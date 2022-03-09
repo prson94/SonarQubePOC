@@ -66,7 +66,7 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
         this.paginatorMutationObserver = new MutationObserver(mutations => {
             mutations.forEach((mutation) => {
                 const addedNode = mutation.addedNodes[0] as HTMLElement;
-                if (addedNode && addedNode.setAttribute !== undefined) {
+                if (addedNode && addedNode.nodeType === 1) {
                     this.setDataCyAttr(addedNode, this.igDataCy + addedNode.textContent);
                 }
             });

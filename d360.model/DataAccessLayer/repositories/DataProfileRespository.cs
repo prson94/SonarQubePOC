@@ -435,7 +435,7 @@ namespace d360.model.DataAccessLayer
             return await CompanyContext.QueryAsync<DataProfileExportModel>(sql, dbArgs, ApiTimeout);
         }
 
-        public async Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false)
         {
             var dbArgs = new DynamicParameters();
             var results = new AssetDataProfileByTypeQualifierApiViewModel();
@@ -487,6 +487,14 @@ namespace d360.model.DataAccessLayer
                 if (orderFilter.Equals("confidence", StringComparison.InvariantCultureIgnoreCase))
                 {
                     orderBy = "ADP.confidence";
+                }
+                if (orderFilter.Equals("assettypepath", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    orderBy = "P.Path";
+                }
+                if (orderFilter.Equals("path", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    orderBy = "NDP.DisplayPath";
                 }
             }
 
@@ -567,6 +575,23 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("@userid", CompanyContext.CurrentResourceID);
             }
 
+            if (isExport)
+            {
+                sqlJoins = $@"{sqlJoins}
+                               outer apply 
+			                (
+			                select 
+				                top 1 *
+			                from 
+								semantic
+			                where 
+				                qualifier = @typeQualifier
+							order by 
+								EffectiveDate desc
+
+			                ) s";
+            }
+
 
             var itemsSQL = $@"
                             SELECT 
@@ -574,7 +599,9 @@ namespace d360.model.DataAccessLayer
 	                            NDP.uid, 
                                 NDP.DisplayPath as [path],
                                 P.[path] as assetTypePath,
-                                ADP.Confidence
+                                ADP.Confidence,
+                                NDP.assettypeUid
+                                {(isExport ? ", s.Uid as semanticTypeUid" : "")}
                             FROM                                     
 	                            {sqlJoins}		                            
 	                            {whereConditions}

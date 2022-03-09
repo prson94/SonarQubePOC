@@ -55,4 +55,30 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.dbo.AssetTypeExportTemplate-v1">
+  <comment>GOV-17248</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[AssetTypeExportTemplate]') AND name = N'IX_dbo_AssetTypeExportTemplate_AssetTypeID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_dbo_AssetTypeExportTemplate_AssetTypeID] ON [dbo].[AssetTypeExportTemplate]
+	(
+		[AssetTypeID] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[dbo].[AssetTypeExportTemplate]') AND name = N'IX_dbo_AssetTypeExportTemplate_AssetTypeID')
+BEGIN
+	DROP INDEX [IX_dbo_AssetTypeExportTemplate_AssetTypeID] ON [dbo].[AssetTypeExportTemplate]
+END
+		]]>
+	</rollback>
+  </changeSet>  
 </databaseChangeLog>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.Theme-v1.1">
+  <changeSet author="Pappas" id="Table.dbo.Theme-v1.2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -36,8 +36,14 @@ BEGIN
 		CreatedOn datetime not null,
 		UpdatedBy int not null,
 		UpdatedOn datetime not null,
+		Locked bit constraint DF_Theme_Locked default(0) not null,
 		CONSTRAINT [PK_Theme] PRIMARY KEY CLUSTERED ( ID ASC )
 	)
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Theme' and COLUMN_NAME = 'Locked')
+BEGIN 
+	ALTER TABLE [dbo].[Theme] ADD Locked bit constraint DF_Theme_Locked default(0) not null
 END
 		]]>
     </sql>
@@ -51,7 +57,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Theme-Constraints-v1">
+  <changeSet author="Pappas" id="Table.dbo.Theme-Constraints-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -70,6 +76,11 @@ END
 IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_Theme_IsCurrent')
 BEGIN
 	ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [DF_Theme_IsCurrent] DEFAULT (0) FOR [IsCurrent]
+END
+
+IF NOT EXISTS (select 1 from sys.objects where type = 'UQ' and name = 'UC_Theme_Name')
+BEGIN
+	ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [UC_Theme_Name] UNIQUE ([Name])
 END
 
 IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_Theme_Uid')
@@ -105,6 +116,11 @@ BEGIN
 	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [DF_Theme_IsCurrent]
 END
 		
+IF EXISTS (select 1 from sys.objects where type = 'UQ' and name = 'UC_Theme_Name')
+BEGIN
+	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [UC_Theme_Name]
+END
+
 IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_Theme_Uid')
 BEGIN
 	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [DF_Theme_Uid]
@@ -151,6 +167,44 @@ IF EXISTS (select * from [sys].[indexes] where name = 'IX_Theme_Name')
 BEGIN
 	DROP INDEX [IX_Theme_Name] ON [dbo].[Theme]
 END
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.Theme-Data-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [Theme] where Uid = 'AAAAAAAA-0000-0000-0000-000000000001')
+BEGIN
+	INSERT INTO [dbo].[Theme] (
+	[Uid],[Name],[IsCurrent]
+	,[BackColor]
+	,[BreadcrumbLinkColor]
+	,[ButtonBackColor],[PrimaryButtonBackColor]
+	,[HeaderBackColor]
+	,[NavBarBackColor],[NavBarBackSelectedColor]
+	,[TabLinkColor]
+	,[TableHeaderBackColor],[TableRowBackSelectedColor]
+	,[CreatedBy],[CreatedOn],[UpdatedBy],[UpdatedOn],[Locked])
+	VALUES (
+	'AAAAAAAA-0000-0000-0000-000000000001','Precisely Theme',1
+	,'#F1F2F3'
+	,'#90FCF9'
+	,'#CE53A5', '#9D53FF'
+	,'#36017B'
+	,'#FFFFFF'
+	,'#E4CFFF'
+	,'#8A46E4'
+	,'#F1F2F3', '#E4CFFF'
+	, 0, '2022-03-01', 0, '2022-03-01', 1)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
 		]]>
 	</rollback>
   </changeSet>

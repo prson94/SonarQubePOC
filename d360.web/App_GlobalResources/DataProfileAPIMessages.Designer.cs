@@ -106,6 +106,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset Type Uid.
+        /// </summary>
+        internal static string AssetTypeUidColumn {
+            get {
+                return ResourceManager.GetString("AssetTypeUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset UID.
         /// </summary>
         internal static string AssetUidColumn {
@@ -133,6 +142,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Base Type.
+        /// </summary>
+        internal static string BaseTypeColumn {
+            get {
+                return ResourceManager.GetString("BaseTypeColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint..
         /// </summary>
         internal static string DataProfileDeleteMaxLimit {
@@ -147,6 +165,24 @@ namespace Resources {
         internal static string DataProfileRecordsLimit {
             get {
                 return ResourceManager.GetString("DataProfileRecordsLimit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Description.
+        /// </summary>
+        internal static string DescriptionColumn {
+            get {
+                return ResourceManager.GetString("DescriptionColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        internal static string DisabledColumn {
+            get {
+                return ResourceManager.GetString("DisabledColumn", resourceCulture);
             }
         }
         
@@ -169,6 +205,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Effective From.
+        /// </summary>
+        internal static string EffectiveFromColumn {
+            get {
+                return ResourceManager.GetString("EffectiveFromColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Effective Through.
+        /// </summary>
+        internal static string EffectiveThroughColumn {
+            get {
+                return ResourceManager.GetString("EffectiveThroughColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Elements in bottomK cannot be Empty strings.
         /// </summary>
         internal static string ElementBottomKNotEmpty {
@@ -187,6 +241,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Header Filter.
+        /// </summary>
+        internal static string HeaderFilterColumn {
+            get {
+                return ResourceManager.GetString("HeaderFilterColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Header Filter Confidence.
+        /// </summary>
+        internal static string HeaderFilterConfidenceColumn {
+            get {
+                return ResourceManager.GetString("HeaderFilterConfidenceColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;path&apos; and &apos;tags&apos;..
         /// </summary>
         internal static string InvalidOrder {
@@ -201,6 +273,24 @@ namespace Resources {
         internal static string InvalidSimilarType {
             get {
                 return ResourceManager.GetString("InvalidSimilarType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Values.
+        /// </summary>
+        internal static string InvalidValuesColumn {
+            get {
+                return ResourceManager.GetString("InvalidValuesColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to JSON.
+        /// </summary>
+        internal static string JsonColumn {
+            get {
+                return ResourceManager.GetString("JsonColumn", resourceCulture);
             }
         }
         
@@ -277,11 +367,56 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Match Type.
+        /// </summary>
+        internal static string MatchTypeColumn {
+            get {
+                return ResourceManager.GetString("MatchTypeColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Maximum.
+        /// </summary>
+        internal static string MaximumColumn {
+            get {
+                return ResourceManager.GetString("MaximumColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Min Confidence Parameter is invalid.
         /// </summary>
         internal static string MinConfidenceInvalid {
             get {
                 return ResourceManager.GetString("MinConfidenceInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum.
+        /// </summary>
+        internal static string MinimumColumn {
+            get {
+                return ResourceManager.GetString("MinimumColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum Maximum Present.
+        /// </summary>
+        internal static string MinimumMaximumPresentColumn {
+            get {
+                return ResourceManager.GetString("MinimumMaximumPresentColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum Samples.
+        /// </summary>
+        internal static string MinimumSamplesColumn {
+            get {
+                return ResourceManager.GetString("MinimumSamplesColumn", resourceCulture);
             }
         }
         
@@ -313,6 +448,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Priority.
+        /// </summary>
+        internal static string PriorityColumn {
+            get {
+                return ResourceManager.GetString("PriorityColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Record already exists for AssetUid {0} and ProfileSetDate {1}.
         /// </summary>
         internal static string ProfileRecordAlreadyExists {
@@ -331,6 +475,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Qualifier.
+        /// </summary>
+        internal static string QualifierColumn {
+            get {
+                return ResourceManager.GetString("QualifierColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Regular Expression.
+        /// </summary>
+        internal static string RegularExpressionColumn {
+            get {
+                return ResourceManager.GetString("RegularExpressionColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to similarType is a required field..
         /// </summary>
         internal static string RequiredSimilarType {
@@ -340,11 +502,137 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to True/False (Boolean).
+        /// </summary>
+        internal static string SemanticBaseTypeBoolean {
+            get {
+                return ResourceManager.GetString("SemanticBaseTypeBoolean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Number ({0}).
+        /// </summary>
+        internal static string SemanticBaseTypeNumber {
+            get {
+                return ResourceManager.GetString("SemanticBaseTypeNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Advanced (JSON).
+        /// </summary>
+        internal static string SemanticMatchTypeAdvanced {
+            get {
+                return ResourceManager.GetString("SemanticMatchTypeAdvanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List of Values.
+        /// </summary>
+        internal static string SemanticMatchTypeList {
+            get {
+                return ResourceManager.GetString("SemanticMatchTypeList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pattern in Data.
+        /// </summary>
+        internal static string SemanticMatchTypePattern {
+            get {
+                return ResourceManager.GetString("SemanticMatchTypePattern", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Built-In.
+        /// </summary>
+        internal static string SemanticSourceBuiltIn {
+            get {
+                return ResourceManager.GetString("SemanticSourceBuiltIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User-Defined.
+        /// </summary>
+        internal static string SemanticSourceUserDefined {
+            get {
+                return ResourceManager.GetString("SemanticSourceUserDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Under Review.
+        /// </summary>
+        internal static string SemanticStatusUnderReview {
+            get {
+                return ResourceManager.GetString("SemanticStatusUnderReview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filtered Semantic Types List {0}.xlsx.
+        /// </summary>
+        internal static string SemanticTypeExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Type Uid.
+        /// </summary>
+        internal static string SemanticTypeUidColumn {
+            get {
+                return ResourceManager.GetString("SemanticTypeUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Type URL.
+        /// </summary>
+        internal static string SemanticTypeURLColumn {
+            get {
+                return ResourceManager.GetString("SemanticTypeURLColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filtered Asset list for {0} {1}.
+        /// </summary>
+        internal static string SemanticTypeAssetExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeAssetExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Similar.
         /// </summary>
         internal static string Similar {
             get {
                 return ResourceManager.GetString("Similar", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Source.
+        /// </summary>
+        internal static string SourceColumn {
+            get {
+                return ResourceManager.GetString("SourceColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        internal static string StatusColumn {
+            get {
+                return ResourceManager.GetString("StatusColumn", resourceCulture);
             }
         }
         
@@ -367,11 +655,38 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Threshold.
+        /// </summary>
+        internal static string ThresholdColumn {
+            get {
+                return ResourceManager.GetString("ThresholdColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Type Qualifier Parameter is invalid.
         /// </summary>
         internal static string TypeQualifierInvalid {
             get {
                 return ResourceManager.GetString("TypeQualifierInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Valid Locales.
+        /// </summary>
+        internal static string ValidLocalesColumn {
+            get {
+                return ResourceManager.GetString("ValidLocalesColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Valid Values.
+        /// </summary>
+        internal static string ValidValuesColumn {
+            get {
+                return ResourceManager.GetString("ValidValuesColumn", resourceCulture);
             }
         }
     }

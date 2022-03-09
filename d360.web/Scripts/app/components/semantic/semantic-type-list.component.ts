@@ -45,6 +45,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     navigationItemsSubs: Subscription[] = [];
     sortField: string;
     sortOrder: number;
+    isExportInProgress: boolean = false;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -133,7 +134,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     sourceValues: string[] = ["Built-In", "User-Defined"];
     statusValues: string[] = ["Certified", "Draft", "Under Review"];
     matchTypeValues: string[] = ["Advanced (JSON)", "List of Values", "Number", "Pattern in Data"];
-    baseTypeValues: string[] = ["Boolean", "Double", "Long", "String", "LocalDate", "LocalTime", "LocalDateTime", "OffsetDateTime", "ZonedDateTime",];
+    baseTypeValues: string[] = ["True/False (Boolean)", "Number (Double)", "Number (Long)", "String", "LocalDate", "LocalTime", "LocalDateTime", "OffsetDateTime", "ZonedDateTime",];
 
     advancedFilterMap = new Map([
         ["Built-In", "BuiltIn"],
@@ -142,6 +143,9 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         ["Advanced%20\\(JSON\\)", "Advanced"],
         ["List%20of%20Values", "List"],
         ["Pattern%20in%20Data", "Pattern"],
+        ["True%2FFalse%20\\(Boolean\\)", "Boolean"],
+        ["Number%20\\(Double\\)", "Double"],
+        ["Number%20\\(Long\\)", "Long"],
     ]);    
 
     constructor(private route: ActivatedRoute,
@@ -309,6 +313,15 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
                 count: values.length
             });
         }
+    }
+
+    canExportRecords() {
+        return this.semanticsTotal <= this.maxExportRows;
+    }
+
+    export() {
+        this.isExportInProgress = true;
+        this.dataProfileService.getSemanticTypes(1, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => { this.isExportInProgress = false; });
     }
 
     getBaseTypeText(baseType: string) {

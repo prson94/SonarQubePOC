@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input, AfterViewChecked, ViewChild, SimpleChanges, OnDestroy } from "@angular/core";
+﻿import { Component, OnInit, Output, EventEmitter, Input, AfterViewChecked, ViewChild, SimpleChanges, OnDestroy, OnChanges } from "@angular/core";
 import * as _ from "lodash";
 import { WorkflowService } from "../../../../services/workflow.service";
 import { WorkflowFieldsService } from "../../../../services/workflow-fields.service";
@@ -10,7 +10,7 @@ import { HTTPResponseOutput, NodeModel } from "../../../../models/workflow.model
     templateUrl: "./workflow-template-tool.component.html"
 })
 
-export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, OnDestroy, OnChanges {
     @Input() objectType: string;
     @Input() objectId: number;
     @Output() onItemClick = new EventEmitter();
@@ -58,8 +58,6 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     }
 
     ngOnInit() {
-        this.fields = _.cloneDeep(this.defaultFields);
-
         this.httpFieldsSub = this.workflowFieldsService.httpFields$.subscribe(() => {
             this.filterHttpFields();
             this.load();

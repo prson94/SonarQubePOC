@@ -1,12 +1,9 @@
 ﻿using System.Collections.Generic;
 
-
 namespace d360.extensions.caching
 {
     public class DummyCachingProvider : ICachingProvider
     {
-        
-
         public bool ListItemExists<T, TIdentifier>(string name, TIdentifier id)
         {
             return true;
@@ -29,27 +26,18 @@ namespace d360.extensions.caching
 
         public void SetItem<T>(string name, T item, bool isAbsoluteExpiration = false, int expirationMinutes = 10)
         {
-          
         }
 
         public void SetList<T, TIdentifier>(string name, SortedDictionary<TIdentifier, T> list, bool isAbsoluteExpiration = false, int expirationMinutes = 10)
         {
-          
         }
 
         public void SetItemInListByID<T, TIdentifier>(string name, TIdentifier id, T item, bool isAbsoluteExpiration = false, int expirationMinutes = 10)
         {
         }
 
-        private SortedDictionary<TIdentifier, T> getOrCreateDictionary<T, TIdentifier>(string name)
-        {
-            return null;
-        }
-
-
         public void RemoveItem(string name)
         {
-           
         }
     }
 }

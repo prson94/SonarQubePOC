@@ -1,4 +1,4 @@
-import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output } from '@angular/core';
+import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { TagType, TagApiModel } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
@@ -10,6 +10,9 @@ import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DatePipe } from '@angular/common';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { Subscription } from 'rxjs';
+import { GenericMessageService } from '../../../services/generic-message.service';
+import { GenericMessageType } from '../../../models/generic-message.model';
 
 declare var CurrentResourceID;
 
@@ -62,6 +65,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     EditingTagsLoading: boolean;
     deletingTag: boolean;
     tagNameBeingAdded: any;
+    private genericMessageServiceSub: Subscription;
 
     constructor(
         private auth: AuthenticationService,
@@ -72,22 +76,36 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         private ref: ChangeDetectorRef,
         private datePipe: DatePipe,
         private router: Router,
-        private linkClickInterceptor: LinkClickInterceptor) {
+        private linkClickInterceptor: LinkClickInterceptor,
+        private genericMessageService: GenericMessageService ) {
         super(settingsService);
     }
 
     ngOnInit() {
         this.theDeleteCallback = this.deleteTags.bind(this);
+        this.assignTagsFromData();
+        this.genericMessageServiceSub = this.genericMessageService.getMessage().subscribe(
+            message => {
+                if (message
+                    && message.messageType === GenericMessageType.Tags
+                    && message.uid === this.assetUID
+                    && message.data.length !== this.tags.length) {
+                    this.tags = message.data;
+                    this.ref.detectChanges();
+                }
+            }
+        );
+    }
+
+    assignTagsFromData() {
         this.tags = [];
         if (this.data) {
 
             if (typeof this.data == 'string') {
                 this.data.split('|').forEach(t => {
-                    this.tags.push({ Value: t, uid: null });
+                    this.tags = this.tags.concat([{ Value: t, uid: null }])
                 });
-            }
-
-            if (typeof this.data == 'object') {
+            } else if (typeof this.data == 'object') {
                 if (Array.isArray(this.data) && this.data.every(item => typeof item === "string")) {
                     this.data.forEach(t => {
                         this.tags.push({ Value: t, uid: null });
@@ -119,6 +137,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         if (this.resizeSub) {
             this.resizeSub.unsubscribe();
+        }
+        if (this.genericMessageServiceSub) {
+            this.genericMessageServiceSub.unsubscribe();
         }
     }
 
@@ -202,13 +223,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 let tag = new TagApiModel();
                 tag.AssetUID = uid;
                 tag.TagName = event.Value;
-                tags.push(tag);
+                this.tags = this.tags.concat([tag])
             })
         } else {
             let tag = new TagApiModel();
             tag.AssetUID = this.assetUID;
             tag.TagName = event.Value;
-            tags.push(tag);
+            tags = tags.concat([tag])
         }
         this.tags.forEach(x => {
             if (x.Value == event.Value) {
@@ -250,12 +271,17 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 event.uid = result[0].Uid;
-                                this.tags.push(event);
+                                this.tags = this.tags.concat([event])
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 event.UseCount = 0;
                                 this.searchResults = [];
                                 this.inputValue = "";
                                 this.savingTag = false;
+                                this.genericMessageService.sendMessage({
+                                    uid: this.assetUID,
+                                    messageType: GenericMessageType.Tags,
+                                    data: this.tags
+                                });
                                 this.tagsChanged.emit();
                                 this.EditingTagsLoading = false;
                                 this.ref.markForCheck();
@@ -280,7 +306,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                             this.showMessageForResult(this.messagesService, result, msg);
                                             if (event.uid == undefined) {
                                                 event.uid = result[0].Uid;
-                                                this.tags.push(event);
+                                                this.tags = this.tags.concat([event])
                                             }
                                             this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                             event.UseCount = 0;
@@ -288,6 +314,11 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                             this.inputValue = "";
                                             this.savingTag = false;
                                             this.EditingTagsLoading = false;
+                                            this.genericMessageService.sendMessage({
+                                                uid: this.assetUID,
+                                                messageType: GenericMessageType.Tags,
+                                                data: this.tags
+                                            });
                                             this.tagsChanged.emit();
                                             this.ref.markForCheck();
                                         });
@@ -336,6 +367,11 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 if (result.type != 'error') {
                     this.tags = this.tags.filter((x) => x.Value !== selectedTag.Value);
                 }
+                this.genericMessageService.sendMessage({
+                    uid: this.assetUID,
+                    messageType: GenericMessageType.Tags,
+                    data: this.tags
+                });
                 this.tagsChanged.emit();
                 this.deletingTag = false;
                 this.ref.markForCheck();
