@@ -2550,6 +2550,10 @@ from    (
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
+                case SystemObjects.ReferenceItemType:
+                    var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
+
+                    return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 
