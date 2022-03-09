@@ -2887,6 +2887,8 @@ where asset.Object = @type and asset.ObjectId = @id
                         gr_sec.LastName + ', ' + gr_sec.FirstName as 'SecondaryOwnerName',
                         u.LastName+', '+u.FirstName as UpdatedByName,
                         c.LastName+', '+c.FirstName as CreatedByName, 
+                        u.uid as UpdatedByUid,
+                        c.uid as CreatedByUid, 
                         g.* from
                         [group] g
                         inner join asset a on a.object ='Group' and a.objectid = g.id
@@ -2909,14 +2911,14 @@ where asset.Object = @type and asset.ObjectId = @id
                             }
                         });
 
-                        if (group.PrimaryOwnerResourceID.HasValue || group.SecondaryOwnerResourceID.HasValue)
+                        if (group.PrimaryOwnerUid.HasValue || group.SecondaryOwnerUid.HasValue)
                         {
                             var groupOwnerIDs = new List<int>();
-                            if (group.PrimaryOwnerResourceID.HasValue)
+                            if (group.PrimaryOwnerUid.HasValue)
                             {
                                 groupOwnerIDs.Add(group.PrimaryOwnerResourceID.Value);
                             }
-                            if (group.SecondaryOwnerResourceID.HasValue)
+                            if (group.SecondaryOwnerUid.HasValue)
                             {
                                 groupOwnerIDs.Add(group.SecondaryOwnerResourceID.Value);
                             }
@@ -2950,9 +2952,9 @@ where asset.Object = @type and asset.ObjectId = @id
                             {
                                 row.SecondColumnFields = new List<ReadOnlyField>
                                 {
-                                    new ReadOnlyField { 
-                                        Name = group.GetName(i => i.SecondaryOwnerResourceID), 
-                                        FieldName = "GroupOwner", 
+                                    new ReadOnlyField {
+                                        Name = group.GetName(i => i.SecondaryOwnerResourceID),
+                                        FieldName = "GroupOwner",
                                         FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
                                         Value = "values",
                                         Values = new List<ReadOnlyFieldValue>{
@@ -3052,7 +3054,8 @@ where asset.Object = @type and asset.ObjectId = @id
                                                 Value=group.CreatedByName,
                                                 TooltipType="Resource",
                                                 TooltipUrl="resource/"+asset.CreatedBy,
-                                                HideTooltip = true
+                                                HideTooltip = true,
+                                                uid= group.CreatedByUid.Value
                                             }
                                         },
                                         DataType = DataType.Lookup.ToString()
@@ -3077,7 +3080,8 @@ where asset.Object = @type and asset.ObjectId = @id
                                                 Value=group.UpdatedByName,
                                                 TooltipType="Resource",
                                                 TooltipUrl="resource/"+asset.UpdatedBy,
-                                                HideTooltip = true
+                                                HideTooltip = true,
+                                                uid = group.UpdatedByUid.Value
                                             }
                                         },
                                         DataType = DataType.Lookup.ToString()
@@ -3500,12 +3504,12 @@ where asset.Object = @type and asset.ObjectId = @id
                                 {
                                     columns = 2,
                                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", 
-                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", 
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn",
+                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
                                         DataType = "date" }
                                 },
                                     SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", 
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn",
                                         FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
                                 },
                                     Category = FieldInfo.SystemFieldCategory
@@ -3517,8 +3521,8 @@ where asset.Object = @type and asset.ObjectId = @id
                                 {
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", 
-                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", 
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn",
+                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "",
                                         DataType = "date" }
                                 },
                                     Category = FieldInfo.SystemFieldCategory
@@ -3532,14 +3536,14 @@ where asset.Object = @type and asset.ObjectId = @id
                             if (asset.CreatedBy.HasValue)
                             {
                                 model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
-                                    FieldInfo.CreatedBy_Name, 
+                                    FieldInfo.CreatedBy_Name,
                                     users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
                             }
 
                             if (asset.UpdatedBy.HasValue)
                             {
-                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
-                                    FieldInfo.UpdatedBy_Name, 
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
+                                    FieldInfo.UpdatedBy_Name,
                                     users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
                             }
                         }
