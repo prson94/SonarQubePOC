@@ -1622,7 +1622,6 @@ namespace d360.model.DataAccessLayer
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
             }
             else
             {

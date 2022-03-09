@@ -588,6 +588,7 @@
     <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Extensions\SecurityExtensions.cs" />
+    <Compile Include="Extensions\SystemFieldsHelper.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\RequireAdminPermissionsAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />

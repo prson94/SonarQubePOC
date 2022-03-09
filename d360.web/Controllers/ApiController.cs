@@ -2674,18 +2674,6 @@ where asset.Object = @type and asset.ObjectId = @id
 
                         if (asset != null)
                         {
-                            if (type == SystemObjects.Rule)
-                            {
-                                model.rows.Add(new DetailReadOnlyRowModel
-                                {
-                                    columns = 1,
-                                    FirstColumnFields = new List<ReadOnlyField> {
-                                        new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "AssetTypeName", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = asset.AssetType.Name }
-                                    },
-                                    Category = Resources.FieldInfo.SystemFieldCategory
-                                });
-                            }
-
                             var dynamicRows = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
 
                             if (useAssetDetailColumnDefinition && fcMapper != null)
@@ -2740,16 +2728,6 @@ where asset.Object = @type and asset.ObjectId = @id
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            },
-                                Category = FieldInfo.SystemFieldCategory
-                            });
-
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
@@ -2788,16 +2766,22 @@ where asset.Object = @type and asset.ObjectId = @id
                                 });
                             }
 
-                            if (type == SystemObjects.Rule)
+                            IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(asset.CreatedBy, asset.UpdatedBy);
+                            if (users != null)
                             {
-                                model.rows.Add(new DetailReadOnlyRowModel
+                                if (asset.CreatedBy.HasValue)
                                 {
-                                    columns = 2,
-                                    FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = FieldInfo.RuleID_Name, FieldName = "RuleID", Value = $"{asset.ObjectID}" }
-                                },
-                                    Category = Resources.FieldInfo.SystemFieldCategory
-                                });
+                                    model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
+                                        FieldInfo.CreatedBy_Name,
+                                        users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
+                                }
+
+                                if (asset.UpdatedBy.HasValue)
+                                {
+                                    model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy,
+                                        FieldInfo.UpdatedBy_Name,
+                                        users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
+                                }
                             }
                         }
                     }
@@ -3498,16 +3482,6 @@ where asset.Object = @type and asset.ObjectId = @id
                         {
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
-                            },
-                                Category = Resources.FieldInfo.SystemFieldCategory
-                            });
-
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
                                 columns = 2,
                                 FirstColumnFields = new List<ReadOnlyField>
                             {
@@ -3519,16 +3493,56 @@ where asset.Object = @type and asset.ObjectId = @id
                             },
                                 Category = Resources.FieldInfo.SystemFieldCategory
                             });
+
+                            if (asset.UpdatedOn.HasValue)
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", 
+                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", 
+                                        DataType = "date" }
+                                },
+                                    SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", 
+                                        FieldDescription = FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                },
+                                    Category = FieldInfo.SystemFieldCategory
+                                });
+                            }
+                            else
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", 
+                                        FieldDescription = FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", 
+                                        DataType = "date" }
+                                },
+                                    Category = FieldInfo.SystemFieldCategory
+                                });
+                            }
                         }
 
-                        model.rows.Add(new DetailReadOnlyRowModel
+                        IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(asset.CreatedBy, asset.UpdatedBy);
+                        if (users != null)
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = "ID", FieldName = "PolicyID", FieldDescription = Fields.Type_Description, Value = $"{policy.ObjectID}" }
-                                },
-                            Category = Resources.FieldInfo.SystemFieldCategory
-                        });
+                            if (asset.CreatedBy.HasValue)
+                            {
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.CreatedBy,
+                                    FieldInfo.CreatedBy_Name, 
+                                    users.FirstOrDefault(x => x.ResourceID == asset.CreatedBy)));
+                            }
+
+                            if (asset.UpdatedBy.HasValue)
+                            {
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(asset.UpdatedBy, 
+                                    FieldInfo.UpdatedBy_Name, 
+                                    users.FirstOrDefault(x => x.ResourceID == asset.UpdatedBy)));
+                            }
+                        }
                     }
                     policy = null;
                     break;
@@ -4015,6 +4029,10 @@ where asset.Object = @type and asset.ObjectId = @id
 select	A.ID as AssetID,
         A.UID as UID,
 		A.ObjectID,
+		A.CreatedOn,
+		A.CreatedBy,
+		A.UpdatedOn,
+		A.UpdatedBy,
 		T.ID as TypeID,
         T.uid as AssetTypeUid,
 		P.TextPath,
@@ -4073,15 +4091,6 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = $"{taxonomy.AssetID}", DataType = "string" }
-                            },
-                            Category = Resources.FieldInfo.SystemFieldCategory
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
@@ -4091,8 +4100,28 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.AssetType_UID_Name, FieldName = "AssetTypeUid", FieldDescription = Resources.FieldInfo.AssetType_UID_Description, Value = taxonomy.AssetTypeUid.ToString(), DataType = "string" }
                             },
-                            Category = Resources.FieldInfo.SystemFieldCategory
+                            Category = FieldInfo.SystemFieldCategory
                         });
+
+                        model.rows.Add(SystemFieldsHelper.DetailRowInSystemFieldsForCreatedOnAndUpdatedOn(taxonomy));
+
+                        IEnumerable<GlobalReportingResource> users = GetUserNamesFromGloabResource(taxonomy.CreatedBy, taxonomy.UpdatedBy);
+                        if (users != null)
+                        {
+                            if (taxonomy.CreatedBy != null)
+                            {
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(taxonomy.CreatedBy,
+                                    FieldInfo.CreatedBy_Name,
+                                    users.FirstOrDefault(x => x.ResourceID == taxonomy.CreatedBy)));
+                            }
+
+                            if (taxonomy.UpdatedBy != null)
+                            {
+                                model.rows.Add(SystemFieldsHelper.RowWithUserNameLinkAndLookup(taxonomy.UpdatedBy,
+                                    FieldInfo.UpdatedBy_Name,
+                                    users.FirstOrDefault(x => x.ResourceID == taxonomy.UpdatedBy)));
+                            }
+                        }
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
@@ -4209,6 +4238,16 @@ where v.id = {0}", id)).FirstOrDefault();
             }
 
             return model;
+        }
+
+        private IEnumerable<GlobalReportingResource> GetUserNamesFromGloabResource(int? userId1, int? userId2)
+        {
+            return Company.Query<GlobalReportingResource>(@"select 
+                                u.resourceid, u.Uid, u.LastName, u.FirstName
+                                from reporting.global_resource u 
+                                where u.resourceid = @resourceId1 or u.resourceid = @resourceId2
+                                ",
+                new { resourceId1 = userId1, resourceId2 = userId2 });
         }
 
         private string GetPromotionStatusMessage(LoadDetail load)
