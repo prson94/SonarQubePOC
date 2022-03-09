@@ -50,6 +50,11 @@ namespace d360.core.entities
 
         [DataMember, NotMapped]
         public string CreatedByName { get; set; }
+        [DataMember, NotMapped]
+        public Guid? UpdatedByUid { get; set; }
+
+        [DataMember, NotMapped]
+        public Guid? CreatedByUid { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
