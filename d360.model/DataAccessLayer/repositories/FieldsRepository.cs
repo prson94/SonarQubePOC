@@ -2270,7 +2270,7 @@ namespace d360.model.DataAccessLayer
 
 			(Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
-            List<string> defaultFilters = new List<string>();
+			List<string> defaultFilters = new List<string>();
 
 			foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
 			{
@@ -2293,11 +2293,11 @@ namespace d360.model.DataAccessLayer
 				advancedFilter = string.IsNullOrEmpty(advancedFilter) ? defFilters : advancedFilter + " and " + defFilters;
 			}
 
-            List<string> simpleFilters = new List<string>();
-            if (!string.IsNullOrEmpty(simpleFilter))
-            {
-                simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
-            }
+			List<string> simpleFilters = new List<string>();
+			if (!string.IsNullOrEmpty(simpleFilter))
+			{
+				simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
+			}
 
 			if (simpleFilters.Count > 0)
 			{
@@ -2457,11 +2457,11 @@ namespace d360.model.DataAccessLayer
 			string countSQL = ComplexFieldsHelper.GetRefListFromRelSQL(fields, dbArgs, selects, joins, true);
 			(Columns, Fields) = ComplexFieldsHelper.GetComplexRefListFromRelFieldsAndColumns(fields);
 
-            List<string> simpleFilters = new List<string>();
-            if (!string.IsNullOrEmpty(simpleFilter))
-            {
-                simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
-            }
+			List<string> simpleFilters = new List<string>();
+			if (!string.IsNullOrEmpty(simpleFilter))
+			{
+				simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
+			}
 
 			if (simpleFilters.Count > 0)
 			{
@@ -2592,11 +2592,11 @@ namespace d360.model.DataAccessLayer
 				dbArgs.Add("responsibilityTypeId", definition.ResponsibilityType);
 			}
 
-            List<string> simpleFilters = new List<string>();
-            if (!string.IsNullOrEmpty(simpleFilter))
-            {
-                simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
-            }
+			List<string> simpleFilters = new List<string>();
+			if (!string.IsNullOrEmpty(simpleFilter))
+			{
+				simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
+			}
 
 			if (simpleFilters.Count > 0)
 			{
@@ -2670,53 +2670,53 @@ namespace d360.model.DataAccessLayer
 								from	IntersectType I 
 										inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
 		
-		                        if @isSubject = 1
-		                        begin
-			                        select	top 1
-					                        @referenceItemTypeID = A.ID
-			                        from	[Intersect] I
-					                        inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
-		                        end
-		                        else
-		                        begin 
-			                        select	top 1
-					                        @referenceItemTypeID = A.ID
-			                        from	[Intersect] I
-					                        inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
-		                        end
-		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
-        }
+								if @isSubject = 1
+								begin
+									select	top 1
+											@referenceItemTypeID = A.ID
+									from	[Intersect] I
+											inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+								end
+								else
+								begin 
+									select	top 1
+											@referenceItemTypeID = A.ID
+									from	[Intersect] I
+											inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+								end
+								select @referenceItemTypeID", dbArgs)).FirstOrDefault();
+		}
 
 
-        private static List<string> GetSimpleFilterForGridFields(string simpleFilter, List<GridField> Fields)
-        {
-            List<string> simpleFilters = new List<string>();
-            foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
-            {
-                var value = HttpUtility.UrlEncode(simpleFilter);
+		private static List<string> GetSimpleFilterForGridFields(string simpleFilter, List<GridField> Fields)
+		{
+			List<string> simpleFilters = new List<string>();
+			foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+			{
+				var value = HttpUtility.UrlEncode(simpleFilter);
 
-                if (f.type == "bool")
-                {
-                    bool parsedResult;
-                    if ("true".IndexOf(value.ToLowerInvariant()) != -1)
-                    {
-                        value = "1";
-                    }
-                    if ("false".IndexOf(value.ToLowerInvariant()) != -1)
-                    {
-                        value = "0";
-                    }
-                    if (bool.TryParse(value, out parsedResult))
-                    {
-                        value = parsedResult ? "1" : "0";
-                    }
+				if (f.type == "bool")
+				{
+					bool parsedResult;
+					if ("true".IndexOf(value.ToLowerInvariant()) != -1)
+					{
+						value = "1";
+					}
+					if ("false".IndexOf(value.ToLowerInvariant()) != -1)
+					{
+						value = "0";
+					}
+					if (bool.TryParse(value, out parsedResult))
+					{
+						value = parsedResult ? "1" : "0";
+					}
 
-                }
-                simpleFilters.Add($"({f.apiName} ct '{value}')");
-            }
-            return simpleFilters;
-        }
+				}
+				simpleFilters.Add($"({f.apiName} ct '{value}')");
+			}
+			return simpleFilters;
+		}
 
 
-    }
+	}
 }
