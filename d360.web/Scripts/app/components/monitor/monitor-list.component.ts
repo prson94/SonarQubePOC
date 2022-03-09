@@ -112,7 +112,7 @@ export class MonitorListComponent extends BaseComponent implements OnInit, OnCha
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
-        })
+        });
     }
 
     ngOnChanges(changes: SimpleChanges) {

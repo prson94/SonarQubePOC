@@ -85,7 +85,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage as number;
-        })
+        });
     }
 
     ngOnDestroy() {

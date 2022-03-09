@@ -223,7 +223,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage as number;
-        })
+        });
     }
 
     ngOnDestroy() {

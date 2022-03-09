@@ -176,7 +176,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage as number;
-        })
+        });
     }
 
     canExportRecords() {

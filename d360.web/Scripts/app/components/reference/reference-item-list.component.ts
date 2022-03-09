@@ -71,7 +71,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage[this.title];
-        })
+        });
     }
 
     ngOnChanges(changes: SimpleChanges) {

@@ -63,7 +63,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
             this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
             this.isLoading = true;
             this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
-        })
+        });
     }
 
     ngOnChanges(changes: SimpleChanges): void {

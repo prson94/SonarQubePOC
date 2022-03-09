@@ -41,7 +41,7 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
     if (area) {
       set(numberOfRowsByCategories, `${category}.${area}`, numberOfRows);
     } else {
-      numberOfRowsByCategories[category] = numberOfRows;
+      numberOfRowsByCategories[category] = numberOfRows; // eslint-disable-line
     }
     localStorage.setItem(LocalStorageKey.NumberOfRowsByCategories, JSON.stringify(numberOfRowsByCategories));
   }
@@ -50,7 +50,7 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
     if (LocalStorageHelper.isLocalStorageKeyExist(LocalStorageKey.NumberOfRowsByCategories)) {
       return this.getNumberOfRowsByCategoriesFromStorage();
     } else {
-      return {}
+      return {};
     }
   }
 
@@ -59,7 +59,7 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
     if (breadcrumb && breadcrumb[0]) {
       return breadcrumb[0].text;
     } else {
-      return undefined;
+      return void(0);
     }
   }
 
@@ -76,7 +76,7 @@ export class NumberOfRowsByCategoryService implements OnDestroy {
   defineNumberOfRowsByCategory(category: string, defaultNumberOfRows?: number): NumberOfRowsByCategories | number {
     let numberOfRowsByCategories: NumberOfRowsByCategories = this.getNumberOfRowsByCategoriesFromStorage();
     if (numberOfRowsByCategories.hasOwnProperty(category)) {
-      return numberOfRowsByCategories[category];
+      return numberOfRowsByCategories[category]; // eslint-disable-line
     } else {
       return defaultNumberOfRows || AppConstants.DEFAULT_ROWS_PER_PAGE;
     }

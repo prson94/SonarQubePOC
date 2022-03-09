@@ -94,7 +94,7 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
-        })
+        });
     }
     
     ngOnChanges() {

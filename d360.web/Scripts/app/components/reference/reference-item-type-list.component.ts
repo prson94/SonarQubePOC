@@ -96,7 +96,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage[this.title];
-        })
+        });
     }
 
     private load() {

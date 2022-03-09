@@ -110,7 +110,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage[this.UserListHeading] || this.defaultInitialItemsPerPage;
-        })
+        });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
