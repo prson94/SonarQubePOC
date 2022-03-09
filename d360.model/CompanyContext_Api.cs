@@ -4748,7 +4748,6 @@ where   ExecutionID = @ExecutionID
                         try
                         {
                             // if needed create temp tables for data
-                            useTempTableForFields = false;
                             CreateWorkareaTempTables(useTempTableForFields, transaction);
 
                             AddMeasurement(metrics, "Create work area temp tables", sw.ElapsedMilliseconds, ++step);
