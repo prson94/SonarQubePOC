@@ -5,6 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="MDonato" id="Table.Deletions.Group-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			DROP TRIGGER IF EXISTS [dbo].[Group_AfterInsert]
+		]]>
+    </sql>
+  </changeSet>
+
   <changeSet author="Pappas" id="Table.Deletions-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
