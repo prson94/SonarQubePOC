@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace d360.core.types
 {
-    public sealed class DateTimeService: IDateTimeService
+    public sealed class DateTimeService : IDateTimeService
     {
         private static readonly IFormatProvider DefaultProvider = CultureInfo.InvariantCulture;
         private static readonly DateTimeStyles DefaultStyles = DateTimeStyles.None;
@@ -16,7 +16,7 @@ namespace d360.core.types
 
         public bool CanParse(string input, IFormatProvider formatProvider, DateTimeStyles dateTimeStyles)
         {
-            return DateTime.TryParse(input, formatProvider, dateTimeStyles, out _); 
+            return DateTime.TryParse(input, formatProvider, dateTimeStyles, out _);
         }
 
         public DateTime Parse(string input, IFormatProvider formatProvider, DateTimeStyles dateTimeStyles)

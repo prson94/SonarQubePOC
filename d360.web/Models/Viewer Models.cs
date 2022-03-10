@@ -272,6 +272,9 @@ namespace d360.web.Models
         public int? Row { get; set; }
 
         [DataMember]
+        public Guid? ResourceUid { get; set; }
+
+        [DataMember]
         public int? Column { get; set; }
 
         [DataMember]

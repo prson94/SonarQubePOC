@@ -1,15 +1,13 @@
-﻿using d360.core.helpers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
 using d360.core.types;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 // version on C# in not appropriate
 // ReSharper disable ConvertToNullCoalescingCompoundAssignment
@@ -113,7 +111,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/),
+            OperatorAllowedDataTypes(DataType.Date),
             OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.DateTime),
             OperatorFieldTypeRequirements(false),
             SortOrder(500)
@@ -126,7 +124,7 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/),
+            OperatorAllowedDataTypes(DataType.Date),
             OperatorAllowedDataTypesAdvancedFilter(DataType.Date, DataType.DateTime),
             OperatorFieldTypeRequirements(false),
             SortOrder(600)
@@ -292,8 +290,8 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Date /*, DataType.DateTime*/),
+            OperatorAllowedDataTypes(DataType.Date),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Date),
             OperatorFieldTypeRequirements(false),
             SortOrder(700)
         ]
@@ -305,8 +303,8 @@ namespace d360.core.enums
             Description(""),
             OperatorValueCountRange(1, 1),
             OperatorAllowedMeasureChecks(MetricGovernanceCheckType.Field),
-            OperatorAllowedDataTypes(DataType.Date /*, DataType.DateTime*/),
-            OperatorAllowedDataTypesAdvancedFilter(DataType.Date /*, DataType.DateTime*/),
+            OperatorAllowedDataTypes(DataType.Date),
+            OperatorAllowedDataTypesAdvancedFilter(DataType.Date),
             OperatorFieldTypeRequirements(false),
             SortOrder(800)
         ]
@@ -510,7 +508,7 @@ namespace d360.core.enums
         bool Execute(Operator @operator, string dataType, bool allowMultipleValues, IReadOnlyList<string> values, string valueToCompare);
     }
 
-    internal abstract class TestOperatorBase: ITestOperator
+    internal abstract class TestOperatorBase : ITestOperator
     {
         protected static bool OneValueCondition<T>(IList<T> values, Func<T, bool> condition)
         {
@@ -593,18 +591,20 @@ namespace d360.core.enums
         }
     }
 
-    internal class DefaultTestOperator: TestOperatorBase
+    internal class DefaultTestOperator : TestOperatorBase
     {
         public DefaultTestOperator()
         {
             // DI also can be reused
-            Operators = new List<TestOperatorBase>();
-            Operators.Add(new BooleanTestOperator());
-            Operators.Add(new DateTimeTestOperator(new DateTimeService()));
-            Operators.Add(new DecimalTestOperator(new DecimalService()));
-            Operators.Add(new Int64TestOperator(new Int64Service()));
-            Operators.Add(new LookupTestOperator());
-            Operators.Add(new StringTestOperator());
+            Operators = new List<TestOperatorBase>
+            {
+                new BooleanTestOperator(),
+                new DateTimeTestOperator(new DateTimeService()),
+                new DecimalTestOperator(new DecimalService()),
+                new Int64TestOperator(new Int64Service()),
+                new LookupTestOperator(),
+                new StringTestOperator()
+            };
         }
 
         private ICollection<TestOperatorBase> Operators { get; set; }
@@ -662,7 +662,6 @@ namespace d360.core.enums
                     result = OneValueCondition(parsedValues, value => fieldValue.EndsWith(value, StringComparison.InvariantCulture));
                     break;
 
-
                 case Operator.NotPopulated:
                     result = string.IsNullOrEmpty(fieldValue);
                     break;
@@ -678,7 +677,7 @@ namespace d360.core.enums
                 case Operator.In:
                     result = parsedValues.Any(value => fieldValue.IndexOf(value, StringComparison.InvariantCulture) != -1);
                     break;
-                    
+
                 case Operator.Contains:
                     result = OneValueCondition(parsedValues, value => fieldValue.IndexOf(value, StringComparison.InvariantCulture) != -1);
                     break;

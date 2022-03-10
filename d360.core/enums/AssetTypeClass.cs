@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -13,31 +12,36 @@ namespace d360.core.enums
             Description("Generic Type.")
         ]
         Generic = 0,
+
         [
-            Name("Business Asset"), 
+            Name("Business Asset"),
             Description("Business assets."),
-            IsAllowedAutoDisplayParent(true), 
+            IsAllowedAutoDisplayParent(true),
             AllowCommentsOnAsset
         ]
         BusinessAsset = 1,
+        
         [
             Name("Model"),
             Description("Model assets."),
             AllowCommentsOnAsset
         ]
         Model = 2,
+        
         [
             Name("Policy"),
             Description("Policy asset."),
             AllowCommentsOnAsset
         ]
         Policy = 6,
+        
         [
             Name("Rule"),
             Description("Rule asset."),
             AllowCommentsOnAsset
         ]
         Rule = 7,
+        
         [
             Name("Technical Asset"),
             Description("Technical asset that represent items like database columns, schemas, XML attributes, etc."),
@@ -45,46 +49,55 @@ namespace d360.core.enums
             AllowCommentsOnAsset
         ]
         TechnicalAsset = 8,
+        
         [
             Name("Reference"),
             Description("Reference asset.")
         ]
         Reference = 9,
+        
         [
             Name("Organization"),
             Description("Organization asset.")
         ]
         Organization = 10,
+        
         [
             Name("User"),
             Description("User asset.")
         ]
         User = 11,
+        
         [
             Name("Group"),
             Description("Group asset.")
         ]
         Group = 12,
+        
         [
             Name("Reference List"),
             Description("Reference Item List.")
         ]
         ReferenceItemType = 14,
+        
         [
             Name("Diagram"),
             Description("Diagram asset.")
         ]
         Diagram = 15,
+        
         [
             Name("MetricAllocation"),
             Description("Metric Allocation.")
         ]
         MetricAllocation = 16,
+        
         [
             Name("Predicate"),
             Description("Predicate.")
         ]
         Predicate = 17,
+        
         [
             Name("SemanticType"),
             Description("Semantic Type.")
@@ -101,9 +114,13 @@ namespace d360.core.enums
     public class AssetTypeClassInfo
     {
         public AssetTypeClass ID { get; set; }
+        
         public string Value { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
+        
         public bool AllowCommentsOnAsset { get; set; }
     }
 
@@ -128,11 +145,14 @@ namespace d360.core.enums
         {
             var attr = type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<IsAllowedAutoDisplayParentAttribute>();
             if (attr == null)
+            {
                 return false;
+            }
             else
+            {
                 return attr._isAllowedAutoDisplayParent;
+            }
         }
-
 
         public static List<AssetTypeClassInfo> GetAsList(this AssetTypeClass type)
         {

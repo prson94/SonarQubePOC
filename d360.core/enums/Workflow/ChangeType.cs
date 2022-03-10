@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace d360.core.enums.Workflow
@@ -12,22 +11,29 @@ namespace d360.core.enums.Workflow
     {
         [Description("Item Added")]
         Add = 1,
+
         [Description("Item Changed")]
         Update = 2,
+        
         [Description("Item Removed")]
         Delete = 3,
+        
         [Description("Schedule")]
         Schedule = 4,
+        
         [Description("Score Changed")]
         ScoreUpdate = 5,
+        
         [Description("Request Certification")]
-        RequestCertification = 8        
+        RequestCertification = 8
     }
 
     public class ChangeTypeInfo
     {
         public ChangeType ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
 
@@ -49,6 +55,6 @@ namespace d360.core.enums.Workflow
             }
 
             return list;
-        }    
+        }
     }
 }

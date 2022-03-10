@@ -1,4 +1,4 @@
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
@@ -11,7 +11,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
-import { forkJoin, Observable, ReplaySubject, SubscriptionLike as ISubscription } from 'rxjs';
+import { forkJoin, Observable, ReplaySubject, Subject, SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../../models/enums.model';
 import { Input, Output, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, Component, OnChanges, SimpleChange, OnDestroy, ViewChild, OnInit } from '@angular/core';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -21,6 +21,7 @@ import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from "../../assets-grid/advanced-filtering/advanced-filtering.models";
 import { isEqual } from "lodash";
 import { of } from 'rxjs';
+import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 
 @Component({
     selector: "d3s-user-list",
@@ -55,7 +56,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     advancedFilter: string = "";
 
     totalRecords: number;
-    rowsPerPage: number = 10;
+    rowsPerPage: number = this.defaultInitialItemsPerPage;
+    defaultInitialItemsPerPage: number = 10;
     private usersSub: ISubscription
     currentPageNumber: number = 0;
     sortField: string = undefined;
@@ -65,6 +67,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     columnWidthOwnedItems: number = 0;
 
     private statusValues: string[] = ["Active", "Inactive"];
+    private destroy = new Subject<void>();
 
     get globalFilterFields(): string[] {
         let f = this.columns.map(c => c.datafield);
@@ -76,6 +79,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     @ViewChild('dt', { static: false }) datatable;
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private router: Router,        
         private gridDefinitionService: GridDefinitionService,
         private fieldsService: FieldsObservableService,
@@ -96,6 +100,17 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
         this.theDeleteCallback = this.deleteUser.bind(this);
         this.load();
+
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.UserListHeading] || this.defaultInitialItemsPerPage;
+        });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -108,6 +123,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         if (this.usersSub) {
             this.usersSub.unsubscribe();
         }
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     public openResource(event) {

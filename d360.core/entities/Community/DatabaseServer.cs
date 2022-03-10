@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+
 using d360.core.entities.Contracts;
 
 namespace d360.core.entities

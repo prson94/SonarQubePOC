@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
 using d360.core.enums;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -22,7 +23,7 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         [DataMember]
-        public string UsageNotes { get; set; }        
+        public string UsageNotes { get; set; }
 
         [DataMember]
         public string[] IncludeFieldTypes { get; set; }
@@ -47,6 +48,7 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         #endregion
+
         [NotMapped, DataMember]
         public Guid AssetTypeUID { get; set; }
 
@@ -54,7 +56,7 @@ namespace d360.core.entities
         public virtual AssetType AssetType { get; set; }
 
         [NotMapped, IgnoreDataMember]
-        public string AssetTypeExportTemplateStyleJson { get; set; }        
+        public string AssetTypeExportTemplateStyleJson { get; set; }
 
         [IgnoreDataMember, ForeignKey("AssetTypeExportTemplateID")]
         public virtual ICollection<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }

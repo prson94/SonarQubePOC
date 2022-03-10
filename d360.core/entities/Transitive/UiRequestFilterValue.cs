@@ -1,25 +1,25 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
+using Newtonsoft.Json.Linq;
 
 namespace d360.core.entities
 {
     public class UiRequestFilterValue
     {
         public string Operator { get; set; } = "OR";
+        
         public string RawValue { get; set; }
     }
 
-    public class UiRequestFieldFilterValue: UiRequestFilterValue
+    public class UiRequestFieldFilterValue : UiRequestFilterValue
     {
         public string FieldName { get; set; }
+        
         public string Condition { get; set; }
+        
         public bool IsUnlistedFilterField { get; set; } = false;
 
-        public bool IsParentField { get {  return (string.Compare(this.FieldName, "Parent", true) == 0); } }
+        public bool IsParentField { get { return (string.Compare(FieldName, "Parent", true) == 0); } }
     }
 
     public enum UiRequestOwnershipFilterType
@@ -32,7 +32,9 @@ namespace d360.core.entities
     public class UiRequestOwnershipFilterItem
     {
         public UiRequestOwnershipFilterType FilterType { get; set; }
+        
         public int ResponsibilityTypeID { get; set; }
+        
         public int SecurityAssetID { get; set; }
 
         public JObject GetAsJsonDbQueryObject()
@@ -69,8 +71,9 @@ namespace d360.core.entities
     public class UiRequestRelationshipFilterValue : UiRequestFilterValue
     {
         public int IntersectTypeID { get; set; }
+        
         public string TargetObject { get; set; }
+        
         public List<int> TargetObjectIDs { get; set; }
     }
-
 }

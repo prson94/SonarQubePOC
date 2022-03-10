@@ -1,7 +1,4 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -23,12 +20,12 @@ namespace d360.core.entities
 
         [DataMember]
         public DateTime? AcceptedOn { get; set; }
+
         [DataMember]
         public bool Accepted { get; set; }
-    
     }
 
-    public class ContractAcceptanceDetail: BaseIntObject
+    public class ContractAcceptanceDetail : BaseIntObject
     {
         [DataMember]
         public int? OrganizationID { get; set; }
@@ -51,5 +48,4 @@ namespace d360.core.entities
         [DataMember]
         public bool Accepted { get; set; }
     }
-
 }

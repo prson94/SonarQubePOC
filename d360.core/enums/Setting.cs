@@ -1,6 +1,4 @@
 ﻿
-using d360.core.resources;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+
+using d360.core.resources;
 
 namespace d360.core.enums
 {
@@ -21,7 +21,7 @@ namespace d360.core.enums
             Type(SettingType.Boolean)
         ]
         DisableCommunityPosting = 1,
-        
+
         [
             DefaultValue("/Content/images/PreciselyLogo@2x.png"),
             Description("CompanyLogo_Desc", typeof(Settings)),
@@ -30,7 +30,7 @@ namespace d360.core.enums
             Type(SettingType.Text)
         ]
         CompanyLogo = 2,
-        
+
         [
             DefaultValue("/favicon.ico"),
             Description("CompanyIcon_Desc", typeof(Settings)),
@@ -39,7 +39,7 @@ namespace d360.core.enums
             Type(SettingType.Text)
         ]
         CompanyIcon = 3,
-        
+
         [
             DefaultValue("<ips />"),
             Description("IpRestriction_Desc", typeof(Settings)),
@@ -48,469 +48,469 @@ namespace d360.core.enums
             Type(SettingType.IPAddress)
         ]
         IpRestriction = 4,
-        
+
         [
-            DefaultValue(true), 
+            DefaultValue(true),
             Description("HideData3SixtyUsers_Desc", typeof(Settings)),
             Locked(false),
             Name("HideData3SixtyUsers_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         HideData3SixtyUsers = 9,
-        
-        
+
+
         [
-            DefaultValue(""), 
+            DefaultValue(""),
             Description("DefaultSearchTypes_Desc", typeof(Settings)),
             Locked(false),
             Name("DefaultSearchTypes_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         DefaultSearchTypes = 13,
-        
+
         [
-            DefaultValue(false), 
+            DefaultValue(false),
             Description("DisableIssueManagement_Desc", typeof(Settings)),
             Locked(false),
             Name("DisableIssueManagement_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         DisableIssueManagement = 17,
-        
+
         [
-            DefaultValue(false), 
+            DefaultValue(false),
             Description("EnableOrganizations_Desc", typeof(Settings)),
             Locked(false),
             Name("EnableOrganizations_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         EnableOrganizations = 19,
-        
+
         [
-            DefaultValue(false), 
-            Description("EnableShoppingCart_Desc", typeof(Settings)), 
+            DefaultValue(false),
+            Description("EnableShoppingCart_Desc", typeof(Settings)),
             Locked(false),
             Name("EnableShoppingCart_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         EnableShoppingCart = 20,
-        
+
         [
-            DefaultValue(true), 
-            Description("EnableSagacity_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("EnableSagacity_Desc", typeof(Settings)),
             Locked(false),
             Name("EnableSagacity_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         EnableSagacity = 21,
-        
+
         [
-            DefaultValue(""), 
-            Description("DefaultRoute_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("DefaultRoute_Desc", typeof(Settings)),
             Locked(false),
             Name("DefaultRoute_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
-        DefaultRoute = 22,       
-        
+        DefaultRoute = 22,
+
         [
-            DefaultValue(""), 
-            Description("CustomCSSLocation_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("CustomCSSLocation_Desc", typeof(Settings)),
             Locked(false),
             Name("CustomCSSLocation_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         CustomCSSLocation = 24,
-        
+
         [
-            DefaultValue(""), 
-            Description("AzureADTenant_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("AzureADTenant_Desc", typeof(Settings)),
             Locked(true),
             Name("AzureADTenant_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         AzureADTenant = 25,
-        
+
         [
-            DefaultValue(""), 
-            Description("AzureGraphAPIKey_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("AzureGraphAPIKey_Desc", typeof(Settings)),
             Locked(true),
             Name("AzureGraphAPIKey_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         AzureGraphAPIKey = 26,
-        
+
         [
-            DefaultValue(""), 
-            Description("AzureApplicationId_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("AzureApplicationId_Desc", typeof(Settings)),
             Locked(true),
             Name("AzureApplicationId_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         AzureApplicationId = 27,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowResources_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowResources_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowResources_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowResources = 28,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowFollowersSidebar_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowFollowersSidebar_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowFollowersSidebar_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowFollowersSidebar = 29,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowOwnersSidebar_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowOwnersSidebar_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowOwnersSidebar_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowOwnersSidebar = 30,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowImpactSidebar_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowImpactSidebar_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowImpactSidebar_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowImpactSidebar = 31,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowLineageSidebar_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowLineageSidebar_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowLineageSidebar_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowLineageSidebar = 32,
-        
+
         [
-            DefaultValue("Data360"), 
-            Description("BrowserTitlePrefix_Desc", typeof(Settings)), 
+            DefaultValue("Data360"),
+            Description("BrowserTitlePrefix_Desc", typeof(Settings)),
             Locked(false),
             Name("BrowserTitlePrefix_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         BrowserTitlePrefix = 33,
-        
+
         [
-            DefaultValue(480), 
-            Description("SessionTimeout_Desc", typeof(Settings)), 
+            DefaultValue(480),
+            Description("SessionTimeout_Desc", typeof(Settings)),
             Locked(false),
             Name("SessionTimeout_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         SessionTimeout = 34,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowFavorites_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowFavorites_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowFavorites_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowFavorites = 37,
-        
+
         [
             DefaultValue(true),
-            Description("ShowSocialScoreBar_Desc", typeof(Settings)), 
+            Description("ShowSocialScoreBar_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowSocialScoreBar_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowSocialScoreBar = 38,
-        
+
         [
             DefaultValue(true),
-            Description("ShowHomeAssignmentTile_Desc", typeof(Settings)), 
+            Description("ShowHomeAssignmentTile_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowHomeAssignmentTile_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowHomeAssignmentTile = 39,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowHomeBoardTile_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowHomeBoardTile_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowHomeBoardTile_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowHomeBoardTile = 40,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowHomeActivityTile_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowHomeActivityTile_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowHomeActivityTile_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowHomeActivityTile = 41,
-        
+
         [
-            DefaultValue(false), 
-            Description("ShowHomePageTitle_Desc", typeof(Settings)), 
+            DefaultValue(false),
+            Description("ShowHomePageTitle_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowHomePageTitle_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowHomePageTitle = 42,
-        
+
         [
-            DefaultValue("14px"), 
-            Description("HomePageTitleSize_Desc", typeof(Settings)), 
+            DefaultValue("14px"),
+            Description("HomePageTitleSize_Desc", typeof(Settings)),
             Locked(false),
             Name("HomePageTitleSize_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         HomePageTitleSize = 43,
-        
+
         [
-            DefaultValue("#ffffff"), 
-            Description("HomePageTitleColor_Desc", typeof(Settings)), 
+            DefaultValue("#ffffff"),
+            Description("HomePageTitleColor_Desc", typeof(Settings)),
             Locked(false),
             Name("HomePageTitleColor_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         HomePageTitleColor = 44,
-        
+
         [
-            DefaultValue(""), 
-            Description("HomePageBackgroundImage_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("HomePageBackgroundImage_Desc", typeof(Settings)),
             Locked(false),
             Name("HomePageBackgroundImage_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         HomePageBackgroundImage = 45,
-        
+
         [
-            DefaultValue("What item would you like to report a problem with?"), 
-            Description("ActionMessage_Desc", typeof(Settings)), 
+            DefaultValue("What item would you like to report a problem with?"),
+            Description("ActionMessage_Desc", typeof(Settings)),
             Locked(false),
             Name("ActionMessage_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         ActionMessage = 47,
-        
+
         [
-            DefaultValue("Data360 Workflow"), 
-            Description("WorkflowFromName_Desc", typeof(Settings)), 
+            DefaultValue("Data360 Workflow"),
+            Description("WorkflowFromName_Desc", typeof(Settings)),
             Locked(false),
             Name("WorkflowFromName_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         WorkflowFromName = 48,
-        
+
         [
-            DefaultValue("no-reply@data3sixty.com"), 
-            Description("WorkflowFromEmail_Desc", typeof(Settings)), 
+            DefaultValue("no-reply@data3sixty.com"),
+            Description("WorkflowFromEmail_Desc", typeof(Settings)),
             Locked(false),
             Name("WorkflowFromEmail_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         WorkflowFromEmail = 49,
-        
+
         [
-            DefaultValue(false), 
-            Description("ShowCustomAPIAdmin_Desc", typeof(Settings)), 
+            DefaultValue(false),
+            Description("ShowCustomAPIAdmin_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowCustomAPIAdmin_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowCustomAPIAdmin = 50,
-        
+
         [
-            DefaultValue(false), 
-            Description("HasRegisterLink_Desc", typeof(Settings)), 
+            DefaultValue(false),
+            Description("HasRegisterLink_Desc", typeof(Settings)),
             Locked(false),
             Name("HasRegisterLink_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         HasRegisterLink = 52,
-        
+
         [
-            DefaultValue(""), 
-            Description("JwtAuthority_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("JwtAuthority_Desc", typeof(Settings)),
             Locked(false),
             Name("JwtAuthority_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         JwtAuthority = 54,
-        
+
         [
-            DefaultValue("2ec97ecb-f620-40ba-a109-afcd2e89be0f"), 
+            DefaultValue("2ec97ecb-f620-40ba-a109-afcd2e89be0f"),
             Description("PowerBIClientId_Desc", typeof(Settings)),
             Locked(true),
             Name("PowerBIClientId_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         PowerBIClientId = 55,
-        
+
         [
-            DefaultValue(""), 
-            Description("PowerBIGroupId_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("PowerBIGroupId_Desc", typeof(Settings)),
             Locked(true),
             Name("PowerBIGroupId_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         PowerBIGroupId = 56,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowAllUsersAPIKey_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowAllUsersAPIKey_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowAllUsersAPIKey_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowAllUsersAPIKey = 57,
-        
+
         [
-            DefaultValue(0), 
-            Description("WorkflowCatchAllGroup_Desc", typeof(Settings)), 
+            DefaultValue(0),
+            Description("WorkflowCatchAllGroup_Desc", typeof(Settings)),
             Locked(false),
             Name("WorkflowCatchAllGroup_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         WorkflowCatchAllGroup = 58,
-        
+
         [
-            DefaultValue(10000), 
-            Description("MaxDropdownItems_Desc", typeof(Settings)), 
+            DefaultValue(10000),
+            Description("MaxDropdownItems_Desc", typeof(Settings)),
             Locked(false),
             Name("MaxDropdownItems_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         MaxDropdownItems = 60,
-        
+
         [
-            DefaultValue(true), 
-            Description("WriteActionDescription_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("WriteActionDescription_Desc", typeof(Settings)),
             Locked(false),
             Name("WriteActionDescription_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
-        WriteActionDescription = 61,       
-        
+        WriteActionDescription = 61,
+
         [
-            DefaultValue("DRAFT"), 
-            Description("RequestCertificationDraft_Desc", typeof(Settings)), 
+            DefaultValue("DRAFT"),
+            Description("RequestCertificationDraft_Desc", typeof(Settings)),
             Locked(false),
             Name("RequestCertificationDraft_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         RequestCertificationDraft = 64,
-        
+
         [
-            DefaultValue(6), 
-            Description("UseAsTransformationLimit_Desc", typeof(Settings)), 
+            DefaultValue(6),
+            Description("UseAsTransformationLimit_Desc", typeof(Settings)),
             Locked(false),
             Name("UseAsTransformationLimit_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         UseAsTransformationLimit = 69,
-        
+
         [
-            DefaultValue(10000), 
-            Description("MaxExcelExportRows_Desc", typeof(Settings)), 
+            DefaultValue(10000),
+            Description("MaxExcelExportRows_Desc", typeof(Settings)),
             Locked(false),
             Name("MaxExcelExportRows_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         MaxExcelExportRows = 71,
-        
+
         [
-            DefaultValue(false), 
-            Description("ShowNavigationChildren_Desc", typeof(Settings)), 
+            DefaultValue(false),
+            Description("ShowNavigationChildren_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowNavigationChildren_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowNavigationChildren = 72,
-        
+
         [
-            DefaultValue("00000000-0000-0000-0000-000000000000"), 
-            Description("GovernanceRoleReferenceListUid_Desc", typeof(Settings)), 
+            DefaultValue("00000000-0000-0000-0000-000000000000"),
+            Description("GovernanceRoleReferenceListUid_Desc", typeof(Settings)),
             Locked(false),
             Name("GovernanceRoleReferenceListUid_Name", typeof(Settings)),
             Type(SettingType.Guid)
         ]
         GovernanceRoleReferenceListUid = 73,
-        
+
         [
-            DefaultValue(90), 
-            Description("ApiTimeout_Desc", typeof(Settings)), 
+            DefaultValue(90),
+            Description("ApiTimeout_Desc", typeof(Settings)),
             Locked(false),
             Name("ApiTimeout_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         ApiTimeout = 74,
-        
+
         [
-            DefaultValue(false), 
-            Description("EnableJsonAttribute_Desc", typeof(Settings)), 
+            DefaultValue(false),
+            Description("EnableJsonAttribute_Desc", typeof(Settings)),
             Locked(false),
             Name("EnableJsonAttribute_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         EnableJsonAttribute = 75,
-        
+
         [
-            DefaultValue(""), 
-            Description("AllowedOrigins_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("AllowedOrigins_Desc", typeof(Settings)),
             Locked(false),
             Name("AllowedOrigins_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         AllowedOrigins = 76,
-        
+
         [
-            DefaultValue(""), 
-            Description("FramingDomains_Desc", typeof(Settings)), 
+            DefaultValue(""),
+            Description("FramingDomains_Desc", typeof(Settings)),
             Locked(false),
             Name("FramingDomains_Name", typeof(Settings)),
             Type(SettingType.Text)
         ]
         FramingDomains = 77,
-        
+
         [
-            DefaultValue(0), 
-            Description("WorkflowDigestEmailDays_Desc", typeof(Settings)), 
+            DefaultValue(0),
+            Description("WorkflowDigestEmailDays_Desc", typeof(Settings)),
             Locked(false),
             Name("WorkflowDigestEmailDays_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
         WorkflowDigestEmailDays = 78,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowChangeLogTab_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowChangeLogTab_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowChangeLogTab_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowChangeLogTab = 79,
-        
+
         [
-            DefaultValue(true), 
-            Description("ShowCommentsTab_Desc", typeof(Settings)), 
+            DefaultValue(true),
+            Description("ShowCommentsTab_Desc", typeof(Settings)),
             Locked(false),
             Name("ShowCommentsTab_Name", typeof(Settings)),
             Type(SettingType.Boolean)
         ]
         ShowCommentsTab = 80,
-        
+
         [
-            DefaultValue(365), 
+            DefaultValue(365),
             Description("AssetDataProfileLifespan_Desc", typeof(Settings)),
             Locked(false),
             Name("AssetDataProfileLifespan_Name", typeof(Settings)),
@@ -664,7 +664,7 @@ namespace d360.core.enums
 
             if (int.TryParse(companyValue, out int v))
             {
-                Value = v; 
+                Value = v;
             }
         }
 
@@ -678,17 +678,17 @@ namespace d360.core.enums
         public CompanySettingApiIpAddressModel(SettingInfo setting, string companyValue)
         {
             var value = string.IsNullOrEmpty(companyValue) ? setting.DefaultValue : companyValue;
-            Addresses = new List<Ip>();
+            Value = new List<Ip>();
 
             if (!string.IsNullOrEmpty(value))
             {
                 var xml = XElement.Parse(value);
                 var ips = xml.Elements("ip").Select(i => new Ip { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
-                Addresses.AddRange(ips);
+                Value.AddRange(ips);
             }
         }
 
-        public List<Ip> Addresses { get; set; }
+        public List<Ip> Value { get; set; }
     }
 
     public class CompanySettingApiGuidModel
@@ -781,7 +781,7 @@ namespace d360.core.enums
             {
                 return default(T);
             }
-            
+
         }
 
         public static string GetName(this Setting type)
