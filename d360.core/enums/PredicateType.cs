@@ -1,11 +1,13 @@
-﻿using d360.core.entities;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
+using d360.core.entities;
+
+using Newtonsoft.Json;
 
 namespace d360.core.enums
 {
@@ -28,6 +30,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(true)
         ]
         DataLineage = 1,
+        
         [
             Category("Data Quality"),
             Name("Evaluation"),
@@ -45,6 +48,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         Evaluation = 2,
+        
         [
             Category("Ancestry"),
             Name("Inter-type Hierarchy"),
@@ -62,6 +66,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         InterTypeHierarchy = 3,
+        
         [
             Category("Ancestry"),
             Name("Intra-type Hierarchy"),
@@ -79,6 +84,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         IntraTypeHierarchy = 4,
+        
         [
             Category("General"),
             Name("Grammatic Association"),
@@ -96,6 +102,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         Grammar = 6,
+        
         [
             Category("General"),
             Name("Simple"),
@@ -113,6 +120,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         Simple = 7,
+        
         [
             Category("General"),
             Name("See Also"),
@@ -130,6 +138,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(true)
         ]
         SeeAlso = 9,
+        
         [
             Category("Lineage"),
             Name("Transformation"),
@@ -147,6 +156,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         Transformation = 12,
+        
         [
             Category("Lineage"),
             Name("Business To Technical"),
@@ -164,6 +174,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         BusinessToTechnical = 13,
+        
         [
             Category("General"),
             Name("Semantic Relation"),
@@ -181,6 +192,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         SemanticRelation = 14,
+        
         [
             Category(""),
             Name("Diagram"),
@@ -198,6 +210,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         Diagram = 15,
+        
         [
             Category(""),
             Name("Diagram Use"),
@@ -215,6 +228,7 @@ namespace d360.core.enums
             AllowIntersectTypeAsSubject(false)
         ]
         DiagramUse = 16,
+        
         [
             Category(""),
             Name("Diagram Reference"),
@@ -233,7 +247,6 @@ namespace d360.core.enums
         ]
         DiagramReference = 17
     }
-
 
     public class PredicateTypeInfo : BaseObject
     {

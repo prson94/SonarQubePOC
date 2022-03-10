@@ -1,10 +1,9 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
 
 
 namespace d360.core.entities
@@ -35,7 +34,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class ContractDetail: BaseIntObject, IIntObject
+    public class ContractDetail : BaseIntObject, IIntObject
     {
         [DataMember]
         public string Title { get; set; }
@@ -104,8 +103,5 @@ namespace d360.core.entities
             public int ID { get; set; }
             public bool ContractsAccepted { get; set; }
         }
-
     }
-
-
 }

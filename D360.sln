@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.model", "d360.model\d360.model.csproj", "{B12A1078-5835-43B8-AFB2-C3D24C4AA098}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.model", "d360.model\d360.model.csproj", "{B12A1078-5835-43B8-AFB2-C3D24C4AA098}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Common", "1. Common", "{5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}"
 EndProject
@@ -22,10 +22,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Jobs", "Jobs", "{757CF48D-6728-4702-AC12-754629196548}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.reportlayer", "igx.jobs.reportlayer\igx.jobs.reportlayer.csproj", "{9902BB38-7BC7-4CA9-8C35-C23E8F50CD47}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.resourcecache", "igx.jobs.resourcecache\igx.jobs.resourcecache.csproj", "{FF774B2C-787A-4694-BF07-B4A641D15E4F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.databasetaskprocessor", "igx.jobs.databasetaskprocessor\igx.jobs.databasetaskprocessor.csproj", "{BE8136FF-C54D-4C40-B563-CB13C08C84CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.bulkloadprocessor", "igx.jobs.bulkloadprocessor\igx.jobs.bulkloadprocessor.csproj", "{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}"
 EndProject
@@ -49,10 +45,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.workflowdigestprocessor", "igx.jobs.workflowdigestprocessor\igx.jobs.workflowdigestprocessor.csproj", "{CC659834-FB58-41BF-83AA-249FC84D009F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.displayvalueupdateprocessor", "igx.jobs.displayvalueupdateprocessor\igx.jobs.displayvalueupdateprocessor.csproj", "{868597A5-9A50-447B-8702-E46EC308BA85}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.displayvaluechecker", "igx.jobs.displayvaluechecker\igx.jobs.displayvaluechecker.csproj", "{AA54113F-1E7E-4B28-BF89-6FB686E61B46}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.apiexecutionprocessor", "igx.jobs.apiexecutionprocessor\igx.jobs.apiexecutionprocessor.csproj", "{9B959DF4-93DC-4FF2-B187-8BDB26206700}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}"
@@ -75,7 +67,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.utils.company", "d360.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.consumption", "igx.functions\igx.functions.consumption.csproj", "{E847AC05-71C8-4D30-AAC6-C88B56C45A5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.utils.excel", "d360.utils.excel\d360.utils.excel.csproj", "{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.utils.excel", "d360.utils.excel\d360.utils.excel.csproj", "{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,14 +99,6 @@ Global
 		{9902BB38-7BC7-4CA9-8C35-C23E8F50CD47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9902BB38-7BC7-4CA9-8C35-C23E8F50CD47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9902BB38-7BC7-4CA9-8C35-C23E8F50CD47}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FF774B2C-787A-4694-BF07-B4A641D15E4F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE8136FF-C54D-4C40-B563-CB13C08C84CF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -143,14 +127,6 @@ Global
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CC659834-FB58-41BF-83AA-249FC84D009F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{868597A5-9A50-447B-8702-E46EC308BA85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{868597A5-9A50-447B-8702-E46EC308BA85}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{868597A5-9A50-447B-8702-E46EC308BA85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{868597A5-9A50-447B-8702-E46EC308BA85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA54113F-1E7E-4B28-BF89-6FB686E61B46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA54113F-1E7E-4B28-BF89-6FB686E61B46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA54113F-1E7E-4B28-BF89-6FB686E61B46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA54113F-1E7E-4B28-BF89-6FB686E61B46}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -203,8 +179,6 @@ Global
 		{8A6EF61F-12E0-4FA4-8CFA-588EBAB47490} = {757CF48D-6728-4702-AC12-754629196548}
 		{757CF48D-6728-4702-AC12-754629196548} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{9902BB38-7BC7-4CA9-8C35-C23E8F50CD47} = {757CF48D-6728-4702-AC12-754629196548}
-		{FF774B2C-787A-4694-BF07-B4A641D15E4F} = {757CF48D-6728-4702-AC12-754629196548}
-		{BE8136FF-C54D-4C40-B563-CB13C08C84CF} = {757CF48D-6728-4702-AC12-754629196548}
 		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1} = {757CF48D-6728-4702-AC12-754629196548}
 		{BB4B3F08-534C-45F8-808A-67E911A20311} = {757CF48D-6728-4702-AC12-754629196548}
 		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F} = {757CF48D-6728-4702-AC12-754629196548}
@@ -212,8 +186,6 @@ Global
 		{795C450D-34F3-441C-BE8C-EC391D374FD9} = {757CF48D-6728-4702-AC12-754629196548}
 		{C36A8BA3-5979-4087-8CC9-7EDE903F6EC8} = {757CF48D-6728-4702-AC12-754629196548}
 		{CC659834-FB58-41BF-83AA-249FC84D009F} = {757CF48D-6728-4702-AC12-754629196548}
-		{868597A5-9A50-447B-8702-E46EC308BA85} = {757CF48D-6728-4702-AC12-754629196548}
-		{AA54113F-1E7E-4B28-BF89-6FB686E61B46} = {757CF48D-6728-4702-AC12-754629196548}
 		{9B959DF4-93DC-4FF2-B187-8BDB26206700} = {757CF48D-6728-4702-AC12-754629196548}
 		{E08213BF-83D1-4263-8F7B-ED4EFAC6BA58} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
 		{E66CD394-FAE0-47BF-A24A-DC65FADCE0ED} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
@@ -228,7 +200,7 @@ Global
 		{82FAA62E-0A4F-4D1A-BA72-6689705A59A0} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -10,18 +9,23 @@ namespace d360.core.enums
     {
         [Name("Average"), Description("")]
         Average = 1,
+        
         [Name("Maximum"), Description("")]
         Maximum = 2,
+        
         [Name("Minimum"), Description("")]
         Minimum = 3,
+        
         [Name("Weighted"), Description("")]
         Weighted = 4
     }
 
     public class CalculationMethodInfo
     {
-        public CalculationMethod ID { get; set;  }
+        public CalculationMethod ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
 

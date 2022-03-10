@@ -37,13 +37,25 @@
         </div>
     </div>
     <div class="grid-table-wrapper">
-        <p-table #dt [loading]="isLoading" loadingIcon="fa fa-spinner" [scrollable]="true"
-                 scrollWidth="100%" [lazy]="true" (onLazyLoad)="lazyLoadUsers($event)"
-                 [totalRecords]="totalRecords" [value]="items" selectionMode="single"
-                 [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3"
-                 [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+        <p-table #dt
+                 [loading]="isLoading"
+                 loadingIcon="fa fa-spinner"
+                 [scrollable]="true"
+                 scrollWidth="100%"
+                 [lazy]="true"
+                 (onLazyLoad)="lazyLoadUsers($event)"
+                 [totalRecords]="totalRecords"
+                 [value]="items"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 [globalFilterFields]="globalFilterFields"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="rowsPerPage"
+                 [rowsPerPageOptions]="defaultPagingOptions"
                  [(selection)]="selected"
-                 (selectionChange)="selected=$event;selectedChange.emit(selected);">
+                 (selectionChange)="selected=$event;selectedChange.emit(selected);"
+                 (onPage)="numberOfRowsByCategoryService.onPage($event, UserListHeading)">
             <ng-template pTemplate="header">
                 <tr>
 

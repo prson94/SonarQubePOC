@@ -1,12 +1,11 @@
-﻿using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities.Views
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class FollowDetail: BaseObject
+    public class FollowDetail : BaseObject
     {
         [DataMember, Key, Column(Order = 1)]
         public int ResourceID { get; set; }
@@ -67,7 +66,6 @@ namespace d360.core.entities.Views
 
         [DataMember]
         public decimal? CurrentScore { get; set; }
-
 
         [DataMember]
         public string FollowerEmail { get; set; }

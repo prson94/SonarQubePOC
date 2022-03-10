@@ -17,26 +17,31 @@ namespace d360.core
             {
                 var n = token.Substring(1, token.Length - 2);   // Name of the element to find in the XML.
                 if (fields.ContainsKey(n))
+                {
                     tokenFormatString = tokenFormatString.Replace(token, fields[n]);
+                }
             }
 
             return tokenFormatString;
         }
-        
+
         public static string GetSafeFilename(this string filename)
         {
             if (string.IsNullOrEmpty(filename))
+            {
                 return string.Empty;
+            }
 
             //restricted characters check
             var fn = string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
 
             // max filename check
             if (fn.Length > 250)
+            {
                 fn = fn.Substring(0, 250);
+            }
 
             return fn;
         }
-
     }
 }

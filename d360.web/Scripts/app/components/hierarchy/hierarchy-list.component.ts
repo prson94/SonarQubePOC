@@ -12,6 +12,9 @@ import * as _ from 'lodash';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 
 
@@ -22,15 +25,18 @@ import { CompanySettingsService } from '../../services/settings.service';
 })
 
 export class HierarchyListComponent extends BaseComponent implements OnInit {
+    public rowsPerPage: number;
     private types: AssetTypeApiModel[] = [];
     private selected: AssetTypeApiModel;
     private type: string;
 
     private assetTypeClass: AssetTypeClass;
     private navFolderName: string;
+    private destroy = new Subject<void>();
     
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
@@ -70,10 +76,22 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
 
         this.setBrowserTitle(this.titleService, this.objectName);
 
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage as number;
+        });
     }
 
     ngOnDestroy() {
         this.clearSidebar();
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     load() {

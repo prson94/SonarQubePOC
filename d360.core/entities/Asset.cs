@@ -1,14 +1,16 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using d360.core.queue;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
-using System.Linq;
+
+using d360.core.entities.Contracts;
+using d360.core.enums;
+using d360.core.queue;
+
 using Newtonsoft.Json;
 
 namespace d360.core.entities
@@ -54,7 +56,7 @@ namespace d360.core.entities
 
         [DataMember]
         public virtual ICollection<Field> Fields { get; set; }
-                
+
         public EventObjectInfo GetEventObjectInfo()
         {
             return new EventObjectInfo
@@ -90,29 +92,48 @@ namespace d360.core.entities
     public class AssetsQueryResults
     {
         public int? total { get; set; }
+        
         public IEnumerable<dynamic> items { get; set; }
+        
         public IEnumerable<dynamic> ownershipData { get; set; }
     }
 
     public class AssetAuditApiItemModel
     {
         public Guid uid { get; set; }
+        
         public string name { get; set; }
+        
         public Guid resourceUid { get; set; }
+        
         public string resourceName { get; set; }
+        
         public DateTime date { get; set; }
+        
         public string action { get; set; }
+        
         public Guid? actionAssetUid { get; set; }
+        
         public Guid? actionAssetTypeUid { get; set; }
+        
         public string actionObject { get; set; }
+        
         public string actionObjectTypeName { get; set; }
+        
         public string actionObjectName { get; set; }
+        
         public string actionDescription { get; set; }
+        
         public string field { get; set; }
+        
         public string fieldType { get; set; }
+        
         public string newValue { get; set; }
+        
         public int @class { get; set; }
+        
         public int version { get; set; }
+        
         public string previousValue { get; set; }
     }
 
@@ -126,13 +147,13 @@ namespace d360.core.entities
     {
         [DataMember]
         public bool ReadAsset { get; set; }
+        
         [DataMember]
         public bool ModifyAsset { get; set; }
+        
         [DataMember]
         public bool DeleteAsset { get; set; }
     }
-
-
 
     public class AssetsByPathApiRequestModel : PagedApiBaseRequestModel
     {
@@ -232,38 +253,48 @@ namespace d360.core.entities
     public class AssetClassCountModel
     {
         public string @class { get; set; }
-        public int numberOfAssets { get; set; }        
+        
+        public int numberOfAssets { get; set; }
     }
 
     public class AssetsCountModel
     {
         public int totalNumberOfAssets { get; set; }
+        
         public List<AssetClassCountModel> countsByAssetClass { get; set; }
     }
 
     public class AssetTypeCountModel
     {
         public Guid uid { get; set; }
+        
         [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public Guid? parentUid { get; set; }
+        
         public string @class { get; set; }
+        
         public string name { get; set; }
+        
         [JsonProperty(NullValueHandling = NullValueHandling.Include)]
         public string description { get; set; }
+        
         public int? count { get; set; }
-
     }
 
     public class UserGetAPIRestrictionModel
     {
         public bool HasAssetRestriction { get; set; }
+        
         public bool HasAssetTypeRestriction { get; set; }
+        
         public bool HasAssetPermission { get; set; }
     }
     public class AssetTypePossibleOwnersModel
     {
         public Guid Uid { get; set; }
+        
         public string Name { get; set; }
+       
         public string Type { get; set; }
     }
 

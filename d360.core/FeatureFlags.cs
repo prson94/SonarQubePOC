@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace d360.core
+﻿namespace d360.core
 {
     public static class FeatureFlags
     {

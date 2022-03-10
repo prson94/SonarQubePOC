@@ -1,8 +1,9 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
 using d360.core.enums;
-using System;
 
 namespace d360.core.entities
 {
@@ -47,8 +48,6 @@ namespace d360.core.entities
 
         [DataMember]
         public string SubjectIconText { get; set; }
-
-
 
         [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }

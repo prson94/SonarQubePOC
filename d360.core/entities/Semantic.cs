@@ -1,12 +1,14 @@
-﻿using d360.core.enums;
-using d360.core.exceptions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+using d360.core.exceptions;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.core.entities
 {
@@ -15,13 +17,24 @@ namespace d360.core.entities
     public class SemanticHeaderFilterValue
     {
         public string @operator { get; set; }
+        
         public string value { get; set; }
     }
 
     public class SemanticHeaderFilter
     {
         public string match { get; set; }
+        
         public List<SemanticHeaderFilterValue> values { get; set; }
+    }
+
+    public class SemanticUserModel
+    {
+        [JsonProperty("uid")]
+        public Guid Uid { get; set; }
+
+        [JsonProperty("fullName")]
+        public string FullName { get; set; }
     }
 
     #endregion
@@ -42,8 +55,6 @@ namespace d360.core.entities
 
         [JsonProperty("invalidList"), NotMapped]
         public List<string> InvalidValuesStructured { get; set; }
-
-
 
         [JsonProperty("advanced"), NotMapped]
         public JObject JsonPayloadStructured { get; set; }
@@ -83,16 +94,19 @@ namespace d360.core.entities
 
         [JsonProperty("validLocales"), NotMapped]
         public List<string> ValidLocalesStructured { get; set; }
- 
+
         [JsonProperty("validList"), NotMapped]
         public List<string> ValidValuesStructured { get; set; }
     }
 
-    public class GetSemantics 
+    public class GetSemantics
     {
         public int total { get; set; }
+        
         public int pageNum { get; set; }
+        
         public int pageSize { get; set; }
+        
         public List<GetSemantic> items { get; set; }
     }
 
@@ -139,8 +153,8 @@ namespace d360.core.entities
     }
 
     public class PostSemantic : SemanticBase
-    { 
-    
+    {
+
     }
 
     public class PutSemantic : SemanticBase
@@ -148,7 +162,7 @@ namespace d360.core.entities
 
     }
 
-    public class Semantic: SemanticBase
+    public class Semantic : SemanticBase
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long ID { get; set; }
@@ -178,13 +192,13 @@ namespace d360.core.entities
 
         [Column(TypeName = "nvarchar")]
         public string InvalidValues { get; set; }
-        
+
         [Column(TypeName = "nvarchar")]
         public string JsonPayload { get; set; }
-        
+
         [Column(TypeName = "nvarchar")]
         public string ValidLocales { get; set; }
-        
+
         [Column(TypeName = "nvarchar")]
         public string ValidValues { get; set; }
 
@@ -395,7 +409,7 @@ namespace d360.core.entities
 
             #region Common validation funcs
 
-            Func<bool> headerFilterPopulated = () => 
+            Func<bool> headerFilterPopulated = () =>
             {
                 if (model.HeaderFilterStructured != null)
                 {
@@ -477,6 +491,7 @@ namespace d360.core.entities
             {
                 errors.Add("Minimum must not be greater than Maximum.");
             }
+            
             if (model.Minimum.HasValue)
             {
                 if (model.Minimum.Value < minValue || model.Minimum.Value > maxValue)
@@ -484,6 +499,7 @@ namespace d360.core.entities
                     errors.Add($"Minimum must not fall outside the range of {minValue} or {maxValue}.");
                 }
             }
+            
             if (model.Maximum.HasValue)
             {
                 if (model.Maximum.Value < minValue || model.Maximum.Value > maxValue)
@@ -519,7 +535,7 @@ namespace d360.core.entities
 
             #region Advanced Validation
 
-            switch(model.MatchType)
+            switch (model.MatchType)
             {
                 case SemanticMatchType.Advanced:
                     if (headerFilterPopulated())
@@ -557,6 +573,7 @@ namespace d360.core.entities
                     {
                         errors.Add("Since MatchType is List, JsonPayload must be empty.");
                     }
+
                     if (!string.IsNullOrEmpty(model.RegularExpression))
                     {
                         errors.Add("Since MatchType is List, RegularExpression must be empty.");
@@ -567,6 +584,7 @@ namespace d360.core.entities
                     {
                         errors.Add("Since MatchType is Number, HeaderFilter must not be empty.");
                     }
+                    
                     if (jsonPayloadPopulated())
                     {
                         errors.Add("Since MatchType is Number, JsonPayload must be empty.");
@@ -577,6 +595,7 @@ namespace d360.core.entities
                     {
                         errors.Add("Since MatchType is Pattern, JsonPayload must be empty.");
                     }
+                    
                     if (string.IsNullOrEmpty(model.RegularExpression))
                     {
                         errors.Add("Since MatchType is Pattern, RegularExpression must not be empty.");
@@ -588,7 +607,6 @@ namespace d360.core.entities
             }
 
             #endregion Advanced Validation
-
 
             // Determine if we should throw an error.
             if (errors.Count > 0)

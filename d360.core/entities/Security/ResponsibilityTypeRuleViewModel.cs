@@ -1,10 +1,11 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using System;
-using System.ComponentModel;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -20,17 +21,20 @@ namespace d360.core.entities
         [DataMember]
         public string Context { get; set; }
 
-        
         public string DefinitionRaw { get; set; }
 
         [DataMember]
-        public ResponsibilityRuleDefinition Definition {
+        public ResponsibilityRuleDefinition Definition
+        {
             get
             {
                 ResponsibilityRuleDefinition def = new ResponsibilityRuleDefinition();
                 try
                 {
-                    if (string.IsNullOrEmpty(DefinitionRaw)) return def;
+                    if (string.IsNullOrEmpty(DefinitionRaw))
+                    {
+                        return def;
+                    }
 
                     def = JsonConvert.DeserializeObject<ResponsibilityRuleDefinition>(DefinitionRaw);
                 }

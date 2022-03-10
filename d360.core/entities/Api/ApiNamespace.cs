@@ -1,8 +1,8 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -14,7 +14,7 @@ namespace d360.core.entities
 
         [DataMember]
         [Column(TypeName = "varchar"), StringLength(250)]
-        public string Node{ get; set; }
+        public string Node { get; set; }
 
         [DataMember]
         [Column(TypeName = "varchar"), StringLength(250)]

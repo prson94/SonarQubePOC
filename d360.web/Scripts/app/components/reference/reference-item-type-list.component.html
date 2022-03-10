@@ -1,5 +1,5 @@
 <div class="tile tile-detail">
-    <header *ngIf="!showEditor">Reference Lists
+    <header *ngIf="!showEditor">{{title}}
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                           [hasAdd]="!showDelete && hasAddAssetPermissions()"></d3s-tile-actions>
     </header>
@@ -18,12 +18,13 @@
                                  [pageLinks]="3"
                                  [paginator]="true"
                                  [rowsPerPageOptions]="defaultPagingOptions"
-                                 [rows]="defaultInitialItemsPerPage"
+                                 [rows]="rowsPerPage || defaultInitialItemsPerPage"
                                  [selection]="selected"
                                  [sortOrder]="1"
                                  [value]="referenceTypes"
                                  selectionMode="single"
-                                 sortField="Name">
+                                 sortField="Name"
+                                 (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">

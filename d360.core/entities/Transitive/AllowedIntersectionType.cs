@@ -15,6 +15,7 @@ namespace d360.core.entities
         public int? ParentIntersectID { get; set; }
 
         public string PredicateName { get; set; }
+
         public Guid Uid { get; set; }
     }
 }

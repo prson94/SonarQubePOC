@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -10,6 +9,7 @@ namespace d360.core.enums
     {
         [Name("Organization Terms Of Use"), Description("A terms of use contract for an organization to sign when first logging into the environment, signed by an organizational representative.")]
         OrganizationTermsOfUse = 1,
+        
         [Name("User Terms Of Use"), Description("A terms of use contract for users to sign when first logging into the environment.")]
         ResourceTermsOfUse = 2
     }
@@ -17,7 +17,9 @@ namespace d360.core.enums
     public class ContractTypeInfo
     {
         public ContractType ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
 

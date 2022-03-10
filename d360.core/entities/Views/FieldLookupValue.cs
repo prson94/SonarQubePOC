@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using System;
 
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class FieldLookupValue: BaseObject
+    public class FieldLookupValue : BaseObject
     {
         [Column(Order = 1), DataMember, Key]
         public int FieldTypeID { get; set; }
