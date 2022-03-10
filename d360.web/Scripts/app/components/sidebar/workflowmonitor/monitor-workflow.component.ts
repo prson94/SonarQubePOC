@@ -1,5 +1,5 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -43,11 +43,9 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        if (!this.titleAndTabsService.isInitialize) {
-            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, TabTitle.WORKFLOW);
-        }
-
         this.sub = this.route.params.subscribe(params => {
+            this.initializeTitleAndTabsInRightSidebar(params);
+
             let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
             let assetUid = params['assetUid'];
             if (assetUid == null || assetUid == undefined) {
@@ -69,6 +67,12 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
                 });
             }
         });
+    }
+
+    initializeTitleAndTabsInRightSidebar(params: Params): void {
+        if (!this.titleAndTabsService.isInitialize && params['objectType'] === 'ArtifactType') {
+            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, TabTitle.WORKFLOW);
+        }
     }
 
     ngOnDestroy() {
