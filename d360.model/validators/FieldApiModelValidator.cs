@@ -1,22 +1,21 @@
-﻿using d360.core;
-using d360.core.entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
-using d360.core.resources;
 using System.Text.RegularExpressions;
+
+using d360.core;
+using d360.core.entities;
+using d360.core.resources;
 
 namespace d360.model.validators
 {
     public static class FieldApiModelValidator
     {
-
         public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, List<FieldType> existingFieldTypes = null, List<Tuple<string, Guid>> ExistingIntersectID = null, bool isJsonAttributeFieldTypeEnabled = true)
         {
-            var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
-
+            WorkHttpStatus baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
 
             if (baseValidation.StatusCode != HttpStatusCode.OK)
             {
@@ -25,15 +24,16 @@ namespace d360.model.validators
 
             bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
             bool fieldsHaveErrors = false;
-            var fieldsHaveErrorsList = new List<string>();
+            List<string> fieldsHaveErrorsList = new List<string>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = true;
 
-            foreach (var field in model.Fields)
+            foreach (FieldTypeApiEditModel field in model.Fields)
             {
                 #region Basic field Model validation
 
                 isValid = Validator.TryValidateObject(field, new ValidationContext(field, serviceProvider: null, items: null), validationResults, true);
+                
                 if (!isValid)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, string.Format(FieldErrors.InvalidField, validationResults.First().MemberNames.First()), validationResults.First().ErrorMessage);
@@ -64,12 +64,12 @@ namespace d360.model.validators
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, FieldErrors.TypeObjectMissing);
                 }
 
-
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
                     fieldsHaveErrors = true;
                     fieldsHaveErrorsList.Add(field.Name);
                 }
+
                 if (model.Action == FieldTypesApiEditAction.Replace)
                 {
                     if (field.Type.IsPartOfKey())
@@ -117,7 +117,6 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.GroupInvalidFieldType, field.Type.GetFieldType()));
                     }
-
                 }
 
                 if (relationshipTypeIdentifierInfoModel != null)
@@ -142,16 +141,19 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotSupportPath);
                     }
+
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipNotSupportPath);
                     }
+                    
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        var restrictedTypes = new List<string>() {
+                        List<string> restrictedTypes = new List<string>() {
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };
+                        
                         if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ThisAssetTypeNotSupportPath);
@@ -159,7 +161,8 @@ namespace d360.model.validators
                     }
                 }
 
-                #region IsDisplayable   
+                #region IsDisplayable
+
                 if (field.Type.ComputedRelationshipLookup != null)
                 {
                     if (field.Type.ComputedRelationshipLookup.IsDisplayable == false)
@@ -175,9 +178,11 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsDisplayAbleTrueReferenceItemListForRelationship, field.FriendlyName));
                     }
                 }
+
                 #endregion
 
                 #region isPartOfKey
+
                 if (field.Type.IsPartOfKey() == true && assetTypeIdentifierInfoModel != null)
                 {
                     if (assetTypeIdentifierInfoModel.Object == SystemObjects.ResourceType.ToString() || (assetTypeIdentifierInfoModel.Object == SystemObjects.OrganizationType.ToString() && field.Name.ToLower() != "name"))
@@ -192,22 +197,24 @@ namespace d360.model.validators
                 {
                     if (existingFieldTypes != null)
                     {
-                        var jsonAttribute = field.Type.JsonElement.JsonAttribute;
+                        JsonAttributeApiViewModel jsonAttribute = field.Type.JsonElement.JsonAttribute;
+                        
                         if (jsonAttribute == null)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.MissingJsonAttribute);
                         }
+                        
                         if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.JsonFiledNotPartAssetType, jsonAttribute.FieldName));
                         }
-                        var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
+                        
+                        List<string> allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
+                        
                         if (!allowedTypes.Contains(jsonAttribute.DataType))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.InvalidJsonFieldType, string.Join(", ", allowedTypes)));
                         }
-
-
                     }
                 }
 
@@ -217,17 +224,20 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.ActionNotAllowedScoreFieldType);
                     }
+                    
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.RelationshipNotAllowedScoreFieldType);
                     }
+                    
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        var restrictedTypes = new List<string>() {
+                        List<string> restrictedTypes = new List<string>() {
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ReferenceItemType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };
+                        
                         if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.AssetTypeNotHaveScoreField);
@@ -241,13 +251,15 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.ActionNotAllowedTagFieldType);
                     }
+                    
                     if (relationshipTypeIdentifierInfoModel != null)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.RelationshipsNotAllowedTagFieldType);
                     }
+                    
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        var allowedTypes = new List<string>() { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString(), SystemObjects.TaskType.ToString() };
+                        List<string> allowedTypes = new List<string>() { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString(), SystemObjects.TaskType.ToString() };
                         if (!allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.SpecificHaveTagFieldType);
@@ -261,7 +273,6 @@ namespace d360.model.validators
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.OnlyOneTagFieldAllowed);
                         }
                     }
-
                 }
 
                 if (model.AssetTypeUid.HasValue && field.Type.Relationship != null)
@@ -270,7 +281,7 @@ namespace d360.model.validators
                     {
                         if (ExistingIntersectID.Count() > 0)
                         {
-                            var duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
+                            List<string> duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
                             if (duplicateFieldIntersectTypeUid1.Count > 0)
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipIDUsedMoreThanOnce, field.Type.Relationship.IntersectTypeUid));
@@ -283,7 +294,6 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.FormDescriptionMustBeEmptyForRelationship, field.FriendlyName));
                     }
-
                 }
 
                 if (field?.Type?.Boolean != null)
@@ -292,6 +302,7 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsListableParameterMustBeFalseForBooleanType, field.FriendlyName));
                     }
+                    
                     if (actionTypeIdentifierInfoModel != null && field.Type.Boolean.IsPrimaryFilter == true)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.IsPrimaryFilterMustBefalseForBooleanType, field.FriendlyName));
@@ -340,17 +351,17 @@ namespace d360.model.validators
                 {
                     if (field.Type.Number.Increment != null && (field.Type.Number.Increment % 1 != 0))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantIncrement));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantIncrement));
                     }
 
                     if (field.Type.Number.Validation?.MaximumValue != null && (field.Type.Number.Validation?.MaximumValue % 1) != 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMaximumValue));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMaximumValue));
                     }
 
                     if (field.Type.Number.Validation?.MinimumValue != null && (field.Type.Number.Validation?.MinimumValue % 1) != 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMinimumValue));
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMinimumValue));
                     }
 
                     if (!FieldLengthValue(field.Type.Number.Validation, out string validationErrorMsg, field.Type.Number.DefaultValue))
@@ -390,7 +401,7 @@ namespace d360.model.validators
 
                     if (!string.IsNullOrEmpty(field.Type.Counter.CounterPrefix))
                     {
-                        var value = field.Type.Counter.CounterPrefix.Trim();
+                        string value = field.Type.Counter.CounterPrefix.Trim();
                         field.Type.Counter.CounterPrefix = value;
 
                         if (value.Length > 10)
@@ -398,7 +409,8 @@ namespace d360.model.validators
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterPrefixMax10Char);
                         }
 
-                        var match = Regex.Matches(value, "[a-zA-Z0-9-_]");
+                        MatchCollection match = Regex.Matches(value, "[a-zA-Z0-9-_]");
+
                         if (match.Count != value.Length)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterPrefixRule);
@@ -415,13 +427,14 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterRange);
                     }
 
-                    var allowedTypes = new List<string> {
+                    List<string> allowedTypes = new List<string> {
                             SystemObjects.ArtifactType.ToString(),
                             SystemObjects.PolicyType.ToString(),
                             SystemObjects.RuleType.ToString(),
                             SystemObjects.TaxonomyType.ToString(),
                             SystemObjects.GroupType.ToString()
                         };
+
                     if (assetTypeIdentifierInfoModel == null || !allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, FieldErrors.CounterFieldNotSupportedThisAssetType);
@@ -483,121 +496,150 @@ namespace d360.model.validators
                     if (field.Type.Text != null && field.Name == "Name")
                     {
 
-                        var message = FieldErrors.TaskTypeNameCustomError;
-                        var ft = field.Type.Text;
+                        string message = FieldErrors.TaskTypeNameCustomError;
+                        FieldTypeDataTypeTextApiViewModel ft = field.Type.Text;
+                        
                         if (ft.IsDisplayable == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsDisplayable, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.IsEditable == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsEditable, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.IsListable == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsListable, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.IsPartOfKey == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.Validation.IsRequired == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsRequired, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.IsPrimaryFilter == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
                         }
+                        
                         if (ft.ShowIfEmpty == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
                         }
-
                     }
+
                     if (field.Type.Lookup != null && field.Name == "GovernanceRole")
                     {
 
-                        var message = FieldErrors.TaskTypeGovernanceRoleCustomError;
-                        var ft = field.Type.Lookup;
+                        string message = FieldErrors.TaskTypeGovernanceRoleCustomError;
+                        FieldTypeDataTypeLookupApiViewModel ft = field.Type.Lookup;
+                        
                         if (ft.IsDisplayable == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsDisplayable, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.IsPartOfKey == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
                         }
+                        
                         if (ft.IsPrimaryFilter == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
                         }
+                        
                         if (ft.ShowIfEmpty == false)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
                         }
+                        
                         if (ft.List.AllowMultipleValues == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.AllowMultipleValues, FieldErrors.Constanttrue));
                         }
                     }
+
                     if (field.Type.Decimal != null && field.Name == "StepNo")
                     {
 
-                        var message = FieldErrors.TaskTypeStepNoCustomError;
-                        var ft = field.Type.Decimal;
+                        string message = FieldErrors.TaskTypeStepNoCustomError;
+                        FieldTypeDataTypeDecimalApiViewModel ft = field.Type.Decimal;
+                        
                         if (ft.IsDisplayable == false)
+                        {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsDisplayable, FieldErrors.Constantfalse));
-                        if (ft.IsPartOfKey == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
-                        if (ft.IsPrimaryFilter == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
-                        if (ft.ShowIfEmpty == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
+                        }
 
+                        if (ft.IsPartOfKey == true)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
+                        }
+
+                        if (ft.IsPrimaryFilter == true)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
+                        }
+
+                        if (ft.ShowIfEmpty == false)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.ShowIfEmpty, FieldErrors.Constantfalse));
+                        }
                     }
 
                     if (!new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(field.Name))
                     {
-                        var editableViewModel = GetEditableViewModel(field);
+                        FieldTypeEditableApiViewModel editableViewModel = GetEditableViewModel(field);
 
-                        var message = FieldErrors.DiagramATCustomError;
+                        string message = FieldErrors.DiagramATCustomError;
 
                         if (editableViewModel.IsListable == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsListable, FieldErrors.Constanttrue));
                         }
+                        
                         if (editableViewModel.IsPartOfKey == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPartOfKey, FieldErrors.Constanttrue));
                         }
+                        
                         if (editableViewModel.IsPrimaryFilter == true)
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldPropertyError, string.Format(message, FieldErrors.IsPrimaryFilter, FieldErrors.Constanttrue));
                         }
-
                     }
                 }
             }
+
             if (fieldsHaveErrors)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldsContainErrors, string.Format(FieldErrors.OneThanOneTypeDefined, string.Join(", ", fieldsHaveErrorsList)));
             }
+            
             if (!actionIsReplaceAndKeySelected)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.NoPrimaryKeyDefined, FieldErrors.KeyFieldNotDefined);
             }
-            var duplicateFieldNames = model.Fields.Select(f => f.Name.ToLower()).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
+            
+            List<string> duplicateFieldNames = model.Fields.Select(f => f.Name.ToLower()).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
+            
             if (duplicateFieldNames.Count > 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateFieldNames, string.Format(FieldErrors.FieldNameMustUnique, string.Join(", ", duplicateFieldNames)));
             }
 
-
             //development area
             if (model.AssetTypeUid.HasValue)
             {
-                var duplicateFieldIntersectTypeUid = model.Fields.Where(f => f.Type.Relationship != null).Select(f => f.Type.Relationship.IntersectTypeUid).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
+                List<Guid> duplicateFieldIntersectTypeUid = model.Fields.Where(f => f.Type.Relationship != null).Select(f => f.Type.Relationship.IntersectTypeUid).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
+                
                 if (duplicateFieldIntersectTypeUid.Count > 0)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.DuplicateRelationship, string.Format(FieldErrors.RelationshipUidMustUniqueWithinAssetType, string.Join(", ", duplicateFieldIntersectTypeUid)));
@@ -609,43 +651,53 @@ namespace d360.model.validators
 
         private static FieldTypeEditableApiViewModel GetEditableViewModel(FieldTypeApiEditModel field)
         {
-            var editableViewModel = new FieldTypeEditableApiViewModel();
+            FieldTypeEditableApiViewModel editableViewModel = new FieldTypeEditableApiViewModel();
+            
             if (field.Type.Text != null)
             {
-                editableViewModel = field.Type.Text as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Text;
             }
+            
             if (field.Type.Boolean != null)
             {
-                editableViewModel = field.Type.Boolean as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Boolean;
             }
+            
             if (field.Type.Date != null)
             {
-                editableViewModel = field.Type.Date as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Date;
             }
+            
             if (field.Type.DateTime != null)
             {
-                editableViewModel = field.Type.DateTime as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.DateTime;
             }
+            
             if (field.Type.Decimal != null)
             {
-                editableViewModel = field.Type.Decimal as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Decimal;
             }
+            
             if (field.Type.Html != null)
             {
-                editableViewModel = field.Type.Html as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Html;
             }
+            
             if (field.Type.Link != null)
             {
-                editableViewModel = field.Type.Link as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Link;
             }
+            
             if (field.Type.Lookup != null)
             {
-                editableViewModel = field.Type.Lookup as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Lookup;
             }
+            
             if (field.Type.Number != null)
             {
-                editableViewModel = field.Type.Number as FieldTypeEditableApiViewModel;
+                editableViewModel = field.Type.Number;
             }
+            
             return editableViewModel;
         }
 
@@ -656,15 +708,15 @@ namespace d360.model.validators
 
         public static (WorkHttpStatus, List<string>) FieldValidator(FieldTypesApiDeleteModel model, bool anyExistingItems, List<FieldType> currentFieldTypes)
         {
-            var fieldNamesToDelete = model.Fields.Select(i => i.Name).ToList();
-            var keyFieldsWillBeDeleted = currentFieldTypes.Any(d => d.IsPartOfKey == true && fieldNamesToDelete.Contains(d.Name));
+            List<string> fieldNamesToDelete = model.Fields.Select(i => i.Name).ToList();
+            bool keyFieldsWillBeDeleted = currentFieldTypes.Any(d => d.IsPartOfKey == true && fieldNamesToDelete.Contains(d.Name));
 
             if (anyExistingItems && keyFieldsWillBeDeleted)
             {
                 return (new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.ExistItemInSystem, FieldErrors.InvalidRemoveKeyFields), null);
             }
 
-            var anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
+            bool anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
             if (anyInvalidFields)
             {
                 return (new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.InvalidFields, FieldErrors.FailRemoveFieldNotExistsType), null);
@@ -729,6 +781,7 @@ namespace d360.model.validators
                     }
                 }
             }
+
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
@@ -738,7 +791,9 @@ namespace d360.model.validators
             {
                 return false;
             }
+
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath" };
+            
             if (isRelationshipType)
             {
                 disallowedFieldNames.Add("source");
@@ -765,47 +820,61 @@ namespace d360.model.validators
                 {
                     if ((validation?.MaximumLength % 1) != 0)
                     {
-                        errMsg = String.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMaximumLength);
+                        errMsg = string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMaximumLength);
+                        
                         return false;
                     }
+                    
                     if (validation?.MaximumLength < 0)
                     {
-                        errMsg = String.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMaximumLength, "0");
+                        errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMaximumLength, "0");
+                        
                         return false;
                     }
+                    
                     if (validation?.MaximumLength > maxDecimalFieldValue)
                     {
-                        errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumLength, FieldErrors.MaxDecimalFieldValue);
+                        errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumLength, FieldErrors.MaxDecimalFieldValue);
+                        
                         return false;
                     }
-
                 }
+
                 if (validation?.MinimumLength != null)
                 {
                     if ((validation?.MinimumLength % 1) != 0)
                     {
-                        errMsg = String.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMinimumLength);
+                        errMsg = string.Format(FieldErrors.WholeNumberError, FieldErrors.ConstantMinimumLength);
+                        
                         return false;
                     }
+                    
                     if (validation?.MinimumLength < 0)
                     {
-                        errMsg = String.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMinimumLength, "0");
+                        errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMinimumLength, "0");
+                        
                         return false;
                     }
+                    
                     if (validation?.MinimumLength > maxDecimalFieldValue)
                     {
-                        errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumLength, FieldErrors.MaxDecimalFieldValue);
+                        errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumLength, FieldErrors.MaxDecimalFieldValue);
+                        
                         return false;
                     }
                 }
+
                 if (validation?.MinimumLength > validation?.MaximumLength)
                 {
-                    errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumLength, FieldErrors.ConstantMaximumLength);
+                    errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumLength, FieldErrors.ConstantMaximumLength);
+                    
                     return false;
                 }
             }
+
             return true;
         }
+
         private static bool FieldLengthValue(FieldTypeDescriptionApiViewModel_ValidationMinMaxValue validation, out string errMsg, decimal? defaultValue)
         {
             decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
@@ -815,12 +884,14 @@ namespace d360.model.validators
             {
                 if (validation?.MaximumValue > maxDecimalFieldValue)
                 {
-                    errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumValue, FieldErrors.MaxDecimalFieldValue);
+                    errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMaximumValue, FieldErrors.MaxDecimalFieldValue);
+                    
                     return false;
                 }
                 else if (validation?.MaximumValue < -maxDecimalFieldValue)
                 {
-                    errMsg = String.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMaximumValue, $"-{FieldErrors.MaxDecimalFieldValue}");
+                    errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMaximumValue, $"-{FieldErrors.MaxDecimalFieldValue}");
+                    
                     return false;
                 }
             }
@@ -829,29 +900,35 @@ namespace d360.model.validators
             {
                 if (validation?.MinimumValue > maxDecimalFieldValue)
                 {
-                    errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumValue, FieldErrors.MaxDecimalFieldValue);
+                    errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumValue, FieldErrors.MaxDecimalFieldValue);
+                    
                     return false;
                 }
                 else if (validation?.MinimumValue < -maxDecimalFieldValue)
                 {
-                    errMsg = String.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMinimumValue, $" -{FieldErrors.MaxDecimalFieldValue}");
+                    errMsg = string.Format(FieldErrors.GreaterThanError, FieldErrors.ConstantMinimumValue, $" -{FieldErrors.MaxDecimalFieldValue}");
+                    
                     return false;
                 }
             }
 
             if (validation?.MinimumValue > validation?.MaximumValue)
             {
-                errMsg = String.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumValue, FieldErrors.ConstantMaximumValue);
+                errMsg = string.Format(FieldErrors.LessThanError, FieldErrors.ConstantMinimumValue, FieldErrors.ConstantMaximumValue);
+                
                 return false;
             }
+
             if (defaultValue.HasValue)
             {
                 if (defaultValue > validation?.MaximumValue || defaultValue < validation?.MinimumValue)
                 {
                     errMsg = string.Format(FieldErrors.DefaultValueError, validation?.MaximumValue, validation?.MinimumValue);
+                    
                     return false;
                 }
             }
+
             return true;
         }
     }
