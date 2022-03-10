@@ -27,7 +27,7 @@ namespace d360.core.entities
 
         [DataMember, MaxLength(2500)]
         public string Value { get; set; }
-                
+
         [IgnoreDataMember]
         public Field Field { get; set; }
     }

@@ -1,10 +1,10 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using d360.core.enums.Workflow;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+using d360.core.enums.Workflow;
 
 namespace d360.core.entities.Workflow
 {
@@ -22,7 +22,7 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public int ToVersionStepID { get; set; }
-        
+
         [DataMember]
         public TransitionType TransitionType { get; set; }
 
@@ -36,13 +36,12 @@ namespace d360.core.entities.Workflow
 
         [DataMember]
         public State State { get; set; } = State.Unknown;
-        
+
         [IgnoreDataMember]
         public string Condition { get; set; }
 
         [IgnoreDataMember]
         public string Settings { get; set; }
-
 
         [IgnoreDataMember]
         public DateTime? TimerLastRunDate { get; set; }

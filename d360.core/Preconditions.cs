@@ -45,7 +45,7 @@ namespace d360.core
         {
             ValidateParameterName(parameterName);
 
-            if (ReferenceEquals(value, null))
+            if (value is null)
             {
                 throw new ArgumentNullException(parameterName);
             }
@@ -58,7 +58,7 @@ namespace d360.core
         {
             ValidateParameterName(parameterName);
 
-            if (ReferenceEquals(value, null))
+            if (value is null)
             {
                 throw new ArgumentNullException(parameterName);
             }
@@ -70,7 +70,7 @@ namespace d360.core
         {
             ValidateParameterName(parameterName);
 
-            if (ReferenceEquals(value, null))
+            if (value is null)
             {
                 throw new ArgumentNullException(parameterName);
             }

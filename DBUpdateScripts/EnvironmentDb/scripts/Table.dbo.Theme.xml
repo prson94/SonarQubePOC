@@ -57,7 +57,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.Theme-Constraints-v1">
+  <changeSet author="Pappas" id="Table.dbo.Theme-Constraints-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -76,6 +76,11 @@ END
 IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_Theme_IsCurrent')
 BEGIN
 	ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [DF_Theme_IsCurrent] DEFAULT (0) FOR [IsCurrent]
+END
+
+IF NOT EXISTS (select 1 from sys.objects where type = 'UQ' and name = 'UC_Theme_Name')
+BEGIN
+	ALTER TABLE [dbo].[Theme] ADD CONSTRAINT [UC_Theme_Name] UNIQUE ([Name])
 END
 
 IF NOT EXISTS (select * from [sys].default_constraints WHERE name = 'DF_Theme_Uid')
@@ -111,6 +116,11 @@ BEGIN
 	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [DF_Theme_IsCurrent]
 END
 		
+IF EXISTS (select 1 from sys.objects where type = 'UQ' and name = 'UC_Theme_Name')
+BEGIN
+	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [UC_Theme_Name]
+END
+
 IF EXISTS (select * from [sys].default_constraints WHERE name = 'DF_Theme_Uid')
 BEGIN
 	ALTER TABLE [dbo].[Theme] DROP CONSTRAINT [DF_Theme_Uid]

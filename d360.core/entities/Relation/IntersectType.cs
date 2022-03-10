@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 using d360.core.enums;
 using d360.core.queue;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -83,13 +84,19 @@ namespace d360.core.entities
         [JsonConverter(typeof(StringEnumConverter))]
         public PredicateType Type { get; set; }
 
-        public string FriendlyTypeName {
-            get {
+        public string FriendlyTypeName
+        {
+            get
+            {
                 if (Type == 0)
+                {
                     return null;
+                }
                 else
+                {
                     return Type.GetName();
-            } 
+                }
+            }
         }
 
         public string Name { get; set; }
@@ -109,6 +116,7 @@ namespace d360.core.entities
         [JsonConverter(typeof(StringEnumConverter))]
         public Cardinality Cardinality { get; set; }
     }
+
     [NotMapped]
     public class IntersectTypeApiViewNamed : IntersectType
     {
@@ -116,7 +124,7 @@ namespace d360.core.entities
         public string Name { get; set; }
     }
 
-    public class IntersectTypeApiViewModel: BaseObject
+    public class IntersectTypeApiViewModel : BaseObject
     {
         [DataMember]
         public int Id { get; set; }

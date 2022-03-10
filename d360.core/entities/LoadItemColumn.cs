@@ -1,6 +1,6 @@
-﻿using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
@@ -34,7 +34,6 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual LoadColumn LoadColumn { get; set; }
-
 
         [IgnoreDataMember]
         public virtual LoadItem LoadItem { get; set; }

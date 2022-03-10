@@ -1,5 +1,4 @@
-﻿
-namespace d360.core.enums
+﻿namespace d360.core.enums
 {
     public enum SettingType
     {

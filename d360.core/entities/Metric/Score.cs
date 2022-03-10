@@ -1,11 +1,11 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities.Metric
 {
@@ -58,7 +58,7 @@ namespace d360.core.entities.Metric
         #endregion
     }
 
-    public class ExternalScoreResultApiRequestModel: BaseScoreResultApiRequestModel 
+    public class ExternalScoreResultApiRequestModel : BaseScoreResultApiRequestModel
     {
         [DataMember]
         public decimal score { get; set; }
@@ -73,6 +73,7 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public Guid measureUid { get; set; }
+
         [DataMember]
         public bool passed { get; set; }
     }
@@ -81,14 +82,23 @@ namespace d360.core.entities.Metric
     {
         [JsonIgnore]
         public Guid ScoreUid { get; set; }
+
         public Guid AllocationUid { get; set; }
+
         public Guid AssetUid { get; set; }
+
         public decimal Score { get; set; }
+
         public DateTime RunDate { get; set; }
+
         public DateTime EffectiveDate { get; set; }
+
         public bool IsSuccess { get; set; }
+
         public string ErrorMessage { get; set; }
-        public List<ExternalScoreResultMeasureModel> Measures { get { return JsonConvert.DeserializeObject<List<ExternalScoreResultMeasureModel>>((string.IsNullOrEmpty(measuresJson)) ? "[]": measuresJson); } }
+
+        public List<ExternalScoreResultMeasureModel> Measures { get { return JsonConvert.DeserializeObject<List<ExternalScoreResultMeasureModel>>((string.IsNullOrEmpty(measuresJson)) ? "[]" : measuresJson); } }
+        
         [JsonIgnore]
         public string measuresJson { get; set; }
     }
@@ -107,14 +117,19 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public Guid AssetUid { get; set; }
+
         [DataMember]
         public Guid MetricAssetUid { get; set; }
+
         [DataMember]
         public DateTime? EffectiveDate { get; set; }
+
         [DataMember]
         public bool Result { get; set; }
+
         [DataMember]
         public bool IsSuccess { get; set; }
+
         [DataMember]
         public string ErrorMessage { get; set; }
     }

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+
 using Azure.Storage.Blobs;
-using System.IO;
-using Newtonsoft.Json;
 using Azure.Storage.Blobs.Models;
-using System.Configuration;
+
+using Newtonsoft.Json;
 
 namespace d360.extensions.storage
 {
@@ -62,7 +64,6 @@ namespace d360.extensions.storage
             await CreateFile(folderName, fileName, new MemoryStream(Encoding.UTF8.GetBytes(content)), contentType, cache).ConfigureAwait(false);
         }
 
-
         public async Task SerializeJsonObjectToBlobAsync(string folderName, string fileName, object obj)
         {
             using (MemoryStream ms = new MemoryStream())
@@ -102,7 +103,6 @@ namespace d360.extensions.storage
             var blob = GetBlob(folderName, fileName);
             await blob.DeleteIfExistsAsync().ConfigureAwait(false);
         }
-
 
         public string GetFileContentsAsString(string folderName, string fileName)
         {

@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
 using d360.core.enums;
 
 namespace d360.core.entities
@@ -23,6 +24,5 @@ namespace d360.core.entities
 
         [DataMember]
         public FollowType FollowTypeID { get; set; }
-
     }
 }

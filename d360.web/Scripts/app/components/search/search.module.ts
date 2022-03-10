@@ -44,6 +44,8 @@ import { AssetDetailModule } from "../shared/asset-detail/asset-detail.module";
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
+import { SemanticsModule } from "../semantic/semantics.module";
+
 
 @NgModule({
     imports: [
@@ -87,7 +89,8 @@ import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
         DataProfileModule,
         PopupMenuModule,
         SiteModalModule,
-        AssetEditorModule
+        AssetEditorModule,
+        SemanticsModule
     ],
     declarations: [
         HomeSearchComponent,

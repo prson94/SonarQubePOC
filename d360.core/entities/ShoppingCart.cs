@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using d360.core.entities.Contracts;
-using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
-using d360.core.queue;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+using d360.core.queue;
 
 namespace d360.core.entities
 {
@@ -16,10 +12,13 @@ namespace d360.core.entities
     {
         [DataMember]
         public int ShoppingCartTypeID { get; set; }
+
         [DataMember]
         public int ResourceID { get; set; }
+        
         [DataMember]
         public DateTime CreatedOn { get; set; }
+        
         [DataMember]
         public DateTime? RequestedOn { get; set; }
 

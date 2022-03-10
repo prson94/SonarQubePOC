@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace d360.core.enums.Workflow
@@ -9,10 +8,13 @@ namespace d360.core.enums.Workflow
     {
         [Description("Start")]
         Start = 1,
+        
         [Description("Task")]
         Task = 2,
+        
         [Description("Terminate")]
         Terminate = 3,
+        
         [Description("Finish")]
         Finish = 4
     }
@@ -20,7 +22,9 @@ namespace d360.core.enums.Workflow
     public class StepTypeInfo
     {
         public StepType ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
 
@@ -42,6 +46,6 @@ namespace d360.core.enums.Workflow
             }
 
             return list;
-        }    
+        }
     }
 }

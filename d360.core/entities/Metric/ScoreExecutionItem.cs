@@ -1,14 +1,15 @@
-﻿using d360.core.queue;
-using Newtonsoft.Json;
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.queue;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
     public enum ScoreExecutionItemState
-    { 
+    {
         NotProcessed = 0,
         Success = 1,
         Error = 2

@@ -69,19 +69,24 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     getData() {
         this.isLoading = true;
         if (this.semanticType) {
-            this.semanticDetails = this.semanticType;            
+            this.setSemanticDetails(this.semanticType);
         } else {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.qualifier}'`).subscribe((s) => {
+                this.setSemanticDetails(s.items[0]);
                 this.semanticDetails = s.items[0];                
             });
         }
+    }
+
+    private setSemanticDetails(semanticType: SemanticType) {
+        this.semanticDetails = semanticType;
 
         if (SemanticType[this.semanticDetails.matchType] === SemanticType["Advanced"]) {
             this.advancedJson = JSON.stringify(this.semanticDetails.advanced, null, 2);
         }
 
-        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {            
-            this.assetCount = result.total;            
+        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticDetails.qualifier, 1, 1, this.semanticDetails.threshold).subscribe((result) => {
+            this.assetCount = result.total;
             this.isLoading = false;
         });
         if (this.canViewUsers) {

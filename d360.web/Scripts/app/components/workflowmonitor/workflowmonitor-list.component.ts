@@ -2,7 +2,7 @@
 import { BaseComponent } from "../shared/base.component";
 import { LazyLoadEvent } from "primeng/api";
 import { WorkflowMonitorService } from "../../services/workflowmonitor.service";
-import { Subscription } from "rxjs";
+import { Subject, Subscription } from "rxjs";
 import { WorkflowMonitorItem } from "../../models/workflowmonitor.model";
 import { SortOrder } from "../../models/enums.model";
 import {  GridFilterExpression } from "../../models/grid-definition.model";
@@ -11,6 +11,8 @@ import { StringHelpers } from "../../static/string-helpers";
 import { AuthenticationService } from '../../services/authentication.service';
 import * as _ from "lodash";
 import { CompanySettingsService } from "../../services/settings.service";
+import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
+import { takeUntil } from "rxjs/operators";
 
 
 @Component({
@@ -23,7 +25,7 @@ import { CompanySettingsService } from "../../services/settings.service";
 export class WorkflowMonitorListComponent extends BaseComponent  implements OnInit, OnDestroy,OnChanges {
     @Input() predefinedFilters: GridFilterExpression[] = [];
     @Input() showHeader: boolean = true;
-
+    title: string = 'WorkFlow Items';
     items: WorkflowMonitorItem[] = [];;
     subItems : Subscription
     totalRecords: number;
@@ -37,8 +39,10 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     selection: any;
     @Output() selectionChange = new EventEmitter();
     @Output() hideDetails = new EventEmitter();
+    private destroy = new Subject<void>();
 
     constructor(private wfMonitorService: WorkflowMonitorService,
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         public stateService: StateService,
         private changeDetectorRef: ChangeDetectorRef,
         protected settingsService: CompanySettingsService,
@@ -48,7 +52,19 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     ngOnInit(): void {
         this.isAdmin = this.authenticationService.isAdmin;
-     }
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+            this.isLoading = true;
+            this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
+        });
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['predefinedFilters']) {
@@ -62,6 +78,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         if (this.subItems) {
             this.subItems.unsubscribe();
         }
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     export() {

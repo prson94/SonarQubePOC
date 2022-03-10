@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace d360.core.enums
@@ -9,6 +8,7 @@ namespace d360.core.enums
     {
         [EmojiValue(1), EmojiGroup("vote")]
         ThumbsUp = 1,
+        
         [EmojiValue(-1), EmojiGroup("vote")]
         ThumbsDown = 2
     }
@@ -16,8 +16,11 @@ namespace d360.core.enums
     public class EmojiInfo
     {
         public int ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Group { get; set; }
+        
         public int? Value { get; set; }
     }
 

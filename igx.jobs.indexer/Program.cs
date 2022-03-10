@@ -18,6 +18,7 @@ using d360.extensions.info;
 using d360.extensions.caching;
 using d360.model;
 using Microsoft.Extensions.Hosting;
+using System.Collections.Concurrent;
 
 namespace igx.jobs.indexer
 {
@@ -123,6 +124,18 @@ namespace igx.jobs.indexer
 
                 }
             }
+            else if (reindex.BatchUids != null && reindex.BatchUids.Any())
+            {
+                ConcurrentBag<Guid> uids = new ConcurrentBag<Guid>(reindex.BatchUids);
+                if (reindex.BatchOperation == ReindexBatchOperation.Update)
+                {
+                    indexer.IndexAssets(uids);
+                }
+                else if (reindex.BatchOperation == ReindexBatchOperation.Delete)
+                {
+                    indexer.RemoveAssets(uids);
+                }
+            }
             else
             {
                 await RebuildAllIndex(source, company, reindex.CompanyID, indexer);
@@ -153,7 +166,8 @@ namespace igx.jobs.indexer
                 AssetTypeClass.Rule,
                 AssetTypeClass.ReferenceItemType,
                 AssetTypeClass.Group,
-                AssetTypeClass.User
+                AssetTypeClass.User,
+                AssetTypeClass.SemanticType
             };
 
             source.ClearIndex(CompanyID);

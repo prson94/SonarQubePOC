@@ -72,6 +72,8 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.secondaryNavService.resetSecondaryNavActiveItem();
+
         if (this.sub) {
             this.sub.unsubscribe();
         }

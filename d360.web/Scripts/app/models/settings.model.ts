@@ -231,6 +231,7 @@ export module SettingsHelper {
             new SearchType("Rules", "Rule"),
             new SearchType("Reference Lists", "Reference"),
             new SearchType("Grammatic Types", "Synonym"),
+            new SearchType("Semantic Types", "SemanticType"),
             new SearchType("Groups", "Group"),
             new SearchType("Users", "User"),
         ];

@@ -1544,6 +1544,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedPredicates();
             this.helper_HideDeselectedResponsibilityTypes();
             this.helper_CalculateAlertCount();
+            if (this.overviewControlRef) {
+                this.overviewControlRef.clear();
+                this.overviewControlRef.initialize(this.diagram);
+            }
         });
     }
 
@@ -3383,7 +3387,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns The DiagramType.
     */
     viewchange_Apply(e: DiagramType) {
-        this.saveFilter();
+        this.saveFilter();        
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
     }
 

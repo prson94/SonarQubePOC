@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
@@ -14,12 +13,14 @@ namespace d360.core.enums
             Description("Rebuild Visualization diagrams for assets. This request may take a significant amount of time to complete, depending on the number of assets contained within your environment. Additionally, this action has a performance impact on your environment.")
         ]
         AssetGraph = 1,
+        
         [
             Name("Display Values"),
             QueueSettingName("DisplayValueQueue"),
             Description("Rebuild display values for all assets within your environment.")
         ]
         DisplayValues,
+        
         [
             Name("Search Index"),
             QueueSettingName("SearchIndexQueue"),

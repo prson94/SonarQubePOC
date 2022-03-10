@@ -2,7 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
+import { SearchResults, SearchAggregation, SearchResult } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Router } from '@angular/router';
 import { CompanySettingsService } from '../../services/settings.service';
@@ -19,9 +19,9 @@ import { CompanySettingEnum } from '../../models/settings.model';
 export class HomeSearchComponent extends BaseComponent {
     @Output() resultsChange = new EventEmitter();
     @Input() hasResults: boolean;
-    private searchResults: SearchResultsObject;
-    private categories: SearchCategories[] = [];
-    private selectedCategory: SearchCategories;
+    public searchResults: SearchResults;
+    public categories: SearchAggregation[] = [];
+    private selectedCategory: SearchAggregation;
     private searchText: string;
     isExactMatch: boolean = true;
     searchTypes: string[] = [];

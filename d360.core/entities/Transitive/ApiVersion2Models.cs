@@ -1,28 +1,33 @@
-﻿using d360.core.enums;
-using d360.core.enums.Workflow;
-using d360.core.resources;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Dynamic;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+using d360.core.enums.Workflow;
+using d360.core.resources;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
     public interface IWorkflowEnabledAsset
     {
         ChangeType ChangeType { get; }
+
         string Object { get; set; }
+
         int ObjectID { get; set; }
+
         bool Success { get; set; }
     }
 
     public interface IGraphAsset
     {
         bool Success { get; set; }
+
         Guid uid { get; set; }
+
         string Object { get; set; }
     }
 
@@ -95,8 +100,10 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid Uid { get; set; }
+
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -104,8 +111,11 @@ namespace d360.core.entities
     [DataContract(Name = "Hierarchy")]
     public class HierarchyInsert
     {
-        [DataMember] public int MaximumDepth { get; set; }
-        [DataMember] public Guid? PredicateUid { get; set; }
+        [DataMember] 
+        public int MaximumDepth { get; set; }
+
+        [DataMember] 
+        public Guid? PredicateUid { get; set; }
     }
 
     [DataContract(Name = "IconStyle")]
@@ -155,12 +165,14 @@ namespace d360.core.entities
     public class AssetPathResult
     {
         public string path { get; set; }
+
         public Guid uid { get; set; }
     }
 
     public class AssetPathResults
     {
         public IEnumerable<AssetPathResult> items { get; set; }
+
         public int? total { get; set; }
     }
 
@@ -208,12 +220,19 @@ namespace d360.core.entities
     public class AssetTypeDeleteObject
     {
         public Guid uid { get; set; }
+
         public int ObjectId { get; set; }
+
         public string Object { get; set; }
+
         public int AssetTypeId { get; set; }
+
         public int IntersectTypeId { get; set; }
+
         public int Level { get; set; }
+
         public int ItemNumber { get; set; }
+
         public AssetTypeClass Class { get; set; }
     }
 
@@ -230,11 +249,17 @@ namespace d360.core.entities
     public class AssetImportResult
     {
         public int ItemNumber { get; set; }
+
         public string SourceID { get; set; }
+
         public string Message { get; set; }
+
         public bool Success { get; set; }
+
         public bool IsNew { get; set; }
+
         public int ObjectID { get; set; }
+
         public Guid uid { get; set; }
     }
 
@@ -243,18 +268,23 @@ namespace d360.core.entities
     {
         [DataMember]
         public int ItemNumber { get; set; }
+
         [DataMember]
         public Guid uid { get; set; }
+
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
 
         public bool IsNew { get; set; }
+
         public string Object { get; set; }
+
         public int ObjectID { get; set; }
 
         public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
@@ -269,15 +299,18 @@ namespace d360.core.entities
 
         [DataMember]
         public int Processed { get; set; }
+
         [DataMember]
         public int Error { get; set; }
+
         [DataMember]
         public DateTime StartedOn { get; set; }
+
         [DataMember]
         public DateTime? CompletedOn { get; set; }
+
         [DataMember]
         public List<AssetCrossReferenceResult> Results { get; set; }
-
     }
 
     [DataContract]
@@ -290,7 +323,8 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         [DataMember]
-        public String Message { get; set; }
+        public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -300,13 +334,16 @@ namespace d360.core.entities
     {
         [DataMember]
         public int ItemNumber { get; set; }
+
         [DataMember]
         public Guid uid { get; set; }
+
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -325,6 +362,7 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid SubjectAssetUid { get; set; }
+
         [DataMember]
         public Guid ObjectAssetUid { get; set; }
 
@@ -333,6 +371,7 @@ namespace d360.core.entities
 
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+
         [DataMember]
         public string Owner { get; set; }
     }
@@ -354,6 +393,7 @@ namespace d360.core.entities
 
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+
         [DataMember]
         public string Owner { get; set; }
     }
@@ -382,33 +422,37 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid uid { get; set; }
+
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
-
 
     public class RelationshipUidResultItem
     {
         [DataMember]
         public Guid RelationshipUid { get; set; }
+
         [DataMember]
         public Guid? SubjectUid { get; set; }
 
         [DataMember]
         public Guid? ObjectUid { get; set; }
+
         [DataMember]
         public string Owner { get; set; }
     }
 
-    public class RelationshipUidResult: PagedApiBaseRequestModel
+    public class RelationshipUidResult : PagedApiBaseRequestModel
     {
         [DataMember]
         public IEnumerable<RelationshipUidResultItem> Results { get; set; }
+
         [DataMember]
         public int? Total { get; set; }
     }
@@ -417,16 +461,22 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+
         [DataMember]
         public Guid? Uid { get; set; }
+
         [DataMember]
         public Guid PredicateUid { get; set; }
+
         [DataMember]
         public Guid SubjectUid { get; set; }
+
         [DataMember]
         public Cardinality SubjectCardinality { get; set; }
+
         [DataMember]
         public Guid ObjectUid { get; set; }
+
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }
     }
@@ -441,12 +491,16 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid PredicateUid { get; set; }
+
         [DataMember]
         public Guid? SubjectUid { get; set; }
+
         [DataMember]
         public Cardinality SubjectCardinality { get; set; }
+
         [DataMember]
         public Guid? ObjectUid { get; set; }
+
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }
     }
@@ -463,23 +517,29 @@ namespace d360.core.entities
         public bool Cascade { get; set; }
     }
 
-
     public class RelationshipImportRequest
     {
         public int ItemNumber { get; set; }
+
         public string SubjectSourceID { get; set; }
+
         public string ObjectSourceID { get; set; }
+
         public int? PredicateType { get; set; }
+
         public int IntersectTypeID { get; set; }
 
         public string Message { get; set; }
+
         public bool Success { get; set; }
     }
 
     public class RelationshipCountModel
     {
         public Guid IntersectTypeUid { get; set; }
+
         public int Count { get; set; }
+
         public bool IsSubject { get; set; }
     }
 
@@ -499,16 +559,38 @@ namespace d360.core.entities
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
+
         [DataMember]
         public bool IsNew { get; set; }
 
-        public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
+        public ChangeType ChangeType 
+        { 
+            get 
+            {
+                return IsNew ? ChangeType.Add : ChangeType.Update;
+            } 
+        }
 
-        public string Object { get { return "Intersect"; } set { } }
+        public string Object 
+        { 
+            get 
+            { 
+                return "Intersect"; 
+            } 
+            set { } 
+        }
 
-        public int ObjectID { get { return IntersectID; } set { } }
+        public int ObjectID 
+        { 
+            get 
+            { 
+                return IntersectID; 
+            } 
+            set { } 
+        }
 
         [DataMember]
         public Guid uid { get; set; }
@@ -529,16 +611,40 @@ namespace d360.core.entities
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
 
         public bool IsNew { get; set; }
 
-        public ChangeType ChangeType { get { return (IsNew ? ChangeType.Add : ChangeType.Update); } }
+        public ChangeType ChangeType 
+        { 
+            get 
+            { 
+                return IsNew ? ChangeType.Add : ChangeType.Update; 
+            } 
+        }
 
-        public string Object { get { return "Intersect"; } set { } }
+        public string Object 
+        {
+            get 
+            { 
+                return "Intersect"; 
+            } 
+            set 
+            {
+                //it's just for interface satisfaction. should be empty.
+            }
+        }
 
-        public int ObjectID { get { return IntersectID; } set { } }
+        public int ObjectID 
+        { 
+            get 
+            { 
+                return IntersectID; 
+            } 
+            set { } 
+        }
 
         [DataMember]
         public Guid uid { get; set; }
@@ -555,6 +661,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -600,12 +707,12 @@ namespace d360.core.entities
     [DataContract]
     public class PredicateUpsertResult : PredicateApiResult { }
 
-
-
     public class AssetFieldTypeUpdate
     {
         public string Object { get; set; }
+
         public int ObjectId { get; set; }
+
         public int Id { get; set; }
     }
 
@@ -623,6 +730,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -653,7 +761,6 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         public bool IsNew { get; set; }
-
     }
 
     [DataContract]
@@ -664,6 +771,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -676,7 +784,6 @@ namespace d360.core.entities
 
         [DataMember]
         public bool Cascade { get; set; }
-
     }
 
     #region Allocations
@@ -725,6 +832,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public List<Guid> ResourceUid { get; set; }
+
         [DataMember]
         public string Description { get; set; }
     }
@@ -739,8 +847,11 @@ namespace d360.core.entities
     public class SecurityAssetModel
     {
         public Guid uid { get; set; }
+
         public int SecurityAssetId { get; set; }
+
         public string SecurityAsset { get; set; }
+
         public bool Exists { get; set; }
     }
 
@@ -749,35 +860,45 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+
         [DataMember]
         public Guid? AssetTypeUid { get; set; }
+
         [DataMember]
         public Guid? Uid { get; set; }
+
         [DataMember]
         public string Name { get; set; }
+
         [DataMember]
         public bool IsVisible { get; set; }
+
         [DataMember]
         public bool ApplyToType { get; set; }
+
         [DataMember]
         public string Context { get; set; }
+
         [DataMember]
         public RuleDefinition Definition { get; set; }
     }
+
     [DataContract]
     public class RuleDefinition
     {
         [DataMember]
         public List<RuleWhen> When { get; set; }
+
         [DataMember]
         public List<RuleThenWrapper> Then { get; set; }
-
     }
+
     [DataContract]
     public class RuleThenWrapper
     {
         [DataMember]
         public Guid? AssigneeTypeUid { get; set; }
+
         [DataMember]
         public List<RuleThen> Conditions { get; set; } = new List<RuleThen>();
 
@@ -790,6 +911,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public RuleFieldCondition Field { get; set; }
+
         [DataMember]
         public RuleAssigneeCondition Assignee { get; set; }
     }
@@ -799,6 +921,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public RuleFieldCondition Field { get; set; }
+
         [DataMember]
         public RuleRelationCondition Relation { get; set; }
     }
@@ -808,6 +931,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public string ApiName { get; set; }
+
         [DataMember]
         public string Value { get; set; }
     }
@@ -825,6 +949,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? IntersectTypeUid { get; set; }
+
         [DataMember]
         public Guid? AssetUid { get; set; }
     }
@@ -834,12 +959,16 @@ namespace d360.core.entities
     {
         [DataMember]
         public int ItemNumber { get; set; }
+
         [DataMember]
         public Guid? Uid { get; set; }
+
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -856,8 +985,10 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? Uid { get; set; }
+
         [DataMember]
         public string Message { get; set; }
+
         [DataMember]
         public bool Success { get; set; }
     }
@@ -867,6 +998,7 @@ namespace d360.core.entities
     {
         public bool Success { get; set; } = true;
         public string Message { get; set; }
+
         [DataMember]
         public IEnumerable<ResponsibilityRuleTestResultModel> items { get; set; }
     }
@@ -876,19 +1008,22 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid uid { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public string path { get; set; }
     }
 
     public class UpsertModel
     {
         public Guid AssetTypeUid { get; set; }
+
         public List<UpsertAsset> Assets { get; set; }
     }
     public class UpsertAsset
     {
         public Guid? Uid { get; set; }
         public Dictionary<string, string> Fields { get; set; }
+
         [JsonIgnore]
         public Guid? ExternalKey { get; set; }
     }
@@ -896,6 +1031,7 @@ namespace d360.core.entities
     public class FieldValidationFieldProperties
     {
         public bool ContainsColorField { get; set; }
+
         public int JsonFieldCount { get; set; }
     }
 
@@ -931,7 +1067,9 @@ namespace d360.core.entities
     public class ActionUpsertRequest
     {
         public Guid? AssetUid { get; set; }
+
         public Guid? AssetTypeUid { get; set; }
+
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
@@ -940,7 +1078,9 @@ namespace d360.core.entities
         public ChangeType ChangeType => ChangeType.ScoreUpdate;
 
         public string Object { get; set; }
+
         public int ObjectID { get; set; }
+
         public bool Success { get; set; } = true;
     }
 
@@ -949,6 +1089,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public AssetCountsModel assets { get; set; }
+
         [DataMember]
         public UserCountModel users { get; set; }
     }
@@ -961,8 +1102,10 @@ namespace d360.core.entities
     {
         [DataMember]
         public int total { get; set; }
+
         [DataMember]
         public int contributors { get; set; }
+
         [DataMember]
         public int administrators { get; set; }
     }
@@ -970,46 +1113,62 @@ namespace d360.core.entities
     public class AssetWatchers
     {
         public int? total { get; set; }
+
         public IEnumerable<AssetWatcher> items { get; set; }
     }
 
     public class AssetWatcher
     {
         public Guid resourceUid { get; set; }
+
         public int resourceId { get; set; }
+
         public string name { get; set; }
     }
 
     public class AssetTypeWatchCountModel
     {
         public Guid assetTypeUid { get; set; }
+
         public string assetTypeName { get; set; }
+
         public int count { get; set; }
     }
 
     public class WatchedAssetTypeDetailModel
     {
         public int? total { get; set; }
+
         public IEnumerable<WatchedAssetTypeDetailItemModel> items { get; set; }
     }
 
     public class WatchedAssetTypeDetailItemModel
     {
         public Guid resourceUid { get; set; }
+
         public int resourceId { get; set; }
+
         public string name { get; set; }
+
         public Guid assetUid { get; set; }
+
         public string assetDisplayValue { get; set; }
+
         public decimal? governanceScore { get; set; }
+
         public decimal? dataQualityScore { get; set; }
     }
 
     public class DataProfileUpsertResponse : IExecutionItem
     {
         public int ItemNumber { get; set; }
+
         public Guid? uid { get; set; }
+
         public Guid? ExecutionItemUid { get; set; }
+
         public string Message { get; set; }
+
         public bool Success { get; set; }
     }
 
@@ -1017,14 +1176,19 @@ namespace d360.core.entities
     {
         [DataMember(Name = "itemNumber")]
         public int ItemNumber { get; set; }
+
         [DataMember]
         public Guid? uid { get; set; }
+
         [DataMember(Name = "executionItemUid")]
         public Guid? ExecutionItemUid { get; set; }
+
         [DataMember(Name = "message")]
         public string Message { get; set; }
+
         [DataMember(Name = "count")]
         public int DeletedCount { get; set; }
+
         [DataMember(Name = "success")]
         public bool Success { get; set; }
     }
@@ -1033,12 +1197,16 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+
         [DataMember]
-        public Guid AssetUid { get; set; }        
+        public Guid AssetUid { get; set; }
+
         [DataMember]
         public Guid ResponsibilityTypeUid { get; set; }
+
         [DataMember]
         public Guid AssignedUid { get; set; }
+
         [DataMember]
         public string Description { get; set; }
     }
@@ -1047,10 +1215,13 @@ namespace d360.core.entities
     {
         [DataMember(Name = "itemNumber")]
         public int ItemNumber { get; set; }
+
         [DataMember(Name = "executionItemUid")]
         public Guid? ExecutionItemUid { get; set; }
+
         [DataMember(Name = "message")]
-        public string Message { get; set; }        
+        public string Message { get; set; }
+
         [DataMember(Name = "success")]
         public bool Success { get; set; }
     }
@@ -1060,9 +1231,11 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? ResponsibilityTypeUid { get; set; }
+
         [DataMember]
         public string ResponsibilityName { get; set; }
+
         [DataMember]
         public int Count { get; set; }
-    }   
+    }
 }
