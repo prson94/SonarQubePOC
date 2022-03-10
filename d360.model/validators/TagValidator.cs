@@ -1,6 +1,7 @@
-﻿using d360.core.entities;
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
+
+using d360.core.entities;
 
 namespace d360.model.validators
 {
@@ -9,10 +10,12 @@ namespace d360.model.validators
         public static void ValidateForPost(TagApiUpsertModel model)
         {
             string isTagBlank = "";
+
             if (model == null)
             {
                 throw new Exception("Invalid tag specified [null model].");
             }
+            
             if (string.IsNullOrEmpty(model.Value))
             {
                 throw new Exception("Invalid tag specified [no value].");
@@ -37,6 +40,7 @@ namespace d360.model.validators
         public static void ValidateForPut(Guid uid, TagApiUpsertModel model)
         {
             string isTagBlank = "";
+
             if (model == null)
             {
                 throw new Exception("Invalid tag specified [null model].");
@@ -46,6 +50,7 @@ namespace d360.model.validators
             {
                 throw new Exception("Invalid tag specified [no value].");
             }
+            
             if (!string.IsNullOrEmpty(model.Value))
             {
                 isTagBlank = Regex.Replace(model.Value, @"\s+", "");
@@ -65,8 +70,6 @@ namespace d360.model.validators
             {
                 throw new Exception("Invalid uid specified.");
             }
-
         }
-
     }
 }
