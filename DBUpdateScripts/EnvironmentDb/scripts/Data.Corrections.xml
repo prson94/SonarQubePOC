@@ -1410,4 +1410,25 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 			]]>
 		</sql>
 	</changeSet>
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-17433">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+Declare @ID int = (select ID from sitenav where name = '#Fusion' and parentID is null);
+
+if (@ID is not null)
+begin
+	delete from SiteNavPermission where SiteNavID = @ID;
+
+	delete from sitenav where ID = @ID;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
