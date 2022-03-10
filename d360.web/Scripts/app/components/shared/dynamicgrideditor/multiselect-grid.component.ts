@@ -1,10 +1,10 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
 import { AssetService } from '../../../services/asset.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { RelationshipsService } from '../../../services/relationships.service';
@@ -12,6 +12,8 @@ import { RelationshipType } from '../../../models/relationship.model';
 import { ResourcesService } from '../../../services/resources.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { StringConstants } from '../../../static/string-constants';
+import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -26,7 +28,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit {
+export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit, OnDestroy {
     @Input() multiple: boolean = true;
     @Input() intersectTypeUid: string;
     @Input() assetUid: string;
@@ -57,15 +59,19 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     searchAssetSub: Subscription;
 
+    public rowsPerPage: number;
+    public title: string = 'MultiSelect Grid'
+    private destroy = new Subject<void>();
+
     constructor(
         private assetService: AssetService,
+        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
         private relationshipService: RelationshipsService,
         private resourceService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef) {
         super(settingsService);
-        this.rowsPerPage = 10;
     }
 
     get isLazyLoad() {
@@ -89,6 +95,22 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                     }
                 });
             });
+
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    ngOnDestroy() {
+        this.destroy.next();
+        this.destroy.complete();
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+        });
     }
 
     private updateSubject(ad: any) {

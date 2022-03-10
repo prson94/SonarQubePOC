@@ -3,7 +3,8 @@ import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation
 import { Title } from '@angular/platform-browser';
 import { forEach } from 'lodash';
 import { Table } from 'primeng/table';
-import { forkJoin, Observable, of, ReplaySubject, Subscription } from 'rxjs';
+import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
@@ -14,6 +15,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { PermissionsService, Permissions } from '../../../services/permissions.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -123,8 +125,13 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     selectedReferenceItem: any;
     selectedTag: any;
 
+    public rowsPerPage: number;
+    public title: string = 'Relationships Grid'
+    private destroy = new Subject<void>();
+
     constructor(
         private cdRef: ChangeDetectorRef,
+        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private relationshipService: RelationshipsService,
         private assetService: AssetService,
         private fieldService: FieldsObservableService,
@@ -172,10 +179,20 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     }
 
     ngOnInit() {
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.updateAdvancedFilters();
     }
 
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+        });
+    }
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p === 'assetUid' && this.assetUid) {
@@ -193,6 +210,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         if (this.loadRelationshipsSub) {
             this.loadRelationshipsSub.unsubscribe();
         }
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     public initialLoad(): void {

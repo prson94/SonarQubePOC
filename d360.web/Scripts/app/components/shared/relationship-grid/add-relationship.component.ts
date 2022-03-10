@@ -1,8 +1,10 @@
-﻿import { Input, Component, ViewEncapsulation, ChangeDetectionStrategy, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
-import { forkJoin, Subscription } from 'rxjs';
+﻿import { Input, Component, ViewEncapsulation, ChangeDetectionStrategy, Output, EventEmitter, OnChanges, SimpleChange, ChangeDetectorRef, OnInit } from '@angular/core';
+import { forkJoin, Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { RelationshipCount, RelationshipType, RelationshipV2 } from '../../../models/relationship.model';
 import { AssetService } from '../../../services/asset.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -25,7 +27,7 @@ enum AddRelationshipStep {
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [RelationshipsService]
 })
-export class AddRelationshipComponent extends BaseComponent implements OnChanges {
+export class AddRelationshipComponent extends BaseComponent implements OnChanges, OnInit {
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
     @Input() isVisible: boolean = false;
@@ -56,12 +58,29 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
     constructor(private cdRef: ChangeDetectorRef,
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private relationshipService: RelationshipsService,
         private assetService: AssetService,
         private companySettingsService: CompanySettingsService,
         private messagesService: MessagesObservableService) {
         super(companySettingsService);
-        this.rowsPerPage = 10;
+    }
+
+    public rowsPerPage: number;
+    public title: string = 'Add Relationships Lists'
+    private destroy = new Subject<void>();
+
+    ngOnInit() {
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+        });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -70,6 +89,11 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                 this.initialLoad();
             }
         }
+    }
+
+    ngOnDestroy() {
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     close() {
