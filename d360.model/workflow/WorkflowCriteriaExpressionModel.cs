@@ -1,9 +1,10 @@
-﻿using d360.core.enums.Workflow;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml.Linq;
+
+using d360.core.enums.Workflow;
 using d360.core.types;
 
 namespace d360.model.workflow
@@ -15,24 +16,31 @@ namespace d360.model.workflow
         private readonly IDateTimeService DateTimeService = new DateTimeService();
 
         public object Value { get; set; }
+        
         public int FieldTypeId { get; set; }
+        
         public CriteriaOperator Operator { get; set; }
+        
         public CriteriaValueDataType ValueDataType { get; set; }
+        
         public CriteriaConnector CriteriaConnector { get; set; }
+        
         public string FormInputId { get; set; }
+        
         public int VersionStepId { get; set; }
+        
         public string ContextualFieldID { get; set; }
+        
         public bool IsCriteriaChecked { get; set; }
-
 
         public static WorkflowCriteriaExpressionModel Parse(XElement element)
         {
-            var dataType = dataTypeFromString((string)element.Attribute("ValueType"));
-            var @operator = operatorFromString((string)element.Attribute("Operator"));
-            var @connector = criteriaConnectorFromString((string)element.Attribute("Connector"));
+            CriteriaValueDataType dataType = dataTypeFromString((string)element.Attribute("ValueType"));
+            CriteriaOperator @operator = operatorFromString((string)element.Attribute("Operator"));
+            CriteriaConnector @connector = criteriaConnectorFromString((string)element.Attribute("Connector"));
 
-            var noValueOperators = new List<CriteriaOperator>() 
-            { 
+            List<CriteriaOperator> noValueOperators = new List<CriteriaOperator>()
+            {
                 CriteriaOperator.Changed,
                 CriteriaOperator.Populated,
                 CriteriaOperator.NotPopulated
@@ -40,28 +48,28 @@ namespace d360.model.workflow
 
             return new WorkflowCriteriaExpressionModel
             {
-                FieldTypeId = int.Parse(((string)element.Attribute("FieldTypeID") ?? "0")),
-                ContextualFieldID = ((string)element.Attribute("ContextualFieldID") ?? ""),
+                FieldTypeId = int.Parse((string)element.Attribute("FieldTypeID") ?? "0"),
+                ContextualFieldID = (string)element.Attribute("ContextualFieldID") ?? "",
                 Operator = @operator,
                 ValueDataType = dataType,
                 Value = noValueOperators.Contains(@operator) ? "" : valueFromString(dataType, (string)element.Attribute("Value")),
-                VersionStepId = int.Parse(((string)element.Attribute("VersionStepID") ?? "0")),
-                FormInputId = ((string)element.Attribute("FormInputID")),
+                VersionStepId = int.Parse((string)element.Attribute("VersionStepID") ?? "0"),
+                FormInputId = (string)element.Attribute("FormInputID"),
                 CriteriaConnector = connector
             };
         }
 
         public string ToPlainText(ICompanyContext context)
         {
-            var fieldName = getFieldName(context);
-            var operatorText = getOperatorText();
+            string fieldName = getFieldName(context);
+            string operatorText = getOperatorText();
 
-            return $"{fieldName} {operatorText} {Value.ToString()}";
+            return $"{fieldName} {operatorText} {Value}";
         }
 
         private string getOperatorText()
         {
-            switch (this.Operator)
+            switch (Operator)
             {
                 case CriteriaOperator.GreaterThan:
                     return ">";
@@ -76,12 +84,13 @@ namespace d360.model.workflow
                 case CriteriaOperator.NotEqual:
                     return "!=";
             }
+
             return "?";
         }
 
         protected string getFieldName(ICompanyContext context)
         {
-            var field = context.FieldTypes.Where(x => x.ID == this.FieldTypeId).FirstOrDefault();
+            core.entities.FieldType field = context.FieldTypes.Where(x => x.ID == FieldTypeId).FirstOrDefault();
 
             if (field == null)
             {
@@ -103,6 +112,7 @@ namespace d360.model.workflow
                         return CriteriaConnector.OR;
                 }
             }
+
             return CriteriaConnector.AND;
         }
 
@@ -159,26 +169,32 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Invalid:
                     return val;
                 case CriteriaValueDataType.Boolean:
+
                     if (string.IsNullOrEmpty(val))
                     {
                         return null;
                     }
-                    return (val ?? "").ToUpper() == bool.TrueString.ToUpper() ? true : false;
+
+                    return (val ?? "").ToUpper() == bool.TrueString.ToUpper();
                 case CriteriaValueDataType.String:
                     return (val ?? "").Trim().ToUpper();
                 case CriteriaValueDataType.Integer:
                 case CriteriaValueDataType.Double:
                     double? dVal = null;
+
                     if (double.TryParse(val, NumberStyles.Any, CultureInfo.InvariantCulture, out double dValParsed))
                     {
                         dVal = dValParsed;
                     }
+
                     return dVal;
                 case CriteriaValueDataType.Date:
+
                     if (string.IsNullOrEmpty(val))
                     {
                         return null;
                     }
+
                     return int.Parse(val);
                 case CriteriaValueDataType.Lookup:
                     {
@@ -197,67 +213,65 @@ namespace d360.model.workflow
                             return -1;
                         }
                     }
-
             }
 
             throw new Exception("ERROR - INVALID DATA TYPE SPECIFIED TO PARSE VALUE");
         }
 
-
         public bool IsValueMatch(string givenValue)
         {
             // dates are number of days from the date field value
-            if (this.ValueDataType == CriteriaValueDataType.Date)
+            if (ValueDataType == CriteriaValueDataType.Date)
             {
                 if (Operator == CriteriaOperator.NotPopulated)
                 {
                     return string.IsNullOrEmpty(givenValue) || !DateTimeService.CanParse(givenValue);
                 }
-                
+
                 if (Operator == CriteriaOperator.Populated)
                 {
                     return DateTimeService.CanParse(givenValue);
                 }
-                
-                if (!DateTimeService.TryParse(givenValue, out var parsedDateTime))
+
+                if (!DateTimeService.TryParse(givenValue, out DateTime parsedDateTime))
                 {
                     return false;
                 }
 
-                var currentDate = DateTimeService.Now();
+                DateTimeOffset currentDate = DateTimeService.Now();
 
-                var numDays = Convert.ToInt32((parsedDateTime.Date - currentDate.Date).TotalDays);
-                var value = (int)Value;
+                int numDays = Convert.ToInt32((parsedDateTime.Date - currentDate.Date).TotalDays);
+                int value = (int)Value;
 
                 if (Operator == CriteriaOperator.Equal)
                 {
-                    return (numDays == value);
+                    return numDays == value;
                 }
                 else if (Operator == CriteriaOperator.NotEqual)
                 {
-                    return (numDays != value);
+                    return numDays != value;
                 }
                 else if (Operator == CriteriaOperator.GreaterThan)
                 {
-                    return (numDays > value);
+                    return numDays > value;
                 }
                 else if (Operator == CriteriaOperator.GreaterThanOrEqual)
                 {
-                    return (numDays >= value);
+                    return numDays >= value;
                 }
                 else if (Operator == CriteriaOperator.LessThan)
                 {
-                    return (numDays < value);
+                    return numDays < value;
                 }
                 else if (Operator == CriteriaOperator.LessThanOrEqual)
                 {
-                    return (numDays <= value);
+                    return numDays <= value;
                 }
 
                 throw new Exception("INVALID DATE OPERATION");
             }
 
-            var val = valueFromString(this.ValueDataType, givenValue);
+            object val = valueFromString(ValueDataType, givenValue);
 
             switch (Operator)
             {
@@ -341,7 +355,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                     return (bool?)val == (bool?)Value;
                 case CriteriaValueDataType.String:
-                    return String.Compare((string)val, (string)Value, true) == 0;
+                    return string.Compare((string)val, (string)Value, true) == 0;
                 case CriteriaValueDataType.Integer:
                     return (int?)val == (int?)Value;
                 case CriteriaValueDataType.Double:
@@ -360,7 +374,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                     return (bool?)val != (bool?)Value;
                 case CriteriaValueDataType.String:
-                    return String.Compare((string)val, (string)Value, true) != 0;
+                    return string.Compare((string)val, (string)Value, true) != 0;
                 case CriteriaValueDataType.Integer:
                     return (int?)val != (int?)Value;
                 case CriteriaValueDataType.Double:
