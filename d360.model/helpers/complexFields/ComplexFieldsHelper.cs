@@ -1,18 +1,24 @@
-﻿using d360.core.entities;
-using d360.core.Models;
-using Dapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using d360.core.entities;
+using d360.core.Models;
+
+using Dapper;
 
 namespace d360.model.helpers
 {
     public class ComplexRelationFieldHasAnyModel
     {
         public int FieldTypeId { get; set; }
+        
         public FieldTypeLookup FieldTypeLookup { get; set; }
+        
         public bool? HasAny { get; set; } = true;
+        
         public bool NeedsFullCheck { get; set; } = true;
+        
         public string SQL { get; set; }
     }
 
@@ -85,15 +91,15 @@ namespace d360.model.helpers
 
                 var sql = $@"select distinct count(*)
                                 from graph.AssetNode H1
-                                {(string.Join("\n", joins))};";
+                                {string.Join("\n", joins)};";
 
                 model.SQL = sql;
                 model.HasAny = true;
                 model.NeedsFullCheck = false;
             }
+
             return ret;
         }
-
 
         public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping)
         {
@@ -139,7 +145,9 @@ namespace d360.model.helpers
                         joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
                     }
                 }
-                bool isResource = definition.Fields.Where(x => (x.RelationIndex + 1) == idx && x.AssetTypeUid == resourceTypeUid).Any();
+
+                bool isResource = definition.Fields.Any(x => (x.RelationIndex + 1) == idx && x.AssetTypeUid == resourceTypeUid);
+                
                 if (isResource)
                 {
                     joins.Add($"INNER JOIN reporting.global_resource U{idx} ON u{idx}.uid = h{idx}.uid");
@@ -256,11 +264,13 @@ namespace d360.model.helpers
                         selects.Add($"h{f.RelationIndex + 1}_dv.displayvalue AS [H{f.RelationIndex + 1}_DisplayValue]");
                         joins.Add($"LEFT JOIN assetdisplayvalue H{f.RelationIndex + 1}_DV ON h{f.RelationIndex + 1}_dv.assetid = h{f.RelationIndex + 1}.id");
                     }
+                    
                     if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
                     {
                         selects.Add($"h{f.RelationIndex + 1}p.displaypath AS [H{f.RelationIndex + 1}__assetPath]");
                         joins.Add($"LEFT JOIN graph.assetnodedisplaypath H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
                     }
+                    
                     if (f.FieldTypeName.ToLowerInvariant() == "code")
                     {
                         selects.Add($"H{f.RelationIndex + 1}_CODE.Code as [H{f.RelationIndex + 1}_Code]");
@@ -268,6 +278,7 @@ namespace d360.model.helpers
                     }
 
                     bool isResource = f.AssetTypeUid == resourceTypeUid;
+                    
                     if (isResource)
                     {
                         selects.Add($"u{f.RelationIndex + 1}.{f.FieldTypeName} AS [H{f.RelationIndex + 1}_{f.FieldTypeName}]");
@@ -277,9 +288,9 @@ namespace d360.model.helpers
             }
 
             return $@"select distinct 
-                                {(string.Join(",", selects))}
+                                {string.Join(",", selects)}
                                 from graph.AssetNode H1
-                                {(string.Join("\n", joins))}";
+                                {string.Join("\n", joins)}";
         }
 
         public static (List<GridColumn>, List<GridField>) GetComplexRelationLookupFieldsAndColumns(List<FieldType> fields, FieldTypeComplexLookupDefinition definition)
@@ -378,8 +389,8 @@ namespace d360.model.helpers
                     if (f.FieldTypeName.ToLowerInvariant() == "name")
                     {
                         gField.type = gColumn.columntype = "preview";
-                        gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                        gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+                        gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
+                        gColumn.urlfield = $"H{f.RelationIndex + 1}_Url";
 
                         Fields.Add(new GridField { name = gColumn.uidfield, type = "text" });
                         Fields.Add(new GridField { name = gColumn.urlfield, type = "text" });
@@ -389,6 +400,7 @@ namespace d360.model.helpers
                     {
                         Columns.Add(gColumn);
                     }
+
                     Fields.Add(gField);
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "displayvalue")
@@ -397,13 +409,14 @@ namespace d360.model.helpers
                     var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     gField.type = gColumn.columntype = "preview";
                     gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}_DisplayValue";
-                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+                    gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
+                    gColumn.urlfield = $"H{f.RelationIndex + 1}_Url";
 
                     if (f.Show)
                     {
                         Columns.Add(gColumn);
                     }
+
                     Fields.Add(gField);
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
@@ -412,26 +425,28 @@ namespace d360.model.helpers
                     var gField = new GridField { type = "text", defaultFilter = f.Filter, sortOrder = f.SortOrder };
                     gField.type = gColumn.columntype = "preview";
                     gField.name = gField.apiName = gColumn.datafield = $"H{f.RelationIndex + 1}__assetPath";
-                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
+                    gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
+                    gColumn.urlfield = $"H{f.RelationIndex + 1}_Url";
 
                     if (f.Show)
                     {
                         Columns.Add(gColumn);
                     }
+
                     Fields.Add(gField);
                 }
                 else if (f.FieldTypeName.ToLowerInvariant() == "code")
                 {
                     var gColumn = new GridColumn { text = "Code", datafield = $"H{f.RelationIndex + 1}_Code", columntype = "text", };
-                    gColumn.uidfield = $"H{(f.RelationIndex + 1)}_Uid";
-                    gColumn.urlfield = $"H{(f.RelationIndex + 1)}_Url";
-
-                    var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
+                    gColumn.uidfield = $"H{f.RelationIndex + 1}_Uid";
+                    gColumn.urlfield = $"H{f.RelationIndex + 1}_Url";                    
+                    
                     if (f.Show)
                     {
                         Columns.Add(gColumn);
                     }
+
+                    var gField = new GridField { name = $"H{f.RelationIndex + 1}_Code", apiName = $"H{f.RelationIndex + 1}_Code", type = "Text" };
                     Fields.Add(gField);
                 }
                 else
@@ -593,14 +608,13 @@ namespace d360.model.helpers
             {
                 return $@"  select distinct count(*)
                             from Asset A
-                            {(string.Join("\n", joins))}";
+                            {string.Join("\n", joins)}";
             }
 
             return $@" select distinct 
-                            {(string.Join(", ", selects))}
+                            {string.Join(", ", selects)}
                             from Asset A
-                            {(string.Join("\n", joins))}";
+                            {string.Join("\n", joins)}";
         }
-
     }
 }
