@@ -13,6 +13,7 @@ import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TreeNode } from 'primeng/api';
 import { MessageBarItem } from '../../models/message-bar-item.model';
+import { SynonymPermission } from '../../models/artifacts.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
@@ -54,6 +55,8 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
     sidePanelOpen: boolean = false;
     sidePanelStorageKey;
+
+    synonymPermission: SynonymPermission;
 
     constructor(
         private route: ActivatedRoute,
@@ -217,6 +220,20 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         this.assetID = this.selected.AssetID;
 
         this.loadPermissions(this.permissionsService, this.object, this.selected.ID);
+
+        let TempsynonymPermission = new SynonymPermission;
+
+        this.loadPermissions(this.permissionsService, this.object, this.selected.ID).then((perms) => {
+            if (this.hasAddRelationshipsPermissions() || this.hasModifyRelationshipsPermissions()) {
+                TempsynonymPermission.addModifySynonym = true;
+            }
+
+            if (this.hasDeleteRelationshipsPermissions()) {
+                TempsynonymPermission.deleteSynonym = true;
+            }
+            this.synonymPermission = TempsynonymPermission;
+        });
+
         this.buildBreadcrumb();
 
         return Promise.resolve(null);
