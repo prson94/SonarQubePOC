@@ -51,6 +51,7 @@
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
     <link rel="preload" href="@string.Format("{0}/fonts/fontawesome-webfont.woff2?v=4.7.0", baseUrl)" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="@string.Format("{0}/content/primeicons/fonts/primeicons.ttf", baseUrl)" as="font" type="font/tff" crossorigin>
     @if (Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.InstrumentationKey != "")
     {
         <script type="text/javascript">
@@ -73,13 +74,13 @@
         var DataDogClientToken = '@(DataDogClientToken)';
         var DataDogService = '@(DataDogService)';
     </script>
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v12.0.2/primeng.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/4.1.0/primeicons.min.css", baseUrl)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v12.0.2/default.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/primeng.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/primeicons.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/default.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
     <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v12.0.2/theme.min.css", baseUrl)" />
+    <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/theme.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
     <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />
