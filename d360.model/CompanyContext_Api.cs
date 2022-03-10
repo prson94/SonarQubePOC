@@ -11006,7 +11006,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                                 {
                                     var insertSQL = $@"
                                             				drop table if exists #mergeResultTable
-            create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
+            create table #mergeResultTable (GroupID int, [Action] nvarchar(10), GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
 
             drop table if exists #auditRecords
 			create table #auditRecords (ItemNumber int, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
@@ -11069,7 +11069,23 @@ EG.GroupUid
                 when not matched then
 	                insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
 	                values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
-	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
+	            output inserted.ID, $action, TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
+
+                INSERT INTO [dbo].[Asset] ([uid], [AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		        SELECT	coalesce(EG.GroupUid, newid()), T.ID, 1, M.GroupID, 'Group', M.GroupID, G.UpdatedOn, coalesce(G.UpdatedBy, 0), G.UpdatedOn, coalesce(G.UpdatedBy, 0)
+		        FROM	#mergeResultTable M
+                        INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
+                        INNER JOIN [Group] G on G.ID = M.GroupID
+                        INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
+                WHERE M.[Action] = 'INSERT';
+
+	            INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+	            SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], coalesce(A.UpdatedOn, getutcdate()) 
+	            FROM	#mergeResultTable M
+                INNER JOIN [Group] G on G.ID = M.GroupID
+	            INNER JOIN Asset A ON A.Object = 'Group' and A.ObjectID = G.ID
+	            INNER JOIN  AssetType AT ON AT.Object = 'GroupType' and AT.ObjectID = 1
+	            WHERE M.[Action] = 'INSERT' AND NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = A.Uid);
 
 
                 INSERT INTO [ResourceGroup](GroupID,[ResourceID])
