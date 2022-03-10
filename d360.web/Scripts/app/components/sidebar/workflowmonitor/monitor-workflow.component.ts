@@ -44,7 +44,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.initializeTitleAndTabsInRightSidebar(params);
+            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, TabTitle.WORKFLOW);
 
             let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
             let assetUid = params['assetUid'];
@@ -67,12 +67,6 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
                 });
             }
         });
-    }
-
-    initializeTitleAndTabsInRightSidebar(params: Params): void {
-        if (!this.titleAndTabsService.isInitialize && params['objectType'] === 'ArtifactType') {
-            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, TabTitle.WORKFLOW);
-        }
     }
 
     ngOnDestroy() {

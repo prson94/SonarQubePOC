@@ -5,6 +5,8 @@ import { Observable, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AssetGridBaseComponent } from '../components/assets-grid/asset-grid-base.component';
 import { AssetGridObject } from '../components/assets-grid/asset-grid.model';
+import { ObjectType } from '../enums/app.enum';
+import { Param } from '../enums/param.enum';
 import { ArtifactType } from '../models/artifact-type.model';
 import { AssetTypeClass } from '../models/asset.model';
 import { Breadcrumb } from '../models/breadcrumb.model';
@@ -39,6 +41,12 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
     webAnalyticsService: WebAnalyticsService,
   ) {
     super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+  }
+
+  initializeTitleAndTabsCheck(routeParams: Observable<Params>, params: Params, activeTabTitle?: string): void {
+    if (!this.isInitialize && params[Param.ObjectType] === ObjectType.ArtifactType) {
+      this.initializeTitleAndTabsInRightSidebar(routeParams, activeTabTitle);
+    }
   }
 
   initializeTitleAndTabsInRightSidebar(routeParams: Observable<Params>, activeTabTitle?: string): void {
