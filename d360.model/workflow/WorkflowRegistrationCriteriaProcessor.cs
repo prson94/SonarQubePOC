@@ -1,12 +1,13 @@
-﻿using d360.core.entities;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using System.Data.Entity;
-using d360.core.enums.Workflow;
+
+using d360.core.entities;
 using d360.core.enums;
+using d360.core.enums.Workflow;
 
 namespace d360.model.workflow
 {
@@ -14,13 +15,19 @@ namespace d360.model.workflow
     {
         public static bool Evaluate(ICompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1, int? scoreType = null)
         {
-            if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
+            if (string.IsNullOrEmpty(criteria))
+            {
+                return true; // null criteria means all objects are applicable
+            }
 
-            if (string.IsNullOrEmpty(@object) || objectId <= 0) throw new Exception("ERROR - A VALID OBJECT AND OBJECT ID MUST BE SPECIFIED.  THE OBJECT ID MUST BE GREATER THAN 0.");
+            if (string.IsNullOrEmpty(@object) || objectId <= 0)
+            {
+                throw new Exception("ERROR - A VALID OBJECT AND OBJECT ID MUST BE SPECIFIED.  THE OBJECT ID MUST BE GREATER THAN 0.");
+            }
 
             //take the string criteria and generate the class
             List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
-            bool satisfyAll = expression.All(x => x.CriteriaConnector == core.enums.Workflow.CriteriaConnector.AND); 
+            bool satisfyAll = expression.All(x => x.CriteriaConnector == core.enums.Workflow.CriteriaConnector.AND);
 
             //load the values for each of the fields for the given object
             return EvaluateObject(expression, context, @object, objectId, itemId, issueObject, issueObjectId, changedFields, satisfyAll, scoreType);
@@ -28,16 +35,22 @@ namespace d360.model.workflow
 
         public static string ToPlainText(ICompanyContext context, string criteria)
         {
-            if (string.IsNullOrEmpty(criteria)) return "";
+            if (string.IsNullOrEmpty(criteria))
+            {
+                return "";
+            }
 
             //take the string criteria and generate the class
             List<WorkflowCriteriaExpressionModel> expression = PopulateExpressionFromXml(criteria);
 
             StringBuilder sb = new StringBuilder();
 
-            foreach (var item in expression)
+            foreach (WorkflowCriteriaExpressionModel item in expression)
             {
-                if (sb.Length != 0) sb.Append(" AND ");
+                if (sb.Length != 0)
+                {
+                    sb.Append(" AND ");
+                }
 
                 sb.Append(item.ToPlainText(context));
             }
@@ -56,20 +69,25 @@ namespace d360.model.workflow
 
             //If there are no conditions object is eligible for workflow
             if (expression.Count == 0)
+            {
                 return true;
+            }
 
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
             bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
-            
-            if (satisfyAll && hasChangeCondition && !changedFields.Any()) return false;
 
-            var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
-            
+            if (satisfyAll && hasChangeCondition && !changedFields.Any())
+            {
+                return false;
+            }
+
+            IQueryable<Field> fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
+
             if (issueObjectTypeId > -1)
             {
                 //get asset fields for this action
-                var issue = context.Issues.FirstOrDefault(x => x.ID == objectId);
+                Issue issue = context.Issues.FirstOrDefault(x => x.ID == objectId);
                 if (issue != null)
                 {
                     fields = fields.Union(context.Fields.Where(x => x.ObjectID == issue.ObjectID && x.ObjectType == issue.Object));
@@ -84,10 +102,10 @@ namespace d360.model.workflow
                 "ScoreType"
             };
 
-            var systemExpressions = expression.Where(x => systemContextualFields.Contains(x.ContextualFieldID));
-            var userExpressions = expression.Where(x => !systemContextualFields.Contains(x.ContextualFieldID));
+            IEnumerable<WorkflowCriteriaExpressionModel> systemExpressions = expression.Where(x => systemContextualFields.Contains(x.ContextualFieldID));
+            IEnumerable<WorkflowCriteriaExpressionModel> userExpressions = expression.Where(x => !systemContextualFields.Contains(x.ContextualFieldID));
 
-            foreach(var item in systemExpressions)
+            foreach (WorkflowCriteriaExpressionModel item in systemExpressions)
             {
                 item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields, scoreType);
             }
@@ -97,11 +115,19 @@ namespace d360.model.workflow
                 return false;
             }
 
-            foreach (var item in userExpressions)
+            foreach (WorkflowCriteriaExpressionModel item in userExpressions)
             {
                 item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields, scoreType);
-                if (satisfyAll && item.IsCriteriaChecked == false) return false;
-                if (!satisfyAll && item.IsCriteriaChecked == true) return true;
+                
+                if (satisfyAll && item.IsCriteriaChecked == false)
+                {
+                    return false;
+                }
+
+                if (!satisfyAll && item.IsCriteriaChecked == true)
+                {
+                    return true;
+                }
             }
 
             return satisfyAll ? userExpressions.All(x => x.IsCriteriaChecked) : userExpressions.Any(x => x.IsCriteriaChecked);
@@ -113,61 +139,94 @@ namespace d360.model.workflow
             // With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
             if (changedFields != null && item.FieldTypeId > 0)
             {
-                var field = fields.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeId);
-                var value = field?.Value ?? null;
-                var formattedVal = field?.FormattedValue ?? null;
+                Field field = fields.FirstOrDefault(x => x.FieldTypeID == item.FieldTypeId);
+                string value = field?.Value ?? null;
+                string formattedVal = field?.FormattedValue ?? null;
 
                 //special case for changed operator. If it's in the list of changed fields, return true
                 if (item.Operator == CriteriaOperator.Changed)
+                {
                     return changedFields.Contains(item.FieldTypeId);
+                }
 
                 if (item.ValueDataType == CriteriaValueDataType.Lookup)
                 {
-                    if (!item.IsValueMatch(value)) return false;
+                    if (!item.IsValueMatch(value))
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
-                    if (!item.IsValueMatch(formattedVal)) return false;
+                    if (!item.IsValueMatch(formattedVal))
+                    {
+                        return false;
+                    }
                 }
-            }            
+            }
             else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
             {
 
-                var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
-                if (!item.IsValueMatch(requestedOn.ToString())) return false;
+                DateTime? requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
+                
+                if (!item.IsValueMatch(requestedOn.ToString()))
+                {
+                    return false;
+                }
             }
             else if ((item.ContextualFieldID ?? "").ToLower() == "name")
             {
-                var name = context.GetObjectDetail(@object, objectId).Name;
-                if (!item.IsValueMatch(name?.ToString() ?? "")) return false;
+                string name = context.GetObjectDetail(@object, objectId).Name;
+                if (!item.IsValueMatch(name?.ToString() ?? ""))
+                {
+                    return false;
+                }
             }
             else if ((item.ContextualFieldID ?? "").ToLower() == "description")
             {
-                var description = context.GetObjectDetail(@object, objectId).Description;
-                if (!item.IsValueMatch(description?.ToString() ?? "")) return false;
+                string description = context.GetObjectDetail(@object, objectId).Description;
+                
+                if (!item.IsValueMatch(description?.ToString() ?? ""))
+                {
+                    return false;
+                }
             }
             else if ((item.ContextualFieldID ?? "").ToLower() == "issueobject")
             {
-                if (!item.IsValueMatch(issueObjectType)) return false;
+                if (!item.IsValueMatch(issueObjectType))
+                {
+                    return false;
+                }
             }
             else if ((item.ContextualFieldID ?? "").ToLower() == "issueobjectid")
             {
-                if (!item.IsValueMatch(issueObjectTypeId.ToString())) return false;
+                if (!item.IsValueMatch(issueObjectTypeId.ToString()))
+                {
+                    return false;
+                }
             }
             else if ((item.ContextualFieldID ?? "").ToLower() == "scoretype")
             {
-                if (!item.IsValueMatch(scoreType?.ToString() ?? "")) return false;
+                if (!item.IsValueMatch(scoreType?.ToString() ?? ""))
+                {
+                    return false;
+                }
             }
             else if ((item.ContextualFieldID ?? "").ToLower().StartsWith("score|"))
             {
-                var typeString = item.ContextualFieldID.Split('|')[1];
+                string typeString = item.ContextualFieldID.Split('|')[1];
+                
                 if (Enum.TryParse(typeString, out ScoreType stype))
                 {
                     long? assetId = context.GetObjectDetail(@object, objectId)?.AssetID;
                     if (assetId.HasValue)
                     {
                         decimal? score = context.GetAssetScore((int)assetId, stype);
-                        if (!item.IsValueMatch(score.ToString())) return false;
+                        
+                        if (!item.IsValueMatch(score.ToString()))
+                        {
+                            return false;
+                        }
                     }
                     else
                     {
@@ -184,7 +243,7 @@ namespace d360.model.workflow
             else if (item.VersionStepId > 0)
             {
                 //load the results of the version step
-                var versionStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x => x.Step).OrderByDescending(x => x.ID).FirstOrDefault();
+                core.entities.Workflow.WorkflowItemStep versionStep = context.WorkflowItemSteps.Where(x => x.ItemID == itemId && x.StepID == item.VersionStepId).Include(x => x.Step).OrderByDescending(x => x.ID).FirstOrDefault();
 
                 if (versionStep == null)
                 {
@@ -194,7 +253,7 @@ namespace d360.model.workflow
                 }
 
                 //get the results of the form input with the specified id
-                var xml = versionStep.Fields;
+                string xml = versionStep.Fields;
 
                 if (string.IsNullOrEmpty(xml))
                 {
@@ -203,8 +262,6 @@ namespace d360.model.workflow
                     return false;
                 }
 
-                
-
                 if ((versionStep.Step == null) || string.IsNullOrEmpty(versionStep.Step.Settings))
                 {
                     Console.WriteLine("DEBUG - FORM SETTINGS ARE MISSING");
@@ -212,13 +269,13 @@ namespace d360.model.workflow
                     return false;
                 }
 
-                var stepSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Step.Settings));
+                WorkflowItemStepSettingModel stepSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Step.Settings));
 
-                switch(versionStep.Step.ActivityType)
+                switch (versionStep.Step.ActivityType)
                 {
                     case WorkflowActivityType.Form:
                     case WorkflowActivityType.None:
-                        var formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
+                        WorkflowFormModel formModel = WorkflowFormModel.ParseXml(XElement.Parse(xml));
 
                         switch (stepSettings.ResponseType)
                         {
@@ -232,9 +289,9 @@ namespace d360.model.workflow
                                 {
                                     // ALL USERS NEED TO RESPOND AND APPROVE
                                     // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
-                                    var formValues = formModel.GetFormValuesById(item.FormInputId);
+                                    List<string> formValues = formModel.GetFormValuesById(item.FormInputId);
 
-                                    foreach (var val in formValues)
+                                    foreach (string val in formValues)
                                     {
                                         if (item.IsValueMatch(val) == false)
                                         {
@@ -248,7 +305,7 @@ namespace d360.model.workflow
                                     var formValues = formModel.GetFormValuesById(item.FormInputId);
                                     var matchCount = 0;
 
-                                    foreach (var val in formValues)
+                                    foreach (string val in formValues)
                                     {
                                         if (item.IsValueMatch(val))
                                         {
@@ -263,29 +320,30 @@ namespace d360.model.workflow
                                 return false;
                         }
                     case WorkflowActivityType.HTTPRequest:
-                        switch(item.FormInputId.ToUpper())
+                        switch (item.FormInputId.ToUpper())
                         {
                             case "STATUSCODE":
-                                var statusCodeString = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("StatusCode")?.Value ?? "";
+                                string statusCodeString = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("StatusCode")?.Value ?? "";
                                 if (int.TryParse(statusCodeString, out int _))
                                 {
                                     return item.IsValueMatch(statusCodeString);
                                 }
                                 break;
                             case "RESPONSEBODY":
-                                var responseBody = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("Body")?.Value ?? "";
+                                string responseBody = versionStep.FieldsDocument?.Element("HTTPResponse")?.Element("Body")?.Value ?? "";
                                 return item.IsValueMatch(responseBody);
 
                         }
                         break;
                     case WorkflowActivityType.HTTPResponse:
-                        var stepFields = versionStep.FieldsDocument;
+                        XElement stepFields = versionStep.FieldsDocument;
+
                         if (stepFields != null)
                         {
-                            var outputs = stepFields.Element("Outputs").Elements("Output");
+                            IEnumerable<XElement> outputs = stepFields.Element("Outputs").Elements("Output");
                             if (outputs != null)
                             {
-                                foreach (var output in outputs)
+                                foreach (XElement output in outputs)
                                 {
                                     if (output.Element("Id")?.Value == item.FormInputId)
                                     {
@@ -294,12 +352,11 @@ namespace d360.model.workflow
                                 }
                             }
                         }
+
                         break;
                     default:
                         return false;
                 }
-
-
             }
 
             return true;
@@ -308,7 +365,7 @@ namespace d360.model.workflow
         private static List<WorkflowCriteriaExpressionModel> PopulateExpressionFromXml(string criteria)
         {
             // PARSE THE XML
-            XElement exprXml = null;
+            XElement exprXml;
             try
             {
                 exprXml = XElement.Parse(criteria);
@@ -321,7 +378,7 @@ namespace d360.model.workflow
             // LOOP THROUGH EACH EXPRESSION
             List<WorkflowCriteriaExpressionModel> expression = new List<WorkflowCriteriaExpressionModel>();
 
-            foreach (var expr in exprXml.Elements("Condition"))
+            foreach (XElement expr in exprXml.Elements("Condition"))
             {
                 expression.Add(WorkflowCriteriaExpressionModel.Parse(expr));
             }
