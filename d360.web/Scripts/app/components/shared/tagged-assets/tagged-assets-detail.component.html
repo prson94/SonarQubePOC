@@ -10,7 +10,7 @@
             <div class="class-name">
                 Tag
             </div>
-            <div>
+            <div *ngIf="isAdmin">
                 <a (click)="open();">Open</a> <span class="grey-delimiter">|</span> <a (click)="open(true);">Open in New Tab</a>
             </div>
         </div>

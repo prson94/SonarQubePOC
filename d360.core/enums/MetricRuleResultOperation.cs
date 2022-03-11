@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.enums
 {
@@ -14,17 +14,23 @@ namespace d360.core.enums
     {
         [Name("Average"), EnumMember(Value = "Average"), Description("")]
         Average = 1,
+        
         [Name("Minimum"), EnumMember(Value = "Minimum"), Description("")]
         Minimum = 2,
+        
         [Name("Maximum"), EnumMember(Value = "Maximum"), Description("")]
         Maximum = 3
     }
+
     public class MetricRuleResultOperationInfo
     {
         public MetricRuleResultOperation ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
+
     public static class MetricRuleResultOperationClassExtensions
     {
         public static string GetDisplayName(this MetricRuleResultOperation type)
@@ -60,6 +66,5 @@ namespace d360.core.enums
 
             return list.OrderBy(i => i.Name).ToList();
         }
-
     }
 }

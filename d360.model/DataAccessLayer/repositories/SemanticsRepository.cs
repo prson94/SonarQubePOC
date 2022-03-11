@@ -1,6 +1,8 @@
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -10,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -47,7 +50,7 @@ namespace d360.model.DataAccessLayer
             "validList"
         };
 
-        readonly Dictionary<string, string> orderFields = new Dictionary<string, string> 
+        readonly Dictionary<string, string> orderFields = new Dictionary<string, string> (StringComparer.InvariantCultureIgnoreCase)
         {
             { "baseType", "BaseType" },
             { "description", "Description" },
@@ -61,7 +64,7 @@ namespace d360.model.DataAccessLayer
             { "name", "Name" },
             { "priority", "Priority" },
             { "qualifier", "Qualifier" },
-            { "status", "Status" },
+            { "status", "StatusString" },
             { "threshold", "Threshold" }
         };
 
@@ -227,10 +230,10 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
         "inner join (" +
         " select Qualifier, max(EffectiveDate) as EffectiveDate " +
         " from Semantic " +
-        " where Qualifier in (@qualifiers) " +
+        " where Qualifier in @qualifiers " +
         "group by Qualifier) M on M.Qualifier = S.Qualifier and M.EffectiveDate = S.EffectiveDate", new { qualifiers }).ToList();
 
-            if (existingSemantics.Count != expectedCount)
+            if (expectedCount > 0 && existingSemantics.Count != expectedCount)
             {
                 var missing = qualifiers.Where(q => !existingSemantics.Any(e => e.Qualifier == q)).ToList();
                 throw new GenericException(
@@ -255,7 +258,7 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
             try
             {
                 var qualifiers = new List<string> { qualifier };
-                findLatestExistingSemantics(qualifiers, 1);
+                List<Semantic> deletes = findLatestExistingSemantics(qualifiers, 1);
 
                 var anyProfilesQuery = await CompanyContext.QueryAsync<int>(@"
 select  count(1)  
@@ -277,6 +280,14 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                         "Profiles match the semantic.",
                         "You may not remove this semantic since one or more asset data profiles match this semantic.");
                 }
+
+                //Queue semantic for deletion in search index
+                QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+                {
+                    CompanyID = CompanyContext.CurrentCompanyID,
+                    BatchUids = new List<Guid> { deletes.FirstOrDefault().Uid },
+                    BatchOperation = ReindexBatchOperation.Delete
+                });
 
                 CompanyContext.Connection.Execute("delete Semantic where Qualifier = @qualifier", new { qualifier });
 
@@ -308,6 +319,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
             var direction = "asc";
             DateTime asOfEffectiveDate = DateTime.UtcNow;
             var whereStatements = new List<string>();
+            var statusSQL = "";
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
@@ -405,7 +417,12 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                     throw new GenericException(HttpStatusCode.BadRequest, "Invalid sort configuration", "You have provided an invalid field as an order parameter.");
                 }
 
-                order = orderFields[order]; // Get the appropriate column name.
+                if (order.Equals("status", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    statusSQL = buildStatusOrderSQL();
+                }
+
+                order = orderFields[order]; // Get the appropriate column name.                             
             }
             
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
@@ -417,7 +434,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
             }
 
-            var tableQuery = @"(select	ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
+            var tableQuery = $@"(select	ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSQL} from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
             var whereConjunction = whereStatements.Count > 0 ? "and" : "";
 
             var countSql = $"select count(1) as [Count] from {tableQuery} {whereConjunction} {string.Join(" and ", whereStatements)}";
@@ -460,6 +477,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
             var order = "EffectiveDate";
             var direction = "desc";
+            var statusSQL = "";
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_order"))
             {
@@ -474,7 +492,12 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                     throw new GenericException(HttpStatusCode.BadRequest, "You have provided an invalid field as an order parameter.");
                 }
 
-                order = orderFields[order]; // Get the appropriate column name.
+                if (order.Equals("status", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    statusSQL = buildStatusOrderSQL();
+                }                
+
+                order = orderFields[order]; // Get the appropriate column name.                
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_direction"))
@@ -486,7 +509,7 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
             }
 
-            var sql = $"select * from Semantic where Qualifier = @qualifier order by {order} {direction}";
+            var sql = $"select * from (select * {statusSQL} from Semantic where Qualifier = @qualifier) S order by {order} {direction}";
 
             var repoModels = await CompanyContext.Database.Connection.QueryAsync<Semantic>(
                   new CommandDefinition(sql,
@@ -569,6 +592,8 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 CompanyContext.Semantics.AddRange(repoModels);
                 await CompanyContext.SaveChangesAsync();
+
+                queueForSearchIndex(transactionId);
                 addToChangeLog(transactionId, "U");
 
                 var getModels = (
@@ -612,6 +637,8 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
                 CompanyContext.Semantics.AddRange(repoModels);
                 await CompanyContext.SaveChangesAsync();
+
+                queueForSearchIndex(transactionId);
                 addToChangeLog(transactionId, "C");
 
                 var getModels = (
@@ -677,6 +704,8 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 CompanyContext.Semantics.AddRange(repoModels);
                 await CompanyContext.SaveChangesAsync();
+
+                queueForSearchIndex(transactionId);
                 addToChangeLog(transactionId, "U");
 
                 var getModels = (
@@ -697,6 +726,36 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 throw ex;
                 // TODO: Should we do something else here?
             }
+        }
+
+        public List<Semantic> GetSemanticsByQualifiers(List<string> qualifiers)
+        {
+            return findLatestExistingSemantics(qualifiers, 0);
+        }
+
+        private string buildStatusOrderSQL()
+        {
+            StringBuilder statusSQL = new StringBuilder(", CASE");            
+            foreach (int i in Enum.GetValues(typeof(SemanticStatus)))
+            {
+                statusSQL.Append($@" WHEN status = {i} then '{Enum.GetName(typeof(SemanticStatus), i)}'");
+            }
+            statusSQL.Append(" ELSE '' END as statusString");
+
+            return statusSQL.ToString();
+        }
+
+        private void queueForSearchIndex(string transactionId)
+        {
+            var uids = CompanyContext.Semantics.Where(s => s.TransactionId == transactionId).Select(s => s.Uid).Distinct();
+
+            QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                BatchUids = uids.ToList(),
+                BatchOperation = ReindexBatchOperation.Update
+            });
+
         }
     }
 }

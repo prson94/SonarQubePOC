@@ -108,6 +108,7 @@ namespace d360.model.helpers
             if (parseType == FilterExpressionParseType.Semantics)
             {
                 allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("uid", "Uid", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("name", "Name", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("description", "Description", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("qualifier", "Qualifier", SqlFieldType.Text));
@@ -115,11 +116,17 @@ namespace d360.model.helpers
                     SemanticStatus.Draft.GetSqlCaseFilterStatement("Status"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("source",
                     SemanticSource.BuiltIn.GetSqlCaseFilterStatement("[Source]"), SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("matchtype",
+                    SemanticMatchType.Advanced.GetSqlCaseFilterStatement("MatchType"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("threshold", "Threshold", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("priority", "Priority", SqlFieldType.Number));
                 allowedDefaultFields.Add(new DefaultFilter("baseType",
                     SemanticBaseType.Boolean.GetSqlCaseFilterStatement("BaseType"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("effectiveDate", "EffectiveDate", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "CreatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("updatedOn", "UpdatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdBy", "CreatedBy", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("updatedBy", "UpdatedBy", SqlFieldType.Text));
             }
         }
 

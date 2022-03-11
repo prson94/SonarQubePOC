@@ -1,19 +1,20 @@
-﻿using Azure.Messaging.ServiceBus;
-using d360.core.queue;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 
+using Azure.Messaging.ServiceBus;
+
+using d360.core.queue;
+
+using Newtonsoft.Json;
+
 namespace d360.extensions.queue
 {
     public class DummyQueueSource : IQueueSource
     {
-        public string EventServiceBusConnectionString { get { return ConfigurationManager.AppSettings["EventServiceBus"]; } }
-
-
+        public string EventServiceBusConnectionString => ConfigurationManager.AppSettings["EventServiceBus"];
 
         public bool CreateMessage<T>(string queueName, T item)
         {
@@ -62,8 +63,10 @@ namespace d360.extensions.queue
             var topicName = "events";
             var eString = JsonConvert.SerializeObject(e);
             var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new ServiceBusMessage(new BinaryData(eBytes));
-            bm.MessageId = Guid.NewGuid().ToString();
+            var bm = new ServiceBusMessage(new BinaryData(eBytes))
+            {
+                MessageId = Guid.NewGuid().ToString()
+            };
 
             var client = new ServiceBusClient(EventServiceBusConnectionString);
             var sender = client.CreateSender(topicName);
@@ -74,8 +77,10 @@ namespace d360.extensions.queue
         {
             var eString = JsonConvert.SerializeObject(e);
             var eBytes = Encoding.UTF8.GetBytes(eString);
-            var bm = new ServiceBusMessage(new BinaryData(eBytes));
-            bm.MessageId = Guid.NewGuid().ToString();
+            var bm = new ServiceBusMessage(new BinaryData(eBytes))
+            {
+                MessageId = Guid.NewGuid().ToString()
+            };
 
             var client = new ServiceBusClient(EventServiceBusConnectionString);
             var sender = client.CreateSender(topicName);
@@ -108,8 +113,10 @@ namespace d360.extensions.queue
             {
                 var eString = JsonConvert.SerializeObject(e);
                 var eBytes = Encoding.UTF8.GetBytes(eString);
-                var bm = new ServiceBusMessage(new BinaryData(eBytes));
-                bm.MessageId = Guid.NewGuid().ToString();
+                var bm = new ServiceBusMessage(new BinaryData(eBytes))
+                {
+                    MessageId = Guid.NewGuid().ToString()
+                };
                 messages.Enqueue(bm);
             }
 
@@ -145,9 +152,18 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessageAsync<T>(string topicName, T e)
         {
+            await CreateTopicMessageAsync<T>(topicName, e);
+        }
+
+        public async Task CreateFilteredTopicMessageAsync(string topicName, IFilteredServiceBusMessage e)
+        {
             var eString = JsonConvert.SerializeObject(e);
             var eBytes = Encoding.UTF8.GetBytes(eString);
             var bm = new ServiceBusMessage(new BinaryData(eBytes));
+            if (!string.IsNullOrEmpty(e.EventType))
+            {
+                bm.ApplicationProperties.Add("EventType", e.EventType);
+            }
             bm.MessageId = Guid.NewGuid().ToString();
 
             var client = new ServiceBusClient(EventServiceBusConnectionString);
@@ -171,8 +187,10 @@ namespace d360.extensions.queue
             {
                 var eString = JsonConvert.SerializeObject(e);
                 var eBytes = Encoding.UTF8.GetBytes(eString);
-                var bm = new ServiceBusMessage(new BinaryData(eBytes));
-                bm.MessageId = Guid.NewGuid().ToString();
+                var bm = new ServiceBusMessage(new BinaryData(eBytes))
+                {
+                    MessageId = Guid.NewGuid().ToString()
+                };
                 messages.Enqueue(bm);
             }
 
@@ -200,10 +218,10 @@ namespace d360.extensions.queue
                 }
             }
         }
+
         public string GetTopicNameBySetting(string settingName)
         {
             return ConfigurationManager.AppSettings[settingName];
         }
-
     }
 }

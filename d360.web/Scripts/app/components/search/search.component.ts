@@ -6,7 +6,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchStateService } from './search-state.service';
-import { SearchResultsObject, SearchCategories, SearchSelecton, SearchFieldFilter, SearchConnector, SearchOperator } from '../../models/search-result.model';
+import { SearchResults, SearchAggregation, SearchSelection, SearchFieldFilter, SearchConnector, SearchOperator } from '../../models/search-result.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { SidePanelButton } from "../../models/side-panel.model";
@@ -18,9 +18,9 @@ import { PopupMenuItem } from '../shared/controls/popup-menu/popup-menu.componen
 import { FieldType } from '../../models/fieldtype-api.model';
 import { AdvancedFilteringComponent } from '../assets-grid/advanced-filtering/advanced-filtering.component';
 import { Operator } from '../../models/operator.model';
-import { SelectItem } from '../../models/form.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import { SemanticType } from '../../models/semantic-type.model';
 
 @Component({
     selector: 'd3s-search',
@@ -30,8 +30,8 @@ import { CompanySettingEnum } from '../../models/settings.model';
 })
 
 export class SearchComponent extends BaseComponent implements OnInit, OnDestroy {
-    public searchResults: SearchResultsObject;
-    public categories: SearchCategories[] = [];
+    public searchResults: SearchResults;
+    public categories: SearchAggregation[] = [];
     public searchText: string;
     public searchTypes: string[] = [];
 
@@ -39,7 +39,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     public fromNumber: number = 0;
     public sub: any;
     public PageNumberSub: any;
-    public selection: SearchSelecton;
+    public selection: SearchSelection;
 
     public sidePanelOpen: boolean = true;
     public sidePanelLoading: boolean = false;
@@ -55,6 +55,8 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     public canExport: boolean = false;
 
     showEditor: boolean = false;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     public extraButtons: SidePanelButton[] = [new SidePanelButton({
         label: 'Filters',
@@ -117,7 +119,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         this.searchStateService.advancedFilters = [];
 
         this.searchTypes = this.settingsService.getSettingById(CompanySettingEnum.DefaultSearchTypes).StringSetting.Value.split(',');
-        this.exportLimit = <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue;
+        this.exportLimit = Math.min(5000, <number>this.settingsService.getSettingById(CompanySettingEnum.MaxExcelExportRows).ScalarValue);
 
         this.sub = this.route.queryParams.subscribe((params) => {
             this.searchText = params['query'] ? params['query'] : '';
@@ -133,7 +135,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
 
         this.PageNumberSub = this.searchStateService.resultCount.subscribe((pageCount) => {
             this.canExport = pageCount > 0 && pageCount <= this.exportLimit;
-            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `Number of items is greater than ${this.exportLimit}.`;
+            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
         });
     }
 
@@ -338,5 +340,15 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     saveItem() {
         this.showEditor = false;
         this.doSearch(true);
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
+    }
+
+    getQualifier(selection: SearchSelection): string {
+        const pipe = selection.ID.indexOf("|", 0) + 1;
+        return selection.ID.substring(pipe);
     }
 }

@@ -2,7 +2,7 @@
 
 @Component({
     selector: 'ig-field-value',
-    template: `<div class="row">
+    template: `<div class="row" *ngIf="value">
                 <div class="row-header">
                         <label class="ig-label">
                             <span class="ng-star-inserted">{{field}}</span>
@@ -11,7 +11,7 @@
                     <div class="ig-value" [innerHTML]="value"></div>
                 </div>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`p {padding:0, margin:0}`],
+    styles: [`p {padding:0; margin:0}`],
     encapsulation: ViewEncapsulation.None
 })
 
@@ -21,5 +21,4 @@ export class FieldValueComponent {
     @Input() value: string;
 
     constructor() { }
-
 }

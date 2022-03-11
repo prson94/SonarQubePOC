@@ -10,6 +10,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SynonymPermission } from '../../../models/artifacts.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     @Input() hasDelete: boolean = true;
 
     @Input() synonymPermission: SynonymPermission;
+    @Input() interceptLinkClick: boolean = false;
 
     theDeleteCallback: Function;
 
@@ -55,6 +57,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
         private relationshipsService: RelationshipsService,
+        private linkClickInterceptor: LinkClickInterceptor,
         protected settingsService: CompanySettingsService,
         private router: Router) {
         super(settingsService);
@@ -178,6 +181,14 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
     protected navigate(url: string) {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
+    }
+
+    synonymClicked($event, data: any) {
+        if (this.interceptLinkClick) {
+            data["IsSynonym"] = true;
+            this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.convertClassicUrl(data.Url));
+            return;
+        }
     }
 
     protected search(e: any) {

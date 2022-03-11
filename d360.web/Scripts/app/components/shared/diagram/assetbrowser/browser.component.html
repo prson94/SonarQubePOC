@@ -168,9 +168,9 @@
                                                 <div #infoDetailPanel class="scroll-panel">
                                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                                     <ng-container *ngIf="!selectedReferenceItem && !selectedTag">
-                                                        <ig-asset-detail #assetDetailComponent 
+                                                        <ig-asset-detail #assetDetailComponent
                                                                          *ngIf="selectedAsset || selectedDiagramAsset"
-                                                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedDiagramAsset.ObjectId"
+                                                                         [objectUID]="selectedAsset ? selectedAsset.uid : selectedDiagramAsset.Uid"
                                                                          [objectType]="selectedAsset ? selectedAsset.type : selectedDiagramAsset.Object"
                                                                          [useAccordion]="true"
                                                                          [shouldBePadded]="false"
@@ -179,11 +179,12 @@
                                                                          [spacerHeight]="'16px'"
                                                                          [tooltipAlign]="'left'"
                                                                          [isSidePanel]="true"
-                                                                         [hideLinks]="true"
+                                                                         [hasEditLink]="true"
                                                                          [interceptLinkClick]="true"
                                                                          [hasAddRelationshipsPermissions]="false"
                                                                          [hasModifyRelationshipsPermissions]="false"
-                                                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                                                                         [hasDeleteRelationshipsPermissions]="false"
+                                                                         (onEditClick)="onEditClick($event)"></ig-asset-detail>
                                                     </ng-container>
 
                                                     <ng-container *ngIf="selectedReferenceItem">

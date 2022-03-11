@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using d360.core.entities.Contracts;
-using System;
-using System.Runtime.Serialization;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -29,13 +30,12 @@ namespace d360.core.entities
 
         private const string DEFAULT_REPORT_TYPE = "legacy";
         private string _reportType = DEFAULT_REPORT_TYPE;
-        [DataMember]        
+
+        [DataMember]
         [Column(TypeName = "varchar"), StringLength(25)]
-        public string ReportType {
-            get
-            {
-                return _reportType;
-            }
+        public string ReportType
+        {
+            get => _reportType;
             set
             {
                 _reportType = value;
@@ -64,10 +64,11 @@ namespace d360.core.entities
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid uid { get; set; }
 
-        [NotMapped,DataMember]
+        [NotMapped, DataMember]
         public string VisibleTo { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
+        
         public int? UpdatedBy { get; set; }
 
         [IgnoreDataMember, ForeignKey("ReportID")]

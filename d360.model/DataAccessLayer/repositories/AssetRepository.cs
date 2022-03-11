@@ -97,7 +97,7 @@ namespace d360.model.DataAccessLayer
                     if (bool.TryParse(hierarchicalString, out hierarchical))
                     {
 
-                        condition += " and A.Hierarchical=@hierarchical ";
+                        condition += " and HA.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
                     else
@@ -208,13 +208,25 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("assetTypeUid", assetTypeUid.Value);
             }
 
+            //in case of Reference List items, check if there is parent to calculate if it is Hierarchical
+            //otherwise take a value from Hierarchical column in AssetType table
+            extraJoins += @" outer apply(
+										select 
+										case when exists(select top 1 * from  
+												[IntersectType] IT
+												inner join [Predicate] P on P.ID = IT.PredicateID
+												where A.Class = 9 and P.Type in (3,4) and IT.Object = A.Object and IT.ObjectID = A.ObjectID)
+												then 1 
+										else A.Hierarchical
+										end as Hierarchical)HA ";
+
             var sql = $@"
                         SELECT     A.[Name]
                                     ,ISNULL(A.[Description],'') as Description
                                     ,A.[Class] as ClassID
                                     ,ISNULL(A.[Notes],'') as Notes
                                     ,A.[uid]
-									,A.Hierarchical
+									,HA.Hierarchical
 									,A.HierarchyMaximumDepth
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
@@ -320,7 +332,7 @@ namespace d360.model.DataAccessLayer
                     var includeFieldsString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includefields").Value;
                     includeFieldsList = includeFieldsString
                         .Split(',')
-                        .Select(s => s.ToLower().Trim())
+                        .Select(s => s.Trim())
                         .Where(s => !string.IsNullOrEmpty(s))
                         .ToList();
                 }
@@ -333,7 +345,7 @@ namespace d360.model.DataAccessLayer
                 //validate param values
                 includeFieldsList.ForEach(f =>
                 {
-                    if (!allFieldTypes.Any(x => x.Name.ToLower() == f))
+                    if (!allFieldTypes.Any(x => x.Name.ToLower() == f.ToLower()))
                     {
                         throw new ArgumentException(string.Format(AssetTypeErrors.InvalueValue_includeFields, f));
                     }
@@ -341,6 +353,7 @@ namespace d360.model.DataAccessLayer
 
                 if (includeFieldsList.Any())
                 {
+                    includeFieldsList = includeFieldsList.Select(f => f.ToLower()).ToList();
                     fieldTypes = fieldTypes
                         .Where(x => includeFieldsList.Contains(x.Name.ToLower()))
                         .ToList();
@@ -1609,7 +1622,6 @@ namespace d360.model.DataAccessLayer
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
             }
             else
             {
@@ -3649,7 +3661,8 @@ where	O.RowNum = 1";
                     {
                         bool success = true;
                         string error = "";
-                        var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
+                                                
+                        var fieldTypes = CompanyContext.GetAssetTypeFieldTypesCore(assetType.Object, assetType.ObjectID);
 
                         if (nullifyEmptyFields)
                         {

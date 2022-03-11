@@ -6,7 +6,7 @@
           <a (click)="onClick($event, owner)" [href]="owner.ResourceItemUrl" [innerHtml]="owner.ResourceName"></a> {{formatResponsibilityTypes(owner.ResponsibilityTypes)}}
         </ng-container>
         <ng-container *ngIf="interceptLinkClick">
-                   <a context-link (click)="onClick($event, owner)" [innerHtml]="owner.ResourceName"></a> {{formatResponsibilityTypes(owner.ResponsibilityTypes)}}
+                   <a context-link (click)="onClick($event, owner)" [innerHtml]="owner.ResourceName" data-link-type="resource"></a> {{formatResponsibilityTypes(owner.ResponsibilityTypes)}}
         </ng-container>
         </span>
     </li>

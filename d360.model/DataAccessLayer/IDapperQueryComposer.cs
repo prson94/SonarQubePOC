@@ -10,35 +10,35 @@ namespace d360.model.DataAccessLayer
     {
         Task<SqlMapper.GridReader> StoredProcedureMultipleResultsAsync(
             string procedureName,
-            object parameters,
+            object parameters = null,
             int? commandTimeout = null);
 
         Task<TItem> StoredProcedureSingleAsync<TItem>(
             string procedureName,
-            object parameters,
+            object parameters = null,
             int? commandTimeout = null);
 
         Task<IReadOnlyList<TItem>> StoredProcedureMultipleAsync<TItem>(
             string procedureName,
-            object parameters,
+            object parameters = null,
             int? commandTimeout = null
         );
 
         Task<T> QuerySingleOrDefaultAsync<T>(
             string sql,
-            object parameters,
+            object parameters = null,
             int? commandTimeout = null
         );
 
         Task<SqlMapper.GridReader> QueryMultipleAsync(
             string sql,
-            object parameters,
+            object parameters = null,
             int? commandTimeout = null
         );
 
         Task<IReadOnlyList<T>> QueryListAsync<T>(
             string sql,
-            object parameters,
+            object parameters = null,
             int? commandTimeout = null
         );
     }

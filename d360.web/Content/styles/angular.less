@@ -138,6 +138,10 @@
 
 a {
   color: @ig-purple;
+
+  &.disabled {
+    color: @ig-black;
+  }
 }
 
 .grey-delimiter {
@@ -1431,7 +1435,7 @@ a.breadcrumb {
     top: 36px !important;
     width: 576px !important;
     transform: translateX(-10px) !important;
-    z-index: 500 !important;
+    z-index: 500;
 
     .p-autocomplete-items {
       padding: 0px;
@@ -1851,7 +1855,6 @@ chart {
 
 .ql-tooltip {
   z-index: 1000;
-
   /* quill editor - use important to contain hyperlink editor within ql editor bounds otherwise overflows will hide part of editing tooltip */
   &.ql-editing {
     left: 0 !important;

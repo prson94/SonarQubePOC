@@ -1074,8 +1074,9 @@ namespace d360.web.Controllers
 
                 if (model.ObjectType == SystemObjects.Resource.ToString())
                 {
-                    var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
-                    FillResponseModelForResource(assetDetail);
+                    var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
+                    var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
+                    FillResponseModelForResource(asset, resource);
                 }
             }
 
@@ -1108,7 +1109,23 @@ namespace d360.web.Controllers
                 if (asset != null && (asset.Object == "Resource"))
                 {
                     var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
-                    FillResponseModelForResource(assetDetail);
+                    var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.Uid == model.AssetUid);
+                    FillResponseModelForResource(asset, resource);
+                }                
+            }
+
+            if (model.ObjectType == SystemObjects.SemanticType.ToString())
+            {
+                execProcedure = false;
+                responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = "Semantic Types";
+                responseModel.MainTabTitle = "Semantic Types";
+                responseModel.Items.HasAudit = true;
+                if (model.AssetUid.HasValue)
+                {
+                    var semantic = Company.Semantics.FirstOrDefault(x => x.Uid == model.AssetUid);
+                    responseModel.Uid = semantic.Uid;
                 }
             }
 
@@ -1166,7 +1183,7 @@ namespace d360.web.Controllers
                     }
                 }
             }
-            if (responseModel != null && !Company.CurrentResourceIsAdmin)
+            if (responseModel != null && !Company.CurrentResourceIsAdmin && model.ObjectType != SystemObjects.SemanticType.ToString())
             {
                 if (model.AssetUid != null)
                 {
@@ -1224,18 +1241,18 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 
-            void FillResponseModelForResource(AssetDetail assetDetail)
+            void FillResponseModelForResource(Asset asset, GlobalReportingResource resource)
             {
                 execProcedure = false;
-                responseModel.Object = assetDetail.Object;
-                responseModel.ObjectID = assetDetail.ObjectID;
-                responseModel.DisplayValue = assetDetail.DisplayValue;
+                responseModel.Object = asset.Object;
+                responseModel.ObjectID = asset.ObjectID;
+                responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
                 responseModel.MainTabTitle = "Profile";
                 responseModel.Items.HasItemOwn = true;
                 responseModel.Items.HasRelationship = true;
                 responseModel.Items.HasGroups = true;
                 responseModel.Items.HasFollowing = true;
-                responseModel.Uid = assetDetail.uid;
+                responseModel.Uid = asset.uid;
             }
         }
     }

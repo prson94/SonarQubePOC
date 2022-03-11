@@ -58,6 +58,16 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 		[AssetTypeClass] [int] not null
 	)
 
+	declare @semanticTypes table (
+		[FavoriteId] [int] not null,
+		[ObjectType] [varchar](25) not null,
+		[ObjectId] [int] not null,
+		[Uid] [uniqueidentifier] not null,
+		[TypeObjectId] int null,
+		[Name] [varchar](max) not null,
+		[AssetTypeClass] [int] not null
+	)
+
 
 
 	insert into @assets
@@ -115,6 +125,18 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 			and favorite.Uid = assetType.Uid
 		)
 
+	insert into @semanticTypes
+	select 
+		favorite.FavoriteId,
+		isnull(favorite.ObjectType, 'SemanticType') as ObjectType,
+		s.ID as ObjectId,
+		favorite.Uid as Uid,
+		null as TypeObjectId,
+		s.Name,
+		18
+	from @favorites favorite
+	inner join Semantic s on s.[Uid]=favorite.Uid
+
 
 
 	select favorite.*
@@ -123,7 +145,12 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 	union
 
 	select favorite.*
-	from @assetTypes favorite;
+	from @assetTypes favorite
+
+	union
+
+	select favorite.*
+	from @semanticTypes favorite;
 
 
 
@@ -135,7 +162,10 @@ and ((@homePageOnly = 0) or (favorite.IsHomePage = 1))";
 	
 	select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.TypeName as Name
 	from @assetTypes favorite
-	cross apply dbo.GetAssetTypeBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
+	cross apply dbo.GetAssetTypeBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs	
+	union	
+	select favorite.FavoriteId, 0, favorite.Name as Name
+	from @semanticTypes favorite
 ", new { favorites = correctItems.AsUDTParameter() });
             var favorites = await grid.ReadListAsync<FavoriteItem>();
             var breadcrumbs = await grid.ReadListAsync<FavoriteBreadcrumbItem>();

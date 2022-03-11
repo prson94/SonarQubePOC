@@ -1,6 +1,7 @@
-﻿using d360.core.enums;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
 
 namespace d360.core.entities.Membership
 {
@@ -14,7 +15,8 @@ namespace d360.core.entities.Membership
         CommunityPage,
         WorkflowPage,
         CartPage,
-        Unknown
+        Unknown,
+        SemanticTypePage
     }
 
     public interface IFavoriteUpsert
@@ -24,7 +26,6 @@ namespace d360.core.entities.Membership
 
     public class FavoriteApiModel : IFavoriteUpsert
     {
-
         [DataMember]
         public string Route { get; set; }
     }

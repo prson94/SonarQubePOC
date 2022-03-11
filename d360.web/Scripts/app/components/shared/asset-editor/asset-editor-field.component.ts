@@ -828,7 +828,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.overlayPanel.hide();
         }
         if (event) {
-            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.Name, fieldValue: this.field.Value });
+            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
     }
 
@@ -867,7 +867,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         this.lookupSelectedValue = newValues;
 
         if (event) {
-            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.Name, fieldValue: this.field.Value });
+            this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
     }
 

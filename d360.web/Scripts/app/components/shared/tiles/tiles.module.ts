@@ -5,10 +5,12 @@ import { TileActionsComponent } from './tile-actions.component';
 
 import { MenubarModule } from 'primeng/menubar';
 import { TooltipModule } from 'primeng/tooltip';
+import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 
 @NgModule({
     imports: [
         CommonModule,
+        DataCyModule,
         //prime
         MenubarModule,
         TooltipModule,

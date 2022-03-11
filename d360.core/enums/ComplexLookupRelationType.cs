@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace d360.core
@@ -9,10 +8,13 @@ namespace d360.core
     {
         [Description("Standard Relationship")]
         StandardRelationship = 1,
+        
         [Description("Child Relationship")]
         ChildRelationship = 2,
+        
         [Description("Child Item")]
         ChildItem = 3,
+        
         [Description("Parent Item")]
         ParentItem = 4
     }
@@ -20,7 +22,9 @@ namespace d360.core
     public class ComplexLookupRelationTypeInfo
     {
         public ComplexLookupRelationType ID { get; set; }
+        
         public string Name { get; set; }
+       
         public string DisplayName { get; set; }
     }
 
@@ -42,6 +46,6 @@ namespace d360.core
             }
 
             return list;
-        }    
+        }
     }
 }

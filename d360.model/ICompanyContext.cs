@@ -120,6 +120,8 @@ namespace d360.model
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
         DbSet<Tag> Tags { get; set; }
+
+        DbSet<Theme> Themes { get; set; }
         DbSet<ConnectorLabel> ConnectorLabels { get; set; }
         DbSet<AssetTag> AssetTags { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
@@ -207,7 +209,7 @@ namespace d360.model
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
-        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");    
+        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true);
         List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
@@ -294,7 +296,8 @@ namespace d360.model
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
         void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600, string fieldTable = "api.ExecutionField", SqlTransaction trans = null);
-        List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage, bool useFriendlyNames = false, bool allowTagFields = false, FieldValidationFieldProperties validationFieldProperties = null, bool jsonElementsEnabled = true, bool IslookupFieldsPassedByValue = false);
+        List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldTypeCore> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage, bool useFriendlyNames = false, bool allowTagFields = false, FieldValidationFieldProperties validationFieldProperties = null, bool jsonElementsEnabled = true, bool IslookupFieldsPassedByValue = false);
+        List<FieldTypeCore> GetAssetTypeFieldTypesCore(string obj, int objectID);
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, int maxRetryCount = 10);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
@@ -477,6 +480,14 @@ namespace d360.model
         /// When at all possible, do not call directly. You should use the SettingsRepository instead.
         /// </summary>
         void UpsertSetting(Setting setting, string value);
+
+        #endregion
+
+        #region Rebuild job status
+
+        Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses();
+
+        Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state);
 
         #endregion
     }

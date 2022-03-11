@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Runtime.Serialization;
+
 using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]    
+    [DataContract(Namespace = NAMESPACE)]
     public class HelpResource : BaseIntObject, IIntObject
-    {        
+    {
         [DataMember]
         public string Name { get; set; }
 
@@ -21,12 +22,16 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortIndex { get; set; }
+        
         [DataMember]
         public bool isEditable { get; set; }
+        
         [DataMember]
         public int visibility { get; set; }
+        
         [DataMember]
         public int order { get; set; }
+        
         [DataMember]
         public bool isSystem { get; set; }
     }

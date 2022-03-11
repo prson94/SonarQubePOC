@@ -272,6 +272,9 @@ namespace d360.web.Models
         public int? Row { get; set; }
 
         [DataMember]
+        public Guid? ResourceUid { get; set; }
+
+        [DataMember]
         public int? Column { get; set; }
 
         [DataMember]
@@ -419,5 +422,14 @@ namespace d360.web.Models
         public Microsoft.PowerBI.Api.V2.Models.Report Report { get; set; }
 
         public string AccessToken { get; set; }
+    }
+
+    public class ObjectDetailsSimplified
+    {
+        public int AssetTypeID { get; set; }
+
+        public string Type { get; set; }
+
+        public int TypeID { get; set; }
     }
 }

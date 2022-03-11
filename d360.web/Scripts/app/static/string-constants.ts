@@ -52,6 +52,7 @@ export class StringConstants {
     static Section_TechnicalAssets = "Technical Assets";
     static Section_Users = "Users";
     static Section_Workflows = "Workflows";
+    static Section_SemanticTypes = "Semantic Types";
 
     static MenuId_Favorites = "*Favorites";
 

@@ -107,6 +107,12 @@
             <div class="FieldName">Default recipient for workflow forms and emails</div>
             <p-dropdown [options]="groups" [(ngModel)]="companySettings.WorkflowCatchAllGroup" [style]="{ 'width' : '95%' }"></p-dropdown>
             <div class="directions">Determines the default recipient of a workflow form or email when the recipient in the setup of the Email Activity or Form Activity cannot be found.</div>
+            <div class="FieldName">Certification Workflow</div>
+            <div class="directions">Enter the status that will enable the Request Certification button on assets where there is a Request Certification workflow configured.</div>
+            <div>
+                <input type="text" [ngModel]="companySettings.RequestCertificationDraft" (ngModelChange)="companySettings.RequestCertificationDraft = $event; " 
+                       style="width: 95%" maxlength="250"/>
+            </div>
             <div class="FieldName">Summary email for workflow assignments</div>
             <div class="directions">
                 Check to send an email to all users who have outstanding workflow assignments summarizing new and total items.<br />

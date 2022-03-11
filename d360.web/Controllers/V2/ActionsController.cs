@@ -62,7 +62,7 @@ namespace d360.web.Controllers.V2
            HttpGet,
            MapToApiVersion("2.0"),
            Route(""),
-           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
            SwaggerResponse(HttpStatusCode.OK, "Gets all actions.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.NotFound, "Uid {uid} not found."),
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
@@ -989,7 +989,7 @@ for json path";
                 return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.NoMatchingAllocation, assetTypeName, issueType.Name));
             }
 
-            var fieldTypes = Company.Filter<FieldType>(ft => ft.Object == SystemObjects.IssueType.ToString() && ft.ObjectID == issueType.ID);
+            var fieldTypes = Company.GetAssetTypeFieldTypesCore(SystemObjects.IssueType.ToString(), issueType.ID);
 
             var fieldTable = new DataTable();
             fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -1011,7 +1011,7 @@ for json path";
                 }
             }
 
-            Company.ValidateFields(SystemObjects.IssueType.ToString(), issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue) && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);
+            Company.ValidateFields(SystemObjects.IssueType.ToString(), issueType.ID, true, fieldTypes.ToList(), fieldTypes.Where(f => f.IsRequired && !f.HasDefaultValue && f.Type != DataType.Counter.ToString()).Select(f => f.Name).ToList(), model.Fields, Guid.Empty, 1, fieldTable, out bool success, out string errorMessage);
 
             if (!success)
             {

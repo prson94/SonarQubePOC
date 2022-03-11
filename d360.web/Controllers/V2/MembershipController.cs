@@ -63,11 +63,30 @@ namespace d360.web.Controllers.V2
         }
         /// <summary>
         /// Retrieves a list of users.
+        /// </summary>
+        /// <remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-        /// 
-        /// </summary>
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+        /// </remarks>
+        ///
         /// <param name="Uid">The uid of the user.</param>
         /// <param name="ResourceID">The id of the user.</param>
         /// <param name="FirstName">First Name of user.</param>
@@ -85,7 +104,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             Route("users"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml", "application/octet-stream"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -615,7 +634,7 @@ namespace d360.web.Controllers.V2
            HttpGet,
            MapToApiVersion("2.0"),
            Route("groups/{groupUid:Guid}/members"),
-           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
            SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -783,6 +802,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("groups"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
@@ -871,8 +891,9 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
                     insert into reporting.Global_Audit
                     select distinct 'Group', g.id, G.Name, @currentresourceid, GETUTCDATE(), 'Member removed', 'Group', g.ID, 'Group', G.Name,'[' + gr.FirstName + ' ' + gr.LastName + '] removed from the group.'
                     from [group] g 
+                    inner join asset a on a.Object = 'Group' and a.ObjectID = g.id
                     inner join reporting.Global_Resource gr on gr.uid = @resourceUid
-                    where g.uid = @groupUid
+                    where a.uid = @groupUid
                     ", new { groupUid, resourceUid, Company.CurrentResourceID }).FirstOrDefault();
 
                 if (res > 0)
@@ -1642,6 +1663,29 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         /// <summary>
         /// Retrive a summary of organizations for a given organization type
         /// </summary>
+        /// <remarks>
+        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+        /// </remarks>
+        ///
         /// <param name="organizationTypeUid">The uid of the organization type</param>
         [
      HttpGet,
@@ -1824,6 +1868,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         HttpGet,
         Route("users/me/apikey"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(List<ApiKeyDetailModel>)),
+        SwaggerProduces("application/json"),
         SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
         SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]

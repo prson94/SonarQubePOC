@@ -14,6 +14,7 @@ using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -37,11 +38,13 @@ namespace d360.web.Controllers.V2
     {
         private readonly ISearchSource SearchSource;
         private readonly IAssetRepository AssetRepository;
+        private readonly ISemanticsRepository SemanticsRepository;
 
-        public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository repository) : base(set)
+        public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository) : base(set)
         {
             SearchSource = searchSource;
-            AssetRepository = repository;
+            AssetRepository = assetRepository;
+            SemanticsRepository = semanticsRepository;
         }
 
         /// <summary>
@@ -55,13 +58,12 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of matching search items.", typeof(IQueryable<IndexResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE),
-            ApiExplorerSettings(IgnoreApi = true)
         ]
         public IQueryable<IndexResult> GetSearchResults(string phrase)
         {
             if (!string.IsNullOrEmpty(phrase))
             {
-                var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, Company.CurrentResourceID, phrase, 200, 0);
+                var result = SearchSource.GetSearchResults(Company.CurrentCompanyID, phrase, 200, 0, GetQueryLimitation());
                 result.Results.ForEach(i => {
                     i.AbsoluteUrl = string.Format($"https://{Community.GetPrimaryUrlPrefix()}.data3sixty.com/{i.Url}");
                 });
@@ -73,6 +75,19 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Global Search
         /// </summary>
+        /// <remarks>
+        /// Perform a search for any assets matching the search term.
+        /// 
+        /// If the Aggregations parameter is specified, the search will also return aggregate results as is shown in the Filters tab. The parameter is a comma separated list. Currently only the value "category" is supported.
+        /// 
+        /// AggregationFilters are filters applied to values returned from the Aggregation query. Filters are supported for "Category" and "AssetType"
+        /// 
+        /// FieldFilters are filters like the advanced filter bar. Fields supported are
+        /// *   Name
+        /// *   Description
+        /// *   Path
+        /// *   Tags
+        /// </remarks>
         /// <param name="queryRequest">Search Query Request</param>
         /// <returns></returns>
         [
@@ -80,16 +95,24 @@ namespace d360.web.Controllers.V2
             Route("results"),
             SwaggerConsumes("application/json"),
             SwaggerProduces("application/json", "application/octet-stream"),
-            SwaggerResponse(HttpStatusCode.OK, "Search results matching the query.", typeof(SearchResultsViewModel)),
+            SwaggerResponse(HttpStatusCode.OK, "Search results matching the query.", typeof(IndexResults)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your search request is invalid"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            ApiExplorerSettings(IgnoreApi = false)
         ]
         public async Task<IHttpActionResult> GetResultsAsync(QueryRequest queryRequest)
         {
             try
             {
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-                var o = new SearchResultsViewModel();
+                var resultset = new IndexResults();
+
+                string isValid = ValidateQueryRequest(queryRequest);
+
+                if(!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, isValid)).ConfigureAwait(false);
+                }
 
                 if (!string.IsNullOrEmpty(queryRequest.Term))
                 {
@@ -109,16 +132,27 @@ namespace d360.web.Controllers.V2
 
                     queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
 
-                    o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
+                    resultset = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, queryRequest, GetQueryLimitation());
 
-                    await AugmentResults(o.Result.Results).ConfigureAwait(false);
+                    int augmentTime = 0;
+                    if (resultset.Results.Any())
+                    {
+                        Stopwatch timer = new Stopwatch();
+                        timer.Start();
+
+                        await AugmentResults(resultset.Results).ConfigureAwait(false);
+
+                        timer.Stop();
+                        augmentTime = Convert.ToInt32(Math.Round(timer.Elapsed.TotalMilliseconds));
+                    }
+                    resultset.ElapsedMS.Add("Augment", augmentTime);
                 }
 
                 HttpResponseMessage response;
 
                 if (isStreamResponse)
                 {
-                    SLDocument document = ResultsAsExcel(o);
+                    SLDocument document = ResultsAsExcel(resultset);
                     // Select the first worksheet as the active one.
                     var firstSheet = document.GetWorksheetNames()[0];
                     document.SelectWorksheet(firstSheet);
@@ -130,7 +164,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    response = Request.CreateResponse(HttpStatusCode.OK, o);
+                    response = Request.CreateResponse(HttpStatusCode.OK, resultset);
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
@@ -144,8 +178,8 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Typeahead search suggestions.
         /// </summary>
-        /// <param name="q">Query string</param>
-        /// <param name="t">Comma separated list of Categories to limit search to</param>
+        /// <param name="query">Query string</param>
+        /// <param name="categories">Comma separated list of Categories to limit search to</param>
         /// <param name="num">Max number of results. Defaults to 7</param>
         /// <returns></returns>
         [
@@ -153,17 +187,33 @@ namespace d360.web.Controllers.V2
             Route("typeahead"),
             SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Search result suggestions based on query.", typeof(IList<TypeaheadResult>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your search request is invalid"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            ApiExplorerSettings(IgnoreApi = false)
         ]
-        public async Task<IHttpActionResult> GetTypeaheads(string q, string t = null, int? num = null)
+        public async Task<IHttpActionResult> GetTypeaheads(string query, string categories = null, int? num = null)
         {
             try
             {
-                IList<TypeaheadResult> res = null;
-                if (!string.IsNullOrEmpty(q))
+                if (!string.IsNullOrWhiteSpace(categories))
                 {
-                    res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, GetQueryLimitation(), num.GetValueOrDefault(7), t).ToList();
+                    IEnumerable<string> categoryList = categories.Split(',').Select(c => c.Trim());
+                    IEnumerable<string> invalidCategories = categoryList.Except(GetVisibleCategories());
+
+                    if(invalidCategories.Any())
+                    {
+                        return await Task.FromResult(errorMessageResponse(
+                            HttpStatusCode.BadRequest,
+                            ApiMessages.InvalidRequest,
+                            string.Format(SearchApiMessages.CategoryNotAvailable, string.Join(", ", invalidCategories))
+                        )).ConfigureAwait(false);
+                    }
+                }
+
+                IList<TypeaheadResult> res = null;
+                if (!string.IsNullOrEmpty(query))
+                {
+                    res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, query, GetQueryLimitation(), num.GetValueOrDefault(7), categories).ToList();
                     await AugmentResults(res).ConfigureAwait(false);
                 }
 
@@ -185,25 +235,11 @@ namespace d360.web.Controllers.V2
             Route("categories"),
             SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Categories available for filtering", typeof(List<string>)),
-            ApiExplorerSettings(IgnoreApi = true)
+            ApiExplorerSettings(IgnoreApi = false)
         ]
         public async Task<IHttpActionResult> GetCategories()
         {
-            List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
-
-            //We have Grammatic Types if we have Nyms or any intersects with predicate type 6
-            if (Company.Nyms.Any())
-            {
-                visibleCategories.Add("Synonym");
-            }
-            else if (Company.Query<int>(@"select case when exists(select *
-                    from [intersect] I
-                    inner join IntersectType T on T.ID = I.IntersectTypeID
-                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6) then 1
-                    else 0 end").FirstOrDefault() == 1)
-            {
-                visibleCategories.Add("Synonym");
-            }
+            List<string> visibleCategories = GetVisibleCategories();
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, visibleCategories))).ConfigureAwait(false);
         }
 
@@ -215,14 +251,13 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("status"),
             SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Search index count aggregated by Category", typeof(IndexResult)),
+            SwaggerResponse(HttpStatusCode.OK, "Search index count aggregated by Category", typeof(IndexResults)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetStatus()
         {
-            var o = new SearchResultsViewModel();
-            o.Result = SearchSource.GetStatusSearch(Company.CurrentCompanyID, o.Categories, true);
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, o));
+            var resultset = SearchSource.GetStatusSearch(Company.CurrentCompanyID, true);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, resultset));
         }
 
         /// <summary>
@@ -248,6 +283,10 @@ namespace d360.web.Controllers.V2
             types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
             List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
+
+            //if ( GOV-16718 feature flag) {
+            classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
+            //}
 
             //Overload "Predicate" class as a representation for synonyms
             classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
@@ -348,6 +387,25 @@ namespace d360.web.Controllers.V2
             AssetTypeClass.Reference
         };
 
+        private readonly static List<string> supportedAggregations = new List<string>
+        {
+            "category"
+        };
+
+        private readonly static List<string> supportedAggregationFilters = new List<string>
+        {
+            "AssetType",
+            "Category"
+        };
+
+        private readonly static List<string> supportedFields = new List<string>
+        {
+            "Name",
+            "Description",
+            "Path",
+            "Tags"
+        };
+
         //Icons set based on Category/Class directly
         private static readonly Dictionary<string, string> categoryMap = new Dictionary<string, string> {
             { "User", "fa-user" },
@@ -364,8 +422,84 @@ namespace d360.web.Controllers.V2
             { "Model", "#Models" },
             { "Reference", "#Reference" },
             { "Rule", "#Data Quality" },
-            { "Policy", "#Policy" }
+            { "Policy", "#Policy" },
+            { "Semantic Type", "#SemanticTypes" }
         };
+
+        private List<string> GetVisibleCategories()
+        {
+            List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
+
+            if (Company.Semantics.Any()) // && GOV-16718 feature flag
+            {
+                visibleCategories.Add(AssetTypeClass.SemanticType.ToString());
+            }
+
+            //We have Grammatic Types if we have Nyms or any intersects with predicate type 6
+            if (Company.Nyms.Any())
+            {
+                visibleCategories.Add("Synonym");
+            }
+            else if (Company.Query<int>(@"select case when exists(select *
+                    from [intersect] I
+                    inner join IntersectType T on T.ID = I.IntersectTypeID
+                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6) then 1
+                    else 0 end").FirstOrDefault() == 1)
+            {
+                visibleCategories.Add("Synonym");
+            }
+            return visibleCategories;
+        }
+
+        private string ValidateQueryRequest(QueryRequest queryRequest)
+        {
+            if (queryRequest.Size > 5000)
+            {
+                return string.Format(SearchApiMessages.SizeTooBig, 5000); 
+            }
+
+            if (queryRequest.Aggregations.Any())
+            {
+                IEnumerable<string> unsupportedAggregations = queryRequest.Aggregations.Except(supportedAggregations);
+                if (unsupportedAggregations.Any())
+                {
+                    return string.Format(SearchApiMessages.AggregationUnsupported, string.Join(", ", unsupportedAggregations));
+                }
+            }
+
+            if (queryRequest.AggregationFilters.Any())
+            {
+                IEnumerable<string> aggFilters = queryRequest.AggregationFilters.Select(f => f.Field);
+                IEnumerable<string> unsupportedAggFilters = aggFilters.Except(supportedAggregationFilters);
+                if(unsupportedAggFilters.Any())
+                {
+                    return string.Format(SearchApiMessages.AggregationFilterUnsupported, string.Join(", ", unsupportedAggFilters));
+                }
+
+                if (queryRequest.AggregationFilters.Exists(f => f.Field == "Category"))
+                {
+                    IEnumerable<string> categoryList = queryRequest.AggregationFilters.Where(f => f.Field == "Category").FirstOrDefault().Values;
+                    IEnumerable<string> invalidCategories = categoryList.Except(GetVisibleCategories());
+
+                    if (invalidCategories.Any())
+                    {
+                        return string.Format(SearchApiMessages.CategoryNotAvailable, string.Join(", ", invalidCategories));
+                    }
+                }
+            }
+
+            if (queryRequest.FieldFilters.Any())
+            {
+                IEnumerable<string> fieldFilters = queryRequest.FieldFilters.Select(f => f.Field);
+                IEnumerable<string> unsupportedFields = fieldFilters.Except(supportedFields);
+                if (unsupportedFields.Any())
+                {
+                    return string.Format(SearchApiMessages.FieldUnsupported, string.Join(", ", unsupportedFields));
+                }
+            }
+
+            return "";
+        }
 
         private async Task AppendIcons(IEnumerable<TypeaheadResult> results)
         {
@@ -607,21 +741,75 @@ namespace d360.web.Controllers.V2
 
                 result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();
             }
+
+            List<string> qualifiers = results.Where(r => r.Group == "Semantic Type").Select(r => r.ID.Substring(r.ID.IndexOf("|") + 1)).ToList();
+            List<Semantic> semantics = SemanticsRepository.GetSemanticsByQualifiers(qualifiers);
+
+            if (semantics.Any())
+            {
+                foreach (var result in results.Where(r => r.Group == "Semantic Type"))
+                {
+                    result.Object = "Semantic Type";
+
+                    var semantic = semantics.Find(s => s.Uid == result.Uid);
+                    if (semantic != null)
+                    {
+                        result.AssetPath = new List<PathComponent> { new PathComponent {
+                            AssetType = null,
+                            Key = new string[] { semantic.Name }
+                        }};
+
+                        result.Status = semantic.Status.ToString();
+                        result.Fields = new List<IndexFieldDisplay>
+                        {
+                            new IndexFieldDisplay
+                            {
+                                Name = "Qualifier",
+                                Label = "Qualifier",
+                                Type = "Text",
+                                Value = semantic.Qualifier
+                            },
+                            new IndexFieldDisplay
+                            {
+                                Name = "Threshold",
+                                Label = "Threshold",
+                                Type = "Number",
+                                Value = semantic.Threshold.ToString(),
+                                Suffix = "%"
+                            },
+                            new IndexFieldDisplay
+                            {
+                                Name = "Priority",
+                                Label = "Priority",
+                                Type = "Text",
+                                Value = semantic.Priority.ToString()
+                            },
+                            new IndexFieldDisplay
+                            {
+                                Name = "BaseType",
+                                Label = "Base Type",
+                                Type = "Text",
+                                Value = semantic.BaseType.ToString()
+                            }
+                        };
+                    }
+                }
+            }
         }
         #endregion
 
-        private SLDocument ResultsAsExcel(SearchResultsViewModel model)
+        private SLDocument ResultsAsExcel(IndexResults model)
         {
             SLDocument document = new SLDocument();
 
-            AddResultsSheet(document, "Search Results", model.Result.Results, null);
+            AddResultsSheet(document, "Search Results", model.Results, null);
 
-            List<Guid> assetTypeUidWithFields = GetAssetTypeUidWithField(model.Result.Results);
+            List<Guid> assetTypeUidWithFields = GetAssetTypeUidWithField(model.Results);
             assetTypeUidWithFields.ForEach(assetTypeUid => {
                 AssetType assetType = Company.AssetTypes.Where(a => a.uid == assetTypeUid).FirstOrDefault();
                 var fieldTypes = Company.Filter<FieldType>(f => f.AssetTypeID == assetType.ID && f.SearchAddToResult).ToList();
 
-                AddResultsSheet(document, assetType.Name, model.Result.Results.Where(r => r.AssetTypeUid == assetTypeUid), fieldTypes);
+                AddResultsSheet(document, assetType.Name, model.Results.Where(r => r.AssetTypeUid == assetTypeUid), fieldTypes);
             });
             document.DeleteWorksheet(SLDocument.DefaultFirstSheetName);
 
@@ -649,7 +837,7 @@ namespace d360.web.Controllers.V2
 
             document.SetCellValue(1, index++, "Asset UID");
             document.SetCellValue(1, index++, "Asset Type UID");
-            document.SetCellValue(1, index++, "Url");
+            document.SetCellValue(1, index++, "URL");
 
             foreach (IndexResult res in results)
             {

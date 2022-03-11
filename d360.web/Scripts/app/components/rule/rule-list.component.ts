@@ -23,6 +23,7 @@ import { AssetTypeClass } from '../../models/asset.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -57,6 +58,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -174,5 +177,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         if (this.routeParamsSubscription) {
             this.routeParamsSubscription.unsubscribe();
         }
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }

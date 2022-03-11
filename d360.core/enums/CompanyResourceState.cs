@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace d360.core.enums
@@ -9,15 +8,18 @@ namespace d360.core.enums
     {
         [Name("Active")]
         Active = 1,
+        
         [Name("Inactive")]
         Inactive = 2,
-       [Name("Deleted")]
+        
+        [Name("Deleted")]
         Deleted = 3
     }
 
     public class CompanyResourceStateInfo
     {
-        public CompanyResourceState ID { get; set;  }
+        public CompanyResourceState ID { get; set; }
+        
         public string Name { get; set; }
     }
 

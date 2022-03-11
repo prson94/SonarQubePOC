@@ -85,6 +85,10 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
         }))
 
         this.subs.push(this.siteMenu.activeMenu$.subscribe((activeMenu: SiteMenu | undefined) => {
+            if (this.menu == null) {
+                return;
+            }
+            
             if (activeMenu?.MenuID != this.menu.MenuID) {
                 this.store.toggleManageFavoritesOffAction();
             }

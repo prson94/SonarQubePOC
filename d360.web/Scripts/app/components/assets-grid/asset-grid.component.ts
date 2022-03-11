@@ -1,5 +1,5 @@
 import { of as observableOf, Subject, Subscription } from "rxjs";
-import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from "rxjs/operators";
+import { debounceTime, map, distinctUntilChanged, delay, mergeMap, takeUntil } from "rxjs/operators";
 import {
     Component,
     Input,
@@ -40,6 +40,8 @@ import { AssetGridObject } from "./asset-grid.model";
 import { Filters } from "./advanced-filtering/advanced-filtering.models";
 import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
+import { AppConstants } from "../../static/constants";
+import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -60,7 +62,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     @Output() isDefinitionLoadedChange = new EventEmitter();
 
     @Input() titlePostfix: string = ''; // added to end of header title.
-    @Input() rowsPerPage: number = 25;
+    @Input() rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
 
@@ -122,12 +124,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     isDebugMode: boolean = false;
     initialLoadInterval: any;
+    destroy = new Subject<void>();
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
     }
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private headerActionsService: HeaderActionsService,
         public stateService: StateService,
         private permissionsService: PermissionsService,
@@ -161,6 +165,20 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
             );
     }
+
+    ngOnInit() {
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows();
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage as number;
+        });
+    }
+
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
     }
@@ -212,6 +230,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
+
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     load() {
@@ -389,7 +410,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
-
         this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, this.getParams(), true)
             .pipe(debounceTime(200))
             .subscribe(res => {

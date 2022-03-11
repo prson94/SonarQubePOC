@@ -331,6 +331,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Semantic Types.
+        /// </summary>
+        public static string SemanticTypePage {
+            get {
+                return ResourceManager.GetString("SemanticTypePage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Technical Assets.
         /// </summary>
         public static string TechnicalAssetsPage {

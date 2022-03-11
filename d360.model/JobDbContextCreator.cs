@@ -9,9 +9,12 @@ namespace d360.model
 {
     public static class JobDbContextCreator
     {
-        public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, 
+        public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin,
             AzureQueueSource queue = null,
-            AzureStorageProvider storage = null)
+            AzureStorageProvider storage = null,
+            string connectionString = null,
+            string mandrillApiKey = null,
+            string mandrillSubAccount = null)
         {
             var sec = new UriSecurityContextProvider()
             {
@@ -23,13 +26,21 @@ namespace d360.model
             var cache = new DummyCachingProvider();
             var mail = new MandrillMailProvider
             {
-                ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY)
+                ApiKey = string.IsNullOrEmpty(mandrillApiKey) 
+                            ? Config.GetValue<string>(constants.MAIL_API_KEY) 
+                            : mandrillApiKey,
+
+                SubAccount = string.IsNullOrEmpty(mandrillSubAccount)
+                                ? Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT)
+                                : mandrillSubAccount,
             };
-            if (queue == null) 
+            if (queue == null)
             {
                 queue = new AzureQueueSource();
             }
-            var community = new CommunityContext(cache, queue, sec);
+
+            var community = InitializeCommunityContext(connectionString, sec, cache, queue);
+
             if (storage == null)
             {
                 storage = new AzureStorageProvider();
@@ -49,7 +60,11 @@ namespace d360.model
             };
             var cache = new DummyCachingProvider();
             var queue = new AzureQueueSource();
+            return InitializeCommunityContext(connectionString, sec, cache, queue);
+        }
 
+        private static CommunityContext InitializeCommunityContext(string connectionString, UriSecurityContextProvider sec, DummyCachingProvider cache, AzureQueueSource queue)
+        {
             if (string.IsNullOrEmpty(connectionString))
                 return new CommunityContext(cache, queue, sec);
 

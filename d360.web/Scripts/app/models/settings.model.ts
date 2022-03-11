@@ -29,6 +29,7 @@ export class CompanySettings {
     IpRestrictions = new Array<IpRestriction>();
     MaxDropdownItems: number;
     MaxExcelExportRows: number;
+    RequestCertificationDraft: string = "Draft";
     SetIconToDefault = false;
     SetLogoToDefault = false;
     ShowAllUsersAPIKey: boolean;
@@ -230,6 +231,7 @@ export module SettingsHelper {
             new SearchType("Rules", "Rule"),
             new SearchType("Reference Lists", "Reference"),
             new SearchType("Grammatic Types", "Synonym"),
+            new SearchType("Semantic Types", "SemanticType"),
             new SearchType("Groups", "Group"),
             new SearchType("Users", "User"),
         ];

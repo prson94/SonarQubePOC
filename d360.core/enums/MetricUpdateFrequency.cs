@@ -1,11 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.enums
 {
@@ -14,25 +15,35 @@ namespace d360.core.enums
     {
         [Name("Not Applicable"), EnumMember(Value = "None"), ReadOnly(false), Description("")]
         None = 0,
+        
         [Name("Hourly"), EnumMember(Value = "Hourly"), ReadOnly(false), Description("")]
         Hourly = 1,
+        
         [Name("Daily"), EnumMember(Value = "Daily"), ReadOnly(false), Description("")]
         Daily = 2,
+        
         [Name("Weekly"), EnumMember(Value = "Weekly"), ReadOnly(false), Description("")]
         Weekly = 3,
+        
         [Name("Monthly"), EnumMember(Value = "Monthly"), ReadOnly(false), Description("")]
         Monthly = 4,
+        
         [Name("Quarterly"), EnumMember(Value = "Quarterly"), ReadOnly(false), Description("")]
         Quarterly = 5,
+        
         [Name("Annually"), EnumMember(Value = "Annually"), ReadOnly(false), Description("")]
         Annually = 6
     }
+
     public class MetricUpdateFrequencyInfo
     {
         public MetricUpdateFrequency ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
+
     public static class MetricUpdateFrequencyClassExtensions
     {
         public static string GetDisplayName(this MetricUpdateFrequency type)
@@ -68,6 +79,5 @@ namespace d360.core.enums
 
             return list.OrderBy(i => i.Name).ToList();
         }
-
     }
 }

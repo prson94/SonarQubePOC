@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace d360.core.entities
 {
@@ -10,8 +8,11 @@ namespace d360.core.entities
     public class ResponsibilityAssetMeasureProcessedResult
     {
         public Guid AssetUid { get; set; }
+        
         public Guid AllocationUid { get; set; }
+        
         public Guid MetricAssetUid { get; set; }
+        
         public Guid MetricAssetVersionUid { get; set; }
     }
 }

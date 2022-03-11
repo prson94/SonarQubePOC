@@ -1,19 +1,20 @@
-﻿using d360.core.entities.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
+using d360.core.entities.Contracts;
+
 namespace d360.core.entities.Workflow
 {
     [DataContract(Namespace = NAMESPACE), Table("Version", Schema = "workflow")]
-    public class WorkflowVersion : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata,IUIDMetadata
+    public class WorkflowVersion : BaseIntObject, IIntObject, ICreatedMetadata, IUpdatedMetadata, IUIDMetadata
     {
         [DataMember]
         public int TypeID { get; set; }
 
         public int? CreatedBy { get; set; }
-        
+
         public DateTime? CreatedOn { get; set; }
 
         public int? UpdatedBy { get; set; }

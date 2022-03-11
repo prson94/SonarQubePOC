@@ -78,7 +78,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("classes"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes. The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.", typeof(List<AssetTypeClassInfo>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -173,6 +173,49 @@ namespace d360.web.Controllers.V2
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     If Scoring Bands Define : Poor (0%-50%) Average (50%-90%) Good (90%-100%)
+        ///     * Score is in band Poor -({fieldname} le '50')
+        ///     * Score is in band Average -({fieldname} gt '50' and {fieldname} le '90')
+        ///     * Score is in band Good -({fieldname} gt '90')
+        ///     * Date Is {DateFieldName} eq 'YYYY-MM-DD'
+        ///     * Date Is not {DateFieldName} ne 'YYYY-MM-DD'
+        ///     * Date Is Before {DateFieldName} lt 'YYYY-MM-DD'
+        ///     * Date Is After {DateFieldName} gt 'YYYY-MM-DD'
+        ///     * Date Is on or Before {DateFieldName} le 'YYYY-MM-DD'
+        ///     * Date Is on or After {DateFieldName} ge 'YYYY-MM-DD'
+        ///     * Date Is Between ({DateFieldName} ge 'YYYY-MM-DD' and {DateFieldName} le 'YYYY-MM-DD')
+        ///     * DateTime Is Before {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
+        ///     * DateTime Is After {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
+        ///     * DateTime Is Between ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
+        ///     * Tag Contains Match Any (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
+        ///     * Tag Contains Match All (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
+        ///     * Tag Does not Contain Match Any (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
+        ///     * Tag Does not Contain Match All (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
+        ///     * AssetPath Contains (Match All)Operator (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
+        ///     * AssetPath Contains (Match Any)Operator (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
+        ///     * AssetPath Contains  Operator ({AssetPathFieldName} ct 'APValue1')
+        ///     * AssetPath Does not contain Operator ({AssetPathFieldName} nct 'APValue1')
+        ///     * AssetPath is Operator ({AssetPathFieldName} eq 'APValue1')
+        ///     * AssetPath is not Operator ({AssetPathFieldName} ne 'APValue1')
+        ///     * AssetPath Start with Operator {AssetPathFieldName} ct 'APValue1*'
+        ///     * AssetPath End with Operator {AssetPathFieldName} ct '*APValue1'
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// 
         /// Relationship filtering is done using _relationFilter parameter and filter expressions are specified using relationship type UID, operator and Asset UID. IE. {Relationship Type UID} eq {Asset UID}.
         /// *  For comparison operators you can use eq (equal), ne (not equal)
@@ -186,7 +229,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{assetTypeUid:Guid}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
-            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
+            SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -413,6 +456,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route("paths"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsByPathApiViewModel)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -476,6 +520,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("fields/{assetTypeUid}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1179,7 +1224,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("counts"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(AssetsCountModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -1216,6 +1261,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("count/{assetTypeUid}"),
             SwaggerResponse(HttpStatusCode.OK, "An asset type count for current user.", typeof(List<AssetCountsModel>)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Type Uid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
@@ -1261,7 +1307,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("counts/byAssetType"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1730,7 +1776,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{assetTypeUid:Guid}/possibleOwners"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypePossibleOwnersModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -2192,7 +2238,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("executions/{executionID:Guid}/status"),
             SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
         ]
@@ -2584,6 +2630,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json", "application/xml"),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset uids and paths. This is an admin only endpoint.", typeof(AssetPathResults)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset type for the given uid was not found.", typeof(ErrorResponse)),
@@ -2673,7 +2720,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("asset/{assetUid}"),
-            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Details of the asset.", typeof(object)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
@@ -2804,7 +2851,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId or name. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(AssetWatchers)),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
@@ -2957,7 +3004,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_order", "The name of the field to order results by, ascending. Options are resourceId, name, assetDisplayValue, governanceScore or dataQualityScore. By default the results are ordered by name.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("resourceUid", "Optional Uid of a resource. If provided returns assets relevant to that specific resource. If null asset details returned will be for all watchers.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of watchers for a given asset.", typeof(WatchedAssetTypeDetailModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))

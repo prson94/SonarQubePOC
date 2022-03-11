@@ -4,10 +4,9 @@ import { ResourcesService } from "../../../services/resources.service";
 import { HelpMenuService } from '../../shared/helpmenu/helpmenu.service';
 import { HelpResource } from "../../../models/resource.model";
 import { Observable } from "rxjs";
-import { HelpMenu } from "../../../models/helpmenu.model";
+import { environment } from '../../../../environments/environment';
 import { AuthenticationService } from "../../../services/authentication.service";
-declare var __BUILD_DATE: string;
-declare var VersionNumber: string;
+import { HelpMenu } from "../../../models/helpmenu.model";
 
 @Component({
     selector: 'd3s-header-help',
@@ -38,8 +37,8 @@ export class HeaderHelpComponent implements OnInit {
     customHelpResources: HelpResource[] = null;
     customHelpResources$: Observable<any>;
 
-    buildDate: string = __BUILD_DATE;
-    versionNumber: string = VersionNumber;
+    environment= environment;
+  
     isModalVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
@@ -86,7 +85,6 @@ export class HeaderHelpComponent implements OnInit {
         });
     }
 
-
     show(item) {
         let panel = item.children[0].nextElementSibling;
         if (panel) {
@@ -128,4 +126,4 @@ export class HeaderHelpComponent implements OnInit {
                 this.closeAbout();
         }
     }
-}
+} 

@@ -21,6 +21,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
 import { AssetService } from '../../services/asset.service';
+import { SemanticType } from '../../models/semantic-type.model';
 
 declare var CurrentResourceID;
 
@@ -48,6 +49,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+    semanticType: SemanticType;
+    secondarySidePanelOpen: boolean;
 
     constructor(
         private route: ActivatedRoute,
@@ -65,7 +68,7 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     ) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
-
+    
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
@@ -152,5 +155,10 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     sidePanelTab: string = '';
     get showSidePanel() {
         return this.showDataProfile || true;
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 }

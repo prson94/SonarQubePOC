@@ -115,6 +115,7 @@ namespace d360.web.Controllers
         internal const string BAD_REQUEST_GENERIC_MESSAGE = "Error while processing request.";
         internal const string INTERNAL_ERROR_MESSAGE = "An unknown error occurred while processing this request.";
         internal const string UNKNOWN_ERROR_MESSAGE = "An unknown error occurred.";
+        internal const string SUCCESS_MESSAGE = "Returns a success message.";
 
         #endregion
 
@@ -831,7 +832,7 @@ from	CompanyResource CR
 
                                     if (parent != null)
                                     {
-                                        fld.ParentFieldTypeName = parent.FriendlyName;
+                                        fld.ParentFieldTypeName = parent.Name;
                                     }
                                 }
                                 else if (f.FilterFieldTypeID > 0 || f.FilterPredicateID > 0)

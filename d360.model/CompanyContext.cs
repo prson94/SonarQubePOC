@@ -185,6 +185,8 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
+        public DbSet<Theme> Themes { get; set; }
+
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
@@ -698,17 +700,26 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
         {
             var model = Database.Connection.QuerySingleOrDefault<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@type, @id)", new { type = new DbString { Value = type, IsAnsi = true, Length = 50 }, id });
 
-            if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
+            try
             {
+                if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
+                {
 #if RUNNING_ON_STANDARD
-                model.PluralizedName = PluralizeService.Core.PluralizationProvider.Pluralize(model.Name ?? "");
+                    model.PluralizedName = PluralizeService.Core.PluralizationProvider.Pluralize(model.Name ?? "");
 #endif
 
 #if RUNNING_ON_NET48
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
 #endif
+                }
             }
+            catch (System.Resources.MissingManifestResourceException)
+            { 
+                //It should be traced someday, but today I won't inject any logger this deep.
+                //At this moment it will be enough to stop diying because of exception from Plurarization module.
+            }
+
             return model;
         }
 
@@ -1219,9 +1230,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 
         public List<Predicate> GetPredicateOptions(Guid subjectUid, Guid? objectUid, Guid? predicateUid)
         {
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => 
+                p.AllowIntersectTypeAssignment 
+                && p.AllowEditFromRelationshipEditor
+                && p.ID != PredicateType.InterTypeHierarchy
+                && p.ID != PredicateType.IntraTypeHierarchy
+                ).ToList();
+            
             var isSubjectIntersectType = IntersectTypes.Any(i => i.uid == subjectUid);
-
             if (isSubjectIntersectType)
             {
                 allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
@@ -1236,27 +1252,8 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
                 allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
 
-            var sql = @"
-                select	P.*
-                from	[Predicate] P
-		                left join IntersectType I on I.PredicateID = P.ID 
-			                and I.SubjectUid = @subjectUid 
-			                and ( (@objectUid is null) or (@objectUid is not null and I.ObjectUid = @objectUid) )
-			                and ( (@predicateUid is null) or (@predicateUid is not null and I.PredicateID <> (select top 1 ID from [Predicate] where UID = @predicateUid) ) )
-                where	I.ID is null";
-
-            var predicates = Query<Predicate>(sql, new
-            {
-                subjectUid,
-                objectUid,
-                predicateUid
-            })
-                .ToList()
-                .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
-                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor
-                  );
-
-            predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
+            var allowedTypes = allowedFunctionalTypes.Select(p => p.ID).ToArray();
+            var predicates = Predicates.Where(i => allowedTypes.Contains(i.Type));
 
             return predicates.ToList();
         }
@@ -2693,6 +2690,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
                 case SystemObjects.ConnectorLabel:
                     objectId = ConnectorLabels.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
+                case SystemObjects.SemanticType:
+                    objectId = Convert.ToInt32(Semantics.FirstOrDefault(x => x.Uid == objectUid).ID);
                     break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;

@@ -74,7 +74,7 @@
         <d3s-color-display [colorsJSON]="fieldValue" [styleClass]="styleClass == null ? 'grid' : styleClass + ' grid'"></d3s-color-display>
     </span>
     <span *ngSwitchCase="'ownershiplookup'">
-        <d3s-ownership-list [list]="fieldValue"></d3s-ownership-list>
+        <d3s-ownership-list [list]="fieldValue" [interceptLinkClick]="interceptLinkClick"></d3s-ownership-list>
     </span>
     <ng-template ngSwitchDefault>
         <span *ngIf="fieldValue != null" [class]="styleClass"

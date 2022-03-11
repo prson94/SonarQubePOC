@@ -1,11 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.enums
 {
@@ -14,17 +14,23 @@ namespace d360.core.enums
     {
         [Name("N/A"), EnumMember(Value = "NotApplicable"), Description("")]
         NotApplicable = 0,
+
         [Name("And"), EnumMember(Value = "And"), Description("")]
         And = 1,
+        
         [Name("Or"), EnumMember(Value = "Or"), Description("")]
         Or = 2
     }
+
     public class MetricConditionTypeInfo
     {
         public MetricConditionType ID { get; set; }
+        
         public string Name { get; set; }
+        
         public string Description { get; set; }
     }
+
     public static class MetricConditionTypeClassExtensions
     {
         public static string GetDisplayName(this MetricConditionType type)
@@ -60,6 +66,5 @@ namespace d360.core.enums
 
             return list.OrderBy(i => i.Name).ToList();
         }
-
     }
 }

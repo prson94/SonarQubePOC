@@ -14,7 +14,8 @@ namespace d360.model
             builder.RegisterType<FavoritesRepository>().AsImplementedInterfaces().InstancePerRequest();
             builder.RegisterType<ResponsibilityTypeRepository>().As<IResponsibilityTypeRepository>().InstancePerRequest();
             builder.RegisterType<AuditDapperRepository>().As<IAuditDapperRepository>().InstancePerRequest();
-
+            builder.RegisterType<ApplicationHealthDapperRepository>().As<IApplicationHealthDapperRepository>().InstancePerRequest();
+            
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
 
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
@@ -43,6 +44,7 @@ namespace d360.model
             builder.RegisterType<ConnectorLabelRepository>().As<IConnectorLabelRepository>().InstancePerRequest();
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
             builder.RegisterType<SemanticsRepository>().As<ISemanticsRepository>().InstancePerRequest();
+            builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
         }
     }
 }

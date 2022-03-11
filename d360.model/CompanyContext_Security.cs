@@ -579,6 +579,20 @@ from    #changes C
                     //drop impacted assets temporary table.
                     await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
 
+                    //First time a rule runs, queue the asset type for search re-indexing
+                    if(rule.LastRunOn == null)
+                    {
+                        var assetType = Connection.Query<AssetType>(
+                            "select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID",
+                            new { rule.Object, rule.ObjectID },
+                            transaction: transaction
+                        ).SingleOrDefault();
+                        Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel {
+                            CompanyID = CurrentCompanyID,
+                            AssetTypeUid = assetType.uid
+                        });
+                    }
+
                     await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 
                     transaction.Commit();
@@ -681,6 +695,21 @@ from    #changes C
 
                     //drop impacted assets temporary table.
                     await Connection.ExecuteAsync("drop table if exists #changes", transaction: transaction);
+
+                    //First time a rule runs, queue the asset type for search re-indexing
+                    if (rule.LastRunOn == null)
+                    {
+                        var assetType = Connection.Query<AssetType>(
+                            "select * from [dbo].[AssetType] at WHERE at.[Object] = @Object and at.ObjectID = @ObjectID",
+                            new { rule.Object, rule.ObjectID },
+                            transaction: transaction
+                        ).SingleOrDefault();
+                        Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+                        {
+                            CompanyID = CurrentCompanyID,
+                            AssetTypeUid = assetType.uid
+                        });
+                    }
 
                     await MarkResponsibilityRuleAsRan(rule.ID, transaction);
 

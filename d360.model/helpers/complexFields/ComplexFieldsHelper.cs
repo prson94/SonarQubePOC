@@ -246,7 +246,7 @@ namespace d360.model.helpers
                     }
                     else
                     {
-                        joins.Add($"left join FieldDetail {fieldSelector} on {fieldSelector}.FieldTypeID = {f.FieldTypeID} and {fieldSelector}.AssetID = H{f.RelationIndex + 1}.ID and {fieldSelector}.FormattedValue <> ''");
+                        joins.Add($"outer apply [utility].[FieldDetailsByAssetId](H{f.RelationIndex + 1}.ID, {f.FieldTypeID}) {fieldSelector}");
                     }
                 }
                 else
@@ -434,38 +434,41 @@ namespace d360.model.helpers
                     }
                     Fields.Add(gField);
                 }
-
-                Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
-                bool isResource = f.AssetTypeUid == resourceTypeUid;
-                if (isResource)
+                else
                 {
-                    var gColumn = new GridColumn
+                    Guid resourceTypeUid = Guid.Parse("00000001-0000-0000-0000-a00000000011");
+                    bool isResource = f.AssetTypeUid == resourceTypeUid;
+                    if (isResource)
                     {
-                        text = fieldName,
-                        datafield = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
-                        columnWidth = colWidth,
-                        columntype = "textbox",
-                        apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
-                        uidfield = $"H{(f.RelationIndex + 1)}_Uid",
-                        urlfield = $"H{(f.RelationIndex + 1)}_Url"
-                    };
-                    var gField = new GridField
-                    {
-                        name = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
-                        type = "text",
-                        apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
-                        defaultFilter = f.Filter,
-                        sortOrder = f.SortOrder
-                    };
-                    if (f.Show)
-                    {
-                        Columns.Add(gColumn);
-                    }
-                    Fields.Add(gField);
+                        var gColumn = new GridColumn
+                        {
+                            text = fieldName,
+                            datafield = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                            columnWidth = colWidth,
+                            columntype = "textbox",
+                            apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                            uidfield = $"H{(f.RelationIndex + 1)}_Uid",
+                            urlfield = $"H{(f.RelationIndex + 1)}_Url"
+                        };
+                        var gField = new GridField
+                        {
+                            name = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                            type = "text",
+                            apiName = $"H{(f.RelationIndex + 1)}_{f.FieldTypeName}",
+                            defaultFilter = f.Filter,
+                            sortOrder = f.SortOrder
+                        };
+                        if (f.Show)
+                        {
+                            Columns.Add(gColumn);
+                        }
+                        Fields.Add(gField);
 
-                    Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Uid", type = "text" });
-                    Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Url", type = "text" });
+                        Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Uid", type = "text" });
+                        Fields.Add(new GridField { name = $"H{(f.RelationIndex + 1)}_Url", type = "text" });
+                    }
                 }
+
             }
 
             return (Columns, Fields);
@@ -582,7 +585,7 @@ namespace d360.model.helpers
                             break;
                     }
 
-                    joins.Add($"left join FieldDetail F{ft.ID} on F{ft.ID}.AssetID = A.ID and F{ft.ID}.FieldTypeID = {ft.ID} and F{ft.ID}.FormattedValue <> ''");
+                    joins.Add($"outer apply [utility].[FieldDetailsByAssetId](A.ID, {ft.ID}) F{ft.ID}");
                 }
             }
 

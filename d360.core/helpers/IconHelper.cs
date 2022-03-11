@@ -24,7 +24,7 @@
                 {
                     iconText = words[0][0].ToString().ToUpper();
                 }
-                
+
                 if (!string.IsNullOrEmpty(words[1]))
                 {
 

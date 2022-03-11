@@ -544,7 +544,7 @@ namespace d360.web.Controllers.V2
             Route("executions/{executionID:Guid}/status"),
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json", "application/xml"), 
-            SwaggerProduces("application/json", "application/xml"),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
             SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
             ]

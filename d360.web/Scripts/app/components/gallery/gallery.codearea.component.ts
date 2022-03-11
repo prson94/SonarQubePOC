@@ -13,19 +13,7 @@ import 'codemirror/mode/markdown/markdown';
 
         .gallery-section h4 {
             padding-bottom: 8px;
-        }
-
-        codeComponent .cm-s-eclipse CodeMirror-line span.cm-number{
-            color:red;
-        }
-
-        codeComponent .cm-s-eclipse div.CodeMirror-code div.CodeMirror-lines pre.CodeMirror-line span.cm-string .cm-property{
-            color:black;
-        }
-
-        .cm-s-eclipse span.cm-number{
-            color:red;
-        }
+        }        
         `
     ], changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -33,7 +21,7 @@ import 'codemirror/mode/markdown/markdown';
 export class GalleryCodeAreaComponent implements OnInit {
     properties: Array<any>;
     events: Array<any>;
-    sampleUsage: string = '<codearea [code]="value"></codearea>';
+    sampleUsage: string = '<codearea [(ngModel)]="value"></codearea>';
 
     exampleCode: string = `
     {

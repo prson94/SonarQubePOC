@@ -75,6 +75,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -183,6 +184,7 @@ namespace d360.web.Controllers.V2
             HttpPut,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -382,6 +384,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route(""),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -487,6 +490,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("batch"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "User is not an administrator.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
@@ -1830,14 +1834,16 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     list.Add("LastName", 0);
                     list.Add("Email", 0);
                     list.Add("LastLoggedInOn", 0);
-                    list.Add("DisplayValue", 0);
                 }
                 else
                 {
                     list.Add("DisplayValue", 0);
                 }
 
-                list.Add("_assetPath", 0);
+                if (type != SystemObjects.ResourceType)
+                {
+                    list.Add("_assetPath", 0);
+                }
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                     .Where(i => i.Type != DataType.Path.ToString())

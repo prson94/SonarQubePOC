@@ -1,9 +1,0 @@
-﻿{
-  "$schema": "http://schemastore.org/schemas/json/webjob-publish-settings.json",
-  "webJobName": "Resource-Cache",
-  "startTime": null,
-  "endTime": null,
-  "jobRecurrenceFrequency": null,
-  "interval": null,
-  "runMode": "Continuous"
-}

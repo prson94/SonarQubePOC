@@ -107,4 +107,31 @@ end
 	</rollback>
   </changeSet> 
 
+  <changeSet author="Puneet Gupta" id="Index.metrics.AssetVersionRollupPathFilter-v4">
+  <comment>GOV-17248</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[metrics].[AssetVersionRollupPathFilter]') AND name = N'IX_metrics_AssetVersionRollupPathFilter_AssetTypeID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_metrics_AssetVersionRollupPathFilter_AssetTypeID] ON [metrics].[AssetVersionRollupPathFilter]
+	(
+		[AssetTypeID] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[metrics].[AssetVersionRollupPathFilter]') AND name = N'IX_metrics_AssetVersionRollupPathFilter_AssetTypeID')
+BEGIN
+	DROP INDEX [IX_metrics_AssetVersionRollupPathFilter_AssetTypeID] ON [metrics].[AssetVersionRollupPathFilter]
+END
+		]]>
+	</rollback>
+  </changeSet>  
+  
 </databaseChangeLog>

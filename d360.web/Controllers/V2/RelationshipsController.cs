@@ -409,6 +409,27 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
         /// This must be used in conjunction with the RelationshipTypeUid query parameter.
+        /// 
+        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// </remarks>
         /// <param name="State">Filter on the state, or status, of a relationship.</param>
         /// <returns></returns>
@@ -1450,7 +1471,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("executions/{executionID:Guid}/status"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerParameter("summaryOnly", "When true the results are omitted from the response. The default value is false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
@@ -1778,7 +1799,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("counts/{assetUid}"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship counts per relationship type for an asset.", typeof(List<AssetTypeCountModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),

@@ -1,8 +1,9 @@
-﻿using d360.core.entities.Contracts;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities.Workflow
 {

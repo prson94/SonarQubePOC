@@ -1,0 +1,65 @@
+﻿<div class="row">
+    <div class="col s12" *ngIf="isLoading">
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    </div>
+    <div class="col s12" style="display: flex" *ngIf="!isLoading">
+        <div class="tile tile-detail main-panel">
+            <semantic-asset-list-grid [semanticType]="semanticType"
+                                      [isSidePanel]="false"
+                                      (assetCountUpdated)="assetCount=$event.assetCount"
+                                      (selectedAssetChanged)="selectAsset($event)"></semantic-asset-list-grid>
+        </div>
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading && selectedAsset != null">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selectedAsset"
+                        [panelApplies]="'true'"
+                        [hasProfiling]="'true'"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab">
+                <ng-container *ngIf="sidePanelOpen && selectedAsset != null && sidePanelLoading">
+                    <d3s-loading [isLoading]="true"></d3s-loading>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen && selectedAsset != null && !sidePanelLoading">
+                    <ng-container *ngIf="sidePanelTab === 'dataprofile'">
+                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondarySidePanelOpen = true"></data-profile>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail [objectUID]="selectedAsset.uid"
+                                         [objectType]="'artifact'"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [interceptLinkClick]="true"></ig-asset-detail>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngIf="secondarySidePanelOpen">
+                    <div #semanticTile class="secondary-side-panel">
+                        <div class="panel-header">
+                            <span class="header-label">Information</span>
+                            <div class="button-container">
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                            </div>
+                        </div>
+                        <div class="details-container">
+                            <div>
+                                <ng-container *ngIf="semanticType">
+                                    <semantic-detail [qualifier]="semanticType.qualifier"
+                                                     [isSidePanel]="true"
+                                                     [showHeader]="true"
+                                                     [semanticType]="semanticType"
+                                                     (close)="secondarySidePanelOpen=false;"></semantic-detail>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+            </side-panel>
+        </div>
+    </div>
+</div>

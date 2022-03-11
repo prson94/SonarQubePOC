@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "projects": {    
+  "projects": {
     "govern": {
       "projectType": "application",
       "schematics": {
@@ -13,16 +13,34 @@
       "root": "",
       "sourceRoot": "Scripts",
       "prefix": "d3s",
+      "i18n": {
+        "sourceLocale": "en",
+        "locales": {
+          "fr": {
+            "translation": "locale/messages.fr.xlf",
+            "baseHref": ""
+          },
+          "de": {
+            "translation": "locale/messages.de.xlf",
+            "baseHref": ""
+          },
+          "en-gb": {
+            "translation": "locale/messages.en-gb.xlf",
+            "baseHref": ""
+          }
+        }
+      },
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "deployUrl": "/scripts/dist/",
+            "deployUrl": "/scripts/dist/chunks/",
             "outputPath": "scripts/dist",
             "index": "index.html",
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",
             "tsConfig": "Scripts/tsconfig.aot.json",
+            "localize": true,
             "assets": [],
             "styles": [
               "Content/styles/angular.less"
@@ -44,16 +62,33 @@
                 }
               ],
               "optimization": true,
-              "outputHashing": "none",
+              "outputHashing": "all", // all will hash files
               "sourceMap": false,
+              "namedChunks": false,
               "extractLicenses": true,
+              "vendorChunk": true,
               "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "4mb",
+                  "maximumError": "6mb"
                 }
+              ]
+            },
+            "fr": {
+              "localize": [
+                "fr"
+              ]
+            },
+            "de": {
+              "localize": [
+                "de"
+              ]
+            },
+            "en-gb": {
+              "localize": [
+                "en-gb"
               ]
             }
           },
@@ -75,18 +110,18 @@
           "options": {
             "browserTarget": "govern:build"
           }
-        },       
+        },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "scripts/tsconfig.aot.json"              
+              "scripts/tsconfig.aot.json"
             ],
             "exclude": [
               "**/node_modules/**"
             ]
           }
-        }      
+        }
       }
     }
   },

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace d360.core.enums.Workflow
+﻿namespace d360.core.enums.Workflow
 {
     public enum CriteriaValueDataType
     {
@@ -13,7 +7,7 @@ namespace d360.core.enums.Workflow
         String,
         Integer,
         Double,
-        Date, 
+        Date,
         Lookup
     }
 }

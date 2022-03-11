@@ -52,7 +52,7 @@
             <tr [pSelectableRow]="item">
                 <td>
                     <ng-container *ngIf="interceptLinkClick">
-                        <a context-link (click)="memberClicked($event,item)">{{item.Name}}</a>
+                        <a context-link (click)="memberClicked($event,item)" data-link-type="resource">{{item.Name}}</a>
                     </ng-container>
                     <ng-container *ngIf="!interceptLinkClick">
                         {{item.Name}}

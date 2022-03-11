@@ -1,13 +1,15 @@
-﻿import { Input, Component, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef, ViewChild } from '@angular/core';
+﻿import { Input, Component, OnDestroy, OnChanges, SimpleChanges, ChangeDetectorRef, ViewChild, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { AssetService } from '../../services/asset.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 import { filter } from 'lodash';
 import { Table } from 'primeng/table';
+import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-reference-item-list',
@@ -15,9 +17,10 @@ import { Table } from 'primeng/table';
     providers: [AssetService, GridDefinitionService]
 })
 
-export class ReferenceItemGridComponent extends BaseComponent implements OnChanges, OnDestroy {
+export class ReferenceItemGridComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetService: AssetService,
         private gridDefinitionService: GridDefinitionService,
         protected settingsService: CompanySettingsService,
@@ -33,9 +36,11 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     @Input() isForAssetDetailPage: boolean = false;
     @Input() highlightUid: string = '';
 
+    public rowsPerPage: NumberOfRowsByCategories;
     private sortField: string = 'Code';
     private items: any[] = [];
     private totalRecords: number = 10000;
+    private destroy = new Subject<void>();
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -55,6 +60,19 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     }
 
     private title: string = 'Items';
+
+    ngOnInit() {
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title];
+        });
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.assetTypeUid && changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {
@@ -81,6 +99,8 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     }
     ngOnDestroy() {
         this.getAssetSub.unsubscribe();
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     private load() {
