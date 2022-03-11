@@ -1563,7 +1563,7 @@ namespace d360.web.Controllers.V2
 	</defs>
 	<style>
 ");
-                svg.AppendLine($".s-main-bck {{ filter: url(#f1);fill: #f1f2f3 }} ");
+                svg.AppendLine($".s-main-bck {{ filter: url(#f1);fill: {theme.BackColor} }} ");
                 svg.AppendLine($".s-header-bck {{ fill: {theme.HeaderBackColor} }} ");
                 svg.AppendLine($".s-breadcrumb-txt {{ fill: {BlackOrWhite(theme.HeaderBackColor)} }} ");
                 svg.AppendLine($".s-breadcrumb-lnk {{ fill: {theme.BreadcrumbLinkColor} }} ");
