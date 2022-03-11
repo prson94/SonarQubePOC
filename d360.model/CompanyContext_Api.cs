@@ -16,6 +16,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1821,7 +1822,7 @@ where T.ExecutionId = @executionid;
 
         #endregion
 
-        public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
+        public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null)
         {
             var dbArgs = new DynamicParameters();
 
@@ -1891,8 +1892,71 @@ from	IntersectType I
 {whereClause} for json path";
 
             var models = await GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
+            // in-memory filter
+            if (string.IsNullOrEmpty(keyword) == false 
+                || id.HasValue 
+                || string.IsNullOrEmpty(subject) 
+                || string.IsNullOrEmpty(predicate)
+                || string.IsNullOrEmpty(@object))
+            {
+                models = models.Where(x => FilterIntersectTypeApiViewModel(x, keyword, id, subject, predicate, @object)).ToList();
+            }
 
             return models;
+        }
+
+        private static bool FilterIntersectTypeApiViewModel(IntersectTypeApiViewModel item, string keyword, int? id, string subject, string predicate, string @object)
+        {
+            if (item == null) return false;
+            if (string.IsNullOrEmpty(keyword)
+                && !id.HasValue
+                && string.IsNullOrEmpty(subject)
+                && string.IsNullOrEmpty(predicate)
+                && string.IsNullOrEmpty(@object)) return true;
+
+            bool checkKeyword(IntersectTypeApiViewModel item, string keyword)
+            {
+                return checkObject(item, keyword)
+                   || checkPredicate(item, keyword)
+                   || checkSubject(item, keyword);
+            }
+
+            bool checkSubject(IntersectTypeApiViewModel item, string subject)
+            {
+                return string.IsNullOrEmpty(subject)
+                        ? true
+                        : (item.Subject?.Name ?? string.Empty).IndexOf(subject, StringComparison.OrdinalIgnoreCase) > -1;
+            }
+
+            bool checkPredicate(IntersectTypeApiViewModel item, string predicate)
+            {
+                return string.IsNullOrEmpty(predicate)
+                        ? true
+                        : (item.Predicate?.Name ?? string.Empty).IndexOf(predicate, StringComparison.OrdinalIgnoreCase) > -1
+                            || (item.Predicate?.Inverse.ToString() ?? string.Empty).IndexOf(predicate, StringComparison.OrdinalIgnoreCase) > -1;
+            }
+
+            bool checkObject(IntersectTypeApiViewModel item, string @object)
+            {
+                return string.IsNullOrEmpty(@object)
+                        ? true
+                        : (item.Object?.Name ?? string.Empty).IndexOf(@object, StringComparison.OrdinalIgnoreCase) > -1;
+            }
+
+            bool checkId(IntersectTypeApiViewModel item, int? id)
+            {
+                if (!id.HasValue)
+                {
+                    return true;
+                }
+                return item.Id.ToString().IndexOf(id.ToString(), StringComparison.OrdinalIgnoreCase) > -1;
+            }
+
+            return string.IsNullOrEmpty(keyword) ? true : checkKeyword(item, keyword)
+                        && checkId(item, id)
+                        && checkSubject(item, subject)
+                        && checkPredicate(item, predicate)
+                        && checkObject(item, @object);
         }
 
         public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)

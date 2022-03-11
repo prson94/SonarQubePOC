@@ -113,3 +113,4 @@
 /d360.web/Scripts/dist/en
 /d360.web/Scripts/dist/en-gb
 /DBUpdateScripts/EnvironmentDb/liquibase.properties
+/d360.web/.vscode/**
