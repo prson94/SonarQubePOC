@@ -3743,7 +3743,9 @@ from    (
                         var users = await Company.QueryFirstOrDefaultAsync<dynamic>(@"
                             select
                                 u.LastName + ', ' + u.FirstName as UpdatedByName,
-                                c.LastName + ', ' + c.FirstName as CreatedByName
+                                u.uid as UpdatedUid,
+                                c.LastName + ', ' + c.FirstName as CreatedByName,
+                                c.uid as CreatedUid
                             from dbo.AssetType assetType
                                 left join reporting.global_resource u
                                     on u.resourceid = assetType.updatedby
@@ -3767,6 +3769,7 @@ from    (
                                                 Value = users.CreatedByName,
                                                 TooltipType = "Resource",
                                                 TooltipUrl = "resource/" + refType.CreatedBy,
+                                                uid = users.CreatedUid,
                                                 HideTooltip = true
                                             }
                                         },
@@ -3792,6 +3795,7 @@ from    (
                                                 Value = users.UpdatedByName,
                                                 TooltipType = "Resource",
                                                 TooltipUrl = "resource/" + refType.UpdatedBy,
+                                                uid = users.UpdatedUid,
                                                 HideTooltip = true
                                             }
                                         },
