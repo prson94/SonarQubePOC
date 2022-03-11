@@ -821,6 +821,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RelationshipsApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Content Include="App_GlobalResources\Swagger.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>

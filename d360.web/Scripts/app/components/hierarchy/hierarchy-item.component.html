@@ -10,7 +10,8 @@
                                                 [useV2Api]="true"
                                                 [objectID]="selected?.ID"
                                                 (onEditComplete)="editComplete($event)"
-                                                [interceptLinkClick]="true"></d3s-object-definition-tile>
+                                                [interceptLinkClick]="true"
+                                                [synonymPermission]="synonymPermission"></d3s-object-definition-tile>
                 </div>
                 <div class="tile tile-detail side-panel">
                     <side-panel (expandedChange)="sidePanelOpen=$event"

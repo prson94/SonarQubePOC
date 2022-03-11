@@ -428,7 +428,10 @@ select	I.ID as IntersectID,
 		dbo.GenerateAssetUrl(S.ID) as [Url]       
         ,null as [CustomID]
 		,I.uid as [IntersectUid]
-		,T.uid as [IntersectTypeUid]
+		,T.uid as [IntersectTypeUid]		
+		,S.uid as [AssetUid]
+		,ST.Uid as [AssetTypeUid]
+
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
 		inner join Asset S on 
@@ -466,6 +469,8 @@ select
     ,S.ID as CustomID
 	,null as [IntersectUid]
 	,null as [IntersectTypeUid]
+	,null as [AssetUid]
+    ,null as [AssetTypeUid]
 from 
 	[dbo].[nym] s	
 where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1

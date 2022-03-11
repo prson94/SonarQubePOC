@@ -94,6 +94,8 @@ export class Synonym {
     ParentUrl: string;
     IntersectUid: string;
     IntersectTypeUid: string;
+    AssetUid: string;
+    AssetTypeUid: string;
 }
 
 export class SynonymItem {

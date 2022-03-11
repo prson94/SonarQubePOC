@@ -4,6 +4,7 @@ import { Operator } from "./operator.model";
 
 export class FieldTypeAPIModelFieldCondition extends FieldTypeAPIModelField {
     AssetTypeUid: string;
+    RelationshipTypeUid: string;
     Values: SelectItem[];
     Operators: SelectItem[];
 

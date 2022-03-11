@@ -1,16 +1,10 @@
-﻿<d3s-modal [title]="componentTitle" [subtitle]="subtitle" [showTitle]="true" additionalClasses="full-window-dialog" [showConfirm]="false" (onClose)="cancel()" [isVisible]="isModalVisible">
-    <div class="modal-content">
-        <div class="modal-child-component">
-            <d3s-object-relationships [objectType]="objectType"
-                                      [objectID]="objectID"
-                                      [objectName]="objectName"
-                                      [objectPermissions]="permissions"
-                                      [isModal]="true"></d3s-object-relationships>
-        </div>
-        <button class="ig-button-primary modal-button-position right"
-                igButton
-                label="Close"
-                (click)="cancel()">
-        </button>
+﻿<d3s-modal [subtitle]="subtitle"
+           [showTitle]="false"
+           additionalClasses="full-window-dialog relationship-dialog"
+           [showConfirm]="false"
+           (onClose)="cancel()"
+           [isVisible]="isModalVisible">
+    <div class="modal-with-side-panel">
+        <gov-relationship-grid (onClose)="cancel()" [assetUid]="assetUid" [assetTypeUid]="assetTypeUid" [isInModal]="true"></gov-relationship-grid>
     </div>
 </d3s-modal>

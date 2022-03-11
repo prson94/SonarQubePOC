@@ -15,7 +15,6 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     @Input() nodeSelection: any;
     @Input() diagram: go.Diagram;
 
-    private rowsPerPage: number = 10;
     private tableScrollHeight: string = '500px';
 
     selected: go.ObjectData[] = [];

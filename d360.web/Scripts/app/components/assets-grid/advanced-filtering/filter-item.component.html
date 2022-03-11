@@ -83,7 +83,7 @@
                             <div *ngIf="condval.errors.overMax" class="ig-text-required">Please enter a value of {{condval.errors.overMax.max}} or lower</div>
                         </div>
                         <div class="value-separator">and</div>
-                        <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax"  #condvaltwo="ngModel"></ig-number-input>
+                        <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax" #condvaltwo="ngModel"></ig-number-input>
                         <div *ngIf="condvaltwo.invalid && (condvaltwo.dirty || condvaltwo.touched)">
                             <div *ngIf="condvaltwo.errors.underMin" class="ig-text-required">Please enter a value of {{condvaltwo.errors.underMin.min}} or higher</div>
                             <div *ngIf="condvaltwo.errors.overMax" class="ig-text-required">Please enter a value of {{condvaltwo.errors.overMax.max}} or lower</div>
@@ -146,11 +146,17 @@
                                     <ng-template #elseBlock>
                                         <tr [pSelectableRow]="item" [pSelectableRowIndex]="rowIndex">
                                             <td class="first-col">
-                                                <p-tableCheckbox [value]="item" 
+                                                <p-tableCheckbox [value]="item"
                                                                  [pSelectableRow]="item"></p-tableCheckbox>
                                             </td>
-                                            <td (click)="selectSingleItem($event,item);">
+                                            <td (click)="selectSingleItem($event,item);" style="{{item.count ? 'display:flex;' : ''}}">
                                                 <span class="item-value" [innerHTML]="item.title"></span>
+                                                <ng-container *ngIf="item.count">
+                                                    <div class="flex-grow"></div>
+                                                    <span class="row-badge">
+                                                        <ig-badge [text]="item.count"></ig-badge>
+                                                    </span>
+                                                </ng-container>
                                             </td>
                                         </tr>
                                     </ng-template>

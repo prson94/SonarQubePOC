@@ -26,8 +26,14 @@ export class ObjectDetailService extends BaseObservableService {
         super(messagesService);
     }
 
-    getObjectDetailByUid(uid: string, objectType: string, useSingleColumn: boolean = false, includeHeader: boolean = false, useAssetDetailColumnDefinition: boolean = false): Observable<any> {
-        return this.http.get(`api/${objectType}/${uid}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`)
+    getObjectDetailByUid(uid: string, objectType: string, useSingleColumn: boolean = false, includeHeader: boolean = false, useAssetDetailColumnDefinition: boolean = false, baseAssetUid: string = ''): Observable<any> {
+        let url = `api/${objectType}/${uid}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`;
+
+        if (baseAssetUid) {
+            url += "&baseAssetUid=" + baseAssetUid;
+        }
+
+        return this.http.get(url)
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))

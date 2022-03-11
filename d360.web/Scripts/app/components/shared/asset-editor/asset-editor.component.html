@@ -1,6 +1,7 @@
 ﻿<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
     <div class="form-header" *ngIf="hasHeader">
         {{title}}
+        <h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
         <div class="sub-header" *ngIf="!isLoading && !hidePath">
             <span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
             {{assetTypePath}}
