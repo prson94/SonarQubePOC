@@ -48,12 +48,17 @@
                              let-item>
                     <tr [pSelectableRow]="item">
                         <td>
-                            <d3s-preview-tooltip *ngIf="item.Object"
-                                                 [objectType]="item.Object"
-                                                 [objectId]="item.ObjectID">
-                                <a (click)="navigate(item.Url)">{{item.Name}}</a>
-                            </d3s-preview-tooltip>
-                            <span *ngIf="!item.Object">{{item.Name}}</span>
+                            <ng-container *ngIf="interceptLinkClick && item.ObjectTypeName != 'Custom'">
+                                <a context-link (click)="synonymClicked($event,item)" data-link-type="resource">{{item.Name}}</a>
+                            </ng-container>
+                            <ng-container *ngIf="!interceptLinkClick || item.ObjectTypeName == 'Custom'">
+                                <d3s-preview-tooltip *ngIf="item.Object"
+                                                     [objectType]="item.Object"
+                                                     [objectId]="item.ObjectID">
+                                    <a (click)="navigate(item.Url)">{{item.Name}}</a>
+                                </d3s-preview-tooltip>
+                                <span *ngIf="!item.Object">{{item.Name}}</span>
+                            </ng-container>
                         </td>
                         <td>{{item.ObjectTypeName}}</td>
                         <td>
