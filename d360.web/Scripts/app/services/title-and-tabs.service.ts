@@ -46,6 +46,8 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
   initializeTitleAndTabsCheck(routeParams: Observable<Params>, params: Params, activeTabTitle?: string): void {
     if (!this.isInitialize && params[Param.ObjectType] === ObjectType.ArtifactType) {
       this.initializeTitleAndTabsInRightSidebar(routeParams, activeTabTitle);
+    } else {
+      this.secondaryNavService.setArtifactTypeId(params); 
     }
   }
 
