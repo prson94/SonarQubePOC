@@ -180,7 +180,6 @@ namespace d360.web.Controllers
                             }
                         }
                     }
-
                 }
 
                 list.Add(new DetailReadOnlyRowModel
