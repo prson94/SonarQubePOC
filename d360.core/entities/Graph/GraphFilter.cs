@@ -1,10 +1,11 @@
-﻿using d360.core.enums;
-using d360.core.entities.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -21,6 +22,7 @@ namespace d360.core.entities.Graph
         public string Name { get; set; }
 
         private string _rawSettings = "";
+
         [IgnoreDataMember]
         public string Settings
         {
@@ -35,12 +37,17 @@ namespace d360.core.entities.Graph
         }
 
         private FilterSettings _structuredSettings;
+
         [NotMapped, DataMember]
-        public FilterSettings StructuredSettings {
+        public FilterSettings StructuredSettings
+        {
             get
             {
-                if(_structuredSettings == null)
+                if (_structuredSettings == null)
+                {
                     _structuredSettings = JsonConvert.DeserializeObject<FilterSettings>(Settings);
+                }
+
                 return _structuredSettings;
             }
             set
@@ -59,6 +66,7 @@ namespace d360.core.entities.Graph
         {
             Settings = JsonConvert.SerializeObject(StructuredSettings);
         }
+
         [DataMember]
         public bool IsPublic { get; set; }
 
@@ -85,10 +93,15 @@ namespace d360.core.entities.Graph
     public class FilterSettings
     {
         public int? AncestryMode { get; set; }
+
         public int? NumberOfHops { get; set; }
+
         public int? DiagramType { get; set; }
+
         public List<FilterSetttingAssetType> AssetTypes { get; set; }
+
         public List<FilterSetttingPredicate> Predicates { get; set; }
+
         public List<FilterSetttingResponsibilityType> ResponsibilityTypes { get; set; }
     }
 
@@ -96,6 +109,7 @@ namespace d360.core.entities.Graph
     public class FilterSetttingAssetType
     {
         public string Class { get; set; }
+
         public Guid? Uid { get; set; }
     }
 
@@ -103,6 +117,7 @@ namespace d360.core.entities.Graph
     public class FilterSetttingPredicate
     {
         public string Type { get; set; }
+
         public Guid? Uid { get; set; }
     }
 
@@ -110,6 +125,7 @@ namespace d360.core.entities.Graph
     public class FilterSetttingResponsibilityType
     {
         public string Type { get; set; }
+
         public Guid? Uid { get; set; }
     }
 
@@ -123,6 +139,7 @@ namespace d360.core.entities.Graph
             }
             return str;
         }
+
         private static string ToPascalCaseString(string str)
         {
             if (!string.IsNullOrEmpty(str))
@@ -132,12 +149,10 @@ namespace d360.core.entities.Graph
             return str;
         }
 
-
         public override bool CanConvert(Type objectType)
         {
-            return (GetType().Namespace ==  objectType.Namespace);
+            return (GetType().Namespace == objectType.Namespace);
         }
-        
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -146,13 +161,13 @@ namespace d360.core.entities.Graph
 
             serializer.Populate(jsonObject.CreateReader(), o);
 
-            if(objectType.Name == "GraphFilter")
+            if (objectType.Name == "GraphFilter")
             {
                 FilterSettings settings = new FilterSettings();
-                foreach ( var jp in jsonObject.Properties())
+                foreach (var jp in jsonObject.Properties())
                 {
                     var sp = settings.GetType().GetProperty(ToPascalCaseString(jp.Name));
-                    if(sp != null)
+                    if (sp != null)
                     {
                         var jv = serializer.Deserialize(jp.Value.CreateReader(), sp.PropertyType);
                         sp.SetValue(settings, jv);
@@ -170,8 +185,10 @@ namespace d360.core.entities.Graph
             foreach (var attr in p.GetCustomAttributes(true))
             {
                 if (attr.GetType().Name == "IgnoreDataMemberAttribute")
+                {
                     return true;
                 }
+            }
 
             return false;
         }
@@ -189,9 +206,11 @@ namespace d360.core.entities.Graph
             foreach (var property in value.GetType().GetProperties())
             {
                 if (IsIgnoreDataMemberAttribute(property))
+                {
                     continue;
+                }
 
-                if(property.Name == "StructuredSettings")
+                if (property.Name == "StructuredSettings")
                 {
                     var settingValue = property.GetValue(value, null);
                     foreach (var settingPropperty in settingValue.GetType().GetProperties())
@@ -200,7 +219,8 @@ namespace d360.core.entities.Graph
                         serializer.Serialize(writer, settingPropperty.GetValue(settingValue, null));
 
                     }
-                } else
+                }
+                else
                 {
                     var propVal = property.GetValue(value, null);
                     if (propVal != null)

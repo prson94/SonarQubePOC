@@ -1,6 +1,6 @@
-﻿using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
@@ -9,7 +9,7 @@ namespace d360.core.entities
     {
         #region Properties
 
-        [DataMember, Key, Column(Order=1)]
+        [DataMember, Key, Column(Order = 1)]
         public int LoadID { get; set; }
 
         [DataMember, Key, Column(Order = 2)]

@@ -1,6 +1,8 @@
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.queue;
 using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -228,10 +230,10 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
         "inner join (" +
         " select Qualifier, max(EffectiveDate) as EffectiveDate " +
         " from Semantic " +
-        " where Qualifier in (@qualifiers) " +
+        " where Qualifier in @qualifiers " +
         "group by Qualifier) M on M.Qualifier = S.Qualifier and M.EffectiveDate = S.EffectiveDate", new { qualifiers }).ToList();
 
-            if (existingSemantics.Count != expectedCount)
+            if (expectedCount > 0 && existingSemantics.Count != expectedCount)
             {
                 var missing = qualifiers.Where(q => !existingSemantics.Any(e => e.Qualifier == q)).ToList();
                 throw new GenericException(
@@ -256,7 +258,7 @@ insert into [reporting].[Global_FieldAudit] (AuditID, FieldTypeID, FieldName, Ve
             try
             {
                 var qualifiers = new List<string> { qualifier };
-                findLatestExistingSemantics(qualifiers, 1);
+                List<Semantic> deletes = findLatestExistingSemantics(qualifiers, 1);
 
                 var anyProfilesQuery = await CompanyContext.QueryAsync<int>(@"
 select  count(1)  
@@ -278,6 +280,14 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                         "Profiles match the semantic.",
                         "You may not remove this semantic since one or more asset data profiles match this semantic.");
                 }
+
+                //Queue semantic for deletion in search index
+                QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+                {
+                    CompanyID = CompanyContext.CurrentCompanyID,
+                    BatchUids = new List<Guid> { deletes.FirstOrDefault().Uid },
+                    BatchOperation = ReindexBatchOperation.Delete
+                });
 
                 CompanyContext.Connection.Execute("delete Semantic where Qualifier = @qualifier", new { qualifier });
 
@@ -582,6 +592,8 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 CompanyContext.Semantics.AddRange(repoModels);
                 await CompanyContext.SaveChangesAsync();
+
+                queueForSearchIndex(transactionId);
                 addToChangeLog(transactionId, "U");
 
                 var getModels = (
@@ -625,6 +637,8 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
                 }
                 CompanyContext.Semantics.AddRange(repoModels);
                 await CompanyContext.SaveChangesAsync();
+
+                queueForSearchIndex(transactionId);
                 addToChangeLog(transactionId, "C");
 
                 var getModels = (
@@ -690,6 +704,8 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
 
                 CompanyContext.Semantics.AddRange(repoModels);
                 await CompanyContext.SaveChangesAsync();
+
+                queueForSearchIndex(transactionId);
                 addToChangeLog(transactionId, "U");
 
                 var getModels = (
@@ -712,6 +728,11 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
             }
         }
 
+        public List<Semantic> GetSemanticsByQualifiers(List<string> qualifiers)
+        {
+            return findLatestExistingSemantics(qualifiers, 0);
+        }
+
         private string buildStatusOrderSQL()
         {
             StringBuilder statusSQL = new StringBuilder(", CASE");            
@@ -722,6 +743,19 @@ where   P.TypeQualifier = @qualifier", new { qualifier });
             statusSQL.Append(" ELSE '' END as statusString");
 
             return statusSQL.ToString();
+        }
+
+        private void queueForSearchIndex(string transactionId)
+        {
+            var uids = CompanyContext.Semantics.Where(s => s.TransactionId == transactionId).Select(s => s.Uid).Distinct();
+
+            QueueSource.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                BatchUids = uids.ToList(),
+                BatchOperation = ReindexBatchOperation.Update
+            });
+
         }
     }
 }

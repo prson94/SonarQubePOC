@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.Serialization;
 
 namespace d360.core.entities.Permissions
-{   
+{
     /// <summary>
     /// Model for example swagger response (swagger doesn't like simple dictionary)
     /// </summary>

@@ -6,7 +6,7 @@
         </div>
         <ng-container *ngIf="visible">
             <div class="filter-item" *ngFor="let item of conditions.filters">
-                <filter-item (onChange)="onItemChange()"
+                <filter-item (onChange)="onItemChange($event)"
                              [loadIdentifier]="loadIdentifier"
                              [assetTypeUid]="assetTypeUid"
                              [condition]="item"

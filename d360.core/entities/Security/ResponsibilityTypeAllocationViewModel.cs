@@ -1,10 +1,10 @@
-﻿using d360.core.enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -30,12 +30,13 @@ namespace d360.core.entities
         public AssetTypeClass? AssetClass { get; set; }
 
         [DataMember]
-        public AssetTypeClassInfo AssetTypeClass {
+        public AssetTypeClassInfo AssetTypeClass
+        {
             get
             {
                 if (AssetClass.HasValue)
                 {
-                    
+
                     MemberInfo tm = AssetClass.GetType().GetMember(AssetClass.ToString()).First();
                     return new AssetTypeClassInfo
                     {
@@ -58,7 +59,7 @@ namespace d360.core.entities
             get
             {
                 var permissions = Permission.DeleteAsset.GetList();
-                
+
                 permissions.ForEach(p =>
                 {
                     p.Selected = (PermissionsMask & p.Value) == p.Value;

@@ -1,9 +1,9 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System;
+using System.Runtime.Serialization;
+
 using d360.core.entities.Contracts;
-using d360.core.enums;
 using d360.core.queue;
 
 namespace d360.core.entities
@@ -46,6 +46,7 @@ namespace d360.core.entities
         public DateTime? CompletedOn { get; set; }
 
         public int? CompletedBy { get; set; }
+
         public int? InitiatorID { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()

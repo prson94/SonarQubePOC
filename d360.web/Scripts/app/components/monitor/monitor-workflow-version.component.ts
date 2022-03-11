@@ -10,7 +10,7 @@ import { BaseComponent } from "../shared/base.component";
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
         <div *ngIf="!isLoading">    
         <header *ngIf="showHeader">   
-                Workflow Versions
+                {{title}}
                  <d3s-tile-actions [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
          </header>
             <d3s-monitor-filter *ngIf="showHeader" [hidden]="isFiltered" (selectionChange)="filterChange($event)" [selectAll]="selectAll"></d3s-monitor-filter>
@@ -18,6 +18,7 @@ import { BaseComponent } from "../shared/base.component";
 
             <d3s-monitor-list 
                     [showSimpleFilter]="showSimpleFilter"
+                    [title]="title"
                     [workflowTypes]="selectedWorkflowTypes" 
                     (selectionChange)="monitorListChange($event)" 
                     [objectType]="objectType" 
@@ -43,6 +44,7 @@ export class MonitorWorkflowVersionComponent extends BaseComponent {
     @Input() showHeader: boolean = true;
 
     @Input() selectedWorkflowTypes: any[];
+    title: string = 'Workflow Versions'
     selectedWorkflowType: any = null;
     showSimpleFilter: boolean = true;
 

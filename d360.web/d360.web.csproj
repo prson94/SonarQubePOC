@@ -476,6 +476,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ScoreApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\SearchApiMessages.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SearchApiMessages.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\SurverysApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -583,6 +588,7 @@
     <Compile Include="Extensions\HttpRequestMessageExtensions.cs" />
     <Compile Include="Extensions\PowerBI.cs" />
     <Compile Include="Extensions\SecurityExtensions.cs" />
+    <Compile Include="Extensions\SystemFieldsHelper.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
     <Compile Include="Filters\RequireAdminPermissionsAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
@@ -592,6 +598,7 @@
     <Compile Include="Filters\SwaggerDescriptionAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
     <Compile Include="Filters\ApplicationExceptionFilterAttribute.cs" />
+    <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
     <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
@@ -609,7 +616,6 @@
     <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\FeatureFlagUser.cs" />
-    <Compile Include="Models\Filter Models.cs" />
     <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
@@ -1019,11 +1025,17 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RelationshipsApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <Content Include="App_GlobalResources\Swagger.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>Swagger.designer.cs</LastGenOutput>
     </Content>
+    <EmbeddedResource Include="App_GlobalResources\SearchApiMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SearchApiMessages.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>WorkflowApiMessages.designer.cs</LastGenOutput>
@@ -1105,7 +1117,7 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="webpack.prod.config.js" />
     <Content Include="webpack.config.js" />
-    <Content Include="Scripts\dist\*.js" />
+    <Content Include="Scripts\dist\**\*.js" />
     <Content Include="fonts\material-design-icons\LICENSE.txt" />
     <Content Include="fonts\material-design-icons\Material-Design-Icons.svg" />
     <Content Include="Content\styles\images\check_black.png" />
@@ -1334,7 +1346,9 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

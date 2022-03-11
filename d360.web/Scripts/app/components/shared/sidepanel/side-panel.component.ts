@@ -17,6 +17,7 @@ export class SidePanelComponent extends BaseComponent {
 
     @Input() hasDetail: boolean = false;
     @Input() hasProfiling: boolean = false;
+    @Input() hasFilter: boolean = false;
     @Input() disableProfiling: boolean = false;
 
     @Input() expanded: boolean = false;
@@ -61,6 +62,9 @@ export class SidePanelComponent extends BaseComponent {
         let loadState = false;
 
         if (changes['hasProfiling'] && !changes['hasProfiling'].isFirstChange() && changes['hasProfiling'].currentValue !== changes['hasProfiling'].previousValue) {
+            loadButtons = true;
+        }
+        if (changes['hasFilter'] && !changes['hasFilter'].isFirstChange() && changes['hasFilter'].currentValue !== changes['hasFilter'].previousValue) {
             loadButtons = true;
         }
         if (changes['hasDetail'] && !changes['hasDetail'].isFirstChange() && changes['hasDetail'].currentValue !== changes['hasDetail'].previousValue) {
@@ -140,6 +144,20 @@ export class SidePanelComponent extends BaseComponent {
         this.buttons = [];
 
         this.extraButtons.forEach((b) => this.buttons.push(b));
+
+        if (this.hasFilter) {
+            this.buttons.push(new SidePanelButton({
+                label: 'Filters',
+                tooltip: 'Filters',
+                disabledTooltip: '',
+                nothingSelectedMessage: '',
+                notApplicableMessage: '',
+                multipleSelectedMessage: '',
+                key: 'filters',
+                icon: 'fa-filter',
+                visible: true
+            }));
+        }
 
         if (this.hasDetail) {
             this.buttons.push(new SidePanelButton({

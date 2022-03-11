@@ -1430,7 +1430,7 @@ where T.ExecutionId = @executionid;
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
             foreach (var result in results)
-            {
+            {   
                 if (result.Success)
                 {
                     events.Add(new AssetEventInfo
@@ -3779,6 +3779,8 @@ where	T.ExecutionID = @ExecutionID
             Connection.Execute(@"
                                             drop table if exists #w;
                                     		create table #w (ID int);
+                                            create index idx_w on #w(ID);
+
                                     		insert into #w
                                     			select	distinct 
                                     					wi.ID 
@@ -3793,18 +3795,25 @@ where	T.ExecutionID = @ExecutionID
                                     					inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
                                     					inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
                                     					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-                                    		delete  T
-                                    		from	[workflow].[ItemStepTransition] T
-                                    				inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
-                                    				inner join #w S on S.ID = wis.ItemID;
-                                    		delete  workflow.itemstep 
-                                    		where	ItemID in (Select ID from #w);
-                                    		delete	T
-                                    		from	[workflow].[ItemAssignment] T
-                                    				inner join #w S on S.ID = T.ItemID;
+                                            
+                                            if exists(select 1 from #w)
+                                            begin
+                                    		    delete  T
+                                    		    from	[workflow].[ItemStepTransition] T
+                                    				    inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
+                                    				    inner join #w S on S.ID = wis.ItemID;
 
-                                    		delete  [workflow].[Item] 
-                                    		where	ID in (Select ID from #w);
+                                    		    delete  workflow.itemstep 
+                                    		    where	ItemID in (Select ID from #w);
+
+                                    		    delete	T
+                                    		    from	[workflow].[ItemAssignment] T
+                                    				    inner join #w S on S.ID = T.ItemID;
+
+                                    		    delete  [workflow].[Item] 
+                                    		    where	ID in (Select ID from #w);
+                                            end
+
                                     		truncate table #w;
                                     		insert into #w
                                     			select	distinct 
@@ -3812,73 +3821,122 @@ where	T.ExecutionID = @ExecutionID
                                     			from	workflow.[Type] wt
                                     					inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
                                     					inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-                                    		delete  T
-                                    		from	[workflow].[VersionStepTransition] T
-                                    				inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
-                                    				inner join [workflow].[Version] v on v.ID = wis.VersionID
-                                    				inner join [workflow].[Type] wt on wt.ID = v.TypeID
-                                    				inner join #w S on S.ID = wt.ID;
-                                    		delete  wis
-                                    		from	workflow.Versionstep wis
-                                    				inner join [workflow].[Version] v on v.ID = wis.VersionID
-                                    				inner join [workflow].[Type] wt on wt.ID = v.TypeID
-                                    				inner join #w S on S.ID = wt.ID;
 
-                                     		update	wt
-                                    		set		PublishedVersionID = null
-                                    		from	workflow.type wt
-                                    				inner join #w S on S.ID = wt.ID;
-                                    		delete  v
-                                    		from	[workflow].[Version] v
-                                    				inner join [workflow].[Type] wt on wt.ID = v.TypeID
-                                    				inner join #w S on S.ID = wt.ID;
-                                    		delete  wt
-                                    		from	[workflow].[Type] wt
-                                    				inner join #w S on S.ID = wt.ID;
+                                            if exists(select 1 from #w)
+                                            begin
+                                    		    delete  T
+                                    		    from	[workflow].[VersionStepTransition] T
+                                    				    inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
+                                    				    inner join [workflow].[Version] v on v.ID = wis.VersionID
+                                    				    inner join [workflow].[Type] wt on wt.ID = v.TypeID
+                                    				    inner join #w S on S.ID = wt.ID;
 
-                                    		delete	T
-                                    		from	ResponsibilityRuleResultAsset T
-                                    				inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
-                                    				inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-                                    		delete	T
-                                    		from	ResponsibilityRuleResultSecurityAsset T
-                                    				inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
-                                    				inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-                                    		delete	T
-                                    		from	ResponsibilityTypeRelationRule T
-                                    				inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+                                    		    delete  wis
+                                    		    from	workflow.Versionstep wis
+                                    				    inner join [workflow].[Version] v on v.ID = wis.VersionID
+                                    				    inner join [workflow].[Type] wt on wt.ID = v.TypeID
+                                    				    inner join #w S on S.ID = wt.ID;
+
+                                     		    update	wt
+                                    		    set		PublishedVersionID = null
+                                    		    from	workflow.type wt
+                                    				    inner join #w S on S.ID = wt.ID;
+
+                                    		    delete  v
+                                    		    from	[workflow].[Version] v
+                                    				    inner join [workflow].[Type] wt on wt.ID = v.TypeID
+                                    				    inner join #w S on S.ID = wt.ID;
+
+                                    		    delete  wt
+                                    		    from	[workflow].[Type] wt
+                                    				    inner join #w S on S.ID = wt.ID;
+                                            end
+
+                                            drop table if exists #r;
+                                            create table #r (ID int);
+                                            create index idx_r on #r(ID);
+
+                                            insert into #r
+                                            select T.ID
+                                            from   ResponsibilityTypeRelationRule T
+		                                           inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID 
+                                                    and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                            if exists (select 1 from #r)
+	                                         begin
+                                    		    delete	T
+                                    		    from	ResponsibilityRuleResultAsset T
+                                    				    inner join #r R on R.ID = T.RuleID;
+                                    		    delete	T
+                                    		    from	ResponsibilityRuleResultSecurityAsset T
+                                    				    inner join #r R on R.ID = T.RuleID;
+
+                                    		    delete	T
+                                    		    from	ResponsibilityTypeRelationRule T
+                                    				    inner join #r S on S.ID = T.ID;
+                                            end
+
                                     		delete	T
                                     		from	ResponsibilityTypeRelation T
                                     				inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
 
-                                            delete	T
-                                    		from	api.EntityFieldTypeMultiSelectField T
-                                    				inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
-                                    				inner join api.Entity E on E.ID = F.EntityID
-                                    				inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-                                    		delete	T
-                                    		from	api.EntityFieldType T
-                                    				inner join api.Entity E on E.ID = T.EntityID
-                                    				inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-                                    		delete	T
-                                    		from	api.EntityUri T
-                                    				inner join api.Entity E on E.ID = T.EntityID
-                                    				inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-                                    		delete	T
-                                    		from	api.Entity T
-                                    				inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-                                  			
+
+                                            drop table if exists #e;
+                                            create table #e (ID int);
+                                            create index idx_e on #e(ID);
+
+                                            insert into #e
+                                            select distinct E.ID
+                                            from	api.Entity E
+		                                    inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID 
+                                            and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
+
+                                            if exists(select 1 from #e)
+                                            begin
+
+                                                delete	T
+                                    		    from	api.EntityFieldTypeMultiSelectField T
+                                    				    inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
+                                    				    inner join #e E on E.ID = F.EntityID;
+
+                                    		    delete	T
+                                    		    from	api.EntityFieldType T
+                                    				    inner join #e E on E.ID = T.EntityID;
+
+                                    		    delete	T
+                                    		    from	api.EntityUri T
+                                    				    inner join #e E on E.ID = T.EntityID;
+
+                                    		    delete	T
+                                    		    from	api.Entity T
+                                    				    inner join #e E on E.ID = T.ID;
+                                            end
+
                                     		delete	T
                                     		from	[Load] T
                                     				inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
 
-                                       		delete	T
-                                    		from	SiteNavPermission T
-                                    				inner join SiteNav O on O.ID = T.SiteNavID
-                                    				inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
-                                    		delete	O
-                                    		from	SiteNav O
-                                    				inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                            drop table if exists #s;
+                                            create table #s (ID int);
+                                            create index idx_s on #s(ID);
+
+                                            insert into #s
+                                            select O.ID
+                                            from	SiteNav O 
+		                                            inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
+
+                                            if exists(select 1 from #s)
+                                            begin
+                                       		    delete	T
+                                    		    from	SiteNavPermission T
+                                    		    inner join #s O on O.ID = T.SiteNavID;
+
+                                    		    delete	O
+                                    		    from	SiteNav O
+                                    			inner join #s S on S.ID = O.ID;
+
+                                            end
 
                                             delete	T
                                     		from	NymRelation T
@@ -4812,7 +4870,6 @@ where   ExecutionID = @ExecutionID
                         try
                         {
                             // if needed create temp tables for data
-                            useTempTableForFields = false;
                             CreateWorkareaTempTables(useTempTableForFields, transaction);
 
                             AddMeasurement(metrics, "Create work area temp tables", sw.ElapsedMilliseconds, ++step);
@@ -11071,7 +11128,7 @@ where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * f
                                 {
                                     var insertSQL = $@"
                                             				drop table if exists #mergeResultTable
-            create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
+            create table #mergeResultTable (GroupID int, [Action] nvarchar(10), GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
 
             drop table if exists #auditRecords
 			create table #auditRecords (ItemNumber int, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
@@ -11134,7 +11191,23 @@ EG.GroupUid
                 when not matched then
 	                insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
 	                values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@CurrentResourceID)
-	            output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
+	            output inserted.ID, $action, TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
+
+                INSERT INTO [dbo].[Asset] ([uid], [AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
+		        SELECT	coalesce(EG.GroupUid, newid()), T.ID, 1, M.GroupID, 'Group', M.GroupID, G.UpdatedOn, coalesce(G.UpdatedBy, 0), G.UpdatedOn, coalesce(G.UpdatedBy, 0)
+		        FROM	#mergeResultTable M
+                        INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
+                        INNER JOIN [Group] G on G.ID = M.GroupID
+                        INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
+                WHERE M.[Action] = 'INSERT';
+
+	            INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+	            SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], coalesce(A.UpdatedOn, getutcdate()) 
+	            FROM	#mergeResultTable M
+                INNER JOIN [Group] G on G.ID = M.GroupID
+	            INNER JOIN Asset A ON A.Object = 'Group' and A.ObjectID = G.ID
+	            INNER JOIN  AssetType AT ON AT.Object = 'GroupType' and AT.ObjectID = 1
+	            WHERE M.[Action] = 'INSERT' AND NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = A.Uid);
 
 
                 INSERT INTO [ResourceGroup](GroupID,[ResourceID])

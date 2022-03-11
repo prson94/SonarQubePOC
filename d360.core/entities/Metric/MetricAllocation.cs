@@ -1,11 +1,11 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities.Metric
 {
@@ -37,7 +37,7 @@ namespace d360.core.entities.Metric
         public int UpperThreshold { get; set; }
 
         public new int CreatedBy { get; set; }
-        
+
         public new int UpdatedBy { get; set; }
     }
 
@@ -89,8 +89,10 @@ namespace d360.core.entities.Metric
 
         [DataMember]
         public bool isExternallyCalculated { get; set; }
+
         [DataMember]
         public int? lowerThreshold { get; set; }
+
         [DataMember]
         public int? upperThreshold { get; set; }
     }

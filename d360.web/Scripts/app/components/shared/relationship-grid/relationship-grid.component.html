@@ -1,0 +1,208 @@
+﻿<div class="relationship-detail">
+    <div class="row">
+        <div class="col s12" style="display: flex">
+            <div class="main-panel {{isInModal ? 'modal-dialog-main-panel' : 'tile tile-detail '}}">
+                <div class="modal-title" *ngIf="isInModal">
+                    <h1>Relationships</h1>
+                    <h2 *ngIf="assetDetail">{{assetDetail.DisplayValue}}</h2>
+                </div>
+                <div class="grid-actions-header">
+                    <div class="simple-search">
+                        <ig-search-field mode="Keypress"
+                                         [debounce]="600"
+                                         (onSearch)="onSimpleSearch($event)"
+                                         [(ngModel)]="simpleFilter"
+                                         [infoTooltip]="simpleSearchTooltipHTML">
+                        </ig-search-field>
+                    </div>
+                    <advanced-filtering *ngIf="areTypesLoaded"
+                                        #advFilterComponent
+                                        [loadIdentifier]="advFilterIdentifier"
+                                        [fieldsObserver]="filterFields$"
+                                        [clearConditionsOnFilterField]="'relationshiptype'"
+                                        (onChange)="advancedFiltersChanged($event)">
+                    </advanced-filtering>
+                    <div class="grid-action-buttons">
+                        <button *ngIf="assetPermissions && assetPermissions.AddRelationships"
+                                igButton
+                                pTooltip="Add Relationships"
+                                tooltipPosition="top"
+                                tooltipStyleClass="ig-tooltip"
+                                class="ig-button-primary"
+                                icon="fa-plus"
+                                (click)="isAddVisible=true">
+                        </button>
+                        <div pTooltip="Export to Excel"
+                             tooltipPosition="left"
+                             tooltipStyleClass="ig-tooltip">
+                            <button igButton
+                                    [disabled]="isExportInProgress"
+                                    icon="fa-download"
+                                    [loading]="isExportInProgress"
+                                    (click)="export()">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <p-table *ngIf="assetUid && areTypesLoaded" #dt
+                         [metaKeySelection]="true"
+                         [value]="relationships"
+                         [(selection)]="selectedRelationship"
+                         [globalFilterFields]="['RelationshipTypeName']"
+                         dataKey="Uid"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         paginatorDropdownAppendTo="body"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         [totalRecords]="totalRecords"
+                         [loading]="isLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         [lazy]="true"
+                         (onLazyLoad)="loadRelationshipLazy($event)">
+                    <ng-template pTemplate="emptymessage" let-columns>
+                        <tr>
+                            <td [attr.colspan]="2">
+                                <span>&nbsp;&nbsp;No matches found</span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'RelationshipTypeName'">
+                                Relationship Type <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
+                            <th *ngFor="let column of columns" [pSortableColumn]="column.sortable ? column.apiName : null ">
+                                {{column.text}}
+                                <d3s-sortIcon [field]="column.apiName"></d3s-sortIcon>
+                            </th>
+                            <th width="40px"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                            <td>
+                                {{item.RelationshipTypeName}}
+                            </td>
+                            <td>
+                                {{item.AssetPath}}
+                            </td>
+                            <td *ngFor="let column of columns">
+                                <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                            </td>
+                            <td class="asset-grid-tools">
+                                <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
+                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                </div>
+                                <div style="display:inline-block" *ngIf="item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
+                                    <i class="fa fa-question-circle" pTooltip="This is a parent-child relationship which can neither be edited/deleted" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first"
+                                              [rows]="dt.rows"
+                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+
+                <div class="action-bar modal-action-bar" *ngIf="isInModal">
+                    <button igButton igAutoFocus label="Close" (click)="onClose.emit()"></button>
+                </div>
+            </div>
+
+
+            <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="side-panel {{isInModal ? '' : 'tile tile-detail '}}">
+                <side-panel (expandedChange)="sidePanelOpen=$event"
+                            (selectedPanelChange)="sidePanelTab=$event"
+                            [hasSelectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
+                            [hasProfiling]="false"
+                            [hasDetail]="true"
+                            [hasFilter]="true"
+                            [storageKey]="sidePanelStorageKey"
+                            [selectedPanel]="sidePanelTab">
+                    <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'filters'">
+                        <gov-relationship-filter [relationshipTypesResolvedNames]="relationshipTypesResolvedNames"></gov-relationship-filter>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
+                        <ig-asset-detail *ngIf="(selectedAsset || selectedRelAsset) && !selectedReferenceItem && !selectedTag"
+                                         [objectUID]="selectedRelAsset ? selectedRelAsset.uid : selectedAsset.uid"
+                                         [objectType]="selectedRelAsset ? selectedRelAsset.type : selectedAsset.type"
+                                         [relationshipUid]="selectedRelAsset ? selectedRelAsset.relUid : ''"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [interceptLinkClick]="true"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"></ig-asset-detail>
+                        <ng-container *ngIf="selectedReferenceItem">
+                            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                                  [baseUrl]="selectedReferenceItem.url">
+                            </ig-asset-type-detail>
+                        </ng-container>
+                        <ng-container *ngIf="selectedTag">
+                            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                        </ng-container>
+                    </ng-container>
+                </side-panel>
+            </div>
+        </div>
+    </div>
+</div>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [appendToBody]="true"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <asset-editor #dynamicEditor
+                  *ngIf="showEditor"
+                  [objectID]="selectedRelationship ? selectedRelationship.Uid : null"
+                  [objectType]="'IntersectType'"
+                  [title]="'Edit Relationship'"
+                  [subTitle]="fullRelationshipNameAsHTML"
+                  [selection]="selectedRelationship"
+                  [rowID]="rowID"
+                  [objectTypeUid]="selectedRelationship.RelationshipTypeUid"
+                  [hidePath]="true"
+                  (saveClick)="saveItem($event)"
+                  [showAsModal]="true"
+                  [isV2API]="true"
+                  (closeClick)="showEditor=false"></asset-editor>
+</d3s-modal>
+
+<add-relationship-editor #addRelationships
+                         [assetUid]="assetUid"
+                         [assetTypeUid]="assetTypeUid"
+                         [isVisible]="isAddVisible"
+                         (onClose)="isAddVisible=false"
+                         (onAddComplete)="onAddComplete($event)">
+</add-relationship-editor>
+
+<d3s-modal *ngIf="selectedRelationship" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [appendToBody]="true"
+           [title]="'Delete Relationship'"
+           [isVisible]="showDelete">
+    <div class="content">
+        Please confirm that you wish to remove the relationship:<br />
+        <span [innerHTML]="fullRelationshipNameAsHTML"></span> <br /><br />
+
+        Please note that this operation cannot be undone.
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>

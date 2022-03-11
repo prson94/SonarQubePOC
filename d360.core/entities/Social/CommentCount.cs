@@ -1,6 +1,7 @@
-﻿using d360.core.entities.Contracts;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
-using System.ComponentModel.DataAnnotations.Schema;
+
+using d360.core.entities.Contracts;
 using d360.core.enums;
 
 namespace d360.core.entities
@@ -12,6 +13,7 @@ namespace d360.core.entities
 
         [DataMember]
         public string CommentTypeName { get; set; }
+
         [DataMember]
         public int Count { get; set; }
 
@@ -19,6 +21,5 @@ namespace d360.core.entities
         public CommentType CommentType { get; set; }
 
         #endregion
-
     }
 }

@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, ViewChild, ElementRef, EventEmitter, Inject, forwardRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchFullResult, SearchResultFieldDisplay, SearchSelecton } from '../../models/search-result.model';
+import { SearchFullResult, SearchResultFieldDisplay, SearchSelection } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -21,7 +21,7 @@ import { CompanySettingEnum } from '../../models/settings.model';
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
-    @Input() selection: SearchSelecton;
+    @Input() selection: SearchSelection;
 
     @Output() onSelect = new EventEmitter();
 

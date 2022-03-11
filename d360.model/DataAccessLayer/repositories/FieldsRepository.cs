@@ -2163,7 +2163,6 @@ from	IntersectType I
             (Columns, Fields) = ComplexFieldsHelper.GetComplexRelationLookupFieldsAndColumns(fields, definition);
 
             List<string> defaultFilters = new List<string>();
-            List<string> simpleFilters = new List<string>();
 
             foreach (var field in Fields.Where(x => !string.IsNullOrEmpty(x.defaultFilter)))
             {
@@ -2186,23 +2185,10 @@ from	IntersectType I
                 advancedFilter = string.IsNullOrEmpty(advancedFilter) ? defFilters : advancedFilter + " and " + defFilters;
             }
 
+            List<string> simpleFilters = new List<string>();
             if (!string.IsNullOrEmpty(simpleFilter))
             {
-                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
-                {
-                    var value = HttpUtility.UrlEncode(simpleFilter);
-
-                    if (f.type == "bool")
-                    {
-                        bool parsedResult;
-                        if (bool.TryParse(value, out parsedResult))
-                        {
-                            value = parsedResult ? "1" : "0";
-                        }
-
-                    }
-                    simpleFilters.Add($"({f.apiName} ct '{value}')");
-                }
+                simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
             }
 
             if (simpleFilters.Count > 0)
@@ -2362,10 +2348,7 @@ from	IntersectType I
             List<string> simpleFilters = new List<string>();
             if (!string.IsNullOrEmpty(simpleFilter))
             {
-                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
-                {
-                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
-                }
+                simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
             }
 
             if (simpleFilters.Count > 0)
@@ -2498,10 +2481,7 @@ from	IntersectType I
             List<string> simpleFilters = new List<string>();
             if (!string.IsNullOrEmpty(simpleFilter))
             {
-                foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
-                {
-                    simpleFilters.Add($"({f.apiName} ct '{HttpUtility.UrlEncode(simpleFilter)}')");
-                }
+                simpleFilters = GetSimpleFilterForGridFields(simpleFilter, Fields);
             }
 
             if (simpleFilters.Count > 0)
@@ -2592,6 +2572,37 @@ from	IntersectType I
 		                        end
 		                        select @referenceItemTypeID", dbArgs)).FirstOrDefault();
         }
+
+
+        private static List<string> GetSimpleFilterForGridFields(string simpleFilter, List<GridField> Fields)
+        {
+            List<string> simpleFilters = new List<string>();
+            foreach (var f in Fields.Where(x => !string.IsNullOrEmpty(x.apiName)))
+            {
+                var value = HttpUtility.UrlEncode(simpleFilter);
+
+                if (f.type == "bool")
+                {
+                    bool parsedResult;
+                    if ("true".IndexOf(value.ToLowerInvariant()) != -1)
+                    {
+                        value = "1";
+                    }
+                    if ("false".IndexOf(value.ToLowerInvariant()) != -1)
+                    {
+                        value = "0";
+                    }
+                    if (bool.TryParse(value, out parsedResult))
+                    {
+                        value = parsedResult ? "1" : "0";
+                    }
+
+                }
+                simpleFilters.Add($"({f.apiName} ct '{value}')");
+            }
+            return simpleFilters;
+        }
+
 
     }
 }

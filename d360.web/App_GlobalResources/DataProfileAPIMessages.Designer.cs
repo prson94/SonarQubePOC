@@ -106,6 +106,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset Type Uid.
+        /// </summary>
+        internal static string AssetTypeUidColumn {
+            get {
+                return ResourceManager.GetString("AssetTypeUidColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset UID.
         /// </summary>
         internal static string AssetUidColumn {
@@ -588,6 +597,15 @@ namespace Resources {
         internal static string SemanticTypeURLColumn {
             get {
                 return ResourceManager.GetString("SemanticTypeURLColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Filtered Asset list for {0} {1}.
+        /// </summary>
+        internal static string SemanticTypeAssetExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeAssetExportFilename", resourceCulture);
             }
         }
         

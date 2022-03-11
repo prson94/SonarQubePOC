@@ -71,6 +71,7 @@ export class SearchStateService extends BaseObservableService {
     private _initial: boolean = false;
 
     loadState(term: string, searchCategories: string[], keepFilters: boolean) {
+        this._loading.next(true);
         this.reset(keepFilters);
         this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x != a[i - 1]);
 
@@ -215,13 +216,13 @@ export class SearchStateService extends BaseObservableService {
 
         if (categories.length > 0) {
             aggFilters.push(new SearchAggregationFilter({
-                Field: "d3sCategory",
+                Field: "Category",
                 Values: categories.sort().filter((x, i, a) => !i || x != a[i - 1])
             }));
         }
         if (types.length > 0) {
             aggFilters.push(new SearchAggregationFilter({
-                Field: "d3sAssetType",
+                Field: "AssetType",
                 Values: types.sort().filter((x, i, a) => !i || x != a[i - 1])
             }));
         }
@@ -267,7 +268,7 @@ export class SearchStateService extends BaseObservableService {
             tap(val => { this._treeLoading.next(true) }),
             switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery))
         ).subscribe((res) => {
-            var filterTree = this.buildTree(res.Categories.map((val) => {
+            var filterTree = this.buildTree(res.Aggregations.category.map((val) => {
                 return {
                     "key": val.Name,
                     "label": this.getDisplayLookup(val.Name),
@@ -275,7 +276,7 @@ export class SearchStateService extends BaseObservableService {
                     "expanded": false,
                     "data": val.Name,
                     "count": val.ResultCount,
-                    "children": val.Categories.map((cat) => {
+                    "children": val.Items.map((cat) => {
                         return {
                             "key": val.Name + this.subCategoryKeySeparator + cat.Name,
                             "label": cat.Name,
@@ -301,6 +302,8 @@ export class SearchStateService extends BaseObservableService {
         }
         );
 
+        let initialQuery = true;
+
         //Main query - results goes in the card list
         this.MainSub$ = this.MainQuery$.pipe(
             debounceTime(this.debounceValue),
@@ -308,11 +311,15 @@ export class SearchStateService extends BaseObservableService {
             tap(val => { this._loading.next(true); }),
             switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery))
         ).subscribe((res) => {
-            const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
-            this._resultCount.next(res.Result.Matches);
-            this._pageNumber.next(pageNumber);
-            this._results.next(res.Result.Results);
-            this._loading.next(false);
+            if (initialQuery && res.ElapsedMS.Query === 0) {
+                initialQuery = false;
+            } else {
+                const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
+                this._resultCount.next(res.Matches);
+                this._pageNumber.next(pageNumber);
+                this._results.next(res.Results);
+                this._loading.next(false);
+            }
         });
     }
 

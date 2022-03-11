@@ -166,7 +166,7 @@ namespace igx.UnitTests.SearchTests
                 .Returns(CreateESClientWithResponse(response))
                 .Verifiable();
 
-            IndexResults result = source.Object.GetStatusSearch(CompanyID, new List<IndexTypeList>(), false);
+            IndexResults result = source.Object.GetStatusSearch(CompanyID, false);
 
             Assert.Equal(recordCount, result.Matches);
         }
@@ -430,7 +430,7 @@ namespace igx.UnitTests.SearchTests
                 Size = 25,
                 Term = "more"
             };
-            List<IndexTypeList> categories = new List<IndexTypeList>();
+            List<IndexAggregation> categories = new List<IndexAggregation>();
             QueryLimitation limits = new QueryLimitation
             {
                 ResourceID = 1,
@@ -444,7 +444,7 @@ namespace igx.UnitTests.SearchTests
                 .Returns(CreateESClientWithResponse(GetSearchResponse()))
                 .Verifiable();
 
-            IndexResults result = source.Object.GetSearchResultsWithAggregation(CompanyID, 1, queryRequest, categories, limits);
+            IndexResults result = source.Object.GetSearchResultsWithAggregation(CompanyID, queryRequest, limits);
 
             Assert.Equal(2, result.Results.Count);
         }

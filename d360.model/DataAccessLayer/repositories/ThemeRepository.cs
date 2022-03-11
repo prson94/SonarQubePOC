@@ -329,6 +329,11 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
                 var repoTheme = theme.ToRepositoryModel(CompanyContext.CurrentResourceID);
                 repoTheme.Validate();
 
+                if (CompanyContext.Any<Theme>(t => t.Name.ToLower() == repoTheme.Name.ToLower()))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, ThemeErrors.ThemeNameMustBeUnique);
+                }
+
                 await Task.Run(() => {
                     CompanyContext.Add(repoTheme);
                     if (repoTheme.IsCurrent)
@@ -376,6 +381,12 @@ select * from reporting.Global_Resource where ResourceID = @updatedBy;";
 
                 existingTheme = theme.ToRepositoryModel(existingTheme, CompanyContext.CurrentResourceID);
                 existingTheme.Validate();
+
+                if (CompanyContext.Any<Theme>(t => t.Uid != existingTheme.Uid && t.Name.ToLower() == existingTheme.Name.ToLower()))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeNameMustBeUnique);
+                }
+
                 await Task.Run(() => {
                     CompanyContext.Update(existingTheme);
                     if (existingTheme.IsCurrent) 

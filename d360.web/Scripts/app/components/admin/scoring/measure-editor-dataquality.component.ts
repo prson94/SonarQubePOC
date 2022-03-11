@@ -260,6 +260,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         this.ruleResultFields = fields.map(f => {
             let fieldOption: FieldTypeAPIModelFieldCondition = {
                 AssetTypeUid: f.AssetTypeUid,
+                RelationshipTypeUid: '',
                 Category: '',
                 FriendlyName: f.AssetTypeName + ' > ' + f.Name,
                 Name: f.ApiName,

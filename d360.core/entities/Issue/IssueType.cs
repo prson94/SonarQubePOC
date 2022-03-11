@@ -1,11 +1,9 @@
-﻿using d360.core.entities.Contracts;
-using System;
-using System.Data;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Xml.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -22,6 +20,7 @@ namespace d360.core.entities
         public string Description { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
+
         public int? UpdatedBy { get; set; }
 
         [DataMember]

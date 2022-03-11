@@ -44,12 +44,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnInit() {
-        if (!this.titleAndTabsService.isInitialize) {
-            this.titleAndTabsService.initializeTitleAndTabsInRightSidebar(this.route.params, TabTitle.DASHBOARDS);
-        }
-
         this.showSingle = false;
         this.sub = this.route.params.subscribe(params => {
+            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, TabTitle.DASHBOARDS);
+
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.dashboardName = params['name'];
@@ -97,6 +95,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnDestroy() {
+        this.secondaryNavService.resetSecondaryNavActiveItem();
+        
         if (this.sub) {
             this.sub.unsubscribe();
         }

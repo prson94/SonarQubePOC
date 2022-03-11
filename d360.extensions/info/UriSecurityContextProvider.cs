@@ -1,16 +1,12 @@
-﻿using System;
-using d360.core;
-
-
-namespace d360.extensions.info
+﻿namespace d360.extensions.info
 {
     public class UriSecurityContextProvider : ISecurityContextProvider
     {
         public UriSecurityContextProvider()
         {
-            
+
         }
-        
+
         public int ClientID { get; set; }
 
         public int CompanyID { get; set; }

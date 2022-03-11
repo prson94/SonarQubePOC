@@ -1,8 +1,10 @@
-﻿using d360.core.enums;
+﻿using System;
+using System.Resources;
+
+using d360.core.enums;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
-using System;
-using System.Resources;
 
 namespace d360.core
 {
@@ -52,8 +54,7 @@ namespace d360.core
             bool isValidEnum = true;
             if (reader.Value != null)
             {
-                int enumValue;
-                bool isNumeric = int.TryParse(reader.Value.ToString(), out enumValue);
+                bool isNumeric = int.TryParse(reader.Value.ToString(), out int enumValue);
                 if (isNumeric && !Enum.IsDefined(objectType, enumValue))
                 {
                     isValidEnum = false;
@@ -65,9 +66,10 @@ namespace d360.core
 
                 if (!isValidEnum)
                 {
-                    var ex = new JsonSerializationException($"Requested value '{reader.Value}' was not found.", new Exception("Invalid enum value"));
-                    ex.Source = "Newtonsoft.Json";
-                    throw ex;
+                    throw new JsonSerializationException($"Requested value '{reader.Value}' was not found.", new Exception("Invalid enum value"))
+                    {
+                        Source = "Newtonsoft.Json"
+                    };
                 }
             }
 
@@ -160,7 +162,7 @@ namespace d360.core
             Allowed = true;
         }
     }
-    
+
     public class AllowEditFromPredicateEditorAttribute : Attribute
     {
         public bool Allowed { get; private set; }
@@ -198,7 +200,7 @@ namespace d360.core
             Allowed = allowed;
         }
     }
-    
+
     public class AllowSurveyAttribute : Attribute
     {
         public bool Allowed { get; private set; } = true;
@@ -233,9 +235,9 @@ namespace d360.core
 
         public ExcludeDataTypeAttribute(DataType exclude)
         {
-            this.Excluded = exclude;
+            Excluded = exclude;
         }
-    }    
+    }
 
     public class ForceDifferentSubjectObjectAttribute : Attribute
     {
@@ -245,7 +247,7 @@ namespace d360.core
             Allowed = allowed;
         }
     }
-    
+
     public class IconAttribute : Attribute
     {
         public string Icon { get; private set; } = "";
@@ -254,7 +256,7 @@ namespace d360.core
             Icon = icon;
         }
     }
-    
+
     public class IsAllowedAutoDisplayParentAttribute : Attribute
     {
         public bool _isAllowedAutoDisplayParent = false;
@@ -264,7 +266,7 @@ namespace d360.core
             _isAllowedAutoDisplayParent = _isAllowed;
         }
     }
-    
+
     public class IsTypeAttribute : Attribute
     {
         public bool IsType { get; private set; }
@@ -283,26 +285,26 @@ namespace d360.core
             Locked = locked;
         }
     }
-    
+
     public class NameAttribute : LocalizedAttribute
     {
-        public string Name 
+        public string Name
         {
-            get 
+            get
             {
                 return Value;
-            } 
+            }
         }
-        
-        public NameAttribute(string name): base(name)
+
+        public NameAttribute(string name) : base(name)
         {
         }
 
-        public NameAttribute(string resourceKey, Type localizedResource): base(resourceKey, localizedResource)
+        public NameAttribute(string resourceKey, Type localizedResource) : base(resourceKey, localizedResource)
         {
         }
     }
-   
+
     public class NotYetUsedAttribute : Attribute
     {
         public NotYetUsedAttribute()
@@ -318,7 +320,7 @@ namespace d360.core
             Classes = classes;
         }
     }
-    
+
     public class OperatorAllowedDataTypesAdvancedFilterAttribute : Attribute
     {
         public DataType[] DataTypes { get; private set; }
@@ -336,7 +338,7 @@ namespace d360.core
             DataTypes = dataTypes;
         }
     }
-    
+
     public class OperatorAllowedMeasureChecksAttribute : Attribute
     {
         public MetricGovernanceCheckType[] Checks { get; private set; }
@@ -345,7 +347,7 @@ namespace d360.core
             Checks = checks;
         }
     }
-    
+
     public class OperatorFieldTypeRequirementsAttribute : Attribute
     {
         public bool FieldRequiresMultipleValueSupport { get; private set; }

@@ -1401,4 +1401,34 @@ SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'Queue', 0;
 			]]>
 		</sql>
 	</changeSet>
+	<changeSet author="TKlok" id="Data.Corrections.GOV-16661">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+			<comment>Queue Elasticsearch index of Semantics, delayed 1 hour to allow for code deployment.</comment>
+			<![CDATA[
+			INSERT INTO [queue].[task] (Action, Custom, Date, Object, ObjectID)
+			SELECT 'QueueRebuild', 'SearchIndex', DATEADD(HOUR, 1, getdate()), 'SemanticType', 0;
+			]]>
+		</sql>
+	</changeSet>
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-17433">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+Declare @ID int = (select ID from sitenav where name = '#Fusion' and parentID is null);
+
+if (@ID is not null)
+begin
+	delete from SiteNavPermission where SiteNavID = @ID;
+
+	delete from sitenav where ID = @ID;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

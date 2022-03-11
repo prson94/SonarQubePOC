@@ -18,6 +18,5 @@ namespace d360.core.helpers
         {
             return obj.ToLower().GetHashCode();
         }
-
     }
 }

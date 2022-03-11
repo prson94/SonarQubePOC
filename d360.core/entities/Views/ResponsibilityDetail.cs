@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -49,7 +48,6 @@ namespace d360.core.entities.Views
 
         [DataMember]
         public bool IsVisible { get; set; }
-
 
         [DataMember]
         public string Object { get; set; }

@@ -720,7 +720,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("type/{typeQualifier}/{minConfidence}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfileByTypeQualifierApiViewModel)),
-            SwaggerProduces("application/json"),
+            SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),            
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
@@ -738,7 +738,9 @@ namespace d360.web.Controllers.V2
             try {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var isValid = isPageSizeAndNumValid(queryParams);
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+                var isValid = isPageSizeAndNumValid(queryParams, isStreamResponse);
                 if (!string.IsNullOrEmpty(isValid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
@@ -775,9 +777,28 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.MinConfidenceInvalid)).ConfigureAwait(false);
                 }
 
-                var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams).ConfigureAwait(false);
+                var results = await DataProfiles.GetAssetsByTypeQualifier(typeQualifier, minConfidence, queryParams, isStreamResponse).ConfigureAwait(false);                
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+                HttpResponseMessage response;
+
+                if (isStreamResponse)
+                {
+                    var semantic = Company.Semantics.FirstOrDefault(x => x.Qualifier == typeQualifier);
+                    SLDocument document = CreateResponseDocumentForSemanticTypeAssetListExport(results, semantic.Name);
+                    document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
+                    var stream = new MemoryStream();
+                    document.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();
+
+                    response = createFileResponseMessage(HttpStatusCode.OK, string.Format(DataProfileAPIMessages.SemanticTypeAssetExportFilename, semantic.Name, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+                }
+                else
+                {
+                    response = Request.CreateResponse(HttpStatusCode.OK, results);
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+
             }
             catch (FilterExpressionParserException ex)
             {
@@ -1083,7 +1104,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("asOfEffectiveDate", "Assumed to be current UTC date if left empty, otherwise, gets semantic types as of the specified effective date, and nothing later. This is the parameter used to get prior versions.", DataType = "datetime", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(GetSemantics)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetSemanticTypes(CancellationToken cancellationToken)
         {
@@ -1149,7 +1170,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(List<GetSemantic>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetSemanticTypeVersions(string qualifier, CancellationToken cancellationToken)
         {
@@ -1374,7 +1395,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("semantictypes/{qualifier}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns a success message.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Your semantic type was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this semantic type is invalid, possibly due to being used on one or more data profiles.", typeof(ErrorResponse)),
@@ -1513,6 +1534,56 @@ namespace d360.web.Controllers.V2
 
             }
         }
+        
+        /// <summary>
+        /// Create the Excel document for export
+        /// </summary>
+        /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
+        private SLDocument CreateResponseDocumentForSemanticTypeAssetListExport(AssetDataProfileByTypeQualifierApiViewModel assets, string semanticName)
+        {           
+            var document = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeAssetExportFilename, semanticName, DateTime.Now.ToString("ddd MMM dd yyyy")))
+            {
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+                {
+                    HeaderRows = {
+                        new ExcelRow
+                        {
+                            DataProfileAPIMessages.AssetPathColumn,
+                            DataProfileAPIMessages.AssetTypePathColumn,
+                            DataProfileAPIMessages.AssetUidColumn,
+                            DataProfileAPIMessages.AssetTypeUidColumn,
+                            DataProfileAPIMessages.SemanticTypeUidColumn,
+                            DataProfileAPIMessages.AssetUrlColumn,
+                            DataProfileAPIMessages.SemanticTypeURLColumn
+                        }
+                    },
+
+                    ValueRows = assets.items.Select(row => new ExcelRow
+                    {
+                        row.path,
+                        row.assetTypePath,
+                        row.uid.ToString(),
+                        row.assetTypeUid.ToString(),
+                        row.semanticTypeUid.ToString(),
+                        $"asset/{row.uid}",
+                        $"semantics/{row.semanticTypeUid}"
+                    }).ToList(),
+                },
+
+                new ExcelSheet(ExcelExports.Common_ApiInfoSheetName)
+                {
+                    ValueRows =
+                    {
+                        new ExcelRow { ExcelExports.Common_PageSize, assets.pageSize.ToString() },
+                        new ExcelRow { ExcelExports.Common_PageNum, assets.pageNum.ToString() },
+                        new ExcelRow { ExcelExports.Common_Total, assets.total.ToString() }
+                    }
+                }
+            };
+
+            return document.ToSLDocument();
+        }
+
+        #endregion
     }
-    #endregion
 }

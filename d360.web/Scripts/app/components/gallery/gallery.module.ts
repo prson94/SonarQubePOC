@@ -72,6 +72,7 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { GalleryCodeAreaComponent } from './gallery.codearea.component';
 import { CodeAreaModule } from '../shared/controls/codearea/codearea.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { GalleryLocaleComponent } from './gallery.locale.component';
 
 @NgModule({
     imports: [
@@ -148,11 +149,12 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         GalleryInputGroupComponent,
         GalleryModalComponent,
         GalleryModalDrawerComponent,
-        GalleryCodeAreaComponent
+        GalleryCodeAreaComponent,
+        GalleryLocaleComponent
     ],
     providers: [
         GalleryGuard,
-        
+
     ]
 })
 export class GalleryModule { }

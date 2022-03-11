@@ -104,7 +104,6 @@ namespace d360.web.Controllers.V2
         [SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid.", typeof(ErrorResponse))]
         [SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))]
         [SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse))]
-        [SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse))]
         public async Task<IHttpActionResult> GetAuditAsync(
             [FromUri(Name = "_pageSize")] int? pageSize = null,
             [FromUri(Name = "_pageNum")] int? pageNum = null,
@@ -118,27 +117,38 @@ namespace d360.web.Controllers.V2
             [FromUri(Name = "_assetUid")] Guid? assetUid = null
         )
         {
-            ValidateParameters();
-
-            bool isStreamResponse = RequestValidator.IsStreamResponse(Request);
-            pageSize = isStreamResponse ? RequestValidator.ValidateStreamPageSize(pageSize) : RequestValidator.ValidateJsonPageSize(pageSize);
-            pageNum = RequestValidator.ValidatePageNumber(pageNum);
-
-            var orderBy = Array.Empty<OrderByModel>();
-            if (string.IsNullOrEmpty(orderByColumnName) == false)
+            try
             {
-                orderBy = new[] { OrderByModel.Create(orderByColumnName, orderByDirection) };
+                ValidateParameters();
+
+                bool isStreamResponse = RequestValidator.IsStreamResponse(Request);
+                pageSize = isStreamResponse ? RequestValidator.ValidateStreamPageSize(pageSize) : RequestValidator.ValidateJsonPageSize(pageSize);
+                pageNum = RequestValidator.ValidatePageNumber(pageNum);
+
+                var orderBy = Array.Empty<OrderByModel>();
+                if (string.IsNullOrEmpty(orderByColumnName) == false)
+                {
+                    orderBy = new[] { OrderByModel.Create(orderByColumnName, orderByDirection) };
+                }
+
+                if (isStreamResponse)
+                {
+                    var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
+                    return Excel(GetExcelDocumentFromQuery(result), $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+                }
+                else
+                {
+                    var result = await AuditDapperRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
+                    return Ok(result);
+                }
             }
-
-            if (isStreamResponse)
+            catch (Exception ex)
             {
-                var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
-                return Excel(GetExcelDocumentFromQuery(result), $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
-            }
-            else
-            {
-                var result = await AuditDapperRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
-                return Ok(result);
+                if (ex is ArgumentException || ex is FilterExpressionParserException)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ex.Message)).ConfigureAwait(false);
+                }
+                throw;
             }
         }
 

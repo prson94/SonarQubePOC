@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-
-namespace d360.core.enums
+﻿namespace d360.core.enums
 {
     public enum ApiUriType
     {
         [
-            Name("Collection"), 
+            Name("Collection"),
             Description("Collection.")
         ]
         Collection = 1,
+
         [
             Name("Singleton"),
             Description("Single asset.")

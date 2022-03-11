@@ -31,9 +31,12 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
     assets: SemanticTypeAsset[];
     assetsTotal: number;
     selectedAsset: SemanticTypeAsset;
+    sortField: string;
+    sortOrder: number;
 
     simpleFilter: string = "";
     advancedFilter: string = "";
+    isExportInProgress: boolean = false;
 
     menuItems: any[] = [
         { title: "Open" },
@@ -82,7 +85,7 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
 
     getData() {
         this.isLoading = true;        
-        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter).subscribe((result) => {
+        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
             this.assets = result.items;
             if (!this.selectedAsset || !result.items.some((x) => (x.uid === this.selectedAsset.uid))) {
                 this.selectedAsset = result.items[0];
@@ -109,6 +112,8 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
 
     lazyLoad(event: LazyLoadEvent) {
         this.rowsPerPage = event.rows;
+        this.sortField = event.sortField;
+        this.sortOrder = event.sortOrder;
         this.currentPageNumber = (event.first / event.rows) + 1;
         this.getData();
     }
@@ -137,5 +142,14 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
         } else if (key === 'open in new tab') {
             this.selectSemanticTypeAsset(item, true);
         }
+    }
+
+    canExportRecords() {
+        return this.assetsTotal <= this.maxExportRows;
+    }
+
+    export() {
+        this.isExportInProgress = true;
+        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, this.maxExportRows, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, this.semanticType.name, () => { this.isExportInProgress = false; });
     }
 }

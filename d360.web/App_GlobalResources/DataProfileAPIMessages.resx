@@ -135,6 +135,10 @@
     <value>Asset Type Path</value>
     <comment>Used for data profile match export</comment>
   </data>
+  <data name="AssetTypeUidColumn" xml:space="preserve">
+    <value>Asset Type Uid</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
   <data name="AssetUidColumn" xml:space="preserve">
     <value>Asset UID</value>
     <comment>Used for data profile match export</comment>
@@ -326,6 +330,10 @@
   <data name="SemanticTypeURLColumn" xml:space="preserve">
     <value>Semantic Type URL</value>
     <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeAssetExportFilename" xml:space="preserve">
+    <value>Filtered Asset list for {0} {1}</value>
+    <comment>Used for semantic type asset list export</comment>
   </data>
   <data name="Similar" xml:space="preserve">
     <value>Similar</value>

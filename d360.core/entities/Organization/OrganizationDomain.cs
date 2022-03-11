@@ -1,7 +1,6 @@
-﻿using d360.core.entities.Contracts;
-using d360.core.enums;
-using System;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
