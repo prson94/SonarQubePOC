@@ -317,8 +317,8 @@
 <d3s-relationships-modal *ngIf="selectedNodeData && selectedNodeData.objectId"
                          (onClose)="closeRelationshipModel()"
                          [isModalVisible]="isRelatedAssetsVisible"
-                         [objectID]="selectedNodeData.objectId"
-                         [objectType]="'Task'">
+                         [assetUid]="selectedNodeData.key"
+                         [assetTypeUid]="selectedNodeData.assetTypeUid">
 </d3s-relationships-modal>
 
 <div #palleteTooltip id="toolTipDIV" class="gojs-pallete-tooltip">

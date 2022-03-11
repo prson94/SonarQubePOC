@@ -43,11 +43,17 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
     @Input() hasEditLink: boolean = false;
+    @Input() hasOpenLink: boolean = true;
     @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
     @Input() hideLinks: boolean = false;
     @Input() hideClassName: boolean = false;
     @Input() groupMembersReadOnlyMode: boolean = true;
+    //if relationshipUid is sent we need to show both relationship data and related asset data
+    @Input() relationshipUid: string = '';
+    //baseAssetUid is used to determine on which side is our relationship
+    @Input() baseAssetUid: string = '';
+
     @Output() onEditClick = new EventEmitter();
 
     assetUID: string;
@@ -122,7 +128,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             }
 
             if (this.objectType && this.objectUID) {
-                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition, this.baseAssetUid);
             }
         }
 
@@ -143,6 +149,11 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         if (this.objectType === 'Group' && updateTab) {
             this.tab = 'members';
             this.hideLinks = !this.isAdmin;
+        }
+
+
+        if (this.relationshipUid) {
+            this.tab = 'relationship';
         }
 
         if (detailSub) {
@@ -417,15 +428,15 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task';
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task' && !this.relationshipUid;
     }
 
     get showGroupTab(): boolean {
-        return this.objectType === 'Resource';
+        return this.objectType === 'Resource' && !this.relationshipUid;
     }
 
     get showMemberTab(): boolean {
-        return this.objectType === 'Group';
+        return this.objectType === 'Group' && !this.relationshipUid;
     }
 
     memberClicked($event, data) {

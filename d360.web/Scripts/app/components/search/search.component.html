@@ -135,22 +135,22 @@
             </side-panel>
         </div>
     </div>
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
-           (onClose)="showEditor=false"
-           [showTitle]="false"
-           [isVisible]="showEditor">
-    <asset-editor #dynamicEditor
-                  *ngIf="showEditor"
-                  [objectID]="selection?.AssetUid"
-                  [objectType]="selection?.ObjectType"
-                  [title]="selection ? 'Edit Asset' : 'Create New Asset'"
-                  [selection]="selection"
-                  [objectTypeUid]="selection?.Data?.AssetTypeUid"
-                  [assetTypePath]="''"
-                  (saveClick)="saveItem($event)"
-                  [showAsModal]="true"
-                  [isV2API]="true"
-                  (closeClick)="showEditor=false"></asset-editor>
-</d3s-modal>
+    <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+               (onClose)="showEditor=false"
+               [showTitle]="false"
+               [isVisible]="showEditor">
+        <asset-editor #dynamicEditor
+                      *ngIf="showEditor"
+                      [objectID]="selection?.AssetUid"
+                      [objectType]="selection?.ObjectType"
+                      [title]="selection ? 'Edit Asset' : 'Create New Asset'"
+                      [selection]="selection"
+                      [objectTypeUid]="selection?.Data?.AssetTypeUid"
+                      [assetTypePath]="''"
+                      (saveClick)="saveItem($event)"
+                      [showAsModal]="true"
+                      [isV2API]="true"
+                      (closeClick)="showEditor=false"></asset-editor>
+    </d3s-modal>

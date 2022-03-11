@@ -1429,7 +1429,7 @@ where T.ExecutionId = @executionid;
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
             foreach (var result in results)
-            {
+            {   
                 if (result.Success)
                 {
                     events.Add(new AssetEventInfo

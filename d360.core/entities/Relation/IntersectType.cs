@@ -146,5 +146,7 @@ namespace d360.core.entities
 
         [DataMember]
         public IntersectTypeApiEdgeViewModel Object { get; set; }
+        [DataMember]
+        public bool? HasFieldTypes { get; set; }
     }
 }

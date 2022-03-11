@@ -9,6 +9,7 @@ import { DropdownOption } from '../models/dropdown.model';
 import { Observable, forkJoin } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 import { Relation } from '../models/fieldtype-api.model';
+import * as _ from 'lodash';
 
 @Injectable({
     providedIn: 'root'
@@ -194,7 +195,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     deleteRelationshipType(uid: string): Observable<any> {
-        return this.http.delete('api/v2/relationships/types', { body: [{ uid }]})
+        return this.http.delete('api/v2/relationships/types', { body: [{ uid }] })
             .pipe(
                 map(response => <any>response),
                 catchError(err => this.handleError(err))
@@ -313,7 +314,7 @@ export class RelationshipsService extends BaseObservableService {
         if (cachedItem)
             return cachedItem.obs;
 
-        let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active`;
+        let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
         var obs = this.http.get(url)
             .pipe(map(response => <RelationshipType[]>response),
@@ -365,4 +366,51 @@ export class RelationshipsService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+
+    getRelationshipsForAsset(assetUid: string, params: any): Observable<any[]> {
+        var url = `/api/v2/relationships?AssetUid=${assetUid}`;
+        if (!params) {
+            params = {};
+        }
+        params["State"] = "Active";
+        params["_includeTotal"] = "true";
+        params["_includePath"] = "true";
+
+        if (params) {
+            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+        }
+
+        return this.http.get(url)
+            .pipe(
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    public getRelationshipsForAssetExcel(assetUid: string, params: any, fileName: string = '', callback: Function = null) {
+        var url = `/api/v2/relationships?AssetUid=${assetUid}`;
+        if (!params) {
+            params = {};
+        }
+        var copyParams = _.clone(params);
+
+        //Setup paging for export
+        copyParams['_pageNum'] = 1;
+        copyParams['_pageSize'] = 200000;
+        copyParams['_includeTotal'] = false;
+        copyParams["State"] = "Active";
+
+        if (copyParams) {
+            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+        }
+
+        return this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe((data) => {
+                this.downloadFile(data, fileName);
+                if (callback) {
+                    callback();
+                }
+            });
+    }
+
 }
