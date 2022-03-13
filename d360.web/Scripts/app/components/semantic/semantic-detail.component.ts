@@ -134,14 +134,6 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         }
     }
 
-    handleUserClick(resourceuid: string) {
-        this.linkClicked.emit({ resourceUid: resourceuid });
-    }
-
-    handleStatusClick() {
-        this.linkClicked.emit();
-    }
-
     openSemanticType(newTab: boolean = false) {
         let url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticDetails.uid}`;
         if (url) {

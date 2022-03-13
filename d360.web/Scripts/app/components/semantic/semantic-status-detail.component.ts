@@ -30,7 +30,7 @@ export class SemanticStatusDetailComponent implements OnInit {
 
     export() {
         this.isExportInProgress = true;
-        this.dataProfileService.getSemanticLookupList("statuses", true, () => { this.isExportInProgress = false });        
+        this.dataProfileService.getSemanticLookupList("statuses", true, () => { this.isExportInProgress = false; });        
     }
 
     clickedOutside(event: any) {
