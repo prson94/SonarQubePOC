@@ -369,4 +369,11 @@
     <value>Valid Values</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
+  <data name="SemanticTypeStatusExportFilename" xml:space="preserve">
+    <value>Semantic Type Status List {0}.xlsx</value>
+  </data>
+  <data name="ColorColumn" xml:space="preserve">
+    <value>Color</value>
+    <comment>User for Semantic Type Status export</comment>
+  </data>
 </root>

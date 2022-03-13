@@ -1224,12 +1224,54 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("semantictypes/lookups/statuses"),
-            SwaggerProduces("application/json"),
+            SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic type statuses.", typeof(List<SemanticStatusInfo>)),
         ]
-        public IHttpActionResult GetSemanticTypeStatuses()
+        public async Task<IHttpActionResult> GetSemanticTypeStatuses()
         {
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList()));
+            var isExport = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+            List<SemanticStatusInfo> statuses = SemanticStatus.Draft.GetAsList();
+
+            HttpResponseMessage response;
+
+            if (isExport)
+            {
+                var excelDocument = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeStatusExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")))
+                {
+                    new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+                    {
+                        HeaderRows = {
+                            new ExcelRow
+                            {
+                                DataProfileAPIMessages.NameColumn,
+                                DataProfileAPIMessages.ColorColumn
+                            }
+                        },
+
+                        ValueRows = statuses.Select(row => new ExcelRow
+                        {
+                            row.Name,
+                            row.ColorName,
+                        }).ToList(),
+                    }
+                };
+
+                SLDocument document = excelDocument.ToSLDocument();
+                document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
+                var stream = new MemoryStream();
+                document.SaveAs(stream);
+                byte[] bytes = stream.ToArray();
+
+                response = createFileResponseMessage(HttpStatusCode.OK, string.Format(DataProfileAPIMessages.SemanticTypeStatusExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+            }
+            else
+            {
+                response = Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList());
+            }
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+            
         }
 
         /// <summary>

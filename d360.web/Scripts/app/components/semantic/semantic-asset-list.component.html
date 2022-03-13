@@ -23,7 +23,7 @@
                 </ng-container>
                 <ng-container *ngIf="sidePanelOpen && selectedAsset != null && !sidePanelLoading">
                     <ng-container *ngIf="sidePanelTab === 'dataprofile'">
-                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondarySidePanelOpen = true"></data-profile>
+                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondarySidePanelOpen = true; secondarySidePanel= 'detail'"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selectedAsset.uid"
@@ -48,12 +48,29 @@
                         </div>
                         <div class="details-container">
                             <div>
-                                <ng-container *ngIf="semanticType">
+                                <ng-container *ngIf="semanticType && secondarySidePanel=='detail'">
                                     <semantic-detail [qualifier]="semanticType.qualifier"
                                                      [isSidePanel]="true"
                                                      [showHeader]="true"
                                                      [semanticType]="semanticType"
-                                                     (close)="secondarySidePanelOpen=false;"></semantic-detail>
+                                                     (close)="secondarySidePanelOpen=false;"
+                                                     (linkClicked)="handleSemanticLinkClick($event)"></semantic-detail>
+                                </ng-container>
+                                <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+                                    <ig-asset-detail [objectUID]="resourceUid"
+                                                     [objectType]="'Resource'"
+                                                     [useAccordion]="true"
+                                                     [shouldBePadded]="true"
+                                                     [showHeader]="true"
+                                                     [showHeaderLine]="false"
+                                                     [spacerHeight]="'16px'"
+                                                     [tooltipAlign]="'left'"
+                                                     [isSidePanel]="true"
+                                                     [interceptLinkClick]="true"
+                                                     (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                                </ng-container>
+                                <ng-container *ngIf="secondarySidePanel=='status'">
+                                    <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
                                 </ng-container>
                             </div>
                         </div>

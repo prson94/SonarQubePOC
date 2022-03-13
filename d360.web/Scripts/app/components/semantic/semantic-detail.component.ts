@@ -27,6 +27,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     @Input() showHeader: boolean = false;
     @Input() semanticType: SemanticType;
     @Output() close = new EventEmitter();
+    @Output() linkClicked = new EventEmitter();
 
     semanticDetails: SemanticType;
     semanticAssets: any[];
@@ -131,6 +132,14 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                 this.router.navigateByUrl(url);
             }
         }
+    }
+
+    handleUserClick(resourceuid: string) {
+        this.linkClicked.emit({ resourceUid: resourceuid });
+    }
+
+    handleStatusClick() {
+        this.linkClicked.emit();
     }
 
     openSemanticType(newTab: boolean = false) {
