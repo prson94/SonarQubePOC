@@ -12,7 +12,7 @@ import { Router } from '@angular/router';
     templateUrl: './asset-type-detail.component.html',
     providers: [ObjectDetailService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    styles: [`.p-datatable-wrapper { overflow:auto; } .p-datatable-wrapper table { table-layout: unset !important;}`],
+    styles: [`.p-datatable-wrapper { overflow:auto; } .p-datatable-wrapper table { table-layout: unset !important;} .asset-type-detail-wrapper {padding-left:16px;}`],
     encapsulation: ViewEncapsulation.None
 })
 
