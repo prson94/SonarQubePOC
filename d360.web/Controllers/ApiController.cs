@@ -3691,6 +3691,10 @@ from    (
                                 {
                                     new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = refType.uid.ToString()  }
                                 },
+                            SecondColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = refType.ID.ToString(), DataType = "string" }
+                                },
                             Category = FieldInfo.SystemFieldCategory
                         });
 
