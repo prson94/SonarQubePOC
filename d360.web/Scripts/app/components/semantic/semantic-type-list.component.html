@@ -124,8 +124,39 @@
                         <semantic-detail [qualifier]="selectedType.qualifier"
                                          [isSidePanel]="true"
                                          [showHeader]="true"
-                                         [semanticType]="selectedType"></semantic-detail>
+                                         [semanticType]="selectedType"
+                                         (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>
                     </ng-container>
+                </ng-container>   
+                <ng-container *ngIf="secondarySidePanelOpen">
+                    <div #semanticTile class="secondary-side-panel">
+                        <div class="panel-header">
+                            <span class="header-label">Information</span>
+                            <div class="button-container">
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                            </div>
+                        </div>
+                        <div class="details-container">
+                            <div>
+                                <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+                                    <ig-asset-detail [objectUID]="resourceUid"
+                                                     [objectType]="'Resource'"
+                                                     [useAccordion]="true"
+                                                     [shouldBePadded]="true"
+                                                     [showHeader]="true"
+                                                     [showHeaderLine]="false"
+                                                     [spacerHeight]="'16px'"
+                                                     [tooltipAlign]="'left'"
+                                                     [isSidePanel]="true"
+                                                     [interceptLinkClick]="true"
+                                                     (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                                </ng-container>
+                                <ng-container *ngIf="secondarySidePanel=='status'">
+                                    <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
                 </ng-container>
             </side-panel>
         </div>

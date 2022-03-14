@@ -7,13 +7,11 @@ namespace d360.core.enums
 {
     public enum SemanticStatus
     {
-        [Name("Draft"), Icon("fa-"), Color("")]
+        [Name("Draft"), Icon("fa-"), Color("#BBBBBB"), Description("Stone")]
         Draft = 0,
-
-        [Name("In Review"), Icon("fa-"), Color("")]
+        [Name("Under Review"), Icon("fa-"), Color("#e2792a"), Description("Orange")]
         InReview = 1,
-
-        [Name("Certified"), Icon("fa-"), Color("")]
+        [Name("Certified"), Icon("fa-"), Color("#3f9d40"), Description("Emerald")]
         Certified = 2
     }
 
@@ -28,6 +26,7 @@ namespace d360.core.enums
         public string Icon { get; set; }
 
         public string Color { get; set; }
+        public string ColorName { get; set; }
     }
 
     public static class SemanticStatusExtensions
@@ -48,7 +47,8 @@ namespace d360.core.enums
                         Color = tm.GetCustomAttribute<ColorAttribute>().Rgb,
                         Icon = tm.GetCustomAttribute<IconAttribute>().Icon,
                         ID = enumValue,
-                        Value = enumValue.ToString()
+                        Value = enumValue.ToString(),
+                        ColorName = tm.GetCustomAttribute<DescriptionAttribute>().Description
                     });
                 }
             }

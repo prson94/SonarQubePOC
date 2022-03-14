@@ -57,6 +57,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     selectedTag: any;
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
+    secondarySidePanel: string = "detail";
+    resourceUid: any;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -233,7 +235,18 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     secondaryPanelOpen(event: any) {
-        this.secondarySidePanelOpen = true;
-        this.semanticType = event.semanticType;
-    }
+        this.secondarySidePanelOpen = true;        
+        if (event) {
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }
+            if (event.semanticType) {
+                this.secondarySidePanel = "detail";
+                this.semanticType = event.semanticType;
+            }            
+        } else {
+            this.secondarySidePanel = "status";
+        }
+    }    
 }

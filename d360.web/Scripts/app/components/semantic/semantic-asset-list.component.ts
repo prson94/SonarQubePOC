@@ -34,6 +34,8 @@ export class SemanticTypeAssetListComponent extends AssetGridBaseComponent imple
     sidePanelLoading: boolean = false;
     sidePanelStorageKey: string;
     secondarySidePanelOpen: boolean = false;
+    secondarySidePanel: string = 'detail';
+    resourceUid: any;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -96,4 +98,16 @@ export class SemanticTypeAssetListComponent extends AssetGridBaseComponent imple
         this.currentPageNumber = (event.first / event.rows) + 1;
         this.getData(this.semanticType.uid);
     }    
+
+    handleSemanticLinkClick(event: any) {
+        this.secondarySidePanelOpen = true;
+        if (event && event.resourceUid) {            
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }            
+        } else {
+            this.secondarySidePanel = 'status';
+        }
+    }
 }

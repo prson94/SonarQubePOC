@@ -237,4 +237,31 @@ export class DataProfileService extends BaseObservableService {
                 );           
         } 
     }
+
+    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null): Observable<any> {
+        
+        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}/`;        
+
+        if (isExport) {
+            this.
+                http
+                .get(`${url}?`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe((data) => {
+                    let filename = `Semantic Type Status List`;
+                    this.downloadFile(data, filename);
+                    if (callback) {
+                        callback();
+                    }
+                });
+
+        } else {
+            return this
+                .http
+                .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) })
+                .pipe(
+                    map((response) => <any>response),
+                    catchError((err) => this.handleError(err, false))
+                );
+        }
+    }    
 }

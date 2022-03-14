@@ -27,6 +27,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     @Input() showHeader: boolean = false;
     @Input() semanticType: SemanticType;
     @Output() close = new EventEmitter();
+    @Output() linkClicked = new EventEmitter();
 
     semanticDetails: SemanticType;
     semanticAssets: any[];

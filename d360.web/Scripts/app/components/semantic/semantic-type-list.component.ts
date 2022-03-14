@@ -147,6 +147,9 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
         ["Number%20\\(Double\\)", "Double"],
         ["Number%20\\(Long\\)", "Long"],
     ]);    
+    secondarySidePanel: string;
+    resourceUid: any;
+    secondarySidePanelOpen: boolean;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -229,6 +232,7 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     }
 
     selectRow(row: any) {
+        this.secondarySidePanelOpen = false;
         this.selectedType = row;
         if (this.selectedType) {
             this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, this.displayBreadCrumbs.bind(this), null);
@@ -326,5 +330,15 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
 
     getBaseTypeText(baseType: string) {
         return SemanticType.getBaseTypeText(baseType);
+    }
+
+    handleSecondarySidePanelLinkClicked(event: any) {
+        this.secondarySidePanelOpen = true;
+        if (event && event.resourceUid) {
+            this.secondarySidePanel = "user";
+            this.resourceUid = event.resourceUid;
+        } else {
+            this.secondarySidePanel = "status";
+        }
     }
 }

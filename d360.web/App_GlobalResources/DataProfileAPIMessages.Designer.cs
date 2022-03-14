@@ -151,6 +151,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Color.
+        /// </summary>
+        internal static string ColorColumn {
+            get {
+                return ResourceManager.GetString("ColorColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You may only delete a maximum of {0} dataprofile records in this request. Please use the BATCH API endpoint..
         /// </summary>
         internal static string DataProfileDeleteMaxLimit {
@@ -574,11 +583,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filtered Asset list for {0} {1}.
+        /// </summary>
+        internal static string SemanticTypeAssetExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeAssetExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filtered Semantic Types List {0}.xlsx.
         /// </summary>
         internal static string SemanticTypeExportFilename {
             get {
                 return ResourceManager.GetString("SemanticTypeExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Type Status List {0}.xlsx.
+        /// </summary>
+        internal static string SemanticTypeStatusExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeStatusExportFilename", resourceCulture);
             }
         }
         
@@ -597,15 +624,6 @@ namespace Resources {
         internal static string SemanticTypeURLColumn {
             get {
                 return ResourceManager.GetString("SemanticTypeURLColumn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Filtered Asset list for {0} {1}.
-        /// </summary>
-        internal static string SemanticTypeAssetExportFilename {
-            get {
-                return ResourceManager.GetString("SemanticTypeAssetExportFilename", resourceCulture);
             }
         }
         

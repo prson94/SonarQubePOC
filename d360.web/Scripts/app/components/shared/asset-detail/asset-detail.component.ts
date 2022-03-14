@@ -20,7 +20,10 @@ declare var CurrentResourceID;
 @Component({
     selector: 'ig-asset-detail',
     templateUrl: './asset-detail.component.html',
-    providers: [ObjectDetailService, AssetService, ProcessService]
+    providers: [ObjectDetailService, AssetService, ProcessService],
+    host: {
+        "(document:click)": "clickedOutside($event)",
+    }, 
 })
 
 
@@ -55,6 +58,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() baseAssetUid: string = '';
 
     @Output() onEditClick = new EventEmitter();
+    @Output() close = new EventEmitter();
 
     assetUID: string;
     assetTypeUID: string;
@@ -450,6 +454,12 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         if (this.interceptLinkClick) {
             this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.Uid);
             return;
+        }
+    }
+
+    clickedOutside(event: any) {
+        if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+            this.close.emit();
         }
     }
 }
