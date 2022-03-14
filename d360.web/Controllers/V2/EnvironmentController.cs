@@ -889,7 +889,8 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
+                    var model = new { pageSize, pageNum, items = response };
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
