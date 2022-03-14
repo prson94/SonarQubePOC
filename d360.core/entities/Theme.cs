@@ -145,6 +145,30 @@ namespace d360.core.entities
 
     public static class ThemeExtensions
     {
+        private static string ParseBase64CustomCss(this string css)
+        {
+            if (!string.IsNullOrEmpty(css))
+            {
+                var remainder = css.Length % 4;
+                if (remainder != 0)
+                {
+                    while (remainder > 0)
+                    {
+                        css += "=";
+                        remainder -= 1;
+                    }
+                }
+                var cssBytes = Convert.FromBase64String(css);
+                css = System.Text.Encoding.UTF8.GetString(cssBytes);
+            }
+            else
+            {
+                css = null;
+            }
+            
+            return css;
+        }
+
         public static GetTheme ToGetModel(this Theme model, Uri baseUri, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, int environmentId)
         {
             return new GetTheme
@@ -208,19 +232,7 @@ namespace d360.core.entities
                 UpdatedBy = resourceId,
                 UpdatedOn = date
             };
-
-            if (!string.IsNullOrEmpty(model.CustomCss))
-            {
-                var remainder = model.CustomCss.Length % 4;
-                if (remainder != 0) {
-                    while (remainder > 0) {
-                        model.CustomCss += "=";
-                        remainder -= 1;
-                    }
-                }
-                var cssBytes = Convert.FromBase64String(model.CustomCss);
-                repoModel.CustomCss = System.Text.Encoding.UTF8.GetString(cssBytes);
-            }
+            model.CustomCss = model.CustomCss.ParseBase64CustomCss();
 
             if (model.Icon != null)
             {
@@ -250,17 +262,10 @@ namespace d360.core.entities
         {
             var date = DateTime.UtcNow;
 
-            if (string.IsNullOrEmpty(model.CustomCss))
-            {
-                existing.CustomCss = null;
-            }
-            else 
-            {
-                var cssBytes = Convert.FromBase64String(model.CustomCss);
-                existing.CustomCss = System.Text.Encoding.UTF8.GetString(cssBytes);
-            }
             existing.BackColor = model.BackColor;
+            existing.CustomCss = model.CustomCss.ParseBase64CustomCss();
             existing.Name = model.Name;
+            existing.IsCurrent = model.IsCurrent;
             existing.NavBarBackColor = model.NavBarBackColor;
             existing.NavBarBackSelectedColor = model.NavBarBackSelectedColor;
             existing.PrimaryButtonBackColor = model.PrimaryButtonBackColor;
