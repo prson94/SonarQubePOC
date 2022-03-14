@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { map } from 'rxjs/operators';
+import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 @Injectable()
 export class AuthenticationService {
@@ -22,7 +23,11 @@ export class AuthenticationService {
     }
 
     checkCurrentUserAdmin(): Observable<boolean> {
-        return this.http.get("/api/v2/membership/users/me/roles")
+        return this.http
+            .get(
+                "/api/v2/membership/users/me/roles", {
+                context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
+            })
             .pipe(map((res) => {
                 this._isAdmin = (res as string[]).some((x) => x === "Administrator");
                 return this._isAdmin;
