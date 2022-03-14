@@ -256,11 +256,21 @@ namespace d360.core.entities
             }
             else 
             {
+                var remainder = model.CustomCss.Length % 4;
+                if (remainder != 0)
+                {
+                    while (remainder > 0)
+                    {
+                        model.CustomCss += "=";
+                        remainder -= 1;
+                    }
+                }
                 var cssBytes = Convert.FromBase64String(model.CustomCss);
                 existing.CustomCss = System.Text.Encoding.UTF8.GetString(cssBytes);
             }
             existing.BackColor = model.BackColor;
             existing.Name = model.Name;
+            existing.IsCurrent = model.IsCurrent;
             existing.NavBarBackColor = model.NavBarBackColor;
             existing.NavBarBackSelectedColor = model.NavBarBackSelectedColor;
             existing.PrimaryButtonBackColor = model.PrimaryButtonBackColor;
