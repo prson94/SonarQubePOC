@@ -759,7 +759,7 @@ namespace d360.web.Controllers.V2
 
                 if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
                 {
-                    string[] allowedValues = new[] { "confidence", "path" };
+                    string[] allowedValues = new[] { "confidence", "path", "assettypepath" };
                     var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
 
                     if (!allowedValues.Contains(directionFilter))
