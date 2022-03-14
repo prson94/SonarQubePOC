@@ -20,6 +20,7 @@ import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
+import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 
 declare var CurrentResourceID;
 
@@ -60,6 +61,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     constructor(private route: ActivatedRoute,
         private router: Router,
         private artifactTypeService: ArtifactTypeService,
+        private titleAndTabsService: TitleAndTabsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
@@ -112,6 +114,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
                         this.setBrowserTitle(this.titleService, this.artifactType.Name);
                         this.isLoading = false;
+                        this.titleAndTabsService.isInitialize = true;
                     });
                 });
         });
@@ -159,13 +162,12 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
                         this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                         if (this.artifactType.HasV2Workflows) {
-                            this.secondaryNavService
-                                .showItem(
-                                    new SecondaryNavItem(
-                                        'Workflow',
-                                        'workflowmonitor',
-                                        ['fa-usb'],
-                                        `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`));
+                            this.secondaryNavService.showItem(
+                                new SecondaryNavItem('Workflow',
+                                                     'workflowmonitor',
+                                                     ['fa-usb'],
+                                                     `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`)
+                            );
                         }
                     });
                     this.navigationItemsSubs.push(breadCrumbsSub);

@@ -9,6 +9,8 @@ import { IndexableType, IndexableStatus } from "../../../models/search-admin.mod
 import { TreeNode } from "primeng/api";
 import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
+
 
 
 @Component({
@@ -32,7 +34,8 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        titleService: Title
+        titleService: Title,
+        private reuseInterceptor: ReuseInterceptor
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Search;
@@ -97,11 +100,13 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
         elem.Class = t.Class;
         elem.ClassName = t.ClassName;
         elem.Name = t.Name;
+        elem.Status = 0;
         return elem;
     }
 
     UpdateStatus() {
         this.isUpdating = true;
+        this.reuseInterceptor.forceRefresh();
         this.searchService.GetIndexbleStatus()
             .subscribe((statuses) => {
                 statuses.forEach((s) => {

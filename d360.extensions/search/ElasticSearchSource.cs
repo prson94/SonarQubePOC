@@ -1,22 +1,28 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.queue;
-using d360.core.enums;
-using d360.core.resources;
-using Dapper;
-using Elasticsearch.Net;
-using MoreLinq;
-using Nest;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Data;
+
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.queue;
+using d360.core.resources;
+
+using Dapper;
+
+using Elasticsearch.Net;
+
+using MoreLinq;
+
+using Nest;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.extensions.search
 {
@@ -26,17 +32,17 @@ namespace d360.extensions.search
         public HttpStatusCode Status { get; set; }
         public string StatusMessage { get; set; }
 
-        public bool IsSuccessStatusCode
-        {
-            get { return ((int)Status >= 200) && ((int)Status <= 299); }
-        }
+        public bool IsSuccessStatusCode => ((int)Status >= 200) && ((int)Status <= 299);
     }
 
     public class SearchResultsModel
     {
         public int took { get; set; }
+        
         public bool timed_out { get; set; }
+        
         public SearchResultsShardModel _shards { get; set; }
+        
         public SearchResultsHitsModel hits { get; set; }
 
         public SearchAggregationsModel aggregations { get; set; }
@@ -44,13 +50,17 @@ namespace d360.extensions.search
     public class SearchResultsShardModel
     {
         public int total { get; set; }
+        
         public int successful { get; set; }
+        
         public int failed { get; set; }
     }
     public class SearchResultsHitsModel
     {
         public int total { get; set; }
+        
         public float? max_score { get; set; }
+        
         public List<SearchResultsHitModel> hits { get; set; }
     }
 
@@ -67,7 +77,9 @@ namespace d360.extensions.search
     public class SearchAggregationTypeBucketModel
     {
         public int doc_count { get; set; }
+        
         public string key { get; set; }
+        
         public SearchAggregationCategoryTypeModel category { get; set; }
     }
 
@@ -79,13 +91,16 @@ namespace d360.extensions.search
     public class SearchAggregationCategoryBucketModel
     {
         public int doc_count { get; set; }
+        
         public string key { get; set; }
     }
 
     public class SearchTagInnerHitsModel
     {
         public IndexTag _source { get; set; }
+        
         public JObject highlight { get; set; }
+        
         public string GetHighLightValue()
         {
             if (highlight != null && highlight.TryGetValue(ElasticSearchSource.D3S_FIELD_PREFIX + "Tags.Value", out JToken jToken))
@@ -103,7 +118,9 @@ namespace d360.extensions.search
     public class SearchResultsHitModel
     {
         public string _index { get; set; }
+        
         public string _type { get; set; }
+        
         public string d3sCategory
         {
             get
@@ -115,18 +132,20 @@ namespace d360.extensions.search
                 }
                 return null;
             }
-            set
-            {
-            }
         }
+
         public string _id { get; set; }
+        
         public float _score { get; set; }
+        
         public JObject _source { get; set; }
+        
         public JObject highlight { get; set; }
+        
         public JObject inner_hits { get; set; }
+        
         public JObject _explanation { get; set; }
     }
-
 
     public class ElasticSearchSource : ISearchSource
     {
@@ -176,8 +195,10 @@ namespace d360.extensions.search
             {
                 d3sFields.Add("Url", item.RelativeUrl);
             }
+            
             d3sFields.Add("AssetType", item.AssetType);
             d3sFields.Add("Category", item.Category);
+
             if (item.Uid.HasValue && item.Uid != Guid.Empty)
             {
                 d3sFields.Add("Uid", item.Uid.ToString());
@@ -203,7 +224,7 @@ namespace d360.extensions.search
                 sb.Append($", \"Path\" : [{string.Join(",", item.AssetPath.Select(p => $"\"{EscapeValueForDoc(p)}\""))}]");
             }
 
-            if(item.IndexFlags.HasFlag(IndexMode.WithResponsibility))
+            if (item.IndexFlags.HasFlag(IndexMode.WithResponsibility))
             {
                 foreach (KeyValuePair<string, string> entry in NoReadMapping)
                 {
@@ -237,12 +258,13 @@ namespace d360.extensions.search
                     sb.Append("]");
                 }
             }
-            sb.Append("  },"); //End d3s section
 
+            sb.Append("  },"); //End d3s section
             sb.Append("  \"" + DYNAMIC_FIELD + "\": {");
             sb.Append(string.Join(",", dynamicFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value, i.Key.ToLower() != "name") + "\"").ToArray()));
             sb.Append("  }");
             sb.Append("}");
+
             return sb.ToString();
         }
 
@@ -261,7 +283,7 @@ namespace d360.extensions.search
             {
                 return new SqlConnection(CommunityConnectionString);
             }
-            
+
         }
 
         protected virtual IElasticClient GetElasticClient(int companyID)
@@ -375,6 +397,7 @@ namespace d360.extensions.search
                     throw new ArgumentException(OthersError.NotDetermineServerVersion);
                 }
             }
+
             return ver;
         }
 
@@ -388,6 +411,7 @@ namespace d360.extensions.search
                 JObject result = JObject.Parse(response.Body);
                 count = (int)result.SelectToken("count");
             }
+
             return count;
         }
 
@@ -426,6 +450,7 @@ namespace d360.extensions.search
                     input = core.helpers.HtmlHelper.RemoveTags(input);
                 }
             }
+
             return input;
         }
 
@@ -446,7 +471,7 @@ namespace d360.extensions.search
             foreach (var batch in items.Batch(BULK_BATCH_SIZE))
             {
                 //Get FirstOrDefault inside batch loop to not trigger enumeration twice
-                if(firstRun)
+                if (firstRun)
                 {
                     firstRun = false;
                     var firstItem = batch.FirstOrDefault();
@@ -468,7 +493,6 @@ namespace d360.extensions.search
                     sb.Append("\",\"_type\":\"");
                     sb.Append("_doc");
                     sb.Append("\" } }\n");
-
                     sb.AppendLine(CreateDocument(item));
 
                 }
@@ -506,6 +530,7 @@ namespace d360.extensions.search
 
                 }
             }
+
             if (postingErrors.Count > 0)
             {
                 throw new ArgumentException(OthersError.AddIndexIndividualErrors + string.Join(Environment.NewLine, postingErrors.ToArray()));
@@ -515,21 +540,21 @@ namespace d360.extensions.search
         public void ClearIndex(int companyID)
         {
             DeleteIndexIfExists(companyID);
-
             CreateIndexIfNotExists(companyID);
         }
-
 
         public void ClearIndex(int companyID, string category, string assetType = null)
         {
             CreateIndexIfNotExists(companyID);
 
-            List<QueryContainer> termQueries = new List<QueryContainer>();
-            termQueries.Add(new TermQuery
+            List<QueryContainer> termQueries = new List<QueryContainer>
             {
-                Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
-                Value = category
-            });
+                new TermQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Value = category
+                }
+            };
             if (!string.IsNullOrEmpty(assetType))
             {
                 termQueries.Add(new TermQuery
@@ -588,10 +613,42 @@ namespace d360.extensions.search
             }
         }
 
+        public void RemoveByUids(int companyID, IEnumerable<Guid> assetUids)
+        {
+            var indexName = GetCompanyIndexName(companyID);
+            var client = GetElasticClient(companyID);
+
+            //No index, nothing to delete
+            if (!client.IndexExists(indexName).Exists)
+            {
+                return;
+            }
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new TermsQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Terms = assetUids.Select(u => u.ToString())
+                }
+            };
+
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(indexName, jsonString);
+
+            if (!deleteResponse.Success)
+            {
+                throw new ArgumentException(deleteResponse.OriginalException.Message);
+            }
+        }
+
         private bool IsElasticSearchSpecialChar(char ch)
         {
             if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~' || ch == ')' || ch == '(' ||
-               ch == '!' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '-') return true;
+               ch == '!' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '-')
+            {
+                return true;
+            }
 
             return false;
         }
@@ -672,7 +729,7 @@ namespace d360.extensions.search
 
         private TextQueryType MapStrategyToType(char strategy)
         {
-            switch(strategy)
+            switch (strategy)
             {
                 case STRATEGY_BestFields:
                 case '0':
@@ -693,7 +750,7 @@ namespace d360.extensions.search
                     throw new ArgumentException("Cannot map " + strategy);
             }
         }
-        
+
         private List<QueryContainer> GetMainQuery(QueryRequest queryRequest)
         {
             List<QueryContainer> mainQueries = new List<QueryContainer>();
@@ -757,7 +814,9 @@ namespace d360.extensions.search
                         phrase = phrase.TrimEnd('*');
                     }
                     else
+                    {
                         strategy = STRATEGY_QueryString;
+                    }
                 }
                 else
                 {
@@ -938,7 +997,7 @@ namespace d360.extensions.search
             foreach (FieldFilter fieldFilter in queryRequest.FieldFilters)
             {
                 QueryContainer qry;
-                if(fieldFilter.Values == null || fieldFilter.Values.Length == 0)
+                if (fieldFilter.Values == null || fieldFilter.Values.Length == 0)
                 {
                     continue;
                 }
@@ -952,8 +1011,10 @@ namespace d360.extensions.search
                     {
                         qry = new BoolQuery
                         {
-                            Must = values.Select(v => {
-                                QueryContainer q = new NestedQuery {
+                            Must = values.Select(v =>
+                            {
+                                QueryContainer q = new NestedQuery
+                                {
                                     Path = path,
                                     Query = new MatchQuery
                                     {
@@ -965,14 +1026,16 @@ namespace d360.extensions.search
                                 return q;
                             })
                         };
-                    } else
+                    }
+                    else
                     {
                         qry = new NestedQuery
                         {
                             Path = path,
                             Query = new BoolQuery
                             {
-                                Should = values.Select(v => {
+                                Should = values.Select(v =>
+                                {
                                     QueryContainer q = new MatchQuery
                                     {
                                         Field = fldTag,
@@ -994,7 +1057,8 @@ namespace d360.extensions.search
                     {
                         qry = new BoolQuery
                         {
-                            Must = fieldFilter.Values.Select(v => {
+                            Must = fieldFilter.Values.Select(v =>
+                            {
                                 QueryContainer q = new NestedQuery
                                 {
                                     Path = path,
@@ -1015,7 +1079,8 @@ namespace d360.extensions.search
                             Path = path,
                             Query = new BoolQuery
                             {
-                                Should = fieldFilter.Values.Select(v => {
+                                Should = fieldFilter.Values.Select(v =>
+                                {
                                     QueryContainer q = new TermQuery
                                     {
                                         Field = fldTagUid,
@@ -1031,7 +1096,8 @@ namespace d360.extensions.search
                 else if (fieldFilter.Field == "Path")
                 {
                     Nest.Field fldPath = new Nest.Field(D3S_FIELD_PREFIX + "Path");
-                    var segmentQueries = values.Select(v => {
+                    var segmentQueries = values.Select(v =>
+                    {
                         QueryContainer q = new MatchQuery
                         {
                             Field = fldPath,
@@ -1059,17 +1125,18 @@ namespace d360.extensions.search
                 else
                 {
                     Nest.Field fld = new Nest.Field(DYNAMIC_FIELD_PREFIX + fieldFilter.Field);
-                    if(fieldFilter.MatchWords)
+                    if (fieldFilter.MatchWords)
                     {
                         qry = new MatchPhraseQuery
                         {
                             Field = fld,
                             Query = values.First()
                         };
-                    } else
+                    }
+                    else
                     {
                         string p = fieldFilter.Values.First();
-                        if(p.Contains("*"))
+                        if (p.Contains("*"))
                         {
                             if (p.EndsWith("*")) //If we have trailing *, remove before escaping
                             {
@@ -1136,11 +1203,9 @@ namespace d360.extensions.search
                 string fieldname;
                 switch (aggFilter.Field)
                 {
-                    case "d3sCategory":
-                        fieldname = D3S_FIELD_PREFIX + "Category";
-                        break;
-                    case "d3sAssetType":
-                        fieldname = D3S_FIELD_PREFIX + "AssetType";
+                    case "Category":
+                    case "AssetType":
+                        fieldname = D3S_FIELD_PREFIX + aggFilter.Field;
                         break;
                     default:
                         fieldname = DYNAMIC_FIELD_PREFIX + aggFilter.Field;
@@ -1168,7 +1233,7 @@ namespace d360.extensions.search
             return aggFilters;
         }
 
-        public IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit)
+        public IndexResults GetSearchResultsWithAggregation(int companyID, QueryRequest queryRequest, QueryLimitation queryLimit)
         {
             IndexResults result = new IndexResults();
 
@@ -1269,20 +1334,24 @@ namespace d360.extensions.search
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
-                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
+                List<IndexAggregation> categories = new List<IndexAggregation>();
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexAggregation
                 {
                     Name = h.key,
                     DisplayName = MapCategoryToFriendlyName(h.key),
                     ResultCount = h.doc_count,
-                    Categories = h.category?.buckets.Select(c => new IndexCategory
+                    Items = h.category?.buckets.Select(c => new IndexAggregation
                     {
                         Name = c.key,
+                        DisplayName = c.key,
                         ResultCount = c.doc_count
                     }).OrderBy(x => x.Name).ToList()
                 }).OrderBy(x => x.DisplayName));
+
+                result.Aggregations.Add("category", categories);
             }
 
-            result.ElapsedMS = searchResults.took;
+            result.ElapsedMS.Add("Query", searchResults.took);
 
             if (searchResults.hits != null)
             {
@@ -1295,7 +1364,7 @@ namespace d360.extensions.search
         /**
          * Perform a search that counts total items in index and buckets categories
          */
-        public IndexResults GetStatusSearch(int companyID, List<IndexTypeList> categories, bool withTypes = false)
+        public IndexResults GetStatusSearch(int companyID, bool withTypes = false)
         {
             IndexResults result = new IndexResults();
 
@@ -1335,22 +1404,26 @@ namespace d360.extensions.search
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
-            if (searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
+            if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
-                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
+                List<IndexAggregation> categories = new List<IndexAggregation>();
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexAggregation
                 {
                     Name = h.key,
                     DisplayName = MapCategoryToFriendlyName(h.key),
                     ResultCount = h.doc_count,
-                    Categories = h.category?.buckets.Select(c => new IndexCategory
+                    Items = h.category?.buckets.Select(c => new IndexAggregation
                     {
                         Name = c.key,
+                        DisplayName = c.key,
                         ResultCount = c.doc_count
                     }).OrderBy(x => x.Name).ToList()
                 }).OrderBy(x => x.DisplayName));
+
+                result.Aggregations.Add("category", categories);
             }
 
-            result.ElapsedMS = searchResults.took;
+            result.ElapsedMS.Add("Query", searchResults.took);
 
             if (searchResults.hits != null)
             {
@@ -1396,7 +1469,8 @@ namespace d360.extensions.search
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
-            searchResults.aggregations.all_types?.buckets?.ForEach(b => {
+            searchResults.aggregations.all_types?.buckets?.ForEach(b =>
+            {
                 result.Add(new IndexableCount { ClassName = b.key, AssetTypeUid = Guid.Empty, CurrentCount = b.doc_count });
                 result.AddRange(b.category?.buckets?.Select(t => new IndexableCount { ClassName = b.key, AssetTypeUid = Guid.Parse(t.key), CurrentCount = t.doc_count }));
             });
@@ -1451,16 +1525,15 @@ namespace d360.extensions.search
                 string fieldname;
                 switch (limitAggFilter.Field)
                 {
-                    case "d3sCategory":
-                        fieldname = D3S_FIELD_PREFIX + "Category";
-                        break;
-                    case "d3sAssetType":
-                        fieldname = D3S_FIELD_PREFIX + "AssetType";
+                    case "Category":
+                    case "AssetType":
+                        fieldname = D3S_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                     default:
                         fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                 }
+
                 mustNotQueries.Add(new TermsQuery
                 {
                     Field = new Nest.Field(fieldname),
@@ -1493,6 +1566,8 @@ namespace d360.extensions.search
                     return "Reference";
                 case "SYNONYM":
                     return "Grammatic Type";
+                case "SEMANTICTYPE":
+                    return "Semantic Type";
                 default:
                     return key;
             }
@@ -1513,7 +1588,7 @@ namespace d360.extensions.search
             return 0;
         }
 
-        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string category = "")
+        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, string phrase, QueryLimitation queryLimit, int size = 10, string category = "")
         {
             if (string.IsNullOrEmpty(phrase))
             {
@@ -1567,14 +1642,15 @@ namespace d360.extensions.search
                     string part = parts.Dequeue();
                     if (part.Contains("*"))
                     {
-                        mustClauses.Add(new SimpleQueryStringQuery {
+                        mustClauses.Add(new SimpleQueryStringQuery
+                        {
                             Fields = fldName,
                             Query = part
                         });
                     }
                     else
                     {
-                        if(parts.Count == 0) //Last word, search match or prefix
+                        if (parts.Count == 0) //Last word, search match or prefix
                         {
                             mustClauses.Add(new BoolQuery
                             {
@@ -1617,14 +1693,16 @@ namespace d360.extensions.search
 
                 if (categories.Length > 1)
                 {
-                    filterMustQueries.Add(new TermsQuery {
+                    filterMustQueries.Add(new TermsQuery
+                    {
                         Field = fldCategory,
                         Terms = categories
                     });
                 }
                 else
                 {
-                    filterMustQueries.Add(new TermQuery {
+                    filterMustQueries.Add(new TermQuery
+                    {
                         Field = fldCategory,
                         Value = categories[0]
                     });
@@ -1674,7 +1752,9 @@ namespace d360.extensions.search
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
+            {
                 throw new ArgumentException(response.OriginalException.Message);
+            }
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
@@ -1705,18 +1785,29 @@ namespace d360.extensions.search
         /// Gets the search results from elastic search and converts them to index results
         /// </summary>
         /// <param name="companyID"></param>
-        /// <param name="resourceID"></param>
         /// <param name="phrase"></param>
         /// <returns></returns>
-        public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string type = "")
+        public IndexResults GetSearchResults(int companyID, string phrase, int size, int from, QueryLimitation queryLimit, string type = "")
         {
             IndexResults result = new IndexResults();
             CreateIndexIfNotExists(companyID);
 
             Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+            List<QueryContainer> filterMustQueries = new List<QueryContainer>();
 
             phrase = EscapeSpecialCharacters(phrase);
+
+            if(!string.IsNullOrWhiteSpace(type))
+            {
+                filterMustQueries.Add(
+                    new TermQuery
+                    {
+                        Field = fldAssetType,
+                        Value = type
+                    }
+                );
+            }
 
             SearchRequest sReq = new SearchRequest
             {
@@ -1748,12 +1839,10 @@ namespace d360.extensions.search
                             }
                         }
                     },
-                    Filter = new QueryContainer[] {
-                        new TermQuery{
-                            Field = fldAssetType,
-                            Value = type
-                        }
-                    }
+                    Filter = new QueryContainer[] { new BoolQuery {
+                        Must = filterMustQueries,
+                        MustNot= FiltersFromLimit(queryLimit)
+                    } }
                 },
                 Size = size,
                 From = from,
@@ -1769,7 +1858,9 @@ namespace d360.extensions.search
             var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
+            {
                 throw new ArgumentException(response.OriginalException.Message);
+            }
 
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
@@ -1789,10 +1880,12 @@ namespace d360.extensions.search
                 Tags = GetTags(h)
             }).ToList();
 
-            result.ElapsedMS = searchResults.took;
+            result.ElapsedMS.Add("Query", searchResults.took);
 
             if (searchResults.hits != null)
+            {
                 result.Matches = searchResults.hits.total;
+            }
 
             return result;
         }
@@ -1856,7 +1949,10 @@ namespace d360.extensions.search
         {
             var highlightVal = GetPropertyValue<string>(h.highlight, propName);
 
-            if (!string.IsNullOrEmpty(highlightVal)) return highlightVal;
+            if (!string.IsNullOrEmpty(highlightVal))
+            {
+                return highlightVal;
+            }
 
             return GetPropertyValue<string>(h._source, propName);
         }
@@ -1922,7 +2018,8 @@ namespace d360.extensions.search
             if (_source != null)
             {
                 JToken jToken;
-                 if(!_source.TryGetValue(propName, out jToken)) {
+                if (!_source.TryGetValue(propName, out jToken))
+                {
                     jToken = _source.SelectToken(propName);
                 }
                 if (jToken != null)
@@ -1965,7 +2062,10 @@ namespace d360.extensions.search
         {
             var firstItem = items.FirstOrDefault();
 
-            if (firstItem == null) return;
+            if (firstItem == null)
+            {
+                return;
+            }
 
             var companyId = firstItem.CompanyID;
 
@@ -2003,7 +2103,10 @@ namespace d360.extensions.search
 
         public void UpdateInIndex(IndexObjectModel item, bool withUpsert = false)
         {
-            if (item == null) return;
+            if (item == null)
+            {
+                return;
+            }
 
             UpdateInIndex(new List<IndexObjectModel> { item }, withUpsert);
         }
@@ -2012,7 +2115,10 @@ namespace d360.extensions.search
         {
             var firstItem = items.FirstOrDefault();
 
-            if (firstItem == null) return;
+            if (firstItem == null)
+            {
+                return;
+            }
 
             var companyId = firstItem.CompanyID;
 
@@ -2025,7 +2131,7 @@ namespace d360.extensions.search
             foreach (var item in items)
             {
                 sb.AppendLine("{ \"update\" : { \"_type\" : \"_doc\", \"_id\" : \"" + item.getObjectID() + "\"}}");
-                sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + (withUpsert ? ", \"doc_as_upsert\" : true" : "" ) + "}");
+                sb.AppendLine("{ \"doc\": " + CreateDocument(item, true) + (withUpsert ? ", \"doc_as_upsert\" : true" : "") + "}");
             }
 
             var client = GetElasticClient(companyId).LowLevel;
@@ -2038,12 +2144,13 @@ namespace d360.extensions.search
                 exMessage.Append("ES_DebugInformation: ");
                 exMessage.AppendLine(bulkResponse.DebugInformation);
 
-                throw new ArgumentException(exMessage.ToString()); 
+                throw new ArgumentException(exMessage.ToString());
             }
 
             var result = JObject.Parse(bulkResponse.Body);
 
-            if (result == null) {
+            if (result == null)
+            {
                 throw new ArgumentNullException(OthersError.InvalidResponseData);
             }
 

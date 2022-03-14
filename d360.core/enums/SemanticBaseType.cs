@@ -9,20 +9,28 @@ namespace d360.core.enums
     {
         [Name("Boolean"), Icon("fa-"), Color("")]
         Boolean = 1,
+        
         [Name("Number (Double)"), Icon("fa-"), Color("")]
         Double = 2,
+        
         [Name("Number (Long)"), Icon("fa-"), Color("")]
         Long = 3,
+        
         [Name("String"), Icon("fa-"), Color("")]
         String = 4,
+        
         [Name("Local Date"), Icon("fa-"), Color("")]
         LocalDate = 5,
+        
         [Name("Local Time"), Icon("fa-"), Color("")]
         LocalTime = 6,
+        
         [Name("Local DateTime"), Icon("fa-"), Color("")]
         LocalDateTime = 7,
+        
         [Name("Offset DateTime"), Icon("fa-"), Color("")]
         OffsetDateTime = 8,
+        
         [Name("Zoned DateTime"), Icon("fa-"), Color("")]
         ZonedDateTime = 9
     }
@@ -30,9 +38,13 @@ namespace d360.core.enums
     public class SemanticBaseTypeInfo
     {
         public SemanticBaseType ID { get; set; }
+        
         public string Value { get; set; }
+        
         public string Name { get; set; }
+        
         public string Icon { get; set; }
+        
         public string Color { get; set; }
     }
 
@@ -46,7 +58,7 @@ namespace d360.core.enums
             {
                 if (tm.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
                 {
-                    var enumValue = (SemanticBaseType)Enum.Parse(typeof(SemanticBaseType) ,tm.Name);
+                    var enumValue = (SemanticBaseType)Enum.Parse(typeof(SemanticBaseType), tm.Name);
 
                     list.Add(new SemanticBaseTypeInfo
                     {

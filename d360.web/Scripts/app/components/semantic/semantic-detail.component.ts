@@ -14,7 +14,10 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'semantic-detail',
     templateUrl: './semantic-detail.component.html',
     styleUrls: ["semanticTypes.less"],
-    providers: [DataProfileService]
+    providers: [DataProfileService],
+    host: {
+        "(document:click)": "clickedOutside($event)",
+    }, 
 })
 
 
@@ -23,6 +26,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     @Input() isSidePanel: boolean = false;
     @Input() showHeader: boolean = false;
     @Input() semanticType: SemanticType;
+    @Output() close = new EventEmitter();
 
     semanticDetails: SemanticType;
     semanticAssets: any[];
@@ -65,19 +69,24 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     getData() {
         this.isLoading = true;
         if (this.semanticType) {
-            this.semanticDetails = this.semanticType;            
+            this.setSemanticDetails(this.semanticType);
         } else {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.qualifier}'`).subscribe((s) => {
-                this.semanticDetails = s.items[0];
+                this.setSemanticDetails(s.items[0]);
+                this.semanticDetails = s.items[0];                
             });
         }
+    }
+
+    private setSemanticDetails(semanticType: SemanticType) {
+        this.semanticDetails = semanticType;
 
         if (SemanticType[this.semanticDetails.matchType] === SemanticType["Advanced"]) {
             this.advancedJson = JSON.stringify(this.semanticDetails.advanced, null, 2);
         }
 
-        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {            
-            this.assetCount = result.total;            
+        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticDetails.qualifier, 1, 1, this.semanticDetails.threshold).subscribe((result) => {
+            this.assetCount = result.total;
             this.isLoading = false;
         });
         if (this.canViewUsers) {
@@ -159,5 +168,15 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                     return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
             }
         }
-    }    
+    }
+
+    clickedOutside(event: any) {
+        if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+            this.close.emit();
+        }
+    }
+
+    getBaseTypeText(baseType: string) {
+        return SemanticType.getBaseTypeText(baseType);
+    }
 }

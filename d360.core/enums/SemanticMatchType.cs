@@ -9,10 +9,13 @@ namespace d360.core.enums
     {
         [Name("List of Values"), Icon("fa-"), Color("")]
         List = 1,
+        
         [Name("Pattern of Data"), Icon("fa-"), Color("")]
         Pattern = 2,
+        
         [Name("Numbers"), Icon("fa-"), Color("")]
         Number = 3,
+        
         [Name("Advanced (JSON)"), Icon("fa-"), Color("")]
         Advanced = 4
     }
@@ -20,9 +23,13 @@ namespace d360.core.enums
     public class SemanticMatchTypeInfo
     {
         public SemanticMatchType ID { get; set; }
+        
         public string Value { get; set; }
+        
         public string Name { get; set; }
+        
         public string Icon { get; set; }
+        
         public string Color { get; set; }
     }
 

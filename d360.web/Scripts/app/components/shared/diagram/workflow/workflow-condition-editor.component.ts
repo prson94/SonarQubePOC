@@ -134,9 +134,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             .pipe(
                 map((r) => {
                     this.fields = [];
-                    this.fields = r.filter(function (x) {
-                        return x.Type != "JsonElement" && x.Type != 'Link';
-                    })//Exclude Json Element and Link Fields;
+                    this.fields = r.filter((x) => x.Type != "JsonElement"); //Exclude Json Elements
                 })
             );
     }
@@ -144,8 +142,6 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     loadFormFields() {
         if (this.formFields.length > 0) {
             this.formFields.forEach((f) => {
-                if (f['@type'] == 'html')
-                    return;
                 this.fieldList.push({
                     value: 'FormInput|' + f['@stepId'] + '|' + f['@id'],
                     label: 'Form :: ' + f['@label']
@@ -340,7 +336,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     setOperators(field: any = null, fieldType: ConditionFieldType = null) {
         let type: string = '';
         let fieldId: string = '';
-        let ops = [];
+        let ops = new Set<string>();
 
         switch (fieldType) {
             case ConditionFieldType.Field:
@@ -371,12 +367,20 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
+            case 'text':            
+                ops.add('=');
+                ops.add('!=');
+                break;
             case 'list':
-            case 'text':
-                ops.push('=');
-                ops.push('!=');
+                ops.add('=');
+                ops.add('!=');
+                ops.add('P');
+                ops.add('NP');
                 break;
             case 'html':
+            case 'link':
+                ops.add('P');
+                ops.add('NP');
                 break;
             case 'decimal':
             case 'number':
@@ -384,21 +388,21 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             case 'date':
             case 'datetime':
             default:
-                ops.push('=');
-                ops.push('!=');
-                ops.push('>');
-                ops.push('<');
-                ops.push('>=');
-                ops.push('<=');
+                ops.add('=');
+                ops.add('!=');
+                ops.add('>');
+                ops.add('<');
+                ops.add('>=');
+                ops.add('<=');
                 break;
         }
 
         if (fieldType == ConditionFieldType.Field) {
             if (this.changeType == WorkflowChangeType.Update && !this.isForTransition) {
-                ops.push('C');
+                ops.add('C');
             }
-            ops.push('P');
-            ops.push('NP');
+            ops.add('P');
+            ops.add('NP');
         }
 
         if (fieldType == ConditionFieldType.Contextual) {
@@ -406,8 +410,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 if (this.changeType == WorkflowChangeType.Update
                     || this.changeType == WorkflowChangeType.RequestCertification
                     || this.changeType == WorkflowChangeType.Schedule) {
-                    ops.push('P');
-                    ops.push('NP');
+                    ops.add('P');
+                    ops.add('NP');
                 }
             }
         }
@@ -438,6 +442,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
                 return 'DT';
             case 'text':
             case 'html':
+            case 'link':
                 return 'T';
             default:
                 return 'U';

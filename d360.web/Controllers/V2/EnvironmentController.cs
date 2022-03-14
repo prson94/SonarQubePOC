@@ -2,7 +2,9 @@
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.resources;
 using d360.extensions;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
@@ -11,14 +13,19 @@ using Resources;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
+
 
 namespace d360.web.Controllers.V2
 {
@@ -32,10 +39,12 @@ namespace d360.web.Controllers.V2
     ]
     public class EnvironmentController : BaseV2ApiController
     {
+        readonly IThemeRepository ThemeRepository;
         IStorageProvider _storage;
 
-        public EnvironmentController(ICoreComponentSet set, IStorageProvider storage) : base(set)
+        public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IStorageProvider storage) : base(set)
         {
+            ThemeRepository = themeRepository;
             _storage = storage;
         }
 
@@ -49,7 +58,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
                 }
 
-                var currentStatusList = await Community.GetRebuildJobStatuses();
+                var currentStatusList = await Company.GetRebuildJobStatuses();
                 var listToReturn = CompanyRebuildJobStatusApiModel.GetDefaultList();
                 currentStatusList.ForEach(i =>
                 {
@@ -79,7 +88,7 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
                 }
 
-                var readyToActivate = await Community.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active);
+                var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active);
                 if (readyToActivate.StatusCode == HttpStatusCode.OK)
                 {
                     switch (model.Job)
@@ -239,41 +248,6 @@ namespace d360.web.Controllers.V2
 
         }
 
-        private static readonly Dictionary<string, byte[]> ValidImagefileHeaders = new Dictionary<string, byte[]>
-        {
-            { "image/jpeg", new byte[]{ 0xFF, 0xD8 }},
-            { "image/gif", new byte[]{ 0x47, 0x49, 0x46 }},
-            { "image/png", new byte[]{ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }},
-            { "image/x-icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
-            { "image/vnd.microsoft.icon", new byte[]{ 0x00, 0x00, 0x01, 0x00 }},
-        };
-
-        private bool IsValidImageData(string data)
-        {
-            if(string.IsNullOrEmpty(data))
-            {
-                return true;
-            }
-            var match = MimeTypeExtensionsMap.RegEx.Match(data);
-            var imgMime = match.Groups["mime"].Value;
-
-            if (ValidImagefileHeaders.ContainsKey(imgMime))
-            {
-                var imgByteArray = Convert.FromBase64String(match.Groups["data"].Value);
-
-                if (imgByteArray.Length >= ValidImagefileHeaders[imgMime].Length)
-                {
-                    var slice = imgByteArray.Take(ValidImagefileHeaders[imgMime].Length);
-                    if (slice.SequenceEqual(ValidImagefileHeaders[imgMime]))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
         private async Task<string> updateSingleSettingImageFile(string folder, string url, string data)
         {
             if (string.IsNullOrEmpty(data))
@@ -286,17 +260,10 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                var match = MimeTypeExtensionsMap.RegEx.Match(data);
-                var imgMime = match.Groups["mime"].Value;
-                var imgData = match.Groups["data"].Value;
-                var imgExtension = MimeTypeExtensionsMap.GetExtension(imgMime);
-                var imgByteArray = Convert.FromBase64String(imgData);
-                using (var imgStream = new MemoryStream(imgByteArray))
-                {
-                    var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, imgExtension);
-                    await _storage.CreateFile(folder, imgFileName, imgStream).ConfigureAwait(false);
-                    data = $"{url}{imgFileName}";
-                }
+                var info = data.GetFileFromDataUrl();
+                var imgFileName = string.Format("{0}{1}", Company.CurrentCompanyID, info.Item1);
+                await _storage.CreateFile(folder, imgFileName, info.Item2).ConfigureAwait(false);
+                data = $"{url}{imgFileName}";
             }
 
             return data;
@@ -442,7 +409,7 @@ namespace d360.web.Controllers.V2
 
             if(setting.ID == Setting.CompanyLogo || setting.ID == Setting.CompanyIcon || setting.ID == Setting.HomePageBackgroundImage)
             {
-                if (!IsValidImageData(value))
+                if (!value.IsValidImageData())
                 {
                     throw new GenericException(HttpStatusCode.BadRequest, valueErrorMessage);
                 }
@@ -1037,6 +1004,8 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        #region Help Menu Endpoints
+
         /// <summary>
         /// Gets help menu items.
         /// </summary>
@@ -1350,6 +1319,672 @@ namespace d360.web.Controllers.V2
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, e.Message)).ConfigureAwait(false);
             }
+        }
+
+        #endregion
+
+
+        #region Theme Endpoints
+
+        const string THEME_UID_FILTER_PARAMETER = "An optional unique identifier of the theme, to limit this list to a specific theme.";
+        const string THEME_NOT_FOUND = "The theme was not found based on the provided unique identifier.";
+
+        /// <summary>
+        /// Gets a list of themes in an environment.
+        /// </summary>
+        /// <returns>A list of themes defined in your environment.</returns>
+        [
+            HttpGet,
+            Route("themes"),
+            SwaggerProduces("application/json"),
+            SwaggerParameter("uid", THEME_UID_FILTER_PARAMETER, DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of themes.", typeof(List<GetTheme>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetThemes(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+                var apiModels = await ThemeRepository.GetThemesAsync(queryParams, cancellationToken);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, apiModels));
+            }
+            catch (GenericException)
+            {
+                throw;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGetMany, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the generated CSS stylesheet for the current theme that contains variables used by other stylesheets within Govern.
+        /// </summary>
+        [
+            HttpGet,
+            Route("themes/current.css"),
+            SwaggerProduces("text/css"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.NotFound, "No themes exist or none are set as the current theme.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetCurrentThemeCss()
+        {
+            try
+            {
+                var theme = await ThemeRepository.GetCurrentThemeByUserAsync();
+
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoActiveThemeExists);
+                }
+
+                var css = new StringBuilder();
+                css.AppendLine(":root {");
+                css.AppendCssVariable("backColor", theme.BackColor);
+                css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+                css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+                css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+                css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+                css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+                css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+                css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+                css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                css.AppendLine("}");
+
+                var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
+                css.AppendLine("");
+                css.Append(customCss);
+
+                return ResponseMessage(
+                    new HttpResponseMessage { 
+                        Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGetMany, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the generated CSS stylesheet for the theme (based on the provided Uid) that contains variables used by other stylesheets within Govern.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
+        [
+            HttpGet,
+            Route("themes/{uid:Guid}.css"),
+            SwaggerProduces("text/css"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the specified theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetThemeCssByUid(Guid uid)
+        {
+            try
+            {
+                var theme = ThemeRepository.GetThemeByUid(uid);
+
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.ThemeWithUidNotFound);
+                }
+
+                var css = new StringBuilder();
+                css.AppendLine(":root {");
+                css.AppendCssVariable("backColor", theme.BackColor);
+                css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+                css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+                css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+                css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+                css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+                css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+                css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+                css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                css.AppendLine("}");
+
+                css.AppendLine("");
+                css.Append(theme.CustomCss+"");
+
+                return ResponseMessage(
+                    new HttpResponseMessage
+                    {
+                        Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the generated CSS stylesheet for the theme (based on the provided Uid) that contains variables used by other stylesheets within Govern.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
+        [
+            HttpGet,
+            Route("themes/{uid:Guid}/custom.css"),
+            SwaggerProduces("text/css"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns custom CSS for the specified theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Theme does not exist, or does not contain custom Css.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Feature is not enabled.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetThemeCustomCssByUid(Guid uid)
+        {
+            try
+            {
+                // FeatureFlag Check
+                var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
+                if (!isCustomCssEnabled)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnGet, ThemeErrors.CustomCssNotAllowed);
+                }
+
+
+                var theme = ThemeRepository.GetThemeByUid(uid);
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.ThemeWithUidNotFound);
+                }
+
+                if (string.IsNullOrEmpty(theme.CustomCss))
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.CustomCssNotFound);
+                }
+
+                return ResponseMessage(
+                    new HttpResponseMessage
+                    {
+                        Content = new StringContent(theme.CustomCss, Encoding.UTF8, "text/css"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves the generated SVG thumbnail for the theme based on the provided Uid.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
+        [
+            HttpGet,
+            Route("themes/{uid:Guid}.svg"),
+            SwaggerProduces("application/svg+xml", "image/svg+xml"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns an SVG thumbnail for the specified theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
+            SwaggerParameter("width", "Desired with of SVG file", DataType = "integer", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetThemeSvgByUid(Guid uid)
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            int width = queryParams.Any(q => q.Key == "width") ? Math.Abs(int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "width").Value)) : 330;
+            int height = (int)Math.Round(175.0 / 330.0 * width);
+            bool returnAsXml = Request.Headers.Accept.Any(h => h.MediaType == "application/svg+xml");
+
+            try
+            {
+                var theme = ThemeRepository.GetThemeByUid(uid);
+
+                if (theme == null)
+                {
+                    throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.ThemeWithUidNotFound);
+                }
+
+                var svg = new StringBuilder();
+                svg.Append($@"<svg version=""1.2"" xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 330 175"" width=""{width}"" height=""{height}"">
+	<title>Govern Theme Thumbnail</title>
+	<defs>
+		<filter x=""-50%"" y=""-50%"" width=""200%"" height=""200%"" id=""f1"" ><feDropShadow dx=""-1.8369701987210297e-16"" dy=""3"" stdDeviation=""2.916666666666667"" flood-color=""#000000"" flood-opacity="".2""/></filter>
+	</defs>
+	<style>
+");
+                svg.AppendLine($".s-main-bck {{ filter: url(#f1);fill: {theme.BackColor} }} ");
+                svg.AppendLine($".s-header-bck {{ fill: {theme.HeaderBackColor} }} ");
+                svg.AppendLine($".s-breadcrumb-txt {{ fill: {BlackOrWhite(theme.HeaderBackColor)} }} ");
+                svg.AppendLine($".s-breadcrumb-lnk {{ fill: {theme.BreadcrumbLinkColor} }} ");
+                svg.AppendLine($".s-actionbtn-txt {{ fill: {BlackOrWhite(theme.ButtonBackColor)} }} ");
+                svg.AppendLine($".s-actionbtn-bck {{ fill: {theme.ButtonBackColor} }} ");
+                svg.AppendLine($".s-button-txt {{ fill: #222222 }} ");
+                svg.AppendLine($".s-button-bck {{ fill: #f1f2f3 }}");
+                svg.AppendLine($".s-button-active-txt {{ fill: {BlackOrWhite(theme.PrimaryButtonBackColor)} }} ");
+                svg.AppendLine($".s-button-active-bck {{ fill: {theme.PrimaryButtonBackColor} }} ");
+                svg.AppendLine($".s-nav-bck {{ filter: url(#f1);fill: {theme.NavBarBackColor} }} ");
+                svg.AppendLine($".s-nav-item {{ fill: {BlackOrWhite(theme.NavBarBackColor)} }} ");
+                svg.AppendLine($".s-nav-item-selected {{ fill: {BlackOrWhite(theme.NavBarBackSelectedColor)} }} ");
+                svg.AppendLine($".s-nav-bck-selected {{ fill: {theme.NavBarBackSelectedColor} }} ");
+                svg.AppendLine($".s-tab {{ fill: {theme.TabLinkColor} }} ");
+                svg.AppendLine($".s-tab-active {{ fill: #1e2435 }} ");
+                svg.AppendLine($".s-table-bck {{ fill: #ffffff }} ");
+                svg.AppendLine($".s-table-hdr-txt {{ fill: {BlackOrWhite(theme.TableHeaderBackColor)} }} ");
+                svg.AppendLine($".s-table-hdr-bck {{ fill: {theme.TableHeaderBackColor} }}");
+                svg.AppendLine($".s-table-row-selected {{ fill: {theme.TableRowBackSelectedColor} }} ");
+                svg.AppendLine($".s-pill-green {{ fill: #00853e }} ");
+                svg.AppendLine($".s-pill-yellow {{ fill: #ffaa01 }} ");
+                svg.AppendLine($".s-pill-red {{ fill: #d11947 }} ");
+
+                svg.Append(@"	</style>
+	<g id=""Thumbnail"">
+		<path id=""Background"" class=""s-main-bck"" d=""m10 6h310v164h-310z"" />
+		<path id=""Navbar"" class=""s-nav-bck"" d=""m11 19h65v151h-65z"" />
+		<g id=""Headerbar"">
+			<path id=""HeaderBackground"" class=""s-header-bck"" d=""m11 5h310v14h-310z"" />
+			<path id=""ActionButton"" class=""s-actionbtn-bck"" d=""m247 7h26v10h-26z"" />
+			<path id=""ActionButtonTxt"" class=""s-actionbtn-txt"" d=""m252 11h16v2h-16z"" />
+			<path id=""Breadcrumb"" class=""s-breadcrumb-txt"" d=""m76 11h23v2h-23z"" />
+			<path id=""BreadcrumbLink"" class=""s-breadcrumb-lnk"" d=""m106 11h24v2h-24z"" />
+		</g>
+		<g id=""NavBullets"">
+			<path id=""NavBullet 8"" class=""s-nav-item"" d=""m17 117h3v3h-3z"" />
+			<path id=""Navbullet 6"" class=""s-nav-item"" d=""m17 92h3v3h-3z"" />
+			<path id=""NavBullet 5"" class=""s-nav-item"" d=""m17 80h3v3h-3z"" />
+			<path id=""NavBullet 4"" class=""s-nav-item"" d=""m17 67h3v3h-3z"" />
+			<path id=""NavBullet 3"" class=""s-nav-item"" d=""m17 54h3v3h-3z"" />
+			<path id=""NavBullet 2"" class=""s-nav-item"" d=""m17 41h3v3h-3z"" />
+			<path id=""NavBullet 1"" class=""s-nav-item"" d=""m17 28h3v3h-3z"" />
+		</g>
+		<g id=""NavItems"">
+			<path id=""NavItem 8"" class=""s-nav-item"" d=""m29 117h39v3h-39z"" />
+			<path id=""NavItem 6"" class=""s-nav-item"" d=""m29 92h39v3h-39z"" />
+			<path id=""NavItem 5"" class=""s-nav-item"" d=""m29 80h39v3h-39z"" />
+			<path id=""NavItem 4"" class=""s-nav-item"" d=""m29 67h39v3h-39z"" />
+			<path id=""NavItem 3"" class=""s-nav-item"" d=""m29 54h39v3h-39z"" />
+			<path id=""NavItem 2"" class=""s-nav-item"" d=""m29 41h39v3h-39z"" />
+			<path id=""NavItem 1"" class=""s-nav-item"" d=""m29 28h39v3h-39z"" />
+		</g>
+		<g id=""SelectedNav"">
+			<path id=""SelectedBackground"" class=""s-nav-bck-selected"" d=""m11 102h65v9h-65z"" />
+			<path id=""NavBullet 7"" class=""-nav-item-selected"" d=""m17 105h3v3h-3z"" />
+			<path id=""NavItem 7"" class=""-nav-item-selected"" d=""m29 105h39v3h-39z"" />
+		</g>
+		<path id=""Tab 2"" class=""s-tab"" d=""m112 45h24v2h-24z"" />
+		<path id=""Tab 3"" class=""s-tab"" d=""m144 45h24v2h-24z"" />
+		<path id=""Active Tab"" class=""s-tab-active"" d=""m80 45h24v2h-24z"" />
+		<g id=""Table"">
+			<path id=""TableBackground"" class=""s-table-bck"" d=""m78 52h241v107h-241z"" />
+			<path id=""TableHeaderBackground"" class=""s-table-hdr-bck"" d=""m85 55h229v8h-229z"" />
+			<path id=""Header 4"" class=""s-table-hdr-txt"" d=""m270 58h23v2h-23z"" />
+			<path id=""Header 3"" class=""s-table-hdr-txt"" d=""m216 58h24v2h-24z"" />
+			<path id=""Header 2"" class=""s-table-hdr-txt"" d=""m153 58h24v2h-24z"" />
+			<path id=""Header 1"" class=""s-table-hdr-txt"" d=""m90 58h23v2h-23z"" />
+			<path id=""SelectedRow"" class=""s-table-row-selected"" d=""m85 85h229v8h-229z"" />
+			<path id=""Status Green"" class=""s-pill-green"" d=""m220 74c0-1.7 1.3-3 3-3h9c1.7 0 3 1.3 3 3c0 1.7-1.3 3-3 3h-9c-1.7 0-3-1.3-3-3z"" />
+			<path id=""Status Yellow"" class=""s-pill-yellow"" d=""m220 89c0-1.7 1.3-3 3-3h9c1.7 0 3 1.3 3 3c0 1.7-1.3 3-3 3h-9c-1.7 0-3-1.3-3-3z"" />
+			<path id=""Status Red"" class=""s-pill-red"" d=""m220 106c0-1.7 1.3-3 3-3h9c1.7 0 3 1.3 3 3c0 1.7-1.3 3-3 3h-9c-1.7 0-3-1.3-3-3z"" />
+		</g>
+		<g id=""Buttons"">
+			<path id=""ActiveButtonBackground"" class=""s-button-active-bck"" d=""m289 145h26v10h-26z"" />
+			<path id=""ButtonBackground"" class=""s-button-bck"" d=""m82 145h26v10h-26z"" />
+			<path id=""ActiveButtonText"" class=""s-button-active-txt"" d=""m294 149h16v2h-16z"" />
+			<path id=""ButtonText"" class=""s-button-txt"" d=""m87 149h16v2h-16z"" />
+		</g>
+	</g>
+</svg>
+");
+
+                return ResponseMessage(
+                    new HttpResponseMessage
+                    {
+                        Content = new StringContent(svg.ToString(), Encoding.UTF8, returnAsXml ? "application/svg+xml" : "image/svg+xml"),
+                        StatusCode = HttpStatusCode.OK
+                    });
+            }
+            catch (GenericException ex)
+            {
+                if (returnAsXml)
+                {
+                    throw;
+                }
+                else
+                {
+                    return ResponseMessage(
+                        new HttpResponseMessage
+                        {
+                            Content = new StringContent(ErrorAsSvg(ex.StatusMessage, width, height), Encoding.UTF8, "image/svg+xml"),
+                            StatusCode = HttpStatusCode.OK
+                        }
+                    );
+                }
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Creates a theme.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <returns>The created theme.</returns>
+        [
+            HttpPost,
+            Route("themes"),
+            SwaggerConsumes("application/json"), 
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the created theme.", typeof(GetTheme)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostTheme(PostTheme requestModel)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                if (!string.IsNullOrEmpty(requestModel.CustomCss))
+                {
+                    // FeatureFlag Check
+                    var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
+                    if (!isCustomCssEnabled)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, ThemeErrors.CustomCssNotAllowed);
+                    }
+                }
+
+                var responseModel = await ThemeRepository.PostThemeAsync(requestModel);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Updates a theme based on the provided Uid.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
+        /// <returns>The updated theme.</returns>
+        [
+            HttpPut,
+            Route("themes/{uid:Guid}"),
+            SwaggerConsumes("application/json"), 
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the updated theme.", typeof(GetTheme)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutTheme(Guid uid, PutTheme requestModel)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                if (!string.IsNullOrEmpty(requestModel.CustomCss))
+                {
+                    // FeatureFlag Check
+                    var isCustomCssEnabled = Ld.BoolVariation(FeatureFlags.PERM_BRANDING_CUSTOM_CSS, GetSdkFeatureFlagUser(), false);
+                    if (!isCustomCssEnabled)
+                    {
+                        throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnUpdate, ThemeErrors.CustomCssNotAllowed);
+                    }
+                }
+
+                var reponseModel = await ThemeRepository.PutThemeAsync(uid, requestModel);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, reponseModel));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnUpdate, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Makes the selected theme the current one.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
+        /// <returns>An Http Status code.</returns>
+        [
+            HttpPatch,
+            Route("themes/{uid:Guid}/current"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to update the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> MarkThemeAsCurrent(Guid uid)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var success = await ThemeRepository.MarkThemeAsCurrentAsync(uid);
+                if (success)
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Theme marked as current." }));
+                }
+                else
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, new ErrorResponse { message = "Unable to mark theme as current." }));
+                }
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnUpdate, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a theme, provided it is not set as the current theme of the environment.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the theme.</param>
+        /// <returns>A confirmation response.</returns>
+        [
+            HttpDelete,
+            Route("themes/{uid:Guid}"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, THEME_NOT_FOUND, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this theme is invalid, possibly due to being set as the current theme.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public IHttpActionResult DeleteTheme(Guid uid)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var status = ThemeRepository.Delete(uid);
+
+                return ResponseMessage(Request.CreateResponse(status, new ConfirmResponse { message = "Theme removed." }));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
+        /// <summary>
+        /// Helper endpoint to convert a CSS block to a UTF-8 Base64 string.
+        /// </summary>
+        [
+            HttpPut,
+            Route("themes/conversion/base64"),
+            SwaggerConsumes("text/css"), SwaggerProduces("text/plain"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ConvertCssToBase64(string css)
+        {
+            const string ERROR_HEADING = "Error converting css";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var cssBytes = System.Text.Encoding.UTF8.GetBytes(css);
+                var responseModel = Convert.ToBase64String(cssBytes);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        /// <summary>
+        /// Helper endpoint to convert an image file to a DataUrl string block.
+        /// </summary>
+        [
+            HttpPut,
+            Route("themes/conversion/dataurl"),
+            SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+            SwaggerProduces("text/plain"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ConvertImageToDataUrl()
+        {
+            const string ERROR_HEADING = "Error converting css";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var c = await Request.Content.ReadAsMultipartAsync();
+                var file = c.Contents.Where(x => x.Headers?.ContentDisposition?.Parameters.Any(param => param?.Value.Contains("file") == true) == true).FirstOrDefault();
+
+                if (file == null)
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "You must provide an image file to convert.");
+                }
+
+                byte[] bytes = await file.ReadAsByteArrayAsync();
+                string extension = Path.GetExtension(file.Headers.ContentDisposition.FileName.ToString().Replace("\"", ""));
+
+                var goodExtensions = new List<string> { ".gif", ".ico", ".jpg", ".png" };
+                if (!goodExtensions.Contains(extension))
+                {
+                    throw new GenericException(HttpStatusCode.BadRequest, "You must provide a valid image file.");
+                }
+
+                var dataUri = bytes.GetDataUrlFromStream(extension);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataUri));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+        #endregion
+
+        private bool IsDark(string htmlColor)
+        {
+            Color color = ColorTranslator.FromHtml(htmlColor);
+            double luminance = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B);
+            return luminance < 128;
+        }
+
+        private string BlackOrWhite(string htmlColor)
+        {
+            return IsDark(htmlColor) ? "#ffffff" : "#222222";
+        }
+
+        private string ErrorAsSvg(string message, int width=330, int height=175)
+        {
+            int partitionSize = 4;
+            List<string> words = message.Split(' ').ToList();
+            var svg = new StringBuilder();
+            svg.AppendLine($@"<svg version=""1.2"" xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 330 175"" width=""{width}"" height=""{height}"">");
+            svg.AppendLine(@"<text lengthAdjust=""spacing"" x=""5"" y=""20"">");
+            
+            for (int i = 0; i < Math.Ceiling((double)words.Count/ partitionSize); i++)
+            {
+                var offset = i * partitionSize;
+                var line = string.Join(" ",words.GetRange(offset, Math.Min(partitionSize, words.Count - offset)));
+                svg.AppendLine($@"<tspan textLength=""320"" x=""0"" dy=""{i}em"" font-size=""1.6em"">{HttpUtility.HtmlEncode(line)}</tspan>");
+            }
+
+            svg.AppendLine("</text>");
+            svg.AppendLine("</svg>");
+            return svg.ToString();
         }
     }
 }

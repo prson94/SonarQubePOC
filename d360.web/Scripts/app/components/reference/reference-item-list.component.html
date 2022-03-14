@@ -40,14 +40,16 @@
              [sortField]="sortField"
              [pageLinks]="3"
              [paginator]="true"
-             [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+             [rows]="rowsPerPage || defaultInitialItemsPerPage"
+             [rowsPerPageOptions]="defaultPagingOptions"
              [totalRecords]="totalRecords"
              [lazy]="true"
              (onLazyLoad)="loadAssets($event)"
              [(selection)]="selected"
              [loading]="isLoading"
              [tableStyleClass]="'side-panel-max-width'"
-             [loadingIcon]="'fa fa-spinner fa-spin'">
+             [loadingIcon]="'fa fa-spinner fa-spin'"
+             (onPage)="numberOfRowsByCategoryService.onPage($event, title)">
         <ng-template pTemplate="header">
             <tr>
                 <th *ngFor="let column of columns"

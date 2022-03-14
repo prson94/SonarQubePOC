@@ -4,13 +4,15 @@ import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject
 
 import { SiteMenuService } from './site-menu.service';
 import { PlatformLocation } from '@angular/common'
-import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart, Params } from '@angular/router';
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class SecondaryNavService {
+    activeTabTitle: string;
+    artifactTypeId: number;
     // Observable sources
     private rightSidebarSource = new Subject<SecondaryNavItem>();
     private rightSidebarClearSource = new Subject<boolean>();
@@ -207,6 +209,33 @@ export class SecondaryNavService {
 
     private saveSecondaryNavState(state: SecondaryNavState) {
         localStorage.setItem('SecondaryNavState', JSON.stringify({ ...state }));
+    }
+
+    getArtifactTypeIdFromRouteParams(params: Params): number {
+        let artifactTypeId: number;
+        if (params.artifactTypeId) {
+            artifactTypeId = Number(params.artifactTypeId);
+        } else if (params.objectId) {
+            artifactTypeId = Number(params.objectId);
+        }
+        return artifactTypeId;
+    }
+
+    setArtifactTypeId(params: Params): void {
+        this.artifactTypeId = this.getArtifactTypeIdFromRouteParams(params);
+    }
+
+    resetSecondaryNavActiveItem(): void {
+        this.resetSecondaryNavActiveTab();
+        this.resetSecondaryNavActiveArtifact();
+    }
+
+    resetSecondaryNavActiveTab(): void {
+        this.activeTabTitle = null;
+    }
+
+    resetSecondaryNavActiveArtifact(): void {
+        this.artifactTypeId = null;
     }
 
     updateObject(key: string, value: any) {

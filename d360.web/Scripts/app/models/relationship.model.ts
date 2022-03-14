@@ -29,6 +29,7 @@ export class RelationshipType {
     Predicate: Predicate;
     Subject: RelationshipTypeEdge;
     Object: RelationshipTypeEdge;
+    HasFieldTypes?: boolean;
 }
 
 export class RelationshipTypeApiRequestModel {
@@ -111,5 +112,5 @@ export class PredicateDropdown {
 export class RelationshipV2 {
     SubjectAssetUid: string;
     ObjectAssetUid: string;
-    Fields: [];
+    Fields: any = {};
 }

@@ -1,11 +1,12 @@
-﻿using Mandrill;
-using Mandrill.Model;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+
+using Mandrill;
+using Mandrill.Model;
 
 namespace d360.extensions.mail
 {
-    public class MandrillMailProvider: IMailProvider
+    public class MandrillMailProvider : IMailProvider
     {
         public string ApiKey { get; set; }
         public string SubAccount { get; set; }
@@ -44,7 +45,7 @@ namespace d360.extensions.mail
         {
             var message = new MandrillMessage();
 
-            message.AddTo(toEmail, toName);            
+            message.AddTo(toEmail, toName);
             message.FromEmail = fromEmail;
             message.FromName = fromName;
 
@@ -67,7 +68,7 @@ namespace d360.extensions.mail
             var api = new MandrillApi(ApiKey);
 
             await api.Messages.SendAsync(message);
-            
+
         }
 
         public void SendMessage(string subject, string toEmail, string toName, Dictionary<string, string> templateTags, string templateID)

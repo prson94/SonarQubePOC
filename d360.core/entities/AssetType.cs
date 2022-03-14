@@ -1,11 +1,13 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
@@ -56,7 +58,7 @@ namespace d360.core.entities
 
         [IgnoreDataMember, ForeignKey("AssetTypeID")]
         public virtual ICollection<Asset> Assets { get; set; }
-        
+
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
 
@@ -68,16 +70,15 @@ namespace d360.core.entities
 
         [DataMember]
         public bool UseAsTransformation { get; set; }
-        
+
         [NotMapped]
         public AssetType Parent { get; set; }
-        
+
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
 
         [DataMember]
         public bool? CanEditParent { get; set; }
-
     }
 
     public class AssetTypeBrowserApiViewModel
@@ -86,17 +87,20 @@ namespace d360.core.entities
 
         public string Name { get; set; }
 
-        int _ClassID;
+        private int _ClassID;
+        
         public int ClassID
         {
-            get { return _ClassID; }
+            get => _ClassID;
             set
             {
                 _ClassID = value;
-                this.Class = ((AssetTypeClass)_ClassID).AsInfoModel();
+                Class = ((AssetTypeClass)_ClassID).AsInfoModel();
             }
         }
+
         public AssetTypeClassInfo Class { get; set; }
+        
         public string Path { get; set; }
     }
 
@@ -110,30 +114,39 @@ namespace d360.core.entities
         [DataMember]
         public string Name { get; set; }
 
-        AssetTypeClass _ClassID;
+        private AssetTypeClass _ClassID;
+        
         public AssetTypeClass ClassID
         {
-            get { return _ClassID; }
+            get => _ClassID;
             set
             {
                 _ClassID = value;
-                this.Class = _ClassID.AsInfoModel();
+                Class = _ClassID.AsInfoModel();
             }
         }
+        
         [DataMember]
         public AssetTypeClassInfo Class { get; set; }
+        
         [DataMember]
         public string Description { get; set; }
+        
         [DataMember]
         public bool Hierarchical { get; set; }
+        
         [DataMember]
         public int HierarchyMaximumDepth { get; set; }
+        
         [DataMember]
         public string DisplayFormat { get; set; }
+        
         [DataMember]
         public string Notes { get; set; }
+        
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
+        
         [DataMember]
         public bool UseAsTransformation { get; set; }
 
@@ -145,34 +158,31 @@ namespace d360.core.entities
 
         [DataMember]
         public IconStyleInsert IconStyle { get; set; }
+        
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+        
         [DataMember]
         [JsonConverter(typeof(StringEnumConverter))]
         public FlowObjectType? FlowObjectType { get; set; }
+        
         [DataMember]
         public bool? CanEditParent { get; set; }
 
         [DataMember]
         public bool? HasDashboards { get; set; }
-                
 
         [IgnoreDataMember]
         public string LevelsJson { get; set; }
 
         [DataMember]
-        public List<AssetTypeLevelApiViewModel> Levels 
-        { 
-            get 
+        public List<AssetTypeLevelApiViewModel> Levels
+        {
+            get
             {
-                if (string.IsNullOrEmpty(LevelsJson))
-                {
-                    return null;
-                }
-                else
-                {
-                    return JsonConvert.DeserializeObject<List<AssetTypeLevelApiViewModel>>(LevelsJson);
-                }
+                return string.IsNullOrEmpty(LevelsJson) 
+                    ? null 
+                    : JsonConvert.DeserializeObject<List<AssetTypeLevelApiViewModel>>(LevelsJson);
             }
         }
     }

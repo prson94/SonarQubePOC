@@ -226,68 +226,42 @@ namespace d360.model.workflow
                                 {
                                     //check if the value matches
                                     var formValue = formModel.GetFormValueById(item.FormInputId);
-
-                                    if (item.Operator == CriteriaOperator.NotEqual)
-                                    {
-                                        //
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
-                                    }
-                                    else
-                                    {
-                                        //true operator
-                                        if (string.Compare(formValue, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-
-                                    }
-                                    break;
+                                    return item.IsValueMatch(formValue);
                                 }
                             case FormResponseType.All:
                                 {
                                     // ALL USERS NEED TO RESPOND AND APPROVE
-
                                     // GET RESPONSES FROM EACH FORM AND MAKE SURE THEY ARE THE SAME IF NOT RETURN FALSE
                                     var formValues = formModel.GetFormValuesById(item.FormInputId);
 
                                     foreach (var val in formValues)
                                     {
-                                        if (item.Operator == CriteriaOperator.NotEqual)
+                                        if (item.IsValueMatch(val) == false)
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) return false;
+                                            return false;
                                         }
-                                        else
-                                        {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) return false;
-                                        }
-
                                     }
                                     return true;
                                 }
                             case FormResponseType.Majority:
                                 {
                                     var formValues = formModel.GetFormValuesById(item.FormInputId);
-
                                     var matchCount = 0;
 
                                     foreach (var val in formValues)
                                     {
-                                        if (item.Operator == CriteriaOperator.NotEqual)
+                                        if (item.IsValueMatch(val))
                                         {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) != 0) matchCount++;
+                                            matchCount++;
                                         }
-                                        else
-                                        {
-                                            if (string.Compare(val, (item.Value.ToString() ?? "").Trim(), true) == 0) matchCount++;
-                                        }
-
                                     }
 
                                     return matchCount > (formValues.Count / 2);
                                 }
                             default:
                                 Console.WriteLine("DEBUG - FORM HAS UNKNOWN OR UNSUPPORTED FORM RESPONSE TYPE");
-
                                 return false;
                         }
-                        break;
                     case WorkflowActivityType.HTTPRequest:
                         switch(item.FormInputId.ToUpper())
                         {

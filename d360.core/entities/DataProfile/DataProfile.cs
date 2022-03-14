@@ -1,11 +1,11 @@
-﻿using d360.core.entities.Contracts;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -14,66 +14,97 @@ namespace d360.core.entities
     {
         [DataMember]
         public long AssetId { get; set; }
-        [DataMember]        
-        public DateTime ProfileSetDate { get; set; }
+
         [DataMember]
-        public long? SampleCount { get; set; }        
+        public DateTime ProfileSetDate { get; set; }
+
+        [DataMember]
+        public long? SampleCount { get; set; }
+
         [DataMember]
         public long? BlankCount { get; set; }
+
         [DataMember]
         public long? NullCount { get; set; }
+
         [DataMember]
         public string MinimumValue { get; set; }
+
         [DataMember]
         public string MaximumValue { get; set; }
+
         [DataMember]
         public double? MeanValue { get; set; }
+
         [DataMember]
         public int? MinimumLength { get; set; }
+
         [DataMember]
         public int? MaximumLength { get; set; }
+
         [DataMember]
         public double? StandardDeviation { get; set; }
+
         [DataMember]
         public bool? Multiline { get; set; }
+
         [DataMember]
         public string RegExp { get; set; }
+
         [DataMember]
-        public Decimal? Confidence { get; set; }
+        public decimal? Confidence { get; set; }
+
         [DataMember]
         public string Type { get; set; }
+
         [DataMember]
         public string TypeQualifier { get; set; }
+
         [DataMember]
         public bool? LogicalType { get; set; }
+
         [DataMember]
         public bool? LeadingWhiteSpace { get; set; }
+
         [DataMember]
         public int? LeadingZeroCount { get; set; }
+
         [DataMember]
         public bool? TrailingWhiteSpace { get; set; }
+
         [DataMember]
         public long? MatchCount { get; set; }
+
         [DataMember]
-        public int? OutlierCardinality { get; set; }        
+        public int? OutlierCardinality { get; set; }
+
         [DataMember]
         public string DataSignature { get; set; }
+
         [DataMember]
         public string StructureSignature { get; set; }
+
         [DataMember]
         public int? Cardinality { get; set; }
+
         [DataMember]
-        public int? ShapeCardinality { get; set; }        
+        public int? ShapeCardinality { get; set; }
+
         [DataMember]
         public long? TotalCount { get; set; }
+
         [DataMember]
         public long? OutlierCount { get; set; }
+
         [DataMember]
-        public Decimal? KeyConfidence { get; set; }
+        public decimal? KeyConfidence { get; set; }
+
         [DataMember]
         public string DetectionLocale { get; set; }
+
         [DataMember]
         public string FtaVersion { get; set; }
+
         [DataMember]
         public string DecimalSeparator { get; set; }
 
@@ -86,10 +117,13 @@ namespace d360.core.entities
     {
         [DataMember]
         public long AssetDataProfileID { get; set; }
+
         [DataMember]
         public string SampleType { get; set; }
+
         [DataMember]
         public string Key { get; set; }
+
         [DataMember]
         public string Value { get; set; }
 
@@ -109,7 +143,7 @@ namespace d360.core.entities
 
         [DataMember]
         public long? sampleCount { get; set; }
-        
+
         [DataMember]
         public long? blankCount { get; set; }
 
@@ -146,7 +180,7 @@ namespace d360.core.entities
         [DataMember]
         [Range(0, 1, ErrorMessage = "{0} must be between {1} and {2}.")]
         [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
-        public Decimal? confidence { get; set; }
+        public decimal? confidence { get; set; }
 
         [DataMember]
         [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
@@ -175,7 +209,7 @@ namespace d360.core.entities
         public int? outlierCardinality { get; set; }
 
         [DataMember]
-        [ValidateSampleAttribute(200)]
+        [ValidateSample(200)]
         public List<DataProfileSampleDetail> outlierDetail { get; set; }
 
         [DataMember]
@@ -190,25 +224,25 @@ namespace d360.core.entities
         public string structureSignature { get; set; }
 
         [DataMember]
-        [ValidateKListAttribute(200)]
+        [ValidateKList(200)]
         public List<string> bottomK { get; set; }
 
         [DataMember]
-        [ValidateKListAttribute(200)]
+        [ValidateKList(200)]
         public List<string> topK { get; set; }
 
         [DataMember]
         public int? cardinality { get; set; }
 
         [DataMember]
-        [ValidateSampleAttribute(200)]
+        [ValidateSample(200)]
         public List<DataProfileSampleDetail> cardinalityDetail { get; set; }
 
         [DataMember]
         public int? shapesCardinality { get; set; }
 
         [DataMember]
-        [ValidateSampleAttribute(200)]
+        [ValidateSample(200)]
         public List<DataProfileSampleDetail> shapesDetail { get; set; }
 
         [DataMember(Name = "totalCount")]
@@ -220,7 +254,7 @@ namespace d360.core.entities
         [DataMember(Name = "keyConfidence")]
         [Range(0, 1, ErrorMessage = "{0} must be between {1} and {2}.")]
         [RegularExpression(@"^\d+.?\d{0,4}$", ErrorMessage = "{0} is limited to a maximum of 4 decimal places.")]
-        public Decimal? KeyConfidence { get; set; }
+        public decimal? KeyConfidence { get; set; }
 
         [DataMember(Name = "detectionLocale")]
         [StringLength(64, ErrorMessage = "{0} cannot be more than {1} characters.")]
@@ -272,35 +306,40 @@ namespace d360.core.entities
             typeQualifier = profile.TypeQualifier;
 
             //samples
-            this.shapesDetail = samples.Where((s) => s.SampleType.Equals("shapesdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            this.outlierDetail = samples.Where((s) => s.SampleType.Equals("outlierdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            this.cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            this.topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();            
-            this.bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
-            if (this.shapesDetail.Count==0)
+            shapesDetail = samples.Where((s) => s.SampleType.Equals("shapesdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            outlierDetail = samples.Where((s) => s.SampleType.Equals("outlierdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+            topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
+            bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
+            
+            if (shapesDetail.Count == 0)
             {
-                this.shapesDetail = null;
+                shapesDetail = null;
             }
-            if (this.outlierDetail.Count == 0)
+
+            if (outlierDetail.Count == 0)
             {
-                this.outlierDetail = null;
+                outlierDetail = null;
             }
-            if (this.cardinalityDetail.Count == 0)
+
+            if (cardinalityDetail.Count == 0)
             {
-                this.cardinalityDetail = null;
+                cardinalityDetail = null;
             }
-            if (this.topK.Count == 0)
+
+            if (topK.Count == 0)
             {
-                this.topK = null;
+                topK = null;
             }
-            if (this.bottomK.Count == 0)
+
+            if (bottomK.Count == 0)
             {
-                this.bottomK = null;
+                bottomK = null;
             }
         }
     }
 
-    public class DataProfileUpsertModel: DataProfileModel, IExecutionItem
+    public class DataProfileUpsertModel : DataProfileModel, IExecutionItem
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
@@ -309,6 +348,7 @@ namespace d360.core.entities
     public class DataProfileSampleDetail
     {
         public string key { get; set; }
+
         public int count { get; set; }
     }
 
@@ -318,7 +358,7 @@ namespace d360.core.entities
         public IEnumerable<DataProfileModel> items { get; set; }
     }
 
-    public class AssetDataProfileDeleteModel: IExecutionItem
+    public class AssetDataProfileDeleteModel : IExecutionItem
     {
         [DataMember]
         public Guid AssetUid { get; set; }
@@ -340,10 +380,14 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid uid { get; set; }
+
         [DataMember]
         public string path { get; set; }
+
         public string tagsJson { get; set; }
+
         public bool hasTagField { get; set; }
+
         [DataMember]
         public List<string> tags
         {
@@ -364,12 +408,21 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid uid { get; set; }
+
         [DataMember]
         public string path { get; set; }
+
         [DataMember]
         public string assetTypePath { get; set; }
+
         [DataMember]
         public Decimal confidence { get; set; }
+
+        [JsonIgnore]
+        public Guid assetTypeUid { get; set; }
+
+        [JsonIgnore]
+        public Guid semanticTypeUid { get; set; }
     }
 
     public class AssetDataProfileByTypeQualifierApiViewModel : PagedApiBaseViewModel
@@ -381,15 +434,25 @@ namespace d360.core.entities
     public class DataProfileExportModel
     {
         public Guid AssetUid { get; set; }
+
         public long AssetID { get; set; }
+
         public string AssetTags { get; set; }
+
         public string AssetPath { get; set; }
+
         public string AssetTypePath { get; set; }
+
         public string MatchedAssetTags { get; set; }
+
         public string MatchedAssetPath { get; set; }
+
         public string MatchedAssetTypePath { get; set; }
+
         public Guid MatchedAssetUid { get; set; }
+
         public long MatchedAssetID { get; set; }
+
         public bool hasTagField { get; set; }
     }
 
@@ -407,7 +470,7 @@ namespace d360.core.entities
         {
             var sample = (List<DataProfileSampleDetail>)value;
 
-            if (sample?.Count>0 && sample.Any(x=>x.key?.Length > 200))
+            if (sample?.Count > 0 && sample.Any(x => x.key?.Length > 200))
             {
                 return new ValidationResult($"{validationContext.DisplayName} keys cannot be more than {Maxlength} characters.");
             }

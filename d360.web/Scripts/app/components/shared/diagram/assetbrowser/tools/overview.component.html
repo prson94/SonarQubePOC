@@ -1,3 +1,2 @@
 ﻿<button igButton *ngIf="!enabled" type="button" pTooltip="Show Navigator Panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Show Navigator Panel" class="overview-button" (click)="setOverviewState(true)"><img alt="Show Navigator Panel" src="/Content/images/diagram-show-overview.svg" align="middle" /></button>
 <button igButton *ngIf="enabled" type="button" pTooltip="Close Navigator Panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Close Navigator Panel" class="overview-close-button" (click)="setOverviewState(false)"><i class="fa fa-close" aria-hidden="true"></i></button>
-<div [hidden]="!enabled" id="assetBrowserOverview" class="overview"></div>

@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+
+using Newtonsoft.Json;
 
 namespace d360.core.queue
 {
@@ -23,7 +24,7 @@ namespace d360.core.queue
         DeleteFieldTypes,
         UpsertUsers
     }
-    public class ApiExecutionInfo: IServiceBusMessageType
+    public class ApiExecutionInfo : IServiceBusMessageType
     {
         public int CompanyID { get; set; }
 

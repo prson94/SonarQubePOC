@@ -66,6 +66,23 @@ namespace d360.web.Controllers.V2
         /// Results can be filtered using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// 
         /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset audit data.
         /// </remarks>
@@ -87,7 +104,6 @@ namespace d360.web.Controllers.V2
         [SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid.", typeof(ErrorResponse))]
         [SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))]
         [SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse))]
-        [SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse))]
         public async Task<IHttpActionResult> GetAuditAsync(
             [FromUri(Name = "_pageSize")] int? pageSize = null,
             [FromUri(Name = "_pageNum")] int? pageNum = null,
@@ -101,27 +117,38 @@ namespace d360.web.Controllers.V2
             [FromUri(Name = "_assetUid")] Guid? assetUid = null
         )
         {
-            ValidateParameters();
-
-            bool isStreamResponse = RequestValidator.IsStreamResponse(Request);
-            pageSize = isStreamResponse ? RequestValidator.ValidateStreamPageSize(pageSize) : RequestValidator.ValidateJsonPageSize(pageSize);
-            pageNum = RequestValidator.ValidatePageNumber(pageNum);
-
-            var orderBy = Array.Empty<OrderByModel>();
-            if (string.IsNullOrEmpty(orderByColumnName) == false)
+            try
             {
-                orderBy = new[] { OrderByModel.Create(orderByColumnName, orderByDirection) };
+                ValidateParameters();
+
+                bool isStreamResponse = RequestValidator.IsStreamResponse(Request);
+                pageSize = isStreamResponse ? RequestValidator.ValidateStreamPageSize(pageSize) : RequestValidator.ValidateJsonPageSize(pageSize);
+                pageNum = RequestValidator.ValidatePageNumber(pageNum);
+
+                var orderBy = Array.Empty<OrderByModel>();
+                if (string.IsNullOrEmpty(orderByColumnName) == false)
+                {
+                    orderBy = new[] { OrderByModel.Create(orderByColumnName, orderByDirection) };
+                }
+
+                if (isStreamResponse)
+                {
+                    var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
+                    return Excel(GetExcelDocumentFromQuery(result), $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+                }
+                else
+                {
+                    var result = await AuditDapperRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
+                    return Ok(result);
+                }
             }
-
-            if (isStreamResponse)
+            catch (Exception ex)
             {
-                var result = await AuditDapperRepository.AuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy);
-                return Excel(result, $"Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
-            }
-            else
-            {
-                var result = await AuditDapperRepository.PagedAuditViewAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderBy, pageNum.Value, pageSize.Value);
-                return Ok(result);
+                if (ex is ArgumentException || ex is FilterExpressionParserException)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ex.Message)).ConfigureAwait(false);
+                }
+                throw;
             }
         }
 
@@ -132,7 +159,23 @@ namespace d360.web.Controllers.V2
         /// Results can be filtered using the _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
         /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-        /// 
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset audit data.
         /// </remarks>
         /// <param name="assetUid">The unique identifier of the asset.</param>
@@ -239,7 +282,8 @@ namespace d360.web.Controllers.V2
                     !Company.Any<Report>(i => i.uid == assetUid) &&
                     !Company.Any<MetricAllocation>(i => i.Uid == assetUid) &&
                     !Company.Any<Predicate>(i => i.UID == assetUid) &&
-                    !Company.Any<Semantic>(i => i.Uid == assetUid)
+                    !Company.Any<Semantic>(i => i.Uid == assetUid) &&
+                    !Company.Any<Theme>(i => i.Uid == assetUid)
                     )
                 {
                     assetType = Company.Filter<AssetType>(i => i.uid == assetUid).SingleOrDefault();
@@ -316,7 +360,7 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    return Excel(query, $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
+                    return Excel(GetExcelDocumentFromQuery(query), $"{assetUid} Audit Data {DateTime.Now: MMM dd yyyy}.xlsx");
                 }
                 else
                 {
@@ -387,6 +431,11 @@ namespace d360.web.Controllers.V2
             if (result == null)
             {
                 result = Company.Query<dynamic>($@"select 'Report' as Object, ID as ObjectId, Name as DisplayValue from Report where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+            }
+
+            if (result == null)
+            {
+                result = Company.Query<dynamic>($@"select 'Semantic' as Object, ID as ObjectId, Name as DisplayValue from semantic where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
             }
 
             return result;
@@ -552,33 +601,7 @@ namespace d360.web.Controllers.V2
 
             var query = Company.Query<dynamic>(sql, dbArgs, ApiTimeout);
 
-            return Excel(query, "audit.xlsx");
-        }
-
-        protected IHttpActionResult Excel(IEnumerable<dynamic> data, string fileName)
-        {
-            if (string.IsNullOrEmpty(fileName))
-            {
-                fileName = $"{Guid.NewGuid():N}.xlsx";
-            }
-
-            var document = GetExcelDocumentFromQuery(data);
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = fileName
-            };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-
-            return ResponseMessage(result);
+            return Excel(GetExcelDocumentFromQuery(query), "audit.xlsx");
         }
 
         private SLDocument GetExcelDocumentFromQuery(IEnumerable<dynamic> query)
@@ -798,6 +821,8 @@ namespace d360.web.Controllers.V2
 				select uid, name as DisplayName, 'Predicate' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Predicate] where uid = @uid
                 union 
 				select uid, name as DisplayName, 'Semantic' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Semantic] where uid = @uid 
+                union 
+				select uid, name as DisplayName, 'Theme' as Object, id as ObjectID, null as AssetTypeClass from dbo.[Theme] where uid = @uid 
 			) AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;

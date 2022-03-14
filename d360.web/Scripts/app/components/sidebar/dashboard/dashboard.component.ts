@@ -8,6 +8,8 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
+import { TabTitle } from '../../../models/enums.model';
 
 @Component({
     selector: 'd3s-dashboard',
@@ -30,6 +32,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         protected dashboardService: DashboardService,
         private route: ActivatedRoute,
         private headerBreadcrumbService: HeaderBreadcrumbService,
+        private titleAndTabsService: TitleAndTabsService,
         secondaryNavService: SecondaryNavService,
         private router: Router,
         breadcrumbService: HeaderBreadcrumbService,
@@ -43,6 +46,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     ngOnInit() {
         this.showSingle = false;
         this.sub = this.route.params.subscribe(params => {
+            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, TabTitle.DASHBOARDS);
+
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.dashboardName = params['name'];
@@ -90,6 +95,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnDestroy() {
+        this.secondaryNavService.resetSecondaryNavActiveItem();
+        
         if (this.sub) {
             this.sub.unsubscribe();
         }

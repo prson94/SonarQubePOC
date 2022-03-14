@@ -206,7 +206,7 @@ namespace d360.web.Controllers.V2
 
                 if (predicates.Count == 0)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest,RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
                 }
 
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -306,7 +306,7 @@ namespace d360.web.Controllers.V2
 
             if (intersectType == null)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, string.Format(RelationshipsApiMessages.InvalidIntersectTypeUid, intersectTypeUid));
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(RelationshipsApiMessages.InvalidIntersectTypeUid, intersectTypeUid));
             }
 
             int id = intersectType.ID;
@@ -409,6 +409,27 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
         /// This must be used in conjunction with the RelationshipTypeUid query parameter.
+        /// 
+        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        ///     
+        ///     Example :
+        ///     
+        ///     Comparison Operators
+        ///     * Equals operator -{fieldname} eq 'Data'
+        ///     * Not equals operator -{fieldname} ne 'Data'
+        ///     * Contains operator -{fieldname} ct 'Data'  
+        ///     * Greater than operator -{fieldname} gt 99
+        ///     * Greater than or equal operator -{fieldname} ge 99
+        ///     * Less than operator -{fieldname} lt 99
+        ///     * Less than or equal operator -{fieldname} le 99
+        ///     * Not populated operator -{fieldname} eq null
+        ///     * populated operator -{fieldname} ne null
+        ///     
+        ///     Logical Operators
+        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
+        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// </remarks>
         /// <param name="State">Filter on the state, or status, of a relationship.</param>
         /// <returns></returns>
@@ -424,6 +445,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("PredicateUid", "Filter by a predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("SubjectUid", "Filter by a subject asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("ObjectUid", "Filter by an object asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetUid", "Filter by an object and subject asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by Id.", DataType = "string", ParameterType = "query", Required = false),
@@ -444,6 +466,7 @@ namespace d360.web.Controllers.V2
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
                 Guid RelationshipTypeUid = Guid.Empty;
+                Guid AssetUid = Guid.Empty;
 
                 if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
                 {
@@ -524,11 +547,26 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
+                {
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value;
+                    Guid.TryParse(value, out AssetUid);
+
+                    if (!AssetRepository.DoesAssetExists(AssetUid))
+                    {
+                        var assetType = AssetRepository.GetAssetTypeByUID(AssetUid);
+                        if (assetType == null || assetType.Class != AssetTypeClass.Reference)
+                        {
+                            return ReturnApiError(HttpStatusCode.NotFound, string.Format(RelationshipsApiMessages.SubjectUidNotFound, AssetUid.ToString()));
+                        }
+                    }
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "_direction"))
                 {
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
 
-                    if (RelationshipTypeUid == Guid.Empty)
+                    if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.DirectionAllowedForRelation);
                     }
@@ -541,7 +579,7 @@ namespace d360.web.Controllers.V2
 
                 if (queryParams.Any(x => x.Key.ToLower() == "_order"))
                 {
-                    if (RelationshipTypeUid == Guid.Empty)
+                    if (RelationshipTypeUid == Guid.Empty && AssetUid == Guid.Empty)
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.OrderForRelation);
                     }
@@ -550,6 +588,11 @@ namespace d360.web.Controllers.V2
                     var fieldTypes = Company.Query<string>("select F.Name from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { RelationshipTypeUid }, ApiTimeout).ToList().Select(x => x.ToLower(System.Globalization.CultureInfo.InvariantCulture)).ToList();
                     fieldTypes.Add("object.[path]");
                     fieldTypes.Add("subject.[path]");
+                    if (AssetUid != Guid.Empty)
+                    {
+                        fieldTypes.Add("relationshiptypename");
+                        fieldTypes.Add("assetpath");
+                    }
 
                     if (!fieldTypes.Contains(orderValue))
                     {
@@ -698,7 +741,7 @@ namespace d360.web.Controllers.V2
                     var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
                     if (!int.TryParse(value, out pageNum))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest,  ApiMessages.Invalid_PageNum);
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.Invalid_PageNum);
                     }
                 }
 
@@ -712,7 +755,7 @@ namespace d360.web.Controllers.V2
 
                     if (pageSize > 100000)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest,ApiMessages._PageSizeLimit);
+                        return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages._PageSizeLimit);
                     }
 
                     if (pageSize <= 0)
@@ -736,7 +779,7 @@ namespace d360.web.Controllers.V2
                     owner = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_owner").Value;
                     if (owner.Length > 100)
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest,RelationshipsApiMessages.Invalid_owner);
+                        return ReturnApiError(HttpStatusCode.BadRequest, RelationshipsApiMessages.Invalid_owner);
                     }
                 }
 
@@ -946,6 +989,7 @@ namespace d360.web.Controllers.V2
         /// <param name="AssetTypeUid">Allows for filtering by an asset type's unique identifier, looking at the subject or object type.</param>
         /// <param name="PredicateUid">Allows for filtering of relationship types by predicate unique identifier.</param>
         /// <param name="State">Allows for filtering by the relationship type's state.</param>
+        /// <param name="includeHasFieldTypes">Return a property "HasFieldTypes". If Relationship Type has defined custom fields value is true otherwise false.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -955,7 +999,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
        ]
-        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, core.enums.State? State = null)
+        public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, core.enums.State? State = null, bool? includeHasFieldTypes = null)
         {
             var prefix = "Relationships.GetRelationshipTypesAsync => ";
             var errorMessage = "";
@@ -975,6 +1019,10 @@ namespace d360.web.Controllers.V2
                 if (State.HasValue)
                 {
                     queryParams.Add(new KeyValuePair<string, string>("State", State.ToString()));
+                }
+                if (includeHasFieldTypes.HasValue)
+                {
+                    queryParams.Add(new KeyValuePair<string, string>("includeHasFieldTypes", includeHasFieldTypes.ToString()));
                 }
 
                 var types = await RelationshipRepository.GetRelationshipTypes(queryParams);
@@ -1096,9 +1144,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostRelationshipsAsync(
-            Guid intersectTypeUid, 
-            RelationshipInserts relationships, 
-            bool triggerWorkflow = false, 
+            Guid intersectTypeUid,
+            RelationshipInserts relationships,
+            bool triggerWorkflow = false,
             bool lookupFieldsPassedByValue = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
@@ -1134,7 +1182,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(
-                    relationships.Count, 
+                    relationships.Count,
                     new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
                     applicationId: applicationId);
 
@@ -1205,7 +1253,7 @@ namespace d360.web.Controllers.V2
             RelationshipUpdates relationships,
             bool triggerWorkflow = false,
             bool lookupFieldsPassedByValue = false,
-            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))]  string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.PutRelationshipsAsync => ";
 
@@ -1304,7 +1352,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkRelationshipsAsync(
             Guid intersectTypeUid,
-            RelationshipInserts relationships, 
+            RelationshipInserts relationships,
             bool triggerWorkflow = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
@@ -1334,8 +1382,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(
-                    relationships.Count, 
-                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 
+                    relationships.Count,
+                    new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid },
                     applicationId: applicationId);
 
                 ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
@@ -1385,7 +1433,7 @@ namespace d360.web.Controllers.V2
             Guid intersectTypeUid,
             RelationshipUpdates relationships,
             bool triggerWorkflow = false,
-            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))]  string applicationId = null)
+            [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
             var prefix = "Relationships.PutBulkRelationshipsAsync => ";
             try
@@ -1508,7 +1556,7 @@ namespace d360.web.Controllers.V2
             }
             catch (ArgumentException)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -1539,7 +1587,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteBulkRelationshipsAsync(
-            Guid intersectTypeUid, 
+            Guid intersectTypeUid,
             RelationshipDeletes relationships,
             bool triggerWorkflow = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
@@ -1571,8 +1619,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(
-                    relationships.Count, 
-                    new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 
+                    relationships.Count,
+                    new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid },
                     applicationId: applicationId);
 
                 ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
@@ -1624,8 +1672,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteRelationships(
-            Guid intersectTypeUid, 
-            RelationshipDeletes relationships, 
+            Guid intersectTypeUid,
+            RelationshipDeletes relationships,
             bool triggerWorkflow = false,
             [SwaggerDescription(nameof(Swagger.Execution_ApplicationId))] string applicationId = null)
         {
@@ -1712,14 +1760,25 @@ namespace d360.web.Controllers.V2
             Route("export/types"),
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
-            SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Exported relationship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> ExportTypesToExcel()
+        public async Task<IHttpActionResult> ExportTypesToExcel(string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null)
         {
             var queryParams = new List<KeyValuePair<string, string>>();
             queryParams.Add(new KeyValuePair<string, string>("state", "1"));
-            var models = await Company.GetRelationshipTypes(queryParams);
+            var models = await Company.GetRelationshipTypes(queryParams, 
+                keyword: keyword, 
+                id: id, 
+                subject: subject, 
+                predicate: predicate, 
+                @object: @object);
+
+            return Excel(ItemsToExcel(models), $"Relationship Types {DateTime.Now.ToShortDateString()}.xlsx");
+        }
+
+        private SLDocument ItemsToExcel(IEnumerable<IntersectTypeApiViewModel> data)
+        {
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
@@ -1739,7 +1798,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             int rowNumber = 1;
-            foreach (var row in models)
+            foreach (var row in data)
             {
                 index = 1;
                 rowNumber++;
@@ -1754,21 +1813,7 @@ namespace d360.web.Controllers.V2
 
             #endregion
 
-            var stream = new System.IO.MemoryStream();
-            document.SaveAs(stream);
-
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString())
-            };
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-
-            return ResponseMessage(result);
+            return document;
         }
 
         /// <summary>

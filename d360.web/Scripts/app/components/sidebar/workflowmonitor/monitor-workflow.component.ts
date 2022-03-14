@@ -1,10 +1,12 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Params } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
+import { TabTitle } from '../../../models/enums.model';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -30,6 +32,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private assetService: AssetService,
+        private titleAndTabsService: TitleAndTabsService,
         breadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService
@@ -41,6 +44,8 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
+            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, TabTitle.WORKFLOW);
+
             let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
             let assetUid = params['assetUid'];
             if (assetUid == null || assetUid == undefined) {
@@ -65,6 +70,8 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.secondaryNavService.resetSecondaryNavActiveItem();
+
         if (this.sub) {
             this.sub.unsubscribe();
         }

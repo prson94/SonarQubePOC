@@ -73,7 +73,8 @@
                                         <semantic-detail [qualifier]="semanticType.qualifier"
                                                          [isSidePanel]="true"
                                                          [showHeader]="true"
-                                                         [semanticType]="semanticType"></semantic-detail>
+                                                         [semanticType]="semanticType"
+                                                         (close)="secondarySidePanelOpen=false;"></semantic-detail>
                                     </ng-container>
                                 </div>
                             </div>

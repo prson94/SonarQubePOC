@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Runtime.Serialization;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using d360.core.entities.Contracts;
-using System.ComponentModel;
-using System.Xml.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -26,20 +24,21 @@ namespace d360.core.entities
         [DataMember]
         [StringLength(250)]
         public string Name { get; set; }
-        
+
         public DateTime? UpdatedOn { get; set; }
+        
         public int? UpdatedBy { get; set; }
 
         public DateTime CreatedOn
         {
             get
             {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
+                return createdon.HasValue
+                   ? createdon.Value
                    : DateTime.UtcNow;
             }
 
-            set { this.createdon = value; }
+            set { createdon = value; }
         }
 
         private DateTime? createdon = null;

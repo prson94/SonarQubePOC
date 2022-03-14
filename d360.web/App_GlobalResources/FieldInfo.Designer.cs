@@ -223,6 +223,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relationship Type.
+        /// </summary>
+        public static string Relationship_Type_Name {
+            get {
+                return ResourceManager.GetString("Relationship_Type_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship UID.
+        /// </summary>
+        public static string Relationship_UID_Name {
+            get {
+                return ResourceManager.GetString("Relationship_UID_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule ID.
         /// </summary>
         public static string RuleID_Name {

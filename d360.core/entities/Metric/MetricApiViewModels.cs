@@ -1,12 +1,12 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.core.entities.Metric
 {
@@ -18,7 +18,9 @@ namespace d360.core.entities.Metric
     public interface IDefinitionMeasure
     {
         string DefinitionJson { get; set; }
+
         MetricAssetDefinitionViewModel Definition { get; set; }
+
         MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
     }
 
@@ -36,7 +38,7 @@ namespace d360.core.entities.Metric
 
         [DataMember, JsonProperty(Order = 4)]
         public MetricAssetDefinitionViewModel Definition { get; set; }
-        
+
         [DataMember, JsonProperty(Order = 6)]
         public bool IsGroup { get; set; }
 
@@ -72,7 +74,7 @@ namespace d360.core.entities.Metric
         /// <summary>
         /// Used to help parse the json from the database.
         /// </summary>
-        [DataMember] 
+        [DataMember]
         public MetricAssetDefinitionDataQualityViewModel DataQualityDefinition { get; set; }
     }
 
@@ -87,7 +89,7 @@ namespace d360.core.entities.Metric
         public bool HasResults { get; set; } = false;
 
         [DataMember, JsonProperty(Order = 23)]
-        public State State { get; set; }  
+        public State State { get; set; }
 
         [DataMember, JsonProperty(Order = 24)]
         public DateTime? EffectiveEndDate { get; set; }
@@ -124,7 +126,7 @@ namespace d360.core.entities.Metric
         [DataMember]
         public MetricAssetDefinitionDataQualityViewModel DataQuality { get; set; }
 
-        [DataMember] 
+        [DataMember]
         public MetricAssetDefinitionGovernanceViewModel Governance { get; set; }
 
         public string GetHashValue()
@@ -156,7 +158,7 @@ namespace d360.core.entities.Metric
                 {
                     case MetricGovernanceCheckType.External:
                         if (Governance.External != null)
-                        { 
+                        {
                             hash += $"Instructions:{Governance.External.Instructions ?? ""}|";
                         }
                         break;
@@ -194,7 +196,7 @@ namespace d360.core.entities.Metric
                             {
                                 hash += $"Values:{string.Join(";", Governance.Relation.Values.OrderBy(v => v))}|";
                             }
-                            
+
                         }
                         break;
                 }
@@ -210,13 +212,16 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetDefinitionDataQualityViewModel
     {
-        [DataMember] 
+        [DataMember]
         public MetricRuleResultOperation ResultOperation { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public Guid? ResultPathUid { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public MetricMatchType? FilterMatchType { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public List<MetricAssetDefinitionDataQualityFilterViewModel> Filters { get; set; }
     }
 
@@ -225,18 +230,22 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public Guid AssetTypeUid { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public string FieldTypeName { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public Operator Operator { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public List<string> Values { get; set; }
 
 
-       /// <summary>
+        /// <summary>
         /// Property below used solely for processing incoming data.
         /// </summary>
         public int AssetTypeID { get; set; }
+
         /// <summary>
         /// Property below used solely for processing incoming data.
         /// </summary>
@@ -260,13 +269,17 @@ namespace d360.core.entities.Metric
 
         [DataMember]
         public MetricAssetDefinitionGovernanceFieldViewModel Field { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public MetricAssetDefinitionGovernancePredicateViewModel Predicate { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public MetricAssetDefinitionGovernanceRelationViewModel Relation { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public MetricAssetDefinitionGovernanceOwnerViewModel Owner { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public MetricAssetDefinitionGovernanceExternalViewModel External { get; set; }
 
         public string ValidateCheckObjectCorrespondsToCheck()
@@ -337,7 +350,7 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
-        
+
         [DataMember]
         public string Instructions { get; set; }
     }
@@ -345,10 +358,10 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetDefinitionGovernanceFieldViewModel
     {
-        [DataMember] 
+        [DataMember]
         public string FieldTypeName { get; set; }
-        
-        [DataMember] 
+
+        [DataMember]
         public Operator Operator { get; set; }
 
         [DataMember]
@@ -358,28 +371,32 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetDefinitionGovernancePredicateViewModel
     {
-        [DataMember] 
+        [DataMember]
         public Guid PredicateUid { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public Operator Operator { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionGovernanceRelationViewModel
     {
-        [DataMember] 
+        [DataMember]
         public Guid IntersectTypeUid { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public Operator Operator { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public List<string> Values { get; set; }
     }
 
     [DataContract]
     public class MetricAssetDefinitionGovernanceOwnerViewModel
     {
-        [DataMember] 
+        [DataMember]
         public Guid ResponsibilityTypeUid { get; set; }
+
         [DataMember]
         public Operator Operator { get; set; }
     }
@@ -391,6 +408,7 @@ namespace d360.core.entities.Metric
     public class MetricAssetDefinitionPerceptualViewModel
     {
         public Guid QuestionTypeUid { get; set; }
+
         public int NumberOfSurveysToConsider { get; set; }
     }
 
@@ -401,6 +419,7 @@ namespace d360.core.entities.Metric
     public class MetricAssetDefinitionRollupViewModel
     {
         public MetricRuleResultOperation ResultOperation { get; set; }
+
         public bool CrossDescendancy { get; set; }
     }
 
@@ -492,11 +511,11 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public Guid Uid { get; set; }
-        
+
         [DataMember]
         public MetricConditionType ConditionType { get; set; }
-        
-        public int? ConditionFieldTypeID{ get; set; }
+
+        public int? ConditionFieldTypeID { get; set; }
 
         public int? ConditionIntersectTypeID { get; set; }
 
@@ -519,30 +538,38 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public Guid AssetTypeUid { get; set; }
-        [DataMember] 
-        public string AssetTypeName { get; set; }
-        [DataMember] 
-        public int ID { get; set; }
-        [DataMember] 
-        public string ApiName { get; set; }
-        [DataMember] 
-        public string Name { get; set; }
-        [DataMember] 
-        public string Type { get; set; }
-        public string ValuesJson { get; set; }
+
         [DataMember]
-        public List<MetricFieldTypeValueViewModel> Values 
-        { 
-            get 
+        public string AssetTypeName { get; set; }
+
+        [DataMember]
+        public int ID { get; set; }
+
+        [DataMember]
+        public string ApiName { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Type { get; set; }
+
+        public string ValuesJson { get; set; }
+
+        [DataMember]
+        public List<MetricFieldTypeValueViewModel> Values
+        {
+            get
             {
                 return JsonConvert.DeserializeObject<List<MetricFieldTypeValueViewModel>>(ValuesJson ?? "[]");
-            } 
+            }
         }
     }
 
     public class MetricFieldTypeValueViewModel
     {
         public Guid Value { get; set; }
+
         public string Text { get; set; }
     }
 
@@ -551,12 +578,16 @@ namespace d360.core.entities.Metric
     {
         [DataMember]
         public Guid Uid { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public State State { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public string Path { get; set; }
+
         public string SegmentsJson { get; set; }
-        [DataMember] 
+
+        [DataMember]
         public List<MetricPathOptionSegmentViewModel> Segments
         {
             get
@@ -569,26 +600,38 @@ namespace d360.core.entities.Metric
     public class MetricPathOptionSegmentViewModel
     {
         public Guid AssetTypeUid { get; set; }
+
         public string Name { get; set; }
+
         public string Path { get; set; }
     }
 
-    public class MeasureVersionHistoryModel: IConditionGroupMeasure, IDefinitionMeasure
+    public class MeasureVersionHistoryModel : IConditionGroupMeasure, IDefinitionMeasure
     {
         public Guid MeasureUid { get; set; }
+
         public int Version { get; set; }
+
         public string Name { get; set; }
-        public string Description { get; set; }        
+
+        public string Description { get; set; }
+
         public DateTime EffectiveDate { get; set; }
+
         public DateTime? EffectiveEndDate { get; set; }
+
         public double Weight { get; set; }
+
         public float? Threshold { get; set; }
+
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
-        
+
         public bool HasResults { get; set; } = false;
+
         public bool MatchConditionsOnly { get; set; } = false;
 
         public string DefinitionJson { get; set; }
+
         public MetricAssetDefinitionViewModel Definition { get; set; }
 
         /// <summary>
@@ -603,8 +646,11 @@ namespace d360.core.entities.Metric
     public class DataQualityScoreItemEvidenceViewModel
     {
         public int pageSize { get; set; }
+
         public int pageNum { get; set; }
+
         public int total { get; set; }
+
         public List<DataQualityScoreItemEvidenceItemViewModel> items { get; set; }
     }
 
@@ -613,38 +659,57 @@ namespace d360.core.entities.Metric
         [JsonIgnore]
         public string RollupPathJson { get; set; }
 
-        public List<DataQualityScoreItemEvidenceItemRollupPathViewModel> RollupPath 
-        { 
-            get 
-            { 
-                return JsonConvert.DeserializeObject<List<DataQualityScoreItemEvidenceItemRollupPathViewModel>>(RollupPathJson ?? "[]"); 
-            } 
+        public List<DataQualityScoreItemEvidenceItemRollupPathViewModel> RollupPath
+        {
+            get
+            {
+                return JsonConvert.DeserializeObject<List<DataQualityScoreItemEvidenceItemRollupPathViewModel>>(RollupPathJson ?? "[]");
+            }
         }
 
         public Guid? ResultUid { get; set; }
+
         public Guid OwningAssetUid { get; set; }
+
         public string OwningAssetPath { get; set; }
+
         public string OwningAssetTypePath { get; set; }
+
         public string OwningAssetDisplayPath { get; set; }
+
         public Guid EvaluatedAssetUid { get; set; }
+
         public string EvaluatedAssetPath { get; set; }
+
         public string EvaluatedAssetTypePath { get; set; }
+
         public string EvaluatedAssetDisplayPath { get; set; }
+
         public AssetTypeClass EvaluatedAssetClass { get; set; }
+
         public DateTime? EffectiveDate { get; set; }
+
         public DateTime? RunDate { get; set; }
+
         public int? TotalCount { get; set; }
+
         public float PassFraction { get; set; }
+
         public int? PassCount { get; set; }
+
         public int? FailCount { get; set; }
     }
 
     public class DataQualityScoreItemEvidenceItemRollupPathViewModel
     {
         public Guid Uid { get; set; }
+
         public string AssetPath { get; set; }
+
         public string AssetTypePath { get; set; }
+
         public string Predicate { get; set; }
+
         public int Position { get; set; }
     }
 

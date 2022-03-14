@@ -41,4 +41,30 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.api.entity-v1">
+  <comment>GOV-17248</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[api].[Entity]') AND name = N'IX_Api_Entity_AssetTypeID')
+begin
+	CREATE NONCLUSTERED INDEX [IX_Api_Entity_AssetTypeID] ON [api].[Entity]
+	(
+		[AssetTypeID] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[api].[Entity]') AND name = N'IX_Api_Entity_AssetTypeID')
+BEGIN
+	DROP INDEX [IX_Api_Entity_AssetTypeID] ON [api].[Entity]
+END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
+
 using d360.core.entities.Contracts;
 
 namespace d360.core.entities
@@ -30,7 +31,7 @@ namespace d360.core.entities
         DataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Fields), Name = "ID_Name", Description = "ID_Description")
         ]
         public Guid ID { get; set; }
     }
@@ -56,7 +57,7 @@ namespace d360.core.entities
         DataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Fields), Name = "ID_Name", Description = "ID_Description")
         ]
         public int ID { get; set; }
     }
@@ -84,14 +85,9 @@ namespace d360.core.entities
 
         public DateTime CreatedOn
         {
-            get
-            {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
-                   : DateTime.UtcNow;
-            }
+            get => createdon ?? DateTime.UtcNow;
 
-            set { this.createdon = value; }
+            set { createdon = value; }
         }
 
         private DateTime? createdon = null;
@@ -105,14 +101,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? CreatedOn
         {
-            get
-            {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
-                   : DateTime.UtcNow;
-            }
+            get => createdon ?? DateTime.UtcNow;
 
-            set { this.createdon = value; }
+            set { createdon = value; }
         }
 
         private DateTime? createdon = null;
@@ -122,14 +113,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? UpdatedOn
         {
-            get
-            {
-                return this.updatedon.HasValue
-                   ? this.updatedon.Value
-                   : DateTime.UtcNow;
-            }
+            get => updatedon ?? DateTime.UtcNow;
 
-            set { this.updatedon = value; }
+            set { updatedon = value; }
         }
 
         private DateTime? updatedon = null;
@@ -142,14 +128,9 @@ namespace d360.core.entities
 
         public DateTime? CreatedOn
         {
-            get
-            {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
-                   : DateTime.UtcNow;
-            }
+            get => createdon ?? DateTime.UtcNow;
 
-            set { this.createdon = value; }
+            set { createdon = value; }
         }
 
         private DateTime? createdon = null;
@@ -164,14 +145,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? CreatedOn
         {
-            get
-            {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
-                   : DateTime.UtcNow;
-            }
+            get => createdon ?? DateTime.UtcNow;
 
-            set { this.createdon = value; }
+            set { createdon = value; }
         }
 
         private DateTime? createdon = null;
@@ -182,19 +158,13 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? UpdatedOn
         {
-            get
-            {
-                return this.updatedon.HasValue
-                   ? this.updatedon.Value
-                   : DateTime.UtcNow;
-            }
+            get => updatedon ?? DateTime.UtcNow;
 
-            set { this.updatedon = value; }
+            set { updatedon = value; }
         }
 
         private DateTime? updatedon = null;
     }
-
 
     [Serializable, DataContract(Namespace = NAMESPACE)]
     public abstract class BaseLongObject : BaseObject
@@ -203,7 +173,7 @@ namespace d360.core.entities
         DataMember,
         Key,
         DatabaseGenerated(DatabaseGeneratedOption.Identity),
-        Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ID_Name", Description = "ID_Description")
+        Display(ResourceType = typeof(resources.Fields), Name = "ID_Name", Description = "ID_Description")
         ]
         public long ID { get; set; }
     }
@@ -216,14 +186,9 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? CreatedOn
         {
-            get
-            {
-                return this.createdon.HasValue
-                   ? this.createdon.Value
-                   : DateTime.UtcNow;
-            }
+            get => createdon ?? DateTime.UtcNow;
 
-            set { this.createdon = value; }
+            set { createdon = value; }
         }
 
         private DateTime? createdon = null;
@@ -233,21 +198,13 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? UpdatedOn
         {
-            get
-            {
-                return this.updatedon.HasValue
-                   ? this.updatedon.Value
-                   : DateTime.UtcNow;
-            }
+            get => updatedon ?? DateTime.UtcNow;
 
-            set { this.updatedon = value; }
+            set { updatedon = value; }
         }
 
         private DateTime? updatedon = null;
     }
-
-
-
 
     [Serializable, DataContract(Namespace = NAMESPACE)]
     public abstract class BaseTemplateGuidObject : BaseObject

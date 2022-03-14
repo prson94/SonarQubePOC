@@ -14,7 +14,7 @@
         <div class="tile tile-detail side-panel" *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
             <side-panel (expandedChange)="sidePanelOpen=$event"
                         (selectedPanelChange)="sidePanelTab=$event"
-                        [selectedItem]="selection"
+                        [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="hasProfiling"
                         hasDetail="true"
@@ -69,7 +69,8 @@
                                 <semantic-detail [qualifier]="semanticType.qualifier"
                                                  [isSidePanel]="true"
                                                  [showHeader]="true"
-                                                 [semanticType]="semanticType"></semantic-detail>
+                                                 [semanticType]="semanticType"
+                                                 (close)="secondarySidePanelOpen=false;"></semantic-detail>
                             </ng-container>
                         </div>
                     </div>

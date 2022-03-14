@@ -11,10 +11,23 @@
                     </ig-search-field>
                 </div>
                 <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                <div class="grid-action-buttons">
+                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                         tooltipPosition="left"
+                         tooltipStyleClass="ig-tooltip">
+                        <button igButton
+                                [disabled]="!canExportRecords() || isExportInProgress"
+                                [igDataCy]="'Assets_Export'"
+                                icon="fa-download"
+                                [loading]="isExportInProgress"
+                                (click)="export()">
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="row asset-grid-wrapper">
                 <div class="col s12">
-                    <p-table #dt                   
+                    <p-table #dt
                              [value]="semanticTypes"
                              selectionMode="single"
                              [(selection)]="selectedType"
@@ -31,7 +44,7 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [lazy]="true"
                              (onLazyLoad)="lazyLoad($event)"
-                             [style]="{ 'width': '100%' }"                             
+                             [style]="{ 'width': '100%' }"
                              (selectionChange)="selectRow($event)">
                         <ng-template pTemplate="header">
                             <tr>
@@ -78,7 +91,7 @@
                                     </span>
                                 </td>
                                 <td>{{item.priority}}</td>
-                                <td>{{(item.baseType == 0 ? '' : item.baseType)}}</td>
+                                <td>{{(item.baseType == 0 ? '' : getBaseTypeText(item.baseType))}}</td>
                                 <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
                                     <div style="display:inline-block">
                                         <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
@@ -104,17 +117,17 @@
                         [expanded]="sidePanelOpen"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab"
-                        [selectedItem]="selectedType"
-                        hasDetail="true">                
-                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">   
+                        [hasSelectedItem]="selectedType ? true : false"
+                        hasDetail="true">
+                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
                     <ng-container *ngIf="selectedType">
                         <semantic-detail [qualifier]="selectedType.qualifier"
                                          [isSidePanel]="true"
                                          [showHeader]="true"
                                          [semanticType]="selectedType"></semantic-detail>
                     </ng-container>
-                </ng-container>                
+                </ng-container>
             </side-panel>
         </div>
     </div>
-</div>            
+</div>

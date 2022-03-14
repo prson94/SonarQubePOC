@@ -14,7 +14,7 @@ namespace d360.core.entities
         [DataMember]
         public string GroupName { get; set; }
 
-        [DataMember] 
+        [DataMember]
         public bool IsAdministrator { get; set; }
     }
 }

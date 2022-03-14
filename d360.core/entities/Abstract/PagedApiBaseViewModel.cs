@@ -7,6 +7,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public int pageSize { get; set; } = 200;
+
         [DataMember]
         public int pageNum { get; set; } = 1;
     }
@@ -14,8 +15,10 @@ namespace d360.core.entities
     {
         [DataMember]
         public int pageSize { get; set; } = 200;
+
         [DataMember]
         public int pageNum { get; set; } = 1;
+
         [DataMember]
         public int? total { get; set; } = 0;
     }

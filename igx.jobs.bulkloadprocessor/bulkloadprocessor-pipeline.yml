@@ -12,7 +12,7 @@ trigger:
     - /igx.jobs.bulkloadprocessor
 pr:
   autoCancel: false
-  drafts: false
+  drafts: true
   branches:
     include:
     - '*sprint*'
@@ -52,21 +52,13 @@ stages:
       vmImage: windows-2019
     steps:
     - checkout: self
-    - template: build/seteps/step-azure-key-vault.yml@templates
+    - template: build/steps/step-azure-key-vault.yml@templates
       parameters:
         secretsFilter: 'whitesourceApiKey,blackduckApi'
     - template: build/steps/step-t4-transform.yml@templates
-    - task: Cache@2
-      displayName: 'Cache NuGet packages'
-      inputs:
-        key: 'nuget-temp | "$(Agent.OS)" | $(Build.SourcesDirectory)/**/packages.config, !$(Build.SourcesDirectory)/igx.jobs.genericcommandprocessor/packages.config'
-        restoreKeys: |
-          nuget-temp | "$(Agent.OS)"
-          nuget-temp
-        path: $(UserProfile)/.nuget/packages/
-    - template: build/steps/step-dotnet-build.yml
+    - template: build/steps/step-dotnet-build.yml@templates
       parameters:
-        solutionToRestore: .
+        solutionToRestore: D360.sln
         solutionToBuild: 'd360.core/d360.core.csproj'
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
         buildArguments: '/p:Configuration=Release /t:Rebuild'
@@ -102,12 +94,15 @@ stages:
         msbuildArguments: /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/bulkloadprocessor/"
         clean: true
         maximumCpuCount: true
-    - template: build/jobs/job-whitesource-blackduck-scan.yml@templates
+    - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
+        projectName: 'Bulk Load Processor'
+    - template: build/steps/step-blackduck-detect.yml@templates
+      parameters:
         blackduckApi: $(blackduckApi)
         artifactName: BulkLoadProcessor
-        projectName: 'Bulk Load Processor'
+        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.bulkloadprocessor
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Bulk Load Processor'
       inputs:

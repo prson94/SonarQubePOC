@@ -61,6 +61,7 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [showLoader]="true"
                              (onNodeExpand)="nodeExpanded($event)"
+                             (onPage)="numberOfRowsByCategoryService.onPage($event)"
                              (onNodeCollapse)="nodeCollapsed($event)">
                     <ng-template pTemplate="header">
                         <tr>
@@ -203,7 +204,8 @@
                                 <semantic-detail [qualifier]="semanticType.qualifier"
                                                  [isSidePanel]="true"
                                                  [showHeader]="true"
-                                                 [semanticType]="semanticType"></semantic-detail>
+                                                 [semanticType]="semanticType"
+                                                 (close)="secondarySidePanelOpen=false;"></semantic-detail>
                             </ng-container>
                         </div>
                     </div>

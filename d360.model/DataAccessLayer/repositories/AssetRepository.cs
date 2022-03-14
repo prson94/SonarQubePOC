@@ -332,7 +332,7 @@ namespace d360.model.DataAccessLayer
                     var includeFieldsString = queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includefields").Value;
                     includeFieldsList = includeFieldsString
                         .Split(',')
-                        .Select(s => s.ToLower().Trim())
+                        .Select(s => s.Trim())
                         .Where(s => !string.IsNullOrEmpty(s))
                         .ToList();
                 }
@@ -345,7 +345,7 @@ namespace d360.model.DataAccessLayer
                 //validate param values
                 includeFieldsList.ForEach(f =>
                 {
-                    if (!allFieldTypes.Any(x => x.Name.ToLower() == f))
+                    if (!allFieldTypes.Any(x => x.Name.ToLower() == f.ToLower()))
                     {
                         throw new ArgumentException(string.Format(AssetTypeErrors.InvalueValue_includeFields, f));
                     }
@@ -353,6 +353,7 @@ namespace d360.model.DataAccessLayer
 
                 if (includeFieldsList.Any())
                 {
+                    includeFieldsList = includeFieldsList.Select(f => f.ToLower()).ToList();
                     fieldTypes = fieldTypes
                         .Where(x => includeFieldsList.Contains(x.Name.ToLower()))
                         .ToList();
@@ -1621,7 +1622,6 @@ namespace d360.model.DataAccessLayer
                 fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
                 fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
             }
             else
             {

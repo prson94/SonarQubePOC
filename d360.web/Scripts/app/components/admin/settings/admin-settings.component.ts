@@ -120,7 +120,15 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.HomePageBackgroundImage = this.getStringSetting(CompanySettingEnum.HomePageBackgroundImage);
         this.companySettings.HomePageTitleColor = this.getStringSetting(CompanySettingEnum.HomePageTitleColor);
         this.companySettings.HomePageTitleSize = this.getStringSetting(CompanySettingEnum.HomePageTitleSize);
-        this.companySettings.IpRestrictions = this.settingsService.getSettingById(CompanySettingEnum.IpRestriction).IpAddressSetting.Value ?? [];
+
+        let ipCollection = this.settingsService.getSettingById(CompanySettingEnum.IpRestriction).IpAddressSetting.Value;
+        if (!ipCollection) {
+            ipCollection = [];
+        }
+        this.companySettings.IpRestrictions = [];
+        ipCollection.forEach((ip) => {
+            this.companySettings.IpRestrictions.push({ End: ip.End, Name: ip.Name, Start: ip.Start });
+        });
 
         this.companySettings.MaxDropdownItems = this.getNumberSetting(CompanySettingEnum.MaxDropdownItems);
         this.companySettings.MaxExcelExportRows = this.getNumberSetting(CompanySettingEnum.MaxExcelExportRows);
@@ -135,6 +143,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
         this.companySettings.WriteActionDescription = this.getBooleanSetting(CompanySettingEnum.WriteActionDescription);
+        this.companySettings.RequestCertificationDraft = this.getStringSetting(CompanySettingEnum.RequestCertificationDraft);
 
         this.settingsService.getGroups()
             .subscribe(x => {
@@ -356,6 +365,11 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             SettingID: CompanySettingEnum.WorkflowDigestEmailDays,
             NumberSetting: { Value: this.companySettings.WorkflowDigestEmailDays },
             BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, StringSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.RequestCertificationDraft,
+            StringSetting: { Value: this.companySettings.RequestCertificationDraft },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
         });
 
         //#endregion

@@ -20,13 +20,16 @@ import { TreeTable } from 'primeng/treetable';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { AssetEditorComponent } from '../shared/asset-editor/asset-editor.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { AppConstants } from '../../static/constants';
+import { takeUntil } from 'rxjs/operators';
 
 declare var CurrentResourceID;
 
@@ -46,7 +49,7 @@ declare var CurrentResourceID;
 
 export class HierarchyItemStructureComponent extends BaseComponent implements OnInit, OnDestroy {
 
-    rowsPerPage: number = 25;
+    rowsPerPage: number = AppConstants.DEFAULT_ROWS_PER_PAGE;
 
     assetTypeClass: AssetTypeClass;
     assetTypeUid: string;
@@ -60,6 +63,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     levels: AssetTypeLevelApiModel[] = [];
     maxLevelAllowed: number = 1;
     hierarchy: any[] = [];
+    timeouthandle: any;
+    PermissionInterval: number;
 
     rowID: string = 'AssetUid';
     routeSub: any;
@@ -112,6 +117,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
 
+    destroy = new Subject<void>();
+
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
         { title: "Open" },
@@ -119,6 +126,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     ];
 
     constructor(
+        public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetService: AssetService,
         private assetTypeService: AssetTypeService,
         private dataProfileService: DataProfileService,
@@ -205,6 +213,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 });
             });
         });
+
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows();
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage as number;
+        });
     }
 
     ngOnDestroy() {
@@ -214,6 +233,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         if (this.hrefSub) {
             this.hrefSub.unsubscribe();
         }
+
+        this.destroy.next();
+        this.destroy.complete();
     }
 
     selectAsset(event: any) {
@@ -280,7 +302,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             .subscribe((result) => { this.currentAreaName = result });
 
         this.getFieldsDefinition();
-        this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId);
+        this.PermissionInterval = 500;
+        this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId).then((perms) => {
+            this.PermissionInterval = 100;
+        });
         this.setObjectInfo(this.objectType, this.objectTypeId);
         this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);
 
@@ -675,22 +700,26 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.hierarchy = result.items;
 
                 if (this.hierarchy.length !== 0) {
-                    this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
-                    if (autoSelect) {
-                        if (this.treeNodeArray.length > 0) {
-                            this.selectAsset(this.treeNodeArray[0]);
-                        } else {
-                            this.selectAsset(null);
+                    clearTimeout(this.timeouthandle);
+                    this.timeouthandle = window.setTimeout(() => {
+                        this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
+                        if (autoSelect) {
+                            if (this.treeNodeArray.length > 0) {
+                                this.selectAsset(this.treeNodeArray[0]);
+                            } else {
+                                this.selectAsset(null);
+                            }
                         }
-                    }
-                    this.buildScoreAllocationThresholds();
+                        this.buildScoreAllocationThresholds();
+                        this.isLoading = false;
+                    }, this.PermissionInterval);
                 }
                 else {
                     this.treeNodeArray = [];
                     this.selectAsset(null);
+                    this.isLoading = false;
                 }
 
-                this.isLoading = false;
             });
         }
     }
