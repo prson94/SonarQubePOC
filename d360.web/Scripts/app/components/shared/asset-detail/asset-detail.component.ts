@@ -242,12 +242,12 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         }
 
         return rows
-            .map(row => ({
+            .map((row) => ({
                 ...row,
                 FirstColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.FirstColumnFields),
                 SecondColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.SecondColumnFields)
             }))
-            .filter(row => 
+            .filter((row) => 
                 ((row.FirstColumnFields?.length ?? 0) > 0)
                 || ((row.SecondColumnFields?.length ?? 0) > 0)
             );
@@ -257,7 +257,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 return null;
             }
 
-            return fields.filter(f => allowedFields.has(f.FieldName));
+            return fields.filter((f) => allowedFields.has(f.FieldName));
         }
     }
 
