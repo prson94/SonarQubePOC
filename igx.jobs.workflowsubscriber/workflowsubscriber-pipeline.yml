@@ -84,13 +84,13 @@ stages:
         maximumCpuCount: true
     - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
-        whitesourceApiKey: $(whitesourceApiKey)      
-        projectName: 'Workflow Subscriber Processor'  
-    - template: build/steps/step-blackduck-detect.yml@templates
+        whitesourceApiKey: $(whitesourceApiKey)
+        projectName: 'Workflow Subscriber Processor'
+    - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
-        blackduckApi: $(blackduckApi)
-        artifactName: WorkflowSubscriber
-        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.workflowsubscriber
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-Webjob-WorkflowSubscriber'
+        blackDuckScanDirectory: $PWD/igx.jobs.workflowsubscriber
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Workflow Subscriber'
       inputs:

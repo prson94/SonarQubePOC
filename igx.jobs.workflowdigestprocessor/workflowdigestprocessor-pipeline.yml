@@ -94,12 +94,12 @@ stages:
     - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
-        projectName: 'Workflow Digest Processor' 
-    - template: build/steps/step-blackduck-detect.yml@templates
+        projectName: 'Workflow Digest Processor'
+    - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
-        blackduckApi: $(blackduckApi)
-        artifactName: WorkflowDigestProcessor
-        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.workflowdigestprocessor
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-Webjob-WorkflowDigestProcessor'
+        blackDuckScanDirectory: $PWD/igx.jobs.workflowdigestprocessor
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Workflow Digest Processor'
       inputs:
