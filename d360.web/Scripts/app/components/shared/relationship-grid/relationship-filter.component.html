@@ -6,14 +6,15 @@
             </div>
         </div>
         <label class="p-checkbox-label rel-type-label">Relationship Type</label>
-
-        <div class="item" *ngFor="let item of relationshipTypesResolvedNames">
-            <div class="flex-item">
-                <p-checkbox igCheckbox [(ngModel)]="item.isSelected" label="{{item.name}}" [binary]="true" (onChange)="toggleItem($event)"></p-checkbox>
-            </div>
-            <div class="flex-grow"></div>
-            <div class="flex-item">
-                <ig-badge [text]="item.count"></ig-badge>
+        <div class="relationship-picker">
+            <div class="item" *ngFor="let item of relationshipTypesResolvedNames">
+                <div class="flex-item">
+                    <p-checkbox igCheckbox [(ngModel)]="item.isSelected" label="{{item.name}}" [binary]="true" (onChange)="toggleItem($event)"></p-checkbox>
+                </div>
+                <div class="flex-grow"></div>
+                <div class="flex-item">
+                    <ig-badge [text]="item.count"></ig-badge>
+                </div>
             </div>
         </div>
     </div>
