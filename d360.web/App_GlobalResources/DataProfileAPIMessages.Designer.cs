@@ -133,7 +133,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Url.
+        ///   Looks up a localized string similar to Asset URL.
         /// </summary>
         internal static string AssetUrlColumn {
             get {
@@ -448,7 +448,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos; and &apos;path&apos;..
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos;, &apos;path&apos; or &apos;assettypepath&apos;..
         /// </summary>
         internal static string OrderInvalid {
             get {
@@ -687,6 +687,15 @@ namespace Resources {
         internal static string TypeQualifierInvalid {
             get {
                 return ResourceManager.GetString("TypeQualifierInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url.
+        /// </summary>
+        internal static string UrlColumn {
+            get {
+                return ResourceManager.GetString("UrlColumn", resourceCulture);
             }
         }
         
