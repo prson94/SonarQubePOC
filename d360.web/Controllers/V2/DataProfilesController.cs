@@ -727,7 +727,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'confidence' and 'path'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'confidence', 'path' or 'assettypepath'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", "The filter expression used to filter assets by path and/or assetTypePath fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within path or assetTypePath fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
         ]
@@ -1008,7 +1008,7 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetTypePathColumn, matchType));
             doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUidColumn);
             doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetIdColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUrlColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.UrlColumn);
             doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetUidColumn, matchType));
             doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetIdColumn, matchType));
             doc.SetCellValue(rowNumber, index, string.Format(DataProfileAPIMessages.MatchedAssetUrlColumn, matchType));

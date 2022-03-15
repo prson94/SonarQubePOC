@@ -146,7 +146,7 @@
   <data name="AssetUidProfileSetDateRecordNotfound" xml:space="preserve">
     <value>Record does not exist for AssetUid {0} and ProfileSetDate {1}</value>
   </data>
-  <data name="AssetUrlColumn" xml:space="preserve">
+  <data name="UrlColumn" xml:space="preserve">
     <value>Url</value>
     <comment>Used for data profile match export</comment>
   </data>
@@ -272,7 +272,7 @@
     <value>{0} signature not found for AssetUid {1}</value>
   </data>
   <data name="OrderInvalid" xml:space="preserve">
-    <value>Invalid value for parameter '_order'. Allowed values are 'confidence' and 'path'.</value>
+    <value>Invalid value for parameter '_order'. Allowed values are 'confidence', 'path' or 'assettypepath'.</value>
   </data>
   <data name="PriorityColumn" xml:space="preserve">
     <value>Priority</value>
@@ -375,5 +375,9 @@
   <data name="ColorColumn" xml:space="preserve">
     <value>Color</value>
     <comment>User for Semantic Type Status export</comment>
+  </data>
+  <data name="AssetUrlColumn" xml:space="preserve">
+    <value>Asset URL</value>
+    <comment>Used for Semantic Types Assets Export</comment>
   </data>
 </root>
