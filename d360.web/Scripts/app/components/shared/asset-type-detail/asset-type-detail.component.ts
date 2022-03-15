@@ -32,7 +32,7 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
         "Name",
         "Description",
         "Hierarchical",
-        "UID",
+        "uid",
         "ArtifactCreatedOn",
         "ArtifactUpdatedOn", 
         "Created By",
