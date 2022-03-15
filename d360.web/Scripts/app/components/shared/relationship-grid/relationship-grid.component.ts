@@ -353,6 +353,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 this.selectRow(this.relationships[0]);
             }
         }
+        else {
+            this.selectedRelAsset = this.selectedRelationship = this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+        }
 
         this.isLoading = false;
         this.cdRef.detectChanges();

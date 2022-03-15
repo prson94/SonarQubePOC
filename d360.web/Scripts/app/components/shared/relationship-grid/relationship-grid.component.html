@@ -119,7 +119,7 @@
             <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="side-panel {{isInModal ? '' : 'tile tile-detail '}}">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
-                            [hasSelectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
+                            [selectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
                             [hasProfiling]="false"
                             [hasDetail]="true"
                             [hasFilter]="true"
