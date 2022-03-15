@@ -1955,7 +1955,7 @@ from	IntersectType I
                 return item.Id.ToString().IndexOf(id.ToString(), StringComparison.OrdinalIgnoreCase) > -1;
             }
 
-            return string.IsNullOrEmpty(keyword) ? true : checkKeyword(item, keyword)
+            return (string.IsNullOrEmpty(keyword) ? true : checkKeyword(item, keyword))
                         && checkId(item, id)
                         && checkSubject(item, subject)
                         && checkPredicate(item, predicate)
