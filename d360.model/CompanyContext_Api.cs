@@ -1892,14 +1892,17 @@ from	IntersectType I
 {whereClause} for json path";
 
             var models = await GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
-            // in-memory filter
-            if (string.IsNullOrEmpty(keyword) == false 
-                || id.HasValue 
-                || string.IsNullOrEmpty(subject) 
-                || string.IsNullOrEmpty(predicate)
-                || string.IsNullOrEmpty(@object))
+            if (models != null)
             {
-                models = models.Where(x => FilterIntersectTypeApiViewModel(x, keyword, id, subject, predicate, @object)).ToList();
+                // in-memory filter
+                if (string.IsNullOrEmpty(keyword) == false
+                    || id.HasValue
+                    || string.IsNullOrEmpty(subject)
+                    || string.IsNullOrEmpty(predicate)
+                    || string.IsNullOrEmpty(@object))
+                {
+                    models = models.Where(x => FilterIntersectTypeApiViewModel(x, keyword, id, subject, predicate, @object)).ToList();
+                }
             }
 
             return models;
