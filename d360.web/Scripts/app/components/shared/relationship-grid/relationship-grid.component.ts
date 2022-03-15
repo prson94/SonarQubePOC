@@ -64,8 +64,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     simpleFilter: string = "";
     advancedFilter: string = "";
     advancedFilterData: any;
-    sortField: string = "relationshiptypename";
-    sortOrder: string = "asc";
+    sortField: string = "";
+    sortOrder: string = "";
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -374,8 +374,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadPageNumberAfterDeletion = -1;
         }
 
-        params._order = this.sortField;
-        params._direction = this.sortOrder;
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+        if (this.sortOrder) {
+            params._direction = this.sortOrder;
+        }
         params["includeLegacyData"] = true;
         if (this.advancedFilter) {
             params._filter = this.advancedFilter;

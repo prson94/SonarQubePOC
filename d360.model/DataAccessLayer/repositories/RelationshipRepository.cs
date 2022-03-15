@@ -259,6 +259,9 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                         //filter items by inner join
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (exists(select top 1 1 from #filteredIntersects fi where fi.id = i.ID))";
+
+                        //sort by relationship type then by asset
+                        _orderBy = "RelationshipSideData.RelationshipTypeName,RelationshipSideData.AssetPath";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -490,7 +493,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
             }
 
-            if (isFilteredByAssetUID) 
+            if (isFilteredByAssetUID)
             {
                 //apply data to check which side on relationship are we
                 fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side");
