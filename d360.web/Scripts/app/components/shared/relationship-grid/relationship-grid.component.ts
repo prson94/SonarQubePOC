@@ -1,7 +1,5 @@
 ﻿import { EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { forEach } from 'lodash';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -9,7 +7,6 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
-import { Permission } from '../../../models/responsibility-type.model';
 import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';

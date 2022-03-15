@@ -120,12 +120,15 @@ export class SidePanelComponent extends BaseComponent {
                     if (state.selectedPanel != null && state.selectedPanel.length > 0) {
                         let b = this.buttons.find((b) => b.key === state.selectedPanel);
 
-                        if (b) {
+                        if (b || this.storageKey === "relationship-detail") {
                             this.selectedPanel = state.selectedPanel;
                         }
                     }
                 }
 
+            }
+            else if (this.selectedPanel === 'filters') {
+                this.expanded = true;
             }
         }
     }
