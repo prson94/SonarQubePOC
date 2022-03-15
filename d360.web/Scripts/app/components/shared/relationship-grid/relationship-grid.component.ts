@@ -549,7 +549,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     }
 
     get fullRelationshipNameAsHTML(): string {
-        return `${this.assetDetail.DisplayValue} - <strong>${this.selectedRelAsset.name}</strong> - ${this.selectedRelAsset.target}`;
+        return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp;</strong> - ${this.selectedRelAsset.target}`;
 
     }
 }
