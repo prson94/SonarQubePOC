@@ -300,7 +300,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.cdRef.markForCheck();
 
         let loadedFilters: AdvancedFilterFieldCondition[] = [];
-        if (this.enableFilterSaving || this.isGlobalSearch) {
+        if ((this.enableFilterSaving || this.isGlobalSearch) && !newFiltersPushed) {
             loadedFilters = this.loadFilters();
         }
 

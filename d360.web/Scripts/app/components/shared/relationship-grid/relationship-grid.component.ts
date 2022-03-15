@@ -167,7 +167,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     get getAdvancedFilterFields(): AdvancedFilterFieldType[] {
         let filters: AdvancedFilterFieldType[] = [];
         this.filterFieldList.forEach((f) => filters.push(f));
-        this.loadedFilterFields.forEach((f) => filters.push(f));
+        if (this.loadedFilterFields) {
+            this.loadedFilterFields.forEach((f) => filters.push(f));
+        }
         return filters;
     }
 

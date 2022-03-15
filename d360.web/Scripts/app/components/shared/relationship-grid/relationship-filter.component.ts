@@ -20,8 +20,7 @@ export class RelationshipFilterComponent {
                     this.relationshipTypesResolvedNames.forEach((rt) => {
                         rt.isSelected = false;
                         values.forEach((val) => {
-
-                            if (val === rt.name.toLowerCase()) {
+                            if (val === rt.uid.toLowerCase()) {
                                 rt.isSelected = true;
                             }
                         });
@@ -32,10 +31,6 @@ export class RelationshipFilterComponent {
         });
     }
 
-    toggleAll($event) {
-        this.relationshipTypesResolvedNames.forEach((rt) => rt.isSelected = this.allSelected);
-        this.onFilterChange();
-    }
     toggleItem($event) {
         this.onFilterChange();
     }
