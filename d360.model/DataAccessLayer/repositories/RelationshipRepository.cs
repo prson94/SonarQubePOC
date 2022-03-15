@@ -402,6 +402,11 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                         }
                     }
 
+                    if (isFilteredByAssetUID)
+                    {
+                        simpleFilters.Add($"RelationshipSideData.RelationshipTypeName like @simpleFilter");
+                    }
+
                     if (simpleFilters.Any()) //it prevents `and()` instruction appears in WHERE clause
                     {
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $"({string.Join(" or ", simpleFilters)})";
@@ -485,7 +490,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
             }
 
-            if (isFilteredByAssetUID)
+            if (isFilteredByAssetUID) 
             {
                 //apply data to check which side on relationship are we
                 fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side");
