@@ -904,8 +904,7 @@ namespace d360.web.Controllers
                         responseModel.MainTabTitle = "Business Asset Types";
                     }
                 }
-
-                if (model.ObjectType == SystemObjects.TaskType.ToString())
+                else if (model.ObjectType == SystemObjects.TaskType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
@@ -929,8 +928,7 @@ namespace d360.web.Controllers
 
                     responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
                 }
-
-                if (model.ObjectType == SystemObjects.IntersectType.ToString())
+                else if (model.ObjectType == SystemObjects.IntersectType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
@@ -939,10 +937,8 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Relationship Types";
                     responseModel.Items.HasAudit = true;
                     responseModel.Items.HasField = true;
-
                 }
-
-                if (model.ObjectType == SystemObjects.IssueType.ToString())
+                else if (model.ObjectType == SystemObjects.IssueType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
@@ -951,8 +947,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Action Types";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
+                else if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
@@ -961,8 +956,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Responsibility Types";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.Report.ToString())
+                else if (model.ObjectType == SystemObjects.Report.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
@@ -971,8 +965,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Dashboards";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
+                else if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
@@ -981,8 +974,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Model Types";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.PolicyType.ToString())
+                else if (model.ObjectType == SystemObjects.PolicyType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
@@ -991,8 +983,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Policy Types";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.Tag.ToString())
+                else if (model.ObjectType == SystemObjects.Tag.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
@@ -1001,7 +992,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Tags";
                     responseModel.Items.HasAudit = true;
                 }
-                if (model.ObjectType == SystemObjects.RuleType.ToString())
+                else if (model.ObjectType == SystemObjects.RuleType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.RuleType.ToString();
@@ -1010,7 +1001,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Rules";
                     responseModel.Items.HasAudit = true;
                 }
-                if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
+                else if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
@@ -1029,8 +1020,7 @@ namespace d360.web.Controllers
                     }
                     responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
                 }
-
-                if (model.ObjectType == SystemObjects.ResourceType.ToString())
+                else if (model.ObjectType == SystemObjects.ResourceType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
@@ -1038,9 +1028,9 @@ namespace d360.web.Controllers
                     responseModel.DisplayValue = "Users";
                     responseModel.MainTabTitle = "Users";
                     responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
                 }
-
-                if (model.ObjectType == SystemObjects.GroupType.ToString())
+                else if (model.ObjectType == SystemObjects.GroupType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
@@ -1050,8 +1040,7 @@ namespace d360.web.Controllers
                     responseModel.Items.HasAudit = true;
                     responseModel.Items.HasField = true;
                 }
-
-                if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
+                else if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
@@ -1060,8 +1049,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Scoring Definitions";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.Predicate.ToString())
+                else if (model.ObjectType == SystemObjects.Predicate.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
@@ -1071,8 +1059,7 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Predicates";
                     responseModel.Items.HasAudit = true;
                 }
-
-                if (model.ObjectType == SystemObjects.Resource.ToString())
+                else if (model.ObjectType == SystemObjects.Resource.ToString())
                 {
                     var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
                     var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
