@@ -323,16 +323,19 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.relationships.forEach((i, index) => {
                 i["index"] = index;
                 i[this.menuKey] = [];
-                if (this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) {
-                    i[this.menuKey].push({ title: 'Edit Relationship' });
-                }
-                if (this.assetPermissions.DeleteRelationships) {
-                    i[this.menuKey].push({ title: 'Delete Relationship' });
-                }
 
                 var type = this.relationshipTypes.filter((rt) => rt.Uid.toLowerCase() === i.RelationshipTypeUid.toLowerCase());
+
                 if (type.length > 0) {
                     i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy";
+
+                    if ((this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) && type[0].HasFieldTypes) {
+                        i[this.menuKey].push({ title: 'Edit Relationship' });
+                    }
+                }
+
+                if (this.assetPermissions.DeleteRelationships) {
+                    i[this.menuKey].push({ title: 'Delete Relationship' });
                 }
             });
         }
