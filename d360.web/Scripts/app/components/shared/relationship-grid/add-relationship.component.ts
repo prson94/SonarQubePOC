@@ -143,7 +143,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         thisCardinality = type.Subject.Cardinality;
                     }
 
-                    if (count > 0 && targetCardinality === "One" && thisCardinality === "Many") {
+                    if (count > 0 && thisCardinality === "One" && targetCardinality === "Many") {
                         disabledClass = 'disabled-cardinality-many';
                     }
                     if (count > 0 && targetCardinality === "One" && thisCardinality === "One") {

@@ -38,7 +38,7 @@
                              let-item>
                     <tr class="{{item.disabledClass}}" [pSelectableRow]="item.disabledClass ? null : item">
                         <td class="rel-name">
-                            <p-tableRadioButton [value]="item"></p-tableRadioButton>
+                            <p-tableRadioButton [pSelectableRow]="item.disabledClass ? null : item" [value]="item"></p-tableRadioButton>
                             {{item.name}}
                         </td>
                         <td class="flex-grid">
