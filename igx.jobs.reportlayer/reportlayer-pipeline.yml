@@ -87,12 +87,12 @@ stages:
     - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
-        projectName: 'WebJob Report Layer'     
-    - template: build/steps/step-blackduck-detect.yml@templates
+        projectName: 'WebJob Report Layer'
+    - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
-        blackduckApi: $(blackduckApi)
-        artifactName: ReportLayer
-        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.reportlayer
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-Webjob-ReportLayer'
+        blackDuckScanDirectory: $PWD/igx.jobs.reportlayer
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Report Layer'
       inputs:
