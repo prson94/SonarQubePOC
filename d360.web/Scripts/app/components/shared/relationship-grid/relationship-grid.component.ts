@@ -280,7 +280,6 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         this.isLoading = true;
 
-
         if (this.loadRelationshipsSub) {
             this.loadRelationshipsSub.unsubscribe();
         }
@@ -364,6 +363,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         params._pageSize = this.rowsPerPage;
         if (this.dt) {
             params._pageNum = (this.dt.first / this.dt.rows) + 1;
+            params._pageSize = this.dt.rows;
         }
         else {
             params._pageNum = 1;
