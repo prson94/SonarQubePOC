@@ -47,4 +47,11 @@ export class RelationshipFilterComponent {
         ev.values = this.relationshipTypesResolvedNames.filter((rt) => rt.isSelected);
         this.advFilterService.updateFilter(ev);
     }
+
+    get hasSelectedValue(): boolean {
+        if (!this.relationshipTypesResolvedNames || this.relationshipTypesResolvedNames.length === 0) {
+            return false;
+        }
+        return this.relationshipTypesResolvedNames.some((r) => r.isSelected);
+    }
 }
