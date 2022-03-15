@@ -178,6 +178,13 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Typeahead search suggestions.
         /// </summary>
+        /// <remarks>
+        /// The typeahead search is indented to provide suggestions based on a partial search term.
+        /// 
+        /// This search looks for partial matches in Name and Tags.
+        /// 
+        /// If the partial search term appears to be a UID, the Asset UID and Tag UIDs are searched instead.
+        /// </remarks>
         /// <param name="query">Query string</param>
         /// <param name="categories">Comma separated list of Categories to limit search to</param>
         /// <param name="num">Max number of results. Defaults to 7</param>
