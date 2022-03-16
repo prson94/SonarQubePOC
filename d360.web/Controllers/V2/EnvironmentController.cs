@@ -1684,6 +1684,7 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// 
         /// </remarks>
+        /// <param name="requestModel">An object containing the properties of the theme you want to create. See the example model for a list of all available properties.</param>
         /// <returns>The created theme.</returns>
         [
             HttpPost,
@@ -1731,7 +1732,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Updates a theme based on the provided Uid.
         /// </summary>
+        /// <remarks>
+        /// If you leave any properties as null or not present, those properties will be cleared out from the theme you are updating.
+        /// </remarks>
         /// <param name="uid">The unique identifier of the theme.</param>
+        /// <param name="requestModel">An object containing the properties of the theme you want to update. See the example model for a list of all available properties.</param>
         /// <returns>The updated theme.</returns>
         [
             HttpPut,
@@ -1866,6 +1871,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpPut,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("themes/conversion/base64"),
             SwaggerConsumes("text/css"), SwaggerProduces("text/plain"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
@@ -1904,6 +1910,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpPut,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("themes/conversion/dataurl"),
             SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
             SwaggerProduces("text/plain"),
