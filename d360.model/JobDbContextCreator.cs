@@ -16,30 +16,31 @@ namespace d360.model
             string mandrillApiKey = null,
             string mandrillSubAccount = null)
         {
-            var sec = new UriSecurityContextProvider()
+            UriSecurityContextProvider sec = new UriSecurityContextProvider()
             {
                 CompanyID = companyId,
                 ResourceID = resourceId,
                 CompanyPrefix = urlPrefix,
                 IsAdministrator = isAdmin
             };
-            var cache = new DummyCachingProvider();
-            var mail = new MandrillMailProvider
+            DummyCachingProvider cache = new DummyCachingProvider();
+            MandrillMailProvider mail = new MandrillMailProvider
             {
-                ApiKey = string.IsNullOrEmpty(mandrillApiKey) 
-                            ? Config.GetValue<string>(constants.MAIL_API_KEY) 
+                ApiKey = string.IsNullOrEmpty(mandrillApiKey)
+                            ? Config.GetValue<string>(constants.MAIL_API_KEY)
                             : mandrillApiKey,
 
                 SubAccount = string.IsNullOrEmpty(mandrillSubAccount)
                                 ? Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT)
                                 : mandrillSubAccount,
             };
+
             if (queue == null)
             {
                 queue = new AzureQueueSource();
             }
 
-            var community = InitializeCommunityContext(connectionString, sec, cache, queue);
+            CommunityContext community = InitializeCommunityContext(connectionString, sec, cache, queue);
 
             if (storage == null)
             {
@@ -51,22 +52,25 @@ namespace d360.model
 
         public static CommunityContext CreateCommunityContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, string connectionString = null)
         {
-            var sec = new UriSecurityContextProvider()
+            UriSecurityContextProvider sec = new UriSecurityContextProvider()
             {
                 CompanyID = companyId,
                 ResourceID = resourceId,
                 CompanyPrefix = urlPrefix,
                 IsAdministrator = isAdmin
             };
-            var cache = new DummyCachingProvider();
-            var queue = new AzureQueueSource();
+            DummyCachingProvider cache = new DummyCachingProvider();
+            AzureQueueSource queue = new AzureQueueSource();
+            
             return InitializeCommunityContext(connectionString, sec, cache, queue);
         }
 
         private static CommunityContext InitializeCommunityContext(string connectionString, UriSecurityContextProvider sec, DummyCachingProvider cache, AzureQueueSource queue)
         {
             if (string.IsNullOrEmpty(connectionString))
+            {
                 return new CommunityContext(cache, queue, sec);
+            }
 
             return new CommunityContext(connectionString, cache, queue, sec);
         }
