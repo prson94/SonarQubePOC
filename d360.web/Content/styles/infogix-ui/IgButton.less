@@ -183,6 +183,13 @@
   padding: 0;
   width: 32px;
   height: 32px;
+
+  &.highlighted,
+  &.ig-state-focus,
+  &:focus,
+  &:hover {
+    background: @ig-purple-t4;
+  }
 }
 
 .ig-button:focus, .ig-button.ig-state-focus {
@@ -192,6 +199,10 @@
   -webkit-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
   -moz-box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
   box-shadow: 0 0 0 @ig-focus-width @ig-focus-color;
+
+  &.highlighted {
+    background: @ig-purple-t4;
+  }
 }
 
 .ig-button-spinner {

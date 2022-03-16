@@ -50,6 +50,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     selectedAssetsDetail: any[] = [];
     fieldValues: any = {};
     assetDetail: any = {};
+    higlightedItem: any = {};
 
     savingInProgress: boolean = false;
     previewAssetUid: string = "";
@@ -206,15 +207,22 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             title += " - " + `${this.selectedRelationshipType.name}`;
         }
         if (this.currentStep === AddRelationshipStep.SetCustomFields) {
-            title += " - " + `${this.selectedRelationshipType.name}`;
+            title += " -" + `&nbsp;<strong>${this.selectedRelationshipType.name}</strong>&nbsp;`;
             if (this.selectedAssetsDetail.length > 1) {
-                title += " - " + this.selectedAssetsDetail.length + " items";
+                title += "- " + this.selectedAssetsDetail.length + " items";
             }
             else {
-                title += " - " + this.selectedAssetsDetail[0].Text;
+                title += "- " + this.selectedAssetsDetail[0].Text;
             }
         }
         return title;
+    }
+
+    get selectedAssetCount(): number {
+        if (!this.selectedAssetsDetail) {
+            return 0;
+        }
+        return this.selectedAssetsDetail.length;
     }
 
     confirmAssets() {
