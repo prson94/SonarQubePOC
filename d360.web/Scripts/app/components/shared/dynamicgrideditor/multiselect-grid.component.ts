@@ -25,7 +25,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     selector: 'd3s-multiselect-grid',
     templateUrl: "multiselect-grid.component.html",
     providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService, AssetTypeService, ResourcesService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit, OnDestroy {
@@ -34,6 +34,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     @Input() assetUid: string;
     @Input() targetAssetTypeUid: string;
     @Input() objectCardinality: string;
+    @Input() higlightedItem: any;
+    @Input() selectedAssetsDetail: any[] = [];
 
     @Output() onInfoClick = new EventEmitter();
     @Output() onSelected = new EventEmitter();
@@ -172,6 +174,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             this.items = this.items.sort((a, b) => { return a.Text > b.Text ? 1 : -1; });
 
             this.lazyLoadTotalCount = this.items.length;
+            this.checkPreSelectedItems();
 
             this.isLoading = false;
             this.ref.markForCheck();
@@ -218,6 +221,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 }
             });
             this.lazyLoadTotalCount = this.items.length;
+            this.checkPreSelectedItems();
 
             this.isLoading = false;
             this.ref.markForCheck();
@@ -293,8 +297,22 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 });
             });
             this.isLoading = false;
+            this.checkPreSelectedItems();
             this.ref.markForCheck();
         });
+    }
+
+    checkPreSelectedItems() {
+        this.selectedItems = [];
+        if (this.items && this.selectedAssetsDetail) {
+            this.items.forEach((item) => {
+                this.selectedAssetsDetail.forEach((sel) => {
+                    if (sel.Value === item.Value) {
+                        this.selectedItems.push(item);
+                    }
+                })
+            })
+        }
     }
 
     private getObjectTypeForTooltip(item: any): string {

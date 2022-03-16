@@ -38,7 +38,7 @@
                              let-item>
                     <tr class="{{item.disabledClass}}" [pSelectableRow]="item.disabledClass ? null : item">
                         <td class="rel-name">
-                            <p-tableRadioButton [value]="item"></p-tableRadioButton>
+                            <p-tableRadioButton [pSelectableRow]="item.disabledClass ? null : item" [value]="item"></p-tableRadioButton>
                             {{item.name}}
                         </td>
                         <td class="flex-grid">
@@ -71,7 +71,7 @@
                     <div class="panel-header">
                         <span class="header-label">Information</span>
                         <div class="side-panel-button-container">
-                            <button igButton icon="fa-close" pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = ''"></button>
+                            <button igButton icon="fa-close" pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = '';higlightedItem=null;"></button>
                         </div>
                     </div>
                 </div>
@@ -90,14 +90,18 @@
                                   [intersectTypeUid]="selectedType.Uid"
                                   [assetUid]="assetUid"
                                   [targetAssetTypeUid]="targetTypeUid"
+                                  [higlightedItem]="higlightedItem"
                                   [objectCardinality]="targetTypeCardinality"
+                                  [selectedAssetsDetail]="selectedAssetsDetail"
                                   (onInfoClick)="onInfoClick($event)"
                                   (onSelected)="selectedAssetsDetail = $event"></d3s-multiselect-grid>
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetRelationshipType';previewAssetUid = ''"></button>
+                <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
+                <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;"></button>
+
                 <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
-                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
+                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
             </div>
         </div>
 
@@ -117,9 +121,10 @@
                               (modelChanged)="updateFields($event)"></asset-editor>
             </div>
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus label="Cancel" (click)="currentStep = 'SetAssets'"></button>
+                <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress" [loading]="savingInProgress"></button>
+                <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetAssets'"></button>
+                <button igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress" [loading]="savingInProgress"></button>
             </div>
         </div>
     </div>

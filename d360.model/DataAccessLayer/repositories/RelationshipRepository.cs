@@ -259,6 +259,9 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
 
                         //filter items by inner join
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (exists(select top 1 1 from #filteredIntersects fi where fi.id = i.ID))";
+
+                        //sort by relationship type then by asset
+                        _orderBy = "RelationshipSideData.RelationshipTypeName,RelationshipSideData.AssetPath";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -400,6 +403,11 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             simpleFilters.Add($"ISNULL(ANDP_Subject.DisplayPath,ST2.Name) like @simpleFilter");
 
                         }
+                    }
+
+                    if (isFilteredByAssetUID)
+                    {
+                        simpleFilters.Add($"RelationshipSideData.RelationshipTypeName like @simpleFilter");
                     }
 
                     if (simpleFilters.Any()) //it prevents `and()` instruction appears in WHERE clause

@@ -1,14 +1,20 @@
 ﻿<div class="relationship-detail-filter">
     <div class="relationships">
-        <p-checkbox igCheckbox [(ngModel)]="allSelected" label="Relationship Type" (onChange)="toggleAll($event)" [binary]="true"></p-checkbox>
-
-        <div class="item" *ngFor="let item of relationshipTypesResolvedNames">
-            <div class="flex-item">
-                <p-checkbox igCheckbox [(ngModel)]="item.isSelected" label="{{item.name}}" [binary]="true" (onChange)="toggleItem($event)"></p-checkbox>
+        <div class="p-checkbox p-component p-checkbox-checked">
+            <div class="p-checkbox-box ig-checkbox {{hasSelectedValue ? 'p-highlight' : ''}}">
+                <span *ngIf="hasSelectedValue" class="p-checkbox-icon pi pi-minus"></span>
             </div>
-            <div class="flex-grow"></div>
-            <div class="flex-item">
-                <ig-badge [text]="item.count"></ig-badge>
+        </div>
+        <label class="p-checkbox-label rel-type-label">Relationship Type</label>
+        <div class="relationship-picker">
+            <div class="item" *ngFor="let item of relationshipTypesResolvedNames">
+                <div class="flex-item">
+                    <p-checkbox igCheckbox [(ngModel)]="item.isSelected" label="{{item.name}}" [binary]="true" (onChange)="toggleItem($event)"></p-checkbox>
+                </div>
+                <div class="flex-grow"></div>
+                <div class="flex-item">
+                    <ig-badge [text]="item.count"></ig-badge>
+                </div>
             </div>
         </div>
     </div>

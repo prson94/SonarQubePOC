@@ -94,7 +94,7 @@
                             </td>
                             <td class="asset-grid-tools">
                                 <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
-                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
+                                    <button igButton class="ig-button-transparent" type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                                 </div>
                                 <div style="display:inline-block" *ngIf="item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
@@ -106,7 +106,7 @@
                     <ng-template pTemplate="summary">
                         <d3s-grid-paging-info [first]="dt.first"
                                               [rows]="dt.rows"
-                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                              [totalRecords]="totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
 
@@ -119,7 +119,7 @@
             <div *ngIf="areTypesLoaded && relationshipTypesResolvedNames.length !== 0" class="side-panel {{isInModal ? '' : 'tile tile-detail '}}">
                 <side-panel (expandedChange)="sidePanelOpen=$event"
                             (selectedPanelChange)="sidePanelTab=$event"
-                            [hasSelectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
+                            [selectedItem]="selectedAsset || selectedRelAsset || selectedReferenceItem || selectedTag"
                             [hasProfiling]="false"
                             [hasDetail]="true"
                             [hasFilter]="true"

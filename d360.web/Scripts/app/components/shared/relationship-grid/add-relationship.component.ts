@@ -50,6 +50,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     selectedAssetsDetail: any[] = [];
     fieldValues: any = {};
     assetDetail: any = {};
+    higlightedItem: any = {};
 
     savingInProgress: boolean = false;
     previewAssetUid: string = "";
@@ -98,6 +99,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     close() {
         this.isVisible = false;
+        this.currentStep = AddRelationshipStep.SetRelationshipType;
         this.selectedRelationshipType = null;
         this.previewAssetUid = this.previewAssetType = "";
         this.onClose.emit();
@@ -143,7 +145,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         thisCardinality = type.Subject.Cardinality;
                     }
 
-                    if (count > 0 && targetCardinality === "One" && thisCardinality === "Many") {
+                    if (count > 0 && thisCardinality === "One" && targetCardinality === "Many") {
                         disabledClass = 'disabled-cardinality-many';
                     }
                     if (count > 0 && targetCardinality === "One" && thisCardinality === "One") {
@@ -202,18 +204,25 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     get modalSubtitle(): string {
         let title: string = this.assetDetail.DisplayValue;
         if (this.currentStep === AddRelationshipStep.SetAssets) {
-            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            title += " - " + `${this.selectedRelationshipType.name}`;
         }
         if (this.currentStep === AddRelationshipStep.SetCustomFields) {
-            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            title += " -" + `&nbsp;<strong>${this.selectedRelationshipType.name}</strong>&nbsp;`;
             if (this.selectedAssetsDetail.length > 1) {
-                title += " - " + this.selectedAssetsDetail.length + " items";
+                title += "- " + this.selectedAssetsDetail.length + " items";
             }
             else {
-                title += " - " + this.selectedAssetsDetail[0].Text;
+                title += "- " + this.selectedAssetsDetail[0].Text;
             }
         }
         return title;
+    }
+
+    get selectedAssetCount(): number {
+        if (!this.selectedAssetsDetail) {
+            return 0;
+        }
+        return this.selectedAssetsDetail.length;
     }
 
     confirmAssets() {

@@ -1,7 +1,5 @@
 ﻿import { EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { forEach } from 'lodash';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -9,7 +7,6 @@ import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { RelationshipCount, RelationshipType } from '../../../models/relationship.model';
-import { Permission } from '../../../models/responsibility-type.model';
 import { AssetService } from '../../../services/asset.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
@@ -67,8 +64,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     simpleFilter: string = "";
     advancedFilter: string = "";
     advancedFilterData: any;
-    sortField: string = "relationshiptypename";
-    sortOrder: string = "asc";
+    sortField: string = "";
+    sortOrder: string = "";
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -170,7 +167,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     get getAdvancedFilterFields(): AdvancedFilterFieldType[] {
         let filters: AdvancedFilterFieldType[] = [];
         this.filterFieldList.forEach((f) => filters.push(f));
-        this.loadedFilterFields.forEach((f) => filters.push(f));
+        if (this.loadedFilterFields) {
+            this.loadedFilterFields.forEach((f) => filters.push(f));
+        }
         return filters;
     }
 
@@ -281,7 +280,6 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         this.isLoading = true;
 
-
         if (this.loadRelationshipsSub) {
             this.loadRelationshipsSub.unsubscribe();
         }
@@ -326,16 +324,19 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.relationships.forEach((i, index) => {
                 i["index"] = index;
                 i[this.menuKey] = [];
-                if (this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) {
-                    i[this.menuKey].push({ title: 'Edit Relationship' });
-                }
-                if (this.assetPermissions.DeleteRelationships) {
-                    i[this.menuKey].push({ title: 'Delete Relationship' });
-                }
 
                 var type = this.relationshipTypes.filter((rt) => rt.Uid.toLowerCase() === i.RelationshipTypeUid.toLowerCase());
+
                 if (type.length > 0) {
                     i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy";
+
+                    if ((this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) && type[0].HasFieldTypes) {
+                        i[this.menuKey].push({ title: 'Edit Relationship' });
+                    }
+                }
+
+                if (this.assetPermissions.DeleteRelationships) {
+                    i[this.menuKey].push({ title: 'Delete Relationship' });
                 }
             });
         }
@@ -352,6 +353,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 this.selectRow(this.relationships[0]);
             }
         }
+        else {
+            this.selectedRelAsset = this.selectedRelationship = this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+        }
 
         this.isLoading = false;
         this.cdRef.detectChanges();
@@ -362,6 +366,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         params._pageSize = this.rowsPerPage;
         if (this.dt) {
             params._pageNum = (this.dt.first / this.dt.rows) + 1;
+            params._pageSize = this.dt.rows;
         }
         else {
             params._pageNum = 1;
@@ -372,8 +377,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadPageNumberAfterDeletion = -1;
         }
 
-        params._order = this.sortField;
-        params._direction = this.sortOrder;
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+        if (this.sortOrder) {
+            params._direction = this.sortOrder;
+        }
         params["includeLegacyData"] = true;
         if (this.advancedFilter) {
             params._filter = this.advancedFilter;
@@ -540,7 +549,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     }
 
     get fullRelationshipNameAsHTML(): string {
-        return `${this.assetDetail.DisplayValue} - <strong>${this.selectedRelAsset.name}</strong> - ${this.selectedRelAsset.target}`;
+        return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp;</strong> - ${this.selectedRelAsset.target}`;
 
     }
 }

@@ -27,6 +27,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AddRelationshipModule } from './add-relationship.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
 @NgModule({
     imports: [
@@ -55,7 +56,8 @@ import { TooltipModule } from 'primeng/tooltip';
         SiteModalModule,
         AssetEditorModule,
         AddRelationshipModule,
-        TooltipModule
+        TooltipModule,
+        SharedGridPagingInfoModule
     ],
     declarations: [
         RelationshipGridComponent,
