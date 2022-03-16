@@ -318,6 +318,14 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             .subscribe((d) => {
                 this.thenFieldTypes = d.FieldTypes;
                 this.thenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
+                if (this.model && this.model.StructuredDefinition
+                    && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null
+                    && this.model.StructuredDefinition.Then.Conditions.length > 0) {
+                    for (let item of this.model.StructuredDefinition.Then.Conditions) {
+                        this.loadThenValuesForFieldType(item, false);
+                    }
+                }
+
             });
 
         return Promise.all(promises).then(() => { });
