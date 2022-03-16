@@ -325,7 +325,6 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                         this.loadThenValuesForFieldType(item, false);
                     }
                 }
-
             });
 
         return Promise.all(promises).then(() => { });
