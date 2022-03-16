@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DirectionAllowedForRelation" xml:space="preserve">
-    <value>_direction parameter is allowed only when RelationshipTypeUid is passed</value>
+    <value>_direction parameter is allowed only when RelationshipTypeUid or AssetUid is passed</value>
   </data>
   <data name="InvalidIntersectTypeUid" xml:space="preserve">
     <value>Invalid Intersect Type Uid provided {0}.</value>

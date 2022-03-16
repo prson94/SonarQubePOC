@@ -60,6 +60,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     selectedTag: any;
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
+    secondarySidePanel: string = "detail";
+    resourceUid: string;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -181,6 +183,17 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     secondaryPanelOpen(event: any) {
         this.secondarySidePanelOpen = true;
-        this.semanticType = event.semanticType;
+        if (event) {
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }
+            if (event.semanticType) {
+                this.secondarySidePanel = "detail";
+                this.semanticType = event.semanticType;
+            }
+        } else {
+            this.secondarySidePanel = "status";
+        }
     }
 }

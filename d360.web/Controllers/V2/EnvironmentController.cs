@@ -889,7 +889,8 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
+                    var model = new { pageSize, pageNum, items = response };
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -1563,7 +1564,7 @@ namespace d360.web.Controllers.V2
 	</defs>
 	<style>
 ");
-                svg.AppendLine($".s-main-bck {{ filter: url(#f1);fill: #f1f2f3 }} ");
+                svg.AppendLine($".s-main-bck {{ filter: url(#f1);fill: {theme.BackColor} }} ");
                 svg.AppendLine($".s-header-bck {{ fill: {theme.HeaderBackColor} }} ");
                 svg.AppendLine($".s-breadcrumb-txt {{ fill: {BlackOrWhite(theme.HeaderBackColor)} }} ");
                 svg.AppendLine($".s-breadcrumb-lnk {{ fill: {theme.BreadcrumbLinkColor} }} ");

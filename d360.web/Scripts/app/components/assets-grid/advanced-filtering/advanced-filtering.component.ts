@@ -28,6 +28,7 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() fieldsObserver: Observable<AdvancedFilterFieldType[]>;
     @Input() externalStorage: string;
     @Input() externalAllocations: ScoreTypeAllocation[] = [];
+    @Input() clearConditionsOnFilterField: string = '';
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -133,7 +134,10 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.cdRef.markForCheck();
     }
 
-    onItemChange() {
+    onItemChange(changedCondition: AdvancedFilterFieldCondition = null) {
+        if (changedCondition && this.clearConditionsOnFilterField && changedCondition.field.toLowerCase() === this.clearConditionsOnFilterField) {
+            this.conditions.filters = this.conditions.filters.filter((x) => !x.type || !x.type["RelationshipTypeUid"]);
+        }
         this.getQuery();
 
         var currentFilters = JSON.stringify(this.filters);
@@ -152,7 +156,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
     }
 
-    private initializeData() {
+    public initializeData(newFiltersPushed: boolean = false) {
         if (this.isAssetType) {
             this.assetTypeUid = this.loadIdentifier;
         }
@@ -179,11 +183,11 @@ export class AdvancedFilteringComponent implements OnChanges {
                     this.loadFieldFromRelationshipData(res);
                 }
                 catch (ex) {
-                    this.processLoadedData(res);
+                    this.processLoadedData(res, newFiltersPushed);
                 }
             }
             else {
-                this.processLoadedData(res);
+                this.processLoadedData(res, newFiltersPushed);
             }
 
 
@@ -237,7 +241,7 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
     }
 
-    private processLoadedData(res: AdvancedFilterFieldType[]) {
+    private processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false) {
         var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
         res.forEach((f) => {
             if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
@@ -296,8 +300,14 @@ export class AdvancedFilteringComponent implements OnChanges {
         this.cdRef.markForCheck();
 
         let loadedFilters: AdvancedFilterFieldCondition[] = [];
-        if (this.enableFilterSaving || this.isGlobalSearch) {
+        if ((this.enableFilterSaving || this.isGlobalSearch) && !newFiltersPushed) {
             loadedFilters = this.loadFilters();
+        }
+
+        if (newFiltersPushed) {
+            //if new filters are pushed remove last element in conditions which is "Add filter" placeholder
+            //we need to add new "Add filter" button with new fields we've just pushed
+            this.conditions.filters.pop();
         }
 
         this.fields.forEach((field) => {
@@ -318,7 +328,9 @@ export class AdvancedFilteringComponent implements OnChanges {
                         var defaultFilter = new AdvancedFilterFieldCondition(this.datePipe);
                         defaultFilter.field = field.Name;
                         defaultFilter.isDefaultFilter = true;
-                        this.conditions.filters.push(defaultFilter);
+                        if (!newFiltersPushed || !this.conditions.filters.some((x) => x.field === field.Name && x.isDefaultFilter === true)) {
+                            this.conditions.filters.push(defaultFilter);
+                        }
                     }
                 }
             }
@@ -327,8 +339,8 @@ export class AdvancedFilteringComponent implements OnChanges {
         loadedFilters.filter((f) => f !== null).forEach((f) => {
             this.conditions.filters.push(f);
         });
-
         this.conditions.filters.push(new AdvancedFilterFieldCondition(this.datePipe));
+
         this.visible = true;
 
         this.onItemChange();
@@ -426,7 +438,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 var filter = f as AdvancedFilterFieldCondition;
 
                 //do not load from storage if field got removed in meantime
-                if (this.fields && filter.field) {
+                if (this.fields && filter.field && this.loadIdentifier.toLowerCase().indexOf("Relationships_") !== -1) {
                     if (!this.fields.some((f) => f.Name === filter.field)) {
                         return false;
                     }
@@ -550,5 +562,4 @@ export class AdvancedFilteringComponent implements OnChanges {
             return staticObs;
         }
     }
-
 }

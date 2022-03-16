@@ -5,10 +5,13 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { AuthenticationService } from '../../services/authentication.service';
 
 import { DataProfileService } from '../../services/dataprofile.service';
+import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
+import { SemanticBaseComponent } from './semantics-base.component';
 
 @Component({
     selector: 'semantic-detail',
@@ -27,6 +30,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     @Input() showHeader: boolean = false;
     @Input() semanticType: SemanticType;
     @Output() close = new EventEmitter();
+    @Output() linkClicked = new EventEmitter();
 
     semanticDetails: SemanticType;
     semanticAssets: any[];
@@ -48,14 +52,20 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     ])
 
     constructor(        
-        private router: Router,
+        protected router: Router,
         private dataProfileService: DataProfileService,
         private changeDetectorRef: ChangeDetectorRef,
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService,
+        private headerbreadcrumbservice: HeaderBreadcrumbService,
+        private featureFlagService: FeatureFlagsService,
     ) {
-        super(settingsService);        
+        super(settingsService);   
+
+        if (!featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+        } 
     }
 
     ngOnInit() {

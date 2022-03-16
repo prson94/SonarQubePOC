@@ -121,9 +121,20 @@ namespace d360.model.DataAccessLayer
             bool includeAssetPath = false;
             bool orderByAssetPath = false;
             bool listColorsAsJSON = false;
+            bool includeLegacyData = false;
 
             string _orderBy = "I.IntersectTypeID,I.ID";
             string _orderDirection = "asc";
+
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
+            string filteredIntersectsTempTable = "";
+
+            //if filtered by asset uid we will include relationship type name and asset name
+            //both relationship type name and asset name depends on which side of relationship are we on
+            //both fields are needed for filtering and ordering
+            bool isFilteredByAssetUID = false;
 
             Guid objectUid;
             Guid relationshipTypeUid;
@@ -170,6 +181,10 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 if (queryParamsList.Any(k => k.Key.ToLower() == "_listcolorsasjson"))
                 {
                     bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+                }
+                if (queryParamsList.Any(k => k.Key.ToLower() == "includelegacydata"))
+                {
+                    bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "includelegacydata").Value, out includeLegacyData);
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "state"))
                 {
@@ -218,6 +233,35 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     {
                         dbArgs.Add("@objectuid", objectUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (O.Uid = @objectuid or (O.Uid is null and ot2.uid = @objectuid))";
+                    }
+                }
+                if (queryParamsList.Any(q => q.Key.ToLower() == "assetuid"))
+                {
+                    isFilteredByAssetUID = true;
+                    Guid assetUid;
+                    var assetUidString = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
+                    if (Guid.TryParse(assetUidString, out assetUid))
+                    {
+                        var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+
+                        dbArgs.Add("@assetObject", asset.Object);
+                        dbArgs.Add("@assetObjectId", asset.ObjectID);
+
+                        filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
+                            ;with assetIntersects as (select * from [Intersect] I
+                            where i.Object = @assetObject and i.ObjectID = @assetObjectId
+                            union
+                            select * from [Intersect] I
+                            where i.Subject = @assetObject and i.SubjectID = @assetObjectId)
+                            select ID 
+                            into #filteredIntersects
+                            from assetIntersects";
+
+                        //filter items by inner join
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (exists(select top 1 1 from #filteredIntersects fi where fi.id = i.ID))";
+
+                        //sort by relationship type then by asset
+                        _orderBy = "RelationshipSideData.RelationshipTypeName,RelationshipSideData.AssetPath";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_pagenum"))
@@ -278,8 +322,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
             }
 
-            List<string> fieldColumns = new List<string>();
-            List<string> fieldJoins = new List<string>();
 
             if (fieldTypes != null)
             {
@@ -303,6 +345,16 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 else if (orderValue == "subject.[path]")
                 {
                     _orderBy = "ISNULL(ANDP_Subject.DisplayPath,ST2.Name)";
+                    orderByAssetPath = true;
+                }
+                else if (orderValue == "relationshiptypename")
+                {
+                    _orderBy = "RelationshipSideData.RelationshipTypeName";
+                    orderByAssetPath = true;
+                }
+                else if (orderValue == "assetpath")
+                {
+                    _orderBy = "RelationshipSideData.AssetPath";
                     orderByAssetPath = true;
                 }
             }
@@ -334,10 +386,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             string ftformatted = companyContext.LookupFieldHasColorItem(ft) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
                             simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
                         }
-                        else if (ft.Type == DataType.Lookup.ToString() && companyContext.LookupFieldHasColorItem(ft))
-                        {
-                            simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
-                        }
                         else
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
@@ -355,6 +403,11 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             simpleFilters.Add($"ISNULL(ANDP_Subject.DisplayPath,ST2.Name) like @simpleFilter");
 
                         }
+                    }
+
+                    if (isFilteredByAssetUID)
+                    {
+                        simpleFilters.Add($"RelationshipSideData.RelationshipTypeName like @simpleFilter");
                     }
 
                     if (simpleFilters.Any()) //it prevents `and()` instruction appears in WHERE clause
@@ -433,22 +486,39 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
             }
 
             if (isExport)
-            {                
+            {
                 fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ");
                 fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ");
                 fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ");
                 fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
             }
 
+            if (isFilteredByAssetUID)
+            {
+                //apply data to check which side on relationship are we
+                fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side");
+                //depending on relationship side reslove relationship type name and asset name
+                fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
+				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
+				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
+				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData");
+            }
+
             string fieldColumnsSql = "";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
-            var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
+            var countFullSql = $@"select	
+           @total = count(1) 
+                {countSql} 
+                {(filteringByFields ? string.Join("\n", fieldJoins) : "")} 
+                {whereClause}";
 
             string orderByClause = $"order by {_orderBy} {_orderDirection}";
 
             var sql = $@"
+{filteredIntersectsTempTable}
+
 declare @total int
 {(includeTotal ? countFullSql : "")}
 
@@ -458,6 +528,8 @@ select	@pageSize as 'pageSize',
 		(
 		select	lower(I.Uid) as Uid,
 				lower(T.Uid) as RelationshipTypeUid,
+                {(isFilteredByAssetUID ? @"RelationshipSideData.RelationshipTypeName,
+				RelationshipSideData.AssetPath," : "")}
 				{stateSql}
 				{fieldColumnsSql}
 				lower(P.UID) as 'Predicate.Uid',
@@ -469,6 +541,8 @@ select	@pageSize as 'pageSize',
                 {(includeAssetPath ? ",ISNULL(ANDP_Subject.DisplayPath,ST2.Name) as 'Subject.[Path]'" : "")}
                 {(isExport ? ",PS.[Path] as 'Subject.AssetTypePath'" : "")}                
                 {(isExport ? ",ADVS.DisplayValue as 'Subject.DisplayName'" : "")}
+                {(includeLegacyData ? ",I.Subject as 'Subject.Type'" : "")}
+                {(includeLegacyData ? ",I.Object as 'Object.Type'" : "")}
 				,lower(O.Uid) as 'Object.Uid'
 				,ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
                 {(isExport ? ",ADVO.DisplayValue as 'Object.DisplayName'" : "")}
@@ -585,7 +659,7 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
         public async Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
             var dbArgs = new DynamicParameters();
-
+            bool includeHasFieldTypes = false;
             if (queryParams != null)
             {
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "predicateuid"))
@@ -618,6 +692,11 @@ left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
                     }
                 }
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "includehasfieldtypes"))
+                {
+                    var hasFieldTypesString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includehasfieldtypes").Value;
+                    bool.TryParse(hasFieldTypesString, out includeHasFieldTypes);
+                }
             }
 
 
@@ -638,12 +717,15 @@ select	I.Id,
 		coalesce(OP.[Path], O.Name)  as 'Object.Name',
 		coalesce(O.Class, 0) as 'Object.Class',
 		I.ObjectCardinality as 'Object.Cardinality'
+        {(includeHasFieldTypes ? @",case 
+                                when exists (select top 1 1 from FieldType where [Object] = 'IntersectType' and [ObjectId] = I.ID)
+                                    then 1
+                                    else 0
+                                end as 'HasFieldTypes'" : "")}
 from	IntersectType I
 		left join [Predicate] P on P.ID = I.PredicateID
-
 		left join AssetType S on (S.Object = I.Subject and S.ObjectID = I.SubjectID)
         outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-		
 		left join AssetType O on (O.Object = I.Object and O.ObjectID = I.ObjectID)
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
         {whereClause} for json path";
@@ -976,7 +1058,7 @@ from	IntersectType I
             var apiInfo = results.Children().ToList();
 
             var excelDocument = new ExcelDocument(string.Format(ExcelExports.Relationships_DocumentName, DateTime.Now));
-                   
+
             var fields = new List<FieldType>();
 
             var headerRow = new ExcelRow();
@@ -1041,7 +1123,7 @@ from	IntersectType I
                     {
                         int customCount = 0;
                         foreach (var cus in customColumns)
-                        {                            
+                        {
                             var name = cus.Name;
                             var friendlyName = cus.FriendlyName;
                             var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();

@@ -39,7 +39,7 @@
                                         <ig-popup-menu (onSelect)="onMenuSelect($event, duplicatesSelection, 'duplicate', true)" #menu4 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
                                         <button type="button" icon="fa-ellipsis-v" igButton (click)="menu4.toggle($event)" [darkMode]="true"></button>
                                     </div>
-                                </div>                                
+                                </div>
                                 <div class="grid-action-buttons">
                                     <div pTooltip="{{(canExportRecords(duplicatesDataTotalCount) ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
                                          tooltipPosition="left"
@@ -73,12 +73,11 @@
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th style="width: 30px">
-                                            <p-tableHeaderCheckbox  
-                                                #duplicateCheckBox
-                                                pTooltip="{{(duplicatesSelection && (duplicatesSelection.length == duplicatesData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
-                                                tooltipPosition="top"
-                                                tooltipStyleClass="ig-tooltip">
-                                            </p-tableHeaderCheckbox>                                            
+                                            <p-tableHeaderCheckbox #duplicateCheckBox
+                                                                   pTooltip="{{(duplicatesSelection && (duplicatesSelection.length == duplicatesData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
+                                                                   tooltipPosition="top"
+                                                                   tooltipStyleClass="ig-tooltip">
+                                            </p-tableHeaderCheckbox>
                                         </th>
                                         <th [pSortableColumn]="'Path'">
                                             Asset Path
@@ -142,7 +141,7 @@
                                     </ig-search-field>
                                 </div>
                                 <advanced-filtering [loadIdentifier]="getLoadIdentifier('similar')" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded('similar')" (onChange)="advancedFiltersChanged($event, 'similar')"></advanced-filtering>
-                                <div *ngIf="similarSelection && similarSelection.length>1" >                                          
+                                <div *ngIf="similarSelection && similarSelection.length>1">
                                     <div style="background: #f1f1f3;display: inline-flex; margin-left: 8px; height: 32px; align-items: center;">
                                         <span style="padding-left: 16px;padding-right: 8px;">{{similarSelection.length}} items selected</span>
                                         <ig-popup-menu (onSelect)="onMenuSelect($event, similarSelection, 'similar', true)" #menu3 [tabIndex]="1" [items]="multiselectMenuItems"></ig-popup-menu>
@@ -185,11 +184,11 @@
                                                                    pTooltip="{{(similarSelection && (similarSelection.length == similarData.length) ? 'Deselect all items' : 'Select all items in the current page')}}"
                                                                    tooltipPosition="top"
                                                                    tooltipStyleClass="ig-tooltip">
-                                            </p-tableHeaderCheckbox>                                            
+                                            </p-tableHeaderCheckbox>
                                         </th>
                                         <th [pSortableColumn]="'Path'">
                                             Asset Path
-                                            <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>                                            
+                                            <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                                         </th>
                                         <th [pSortableColumn]="'Tags'">
                                             Tags
@@ -246,13 +245,13 @@
                         [expanded]="sidePanelOpen"
                         [selectedPanel]="sidePanelTab"
                         (selectedPanelChange)="sidePanelTab=$event"
-                        [selectedItem]="selection"
+                        [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"
                         [hasProfiling]="true"
                         hasDetail="true"
                         [storageKey]="sidePanelStorageKey"
                         [height]="'calc(100vh - 220px)'"
-                        [multipleItemsSelected] ="multipleItemsSelected">
+                        [multipleItemsSelected]="multipleItemsSelected">
                 <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
                     <d3s-loading [isLoading]="true"></d3s-loading>
                 </ng-container>
@@ -262,19 +261,19 @@
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
                         <ig-asset-detail [objectUID]="selection.uid"
-                                            objectType="artifact"
-                                            [useAccordion]="true"
-                                            [shouldBePadded]="false"
-                                            [showHeader]="true"
-                                            [showHeaderLine]="false"
-                                            [spacerHeight]="'16px'"
-                                            [paddingLeft]="'11px'"
-                                            [tooltipAlign]="'left'"
-                                            [isSidePanel]="true"
-                                            [hasAddRelationshipsPermissions]="false"
-                                            [hasModifyRelationshipsPermissions]="false"
-                                            [hasDeleteRelationshipsPermissions]="false"
-                                            [assetDetail]="assetDetail"></ig-asset-detail>
+                                         objectType="artifact"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [paddingLeft]="'11px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         [assetDetail]="assetDetail"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
             </side-panel>
@@ -292,7 +291,7 @@
             <ng-container content>
                 <div *ngIf="isDrawerLoading">
                     <d3s-loading [isLoading]="isDrawerLoading"></d3s-loading>
-                </div>                
+                </div>
                 <div *ngIf="!isDrawerLoading">
                     <div *ngIf="!selectedAssetUids || selectedAssetUids.length === 0">
                         <span>
@@ -323,14 +322,14 @@
                             </div>
                         </div>
                     </div>
-                </div>                
+                </div>
             </ng-container>
-            <ng-container action>                
+            <ng-container action>
                 <span class="grow"></span>
                 <button class="button primary" (click)="closeModalDrawer()">
                     Close
                 </button>
             </ng-container>
         </d3s-modal-drawer>
-    </div>        
+    </div>
 </d3s-modal>

@@ -97,12 +97,12 @@ stages:
     - template: build/steps/step-whitesource-scan.yml@templates
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
-        projectName: 'Database Index Rebuilder'   
-    - template: build/steps/step-blackduck-detect.yml@templates
+        projectName: 'Database Index Rebuilder'
+    - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
-        blackduckApi: $(blackduckApi)
-        artifactName: DatabaseIndexRebuilder
-        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.databaseindexrebuilder
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-Webjob-DatabaseIndexRebuilder'
+        blackDuckScanDirectory: $PWD/igx.jobs.databaseindexrebuilder
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Database Index Rebuilder'
       inputs:

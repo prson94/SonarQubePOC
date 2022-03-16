@@ -21,11 +21,21 @@
         <div class="asset-type-detail-wrapper">
             <ng-container [ngSwitch]="tab">
                 <ng-container *ngSwitchCase="'detail'">
-                    <br />
-                    <ig-field-value [field]="'Name'" [value]="assetType.Name"></ig-field-value>
-                    <ig-field-value [field]="'Description'" [value]="assetType.Description"></ig-field-value>
-                    <ig-field-value [field]="'UID'" [value]="assetType.uid"></ig-field-value>
-                    <ig-field-value [field]="'Hierarchical'" [value]="assetType.Hierarchical ? 'Yes' : 'No'"></ig-field-value>
+                    <ig-asset-detail
+                        [objectUID]="uid"
+                        [objectType]="'ReferenceItemType'"
+                        [useAccordion]="true"
+                        [shouldBePadded]="false"
+                        [showHeader]="false"
+                        [showHeaderLine]="false"
+                        [showTabs]="false"
+                        [spacerHeight]="'16px'"
+                        [tooltipAlign]="'left'"
+                        [isSidePanel]="true"
+                        [interceptLinkClick]="true"
+                        [showOnlyFields]="includedFields"
+                    >
+                    </ig-asset-detail>
                 </ng-container>
                 <ng-container *ngSwitchCase="'items'">
                     <d3s-reference-item-list [assetTypeUid]="assetType.uid" [typeName]="assetType.Name" [readOnly]="true" [isForAssetDetailPage]="true" [highlightUid]="highlightUid"></d3s-reference-item-list>

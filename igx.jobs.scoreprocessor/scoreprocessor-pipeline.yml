@@ -81,11 +81,11 @@ stages:
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
         projectName: 'Score Processor'
-    - template: build/steps/step-blackduck-detect.yml@templates
+    - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
-        blackduckApi: $(blackduckApi)
-        artifactName: ScoreProcessor
-        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.scoreprocessor
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-Webjob-ScoreProcessor'
+        blackDuckScanDirectory: $PWD/igx.jobs.scoreprocessor
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Score Processor'
       inputs:

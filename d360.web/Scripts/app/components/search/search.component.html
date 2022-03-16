@@ -93,7 +93,9 @@
                     <ng-container *ngIf="sidePanelTab === 'detail' && selection.ObjectType === 'Semantic Type'">
                         <semantic-detail [qualifier]="getQualifier(selection)"
                                          [isSidePanel]="true"
-                                         [showHeader]="true"></semantic-detail>
+                                         [showHeader]="true"
+                                         (linkClicked)="secondaryPanelOpen($event)">
+                        </semantic-detail>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail' && selection.ObjectType !== 'Semantic Type'">
                         <ig-asset-detail #elseAssetDetail
@@ -113,7 +115,7 @@
                          (onEditClick)="showEditor=true"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
-                <ng-container *ngIf="secondarySidePanelOpen && semanticType">
+                <ng-container *ngIf="secondarySidePanelOpen">
                     <div #semanticTile class="secondary-side-panel">
                         <div class="panel-header">
                             <span class="header-label">Information</span>
@@ -127,7 +129,25 @@
                                                  [isSidePanel]="true"
                                                  [showHeader]="true"
                                                  [semanticType]="semanticType"
-                                                 (close)="secondarySidePanelOpen=false;"></semantic-detail>
+                                                 (close)="secondarySidePanelOpen=false;"
+                                                 (linkClicked)="secondaryPanelOpen($event)">
+                                </semantic-detail>
+                            </ng-container>
+                            <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+                                <ig-asset-detail [objectUID]="resourceUid"
+                                                 [objectType]="'Resource'"
+                                                 [useAccordion]="true"
+                                                 [shouldBePadded]="true"
+                                                 [showHeader]="true"
+                                                 [showHeaderLine]="false"
+                                                 [spacerHeight]="'16px'"
+                                                 [tooltipAlign]="'left'"
+                                                 [isSidePanel]="true"
+                                                 [interceptLinkClick]="true"
+                                                 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                            </ng-container>
+                            <ng-container *ngIf="secondarySidePanel=='status'">
+                                <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
                             </ng-container>
                         </div>
                     </div>
@@ -135,22 +155,22 @@
             </side-panel>
         </div>
     </div>
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
-           (onClose)="showEditor=false"
-           [showTitle]="false"
-           [isVisible]="showEditor">
-    <asset-editor #dynamicEditor
-                  *ngIf="showEditor"
-                  [objectID]="selection?.AssetUid"
-                  [objectType]="selection?.ObjectType"
-                  [title]="selection ? 'Edit Asset' : 'Create New Asset'"
-                  [selection]="selection"
-                  [objectTypeUid]="selection?.Data?.AssetTypeUid"
-                  [assetTypePath]="''"
-                  (saveClick)="saveItem($event)"
-                  [showAsModal]="true"
-                  [isV2API]="true"
-                  (closeClick)="showEditor=false"></asset-editor>
-</d3s-modal>
+    <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+               (onClose)="showEditor=false"
+               [showTitle]="false"
+               [isVisible]="showEditor">
+        <asset-editor #dynamicEditor
+                      *ngIf="showEditor"
+                      [objectID]="selection?.AssetUid"
+                      [objectType]="selection?.ObjectType"
+                      [title]="selection ? 'Edit Asset' : 'Create New Asset'"
+                      [selection]="selection"
+                      [objectTypeUid]="selection?.Data?.AssetTypeUid"
+                      [assetTypePath]="''"
+                      (saveClick)="saveItem($event)"
+                      [showAsModal]="true"
+                      [isV2API]="true"
+                      (closeClick)="showEditor=false"></asset-editor>
+    </d3s-modal>

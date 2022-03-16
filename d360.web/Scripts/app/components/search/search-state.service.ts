@@ -202,15 +202,23 @@ export class SearchStateService extends BaseObservableService {
             //Get selected Classes and AssetTypes from checkbox tree
             types = this.selectedFilters.filter((x) => x.type === "subCategory").map((x) => x.data);
             categories = this.selectedFilters.filter((x) => x.type === "category").map((x) => x.data);
-            if (types.length > 0 && this.currentCategories.length > 0) {
-                //Semi-marked classes are not "selected", so they must be added separately
-                categories = categories.concat(
-                    this.currentCategories
-                        .find((x) => x.type === "root")
-                        .children
-                        .filter((x) => x.type === "category" && x.partialSelected === true)
-                        .map((x) => x.data)
-                );
+            if (types.length > 0) {
+                if (this.currentCategories.length > 0) {
+                    //Semi-marked classes are not "selected", so they must be added separately
+                    categories = categories.concat(
+                        this.currentCategories
+                            .find((x) => x.type === "root")
+                            .children
+                            .filter((x) => x.type === "category" && x.partialSelected === true)
+                            .map((x) => x.data)
+                    );
+                } else {
+                    categories = categories.concat(
+                        this.selectedFilters
+                            .filter((x) => x.type === "subCategory")
+                            .map((x) => x.key.split(this.subCategoryKeySeparator)[0])
+                    );
+                }
             }
         }
 

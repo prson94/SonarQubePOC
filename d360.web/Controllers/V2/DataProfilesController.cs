@@ -26,6 +26,7 @@ using d360.core.exceptions;
 using System.Threading;
 using d360.utils.excel;
 using d360.core.resources;
+using d360.core;
 
 namespace d360.web.Controllers.V2
 {
@@ -81,6 +82,12 @@ namespace d360.web.Controllers.V2
             var prefix = "DataProfiles.GetDataProfiles => ";
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 var validationResult = ValidateDataProfileGetParameters(assetUid, queryParams);
@@ -93,6 +100,10 @@ namespace d360.web.Controllers.V2
                 var results = await DataProfiles.GetDataProfiles(assetUid, queryParams);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -192,6 +203,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
@@ -213,6 +230,10 @@ namespace d360.web.Controllers.V2
                 var results = DataProfiles.UpsertDataProfiles(models, execution, true);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -246,6 +267,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
@@ -267,6 +294,10 @@ namespace d360.web.Controllers.V2
                 var results = DataProfiles.UpsertDataProfiles(models, execution, false);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -303,6 +334,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
@@ -330,6 +367,10 @@ namespace d360.web.Controllers.V2
                 var results = DataProfiles.DeleteDataProfiles(asset, startDate, endDate, execution, cascade);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -362,6 +403,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
@@ -391,6 +438,10 @@ namespace d360.web.Controllers.V2
                             });
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -423,6 +474,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
@@ -452,6 +509,10 @@ namespace d360.web.Controllers.V2
                             });
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -485,6 +546,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 { 
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
@@ -504,6 +571,10 @@ namespace d360.web.Controllers.V2
                             });
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -578,7 +649,13 @@ namespace d360.web.Controllers.V2
             var prefix = "DataProfiles.GetMatchingAssets => ";
 
             try
-            {                
+            {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -629,6 +706,10 @@ namespace d360.web.Controllers.V2
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage)).ConfigureAwait(false);
             }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -663,6 +744,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 var validationResult = ValidateMatchAssetGetParameters(assetUid, similarType, queryParams);
@@ -675,6 +762,10 @@ namespace d360.web.Controllers.V2
                 var results = await DataProfiles.GetMatchingAssets(assetUid, similarType, queryParams, true).ConfigureAwait(false);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.total));                
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -727,7 +818,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending and are sorted on the asset path value", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'confidence' and 'path'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. Allowed values are 'confidence', 'path' or 'assettypepath'. By default the results are ordered by asset path value.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", "The filter expression used to filter assets by path and/or assetTypePath fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within path or assetTypePath fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
         ]
@@ -736,6 +827,12 @@ namespace d360.web.Controllers.V2
             var prefix = "DataProfiles.GetMatchingAssets => ";
 
             try {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -759,7 +856,7 @@ namespace d360.web.Controllers.V2
 
                 if (queryParams.Any(qp => qp.Key.ToLower() == "_order"))
                 {
-                    string[] allowedValues = new[] { "confidence", "path" };
+                    string[] allowedValues = new[] { "confidence", "path", "assettypepath" };
                     var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_order").Value.Trim().ToLower();
 
                     if (!allowedValues.Contains(directionFilter))
@@ -804,6 +901,10 @@ namespace d360.web.Controllers.V2
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.FilterExpressionParseError, errorMessage)).ConfigureAwait(false);
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
@@ -1008,7 +1109,7 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetTypePathColumn, matchType));
             doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUidColumn);
             doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetIdColumn);
-            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.AssetUrlColumn);
+            doc.SetCellValue(rowNumber, index++, DataProfileAPIMessages.UrlColumn);
             doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetUidColumn, matchType));
             doc.SetCellValue(rowNumber, index++, string.Format(DataProfileAPIMessages.MatchedAssetIdColumn, matchType));
             doc.SetCellValue(rowNumber, index, string.Format(DataProfileAPIMessages.MatchedAssetUrlColumn, matchType));
@@ -1110,6 +1211,12 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 var queryParams = Request.GetQueryNameValuePairs();
 
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
@@ -1176,6 +1283,12 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 var queryParams = Request.GetQueryNameValuePairs();
                 var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
@@ -1201,6 +1314,12 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeBaseTypes()
         {
+            // FeatureFlag Check            
+            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+            {
+                throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+            }
+
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticBaseType.LocalDate.GetAsList()));
         }
 
@@ -1215,6 +1334,12 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult GetSemanticTypeMatchTypes()
         {
+            // FeatureFlag Check            
+            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+            {
+                throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+            }
+
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticMatchType.Pattern.GetAsList()));
         }
 
@@ -1224,12 +1349,60 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("semantictypes/lookups/statuses"),
-            SwaggerProduces("application/json"),
+            SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic type statuses.", typeof(List<SemanticStatusInfo>)),
         ]
-        public IHttpActionResult GetSemanticTypeStatuses()
+        public async Task<IHttpActionResult> GetSemanticTypeStatuses()
         {
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList()));
+            // FeatureFlag Check
+            if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+            {
+                throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+            }
+
+            var isExport = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+            List<SemanticStatusInfo> statuses = SemanticStatus.Draft.GetAsList();
+
+            HttpResponseMessage response;
+
+            if (isExport)
+            {
+                var excelDocument = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeStatusExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")))
+                {
+                    new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+                    {
+                        HeaderRows = {
+                            new ExcelRow
+                            {
+                                DataProfileAPIMessages.NameColumn,
+                                DataProfileAPIMessages.ColorColumn
+                            }
+                        },
+
+                        ValueRows = statuses.Select(row => new ExcelRow
+                        {
+                            row.Name,
+                            row.ColorName,
+                        }).ToList(),
+                    }
+                };
+
+                SLDocument document = excelDocument.ToSLDocument();
+                document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
+                var stream = new MemoryStream();
+                document.SaveAs(stream);
+                byte[] bytes = stream.ToArray();
+
+                response = createFileResponseMessage(HttpStatusCode.OK, string.Format(DataProfileAPIMessages.SemanticTypeStatusExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")), bytes);
+            }
+            else
+            {
+                response = Request.CreateResponse(HttpStatusCode.OK, SemanticStatus.Draft.GetAsList());
+            }
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
+            
         }
 
         /// <summary>
@@ -1267,6 +1440,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
@@ -1316,6 +1495,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
@@ -1365,6 +1550,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
@@ -1406,6 +1597,12 @@ namespace d360.web.Controllers.V2
             const string ERROR_HEADING = "Error deleting semantic type";
             try
             {
+                // FeatureFlag Check                
+                if (!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);

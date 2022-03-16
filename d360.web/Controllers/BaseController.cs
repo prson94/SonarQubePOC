@@ -565,6 +565,7 @@ from	CompanyResource CR
         internal ICommunityContext Community;
         internal IMailProvider Mail;
         internal ISettingsRepository SettingsRepository;
+        internal LaunchDarkly.Sdk.Server.LdClient Ld;
 
         internal List<string> limitedFieldTypes = new List<string> {
             DataType.Path.ToString(),
@@ -593,6 +594,7 @@ from	CompanyResource CR
         {
             Community = set.Community;
             Company = set.Company;
+            Ld = set.Ld;
             SettingsRepository = set.SettingsRepository;
         }
 
@@ -2108,6 +2110,53 @@ from	CompanyResource CR
                     return File(stream.ToArray(), "application/vnd.ms-excel", $"{document.Name.GetSafeFilename()}.xlsx");
                 }
             }
+        }
+
+        private ClientUserModel GetFeatureFlagUser()
+        {
+            var listKey = "ClientUserModels";
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = Community.GetItemInCachedList<ClientUserModel>(listKey, itemKey);
+            if (userModel == null)
+            {
+                userModel = Community.Query<ClientUserModel>(@"
+select	C.PublicID as TenantId,
+		C.Name as TenantName,
+		R.Email,
+		R.FirstName,
+		R.LastName,
+		R.uid as UserId,
+		CR.IsAdministrator
+from	CompanyResource CR
+		inner join [Resource] R on R.ID = CR.ResourceID and CR.CompanyID = @CurrentCompanyID and CR.ResourceID = @CurrentResourceID
+		inner join Company E on E.ID = CR.CompanyID
+		inner join Client C on C.ID = E.ClientID", new { Community.CurrentCompanyID, Community.CurrentResourceID }).FirstOrDefault();
+
+                if (userModel != null)
+                {
+                    Community.AddItemToCachedList(listKey, itemKey, userModel);
+                }
+            }
+
+            return userModel;
+        }
+
+        internal LaunchDarkly.Sdk.User GetSdkFeatureFlagUser()
+        {
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var userModel = GetFeatureFlagUser();
+
+            var b = LaunchDarkly.Sdk.User.Builder(itemKey);
+            if (userModel != null)
+            {
+                b.FirstName(userModel.FirstName)
+                    .LastName(userModel.LastName)
+                    .Email(userModel.Email)
+                    .Custom("tenantId", userModel.TenantId.ToString())
+                    .Custom("tenantName", userModel.TenantName);
+            }
+
+            return b.Build();
         }
     }
 }

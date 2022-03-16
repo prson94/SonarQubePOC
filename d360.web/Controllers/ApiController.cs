@@ -180,7 +180,6 @@ namespace d360.web.Controllers
                             }
                         }
                     }
-
                 }
 
                 list.Add(new DetailReadOnlyRowModel
@@ -419,6 +418,19 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 var fields = Company.GetFieldRelationsByObject(type, id).ToList();
                 var fieldTypes = Company.Filter<FieldType>(i => i.Object == details.Type && i.ObjectID == details.TypeID && i.IsDisplayable).OrderBy(i => i.ColumnOrder).ToList();
 
+                string lookupDataSelectSQL = @" from asset a
+                    inner join fieldtype ft on ft.assettypeid = a.AssetTypeID 
+                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID";
+
+                string lookupDataWhereSQL = "where a.uid = @uid ";
+                if (details.Type == SystemObjects.IntersectType.ToString())
+                {
+                    lookupDataSelectSQL = @"  from [Intersect] I
+                    inner join fieldtype ft on ft.Object = 'IntersectType' and ft.ObjectID = i.IntersectTypeID
+                    left join Field f on f.ObjectID = i.ID and f.FieldTypeID = ft.ID";
+                    lookupDataWhereSQL = "where I.ID = @assetId ";
+                }
+
                 var lookupDataSql = $@"  select ft.id as FieldTypeId, 
                         trim(Val.Value) as Value, 
                         od.AssetId, 
@@ -427,9 +439,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         flv.DisplayText, 
                         refAsset.uid,
                         refType.uid as assetTypeUid
-                    from asset a
-                    inner join fieldtype ft on ft.assettypeid = a.AssetTypeID
-                    left join Field f on f.AssetID = a.ID and f.FieldTypeID = ft.ID
+                    {lookupDataSelectSQL}
                     cross apply (
                         select * from STRING_SPLIT(f.Value,',')
                         union 
@@ -440,7 +450,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                     left join AssetType refType on refType.ID = od.AssetTypeId
                     outer apply dbo.GetAssetColorJsonByColor(refAsset.Color)Color
                     left join fieldlookupvalue flv on flv.fieldtypeid = ft.id and flv.value = trim(Val.Value)
-                    where a.uid = @uid 
+                    {lookupDataWhereSQL}
                     and (ft.LookupObjectType <> '' or ft.LookupObjectType is not null)
                     and (ft.LookupObjectID <> '' or ft.LookupObjectID is not null)
                     and Val.Value is not null and Val.value <> '';";
@@ -451,7 +461,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                         where ft.assettypeid = @AssetTypeID
                         and ft.type ='ComplexRelationLookup';";
 
-                var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID });
+                var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
 
                 var lookupData = dataReader.Read<LookupDataReadOnlyModel>().ToList();
                 var fieldTypeLookups = dataReader.Read<FieldTypeLookup>().ToList();
@@ -837,7 +847,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
-            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
+            var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault() : false;
 
             switch (type)
             {
@@ -2552,7 +2562,7 @@ where asset.Object = @type and asset.ObjectId = @id
         }
 
         [Route("{type}/{uid}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, Guid uid, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false, Guid? baseAssetUid = null)
         {
             int objectId = -1;
             switch (type)
@@ -2560,6 +2570,13 @@ where asset.Object = @type and asset.ObjectId = @id
                 case SystemObjects.Tag:
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
                     return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader);
+                case SystemObjects.Intersect:
+                    objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
+                    return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
+                case SystemObjects.ReferenceItemType:
+                    var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
+
+                    return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
                 default:
                     var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 
@@ -2570,7 +2587,7 @@ where asset.Object = @type and asset.ObjectId = @id
 
 
         [Route("{type}/{id:int}/detail")]
-        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false)
+        public async Task<DetailReadOnlyModel> GetObjectDetailFields(SystemObjects type, int id, bool useSingleColumn = false, bool includeHeader = false, bool useAssetDetailColumnDefinition = false, Guid? baseAssetUid = null)
         {
             var model = new DetailReadOnlyModel() { columns = useSingleColumn ? 1 : 2 };
             model.Object = type.ToString();
@@ -3292,11 +3309,152 @@ where asset.Object = @type and asset.ObjectId = @id
                 case SystemObjects.Intersect:
                     #region Fields                    
                     var intersect = Company.GetById<Intersect>(id);
+
+                    if (baseAssetUid.HasValue)
+                    {
+                        string relationshipTypeName = Company.Query<string>(@"
+                            declare @isSubject bit = 0
+
+                            if exists(select 1 from [Intersect] I 
+                            left join [Asset] A on A.uid = @baseAssetUid
+                            where I.ID = @intersectId and I.Subject = A.Object and I.SubjectID = A.ObjectID)
+                            begin
+                              set @isSubject = 1
+                            end
+
+                            select 
+                            case when @isSubject = 0 then ITD.PredicateName + ' ' + ITD.ObjectAssetTypePath
+                            else ITD.PredicateInverse + ' ' + ITD.SubjectAssetTypePath
+                            end as RelationshipTypeName
+                            from [IntersectTypeDetail] ITD
+                            where ITD.ID = @intersectTypeId",
+                            new { intersectTypeId = intersect.IntersectTypeID, intersectId = intersect.ID, baseAssetUid }).FirstOrDefault();
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField {
+                                    Name = FieldInfo.Relationship_Type_Name,
+                                    FieldName = "RelationshipType",
+                                    Value = relationshipTypeName,
+                                    DataType = "string" }
+                            }
+                        });
+                    }
+
                     if (intersect != null)
                     {
                         model.columns = 1;
-                        model.rows.AddRange(await loadDynamicDisplayFields(type, id).ConfigureAwait(false));
+                        var relationshipProps = await loadDynamicDisplayFields(type, id).ConfigureAwait(false);
+                        model.rows.AddRange(relationshipProps);
                     }
+
+                    model.rows.Add(new DetailReadOnlyRowModel
+                    {
+                        columns = 1,
+                        FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = FieldInfo.Relationship_UID_Name, FieldName = "Uid", Value = intersect.uid.ToString(), DataType = "string" }
+                            },
+                        Category = FieldInfo.SystemFieldCategory
+                    });
+
+
+
+                    if (intersect.UpdatedOn.HasValue)
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.UpdatedOn_Name, FieldName = "AssetUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = intersect.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                },
+                            Category = Resources.FieldInfo.SystemFieldCategory
+                        });
+                    }
+                    else
+                    {
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = FieldInfo.CreatedOn_Name, FieldName = "AssetCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = intersect.CreatedOn.HasValue ? intersect.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                            Category = FieldInfo.SystemFieldCategory
+                        });
+                    }
+
+                    var userData = Company.Query<dynamic>(@"select 
+                                u.uid as UpdatedBy,
+                                c.uid as CreatedBy,
+	                            u.LastName+', '+u.FirstName as UpdatedByName,
+	                            c.LastName+', '+c.FirstName as CreatedByName
+                            from [intersect] i
+                               left join reporting.global_resource u on u.resourceid = i.updatedby
+                               left join reporting.global_resource c on c.resourceid = i.createdby
+                            where i.id = @id
+                        ", new { id }).FirstOrDefault();
+
+                    if (userData != null)
+                    {
+                        if (!string.IsNullOrEmpty(userData.CreatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.CreatedBy_Name,
+                                        FieldName = FieldInfo.CreatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value=userData.CreatedByName.ToString(),
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+intersect.CreatedBy,
+                                                HideTooltip = true,
+                                                uid = userData.CreatedBy
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(userData.UpdatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.UpdatedBy_Name,
+                                        FieldName = FieldInfo.UpdatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value=userData.UpdatedByName.ToString(),
+                                                TooltipType="Resource",
+                                                TooltipUrl="resource/"+intersect.UpdatedBy,
+                                                HideTooltip = true,
+                                                uid = userData.UpdatedBy
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+                    }
+
                     intersect = null;
                     break;
                 #endregion
@@ -3682,7 +3840,8 @@ where asset.Object = @type and asset.ObjectId = @id
                             SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Fields.DisplayFormat_Name, FieldName = "DisplayFormat", FieldDescription = Fields.DisplayFormat_Description, Value = refType.DisplayFormat }
-                            }
+                            },
+                            Category = FieldInfo.SystemNoCategory
                         });
 
                         if (!string.IsNullOrEmpty(refType.Description))
@@ -3718,7 +3877,8 @@ where asset.Object = @type and asset.ObjectId = @id
                             SecondColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = "Asset Type ID", FieldName = "AssetTypeId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = refType.ID.ToString(), DataType = "string" }
-                                }
+                                },
+                            Category = FieldInfo.SystemFieldCategory
                         });
 
                         var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
@@ -3741,6 +3901,96 @@ where asset.Object = @type and asset.ObjectId = @id
                         }
 
                         model.rows.Add(heirarchyColumns);
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 2,
+                            FirstColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField {
+                                    Name = FieldInfo.CreatedOn_Name,
+                                    FieldName = "ArtifactCreatedOn",
+                                    FieldDescription = FieldInfo.CreatedOn_Description,
+                                    Value = refType.CreatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                                    DataType = "date"
+                                }
+                            },
+                            SecondColumnFields = new List<ReadOnlyField> {
+                                new ReadOnlyField {
+                                    Name = FieldInfo.UpdatedOn_Name,
+                                    FieldName = "ArtifactUpdatedOn",
+                                    FieldDescription = FieldInfo.UpdatedOn_Description,
+                                    Value = refType.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                                    DataType = "date"
+                                }
+                            },
+                            Category = FieldInfo.SystemFieldCategory
+                        });
+
+                        var users = await Company.QueryFirstOrDefaultAsync<dynamic>(@"
+                            select
+                                u.LastName + ', ' + u.FirstName as UpdatedByName,
+                                u.uid as UpdatedUid,
+                                c.LastName + ', ' + c.FirstName as CreatedByName,
+                                c.uid as CreatedUid
+                            from dbo.AssetType assetType
+                                left join reporting.global_resource u
+                                    on u.resourceid = assetType.updatedby
+                                left join reporting.global_resource c
+                                    on c.resourceid = assetType.createdby
+                            where assetType.Id = @ID
+                        ", new { refType.ID });
+
+                        if (!string.IsNullOrEmpty(users.CreatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.CreatedBy_Name,
+                                        FieldName = FieldInfo.CreatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value = users.CreatedByName,
+                                                TooltipType = "Resource",
+                                                TooltipUrl = "resource/" + refType.CreatedBy,
+                                                uid = users.CreatedUid,
+                                                HideTooltip = true
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(users.UpdatedByName))
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField {
+                                        Name = FieldInfo.UpdatedBy_Name,
+                                        FieldName = FieldInfo.UpdatedBy_Name,
+                                        Value = "values",
+                                        Values = new List<ReadOnlyFieldValue>{
+                                            new ReadOnlyFieldValue {
+                                                Value = users.UpdatedByName,
+                                                TooltipType = "Resource",
+                                                TooltipUrl = "resource/" + refType.UpdatedBy,
+                                                uid = users.UpdatedUid,
+                                                HideTooltip = true
+                                            }
+                                        },
+                                        DataType = DataType.Lookup.ToString()
+                                    }
+                                },
+                                Category = FieldInfo.SystemFieldCategory
+                            });
+                        }
                     }
                     break;
                 #endregion

@@ -124,6 +124,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         { title: "Open" },
         { title: "Open in New Tab" },
     ];
+    secondarySidePanel: string = "detail";
+    resourceUid: string;
 
     constructor(
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
@@ -796,6 +798,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     secondaryPanelOpen(event: any) {
         this.secondarySidePanelOpen = true;
-        this.semanticType = event.semanticType;
-    }
+        if (event) {
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }
+            if (event.semanticType) {
+                this.secondarySidePanel = "detail";
+                this.semanticType = event.semanticType;
+            }
+        } else {
+            this.secondarySidePanel = "status";
+        }
+    }    
 }

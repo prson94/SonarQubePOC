@@ -1,18 +1,19 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../base.component';
-import { UriBasedService } from '../../../services/uri-based.service';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 import { LazyLoadEvent } from 'primeng/api';
 import { AssetService } from '../../../services/asset.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
-import { EditorField } from '../../../models/editor-field.model';
 import { ResourcesService } from '../../../services/resources.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { StringConstants } from '../../../static/string-constants';
+import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -24,23 +25,32 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     selector: 'd3s-multiselect-grid',
     templateUrl: "multiselect-grid.component.html",
     providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService, AssetTypeService, ResourcesService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit {
+export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit, OnDestroy {
     @Input() multiple: boolean = true;
     @Input() intersectTypeUid: string;
     @Input() assetUid: string;
     @Input() targetAssetTypeUid: string;
     @Input() objectCardinality: string;
+    @Input() higlightedItem: any;
+    @Input() selectedAssetsDetail: any[] = [];
+
+    @Output() onInfoClick = new EventEmitter();
+    @Output() onSelected = new EventEmitter();
+
 
     relationshipType: RelationshipType;
     isSubject: boolean = true;
 
     value: any; //stores the values array bound back to the ngform.
 
+    simpleSearchTooltipHTML = StringConstants.simpleSearchTooltipHTML;
     items: any[];
     selectedItems: any;
+    simpleTextFilter: string = "";
+    advancedFilters: string = "";
     private selectedRelationRowIndex: number = null;
 
     public onModelChange: Function = () => { };
@@ -51,8 +61,13 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     searchAssetSub: Subscription;
 
+    public rowsPerPage: number;
+    public title: string = 'MultiSelect Grid'
+    private destroy = new Subject<void>();
+
     constructor(
         private assetService: AssetService,
+        private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
         private relationshipService: RelationshipsService,
         private resourceService: ResourcesService,
@@ -82,6 +97,22 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                     }
                 });
             });
+
+        this.setRowsPerPage();
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+    }
+
+    ngOnDestroy() {
+        this.destroy.next();
+        this.destroy.complete();
+    }
+
+    setRowsPerPage(): void {
+        this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+            takeUntil(this.destroy)
+        ).subscribe((rowsPerPage) => {
+            this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
+        });
     }
 
     private updateSubject(ad: any) {
@@ -143,6 +174,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             this.items = this.items.sort((a, b) => { return a.Text > b.Text ? 1 : -1; });
 
             this.lazyLoadTotalCount = this.items.length;
+            this.checkPreSelectedItems();
 
             this.isLoading = false;
             this.ref.markForCheck();
@@ -189,6 +221,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 }
             });
             this.lazyLoadTotalCount = this.items.length;
+            this.checkPreSelectedItems();
 
             this.isLoading = false;
             this.ref.markForCheck();
@@ -198,8 +231,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     loadAssetsLazy($event: LazyLoadEvent) {
         var params = {};
-        params["_pageSize"] = $event.rows;
-        params["_pageNum"] = ($event.first / $event.rows) + 1;
+
         params["useTypeLevelDefaultSorts"] = "true";
 
         var targetClass = this.isSubject ? this.relationshipType.Object.Class : this.relationshipType.Subject.Class;
@@ -210,11 +242,20 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         }
 
         let filters: string[] = [];
-        if ($event.globalFilter) {
-            var value = ($event.globalFilter as string).replace(/'/g, "&apos;");
-            value = `${encodeURIComponent(value)}`;
-            filters.push(`[Path] ct '${value}'`);
+        if ($event) {
+            if ($event.globalFilter) {
+                var value = ($event.globalFilter as string).replace(/'/g, "&apos;");
+                value = `${encodeURIComponent(value)}`;
+                filters.push(`[Path] ct '${value}'`);
+            }
+            params["_pageSize"] = $event.rows;
+            params["_pageNum"] = ($event.first / $event.rows) + 1;
         }
+        else {
+            params["_pageSize"] = this.rowsPerPage;
+            params["_pageNum"] = 1;
+        }
+
 
         filters.push(`($Related:${this.intersectTypeUid} ne ${this.assetUid})`);
 
@@ -222,6 +263,14 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             filters.push(`($Related:${this.intersectTypeUid} eq null)`);
         }
         params["_filter"] = `(${(filters.join(" and "))}) and (uid ne '${this.assetUid}')`;
+
+        if (this.advancedFilters) {
+            params["_filter"] += ` and (${this.advancedFilters})`;
+        }
+
+        if (this.simpleTextFilter) {
+            params["_filter"] += ` and ([Path] ct '${this.simpleTextFilter}')`;
+        }
 
         if (this.lazyLoadTotalCount) {
             params["_includeTotal"] = false;
@@ -233,7 +282,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             this.searchAssetSub.unsubscribe();
         }
 
-        this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true).subscribe((res) => {
+        this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true, false).subscribe((res) => {
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
             }
@@ -248,8 +297,22 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 });
             });
             this.isLoading = false;
+            this.checkPreSelectedItems();
             this.ref.markForCheck();
         });
+    }
+
+    checkPreSelectedItems() {
+        this.selectedItems = [];
+        if (this.items && this.selectedAssetsDetail) {
+            this.items.forEach((item) => {
+                this.selectedAssetsDetail.forEach((sel) => {
+                    if (sel.Value === item.Value) {
+                        this.selectedItems.push(item);
+                    }
+                })
+            })
+        }
     }
 
     private getObjectTypeForTooltip(item: any): string {
@@ -285,6 +348,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 this.selectedRelationRowIndex = this.items.findIndex((i) => (i.Value === this.value[0]));
             }
         }
+
+        this.onSelected.emit(event);
     }
 
     writeValue(value: any): void {
@@ -302,5 +367,17 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     get targetClass() {
         return this.isSubject ? this.relationshipType.Object.Class : this.relationshipType.Subject.Class;
+    }
+
+    advancedFiltersChanged($event) {
+        this.advancedFilters = $event.filter;
+        this.loadAssetsLazy(null);
+    }
+    onSimpleSearch($event) {
+        this.simpleTextFilter = $event;
+        this.loadAssetsLazy(null);
+    }
+    get selectionScrollHeight(): string {
+        return (window.innerHeight - 380) + "px";
     }
 }

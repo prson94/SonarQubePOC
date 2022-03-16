@@ -11,6 +11,7 @@ import { Subscription } from "rxjs";
 import { MultiInputField } from "../../shared/controls/multi-input-field/multi-input-field.component";
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
+import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
 
 @Component({
     selector: "filter-item",
@@ -85,7 +86,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         private fieldsService: FieldsObservableService,
         private assetTypeService: AssetTypeService,
         private tagService: TagService,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private advFilterService: AdvancedFilteringService
     ) {
         setInterval(() => {
             this.updateTopPosition();
@@ -95,6 +97,26 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.assetService.getAllColors().subscribe((x) => {
             this.defaultColorOptions = x;
             this.cdRef.markForCheck();
+        });
+
+
+        this.advFilterService.onFilterUpdate().subscribe((data) => {
+            if (data.source !== this.constructor.name) {
+                //this works only on default filters which are always present in advanced filter field
+                if (this.condition.isDefaultFilter === true && this.condition.field.toLowerCase() === data.fieldName.toLowerCase()) {
+                    var values = [];
+                    data.values.forEach((d) => {
+                        values.push({ title: d.name, value: d.uid });
+                    });
+                    if (values.length === 0) {
+                        this.remove();
+                    }
+                    else {
+                        this.condition.value = values;
+                        this.confirmValue();
+                    }
+                }
+            }
         });
     }
 
@@ -595,7 +617,12 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.lazyLoadSubscription.unsubscribe();
         }
         this.isLookupValuesLoading = true;
+
         var fieldTypeUid = this.currentField.AssetTypeUid ?? "00000000-0000-0000-0000-000000000000";
+
+        if (fieldTypeUid === "00000000-0000-0000-0000-000000000000") {
+            fieldTypeUid = this.currentField.RelationshipTypeUid ?? "00000000-0000-0000-0000-000000000000";
+        }
 
         let lookupMethod = (this.currentField.ValueLoader) ? this.currentField.ValueLoader(params) : this.fieldsService.getLookupValues(fieldTypeUid, this.currentField.Name.trim(), params);
 
@@ -610,7 +637,12 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         let loadedData = [];
 
         res.items.forEach((str) => {
-            loadedData.push({ title: str, value: str });
+            if (typeof str === 'object' && str.value && str.name && str.count) {
+                loadedData.push({ title: str.name, value: str.value, count:str.count });
+            }
+            else {
+                loadedData.push({ title: str, value: str });
+            }
         });
 
         Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
@@ -841,7 +873,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.resetLookupValues();
         this.stopUpdateDynamicWidths();
 
-        this.onChange.emit();
+        this.onChange.emit(this.condition);
+
+        var event = new AdvancedFilterUpdate();
+        event.source = this.constructor.name;
+        event.fieldName = this.condition.field;
+        event.values = this.condition.value;
+        this.advFilterService.updateFilter(event);
     }
 
     cancel() {
@@ -928,7 +966,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             return;
         }
         this.condition.markForDeletion = true;
-        this.onChange.emit();
+        this.onChange.emit(this.condition);
     }
 
     private resetPersistedFilter() {
@@ -942,7 +980,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.uiFilterLabel = this.condition.getFilterLabel();
 
         this.isSelectingValue = false;
-        this.onChange.emit();
+        this.onChange.emit(this.condition);
         this.cdRef.markForCheck();
     }
 
@@ -970,12 +1008,22 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.updateAllAnyData();
     }
 
+    removeSelectionDuplicates() {
+        if (this.condition && this.condition.value && Array.isArray(this.condition.value) && this.condition.value.length > 0) {
+            this.condition.value = this.condition.value.filter(function (elem, index, self) {
+                return index === self.indexOf(elem);
+            });
+        }
+    }
+
     private updateAllAnyData(event = null) {
         if (this.currentOperator === "Populated" || this.currentOperator === "NotPopulated") {
             return;
         }
 
         if (this.condition.fieldType === "Lookup") {
+            this.removeSelectionDuplicates();
+
             if (this.currentField.Type.Lookup.List.AllowMultipleValues !== true) {
                 if (this.currentOperator.toString() === "NotEquals") {
                     this.condition.connectingOperator = "and";

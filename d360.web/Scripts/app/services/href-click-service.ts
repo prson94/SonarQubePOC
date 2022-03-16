@@ -143,6 +143,24 @@ export class LinkClickInterceptor {
                 adcEv.assetTypeUid = data.AssetTypeUid;
             }
 
+            //If clicked comes from synonymn link
+            if (data.IsSynonym) {
+                adcEv.event = origEvent;
+                adcEv.type = AssetDetailClickType.Asset;
+                if (data.type === "SP") {
+                    adcEv.objectId = data.ParentID;
+                    adcEv.objectType = data.Object;
+                    adcEv.uid = data.ParentAssetUid;
+                    adcEv.assetTypeUid = data.ParentAssetTypeUid;
+                }
+                else {
+                    adcEv.objectId = data.ObjectID;
+                    adcEv.objectType = data.Object;
+                    adcEv.uid = data.AssetUid;
+                    adcEv.assetTypeUid = data.AssetTypeUid;
+                }
+            }
+
             //if click comes from Reference List type link
             if (data.referenceListTypeUid) {
                 adcEv.type = AssetDetailClickType.ReferenceItem;

@@ -2441,6 +2441,45 @@ div.home-image-title-text {
     .confirmation-wrapper {
       padding: 0px 24px 24px 24px;
     }
+
+    &.modal-extended {
+      max-width: 1200px;
+
+      .modal-side-panel {
+        position: absolute;
+        left: 800px;
+        top: 0px;
+        height: 100%;
+        width: 400px;
+        border-left: 1px solid @ig-grey-t4;
+
+        .asset-detail {
+          overflow: auto;
+          max-height: calc(100% - 80px);
+          overflow-x: hidden;
+
+          .asset-detail-header {
+            padding: 16px;
+          }
+
+          .asset-detail-tabs {
+            padding: 0 16px 0 16px;
+          }
+        }
+
+        .panel-header {
+          margin-right: 12px;
+        }
+
+        .header-label {
+          font-size: 18px;
+          font-weight: 600;
+          font-stretch: normal;
+          font-style: normal;
+          line-height: 2;
+        }
+      }
+    }
   }
 
   &.large-dialog-with-side-panel {
@@ -2592,6 +2631,12 @@ div.home-image-title-text {
   flex-direction: row;
   align-items: center;
   padding: 0px 24px 24px 24px;
+
+  &.modal-action-bar {
+    padding: 0;
+    flex-grow: 1;
+    align-items: end;
+  }
 }
 
 .modal-overlay .modal-dialog .content {
@@ -6604,6 +6649,12 @@ table {
 }
 
 .asset-detail {
+  .asset-detail {
+    .asset-detail-tabs {
+      padding-left: 0;
+    }
+  }
+
   .asset-detail-header {
     padding-bottom: 8px;
     margin: 0;
@@ -6832,5 +6883,13 @@ table {
 .ig-filter-table {
   td.first-col {
     width: 16px;
+  }
+
+  .row-badge {
+    .ig-badge {
+      min-width: 40px;
+      border: none;
+      margin-right: 8px;
+    }
   }
 }

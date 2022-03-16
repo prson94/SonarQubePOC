@@ -1834,14 +1834,16 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     list.Add("LastName", 0);
                     list.Add("Email", 0);
                     list.Add("LastLoggedInOn", 0);
-                    list.Add("DisplayValue", 0);
                 }
                 else
                 {
                     list.Add("DisplayValue", 0);
                 }
 
-                list.Add("_assetPath", 0);
+                if (type != SystemObjects.ResourceType)
+                {
+                    list.Add("_assetPath", 0);
+                }
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                     .Where(i => i.Type != DataType.Path.ToString())
@@ -2211,16 +2213,28 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                 }
 
                 int fieldTypeId = -1;
+                string fieldObject = "";
+                int fieldObjectID = 0;
 
-                var assetType = Company.AssetTypes
-                    .FirstOrDefault(x => x.uid == assetTypeUid);
+                var atype = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+                if (atype == null)
+                {
+                    var itType = Company.IntersectTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+                    fieldObject = "IntersectType";
+                    fieldObjectID = itType.ID;
+                }
+                else
+                {
+                    fieldObject = atype.Object;
+                    fieldObjectID = atype.ObjectID;
+                }
 
                 if (skip != null && take != null)
                 {
                     pagingQuery = " OFFSET @skip ROWS FETCH NEXT @take ROWS ONLY ";
                 }
 
-                if (assetType.Class == AssetTypeClass.Group
+                if (atype != null && atype.Class == AssetTypeClass.Group
                     && (fieldName == "SecondaryOwnerUid" || fieldName == "PrimaryOwnerUid"))
                 {
 
@@ -2258,13 +2272,13 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     return Request.CreateResponse(HttpStatusCode.OK, data);
                 }
 
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
+                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.Object == fieldObject && x.ObjectID == fieldObjectID && x.Name == fieldName);
 
                 //list items for parent field
                 if (fieldType == null && fieldName.ToLowerInvariant() == "parentuid")
                 {
                     string sql = "";
-                    bool isHierarchyGrid = assetType.Object == "TaxonomyType" || assetType.Object == "PolicyType";
+                    bool isHierarchyGrid = atype.Object == "TaxonomyType" || atype.Object == "PolicyType";
 
                     if (!isHierarchyGrid)
                     {
@@ -2335,7 +2349,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid }, ApiTimeout);
                     }
 
 
-                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { assetType.ID, skip, take, filter });
+                    var resultsAssets = Company.Connection.QueryMultiple(sql, new { atype.ID, skip, take, filter });
 
                     var items = resultsAssets.Read<DDLSelectItem>().ToList();
                     if (isHierarchyGrid)

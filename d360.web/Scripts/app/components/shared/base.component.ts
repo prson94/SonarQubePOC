@@ -1048,7 +1048,7 @@ export class BaseComponent {
                         this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
                         let areaName: string = currentAreaName ? currentAreaName : folderTitle;
                         let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
-                        if (areaName == "Technical Assets") {
+                        if (area == "Technical Assets") {
                             areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                         }
                         else {

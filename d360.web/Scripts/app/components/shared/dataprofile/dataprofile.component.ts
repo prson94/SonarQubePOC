@@ -7,6 +7,7 @@ import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SemanticType } from '../../../models/semantic-type.model';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: 'data-profile',
@@ -30,9 +31,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         private assetTypeService: AssetTypeService,
         protected settingsService: CompanySettingsService,
         private dataProfileService: DataProfileService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private featureFlagService: FeatureFlagsService
     ) {
-        super(settingsService);
+        super(settingsService);        
     }
 
     private sampleCountPercentage: number;
@@ -125,25 +127,28 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     initialize() {
         let startDate = new Date();
         startDate.setFullYear(startDate.getUTCFullYear() - 100);
-        this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
-            (r) => {
-                if (r && r.items && r.items.length > 1) {
-                    this.dataProfileList = r.items;
-                    let maxProfileDate = new Date();
-                    maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
-                    this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
-                    this.cdRef.markForCheck();
-                }
-            });
+        if (this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+            this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
+                (r) => {
+                    if (r && r.items && r.items.length > 1) {
+                        this.dataProfileList = r.items;
+                        let maxProfileDate = new Date();
+                        maxProfileDate.setFullYear(maxProfileDate.getFullYear() - 1);
+                        this.timeSeriesProfileList = this.dataProfileList.filter((p) => new Date(p.profileSetDate) >= maxProfileDate);
+                        this.cdRef.markForCheck();
+                    }
+                });
 
-        if (this.dataProfile.typeQualifier) {
-            this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
-                this.semanticType = s.items[0];
-                if (this.semanticType) {
-                    this.hasDefinedType = true;
-                }                
-            });
+            if (this.dataProfile.typeQualifier && this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+                this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
+                    this.semanticType = s.items[0];
+                    if (this.semanticType) {
+                        this.hasDefinedType = true;
+                    }
+                });
+            }
         }
+        
         
         if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
             this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === "true";            

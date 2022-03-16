@@ -43,6 +43,8 @@ import { OwnershipListModule } from "../small-widgets/ownership-list/ownership-l
 import { AssetEditorComponent } from './asset-editor.component';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { DynamicFieldNameModule } from '../dynamic-field-name.component';
+import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
+import { SearchFieldModule } from '../controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -84,7 +86,9 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         OverlayPanelModule,
         RadioButtonModule,
 
-        NgxJsonViewModule
+        NgxJsonViewModule,
+        AdvancedFiltersModule,
+        SearchFieldModule
     ],
     declarations: [
         AssetEditorComponent,
@@ -99,6 +103,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         DynamicEditorComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,
+        MultiSelectGridComponent
     ],
     providers: [
 

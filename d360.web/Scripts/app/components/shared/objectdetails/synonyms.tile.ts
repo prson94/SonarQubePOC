@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, ElementRef } from '@angular/core';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipV2 } from '../../../models/relationship.model';
@@ -10,6 +10,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SynonymPermission } from '../../../models/artifacts.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { LinkClickInterceptor } from '../../../services/href-click-service';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     @Input() hasDelete: boolean = true;
 
     @Input() synonymPermission: SynonymPermission;
+    @Input() interceptLinkClick: boolean = false;
 
     theDeleteCallback: Function;
 
@@ -55,6 +57,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
         private relationshipsService: RelationshipsService,
+        private linkClickInterceptor: LinkClickInterceptor,
+        private el: ElementRef,
         protected settingsService: CompanySettingsService,
         private router: Router) {
         super(settingsService);
@@ -180,6 +184,21 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }
 
+    synonymClicked($event, data: any, type: string) {
+        if (this.interceptLinkClick) {
+            data["IsSynonym"] = true;
+            data["type"] = type;
+            if (type === "SP" && data.ParentUrl) {
+                this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.convertClassicUrl(data.ParentUrl));
+                return;
+            }
+            if (type === "S" && data.Url) {
+                this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.convertClassicUrl(data.Url));
+                return;
+            }
+        }
+    }
+
     protected search(e: any) {
         this.isLoadingItems = true;
 
@@ -197,6 +216,13 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
                 this.isLoadingItems = false;
             }
         );
+    }
+
+    private deselectElement() {
+        window.setTimeout(() => {
+            var trElement = this.el.nativeElement.querySelector("tr.p-highlight");
+            trElement.classList.remove("p-highlight");
+        }, 1000);
     }
 
     protected clearSearch() {
