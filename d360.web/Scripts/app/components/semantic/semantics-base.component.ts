@@ -19,7 +19,7 @@ export class SemanticBaseComponent extends AssetGridBaseComponent {
         secondaryNavService?: SecondaryNavService,
         webAnalyticsService?: WebAnalyticsService) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
-        this.semanticTypesEnabled = featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]
+        this.semanticTypesEnabled = featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag];
         if (!this.semanticTypesEnabled) {
             this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
         }        
