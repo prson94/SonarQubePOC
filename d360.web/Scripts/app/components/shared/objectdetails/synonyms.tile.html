@@ -18,7 +18,7 @@
                    class="grid-simple-filter">
             <p-table #dt
                      [value]="items"
-                     selectionMode="single"
+                     selectionMode="none"
                      [metaKeySelection]="true"
                      [globalFilterFields]="['Name','ObjectTypeName','ParentName']"
                      sortField="Name"
@@ -46,10 +46,10 @@
                 </ng-template>
                 <ng-template pTemplate="body"
                              let-item>
-                    <tr [pSelectableRow]="item">
+                    <tr style="cursor:default;" [pSelectableRow]="item">
                         <td>
                             <ng-container *ngIf="interceptLinkClick && item.ObjectTypeName != 'Custom'">
-                                <a context-link (click)="synonymClicked($event,item)" data-link-type="resource">{{item.Name}}</a>
+                                <a context-link (click)="synonymClicked($event,item,'S')">{{item.Name}}</a>
                             </ng-container>
                             <ng-container *ngIf="!interceptLinkClick || item.ObjectTypeName == 'Custom'">
                                 <d3s-preview-tooltip *ngIf="item.Object"
@@ -62,11 +62,16 @@
                         </td>
                         <td>{{item.ObjectTypeName}}</td>
                         <td>
-                            <d3s-preview-tooltip *ngIf="item.Object"
-                                                 [objectType]="item.Object"
-                                                 [objectId]="item.ParentID">
-                                <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
-                            </d3s-preview-tooltip>
+                            <ng-container *ngIf="interceptLinkClick">
+                                <a context-link (click)="synonymClicked($event,item,'SP')">{{item.ParentName}}</a>
+                            </ng-container>
+                            <ng-container *ngIf="!interceptLinkClick">
+                                <d3s-preview-tooltip *ngIf="item.Object"
+                                                     [objectType]="item.Object"
+                                                     [objectId]="item.ParentID">
+                                    <a (click)="navigate(item.ParentUrl)">{{item.ParentName}}</a>
+                                </d3s-preview-tooltip>
+                            </ng-container>
                         </td>
                         <td>
                             <div class="RowTools">
@@ -158,6 +163,6 @@
                          [itemId]="selectedItem"
                          [method]="'callback'"
                          [prompt]="'Are you sure you want to remove the ' + predicateName + ' ' + selectedItem.Name + '?'"
-                         (onCancel)="formMode = FormMode.Default;"></d3s-delete-form>
+                         (onCancel)="formMode = FormMode.Default;deselectElement();"></d3s-delete-form>
     </div>
 </div>
