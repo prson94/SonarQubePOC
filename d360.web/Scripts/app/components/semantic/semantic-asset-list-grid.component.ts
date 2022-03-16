@@ -88,17 +88,19 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
     getData() {
-        this.isLoading = true;        
-        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
-            this.assets = result.items;
-            if (!this.selectedAsset || !result.items.some((x) => (x.uid === this.selectedAsset.uid))) {
-                this.selectedAsset = result.items[0];
-                this.selectedAssetChanged.emit(this.selectedAsset);
-            }            
-            this.assetsTotal = result.total;
-            this.assetCountUpdated.emit({ assetCount: this.assetsTotal });
-            this.isLoading = false;
-        });
+        if (this.semanticTypesEnabled) {
+            this.isLoading = true;
+            this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
+                this.assets = result.items;
+                if (!this.selectedAsset || !result.items.some((x) => (x.uid === this.selectedAsset.uid))) {
+                    this.selectedAsset = result.items[0];
+                    this.selectedAssetChanged.emit(this.selectedAsset);
+                }
+                this.assetsTotal = result.total;
+                this.assetCountUpdated.emit({ assetCount: this.assetsTotal });
+                this.isLoading = false;
+            });
+        }       
     }
 
     advancedFiltersChanged($event: Filters) {

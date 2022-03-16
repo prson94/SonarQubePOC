@@ -63,12 +63,14 @@ export class SemanticTypeAssetListComponent extends SemanticBaseComponent implem
     }
 
     getData(uid: string) {
-        this.isLoading = true;
-        this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
-            this.semanticType = s.items[0];
-            this.isLoading = false;
-            this.cdRef.markForCheck();
-        });
+        if (this.semanticTypesEnabled) {
+            this.isLoading = true;
+            this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
+                this.semanticType = s.items[0];
+                this.isLoading = false;
+                this.cdRef.markForCheck();
+            });
+        }
     }
 
     selectAsset(asset: SemanticTypeAsset) {
