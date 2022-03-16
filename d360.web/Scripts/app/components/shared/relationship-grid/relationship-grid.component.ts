@@ -363,7 +363,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     getParams(): V2ApiFilters {
         var params = new V2ApiFilters();
-        params._pageSize = this.rowsPerPage;
+        params._pageSize = this.rowsPerPage ?? 10;
         if (this.dt) {
             params._pageNum = (this.dt.first / this.dt.rows) + 1;
             params._pageSize = this.dt.rows;
