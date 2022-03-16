@@ -98,6 +98,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     close() {
         this.isVisible = false;
+        this.currentStep = AddRelationshipStep.SetRelationshipType;
         this.selectedRelationshipType = null;
         this.previewAssetUid = this.previewAssetType = "";
         this.onClose.emit();
@@ -202,10 +203,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     get modalSubtitle(): string {
         let title: string = this.assetDetail.DisplayValue;
         if (this.currentStep === AddRelationshipStep.SetAssets) {
-            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            title += " - " + `${this.selectedRelationshipType.name}`;
         }
         if (this.currentStep === AddRelationshipStep.SetCustomFields) {
-            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            title += " - " + `${this.selectedRelationshipType.name}`;
             if (this.selectedAssetsDetail.length > 1) {
                 title += " - " + this.selectedAssetsDetail.length + " items";
             }
