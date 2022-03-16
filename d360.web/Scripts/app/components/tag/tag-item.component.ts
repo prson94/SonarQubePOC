@@ -18,7 +18,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { DataProfileService } from '../../services/dataprofile.service';
-import { forkJoin } from 'rxjs';
+import { SelectAssetService } from '../../services/select-asset.service';
 
 
 @Component({
@@ -64,6 +64,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         private loc: Location,
         private dataProfileService: DataProfileService,
         protected tagsService: TagService,
+        protected selectAssetService: SelectAssetService,
         protected titleService: Title,
         protected messagesService: MessagesObservableService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -88,28 +89,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     selectAsset(event: any) {
-        this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-        this.selection = event;
-
-        if (this.selection && this.selection.HasProfiling) {
-            this.sidePanelLoading = true;
-            this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
-                (r) => {
-                    if (r && r.items && r.items.length > 0) {
-                        this.dataProfile = r.items[0];
-                        forkJoin(
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                            this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                        ).subscribe((res) => {
-                            this.dataProfile['matches'] = {
-                                structure: res[0],
-                                data: res[1]
-                            };
-                        });
-                    }
-                    this.sidePanelLoading = false;
-                });
-        }
+        this.selectAssetService.selectAsset(event, this);
     }
 
     secondaryPanelOpen(event: any) {
