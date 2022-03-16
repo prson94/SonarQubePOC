@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data;
-using System.Linq.Expressions;
+using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 using System.Xml;
-using Dapper;
+using System.Xml.Linq;
+
 using d360.core.entities;
+using d360.model.helpers;
+
+using Dapper;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using d360.model.helpers;
 
 namespace d360.model
 {
@@ -31,7 +33,7 @@ namespace d360.model
             (this IEnumerable<T> enumerable,
             string typeName, IEnumerable<string> orderedColumnNames = null)
         {
-            var dataTable = new DataTable();
+            DataTable dataTable = new DataTable();
             if (typeof(T).IsValueType || typeof(T).FullName.Equals("System.String"))
             {
                 dataTable.Columns.Add(orderedColumnNames == null ?
@@ -52,7 +54,7 @@ namespace d360.model
                     throw new ArgumentException("Ordered list of column names must be provided when TVP contains more than one column");
                 }
 
-                var columnNames = (orderedColumnNames ??
+                string[] columnNames = (orderedColumnNames ??
                     readableProperties.Select(s => s.Name)).ToArray();
                 foreach (string name in columnNames)
                 {
@@ -68,9 +70,9 @@ namespace d360.model
                             .ToArray());
                 }
             }
+
             return dataTable.AsTableValuedParameter(typeName);
         }
-
     }
 
     #endregion
@@ -110,30 +112,36 @@ namespace d360.model
         public static XElement ConvertToXml(dynamic dynamicObject, string element, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
             if (namespaces == null)
+            {
                 namespaces = new Dictionary<string, string>();
+            }
 
-            if (String.IsNullOrWhiteSpace(element))
+            if (string.IsNullOrWhiteSpace(element))
             {
                 element = "object";
             }
 
             element = XmlConvert.EncodeName(element);
-            var ret = GetXElement(element, namespaces, parent);
+            XElement ret = GetXElement(element, namespaces, parent);
 
-            var members = new Dictionary<string, object>(dynamicObject);
+            Dictionary<string, object> members = new Dictionary<string, object>(dynamicObject);
 
-            foreach (var prop in members)
+            foreach (KeyValuePair<string, object> prop in members)
             {
-                var name = XmlConvert.EncodeName(prop.Key);
+                string name = XmlConvert.EncodeName(prop.Key);
+                
                 //id should only be a attribute of the root ignore the id field
-                if ((name ?? "").ToUpper() == "ID") continue;
+                if ((name ?? "").ToUpper() == "ID")
+                {
+                    continue;
+                }
 
                 if (prop.Value != null)
                 {
                     if (prop.Value.GetType().IsArray)
                     {
-                        var key = XmlConvert.EncodeName(prop.Key);
-                        var el = GetArrayElement(prop.Key, (Array)prop.Value, namespaces, ret);
+                        string key = XmlConvert.EncodeName(prop.Key);
+                        XElement el = GetArrayElement(prop.Key, (Array)prop.Value, namespaces, ret);
 
                         ret.Add(el);
                     }
@@ -143,18 +151,17 @@ namespace d360.model
                         {
                             if (!string.IsNullOrEmpty(Convert.ToString(prop.Value)))
                             {
-                                var el = GetXElement(name, namespaces, ret, prop.Value);
+                                XElement el = GetXElement(name, namespaces, ret, prop.Value);
                                 ret.Add(el);
 
                             }
                         }
                         else
                         {
-                            var el = prop.Value.ToXml(name, namespaces, ret);
+                            XElement el = prop.Value.ToXml(name, namespaces, ret);
                             ret.Add(el);
                         }
                     }
-
                 }
             }
 
@@ -185,28 +192,31 @@ namespace d360.model
             {
                 return null;
             }
-            if (namespaces == null)
-                namespaces = new Dictionary<string, string>();
 
-            if (String.IsNullOrWhiteSpace(element))
+            if (namespaces == null)
+            {
+                namespaces = new Dictionary<string, string>();
+            }
+
+            if (string.IsNullOrWhiteSpace(element))
             {
                 element = "object";
             }
 
             element = XmlConvert.EncodeName(element);
-            var ret = GetXElement(element, namespaces, parent);
+            XElement ret = GetXElement(element, namespaces, parent);
 
             if (input != null)
             {
-                var type = input.GetType();
-                var props = type.GetProperties();
+                Type type = input.GetType();
+                PropertyInfo[] props = type.GetProperties();
 
-                var elements = from prop in props
-                               let name = XmlConvert.EncodeName(prop.Name)
-                               let val = prop.PropertyType.IsArray ? "array" : prop.GetValue(input, null)
-                               let value = prop.PropertyType.IsArray ? GetArrayElement(prop, (Array)prop.GetValue(input, null), namespaces) : (prop.PropertyType.IsSimpleType() ? GetXElement(name, namespaces, ret, val) : val.ToXml(name, namespaces, ret))
-                               where value != null
-                               select value;
+                IEnumerable<XElement> elements = from prop in props
+                                                 let name = XmlConvert.EncodeName(prop.Name)
+                                                 let val = prop.PropertyType.IsArray ? "array" : prop.GetValue(input, null)
+                                                 let value = prop.PropertyType.IsArray ? GetArrayElement(prop, (Array)prop.GetValue(input, null), namespaces) : (prop.PropertyType.IsSimpleType() ? GetXElement(name, namespaces, ret, val) : val.ToXml(name, namespaces, ret))
+                                                 where value != null
+                                                 select value;
 
                 ret.Add(elements);
             }
@@ -238,17 +248,19 @@ namespace d360.model
         private static XElement GetArrayElement(string propertyName, Array input, Dictionary<string, string> namespaces = null, XElement parent = null)
         {
             if (namespaces == null)
+            {
                 namespaces = new Dictionary<string, string>();
+            }
 
-            var name = XmlConvert.EncodeName(propertyName);
+            string name = XmlConvert.EncodeName(propertyName);
 
             XElement rootElement = GetXElement(name, namespaces, parent);
 
-            var arrayCount = input.GetLength(0);
+            int arrayCount = input.GetLength(0);
 
             for (int i = 0; i < arrayCount; i++)
             {
-                var val = input.GetValue(i);
+                object val = input.GetValue(i);
                 XElement childElement = val.GetType().IsSimpleType() ? GetXElement(name + "Child", namespaces, rootElement, val) : val.ToXml();
 
                 rootElement.Add(childElement);
@@ -268,12 +280,14 @@ namespace d360.model
         public static XElement GetXElement(string name, Dictionary<string, string> namespaces = null, XElement parent = null, params object[] content)
         {
             if (namespaces == null)
+            {
                 namespaces = new Dictionary<string, string>();
+            }
 
             if (namespaces.ContainsKey(name))
             {
                 XNamespace ns = namespaces[name];
-                var x = new XElement(ns + name, content);
+                XElement x = new XElement(ns + name, content);
                 return x;
             }
             else
@@ -284,7 +298,9 @@ namespace d360.model
                     return new XElement(ns + name, content);
                 }
                 else
+                {
                     return new XElement(name, content);
+                }
             }
         }
     }
@@ -299,11 +315,12 @@ namespace d360.model
 
             if (definition.Fields != null)
             {
-                foreach (var f in definition.Fields.Where(f => f.RelationIndex == null))
+                foreach (FieldTypeComplexLookupDefinitionField f in definition.Fields.Where(f => f.RelationIndex == null))
                 {
                     f.RelationIndex = definition.Relations.FindIndex(r => r.AssetTypeUid == f.AssetTypeUid);
                 }
             }
+
             return definition;
         }
 
@@ -315,7 +332,8 @@ namespace d360.model
         public static CustomJSONContractResolver GetFriendlyNameJSONContract(this FieldTypeComplexLookupDefinition definition)
         {
             Dictionary<string, string> customContractProperties = definition.GetFriendlyNamesMapping();
-            var customContract = new CustomJSONContractResolver(customContractProperties);
+            CustomJSONContractResolver customContract = new CustomJSONContractResolver(customContractProperties);
+            
             return customContract;
         }
 
@@ -333,8 +351,8 @@ namespace d360.model
             int relatedItemIdx = 0;
             definition.Fields.ForEach(ft =>
             {
-                var assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
-                var fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
+                int assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
+                string fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
 
                 if (ft.FieldTypeID > 0)
                 {
@@ -356,9 +374,9 @@ namespace d360.model
                     customContractProperties.Add($"H{assetIdx}_{ft.FieldTypeName}", $"Asset.[{assetIdx - 1}].{fname}");
                 }
             });
+            
             return customContractProperties;
         }
-
 
         public static Dictionary<string, FieldTypeComplexLookupDefinitionField> GetFieldMapings(this FieldTypeComplexLookupDefinition definition)
         {
@@ -374,8 +392,8 @@ namespace d360.model
 
             definition.Fields.ForEach(ft =>
             {
-                var assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
-                var fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
+                int assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
+                string fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
 
                 if (ft.FieldTypeID > 0)
                 {
@@ -397,62 +415,68 @@ namespace d360.model
                     map.Add($"H{assetIdx}_{ft.FieldTypeName}", ft);
                 }
             });
+
             return map;
         }
-
 
         public static List<dynamic> UnflattenJson(this FieldTypeComplexLookupDefinition definition, List<dynamic> Values)
         {
             List<dynamic> unflattened = new List<dynamic>();
-            foreach (var item in Values)
+            foreach (dynamic item in Values)
             {
                 List<dynamic> Assets = new List<dynamic>();
 
                 //Deflate asset fields
                 for (int i = 0; i < definition.Relations.Count; i++)
                 {
-                    var relFields = definition.Fields
+                    int relFields = definition.Fields
                         .Where(x => x.FieldTypeName.StartsWith("Related Item."))
                         .Count();
 
-                    var dict = new Dictionary<string, object>();
-                    dict.Add("RelationshipTypeUid", definition.Relations[i].IntersectTypeUid);
-                    dict.Add("AssetTypeUid", definition.Relations[i].AssetTypeUid);
-                    dict.Add("RelationType", definition.Relations[i].RelationType);
+                    Dictionary<string, object> dict = new Dictionary<string, object>
+                    {
+                        { "RelationshipTypeUid", definition.Relations[i].IntersectTypeUid },
+                        { "AssetTypeUid", definition.Relations[i].AssetTypeUid },
+                        { "RelationType", definition.Relations[i].RelationType }
+                    };
 
                     dynamic[] relatedItems = new dynamic[relFields];
 
                     bool hasRelation = false;
-                    var relationFields = new Dictionary<string, object>();
-
+                    Dictionary<string, object> relationFields = new Dictionary<string, object>();
 
                     foreach (JProperty prop in item)
                     {
-                        var match = $"Asset.[{i}].";
+                        string match = $"Asset.[{i}].";
+
                         if (prop.Name.Contains(match))
                         {
-                            var propName = prop.Name.Replace(match, "");
+                            string propName = prop.Name.Replace(match, "");
                             bool isAdded = false;
 
                             for (int rf = 0; rf < relFields; rf++)
                             {
-                                var relMatch = $"RelatedItems.[{rf}].";
+                                string relMatch = $"RelatedItems.[{rf}].";
+                                
                                 if (propName.StartsWith(relMatch))
                                 {
                                     propName = propName.Replace(relMatch, "");
-                                    var relatedItemFields = (IDictionary<string, object>)relatedItems[rf];
+                                    IDictionary<string, object> relatedItemFields = (IDictionary<string, object>)relatedItems[rf];
+                                    
                                     if (relatedItemFields == null)
                                     {
                                         relatedItemFields = new Dictionary<string, object>();
 
                                     }
+
                                     relatedItemFields.Add(propName, prop.Value);
                                     relatedItems[rf] = relatedItemFields;
                                     isAdded = true;
                                 }
                             }
 
-                            var relItemMatch = "Relation.";
+                            string relItemMatch = "Relation.";
+
                             if (propName.StartsWith(relItemMatch))
                             {
                                 propName = propName.Replace(relItemMatch, "");
@@ -462,12 +486,16 @@ namespace d360.model
                             }
 
                             if (!isAdded)
+                            {
                                 dict.Add(propName, prop.Value);
+                            }
                         }
                     }
 
                     if (relFields > 0)
+                    {
                         dict.Add("RelatedItems", relatedItems.Where(x => x != null));
+                    }
 
                     if (hasRelation)
                     {
