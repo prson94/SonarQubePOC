@@ -804,18 +804,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     //table extensions
     selectSingleItem(event: MouseEvent, item: SelectItem) {
         if (this.field?.MultiSelect) {
-            let valueRef = this.lookupSelectedValue as SelectItem[];
-            let elIdx = valueRef.findIndex((x) => x.value === item.value);
-
-            if (elIdx > -1) {
-                valueRef.splice(elIdx, 1);
-            }
-            else if (item.value !== null) {
-                valueRef.push(item);
-            }
-            //update reference
-            this.lookupSelectedValue = [...valueRef];
-            this.field.Items = [...valueRef];
+            this.field.Items = [...this.lookupSelectedValue];
 
             var value = this.lookupSelectedValue.map((s) => s.value);
 
