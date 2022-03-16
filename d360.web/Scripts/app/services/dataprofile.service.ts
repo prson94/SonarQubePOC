@@ -56,7 +56,13 @@ export class DataProfileService extends BaseObservableService {
             .get(url, httpOptions)
             .pipe(
                 map((response) => <any>response),
-                catchError((err) => this.handleError(err, true))
+                catchError((err) => {
+                    if (err?.status === 409) {
+                        return of(0);
+                    } else {
+                        this.handleError(err, true);
+                    }                    
+                })
             );
     }
 

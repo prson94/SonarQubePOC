@@ -11,6 +11,8 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Subscription } from 'rxjs';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SemanticBaseComponent } from './semantics-base.component';
+import { FeatureFlagsService } from '../../services/featureflags.service';
 
 
 declare var CurrentResourceID;
@@ -22,7 +24,7 @@ declare var CurrentResourceID;
 })
 
 
-export class SemanticDefinitionComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+export class SemanticDefinitionComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
    
     private semanticType: SemanticType
     private sub: any;
@@ -41,15 +43,16 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
+        protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private featureFlagService: FeatureFlagsService
     ) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+        super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }
 
 

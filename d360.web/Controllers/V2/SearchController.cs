@@ -290,10 +290,10 @@ namespace d360.web.Controllers.V2
             types.ForEach((t) => t.ClassName = SearchIndexer.GetCategoryFromClass(t.Class));
 
             List<IndexableType> classes = assetTypeClasses.Where(c => types.Any(at => at.Class == (int)c)).Select(c => new IndexableType { Name = c.ToString(), Class = (int)c, AssetTypeUid = Guid.Empty, ClassName = c.ToString() }).ToList();
-
-            //if ( GOV-16718 feature flag) {
-            classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
-            //}
+            
+            if (GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API)) {
+                classes.Add(new IndexableType { Name = AssetTypeClass.SemanticType.ToString(), Class = (int)AssetTypeClass.SemanticType, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.SemanticType.ToString() });
+            }
 
             //Overload "Predicate" class as a representation for synonyms
             classes.Add(new IndexableType { Name = "Synonym", Class = (int)AssetTypeClass.Predicate, AssetTypeUid = Guid.Empty, ClassName = AssetTypeClass.Predicate.ToString() });
@@ -437,7 +437,7 @@ namespace d360.web.Controllers.V2
         {
             List<string> visibleCategories = assetTypeClasses.Where(c => Company.AssetTypes.Any(at => at.Class == c)).Select(c => c.ToString()).ToList();
 
-            if (Company.Semantics.Any()) // && GOV-16718 feature flag
+            if (Company.Semantics.Any() && GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
             {
                 visibleCategories.Add(AssetTypeClass.SemanticType.ToString());
             }
@@ -664,6 +664,10 @@ namespace d360.web.Controllers.V2
                 return;
             }
 
+            // FeatureFlags
+            var dataProfilingEnabled = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING);
+            var semanticTypesEnabled = GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API);
+
             //Determine which results have asset tyoes with search fields defined
             List<Guid> assetTypeUidWithFields = GetAssetTypeUidWithField(results);
 
@@ -743,31 +747,33 @@ namespace d360.web.Controllers.V2
                     result.Status = augment.Status;
                     result.Object = augment.Object;
                     result.ObjectId = augment.ObjectId;
-                    result.HasProfiling = augment.HasProfiling;
+                    result.HasProfiling = dataProfilingEnabled ? augment.HasProfiling: false;
                 }
 
                 result.Scores = searchScores.Where(s => s.AssetUid == result.Uid).ToList();
             }
 
-            List<string> qualifiers = results.Where(r => r.Group == "Semantic Type").Select(r => r.ID.Substring(r.ID.IndexOf("|") + 1)).ToList();
-            List<Semantic> semantics = SemanticsRepository.GetSemanticsByQualifiers(qualifiers);
-
-            if (semantics.Any())
+            if (semanticTypesEnabled)
             {
-                foreach (var result in results.Where(r => r.Group == "Semantic Type"))
-                {
-                    result.Object = "Semantic Type";
+                List<string> qualifiers = results.Where(r => r.Group == "Semantic Type").Select(r => r.ID.Substring(r.ID.IndexOf("|") + 1)).ToList();
+                List<Semantic> semantics = SemanticsRepository.GetSemanticsByQualifiers(qualifiers);
 
-                    var semantic = semantics.Find(s => s.Uid == result.Uid);
-                    if (semantic != null)
+                if (semantics.Any())
+                {
+                    foreach (var result in results.Where(r => r.Group == "Semantic Type"))
                     {
-                        result.AssetPath = new List<PathComponent> { new PathComponent {
+                        result.Object = "Semantic Type";
+
+                        var semantic = semantics.Find(s => s.Uid == result.Uid);
+                        if (semantic != null)
+                        {
+                            result.AssetPath = new List<PathComponent> { new PathComponent {
                             AssetType = null,
                             Key = new string[] { semantic.Name }
                         }};
 
-                        result.Status = semantic.Status.ToString();
-                        result.Fields = new List<IndexFieldDisplay>
+                            result.Status = semantic.Status.ToString();
+                            result.Fields = new List<IndexFieldDisplay>
                         {
                             new IndexFieldDisplay
                             {
@@ -799,9 +805,10 @@ namespace d360.web.Controllers.V2
                                 Value = semantic.BaseType.ToString()
                             }
                         };
+                        }
                     }
                 }
-            }
+            }            
         }
         #endregion
 

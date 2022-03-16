@@ -380,4 +380,12 @@
     <value>Asset URL</value>
     <comment>Used for Semantic Types Assets Export</comment>
   </data>
+  <data name="EndpointNotAccessible" xml:space="preserve">
+    <value>This endpoint is not accessible.</value>
+    <comment>Used for LD Flags</comment>
+  </data>
+  <data name="ErrorOnRequest" xml:space="preserve">
+    <value>Error on request.</value>
+    <comment>Used for LD Flags</comment>
+  </data>
 </root>
