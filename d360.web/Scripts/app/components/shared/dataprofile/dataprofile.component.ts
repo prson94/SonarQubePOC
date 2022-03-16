@@ -128,7 +128,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         let startDate = new Date();
         startDate.setFullYear(startDate.getUTCFullYear() - 100);
         if (this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
-            debugger;
             this.dataProfileService.getDataProfiles(this.dataProfile.assetUid, startDate, null, false, false, false).subscribe(
                 (r) => {
                     if (r && r.items && r.items.length > 1) {
@@ -141,7 +140,6 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 });
 
             if (this.dataProfile.typeQualifier && this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
-                debugger;
                 this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
                     this.semanticType = s.items[0];
                     if (this.semanticType) {

@@ -75,7 +75,7 @@
                                         <span class="ig-colorfield-item detail" style="display: inline-flex !important;">
                                             <span class="ig-colorfield-swatch" [style.background-color]="getCertificationStatusColor(semanticDetails.status)"></span>
                                             <span class="ig-colorfield-item-label">
-                                                <a (click)="linkClicked.emit()">
+                                                <a (click)="handleStatusClick()">
                                                     {{(semanticDetails.status==="InReview" ? "Under Review" : semanticDetails.status)}}
                                                 </a>
                                             </span>

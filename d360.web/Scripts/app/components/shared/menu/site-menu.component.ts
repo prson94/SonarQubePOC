@@ -190,7 +190,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                 result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
                 if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
-                    result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#SemanticTypes'));
+                    result.MenuItems = result.MenuItems.filter((x) => (x.MenuID !== '#SemanticTypes'));
                 }
                 // add properties we need to add to the burned in menus
                 for (let menu of result.MenuItems) {

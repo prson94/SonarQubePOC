@@ -60,7 +60,7 @@ export class DataProfileService extends BaseObservableService {
                     if (err?.status === 409) {
                         return of(0);
                     } else {
-                        this.handleError(err, true)
+                        this.handleError(err, true);
                     }                    
                 })
             );
