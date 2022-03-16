@@ -114,6 +114,8 @@ namespace d360.web.Models
     public class AssetBrowserNode
     {
         public string hierarchyKey { get; set; }
+        public string template { get; set; }
+        public int childCount { get; set; }
         public bool focal { get; set; }
         public bool leaf { get; set; }
         public string key { get; set; }

@@ -49,24 +49,25 @@ export class BrowserService extends BaseObservableService {
     private processResponse(response: AssetBrowserResponseModel) {
         response.nodes.forEach(n => {
 
-            //#region Select template
+            ////#region Select template
 
             let templateName = "";
-            if (!n.group) {
-                n.group = "";
-            }
-            if (n.group !== "") {
-                if (!n.leaf) {
-                    templateName = "Group";
-                }
-            }
-            else {
-                templateName = n.focal ? "FocalPortGroup" : "PortGroup";
-            }
-            n.template = templateName;
+            //if (!n.group) {
+            //    n.group = "";
+            //}
+            //if (n.group !== "") {
+            //    if (!n.leaf) {
+            //        templateName = "Group";
+            //    }
+            //}
+            //else {
+            //    templateName = n.focal ? "FocalPortGroup" : "PortGroup";
+            //}
+            //n.template = templateName;
             n.nonHiddenTemplate = templateName;
 
-            //#endregion
+            ////#endregion
+
             if (n.class.toString() === 'Diagram') {
                 n.class = AssetTypeClass.DiagramAsset;
             }

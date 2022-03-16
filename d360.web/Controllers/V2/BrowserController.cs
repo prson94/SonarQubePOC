@@ -45,7 +45,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf, @descendancy";
+                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @hopCount, @descendancy, @isAdmin, @includeNonLeaf";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -56,7 +56,7 @@ namespace d360.web.Controllers.V2
                         isAdmin = Company.CurrentResourceIsAdmin,
                         postModel.hopCount,
                         postModel.includeNonLeaf,
-                        postModel.descendancy
+                        descendancy = (int)postModel.descendancy
                     },
                     timeout: 120
                 );
