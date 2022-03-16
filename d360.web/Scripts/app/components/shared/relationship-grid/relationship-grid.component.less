@@ -83,10 +83,30 @@
 }
 
 .relationship-dialog {
-  height: unset !important;
+  height: 100% !important;
 
-  .modal-dialog-main-panel .p-datatable {
-    padding-right: 0;
+  .modal-dialog-main-panel {
+    height: 100%;
+
+    .p-datatable {
+      padding-right: 0;
+    }
+  }
+
+  .modal-with-side-panel {
+    height: 100%;
+
+    .relationship-detail {
+      height: 100%;
+
+      .row {
+        height: 100%;
+
+        .col {
+          height: 100%;
+        }
+      }
+    }
   }
 
   .modal-title {
