@@ -33,7 +33,7 @@
                             </div>
                             <div class="card-row description-row">
                                 <span class="category">
-                                    {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span [innerHtml]="result?.Type"></span></span>
+                                    {{result?.Group}}<span *ngIf="showType(result)"><i class="fa fa-angle-right"></i><span [innerHtml]="result?.Type"></span></span>
                                 </span>
                             </div>
                             <div class="card-row description-row" *ngIf="result?.AssetPath">
