@@ -12,6 +12,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { SiteMenuFavoritesComponent } from './site-menu-favorites.component';
 import { Subject } from 'rxjs';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: 'd3s-site-menu',
@@ -61,7 +62,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
         private ref: ChangeDetectorRef,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private featureFlagService: FeatureFlagsService
     ) {
         super(settingsService);
     }    
@@ -187,7 +189,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 this.isAdmin = result.IsAdmin;
 
                 result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
-
+                if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+                    result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#SemanticTypes'));
+                }
                 // add properties we need to add to the burned in menus
                 for (let menu of result.MenuItems) {
                     menu.ShouldDisplay = true;

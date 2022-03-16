@@ -250,6 +250,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This endpoint is not accessible..
+        /// </summary>
+        internal static string EndpointNotAccessible {
+            get {
+                return ResourceManager.GetString("EndpointNotAccessible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error on request..
+        /// </summary>
+        internal static string ErrorOnRequest {
+            get {
+                return ResourceManager.GetString("ErrorOnRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Header Filter.
         /// </summary>
         internal static string HeaderFilterColumn {

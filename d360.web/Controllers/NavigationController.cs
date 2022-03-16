@@ -60,6 +60,11 @@ namespace d360.web.Controllers
                 nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
             }
 
+            if(!Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
+            {
+                nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
+            }
+            
             if (nodes != null)
             {
                 List<string> toggleVisibilityURLs = new List<string> {
@@ -145,9 +150,16 @@ namespace d360.web.Controllers
         [HttpGet, Route("GetSiteNavItems")]
         public JsonNetResult GetSiteNavItems()
         {
-            return new JsonNetResult
+            var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);
+            var data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
+            if (!allowSemantics)
             {
-                Data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList(),
+                data.RemoveAll(x => !allowSemantics && x.Name == "#SemanticTypes");
+            }            
+
+            return new JsonNetResult
+            {                
+                Data = data,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -1101,7 +1113,7 @@ namespace d360.web.Controllers
                 }                
             }
 
-            if (model.ObjectType == SystemObjects.SemanticType.ToString())
+            if (model.ObjectType == SystemObjects.SemanticType.ToString() && Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
             {
                 execProcedure = false;
                 responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();

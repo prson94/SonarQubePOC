@@ -15,6 +15,8 @@ import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { StringConstants } from '../../static/string-constants';
+import { SemanticBaseComponent } from './semantics-base.component';
+import { FeatureFlagsService } from '../../services/featureflags.service';
 
 declare var CurrentResourceID;
 
@@ -25,7 +27,7 @@ declare var CurrentResourceID;
     providers: [DataProfileService],
 })
 
-export class SemanticTypeListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+export class SemanticTypeListComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
 
     @Output() selectedTypeChanged = new EventEmitter();    
     sub: any;
@@ -152,14 +154,15 @@ export class SemanticTypeListComponent extends AssetGridBaseComponent implements
     secondarySidePanelOpen: boolean;
 
     constructor(private route: ActivatedRoute,
-        private router: Router,
+        protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+        protected settingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService) {
+        super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
