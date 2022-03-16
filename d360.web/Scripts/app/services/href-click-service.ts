@@ -147,10 +147,18 @@ export class LinkClickInterceptor {
             if (data.IsSynonym) {
                 adcEv.event = origEvent;
                 adcEv.type = AssetDetailClickType.Asset;
-                adcEv.objectId = data.ObjectID;
-                adcEv.objectType = data.Object;
-                adcEv.uid = data.AssetUid;
-                adcEv.assetTypeUid = data.AssetTypeUid;
+                if (data.type === "SP") {
+                    adcEv.objectId = data.ParentID;
+                    adcEv.objectType = data.Object;
+                    adcEv.uid = data.ParentAssetUid;
+                    adcEv.assetTypeUid = data.ParentAssetTypeUid;
+                }
+                else {
+                    adcEv.objectId = data.ObjectID;
+                    adcEv.objectType = data.Object;
+                    adcEv.uid = data.AssetUid;
+                    adcEv.assetTypeUid = data.AssetTypeUid;
+                }
             }
 
             //if click comes from Reference List type link

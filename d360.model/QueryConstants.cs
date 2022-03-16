@@ -431,7 +431,8 @@ select	I.ID as IntersectID,
 		,T.uid as [IntersectTypeUid]		
 		,S.uid as [AssetUid]
 		,ST.Uid as [AssetTypeUid]
-
+		,SP.uid as [ParentAssetUid]
+		,SPT.Uid as [ParentAssetTypeUid]
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
 		inner join Asset S on 
@@ -471,6 +472,8 @@ select
 	,null as [IntersectTypeUid]
 	,null as [AssetUid]
     ,null as [AssetTypeUid]
+	,null as [ParentAssetUid]
+    ,null as [ParentAssetTypeUid]
 from 
 	[dbo].[nym] s	
 where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1
