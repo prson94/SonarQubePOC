@@ -103,7 +103,13 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         this.currentStep = AddRelationshipStep.SetRelationshipType;
         this.selectedRelationshipType = null;
         this.previewAssetUid = this.previewAssetType = "";
+        this.resetSelectedAssets();
         this.onClose.emit();
+    }
+
+    resetSelectedAssets() {
+        this.selectedAssets = [];
+        this.selectedAssetsDetail = [];
     }
 
     public initialLoad(): void {

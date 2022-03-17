@@ -966,4 +966,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         }
         return true;
     }
+
+    public isFormValid(): boolean {
+        if (!this.form) {
+            return false;
+        }
+        return this.form.valid;
+    }
 }
