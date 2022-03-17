@@ -75,6 +75,7 @@ namespace d360.web.Controllers
     {
         ICompanyContext Company { get; set; }
         ICommunityContext Community { get; set; }
+        IMailProvider Mail { get; set; }
         ISettingsRepository SettingsRepository { get; set; }
         LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
     }
@@ -83,14 +84,16 @@ namespace d360.web.Controllers
     {
         public ICompanyContext Company { get; set; }
         public ICommunityContext Community { get; set; }
+        public IMailProvider Mail { get; set; }
         public ISettingsRepository SettingsRepository { get; set; }
         public LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
 
-        public CoreComponentSet(ICommunityContext community, ICompanyContext company, ISettingsRepository settingsRepository, LaunchDarkly.Sdk.Server.LdClient ld)
+        public CoreComponentSet(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository, LaunchDarkly.Sdk.Server.LdClient ld)
         {
             Company = company;
             Community = community;
             Ld = ld;
+            Mail = mail;
             SettingsRepository = settingsRepository;
         }
     }
@@ -595,6 +598,7 @@ from	CompanyResource CR
             Community = set.Community;
             Company = set.Company;
             Ld = set.Ld;
+            Mail = set.Mail;
             SettingsRepository = set.SettingsRepository;
         }
 
