@@ -402,8 +402,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     get singleSelectedRelationship(): any {
         if (this.relationshipCounts.length === 1) {
             var uid = this.relationshipCounts[0].IntersectTypeUid;
-            var selected = this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === uid.toLowerCase());
-            return selected[0];
+            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === uid.toLowerCase())[0];
         }
 
         if (!this.advancedFilterData) {
@@ -413,8 +412,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         var relFilter = this.advancedFilterData.filter((x) => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
-            var selected = this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase());
-            return selected[0];
+            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase())[0];
         }
         return null;
     }
