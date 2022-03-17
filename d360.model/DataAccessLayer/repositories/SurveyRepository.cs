@@ -64,7 +64,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							throw new Exception("Invalid value for page size parametar!");
+							throw new ArgumentException("Invalid value for page size parametar!");
 						}
 
 						break;
@@ -80,7 +80,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							throw new Exception("Invalid value for page number parametar!");
+							throw new ArgumentException("Invalid value for page number parametar!");
 						}
 
 						break;
@@ -88,7 +88,7 @@ namespace d360.model.DataAccessLayer
 						Guid uid = Guid.Parse(param.Value);
 						if (uid == Guid.Empty)
 						{
-							throw new Exception("Invalid value for asset uid!");
+							throw new ArgumentException("Invalid value for asset uid!");
 						}
 
 						additionalWhereClause += $" AND a.uid = '{uid}'";
@@ -97,7 +97,7 @@ namespace d360.model.DataAccessLayer
 						DateTime date = DateTime.MinValue;
 						if (!DateTime.TryParse(param.Value, out date))
 						{
-							throw new Exception("Invalid date value for AsOfDate parameter!");
+							throw new ArgumentException("Invalid date value for AsOfDate parameter!");
 						}
 						response.asOfDate = date;
 						additionalWhereClause += $" AND S.CreatedOn <= '{date.AddDays(1)}'";
@@ -303,9 +303,10 @@ namespace d360.model.DataAccessLayer
 						break;
 					case "asofdate":
 						DateTime date = DateTime.MinValue;
+
 						if (!DateTime.TryParse(param.Value, out date))
 						{
-							throw new Exception("Invalid date value for AsOfDate parameter!");
+							throw new ArgumentException("Invalid date value for AsOfDate parameter!");
 						}
 
 						whereClauses.Add($"S.CreatedOn <= '{date.Date.AddDays(1)}'");
@@ -313,18 +314,20 @@ namespace d360.model.DataAccessLayer
 						break;
 					case "_pagesize":
 						int size = 0;
+
 						if (int.TryParse(param.Value, out size))
 						{
 							response.pageSize = int.Parse(param.Value);
 						}
 						else
 						{
-							throw new Exception("Invalid value for page size parametar!");
+							throw new ArgumentException("Invalid value for page size parametar!");
 						}
 
 						break;
 					case "_pagenum":
 						int num = 0;
+
 						if (int.TryParse(param.Value, out num))
 						{
 							response.pageNum = int.Parse(param.Value);
@@ -335,7 +338,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							throw new Exception("Invalid value for page number parametar!");
+							throw new ArgumentException("Invalid value for page number parametar!");
 						}
 
 						break;
@@ -345,7 +348,7 @@ namespace d360.model.DataAccessLayer
 							case "firstrespondedon": orderByClause = "order by First.CreatedOn"; break;
 							case "lastrespondedon": orderByClause = "order by Last.CreatedOn"; break;
 							case "numberofresponders": orderByClause = "order by QD.Responders desc"; break;
-							default: throw new Exception("Invalid value for order parametar! Use FirstRespondedOn|LastRespondedOn|NumberOfResponders");
+							default: throw new ArgumentException("Invalid value for order parametar! Use FirstRespondedOn|LastRespondedOn|NumberOfResponders");
 						}
 						break;
 				}
@@ -556,7 +559,7 @@ namespace d360.model.DataAccessLayer
 
 		public async Task PostSurveyResults(SurveyResultsApiModel model, Asset asset, SurveyType surveyType)
 		{
-			var survey = new Survey()
+			var survey = new Survey
 			{
 				SurveyTypeID = surveyType.ID,
 				Object = asset.Object,
@@ -569,7 +572,7 @@ namespace d360.model.DataAccessLayer
 
 			foreach (var question in model.Questions)
 			{
-				var q = new core.entities.Question()
+				var q = new core.entities.Question
 				{
 					SurveyID = survey.ID,
 					Comment = question.Comments

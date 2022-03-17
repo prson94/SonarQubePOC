@@ -763,20 +763,20 @@ namespace d360.model
 
 		public async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
 		{
-			string whenSql = "";
+			var whenSql = new StringBuilder();
 
-			whenSql += "select distinct A.ID as AssetID ";
+			whenSql.Append("select distinct A.ID as AssetID ");
 			if (includeName)
 			{
-				whenSql += ", utility.GetAssetDisplayValueWrapper(A.ID) as Name ";
+				whenSql.Append(", utility.GetAssetDisplayValueWrapper(A.ID) as Name ");
 			}
 
 			if (includeUid)
 			{
-				whenSql += ", A.uid, graph.GetPathByAssetId(a.id,'>', '/') as Path ";
+				whenSql.Append(", A.uid, graph.GetPathByAssetId(a.id,'>', '/') as Path ");
 			}
 
-			whenSql += $"from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ";
+			whenSql.Append($"from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = '{rule.Object}' and T.ObjectID = {rule.ObjectID} ");
 
 			int fCount = 1;
 			int rCount = 1;
@@ -794,15 +794,15 @@ namespace d360.model
 
 							if (whenFieldType != null)
 							{
-								whenSql += $" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
+								whenSql.Append($" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ");
 
-								whenSql += whenFieldType.AllowMultipleValues ?
+								whenSql.Append(whenFieldType.AllowMultipleValues ?
 									$"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" : // multiselect list
-									$"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";  // all field types plus single select list
+									$"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{w.Value}' ) FV{fCount}");  // all field types plus single select list
 							}
 							else // invalid field type ID so the when is always not going to return anything
 							{
-								whenSql += $"where 1 =0 ";
+								whenSql.Append($"where 1 =0 ");
 							}
 						}
 						fCount++;
@@ -810,18 +810,18 @@ namespace d360.model
 
 					if (w.CheckType == "R")
 					{
-						whenSql += $@"inner join [Intersect] I{rCount} on 
+						whenSql.Append($@"inner join [Intersect] I{rCount} on 
 									I{rCount}.IntersectTypeID = {w.IntersectTypeID} and 
 									( 
 									(I{rCount}.Subject = A.Object and I{rCount}.SubjectID = A.ObjectID and I{rCount}.Object = '{w.TargetObject}' and I{rCount}.ObjectID = {w.TargetObjectID}) OR 
 									(I{rCount}.Object = A.Object and I{rCount}.ObjectID = A.ObjectID and I{rCount}.Subject = '{w.TargetObject}' and I{rCount}.SubjectID = {w.TargetObjectID}) 
-									) ";
+									) ");
 						rCount++;
 					}
 				}
 			}
 
-			return whenSql;
+			return whenSql.ToString();
 		}
 
 		private string ThenSqlConnector(ResponsibilityRuleDefinitionThen then)
@@ -848,11 +848,11 @@ namespace d360.model
 					thenSql.Append($"'O' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from Organization O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Organization' " : "")}  ");
 				}
 
-                if (rule.StructuredDefinition.Then.Object == "GroupType")
-                {
-                    obj = "Group";
-                    thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from	[Group] O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Group' " : "")}");
-                }
+				if (rule.StructuredDefinition.Then.Object == "GroupType")
+				{
+					obj = "Group";
+					thenSql.Append($"'G' as SecurityAsset, O.ID as SecurityAssetID{(includeName ? ", O.Name" : "")} {(includeUid ? ", O.Name as Path, Z.uid " : "")} from	[Group] O {(includeUid ? " inner join Asset Z on Z.ObjectID=O.ID and Z.Object='Group' " : "")}");
+				}
 
 				if (rule.StructuredDefinition.Then.Object == "ResourceType")
 				{

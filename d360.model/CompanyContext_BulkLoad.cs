@@ -338,7 +338,7 @@ namespace d360.model
 
 		public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues)
 		{
-			IEnumerable<string> jsonItems = Query<string>($"bulkload.GetLoadColumns @action, @type, @id, @getLookups", new { action, type = type, id, getLookups = includeLookupValues });
+			IEnumerable<string> jsonItems = Query<string>($"bulkload.GetLoadColumns @action, @type, @id, @getLookups", new { action, type, id, getLookups = includeLookupValues });
 			string json = string.Concat(jsonItems);
 			BulkLoadGetLoadColumnsModel model = JsonConvert.DeserializeObject<BulkLoadGetLoadColumnsModel>(json);
 
@@ -481,60 +481,56 @@ namespace d360.model
 				throw new ArgumentNullException("asset type uid cannot be null");
 			}
 
-			try
+			Guid assetTypeUid = (Guid)load.AssetTypeUid;
+			AssetType assetType = repository.GetAssetTypeByUID(assetTypeUid);
+
+			if (assetType == null)
 			{
-				Guid assetTypeUid = (Guid)load.AssetTypeUid;
-				AssetType assetType = repository.GetAssetTypeByUID(assetTypeUid);
+				throw new Exception($"Asset type with uid {assetTypeUid} not found");
+			}
 
-				if (assetType == null)
+			await GenerateExecutionItemUids(load, timeout);
+
+			//get parent type info if applicable
+			AssetType parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
+			int? intersectTypeId = null;
+			PredicateType? predicateType = null;
+			bool calculateParentHashByUid = false;
+			int maxLevel = 1;
+
+			switch (assetType.Class)
+			{
+				case AssetTypeClass.BusinessAsset:
+				case AssetTypeClass.TechnicalAsset:
+				case AssetTypeClass.ReferenceItemType:
+					predicateType = PredicateType.InterTypeHierarchy;
+					calculateParentHashByUid = true;
+					break;
+				case AssetTypeClass.Policy:
+				case AssetTypeClass.Model:
+					predicateType = PredicateType.IntraTypeHierarchy;
+					calculateParentHashByUid = false;
+					break;
+			}
+
+			if (predicateType.HasValue)
+			{
+				IntersectType intersectType = Filter<IntersectType>(o => o.Object == assetType.Object && o.ObjectID == assetType.ObjectID && o.Predicate.Type == predicateType).FirstOrDefault();
+				intersectTypeId = intersectType?.ID;
+			}
+
+			await Connection.OpenAsync();
+
+			//calculate key hashes and resolve lookup values
+			using (SqlTransaction trans = Connection.BeginTransaction())
+			{
+				try
 				{
-					throw new Exception($"Asset type with uid {assetTypeUid} not found");
-				}
+					Guid executionID = Guid.NewGuid();
 
-				bool hasLookups = FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.LookupObjectID != null);
-
-				await GenerateExecutionItemUids(load, timeout);
-
-				//get parent type info if applicable
-				AssetType parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
-				int? intersectTypeId = null;
-				PredicateType? predicateType = null;
-				bool calculateParentHashByUid = false;
-				int maxLevel = 1;
-
-				switch (assetType.Class)
-				{
-					case AssetTypeClass.BusinessAsset:
-					case AssetTypeClass.TechnicalAsset:
-					case AssetTypeClass.ReferenceItemType:
-						predicateType = PredicateType.InterTypeHierarchy;
-						calculateParentHashByUid = true;
-						break;
-					case AssetTypeClass.Policy:
-					case AssetTypeClass.Model:
-						predicateType = PredicateType.IntraTypeHierarchy;
-						calculateParentHashByUid = false;
-						break;
-				}
-
-				if (predicateType.HasValue)
-				{
-					IntersectType intersectType = Filter<IntersectType>(o => o.Object == assetType.Object && o.ObjectID == assetType.ObjectID && o.Predicate.Type == predicateType).FirstOrDefault();
-					intersectTypeId = intersectType?.ID;
-				}
-
-				await Connection.OpenAsync();
-
-				//calculate key hashes and resolve lookup values
-				using (SqlTransaction trans = Connection.BeginTransaction())
-				{
-					try
+					if (assetType.Class == AssetTypeClass.Model)
 					{
-						Guid executionID = Guid.NewGuid();
-
-						if (assetType.Class == AssetTypeClass.Model)
-						{
-							maxLevel = await Connection.QuerySingleAsync<int>(@"
+						maxLevel = await Connection.QuerySingleAsync<int>(@"
 							select coalesce(max(L.[Level]), 1) from LoadColumn LC
 							inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
 							inner join (
@@ -549,9 +545,9 @@ namespace d360.model
 										and not exists (select 1 from AssetTypeLevel where AssetTypeID = T.ID and [Level] = N.[Level])
 							) L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
 							where LC.Loadid = @ID;", new { load.ID, atID = assetType.ID }, transaction: trans);
-						}
+					}
 
-						await Connection.ExecuteAsync(@"
+					await Connection.ExecuteAsync(@"
 						drop table if exists #BulkExecutionAsset;
 						create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32), AssetUid uniqueidentifier, AssetID bigint, Success bit, Message nvarchar(max))
 
@@ -562,8 +558,8 @@ namespace d360.model
 						create nonclustered index IX_TempBulkExecutionAsset on #BulkExecutionField (ColumnIndex asc,ItemNumber asc);                        
 						", transaction: trans, commandTimeout: timeout);
 
-						//load temp tables and calculate key hashes
-						await Connection.ExecuteAsync($@"
+					//load temp tables and calculate key hashes
+					await Connection.ExecuteAsync($@"
 						insert into #BulkExecutionAsset
 						select	@executionID as ExecutionID,
 								RowIndex as ItemNumber,
@@ -725,10 +721,10 @@ namespace d360.model
 
 						end", new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class, maxLevel }, transaction: trans, commandTimeout: timeout);
 
-						if (intersectTypeId.HasValue && calculateParentHashByUid)
-						{
-							//need to parse parent column here to be used in proposed key
-							await Connection.ExecuteAsync(@"
+					if (intersectTypeId.HasValue && calculateParentHashByUid)
+					{
+						//need to parse parent column here to be used in proposed key
+						await Connection.ExecuteAsync(@"
 								--flag records with missing parent uids, they will error out later in the API
 								update A
 								set A.Success = 0
@@ -749,13 +745,13 @@ namespace d360.model
 								inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex and F.ItemNumber = A.ItemNumber
 								where A.ExecutionID = @executionID and (A.Success is null or A.Success = 1)
 							", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name }, transaction: trans, commandTimeout: timeout);
-						}
+					}
 
-						CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
+					CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
 
-						if (assetType.Class == AssetTypeClass.Reference)
-						{
-							await Connection.ExecuteAsync(@"
+					if (assetType.Class == AssetTypeClass.Reference)
+					{
+						await Connection.ExecuteAsync(@"
 								drop table if exists #AssetActiveKey;
 
 							   select  A.Uid,                                                
@@ -779,13 +775,13 @@ namespace d360.model
 								inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
 								where L.LoadID = @ID
 							", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
-						}
-						else
-						{
+					}
+					else
+					{
 
-							if ((calculateParentHashByUid || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
-							{
-								await Connection.ExecuteAsync(@"
+						if ((calculateParentHashByUid || assetType.Class == AssetTypeClass.Model) && intersectTypeId.HasValue)
+						{
+							await Connection.ExecuteAsync(@"
 									declare @assetttypeID int = (select @atID);
 									declare @fieldtypeid int = 0;
 
@@ -847,10 +843,10 @@ namespace d360.model
 									where   L.LoadID = @ID
 									", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
 
-							}
-							else
-							{
-								await Connection.ExecuteAsync(@"
+						}
+						else
+						{
+							await Connection.ExecuteAsync(@"
 
 								drop table if exists #AssetActiveKey;
 
@@ -877,55 +873,55 @@ namespace d360.model
 								from LoadItem L
 								inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
 								where L.LoadID = @ID", new { atID = assetType.ID, load.ID, maxLevel }, transaction: trans, commandTimeout: timeout);
-							}
 						}
-
-						trans.Commit();
 					}
-					catch (Exception)
-					{
-						try
-						{
-							if (trans != null)
-							{
-								trans.Rollback();
-							}
-						}
-						catch
-						{
-						}
 
-						throw;
+					trans.Commit();
+				}
+				catch (Exception)
+				{
+					try
+					{
+						if (trans != null)
+						{
+							trans.Rollback();
+						}
+					}
+					catch
+					{
+					}
+
+					throw;
+				}
+			}
+
+			List<AssetUpdate> putAssets = new List<AssetUpdate>();
+			List<AssetInsert> postAssets = new List<AssetInsert>();
+
+			List<LoadItem> loadItems = new List<LoadItem>();
+			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
+
+
+			Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
+
+			//build level info for models
+			if (assetType.Class == AssetTypeClass.Model)
+			{
+				for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
+				{
+					AssetTypeLevel level = AssetTypeLevels.Where(l => l.AssetTypeID == assetType.ID).FirstOrDefault(l => l.Level == i);
+
+					if (level != null)
+					{
+						assetTypeLevels.Add(i, level.Name);
+					}
+					else
+					{
+						assetTypeLevels.Add(i, $"Level {i}");
 					}
 				}
 
-				List<AssetUpdate> putAssets = new List<AssetUpdate>();
-				List<AssetInsert> postAssets = new List<AssetInsert>();
-
-				List<LoadItem> loadItems = new List<LoadItem>();
-				List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
-
-
-				Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
-
-				//build level info for models
-				if (assetType.Class == AssetTypeClass.Model)
-				{
-					for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
-					{
-						AssetTypeLevel level = AssetTypeLevels.Where(l => l.AssetTypeID == assetType.ID).FirstOrDefault(l => l.Level == i);
-
-						if (level != null)
-						{
-							assetTypeLevels.Add(i, level.Name);
-						}
-						else
-						{
-							assetTypeLevels.Add(i, $"Level {i}");
-						}
-					}
-
-					loadItems = (await QueryAsync<LoadItem>(@"
+				loadItems = (await QueryAsync<LoadItem>(@"
 						select I.*, L.[Level] from LoadItem I
 						outer apply (
 							select      coalesce(max(L.[Level]), 1) as [Level]
@@ -946,186 +942,181 @@ namespace d360.model
 								where		ATT.[ObjectID] = @ObjectID
 						) L
 						where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID, atID = assetType.ID }, timeout: timeout)).ToList();
-				}
-				else
+			}
+			else
+			{
+				loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
+			}
+
+			//do this in blocks of n items at a time to avoid loading everything in one shot.
+			int loopSize = defaultBulkLoadLoopSize;
+
+			//check for an override to the default.
+			if (int.TryParse(ConfigurationManager.AppSettings["BulkLoadLoopSize"], out int tempLoopSize))
+			{
+				loopSize = tempLoopSize >= 0 ? tempLoopSize : defaultBulkLoadLoopSize;
+			}
+
+			int currentLocation = 0;
+			int numberOfLoops = (int)Math.Ceiling((decimal)(loadItems.Count - currentLocation) / loopSize);
+			int beginItemNumber = currentLocation;
+			int endItemNumber = (currentLocation + loopSize) > loadItems.Count ? loadItems.Count : currentLocation + loopSize;
+			int rowIndexStartNumber = 2;
+
+			for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+			{
+				//bulk load rowindex starts with 2!
+				List<LoadItemColumn> loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id and RowIndex between @beginItemNumber and @endItemNumber", new { id = load.ID, beginItemNumber = beginItemNumber + rowIndexStartNumber, endItemNumber = endItemNumber + rowIndexStartNumber }).ToList();
+
+				//create API models                    
+				for (int currentIndex = beginItemNumber; currentIndex < endItemNumber; currentIndex++)
 				{
-					loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
-				}
+					LoadItem item = loadItems[currentIndex];
+					List<string> fieldsToSkip = new List<string>();
+					string assetTypeLevel = null;
 
-				//do this in blocks of n items at a time to avoid loading everything in one shot.
-				int loopSize = defaultBulkLoadLoopSize;
+					List<LoadItemColumn> rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
 
-				//check for an override to the default.
-				if (int.TryParse(ConfigurationManager.AppSettings["BulkLoadLoopSize"], out int tempLoopSize))
-				{
-					loopSize = tempLoopSize >= 0 ? tempLoopSize : defaultBulkLoadLoopSize;
-				}
-
-				int currentLocation = 0;
-				int numberOfLoops = (int)Math.Ceiling((decimal)(loadItems.Count - currentLocation) / loopSize);
-				int beginItemNumber = currentLocation;
-				int endItemNumber = (currentLocation + loopSize) > loadItems.Count ? loadItems.Count : currentLocation + loopSize;
-				int rowIndexStartNumber = 2;
-
-				for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
-				{
-					//bulk load rowindex starts with 2!
-					List<LoadItemColumn> loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id and RowIndex between @beginItemNumber and @endItemNumber", new { id = load.ID, beginItemNumber = beginItemNumber + rowIndexStartNumber, endItemNumber = endItemNumber + rowIndexStartNumber }).ToList();
-
-					//create API models                    
-					for (int currentIndex = beginItemNumber; currentIndex < endItemNumber; currentIndex++)
+					if (assetType.Class == AssetTypeClass.Model)
 					{
-						LoadItem item = loadItems[currentIndex];
-						List<string> fieldsToSkip = new List<string>();
-						string assetTypeLevel = null;
+						assetTypeLevel = assetTypeLevels[item.Level];
 
-						List<LoadItemColumn> rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
-
-						if (assetType.Class == AssetTypeClass.Model)
+						//ignore parent key fields, not needed for API
+						IQueryable<FieldType> keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
+						foreach (FieldType k in keyFields)
 						{
-							assetTypeLevel = assetTypeLevels[item.Level];
-
-							//ignore parent key fields, not needed for API
-							IQueryable<FieldType> keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
-							foreach (FieldType k in keyFields)
-							{
-								fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
-							}
+							fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
 						}
+					}
 
-						if (!item.AssetUid.HasValue)
+					if (!item.AssetUid.HasValue)
+					{
+						AssetInsert insert = new AssetInsert
 						{
-							AssetInsert insert = new AssetInsert
-							{
-								ExecutionItemUid = item.ExecutionItemUid,
-								Fields = new Dictionary<string, string>()
-							};
+							ExecutionItemUid = item.ExecutionItemUid,
+							Fields = new Dictionary<string, string>()
+						};
 
-							//resolve model parent
-							if (assetType.Class == AssetTypeClass.Model && item.Level > 1)
-							{
-								string parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1);
-								string itemPath = await GetModelPathForLevel(item, assetType, item.Level);
+						//resolve model parent
+						if (assetType.Class == AssetTypeClass.Model && item.Level > 1)
+						{
+							string parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1).ConfigureAwait(false);
+							string itemPath = await GetModelPathForLevel(item, assetType, item.Level).ConfigureAwait(false);
 
-								Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
+							Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
 								cross apply GetAssetKeyHashById(A.ID) S
 								cross apply dbo.GetAssetTextPathById(A.ID, '>') TP
 								where a.AssetTypeID = @assetTypeId 
 								and TP.TextPath like @textPath
 								and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID, textPath = itemPath })).FirstOrDefault();
 
-								if (parentUid.HasValue)
-								{
-									insert.ParentUid = parentUid;
-								}
-							}
-
-							foreach (LoadItemColumn field in rowColumns)
+							if (parentUid.HasValue)
 							{
-								LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
-
-								//resolve parent
-								if (parentAssetType != null && col.Name == parentAssetType.Name)
-								{
-									if (!string.IsNullOrWhiteSpace(field.Value))
-									{
-										string parentUid = "";
-										int endIndex = field.Value.LastIndexOf(']');
-										int startIndex = field.Value.LastIndexOf('[') + 1;
-										if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
-										{
-											parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
-											insert.ParentUid = new Guid(parentUid);
-										}
-									}
-								}
-								else
-								{
-									if (!string.IsNullOrEmpty(field.Value) && !fieldsToSkip.Contains(col.Name))
-									{
-										if (!string.IsNullOrEmpty(assetTypeLevel) && col.Name.StartsWith($"{assetTypeLevel} "))
-										{
-											insert.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
-										}
-										else
-										{
-											insert.Fields.Add(col.Name, field.Value);
-										}
-									}
-								}
+								insert.ParentUid = parentUid;
 							}
-
-							postAssets.Add(insert);
 						}
-						else
+
+						foreach (LoadItemColumn field in rowColumns)
 						{
-							AssetUpdate update = new AssetUpdate
+							LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
+
+							//resolve parent
+							if (parentAssetType != null && col.Name == parentAssetType.Name)
 							{
-								ExecutionItemUid = item.ExecutionItemUid
-							};
-
-							if ((parentAssetType != null || assetType.Class == AssetTypeClass.Model) && item.ParentAssetUid.HasValue)
-							{
-								update.ParentUid = item.ParentAssetUid;
-							}
-
-							update.Uid = ((Guid)item.AssetUid);
-							update.Fields = new Dictionary<string, string>();
-
-							foreach (LoadItemColumn field in rowColumns)
-							{
-								LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
-
-								if (parentAssetType != null && col.Name == parentAssetType.Name)
+								if (!string.IsNullOrWhiteSpace(field.Value))
 								{
-									continue;
-								}
-								else if (!fieldsToSkip.Contains(col.Name))
-								{
-									if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
+									string parentUid = "";
+									int endIndex = field.Value.LastIndexOf(']');
+									int startIndex = field.Value.LastIndexOf('[') + 1;
+									if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
 									{
-										update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
+										parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+										insert.ParentUid = new Guid(parentUid);
+									}
+								}
+							}
+							else
+							{
+								if (!string.IsNullOrEmpty(field.Value) && !fieldsToSkip.Contains(col.Name))
+								{
+									if (!string.IsNullOrEmpty(assetTypeLevel) && col.Name.StartsWith($"{assetTypeLevel} "))
+									{
+										insert.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
 									}
 									else
 									{
-										update.Fields.Add(col.Name, field.Value);
+										insert.Fields.Add(col.Name, field.Value);
 									}
 								}
 							}
-
-							putAssets.Add(update);
 						}
+
+						postAssets.Add(insert);
 					}
-
-					beginItemNumber += loopSize;
-					endItemNumber += loopSize;
-
-					if (endItemNumber > loadItems.Count)
+					else
 					{
-						endItemNumber = loadItems.Count;
+						AssetUpdate update = new AssetUpdate
+						{
+							ExecutionItemUid = item.ExecutionItemUid
+						};
+
+						if ((parentAssetType != null || assetType.Class == AssetTypeClass.Model) && item.ParentAssetUid.HasValue)
+						{
+							update.ParentUid = item.ParentAssetUid;
+						}
+
+						update.Uid = ((Guid)item.AssetUid);
+						update.Fields = new Dictionary<string, string>();
+
+						foreach (LoadItemColumn field in rowColumns)
+						{
+							LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
+
+							if (parentAssetType != null && col.Name == parentAssetType.Name)
+							{
+								continue;
+							}
+							else if (!fieldsToSkip.Contains(col.Name))
+							{
+								if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
+								{
+									update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
+								}
+								else
+								{
+									update.Fields.Add(col.Name, field.Value);
+								}
+							}
+						}
+
+						putAssets.Add(update);
 					}
 				}
 
-				if (putAssets.Any())
-				{
-					ApiExecution execution = getPromoteApiExecution(load, putAssets.Count);
-					ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
-					load.PutExecutionID = executionInfo.ExecutionID;
-				}
+				beginItemNumber += loopSize;
+				endItemNumber += loopSize;
 
-				if (postAssets.Any())
+				if (endItemNumber > loadItems.Count)
 				{
-					ApiExecution execution = getPromoteApiExecution(load, postAssets.Count);
-					ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
-					load.PostExecutionID = executionInfo.ExecutionID;
+					endItemNumber = loadItems.Count;
 				}
-
-				await SaveChangesAsync();
 			}
-			catch (Exception)
+
+			if (putAssets.Any())
 			{
-				throw;
+				ApiExecution execution = getPromoteApiExecution(load, putAssets.Count);
+				ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
+				load.PutExecutionID = executionInfo.ExecutionID;
 			}
+
+			if (postAssets.Any())
+			{
+				ApiExecution execution = getPromoteApiExecution(load, postAssets.Count);
+				ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
+				load.PostExecutionID = executionInfo.ExecutionID;
+			}
+
+			await SaveChangesAsync();
 		}
 
 		private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
@@ -1224,138 +1215,136 @@ namespace d360.model
 
 			await GenerateExecutionItemUids(load, timeout);
 
-			try
+			IntersectType intersectType = relationshipRepository.GetIntersectTypeByUid((Guid)load.IntersectTypeUid);
+
+			if (intersectType == null)
 			{
-				IntersectType intersectType = relationshipRepository.GetIntersectTypeByUid((Guid)load.IntersectTypeUid);
+				throw new Exception($"intersect type for uid {load.IntersectTypeUid} not found");
+			}
 
-				if (intersectType == null)
+			Guid? subjectUid = (await QueryAsync<Guid?>("select [uid] from AssetType where Object = @subject and ObjectID = @subjectID", new { intersectType.Subject, intersectType.SubjectID })).FirstOrDefault();
+			Guid? objectUid = (await QueryAsync<Guid?>("select [uid] from AssetType where Object = @object and ObjectID = @objectID", new { intersectType.Object, intersectType.ObjectID })).FirstOrDefault();
+
+			if (subjectUid == null || objectUid == null)
+			{
+				throw new Exception($"Intersect subject or asset not found");
+			}
+
+			AssetType subjectAssetType = assetRepository.GetAssetTypeByUID((Guid)subjectUid);
+			AssetType objectAssetType = assetRepository.GetAssetTypeByUID((Guid)objectUid);
+
+			if (subjectAssetType == null)
+			{
+				throw new Exception($"Could not find subject asset type for uid [{subjectUid}]");
+			}
+
+			if (objectAssetType == null)
+			{
+				throw new Exception($"Could not find object asset type for uid [{objectUid}]");
+			}
+
+			bool subjectIsReferenceItemType = subjectAssetType.Object == "ReferenceItemType" && subjectAssetType.ObjectID == 0;
+			bool objectIsReferenceItemType = objectAssetType.Object == "ReferenceItemType" && objectAssetType.ObjectID == 0;
+
+			// get the load columns
+			List<LoadColumn> columns = LoadColumns.Where(x => x.LoadID == load.ID).ToList();
+			if (columns == null)
+			{
+				throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{load.ID}]");
+			}
+
+			List<LoadColumn> fieldColumns = columns.ToList();
+
+			int subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, subjectAssetType.Name, intersectType.SubjectID, fieldColumns);
+			int objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, objectAssetType.Name, intersectType.ObjectID, fieldColumns);
+
+			List<LoadItem> loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
+			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
+			List<LoadItemColumn> loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id", new { id = load.ID }).ToList();
+
+
+			if (operation == BulkRelationshipOperation.Relate)
+			{
+				RelationshipInserts upserts = new RelationshipInserts();
+				foreach (LoadItem item in loadItems)
 				{
-					throw new Exception($"intersect type for uid {load.IntersectTypeUid} not found");
-				}
-
-				Guid? subjectUid = (await QueryAsync<Guid?>("select [uid] from AssetType where Object = @subject and ObjectID = @subjectID", new { intersectType.Subject, intersectType.SubjectID })).FirstOrDefault();
-				Guid? objectUid = (await QueryAsync<Guid?>("select [uid] from AssetType where Object = @object and ObjectID = @objectID", new { intersectType.Object, intersectType.ObjectID })).FirstOrDefault();
-
-				if (subjectUid == null || objectUid == null)
-				{
-					throw new Exception($"Intersect subject or asset not found");
-				}
-
-				AssetType subjectAssetType = assetRepository.GetAssetTypeByUID((Guid)subjectUid);
-				AssetType objectAssetType = assetRepository.GetAssetTypeByUID((Guid)objectUid);
-
-				if (subjectAssetType == null)
-				{
-					throw new Exception($"Could not find subject asset type for uid [{subjectUid}]");
-				}
-
-				if (objectAssetType == null)
-				{
-					throw new Exception($"Could not find object asset type for uid [{objectUid}]");
-				}
-
-				bool subjectIsReferenceItemType = subjectAssetType.Object == "ReferenceItemType" && subjectAssetType.ObjectID == 0;
-				bool objectIsReferenceItemType = objectAssetType.Object == "ReferenceItemType" && objectAssetType.ObjectID == 0;
-
-				// get the load columns
-				List<LoadColumn> columns = LoadColumns.Where(x => x.LoadID == load.ID).ToList();
-				if (columns == null)
-				{
-					throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{load.ID}]");
-				}
-
-				List<LoadColumn> fieldColumns = columns.ToList();
-
-				int subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, subjectAssetType.Name, intersectType.SubjectID, fieldColumns);
-				int objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, objectAssetType.Name, intersectType.ObjectID, fieldColumns);
-
-				List<LoadItem> loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
-				List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
-				List<LoadItemColumn> loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id", new { id = load.ID }).ToList();
-
-
-				if (operation == BulkRelationshipOperation.Relate)
-				{
-					RelationshipInserts upserts = new RelationshipInserts();
-					foreach (LoadItem item in loadItems)
+					RelationshipInsert upsert = new RelationshipInsert
 					{
-						RelationshipInsert upsert = new RelationshipInsert
+						ExecutionItemUid = item.ExecutionItemUid
+					};
+					item.StatusMessage = "";
+					item.Status = null;
+
+					List<LoadItemColumn> rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
+
+					foreach (LoadItemColumn field in rowColumns)
+					{
+						if (field.ColumnIndex == subjectAssetIDFieldIndex)
 						{
-							ExecutionItemUid = item.ExecutionItemUid
-						};
-						item.StatusMessage = "";
-						item.Status = null;
+							Guid uid = Guid.Empty;
 
-						List<LoadItemColumn> rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
-
-						foreach (LoadItemColumn field in rowColumns)
-						{
-							if (field.ColumnIndex == subjectAssetIDFieldIndex)
+							if (!Guid.TryParse(field.Value, out uid))
 							{
-								Guid uid = Guid.Empty;
-
-								if (!Guid.TryParse(field.Value, out uid))
-								{
-									item.Status = false;
-									item.StatusMessage += "Subject asset uid is not in a valid format.";
-								}
-
-								upsert.SubjectAssetUid = uid;
+								item.Status = false;
+								item.StatusMessage += "Subject asset uid is not in a valid format.";
 							}
-							else if (field.ColumnIndex == objectAssetIDFieldIndex)
-							{
-								Guid uid = Guid.Empty;
 
-								if (!Guid.TryParse(field.Value, out uid))
-								{
-									item.Status = false;
-									item.StatusMessage += "Subject asset uid is not in a valid format.";
-								}
-
-								upsert.ObjectAssetUid = uid;
-							}
-							else
-							{
-								LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
-								upsert.Fields.Add(col.Name, field.Value);
-							}
+							upsert.SubjectAssetUid = uid;
 						}
-
-						if (item.Status == false)
+						else if (field.ColumnIndex == objectAssetIDFieldIndex)
 						{
-							await Connection.ExecuteAsync(@"
+							Guid uid = Guid.Empty;
+
+							if (!Guid.TryParse(field.Value, out uid))
+							{
+								item.Status = false;
+								item.StatusMessage += "Subject asset uid is not in a valid format.";
+							}
+
+							upsert.ObjectAssetUid = uid;
+						}
+						else
+						{
+							LoadColumn col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
+							upsert.Fields.Add(col.Name, field.Value);
+						}
+					}
+
+					if (item.Status == false)
+					{
+						await Connection.ExecuteAsync(@"
 								update  LoadItem 
 								set     Status = 0, 
 										StatusMessage = @msg 
 								where   LoadID = @id 
 										and RowIndex = @rowIndex",
-										new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex }, commandTimeout: timeout);
-						}
-						else
-						{
-							upserts.Add(upsert);
-						}
+									new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex }, commandTimeout: timeout);
 					}
-
-					if (upserts.Any())
+					else
 					{
-						ApiExecution execution = getRelateApiExecution(load, upserts.Count);
-						ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
-						load.PostExecutionID = executionInfo.ExecutionID;
+						upserts.Add(upsert);
 					}
 				}
 
-				if (operation == BulkRelationshipOperation.Unrelate)
+				if (upserts.Any())
 				{
-					RelationshipDeletes deletes = new RelationshipDeletes();
+					ApiExecution execution = getRelateApiExecution(load, upserts.Count);
+					ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
+					load.PostExecutionID = executionInfo.ExecutionID;
+				}
+			}
 
-					if (Connection.State == ConnectionState.Closed)
-					{
-						await Connection.OpenAsync();
-					}
+			if (operation == BulkRelationshipOperation.Unrelate)
+			{
+				RelationshipDeletes deletes = new RelationshipDeletes();
 
-					//populate intersect IDs
-					await Connection.ExecuteAsync($@"update L
+				if (Connection.State == ConnectionState.Closed)
+				{
+					await Connection.OpenAsync();
+				}
+
+				//populate intersect IDs
+				await Connection.ExecuteAsync($@"update L
 						set     L.IntersectUid = coalesce(I.[uid], 0x0)
 						from    LoadItem L
 								inner join LoadItemColumn CS on CS.RowIndex = L.RowIndex and CS.ColumnIndex = @subjectAssetIDFieldIndex and CS.LoadID = @id
@@ -1388,7 +1377,7 @@ namespace d360.model
 
 						", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid }, commandTimeout: timeout);
 
-					List<RelationshipDelete> results = (await QueryAsync<RelationshipDelete>(@"
+				List<RelationshipDelete> results = (await QueryAsync<RelationshipDelete>(@"
 						select      L.ExecutionItemUid, 
 									cast(0 as bit) as [Cascade], 
 									L.IntersectUid as [Uid]
@@ -1396,28 +1385,17 @@ namespace d360.model
 						where   L.LoadID = @id and L.Status is null
 						", new { id = load.ID, intersectTypeUid = intersectType.uid }, timeout: timeout)).ToList();
 
-					deletes.AddRange(results);
+				deletes.AddRange(results);
 
-					if (deletes.Any())
-					{
-						BulkLoadExecutionFields_Relationships fields = new BulkLoadExecutionFields_Relationships
-						{
-							IntersectTypeUid = intersectType.uid,
-							LoadID = load.ID
-						};
-
-						ApiExecution execution = getRelateApiExecution(load, deletes.Count);
-						ApiExecutionInfo executionInfo = await relationshipRepository.BulkDeleteRelationships(intersectType.uid, deletes, execution, false);
-						load.PostExecutionID = executionInfo.ExecutionID;
-					}
+				if (deletes.Any())
+				{
+					ApiExecution execution = getRelateApiExecution(load, deletes.Count);
+					ApiExecutionInfo executionInfo = await relationshipRepository.BulkDeleteRelationships(intersectType.uid, deletes, execution, false);
+					load.PostExecutionID = executionInfo.ExecutionID;
 				}
+			}
 
-				await SaveChangesAsync();
-			}
-			catch (Exception)
-			{
-				throw;
-			}
+			await SaveChangesAsync();
 		}
 
 		#endregion

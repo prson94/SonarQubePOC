@@ -24,9 +24,9 @@ namespace d360.model.validators
         {
             bool isValid = true;
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "resourceuid"))
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == "resourceuid"))
             {
-                string resourceString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "resourceuid").Value;
+                string resourceString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "resourceuid").Value;
                
                 if (Guid.TryParse(resourceString, out Guid resourceUID))
                 {
@@ -50,9 +50,9 @@ namespace d360.model.validators
         {
             bool isValid = true;
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "assetuid"))
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == "assetuid"))
             {
-                string assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
+                string assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "assetuid").Value;
                 
                 if (Guid.TryParse(assetUIDString, out Guid assetUID))
                 {
@@ -76,9 +76,9 @@ namespace d360.model.validators
         {
             bool isValid = true;
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName.ToLower()))
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == parameterName.ToLowerInvariant()))
             {
-                string sdateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName.ToLower()).Value;
+                string sdateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == parameterName.ToLowerInvariant()).Value;
                 
                 if (!DateTime.TryParse(sdateString, out DateTime sdate))
                 {
@@ -94,9 +94,9 @@ namespace d360.model.validators
         {
             bool isValid = true;
 
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "surveytypeuid"))
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == "surveytypeuid"))
             {
-                string surveytypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "surveytypeuid").Value;
+                string surveytypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "surveytypeuid").Value;
                 
                 if (Guid.TryParse(surveytypeUIDString, out Guid surveytypeUID))
                 {
@@ -124,7 +124,7 @@ namespace d360.model.validators
             {
                 queryParams.ToList().ForEach(x =>
                 {
-                    switch (x.Key.ToLower())
+                    switch (x.Key.ToLowerInvariant())
                     {
                         case "surveytypeuid":
                             Guid actionTypeUid;
@@ -148,6 +148,9 @@ namespace d360.model.validators
                                 count++;
                             }
                             break;
+                        default:
+                            //Nothing to do here.
+                            break;
                     }
                 });
             }
@@ -160,7 +163,7 @@ namespace d360.model.validators
 
             foreach (KeyValuePair<string, string> param in queryParams)
             {
-                switch (param.Key.ToLower())
+                switch (param.Key.ToLowerInvariant())
                 {
                     case "assettypeuid":
                         if (!Guid.TryParse(param.Value, out Guid _))
@@ -187,7 +190,7 @@ namespace d360.model.validators
                         }
                         break;
                     case "_order":
-                        switch (param.Value.ToLower())
+                        switch (param.Value.ToLowerInvariant())
                         {
                             case "name":
                             case "validfordays":
@@ -198,6 +201,9 @@ namespace d360.model.validators
                             default:
                                 return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidOrderSurvey);
                         }
+                        break;
+                    default:
+                        //Nothing to do here.
                         break;
                 }
             }

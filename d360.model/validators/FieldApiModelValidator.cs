@@ -149,7 +149,7 @@ namespace d360.model.validators
                     
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        List<string> restrictedTypes = new List<string>() {
+                        List<string> restrictedTypes = new List<string> {
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ResourceType.ToString()
                         };
@@ -209,7 +209,7 @@ namespace d360.model.validators
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, string.Format(FieldErrors.JsonFiledNotPartAssetType, jsonAttribute.FieldName));
                         }
                         
-                        List<string> allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
+                        List<string> allowedTypes = new List<string> { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
                         
                         if (!allowedTypes.Contains(jsonAttribute.DataType))
                         {
@@ -232,7 +232,7 @@ namespace d360.model.validators
                     
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        List<string> restrictedTypes = new List<string>() {
+                        List<string> restrictedTypes = new List<string> {
                             SystemObjects.OrganizationType.ToString(),
                             SystemObjects.ReferenceItemType.ToString(),
                             SystemObjects.ResourceType.ToString()
@@ -259,7 +259,7 @@ namespace d360.model.validators
                     
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        List<string> allowedTypes = new List<string>() { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString(), SystemObjects.TaskType.ToString() };
+                        List<string> allowedTypes = new List<string> { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString(), SystemObjects.TaskType.ToString() };
                         if (!allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.AssetTypeError, FieldErrors.SpecificHaveTagFieldType);

@@ -16,7 +16,7 @@ namespace d360.model
             string mandrillApiKey = null,
             string mandrillSubAccount = null)
         {
-            UriSecurityContextProvider sec = new UriSecurityContextProvider()
+            UriSecurityContextProvider sec = new UriSecurityContextProvider
             {
                 CompanyID = companyId,
                 ResourceID = resourceId,
@@ -52,7 +52,7 @@ namespace d360.model
 
         public static CommunityContext CreateCommunityContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, string connectionString = null)
         {
-            UriSecurityContextProvider sec = new UriSecurityContextProvider()
+            UriSecurityContextProvider sec = new UriSecurityContextProvider
             {
                 CompanyID = companyId,
                 ResourceID = resourceId,

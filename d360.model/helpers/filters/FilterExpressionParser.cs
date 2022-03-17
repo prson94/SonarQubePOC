@@ -18,9 +18,9 @@ namespace d360.model.helpers
         private readonly List<int> filteredFieldIDs = new List<int>();
         private readonly FilterExpressionParseType parseType;
         private readonly List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
-        private readonly List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
-        private readonly bool registerTokensAsFields = false;
+        private readonly bool registerTokensAsFields;
 
         public FilterExpressionParser(
             IFilterDataProvider fdp,
@@ -498,7 +498,7 @@ namespace d360.model.helpers
     public class FilterExpressionParser2 : IFilterExpressionParser
     {
         private readonly IFilterDataProvider dataProvider;
-        private readonly List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
         private IReadOnlyList<DefaultFilter> GetAllowedDefaultFields(FilterFilterExpressionParserSettings settings)
         {
@@ -659,7 +659,7 @@ namespace d360.model.helpers
             {
                 if (valuesMap.Any(x => x.Item1.ToLower() == tokens[j].ToLower()))
                 {
-                    string value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
+                    string value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLowerInvariant()).Item2;
                     tokens[j] = value;
                 }
             }

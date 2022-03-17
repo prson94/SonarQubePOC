@@ -928,7 +928,6 @@ namespace d360.model.DataAccessLayer
 
 						string relationObject = relationInfo.Object;
 						int relationObjectId = relationInfo.ObjectID;
-						int relationIntersectId = relationInfo.IntersectTypeID;
 
 						relation.Direction = i.Direction ?? FieldTypeComplexLookupRelationDirection.Forward;
 						relation.RelationType = i.RelationType ?? ComplexLookupRelationType.StandardRelationship;
@@ -1825,7 +1824,6 @@ namespace d360.model.DataAccessLayer
 
 					fieldTypeNamesToDelete.Add(f.Name);
 				}
-
 			};
 
 			if (model.RelationshipTypeUid != null)
@@ -2238,7 +2236,6 @@ namespace d360.model.DataAccessLayer
 			var scoringInfo = new List<dynamic>();
 			int count = 0;
 			var definition = ftl.ParseComplexLookupDefinition();
-			var maps = definition.GetFieldMapings();
 			List<string> selects = new List<string>();
 			List<string> wheres = new List<string>();
 			List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping
@@ -2447,7 +2444,7 @@ namespace d360.model.DataAccessLayer
 			List<string> joins = new List<string>();
 			List<string> wheres = new List<string>();
 
-			int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs);
+			int? assetTypeId = await GetAssetTypeIdForRefListField(dbArgs).ConfigureAwait(false);
 
 			wheres.Add("A.AssetTypeID = @assetTypeId");
 			wheres.Add("not exists(select 1 from dbo.AssetTypesUserCantRead(@resourceid) u where u.AssetTypeID = A.AssetTypeID)");

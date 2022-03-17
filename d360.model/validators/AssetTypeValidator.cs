@@ -304,16 +304,16 @@ namespace d360.core.validators
 
 		public bool IsValidOrderByFieldForGetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			if (!queryParams.Any(p => p.Key.Trim().ToLower() == "_order"))
+			if (!queryParams.Any(p => p.Key.Trim().ToLowerInvariant() == "_order"))
 			{
 				return true;
 			}
 
-			string isHierachyItem = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_ishierachyitem").Value;
+			string isHierachyItem = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "_ishierachyitem").Value;
 
 			if (!string.IsNullOrEmpty(isHierachyItem))
 			{
-				string order = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
+				string order = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
 				if (!string.IsNullOrEmpty(order))
 				{
 					int orderID = 0;
@@ -333,11 +333,11 @@ namespace d360.core.validators
 				return false;
 			}
 
-			string fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
+			string fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "_order").Value;
 
 			string[] validFields = { "name", "sourceid", "textpath", "code" };
 
-			bool doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
+			bool doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLowerInvariant() == fieldName.ToLowerInvariant());
 			List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
 
 			if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
@@ -346,9 +346,9 @@ namespace d360.core.validators
 				defaultAssetFields.Add("color");
 			}
 
-			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+			if (queryParams.ToList().Any(x => x.Key.ToLowerInvariant() == "_includeparent"))
 			{
-				string value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+				string value = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "_includeparent").Value;
 				bool.TryParse(value, out bool includeParent);
 				if (includeParent)
 				{
@@ -356,20 +356,20 @@ namespace d360.core.validators
 				}
 			}
 
-			return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLower());
+			return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLowerInvariant());
 		}
 
 		public bool IsValidOrderDirectionGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			string[] allowedValues = new string[] { "asc", "desc" };
-			KeyValuePair<string, string> directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+			KeyValuePair<string, string> directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLowerInvariant() == "_direction");
 
 			if (directionFilter.Key == null)
 			{
 				return true;
 			}
 
-			if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+			if (!allowedValues.Contains(directionFilter.Value.Trim().ToLowerInvariant()))
 			{
 				return false;
 			}
@@ -379,9 +379,9 @@ namespace d360.core.validators
 
 		public bool IsValidOwnersGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
 		{
-			if (queryParams.Any(x => x.Key.Trim().ToLower() == paramName))
+			if (queryParams.Any(x => x.Key.Trim().ToLowerInvariant() == paramName))
 			{
-				string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == paramName).Value.Split(',');
+				string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLowerInvariant() == paramName).Value.Split(',');
 				foreach (string owner in owners)
 				{
 					if (!Guid.TryParse(owner, out Guid ownerguid))
@@ -406,7 +406,7 @@ namespace d360.core.validators
 
 		public bool IsValidRelationFilter(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid") && queryParams.ToList().Any(k => k.Key.ToLower() == "_relationfilter"))
+			if (queryParams.ToList().Any(k => k.Key.ToLowerInvariant() == "_predicateuid") && queryParams.ToList().Any(k => k.Key.ToLowerInvariant() == "_relationfilter"))
 			{
 				return false;
 			}
@@ -416,9 +416,9 @@ namespace d360.core.validators
 
 		public bool IsValidIncludeTotalFlag(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+			if (queryParams.ToList().Any(k => k.Key.ToLowerInvariant() == "_includetotal"))
 			{
-				KeyValuePair<string, string> val = queryParams.ToList().First(k => k.Key.ToLower() == "_includetotal");
+				KeyValuePair<string, string> val = queryParams.ToList().First(k => k.Key.ToLowerInvariant() == "_includetotal");
 
 				if (!bool.TryParse(val.Value, out _))
 				{

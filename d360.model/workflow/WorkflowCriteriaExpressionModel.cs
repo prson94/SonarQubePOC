@@ -39,7 +39,7 @@ namespace d360.model.workflow
             CriteriaOperator @operator = operatorFromString((string)element.Attribute("Operator"));
             CriteriaConnector @connector = criteriaConnectorFromString((string)element.Attribute("Connector"));
 
-            List<CriteriaOperator> noValueOperators = new List<CriteriaOperator>()
+            List<CriteriaOperator> noValueOperators = new List<CriteriaOperator>
             {
                 CriteriaOperator.Changed,
                 CriteriaOperator.Populated,
@@ -175,7 +175,7 @@ namespace d360.model.workflow
                         return null;
                     }
 
-                    return (val ?? "").ToUpper() == bool.TrueString.ToUpper();
+                    return (val ?? "").ToUpperInvariant() == bool.TrueString.ToUpperInvariant();
                 case CriteriaValueDataType.String:
                     return (val ?? "").Trim().ToUpper();
                 case CriteriaValueDataType.Integer:
@@ -355,7 +355,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                     return (bool?)val == (bool?)Value;
                 case CriteriaValueDataType.String:
-                    return string.Compare((string)val, (string)Value, true) == 0;
+                    return string.Compare((string)val, (string)Value, true, CultureInfo.InvariantCulture) == 0;
                 case CriteriaValueDataType.Integer:
                     return (int?)val == (int?)Value;
                 case CriteriaValueDataType.Double:
@@ -374,7 +374,7 @@ namespace d360.model.workflow
                 case CriteriaValueDataType.Boolean:
                     return (bool?)val != (bool?)Value;
                 case CriteriaValueDataType.String:
-                    return string.Compare((string)val, (string)Value, true) != 0;
+                    return string.Compare((string)val, (string)Value, true, CultureInfo.InvariantCulture) != 0;
                 case CriteriaValueDataType.Integer:
                     return (int?)val != (int?)Value;
                 case CriteriaValueDataType.Double:

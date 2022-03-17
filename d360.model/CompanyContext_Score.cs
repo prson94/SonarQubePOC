@@ -910,7 +910,7 @@ namespace d360.model
 		{
 			ObjectStatisticTileModel model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
 
-			List<RawObjectStatistic> list = Database.Connection.Query<RawObjectStatistic>("[dbo].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
+			List<RawObjectStatistic> list = Database.Connection.Query<RawObjectStatistic>("[dbo].[GetObjectStatistics] @type, @id", new { type = new DbString { Value = type.ToString(), IsAnsi = true }, id }).ToList();
 
 			list.ForEach(i =>
 			{

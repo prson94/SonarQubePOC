@@ -15,7 +15,7 @@ namespace d360.model.workflow
         {
             if (xml == null)
             {
-                throw new Exception("INVALID XML SPECIFIED FOR FORM MODEL");
+                throw new ArgumentNullException(nameof(xml), "INVALID XML SPECIFIED FOR FORM MODEL");
             }
 
             WorkflowFormModel model = new WorkflowFormModel
@@ -64,12 +64,10 @@ namespace d360.model.workflow
             {
                 WorkflowFormFieldModel res = form.Fields.Where(x => x.ID == id).FirstOrDefault();
 
-                if (res == null)
+                if (res != null)
                 {
-                    continue;
-                };
-
-                vals.Add((res.Value ?? "").Trim());
+                    vals.Add((res.Value ?? "").Trim());
+                };                
             }
 
             return vals;

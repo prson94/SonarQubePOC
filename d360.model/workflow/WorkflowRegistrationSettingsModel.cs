@@ -13,7 +13,7 @@ namespace d360.model.workflow
 
             if (xml == null)
             {
-                throw new Exception("INVALID XML SPECIFIED");
+                throw new ArgumentNullException(nameof(xml), "INVALID XML SPECIFIED");
             }
 
             if (xml.HasElements)
@@ -25,7 +25,7 @@ namespace d360.model.workflow
                     visString = xml.Element("Visible").Value;
                 }
 
-                if (visString == "1" || (visString ?? "").ToUpper() == "TRUE")
+                if (visString == "1" || (visString ?? "").ToUpperInvariant() == "TRUE")
                 {
                     vis = true;
                 }
@@ -38,7 +38,6 @@ namespace d360.model.workflow
             return new WorkflowRegistrationSettingsModel
             {
                 Visible = vis
-
             };
         }
     }

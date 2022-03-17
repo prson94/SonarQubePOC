@@ -823,7 +823,7 @@ namespace d360.model
 
 		public AssetDetail GetParentObject(int id, SystemObjects obj)
 		{
-			PredicateType predicateType = PredicateType.InterTypeHierarchy;
+			PredicateType predicateType;
 
 			switch (obj)
 			{
@@ -2850,7 +2850,6 @@ namespace d360.model
 
 		public Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
 		{
-			DynamicParameters dbArgs = new DynamicParameters();
 			string sql = $@"select AT.[uid] as AssetUID, P.[Path] as assetTypePath 
 							from AssetType AT cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
 							where AT.class in({string.Join(",", assetClassIds.ToArray())})";
@@ -2994,7 +2993,7 @@ namespace d360.model
 				
 				if (defaultValue.In("True", "False"))
 				{
-					defaultValue = defaultValue.ToLower();
+					defaultValue = defaultValue.ToLowerInvariant();
 				}
 				
 				if (overrides.Any(o => o.ID == s.ID))
@@ -3003,7 +3002,7 @@ namespace d360.model
 					
 					if (s.Value.In("True", "False"))
 					{
-						s.Value = s.Value.ToLower();
+						s.Value = s.Value.ToLowerInvariant();
 					}
 				}
 				else

@@ -22,7 +22,7 @@ namespace d360.model.workflow
 
             if (string.IsNullOrEmpty(@object) || objectId <= 0)
             {
-                throw new Exception("ERROR - A VALID OBJECT AND OBJECT ID MUST BE SPECIFIED.  THE OBJECT ID MUST BE GREATER THAN 0.");
+                throw new ArgumentException("ERROR - A VALID OBJECT AND OBJECT ID MUST BE SPECIFIED.  THE OBJECT ID MUST BE GREATER THAN 0.");
             }
 
             //take the string criteria and generate the class

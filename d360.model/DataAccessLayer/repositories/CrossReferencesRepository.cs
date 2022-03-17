@@ -202,7 +202,7 @@ namespace d360.model.DataAccessLayer
 
         public BulkAssetCrossReferenceResult GetExecutionStatus(ApiExecution execution)
         {
-            BulkAssetCrossReferenceResult bulkResult = new BulkAssetCrossReferenceResult()
+            BulkAssetCrossReferenceResult bulkResult = new BulkAssetCrossReferenceResult
             {
                 Total = execution.Total,
                 Processed = execution.Processed,

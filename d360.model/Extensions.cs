@@ -131,7 +131,7 @@ namespace d360.model
                 string name = XmlConvert.EncodeName(prop.Key);
                 
                 //id should only be a attribute of the root ignore the id field
-                if ((name ?? "").ToUpper() == "ID")
+                if ((name ?? "").ToUpperInvariant() == "ID")
                 {
                     continue;
                 }
@@ -140,9 +140,7 @@ namespace d360.model
                 {
                     if (prop.Value.GetType().IsArray)
                     {
-                        string key = XmlConvert.EncodeName(prop.Key);
                         XElement el = GetArrayElement(prop.Key, (Array)prop.Value, namespaces, ret);
-
                         ret.Add(el);
                     }
                     else
@@ -393,7 +391,6 @@ namespace d360.model
             definition.Fields.ForEach(ft =>
             {
                 int assetIdx = (ft.RelationIndex ?? assetTypes.IndexOf(ft.AssetTypeUid)) + 1;
-                string fname = string.IsNullOrEmpty(ft.OverrideDisplayName) ? ft.FieldTypeName : ft.OverrideDisplayName;
 
                 if (ft.FieldTypeID > 0)
                 {
