@@ -865,6 +865,8 @@ from    #changes C
                 {
                     rule.StructuredDefinition.Then.Conditions.ForEach(rc =>
                     {
+                        var sqlEscapedValue = rc.Value.Replace("'", "''");
+
                         if (rc.FieldTypeID > 0)
                         {
                             var thenFieldType = Connection.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { rc.FieldTypeID }, transaction: transaction).SingleOrDefault();                            
@@ -872,12 +874,12 @@ from    #changes C
                             if (thenFieldType != null)
                             {
                                 whenSuffix += ((thenFieldType.AllowMultipleValues) ?
-                                    $"where FT.ID = {rc.FieldTypeID} and '{rc.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) " :
-                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{rc.Value}' )  ");
+                                    $"where FT.ID = {rc.FieldTypeID} and '{sqlEscapedValue}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) " :
+                                    $"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, F.FormattedValue, FT.DefaultValue) = '{sqlEscapedValue}' )  ");
                             }
                             else
                             {
-                                whenSuffix += ($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{rc.Value}' )  ");                                
+                                whenSuffix += ($"where FT.ID = {rc.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{sqlEscapedValue}' )  ");                                
                             }
                         }
                         else
@@ -890,7 +892,7 @@ from    #changes C
                                 }
                                 else
                                 {
-                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{rc.FieldTypeName} = '{rc.Value}'";
+                                    whenSuffix += (string.IsNullOrEmpty(whenSuffix) ? $" where ( " : $" {this.ThenSqlConnector(rule.StructuredDefinition.Then)} ") + $"O.{rc.FieldTypeName} = '{sqlEscapedValue}'";
                                 }
                             }
                         }
@@ -938,7 +940,7 @@ from    #changes C
 
         public IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null)
         {
-            string sql = GetThenResultsSql(rule, IsHideData3SixtyUsers, trans);
+            string sql = GetThenResultsSql(rule, IsHideData3SixtyUsers, trans, includeUid: false);
             return (string.IsNullOrEmpty(sql)) ?
                 new List<SecurityResult>().AsEnumerable() :
                 Connection.Query<SecurityResult>(sql.Replace(" {0} ", ""), transaction: trans, commandTimeout: 7200);
