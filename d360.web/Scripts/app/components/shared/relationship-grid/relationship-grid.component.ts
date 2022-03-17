@@ -400,6 +400,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     }
 
     get singleSelectedRelationship(): any {
+        if (this.relationshipCounts.length === 1) {
+            var uid = this.relationshipCounts[0].IntersectTypeUid;
+            var selected = this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === uid.toLowerCase());
+            return selected[0];
+        }
+
         if (!this.advancedFilterData) {
             return null;
         }

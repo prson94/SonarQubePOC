@@ -408,6 +408,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (isFilteredByAssetUID)
                     {
                         simpleFilters.Add($"RelationshipSideData.RelationshipTypeName like @simpleFilter");
+                        simpleFilters.Add($"RelationshipSideData.AssetPath like @simpleFilter");
                     }
 
                     if (simpleFilters.Any()) //it prevents `and()` instruction appears in WHERE clause
