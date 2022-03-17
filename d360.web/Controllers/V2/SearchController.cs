@@ -657,7 +657,7 @@ namespace d360.web.Controllers.V2
 
         private async Task AugmentResults(IEnumerable<IndexResult> results)
         {
-            await AugmentResults(results as IEnumerable<TypeaheadResult>).ConfigureAwait(false);
+            await AugmentResults(results as IEnumerable<TypeaheadResult>).ConfigureAwait(true);
 
             if (!results.Any())
             {
