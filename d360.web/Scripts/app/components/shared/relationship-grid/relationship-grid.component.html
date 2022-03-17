@@ -163,6 +163,7 @@
 <d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
            (onClose)="showEditor=false"
            [showTitle]="false"
+           [appendToBody]="true"
            [isVisible]="showEditor">
     <asset-editor #dynamicEditor
                   *ngIf="showEditor"
@@ -184,6 +185,7 @@
                          [assetUid]="assetUid"
                          [assetTypeUid]="assetTypeUid"
                          [isVisible]="isAddVisible"
+                         [isFromModal]="isInModal"
                          (onClose)="isAddVisible=false"
                          (onAddComplete)="onAddComplete($event)">
 </add-relationship-editor>
