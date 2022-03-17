@@ -192,7 +192,7 @@ from	CompanyResource CR
 
         internal FeatureFlagUser GetClientFeatureFlagUser()
         {
-            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
+            var itemKey = $"{Community.CurrentClientID}.{Community.CurrentCompanyID}.{Community.CurrentResourceID}";
             var userModel = GetFeatureFlagUser();
 
             var b = new FeatureFlagUser
