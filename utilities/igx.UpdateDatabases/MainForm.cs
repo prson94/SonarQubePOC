@@ -1,12 +1,4 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.utils.company;
-using Dapper;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SpreadsheetLight;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -14,13 +6,25 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.utils.company;
+
+using Dapper;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using SpreadsheetLight;
+
 namespace igx.UpdateDatabases
 {
     public partial class MainForm : Form
     {
-        List<CompanyWithDatabaseServerSettings> Companies;
+        private List<CompanyWithDatabaseServerSettings> Companies;
 
-        public bool SelectOnly { get { return bool.Parse(ConfigurationManager.AppSettings["SelectOnly"]); } }
+        public bool SelectOnly => bool.Parse(ConfigurationManager.AppSettings["SelectOnly"]);
 
         public MainForm()
         {
@@ -33,11 +37,10 @@ namespace igx.UpdateDatabases
             backgroundWorker1.ProgressChanged += BackgroundWorker1_ProgressChanged;
             Companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
             Companies
-                .OrderBy(i => i.CompanyID)  
-                //.ThenBy(i => i.CompanyID)
-                //.ThenBy(i => i.UrlPrefix)
+                .OrderBy(i => i.CompanyID)
                 .ToList()
-                .ForEach(c => {
+                .ForEach(c =>
+                {
                     lbDatabases.Items.Add($"{c.CompanyID} - {c.UrlPrefix}", CheckState.Unchecked);
                 });
 
@@ -54,29 +57,34 @@ namespace igx.UpdateDatabases
 
         private void BackgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
-            btnRun.Invoke((MethodInvoker)delegate {
+            btnRun.Invoke((MethodInvoker)delegate
+            {
                 btnRun.Enabled = false;
             });
 
-            txtMessages.Invoke((MethodInvoker)delegate {
+            txtMessages.Invoke((MethodInvoker)delegate
+            {
                 txtMessages.Text = "";
             });
 
             var sql = "";
 
-            txtSql.Invoke((MethodInvoker)delegate {
+            txtSql.Invoke((MethodInvoker)delegate
+            {
                 sql = txtSql.Text;
             });
 
             if (string.IsNullOrEmpty(txtSql.Text))
             {
-                lblSqlValidation.Invoke((MethodInvoker)delegate {
+                lblSqlValidation.Invoke((MethodInvoker)delegate
+                {
                     lblSqlValidation.Text = "Sql Statement cannot be empty.";
                 });
             }
             else
             {
-                lblSqlValidation.Invoke((MethodInvoker)delegate {
+                lblSqlValidation.Invoke((MethodInvoker)delegate
+                {
                     lblSqlValidation.Text = "";
                 });
 
@@ -107,6 +115,7 @@ namespace igx.UpdateDatabases
                 {
                     var prefix = (string)lbDatabases.CheckedItems[i];
                     var c = Companies.FirstOrDefault(o => prefix == $"{o.CompanyID} - {o.UrlPrefix}");
+                    
                     if (c != null)
                     {
                         var result = new Result { Server = c.Server, DatabaseName = $"D3S_{c.CompanyID}", UrlPrefix = c.UrlPrefix, StartedOn = DateTime.Now, Queries = new List<DatabaseResult>() };
@@ -157,15 +166,16 @@ namespace igx.UpdateDatabases
 
                                         rowNumbers[queryName]++;
                                     }
-
                                 }
                                 else
                                 {
-                                    var cmd = new System.Data.SqlClient.SqlCommand();
-                                    cmd.CommandText = s;
-                                    cmd.Connection = cnn;
-                                    cmd.CommandTimeout = 12000;
-                                    cmd.CommandType = CommandType.Text;
+                                    var cmd = new System.Data.SqlClient.SqlCommand
+                                    {
+                                        CommandText = s,
+                                        Connection = cnn,
+                                        CommandTimeout = 12000,
+                                        CommandType = CommandType.Text
+                                    };
                                     cmd.ExecuteNonQuery();
                                 }
                                 cnn.Close();
@@ -194,6 +204,7 @@ namespace igx.UpdateDatabases
                             results.Add(result);
                         }
                     }
+
                     var progress = (double)(i + 1) / count;
                     progress = progress * 100;
                     backgroundWorker1.ReportProgress((int)Math.Round(progress, 0));
@@ -208,7 +219,8 @@ namespace igx.UpdateDatabases
                 }
             }
 
-            btnRun.Invoke((MethodInvoker)delegate {
+            btnRun.Invoke((MethodInvoker)delegate
+            {
                 btnRun.Enabled = true;
             });
 
@@ -217,25 +229,26 @@ namespace igx.UpdateDatabases
 
         private void chkDevelopment_CheckedChanged(object sender, EventArgs e)
         {
-            var chk = (chkDevelopment.CheckState == CheckState.Checked);
+            var chk = chkDevelopment.CheckState == CheckState.Checked;
             checkRelevantItems(chk, EnvironmentLevel.Development);
         }
 
         private void chkUat_CheckedChanged(object sender, EventArgs e)
         {
-            var chk = (chkUat.CheckState == CheckState.Checked);
+            var chk = chkUat.CheckState == CheckState.Checked;
             checkRelevantItems(chk, EnvironmentLevel.UAT);
         }
 
         private void chkProduction_CheckedChanged(object sender, EventArgs e)
         {
-            var chk = (chkProduction.CheckState == CheckState.Checked);
+            var chk = chkProduction.CheckState == CheckState.Checked;
             checkRelevantItems(chk, EnvironmentLevel.Production);
         }
 
         private void checkRelevantItems(bool chk, EnvironmentLevel env)
         {
-            Companies.ForEach(c => {
+            Companies.ForEach(c =>
+            {
                 if (c.EnvironmentLevel == env)
                 {
                     for (var i = 0; i < lbDatabases.Items.Count; i++)
@@ -262,7 +275,7 @@ namespace igx.UpdateDatabases
 
         private void chkPreview_CheckedChanged(object sender, EventArgs e)
         {
-            var chk = (chkPreview.CheckState == CheckState.Checked);
+            var chk = chkPreview.CheckState == CheckState.Checked;
             checkRelevantItems(chk, EnvironmentLevel.Nightly);
         }
     }
