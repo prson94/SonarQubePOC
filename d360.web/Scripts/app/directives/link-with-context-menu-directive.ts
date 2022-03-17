@@ -147,9 +147,16 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.removeElement();
     }
 
+    removeEventListener(): void {
+        var htmlEl = this.el.nativeElement as HTMLElement;
+        htmlEl.onmouseenter = null;
+        htmlEl.onmouseleave = null;
+    }
+
     ngOnDestroy() {
         this.removeElement();
         this.removeTooltip();
+        this.removeEventListener();   
     }
 
     ngAfterViewChecked() {
