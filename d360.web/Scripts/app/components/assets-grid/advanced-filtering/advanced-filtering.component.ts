@@ -29,6 +29,8 @@ export class AdvancedFilteringComponent implements OnChanges {
     @Input() externalStorage: string;
     @Input() externalAllocations: ScoreTypeAllocation[] = [];
     @Input() clearConditionsOnFilterField: string = '';
+    @Input() disableMatchAny: boolean = false;
+
     @Output() onChange = new EventEmitter();
     @Output() onLoad = new EventEmitter();
 
@@ -157,6 +159,10 @@ export class AdvancedFilteringComponent implements OnChanges {
     }
 
     public initializeData(newFiltersPushed: boolean = false) {
+        if (this.disableMatchAny) {
+            this.filterMenu[3]["disabled"] = this.disableMatchAny;
+        }
+
         if (this.isAssetType) {
             this.assetTypeUid = this.loadIdentifier;
         }

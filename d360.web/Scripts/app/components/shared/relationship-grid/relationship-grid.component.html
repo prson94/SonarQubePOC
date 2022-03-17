@@ -17,6 +17,7 @@
                     </div>
                     <advanced-filtering *ngIf="areTypesLoaded"
                                         #advFilterComponent
+                                        [disableMatchAny]="true"
                                         [loadIdentifier]="advFilterIdentifier"
                                         [fieldsObserver]="filterFields$"
                                         [clearConditionsOnFilterField]="'relationshiptype'"
