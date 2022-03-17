@@ -31,6 +31,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
     @Input() isVisible: boolean = false;
+    @Input() isFromModal: boolean = false;
 
     @Output() onClose = new EventEmitter();
     @Output() onAddComplete = new EventEmitter();
