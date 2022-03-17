@@ -218,23 +218,39 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadTypesSub.unsubscribe();
         }
 
-        this.loadTypesSub = forkJoin(
-            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
-            this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
-            this.assetService.getUIDetailsForAssetUID(this.assetUid),
-            this.permissionService.getAssetPermissions(this.assetUid)
-        )
-            .subscribe((data) => {
-                this.relationshipTypes = data[0];
-                this.relationshipCounts = data[1];
-                this.assetDetail = data[2];
-                this.assetPermissions = data[3];
+        this.assetService.getUIDetailsForAssetUID(this.assetUid)
+            .subscribe((ad) => {
+                this.assetDetail = ad;
+                var permissionObs: Observable<Permissions> = this.permissionService.getAssetPermissions(this.assetUid);
 
-                this.processCountData();
+                if (ad.Object === 'Resource' || ad.Object === 'ReferenceItemType') {
+                    var p = new Permissions();
+                    p.AddRelationships = p.EditRelationships = p.DeleteRelationships = p.ReadRelationships = true;
+                    permissionObs = of(p);
+                }
 
-                this.areTypesLoaded = true;
-                this.cdRef.detectChanges();
+                if (ad.Object === 'ReferenceItemType') {
+                    this.assetTypeUid = '0000000a-0000-0000-0000-000000000009';
+                }
+
+                this.loadTypesSub = forkJoin(
+                    this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
+                    this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
+                    permissionObs
+                )
+                    .subscribe((data) => {
+                        this.relationshipTypes = data[0];
+                        this.relationshipCounts = data[1];
+                        this.assetPermissions = data[2];
+
+                        this.processCountData();
+
+                        this.areTypesLoaded = true;
+                        this.cdRef.detectChanges();
+                    });
             });
+
+
     }
 
     updateCountData() {
