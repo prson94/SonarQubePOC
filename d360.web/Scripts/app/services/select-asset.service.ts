@@ -15,9 +15,9 @@ export class SelectAssetService {
     if (context.selection && context.selection.HasProfiling) {
       context.sidePanelLoading = true;
       context.dataProfileService.getDataProfiles(context.selection.AssetUid).subscribe(
-        (r) => {
-          if (r && r.items && r.items.length > 0) {
-            context.dataProfile = r.items[0];
+        (response) => {
+          if (response?.items?.length > 0) {
+            context.dataProfile = response.items[0];
             forkJoin(
               context.dataProfileService.getMatchCounts(context.dataProfile.assetUid, 'Structure'),
               context.dataProfileService.getMatchCounts(context.dataProfile.assetUid, 'Data')
