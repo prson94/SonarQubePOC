@@ -398,10 +398,11 @@ export class RelationshipsService extends BaseObservableService {
         copyParams['_pageNum'] = 1;
         copyParams['_pageSize'] = 200000;
         copyParams['_includeTotal'] = false;
+        copyParams['_includePath'] = true;
         copyParams["State"] = "Active";
 
         if (copyParams) {
-            url += "&" + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+            url += "&" + Object.keys(copyParams).map((key) => key + '=' + copyParams[key]).join('&');
         }
 
         return this.http.get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
