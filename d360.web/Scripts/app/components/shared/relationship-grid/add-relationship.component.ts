@@ -301,6 +301,9 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         else if (this.targetType === "User") {
             this.previewAssetType = "Resource";
         }
+        else if (this.targetType === "Model") {
+            this.previewAssetType = "Taxonomy";
+        }
         else {
             this.previewAssetType = this.targetType;
         }
