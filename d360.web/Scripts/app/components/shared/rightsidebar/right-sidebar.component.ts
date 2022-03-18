@@ -356,6 +356,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, HasRequestCertificationWorkflow: boolean) {
+        if (objectName === 'Report') {
+            //do not check status and data classification for type Report
+            return;
+        }
+
         this.objectStatisticsService.getObjectColorAndValue(objectID, objectName, "status").subscribe(
             result => {
                 this.status = result;
@@ -498,9 +503,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.secondaryNavService.clearLocalActiveItem();
             let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
             if (!home) {
-               home = `/artifact/${this.secondaryNavService.artifactTypeId}`;
-               this.secondaryNavService.activeTabTitle = null;
-               this.secondaryNavService.artifactTypeId = null;
+                home = `/artifact/${this.secondaryNavService.artifactTypeId}`;
+                this.secondaryNavService.activeTabTitle = null;
+                this.secondaryNavService.artifactTypeId = null;
             }
             this.router.navigateByUrl(home);
             return;
