@@ -60,7 +60,13 @@
                 </td>
             </tr>
         </ng-template>
-
+        <ng-template pTemplate="emptymessage" let-columns>
+            <tr>
+                <td colspan="2">
+                    No assets found
+                </td>
+            </tr>
+        </ng-template>
         <ng-template pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
         </ng-template>

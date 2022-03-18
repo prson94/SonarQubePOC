@@ -244,8 +244,17 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     {
                         var asset = companyContext.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
 
-                        dbArgs.Add("@assetObject", asset.Object);
-                        dbArgs.Add("@assetObjectId", asset.ObjectID);
+                        if (asset != null)
+                        {
+                            dbArgs.Add("@assetObject", asset.Object);
+                            dbArgs.Add("@assetObjectId", asset.ObjectID);
+                        }
+                        else
+                        {
+                            var type = companyContext.AssetTypes.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+                            dbArgs.Add("@assetObject", type.Object);
+                            dbArgs.Add("@assetObjectId", type.ObjectID);
+                        }
 
                         filteredIntersectsTempTable = @"drop table if exists #filteredIntersects;
                             ;with assetIntersects as (select * from [Intersect] I
