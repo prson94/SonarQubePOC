@@ -907,7 +907,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
                     topFiltersHidden.ForEach(i =>
                     {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true, loadLookupList: false));
 
                         col.id = i.ID.ToString();
                         col.hiddenfield = !i.IsListable;
@@ -1016,7 +1016,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
                     topFiltersHiddenRuleType.ForEach(i =>
                     {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true, loadLookupList: false));
 
                         col.id = i.ID.ToString();
                         col.hiddenfield = !i.IsListable;
