@@ -466,7 +466,7 @@ set EA.Success = 0,
 from api.ExecutionAsset EA
 left join asset a on a.uid = ea.[uid]
 inner join api.Execution EX on ex.executionid = @executionId
-inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
+inner join {ApiExecutionFieldTable} EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
 inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(LEFT(EF.FieldValue, 50) AS INT) and a.id <> fcv.assetid
 where EA.ExecutionID = @executionId and EA.Success is null;
@@ -477,7 +477,7 @@ set EA.Success = 0,
 from api.ExecutionAsset EA
 left join asset a on a.uid = ea.[uid]
 inner join api.Execution EX on ex.executionid = @executionId
-inner join api.ExecutionField EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
+inner join {ApiExecutionFieldTable} EF on EA.ItemNumber = EF.ItemNumber AND EF.ExecutionID = EA.ExecutionId
 inner join FieldType FT on FT.Id = EF.FieldTypeId and FT.[Type] = 'Counter'
 inner join FieldCounterValue FCV on FCV.FieldTypeId = FT.ID and FCV.Value = TRY_CAST(LEFT(EF.FieldValue, 50) AS INT)
 where EA.ExecutionID = @executionId and EA.Success is null and a.uid is null;
@@ -939,7 +939,7 @@ where	ExecutionID = @executionID
                         inner join api.execution ex on ex.executionid = @executionid
                         inner join [asset] a on a.Object = 'Group' and a.uid = ea.groupuid
 						inner join [group] g on g.id = a.objectid						
-                        left join api.ExecutionField ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
+                        left join {ApiExecutionFieldTable} ef on ef.executionid = @executionid and ef.itemnumber = ea.itemnumber and ft.id = ef.fieldtypeid
                         left join dbo.FieldCounterValue FCV on FCV.AssetId = a.id and FCV.FieldTypeId = ft.id
                         where ea.ExecutionID = @executionID 
                                 and ea.Success is null 
