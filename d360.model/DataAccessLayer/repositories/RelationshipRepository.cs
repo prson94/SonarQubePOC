@@ -1124,24 +1124,31 @@ from	IntersectType I
                 rowData = items.ToList();
 
                 List<ExcelRow> rows = new List<ExcelRow>();
+
+                var numberOfRelationshipTypes = rowData.Select(x => x["RelationshipTypeUid"]).Distinct().Count();
                 foreach (var row in rowData)
                 {
                     var relationshipTypeUid = row["RelationshipTypeUid"];
-                    var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString(), apiTimeout);
 
-                    if (customColumns.Count() > 0)
+                    //only include custom fields if there is single relationship type present in results
+                    if (numberOfRelationshipTypes == 1)
                     {
-                        int customCount = 0;
-                        foreach (var cus in customColumns)
+                        var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString(), apiTimeout);
+
+                        if (customColumns.Count() > 0)
                         {
-                            var name = cus.Name;
-                            var friendlyName = cus.FriendlyName;
-                            var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
-                            if (exists == null)
+                            int customCount = 0;
+                            foreach (var cus in customColumns)
                             {
-                                var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
-                                fields.Insert((includeAssetPath ? 10 : 8) + customCount, cusField);
-                                customCount++;
+                                var name = cus.Name;
+                                var friendlyName = cus.FriendlyName;
+                                var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
+                                if (exists == null)
+                                {
+                                    var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
+                                    fields.Insert((includeAssetPath ? 10 : 8) + customCount, cusField);
+                                    customCount++;
+                                }
                             }
                         }
                     }
