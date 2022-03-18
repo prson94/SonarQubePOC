@@ -3,6 +3,7 @@ import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { Param } from '../../../enums/param.enum';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
@@ -92,7 +93,14 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         data.count = this.relationshipTypesResolvedNames.length;
         data.items = [];
         this.relationshipTypesResolvedNames.forEach((item) => {
-            data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+            if (params.filter) {
+                if (item["name"].toLowerCase().indexOf(params.filter.toLowerCase()) !== -1) {
+                    data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+                }
+            }
+            else {
+                data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+            }
         });
         return of(data);
     }
