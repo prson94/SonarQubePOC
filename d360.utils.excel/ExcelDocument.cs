@@ -1,7 +1,8 @@
-﻿using SpreadsheetLight;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+
+using SpreadsheetLight;
 
 namespace d360.utils.excel
 {
@@ -9,36 +10,38 @@ namespace d360.utils.excel
     {
         public string Name { get; set; }
 
-        public List<ExcelSheet> Sheets { get; set; }
-            = new List<ExcelSheet>();
+        public List<ExcelSheet> Sheets { get; set; } = new List<ExcelSheet>();
 
         public ExcelDocument(string name)
         {
-            this.Name = name;
+            Name = name;
         }
 
         public void Add(ExcelSheet sheet)
         {
-            this.Sheets.Add(sheet);
+            Sheets.Add(sheet);
         }
 
-        public IEnumerator<ExcelSheet> GetEnumerator() => Sheets.GetEnumerator();
+        public IEnumerator<ExcelSheet> GetEnumerator()
+        {
+            return Sheets.GetEnumerator();
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => Sheets.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Sheets.GetEnumerator();
+        }
     }
 
     public class ExcelSheet
     {
         public string Name { get; set; }
 
-        public List<ExcelRow> HeaderRows { get; set; }
-            = new List<ExcelRow>();
+        public List<ExcelRow> HeaderRows { get; set; } = new List<ExcelRow>();
 
-        public List<ExcelRow> ValueRows { get; set; }
-            = new List<ExcelRow>();
+        public List<ExcelRow> ValueRows { get; set; } = new List<ExcelRow>();
 
-        public Dictionary<int, ExcelColumnSettings> ColumnSettings { get; set; }
-            = new Dictionary<int, ExcelColumnSettings>();
+        public Dictionary<int, ExcelColumnSettings> ColumnSettings { get; set; } = new Dictionary<int, ExcelColumnSettings>();
 
         public bool FreezeHeaderRows { get; set; } = true;
 
@@ -46,7 +49,7 @@ namespace d360.utils.excel
 
         public ExcelSheet(string name)
         {
-            this.Name = name;
+            Name = name;
         }
     }
 
@@ -67,18 +70,24 @@ namespace d360.utils.excel
         {
             foreach (var cell in cells)
             {
-                this.Add(cell);
+                Add(cell);
             }
         }
 
         public void Add(object cell)
         {
-            this.Cells.Add(cell);
+            Cells.Add(cell);
         }
 
-        public IEnumerator<object> GetEnumerator() => Cells.GetEnumerator();
+        public IEnumerator<object> GetEnumerator()
+        {
+            return Cells.GetEnumerator();
+        }
 
-        IEnumerator IEnumerable.GetEnumerator() => Cells.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Cells.GetEnumerator();
+        }
     }
 
     public class ExcelCell
@@ -89,11 +98,14 @@ namespace d360.utils.excel
 
         public ExcelCell(dynamic value, SLStyle style)
         {
-            this.Value = value;
-            this.Style = style;
+            Value = value;
+            Style = style;
         }
 
-        public static SLStyle MakeDefaultStyle() => new SLDocument().CreateStyle();
+        public static SLStyle MakeDefaultStyle()
+        {
+            return new SLDocument().CreateStyle();
+        }
 
         public static SLStyle MakeStyle(Action<SLStyle> action)
         {
@@ -109,9 +121,6 @@ namespace d360.utils.excel
 
         public SLStyle Style { get; set; }
 
-        public static ExcelColumnSettings Default => new ExcelColumnSettings
-        {
-            Autofit = true
-        };
+        public static ExcelColumnSettings Default => new ExcelColumnSettings { Autofit = true };
     }
 }
