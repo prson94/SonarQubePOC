@@ -216,7 +216,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         this.model.StructuredDefinition.When.push(whenItem);
     }
 
-    private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+    private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem, event: any = null): Promise<void> {
         item.IsBool = false;
         if (item.FieldTypeID) {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
@@ -256,6 +256,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.ValueOptions = [];
                 item.IsLookup = false;
             }
+        }
+        
+        if (event) {
+            item.Value = null;
         }
 
         return null;
