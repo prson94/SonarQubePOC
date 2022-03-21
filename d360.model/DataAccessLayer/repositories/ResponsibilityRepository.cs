@@ -1136,7 +1136,7 @@ where   Success is null", transaction: trans);
             #endregion
 
             //need to add a default Then if it was omitted even if the test is for When, since the parser expects the full rule model
-            if (testType == "when" && !test.Definition.Then.Any())
+            if (testType == "when" && (test.Definition.Then == null || !test.Definition.Then.Any()))
             {
                 test.Definition.Then = new List<RuleThenWrapper>() { new RuleThenWrapper { AssigneeTypeUid = new Guid("00000001-0000-0000-0000-A00000000011") } };
             }
