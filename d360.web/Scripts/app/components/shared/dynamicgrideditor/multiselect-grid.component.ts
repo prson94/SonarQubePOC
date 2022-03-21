@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy, ElementRef } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -14,6 +14,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { StringConstants } from '../../../static/string-constants';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
+import { Table } from 'primeng/table';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -64,6 +65,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     public rowsPerPage: number;
     public title: string = 'MultiSelect Grid'
     private destroy = new Subject<void>();
+
+    @ViewChild('dt', { static: false }) dt: Table;
 
     constructor(
         private elRef: ElementRef,
@@ -372,11 +375,29 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     advancedFiltersChanged($event) {
         this.advancedFilters = $event.filter;
-        this.loadAssetsLazy(null);
+        if (this.isReferenceListType(this.targetAssetTypeUid)) {
+            this.loadReferenceListTypeData();
+        }
+        else if (this.targetClass === "User") {
+            this.loadUsers();
+        }
+        else {
+            this.loadAssetsLazy(null);
+        }
     }
     onSimpleSearch($event) {
         this.simpleTextFilter = $event;
-        this.loadAssetsLazy(null);
+        if (this.isReferenceListType(this.targetAssetTypeUid)) {
+            if (this.dt) {
+                this.dt.filterGlobal($event, 'contains');
+            }
+        }
+        else if (this.targetClass === "User") {
+            this.loadUsers();
+        }
+        else {
+            this.loadAssetsLazy(null);
+        }
     }
     get selectionScrollHeight(): string {
         var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('multiselect-grid-header')[0].getBoundingClientRect().height;
