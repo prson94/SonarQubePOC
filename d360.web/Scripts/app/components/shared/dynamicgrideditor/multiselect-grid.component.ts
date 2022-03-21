@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy, ElementRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -66,6 +66,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     private destroy = new Subject<void>();
 
     constructor(
+        private elRef: ElementRef,
         private assetService: AssetService,
         private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
@@ -378,6 +379,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         this.loadAssetsLazy(null);
     }
     get selectionScrollHeight(): string {
-        return (window.innerHeight - 380) + "px";
+        var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('multiselect-grid-header')[0].getBoundingClientRect().height;
+        return (window.innerHeight - 348 - filterFieldHeight) + "px";
     }
 }
