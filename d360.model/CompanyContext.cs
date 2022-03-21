@@ -1162,14 +1162,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = new 
 				)";
             }
 
-            if (subjectUid.HasValue && limitToClasses != null)
-            {
-                if (limitToClasses.Contains(AssetTypeClass.Reference))
-                {
-                    noClassLimitSql += @" UNION SELECT	0 as ID, null as Uid, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
-                }
-            }
-
             var sql = $@"
     SELECT		I.ID,
                 I.Uid,
