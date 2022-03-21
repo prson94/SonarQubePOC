@@ -31,7 +31,6 @@
                         <th>
                             Relationship Type
                         </th>
-                        <th width="200"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
@@ -39,9 +38,11 @@
                     <tr class="{{item.disabledClass}}" [pSelectableRow]="item.disabledClass ? null : item">
                         <td class="rel-name">
                             <p-tableRadioButton [pSelectableRow]="item.disabledClass ? null : item" [value]="item"></p-tableRadioButton>
-                            {{item.name}}
-                        </td>
-                        <td class="flex-grid">
+
+                            <span class="rel-text">
+                                {{item.name}}
+                            </span>
+
                             <div class="flex-grow"></div>
                             <i *ngIf="item.disabledClass === 'disabled-predicate'" class="fa fa-question-circle" pTooltip="Parent-child relationship type cannot be manually created" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                             <i *ngIf="item.disabledClass === 'disabled-cardinality-many'" class="fa fa-question-circle" pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
