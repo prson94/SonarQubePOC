@@ -21,6 +21,14 @@
     min-width: 30px;
   }
 
+  .rel-name {
+    display: flex;
+
+    .rel-text {
+      margin-top: 1px;
+    }
+  }
+
   .disabled-predicate,
   .disabled-cardinality-many,
   .disabled-cardinality-one {
@@ -43,6 +51,11 @@
 
   .multiselect-grid-header {
     display: flex;
+    margin-bottom: 8px;
+
+    ig-search-field {
+      margin-bottom: 0;
+    }
 
     .multiselect-grid-sel {
       padding-left: 12px;
