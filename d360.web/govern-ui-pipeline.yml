@@ -1,9 +1,9 @@
 trigger:
   branches:
-    include: 
+    include:
       - '*sprint*'
   paths:
-    include: 
+    include:
       - '/'
     exclude:
     - '/igx.functions'
@@ -20,7 +20,7 @@ pr:
     include:
     - '*sprint*'
   paths:
-    include: 
+    include:
       - '/'
     exclude:
     - '/igx.functions'
@@ -53,27 +53,28 @@ stages:
 - stage: BUNDLE_SCRIPTS
   displayName: 'Bundle scripts'
   dependsOn: []
-  jobs: 
+  jobs:
   - job: BundleScripts
     displayName: "Bundle scripts"
     timeoutInMinutes: 0
     cancelTimeoutInMinutes: 5
     variables:
       npm_config_cache: $(Pipeline.Workspace)/.npm
-    pool: 
-      vmImage: windows-2019
+    pool:
+      vmImage: ubuntu-20.04
     steps:
-    - checkout: self   
-    - template: build/steps/step-npm-build.yml@templates
-      parameters:
-        workingDir: 'd360.web'
-        buildScript: 'run build-dev-ops-prod'
+    - checkout: self
+    - script: mkdir $(Build.Repository.LocalPath)/d360.web/Scripts/dist
+    - script: yarn
+      workingDirectory: 'd360.web'
+    - script: yarn run build-dev-ops-prod-linux
+      workingDirectory: 'd360.web'
     - publish: $(Build.Repository.LocalPath)/d360.web/Scripts/dist
       displayName: 'Publish bundled scripts for later use'
       artifact: dist
 - stage: BUILD
   displayName: 'Build solution'
-  dependsOn: 
+  dependsOn:
   - UNIT_TESTS
   - BUNDLE_SCRIPTS
   jobs:
