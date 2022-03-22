@@ -62,7 +62,7 @@ export class SearchService extends BaseObservableService  {
             exclude.push('User');
         }
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
-        debugger;
+        
         if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
            categories = categories.filter((s) => s.value !== "SemanticType")
         }
