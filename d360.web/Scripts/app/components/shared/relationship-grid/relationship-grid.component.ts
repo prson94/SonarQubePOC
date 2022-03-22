@@ -1,4 +1,4 @@
-﻿import { EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+﻿import { ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
@@ -135,6 +135,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     private destroy = new Subject<void>();
 
     constructor(
+        private elRef: ElementRef,
         private cdRef: ChangeDetectorRef,
         private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private relationshipService: RelationshipsService,
@@ -579,5 +580,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     get fullRelationshipNameAsHTML(): string {
         return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp;</strong> - ${this.selectedRelAsset.target}`;
 
+    }
+    get selectionScrollHeight(): string {
+        var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('grid-actions-header')[0].getBoundingClientRect().height;
+        return (window.innerHeight - 348 - filterFieldHeight) + "px";
     }
 }
