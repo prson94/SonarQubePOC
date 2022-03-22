@@ -1,15 +1,13 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using Dapper;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using d360.core.entities;
+
+using Dapper;
 
 namespace d360.model
 {
@@ -18,15 +16,19 @@ namespace d360.model
         public static int UpdateFieldMove(this DbConnection cnn, FieldType toField, FieldType fromField, int currentResourceID)
         {
             string updateSql = $" Update fieldtype set ColumnOrder ={toField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={toField.ID};";
+
             if (fromField != null)
+            {
                 updateSql += $" Update fieldtype set ColumnOrder ={fromField.ColumnOrder},UpdatedBy = {currentResourceID} where Id={fromField.ID};";
+            }
+
             return cnn.Execute(updateSql);
         }
 
         public static int UpdateFieldMove(this DbConnection cnn, List<FieldType> fields, int currentResourceID)
         {
             StringBuilder updateSql = new StringBuilder();
-            foreach (var f in fields)
+            foreach (FieldType f in fields)
             {
                 updateSql.Append($" Update fieldtype set ColumnOrder ={f.ColumnOrder},UpdatedBy = {currentResourceID} where Id={f.ID};");
             }

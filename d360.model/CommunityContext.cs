@@ -1,19 +1,19 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.helpers;
-using d360.core.resources;
-using d360.extensions;
-using Dapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
+
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.helpers;
+using d360.extensions;
+
+using Dapper;
 
 namespace d360.model
 {
@@ -31,30 +31,36 @@ namespace d360.model
 
             Caching = caching;
             QueueSource = queueSource;
-
             CurrentClientID = context.ClientID;
             CurrentCompanyID = context.CompanyID;
             CurrentDomainSettingID = context.DomainSettingID;
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
+
             GetCompanySsoModel();
         }
 
         public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
             : this(constants.COMMUNITY_DATABASE_CONNECTION, caching, queueSource, context) { }
 
-
         #region DbSets
-
         public DbSet<Client> Clients { get; set; }
+        
         public DbSet<Company> Companies { get; set; }
+        
         public DbSet<CompanyDomainGroup> CompanyDomainGroups { get; set; }
+        
         public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
+        
         public DbSet<CompanyResource> CompanyResources { get; set; }
+        
         public DbSet<DatabaseServer> DatabaseServers { get; set; }
+        
         public DbSet<DomainCertificate> DomainCertificates { get; set; }
+        
         public DbSet<DomainSetting> DomainSettings { get; set; }
+        
         public DbSet<Resource> Resources { get; set; }
 
         #endregion
@@ -71,20 +77,26 @@ namespace d360.model
                 Caching.RemoveItem("RESOURCES");
             }
 
-            return (SaveChanges() > 0);
+            return SaveChanges() > 0;
         }
 
         public override bool Delete<T>(Expression<Func<T, bool>> predicate)
         {
-            var items = Filter(predicate).ToList();
+            List<T> items = Filter(predicate).ToList();
             bool allDeleted = true;
             bool clearCache = false;
 
-
             items.ForEach(i =>
             {
-                if (i is CompanyResource) clearCache = true;
-                if (i is Resource) clearCache = true;
+                if (i is CompanyResource)
+                {
+                    clearCache = true;
+                }
+
+                if (i is Resource)
+                {
+                    clearCache = true;
+                }
 
                 if (!Delete(i))
                 {
@@ -105,23 +117,16 @@ namespace d360.model
 
         public override bool Delete<T>(T entity)
         {
-            try
-            {
-                Set<T>().Remove(entity);
-                SaveChanges();
+            Set<T>().Remove(entity);
+            SaveChanges();
 
-                if (entity is Resource || entity is CompanyResource)
-                {
-                    Caching.RemoveItem("Users");
-                    Caching.RemoveItem("RESOURCES");
-                }
-
-                return true;
-            }
-            catch (Exception ex)
+            if (entity is Resource || entity is CompanyResource)
             {
-                throw ex;                
+                Caching.RemoveItem("Users");
+                Caching.RemoveItem("RESOURCES");
             }
+
+            return true;
         }
 
         public IEnumerable<T> Query<T>(string sql, object param = null)
@@ -131,7 +136,7 @@ namespace d360.model
 
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null)
         {
-            return await (Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param));
+            return await Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param);
         }
 
         public override int SaveChanges()
@@ -157,8 +162,9 @@ namespace d360.model
                 Caching.RemoveItem("RESOURCES");
             }
 
-            this.ChangeTracker.DetectChanges();
-            return (SaveChanges() > 0);
+            ChangeTracker.DetectChanges();
+
+            return SaveChanges() > 0;
         }
 
         #endregion
@@ -175,7 +181,7 @@ namespace d360.model
         {
             string val;
 
-            var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 
             using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
             {
@@ -219,12 +225,14 @@ namespace d360.model
         public void RemoveOpenIdRequest(OpenIdRequest request)
         {
             OpenIdRequests.Remove(request);
+
             SaveChanges();
         }
 
         public void SetOpenIdRequest(OpenIdRequest request)
         {
             OpenIdRequests.Add(request);
+
             SaveChanges();
         }
 
@@ -250,7 +258,7 @@ namespace d360.model
             }
         }
 
-        void GetCompanySsoModel()
+        private void GetCompanySsoModel()
         {
             if (Caching.ListItemExists<CompanySsoModel, string>(CACHE_KEY_SSO_MODELS, CurrentCompanyDomain))
             {
@@ -278,8 +286,8 @@ namespace d360.model
                                 cds.DomainSetting.SignInitialSSORequest,
                                 cds.DomainSetting.AuthenticationSettings,
                                 c.Status
-                            }
-                            ).SingleOrDefault();
+                            }).SingleOrDefault();
+
                 if (model != null)
                 {
                     CurrentCompanySsoModel.AllowNewUserLogin = model.AllowNewUserLogin;
@@ -314,11 +322,12 @@ namespace d360.model
             if (Caching.ListItemExists<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID) && !skipCacheCheck)
             {
                 cs = Caching.GetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID);
+
                 return cs;
             }
             else
             {
-                var res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
+                dynamic res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
                                 inner join DatabaseServer s on s.ID = c.DatabaseServerID 
                                 where c.ID = @companyId", new { companyId = CurrentCompanyID });
 
@@ -326,7 +335,7 @@ namespace d360.model
 
                 if (!skipCacheCheck)
                 {
-                    Caching.SetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
+                    Caching.SetItemInListByID(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
                 }
 
                 return cs;
@@ -335,30 +344,23 @@ namespace d360.model
 
         public bool ChangePassword(int resourceID, string oldPassword, string newPassword)
         {
-            var success = false;
+            bool success = false;
 
-            try
+            if (oldPassword != newPassword)
             {
-                if (oldPassword != newPassword)
+                Resource r = GetById<Resource>(resourceID);
+
+                if (r != null)
                 {
-                    var r = GetById<Resource>(resourceID);
-                    if (r != null)
-                    {
-                        r.Password = PasswordHelper.HashPassword(newPassword);
-                        r.UpdatedOn = DateTime.UtcNow;
-                        Update<Resource>(r);
-                        success = true;
-                    }
-                    r = null;
-                }
-                else
-                {
-                    throw new ApplicationException("New password may not be the same as old password.");
+                    r.Password = PasswordHelper.HashPassword(newPassword);
+                    r.UpdatedOn = DateTime.UtcNow;
+                    Update(r);
+                    success = true;
                 }
             }
-            catch
+            else
             {
-                throw;
+                throw new ApplicationException("New password may not be the same as old password.");
             }
 
             return success;
@@ -374,7 +376,7 @@ namespace d360.model
             // Check that resource has access to this company.
             if (r != null)
             {
-                var companyResource = Filter<CompanyResource>(i => i.CompanyID == CurrentCompanyID && i.ResourceID == r.ID).SingleOrDefault();
+                CompanyResource companyResource = Filter<CompanyResource>(i => i.CompanyID == CurrentCompanyID && i.ResourceID == r.ID).SingleOrDefault();
                 if (companyResource != null)
                 {
                     if (companyResource.State == CompanyResourceState.Active)

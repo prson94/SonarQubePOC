@@ -1,81 +1,91 @@
-﻿using d360.model.DataAccessLayer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using d360.core.resources;
-using System.Text;
-using System.Threading.Tasks;
+using d360.model.DataAccessLayer;
 
 namespace d360.model.validators
 {
     public class SurveyApiModelValidator : ISurveyApiModelValidator
     {
-        IAssetRepository assetRepository;
-        IResourceRepository resourceRepository;
-        ISurveyRepository surveyRepository;
+        private readonly IAssetRepository assetRepository;
+        private readonly IResourceRepository resourceRepository;
+        private readonly ISurveyRepository surveyRepository;
+
         public SurveyApiModelValidator(IAssetRepository assetRepository, IResourceRepository resourceRepository, ISurveyRepository surveyRepository)
         {
             this.assetRepository = assetRepository;
             this.resourceRepository = resourceRepository;
             this.surveyRepository = surveyRepository;
         }
-       
 
         public bool IsValidResource(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             bool isValid = true;
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "resourceuid"))
+
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == "resourceuid"))
             {
-                Guid resourceUID;
-                var resourceString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "resourceuid").Value;
-                if (Guid.TryParse(resourceString, out resourceUID))
+                string resourceString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "resourceuid").Value;
+               
+                if (Guid.TryParse(resourceString, out Guid resourceUID))
                 {
-                    var resource = this.resourceRepository.GetResouceByUID(resourceUID);
+                    core.entities.GlobalReportingResource resource = resourceRepository.GetResouceByUID(resourceUID);
+                    
                     if (resource == null)
+                    {
                         isValid = false;
+                    }
                 }
                 else
                 {
                     isValid = false;
                 }
             }
+
             return isValid;
         }
-
-      
 
         public bool IsValidAsset(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             bool isValid = true;
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "assetuid"))
+
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == "assetuid"))
             {
-                Guid assetUID;
-                var assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
-                if (Guid.TryParse(assetUIDString, out assetUID))
+                string assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "assetuid").Value;
+                
+                if (Guid.TryParse(assetUIDString, out Guid assetUID))
                 {
-                    var asset = this.assetRepository.GetAssetByUID(assetUID);
+                    core.entities.Asset asset = assetRepository.GetAssetByUID(assetUID);
+                    
                     if (asset == null)
+                    {
                         isValid = false;
+                    }
                 }
                 else
                 {
                     isValid = false;
                 }
-
             }
+
             return isValid;
         }
 
-        public bool IsValidDate(IEnumerable<KeyValuePair<string, string>> queryParams,string parameterName)
+        public bool IsValidDate(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName)
         {
             bool isValid = true;
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName.ToLower()))
+
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == parameterName.ToLowerInvariant()))
             {
-                DateTime sdate;
-                var sdateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName.ToLower()).Value;
-                if (!DateTime.TryParse(sdateString, out sdate))
+                string sdateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == parameterName.ToLowerInvariant()).Value;
+                
+                if (!DateTime.TryParse(sdateString, out DateTime sdate))
+                {
                     isValid = false;
+                }
             }
+
             return isValid;
         }
 
@@ -83,69 +93,77 @@ namespace d360.model.validators
         public bool IsValidSurveyType(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             bool isValid = true;
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "surveytypeuid"))
+
+            if (queryParams.ToList().Any(q => q.Key.ToLowerInvariant() == "surveytypeuid"))
             {
-                Guid surveytypeUID;
-                var surveytypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "surveytypeuid").Value;
-                if (Guid.TryParse(surveytypeUIDString, out surveytypeUID))
+                string surveytypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLowerInvariant() == "surveytypeuid").Value;
+                
+                if (Guid.TryParse(surveytypeUIDString, out Guid surveytypeUID))
                 {
-                    var surveyType = this.surveyRepository.GetSurveyTypeByUid(surveytypeUID);
+                    core.entities.SurveyType surveyType = surveyRepository.GetSurveyTypeByUid(surveytypeUID);
+                    
                     if (surveyType == null)
+                    {
                         isValid = false;
+                    }
                 }
                 else
                 {
                     isValid = false;
                 }
-
             }
+
             return isValid;
         }
 
         public bool IsRequiredGuidExistForDeleteSurveyResult(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             int count = 0;
+
             if (queryParams != null)
             {
-                queryParams.ToList().ForEach(x => {
-                    switch (x.Key.ToLower())
+                queryParams.ToList().ForEach(x =>
+                {
+                    switch (x.Key.ToLowerInvariant())
                     {
                         case "surveytypeuid":
                             Guid actionTypeUid;
 
-                            if ((Guid.TryParse(x.Value, out actionTypeUid)) && (actionTypeUid != Guid.Empty))
+                            if (Guid.TryParse(x.Value, out actionTypeUid) && (actionTypeUid != Guid.Empty))
                             {
                                 count++;
                             }
                             break;
                         case "resourceuid":
                             Guid assetTypeUid;
-                            if ((Guid.TryParse(x.Value, out assetTypeUid)) && (assetTypeUid != Guid.Empty))
+                            if (Guid.TryParse(x.Value, out assetTypeUid) && (assetTypeUid != Guid.Empty))
                             {
                                 count++;
                             }
                             break;
                         case "assetuid":
                             Guid relationshipTypeUid;
-                            if ((Guid.TryParse(x.Value, out relationshipTypeUid)) && (relationshipTypeUid != Guid.Empty))
+                            if (Guid.TryParse(x.Value, out relationshipTypeUid) && (relationshipTypeUid != Guid.Empty))
                             {
                                 count++;
                             }
                             break;
+                        default:
+                            //Nothing to do here.
+                            break;
                     }
                 });
-
             }
 
-            return (count > 0);
+            return count > 0;
         }
 
         public WorkHttpStatus ValidateGetSurveyTypesRequest(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
 
-            foreach (var param in queryParams)
+            foreach (KeyValuePair<string, string> param in queryParams)
             {
-                switch (param.Key.ToLower())
+                switch (param.Key.ToLowerInvariant())
                 {
                     case "assettypeuid":
                         if (!Guid.TryParse(param.Value, out Guid _))
@@ -172,7 +190,7 @@ namespace d360.model.validators
                         }
                         break;
                     case "_order":
-                        switch (param.Value.ToLower())
+                        switch (param.Value.ToLowerInvariant())
                         {
                             case "name":
                             case "validfordays":
@@ -181,14 +199,16 @@ namespace d360.model.validators
                             case "numberofresponses":
                                 break;
                             default:
-                                return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest,AssetTypeErrors.BadRequest,OthersError.InvalidOrderSurvey);
+                                return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidOrderSurvey);
                         }
+                        break;
+                    default:
+                        //Nothing to do here.
                         break;
                 }
             }
 
             return null;
         }
-
     }
 }

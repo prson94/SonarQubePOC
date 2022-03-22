@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace d360.model.DataAccessLayer.repositories
 {
     [UDTName("dbo.ObjectsTable")]
-    class ObjectsTableUDT : IEquatable<ObjectsTableUDT>
+    internal class ObjectsTableUDT : IEquatable<ObjectsTableUDT>
     {
         [UDTOrder(0)]
         public string ObjectType { get; set; }
@@ -29,6 +29,7 @@ namespace d360.model.DataAccessLayer.repositories
             int hashCode = 1363435841;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ObjectType);
             hashCode = hashCode * -1521134295 + ObjectId.GetHashCode();
+            
             return hashCode;
         }
 

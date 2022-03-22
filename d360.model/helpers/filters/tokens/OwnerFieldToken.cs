@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters
 {
@@ -11,7 +7,7 @@ namespace d360.model.helpers.filters
     {
         public OwnerFieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
-            this.dataProvider = fdp;
+            dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
             this.field = field;
             @operator = op;
@@ -19,15 +15,15 @@ namespace d360.model.helpers.filters
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.IsNullValue = true;
+                IsNullValue = true;
             }
         }
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            this.sqlParamsRef = sqlParams;
+            sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            var valueStr = this.value.ToString().Trim('\'');
+            var valueStr = value.ToString().Trim('\'');
             sqlParamsRef.Add($"@filter_{parameterIdx}", valueStr);
 
             string querySql = $@"EXISTS(
@@ -56,7 +52,7 @@ namespace d360.model.helpers.filters
                                                 rd.isVisible = 1
                                             )";
 
-            if (this.@operator == "ne")
+            if (@operator == "ne")
             {
                 querySql = " NOT " + querySql;
             }

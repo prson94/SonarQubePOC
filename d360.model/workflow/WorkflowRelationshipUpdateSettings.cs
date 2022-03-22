@@ -1,43 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace d360.model.workflow
 {
     public class WorkflowRelationshipUpdateSettings
-    {        
-        private static string CLEAR_VALUE = "ClearValue";
-        private static string APPEND_VALUE = "AppendValue";
+    {
+        private static readonly string CLEAR_VALUE = "ClearValue";
+        private static readonly string APPEND_VALUE = "AppendValue";
+        private static readonly string FORM_FIELD_ID = "FormFieldId";
+        private static readonly string FORM_STEP_ID = "FormStepId";
 
-        private static string FORM_FIELD_ID = "FormFieldId";
-        private static string FORM_STEP_ID = "FormStepId";
-        
         public bool ClearValue { get; set; }
 
         public bool AppendValue { get; set; }
 
-        
         public string FormField { get; set; }
-        public int FormStepID { get; set; }
 
+        public int FormStepID { get; set; }
 
         public static WorkflowRelationshipUpdateSettings ParseXml(XElement xml)
         {
-            var model = new WorkflowRelationshipUpdateSettings();
-                        
-            bool isClearValue = false;            
+            WorkflowRelationshipUpdateSettings model = new WorkflowRelationshipUpdateSettings();
+
+            bool isClearValue = false;
             bool isAppendValue = false;
             int formStepId = 0;
             string formField = "";
-            
+
             if (xml.Attribute(CLEAR_VALUE) != null)
             {
                 bool.TryParse(xml.Attribute(CLEAR_VALUE).Value, out isClearValue);
             }
-            
+
             if (xml.Attribute(FORM_FIELD_ID) != null)
             {
                 formField = xml.Attribute(FORM_FIELD_ID).Value;
@@ -52,8 +45,8 @@ namespace d360.model.workflow
             {
                 bool.TryParse(xml.Attribute(APPEND_VALUE).Value, out isAppendValue);
             }
-                                  
-            model.ClearValue = isClearValue;            
+
+            model.ClearValue = isClearValue;
             model.FormField = formField;
             model.FormStepID = formStepId;
             model.AppendValue = isAppendValue;
@@ -62,4 +55,3 @@ namespace d360.model.workflow
         }
     }
 }
-

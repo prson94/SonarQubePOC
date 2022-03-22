@@ -1,26 +1,29 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Threading.Tasks;
 
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.resources;
+
 namespace d360.model
 {
-    partial class CompanyContext : BaseContext
+    public partial class CompanyContext : BaseContext
     {
         public DbSet<CompanyRebuildJobStatus> RebuildJobStatuses { get; set; }
 
         public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
         {
             int timeoutInHours = 18;
+
             if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
             {
                 timeoutInHours = timeout;
             }
-            var list = await RebuildJobStatuses.ToListAsync();
+
+            List<CompanyRebuildJobStatus> list = await RebuildJobStatuses.ToListAsync();
             list.ForEach(i =>
             {
                 if (i.State == CompanyRebuildJobStatusState.Active && i.LastStartedOn <= DateTime.UtcNow.AddHours(-timeoutInHours))
@@ -28,33 +31,40 @@ namespace d360.model
                     i.State = CompanyRebuildJobStatusState.Inactive;
                 }
             });
+
             return list;
         }
 
         public async Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken)
         {
             int timeoutInHours = 18;
+
             if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
             {
                 timeoutInHours = timeout;
             }
-            var status = await RebuildJobStatuses.FirstOrDefaultAsync(j => j.JobToken == jobToken);
+
+            CompanyRebuildJobStatus status = await RebuildJobStatuses.FirstOrDefaultAsync(j => j.JobToken == jobToken);
             CompanyRebuildJobStatusState state = CompanyRebuildJobStatusState.Inactive;
+
             if (status != null && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours))
             {
                 state = status.State;
             }
+
             return state;
         }
 
         public async Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state)
         {
             int timeoutInHours = 18;
+
             if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
             {
                 timeoutInHours = timeout;
             }
-            var status = await RebuildJobStatuses.FirstOrDefaultAsync(j => j.JobToken == jobToken);
+
+            CompanyRebuildJobStatus status = await RebuildJobStatuses.FirstOrDefaultAsync(j => j.JobToken == jobToken);
             WorkHttpStatus returnValue = null;
 
             if (status != null)
@@ -66,6 +76,7 @@ namespace d360.model
                 else
                 {
                     status.State = state;
+
                     if (state == CompanyRebuildJobStatusState.Active)
                     {
                         status.LastStartedOn = DateTime.UtcNow;
@@ -75,6 +86,7 @@ namespace d360.model
                     {
                         status.LastCompletedOn = DateTime.UtcNow;
                     }
+
                     Update(status);
                     returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
                 }

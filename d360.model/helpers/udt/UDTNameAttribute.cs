@@ -2,7 +2,7 @@
 
 namespace d360.model.DataAccessLayer.repositories
 {
-    class UDTNameAttribute : Attribute
+    internal class UDTNameAttribute : Attribute
     {
         public UDTNameAttribute(string name)
         {

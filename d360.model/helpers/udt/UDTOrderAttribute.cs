@@ -2,7 +2,7 @@
 
 namespace d360.model.DataAccessLayer.repositories
 {
-    class UDTOrderAttribute : Attribute
+    internal class UDTOrderAttribute : Attribute
     {
         public UDTOrderAttribute(int order)
         {

@@ -1,7 +1,8 @@
-﻿using d360.core.entities;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+
+using d360.core.entities;
 
 namespace d360.model.helpers.filters
 {
@@ -11,24 +12,25 @@ namespace d360.model.helpers.filters
 
         public RelationshipComplexFieldToken(IFilterDataProvider fdp, string field, string op, object value, IReadOnlyList<FieldType> types)
         {
-            this.dataProvider = fdp;
-            this.FieldTypes = types;
+            dataProvider = fdp;
+            FieldTypes = types;
             this.field = field;
             @operator = op;
             this.value = value.ToString().Replace("'", "");
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.IsNullValue = true;
+                IsNullValue = true;
             }
         }
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            var intersectUid = this.EscapedValueAsString;
-            var ftRelationship = FieldTypes.FirstOrDefault(x => x.Name.ToLower() == this.Field.ToLower());
+            var intersectUid = EscapedValueAsString;
+            var ftRelationship = FieldTypes.FirstOrDefault(x => x.Name.ToLower() == Field.ToLower());
             var ftQueryName = FieldTypes.FirstOrDefault(x => x.LookupObjectID == ftRelationship.LookupObjectID && x.LookupObjectType == ftRelationship.LookupObjectType && ftRelationship.Name != x.Name).Name;
             var relationshipFilterSQL = "";
+
             if (ftRelationship != null)
             {
                 string sqlOperator = "=";
@@ -40,6 +42,7 @@ namespace d360.model.helpers.filters
                 if (IsNullValue)
                 {
                     sqlOperator = " is null ";
+
                     if (@operator == "ne")
                     {
                         sqlOperator = " is not null";
