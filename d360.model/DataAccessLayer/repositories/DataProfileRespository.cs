@@ -620,15 +620,16 @@ namespace d360.model.DataAccessLayer
 
 			results.items = await CompanyContext.QueryAsync<AssetDataProfileByTypeQualifierModel>(itemsSQL, dbArgs, ApiTimeout);
 
-			if (includeTotal)
-			{
-				var countSQL = $@"
-							SELECT 
-								Count(*)
-							FROM                                     
-								{sqlJoins}		                            
-								{whereConditions}
-							";
+            if (includeTotal)
+            {
+                var countSQL = $@"
+                            SELECT 
+	                            Count(*)
+                            FROM                                     
+	                            {sqlJoins}		                            
+	                            {whereConditions}
+                                {filterSQL}
+		                    ";
 
 				results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSQL, dbArgs, ApiTimeout);
 			}
