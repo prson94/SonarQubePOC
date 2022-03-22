@@ -403,4 +403,14 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('multiselect-grid-header')[0].getBoundingClientRect().height;
         return (window.innerHeight - 348 - filterFieldHeight) + "px";
     }
+
+    toggleSelectedItem(item: any) {
+        if (this.higlightedItem === item) {
+            this.higlightedItem = null;
+        }
+        else {
+            this.higlightedItem = item;
+        }
+        this.onInfoClick.emit(this.higlightedItem);
+    }
 }

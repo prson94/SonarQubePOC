@@ -61,7 +61,7 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
-        [DataMember]
+        [DataMember, NotMapped]
         public Guid Uid { get; set; }
 
         public virtual ICollection<ResourceGroup> ResourceGroups { get; set; }

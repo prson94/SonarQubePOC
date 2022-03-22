@@ -291,6 +291,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     onInfoClick($event) {
+        if (!$event) {
+            this.previewAssetType = this.previewAssetUid = "";
+            return;
+        }
         this.previewAssetUid = $event.Value;
         if (this.targetType === "BusinessAsset" || this.targetType === "TechnicalAsset") {
             this.previewAssetType = "Artifact";
