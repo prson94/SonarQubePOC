@@ -73,7 +73,7 @@
                     </ng-template>
                     <ng-template pTemplate="header">
                         <tr>
-                            <th [pSortableColumn]="'RelationshipTypeName'">
+                            <th width="50%" [pSortableColumn]="'RelationshipTypeName'">
                                 Relationship Type <d3s-sortIcon [field]="'RelationshipTypeName'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'AssetPath'">Asset <d3s-sortIcon [field]="'AssetPath'"></d3s-sortIcon></th>
@@ -86,7 +86,7 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
                         <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
-                            <td>
+                            <td width="50%">
                                 {{item.RelationshipTypeName}}
                             </td>
                             <td>
@@ -95,7 +95,7 @@
                             <td *ngFor="let column of columns">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
-                            <td class="asset-grid-tools">
+                            <td width="40px" class="asset-grid-tools">
                                 <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
                                     <button igButton class="ig-button-transparent" type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
