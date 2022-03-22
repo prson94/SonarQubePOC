@@ -59,6 +59,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     public onModelTouched: Function = () => { };
 
     lazyLoadTotalCount: number = 0;
+    totalRecords: number = 0;
 
     searchAssetSub: Subscription;
 
@@ -151,6 +152,10 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         usersParam["_pageSize"] = 10000;
         usersParam["_pageNum"] = 1;
 
+        if (this.advancedFilters) {
+            usersParam["_filter"] = `(${this.advancedFilters})`;
+        }
+
         forkJoin(
             this.relationshipService.getRelationships(this.intersectTypeUid, params),
             this.resourceService.getResourceLazy(usersParam)
@@ -224,6 +229,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                     });
                 }
             });
+            this.totalRecords = this.items.length;
+
             this.lazyLoadTotalCount = this.items.length;
             this.checkPreSelectedItems();
 
@@ -276,9 +283,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             params["_filter"] += ` and ([Path] ct '${this.simpleTextFilter}')`;
         }
 
-        if (this.lazyLoadTotalCount) {
-            params["_includeTotal"] = false;
-        }
+        params["_includeTotal"] = true;
 
         this.isLoading = true;
 
@@ -289,6 +294,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true, false).subscribe((res) => {
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
+                this.totalRecords = res.total;
             }
             this.items = [...[]];
             (res.items as any[]).forEach((item) => {
@@ -390,10 +396,18 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         if (this.isReferenceListType(this.targetAssetTypeUid)) {
             if (this.dt) {
                 this.dt.filterGlobal($event, 'contains');
+                setTimeout(() => {
+                    this.totalRecords = this.dt.totalRecords;
+                    this.ref.markForCheck();
+                }, 100);
             }
         }
         else if (this.targetClass === "User") {
-            this.loadUsers();
+            this.dt.filterGlobal($event, 'contains');
+            setTimeout(() => {
+                this.totalRecords = this.dt.totalRecords;
+                this.ref.markForCheck();
+            }, 100);
         }
         else {
             this.loadAssetsLazy(null);
