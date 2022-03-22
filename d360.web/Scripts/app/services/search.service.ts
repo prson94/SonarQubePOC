@@ -64,7 +64,7 @@ export class SearchService extends BaseObservableService  {
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
         
         if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
-           categories = categories.filter((s) => s.value !== "SemanticType")
+            categories = categories.filter((s) => s.value !== "SemanticType");
         }
         
         return this.getVisibleCategories().pipe(
