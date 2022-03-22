@@ -7,13 +7,14 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SettingsHelper, SearchType } from '../models/settings.model';
 import { IndexableType, IndexableStatus } from "../models/search-admin.model";
+import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SearchService extends BaseObservableService  {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsService) { super(messagesService); }
 
     private getEmptyResult(): SearchResults {
         let result = new SearchResults();
@@ -61,7 +62,11 @@ export class SearchService extends BaseObservableService  {
             exclude.push('User');
         }
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
-
+        debugger;
+        if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+           categories = categories.filter((s) => s.value !== "SemanticType")
+        }
+        
         return this.getVisibleCategories().pipe(
             map((res) => categories.map((c) => {
                 c.visible = res.indexOf(c.value) >= 0;
