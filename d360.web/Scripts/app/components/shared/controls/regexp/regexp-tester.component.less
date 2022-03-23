@@ -1,0 +1,28 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.regexp-tester {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    .validate-container {
+        display: flex;
+        flex-direction: row; 
+        align-items: center;
+        gap: 12px;
+    }
+}
+
+.validate-status {
+    .pass .icon {
+        color: @ig-green
+    }
+
+    .fail .icon {
+        color: @ig-red
+    }
+}
+
+.fa-question-circle {
+    color: @ig-midblue;
+}

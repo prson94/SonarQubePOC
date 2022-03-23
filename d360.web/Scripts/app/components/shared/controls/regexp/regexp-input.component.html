@@ -31,4 +31,10 @@
 			{{validationMessage}}
 		</div>
 	</div>
+	
+	<ig-regexp-tester *ngIf="showValueValidator"
+		[regexp]="value"
+		[isValidRegexp]="!hasError"
+		[disabled]="disabled">
+	</ig-regexp-tester>
 </div>

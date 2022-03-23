@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common";
 import { PopupMenuModule } from "../popup-menu/popup-menu.component";
 import { TooltipModule } from "primeng/tooltip";
 import { DirectivesModule } from "../../../../directives/directives.module";
+import { RegexpTesterComponent } from "./regexp-tester.component";
 
 export const REGEXP_EDITOR_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -144,7 +145,8 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
         DirectivesModule
     ],
     declarations: [
-        RegexpInputComponent
+        RegexpInputComponent,
+        RegexpTesterComponent
     ],
     exports: [RegexpInputComponent]
 })
