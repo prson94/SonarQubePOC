@@ -1,0 +1,65 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+@font-face {
+  font-family: 'Source Code Pro';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/source-code-pro/SourceCodePro-Regular.ttf') format('truetype');
+}
+
+.ig-regexp-input {
+  font-size: 14px;
+  color: @ig-black;
+  background: @ig-white;
+
+  .samples-button {
+    width: 24px;
+    background: rgba(0,0,0,0.07);
+    font-size: 14px;
+    line-height: 12px;
+    height: 24px;
+    border-radius: 4px;
+    border: none;
+
+    &:hover {
+      background: rgba(0,0,0,0.14);
+    }
+
+    &:active {
+      background: #00000036;
+    }
+
+    > i {
+      margin: 0px;
+    }
+  }
+}
+
+.ig-regexp-input.disabled {
+  opacity: 33%;
+  pointer-events: none;
+}
+
+.ig-regexp-input {
+  padding-top: 6px;
+  padding-bottom: 12px;
+  padding-right: 16px;
+
+  .input-with-buttons {
+    position: relative;
+
+    .samples-button {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+    }
+  }
+}
+
+.ig-text-required {
+  display: none;
+}
+
+:host.ng-touched .ig-text-required {
+  display: block;
+}
