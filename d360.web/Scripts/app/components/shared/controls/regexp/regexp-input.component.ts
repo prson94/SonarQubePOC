@@ -58,7 +58,7 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
     ]
 
     setExample(title: string) {
-        const example = this.examples.find(ex => ex.title === title);
+        const example = this.examples.find((ex) => ex.title === title);
         this.writeValue(example?.value);
     }
 
