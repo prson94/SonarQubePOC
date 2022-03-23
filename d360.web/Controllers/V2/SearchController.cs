@@ -894,6 +894,8 @@ namespace d360.web.Controllers.V2
 
         private QueryLimitation GetQueryLimitation()
         {
+            List<string> blockedCategories = new List<string>();
+
             QueryLimitation limits = new QueryLimitation
             {
                 ResourceID = Company.CurrentResourceID,
@@ -906,14 +908,26 @@ namespace d360.web.Controllers.V2
             }
             else
             {
+                blockedCategories.Add(AssetTypeClass.User.ToString());
+                blockedCategories.Add(AssetTypeClass.Group.ToString());
+            }
+
+            if(!GetBoolFlag(FeatureFlags.PERM_SEMANTIC_TYPES_API))
+            {
+                blockedCategories.Add(AssetTypeClass.SemanticType.ToString());
+            }
+
+            if(blockedCategories.Any())
+            {
                 limits.AggregationFilters.Add(
                     new AggregationFilter
                     {
-                        Field = "d3sCategory",
-                        Values = new string[] { AssetTypeClass.User.ToString(), AssetTypeClass.Group.ToString() }
+                        Field = "Category",
+                        Values = blockedCategories.ToArray()
                     }
                 );
             }
+
             return limits;
         }
 
