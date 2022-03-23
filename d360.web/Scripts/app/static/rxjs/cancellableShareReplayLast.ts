@@ -71,7 +71,7 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
             if (isCompleted) {
                 subscriber.complete();
             }
-        }
+        };
 
 
         return new Observable<T>((subscriber) => {
