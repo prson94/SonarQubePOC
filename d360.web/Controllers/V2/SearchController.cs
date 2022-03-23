@@ -786,6 +786,7 @@ namespace d360.web.Controllers.V2
                             {
                                 Name = "Threshold",
                                 Label = "Threshold",
+                                Prefix = "Threshold",
                                 Type = "Number",
                                 Value = semantic.Threshold.ToString(),
                                 Suffix = "%"
