@@ -218,8 +218,12 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             if (this.selectedAssetsDetail.length > 1) {
                 title += "- " + this.selectedAssetsDetail.length + " items";
             }
-            else {
+            else if (this.selectedAssetsDetail[0]) {
+
                 title += "- " + this.selectedAssetsDetail[0].Text;
+            }
+            else if (this.selectedAssetsDetail && !Array.isArray(this.selectedAssetsDetail)) {
+                title += "- " + this.selectedAssetsDetail["Text"];
             }
         }
         return title;
