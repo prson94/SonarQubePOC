@@ -1,17 +1,18 @@
-﻿using d360.core.entities;
-using d360.core.exceptions;
-using d360.model;
-using d360.web.Filters;
-using d360.web.Extensions;
-using Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using System.Configuration;
+
+using d360.core.entities;
+using d360.core.exceptions;
+using d360.web.Extensions;
+using d360.web.Filters;
+
+using Resources;
 
 namespace d360.web.Controllers
 {
@@ -27,9 +28,14 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                }
 
                 var objectType = form["ObjectType"].Split('|').ToArray();
 
@@ -56,6 +62,7 @@ namespace d360.web.Controllers
                             {
                                 throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
                             }
+
                             datasetID = importResult.Datasets.FirstOrDefault().Id;
                             powerBIID = importResult.Reports.FirstOrDefault().Id.ToString();
                             filename = file.FileName;
@@ -63,7 +70,7 @@ namespace d360.web.Controllers
                     }
                     else if (reportType == "powerbi" && fileCount == 0)
                     {
-                        throw new ConflictException(ApiMessages.Error,FormControllerApiMessage.FileRequired);
+                        throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
                     }
 
                     var model = new Report
@@ -102,6 +109,7 @@ namespace d360.web.Controllers
                     if (showOnHomePage)
                     {
                         var existing = Company.Filter<Report>(r => r.ShowOnHomePage).FirstOrDefault();
+                        
                         if (existing != null)
                         {
                             existing.ShowOnHomePage = false;
@@ -111,7 +119,7 @@ namespace d360.web.Controllers
 
                     Company.Add(model);
 
-                    return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.Dashboard), model.ID.ToString(), "add", HttpStatusCode.Created);
+                    return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.Dashboard), model.ID.ToString(), "add", HttpStatusCode.Created);
                 }
                 else
                 {
@@ -125,6 +133,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -138,19 +147,27 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Report>(id);
-                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
+
+                if (model == null)
+                {
+                    throw new NotFoundException(FormInfo.NoFormData_FieldType);
+                }
 
                 //delete any power bi reports
                 if (model.ReportType == "powerbi" && !string.IsNullOrEmpty(model.PowerBIDatasetID))
                 {
                     var companySettings = SettingsRepository.GetSettings();
-
                     var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
                     var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
 
@@ -177,6 +194,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -187,9 +205,14 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                }
 
                 //get username / password
                 var user = parseTextField(form, "Username");
@@ -199,6 +222,7 @@ namespace d360.web.Controllers
                 {
                     throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
                 }
+
                 var companySettings = SettingsRepository.GetSettings();
                 var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
                 var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
@@ -207,6 +231,7 @@ namespace d360.web.Controllers
                 {
                     throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
                 }
+
                 // if the workspace id is null create a new one and update the companysettings
                 groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 
@@ -214,11 +239,11 @@ namespace d360.web.Controllers
                 {
                     throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
                 }
+
                 //save password in this workspace for all ds's
                 await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, user, pwd);
 
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.PowerBICredentials), "", "add", HttpStatusCode.Created);
-
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.PowerBICredentials), "", "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -227,6 +252,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -237,14 +263,22 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                if (!form.HasKeys())
+                {
+                    throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+                }
 
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<Report>(id);
 
-                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
+                if (model == null)
+                {
+                    throw new NotFoundException(FormInfo.NoFormData_FieldType);
+                }
 
                 var fileCount = HttpContext.Request.Files.Count;
                 var reportType = parseTextField(form, "ReportType");
@@ -273,7 +307,9 @@ namespace d360.web.Controllers
                         var rpt = importResult.Reports.FirstOrDefault();
 
                         if (rpt != null)
+                        {
                             powerBIID = rpt.Id.ToString();
+                        }
 
                         filename = file.FileName;
                     }
@@ -293,8 +329,9 @@ namespace d360.web.Controllers
                     foreach (var responsibility in model.Responsibilities.ToList())
                     {
                         if (!visibleToResponsibilityTypes.Contains(responsibility.ResponsibilityTypeID))
+                        {
                             Company.ReportResponsibilities.Remove(responsibility);
-
+                        }
                     }
 
                     //add any new responsibilities
@@ -332,17 +369,24 @@ namespace d360.web.Controllers
                     model.ShowOnHomePage = showOnHomePage;
 
                     if (!string.IsNullOrEmpty(datasetID))
+                    {
                         model.PowerBIDatasetID = datasetID;
+                    }
 
                     if (!string.IsNullOrEmpty(powerBIID))
+                    {
                         model.PowerBIReportID = powerBIID;
+                    }
 
                     if (!string.IsNullOrEmpty(filename))
+                    {
                         model.FileName = filename;
+                    }
 
                     if (showOnHomePage)
                     {
                         var existing = Company.Filter<Report>(r => r.ShowOnHomePage).FirstOrDefault();
+                        
                         if (existing != null)
                         {
                             existing.ShowOnHomePage = false;
@@ -350,9 +394,9 @@ namespace d360.web.Controllers
                         }
                     }
 
-                    Company.Update<Report>(model);
+                    Company.Update(model);
 
-                    return jsonSuccess(string.Format(ApiMessages.SucessfullyEdited,FormControllerApiMessage.Dashboard), id.ToString(), "edit", HttpStatusCode.OK);
+                    return jsonSuccess(string.Format(ApiMessages.SucessfullyEdited, FormControllerApiMessage.Dashboard), id.ToString(), "edit", HttpStatusCode.OK);
                 }
                 else
                 {
@@ -366,6 +410,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -379,6 +424,7 @@ namespace d360.web.Controllers
                 var groupName = $"D3S{Company.CurrentCompanyID}";
                 var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
                 SettingsRepository.UpsertSetting(core.enums.Setting.PowerBIGroupId, res.Id.ToString());
+                
                 return res.Id.ToString();
             }
 
@@ -395,13 +441,15 @@ namespace d360.web.Controllers
             {
                 throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
             }
+
             // if the workspace id is null create a new one and update the companysettings
             groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 
             // if an existing one exists delete it
             if (!string.IsNullOrEmpty(datasetId))
+            {
                 await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, datasetId);
-
+            }
 
             return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
         }
@@ -409,6 +457,5 @@ namespace d360.web.Controllers
         #endregion
 
         #endregion
-
     }
 }
