@@ -73,6 +73,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        this.canViewUsers  = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
         this.getData();
     }
 
