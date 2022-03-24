@@ -1,0 +1,74 @@
+﻿<div class="tile tile-detail">
+    <header>Image Picker Component</header>
+    <p>Component which allows uploading images</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <code>{{sampleUsage}}</code>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic (limited preview to 168x96)</h4>
+        <div>
+            <image-picker [(ngModel)]="modelBinding"></image-picker>
+            <strong>Model Binding Value : </strong><span class="model-value">{{modelBinding}}</span>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>ICO (limited preview to 40x40)</h4>
+        <div>
+            <image-picker [imageType]="'ICO'"></image-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>LOGO  (limited preview to (40-168)x40)</h4>
+        <div>
+            <image-picker [imageType]="'LOGO'"></image-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Max Dimension Validation (limited height to 40px)</h4>
+        <div>
+            <image-picker [imageType]="'LOGO'" [maxHeight]="40"></image-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Max Dimension Validation (limited both height and width to 10px)</h4>
+        <div>
+            <image-picker [imageType]="'LOGO'" [maxHeight]="100" [maxWidth]="100"></image-picker>
+        </div>
+    </div>
+
+    <div class="gallery-section">
+        <h4>File Size limited to 1,048,576 bytes (1MB)</h4>
+        <div>
+            <image-picker [imageType]="'LOGO'" [maxHeight]="100" [maxWidth]="100" [maxSize]="1048576"></image-picker>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
