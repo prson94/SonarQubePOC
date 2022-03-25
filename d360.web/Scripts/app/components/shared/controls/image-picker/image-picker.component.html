@@ -1,0 +1,29 @@
+﻿<div class="image-picker">
+    <div class="flex-box">
+        <div class="image-preview">
+            <img [src]="domSanitizer.bypassSecurityTrustResourceUrl(value)"
+                 [style.max-height.px]="previewHeight"
+                 [style.max-width.px]="previewWidth" />
+        </div>
+        <div class="image-upload">
+            <input #input name="imageUrl" type="file" accept="{{accept}}" (change)="handleInputChange($event)" />
+            <button igButton
+                    pTooltip="{{chooseFileTooltip}}"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    icon="fa-folder"
+                    (click)="input.click()"></button>
+            <button igButton
+                    pTooltip="{{restoreFileTooltip}}" 
+                    tooltipPosition="top" 
+                    tooltipStyleClass="ig-tooltip" icon="fa-refresh"
+                    (click)="input.value = '';clearValue()"></button>
+        </div>
+
+        <div class="message" [innerHTML]="message"></div>
+    </div>
+    <div *ngIf="!isValid()"
+         class="ig-text-required">
+        {{errorMessage}}
+    </div>
+</div>
