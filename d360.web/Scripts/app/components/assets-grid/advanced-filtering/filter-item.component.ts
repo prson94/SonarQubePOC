@@ -729,25 +729,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 mapped.filter((x) => !x.group).forEach((str) => {
                     this.currentField.Values.push({ title: str.title, value: str.value });
                 });
-
-                var grouped = _.mapValues(_.groupBy(mapped, "value"),
-                    (clist) => clist.map((item) => _.omit(item, "value")));
-
-                var keys = Object.keys(grouped);
-                keys.forEach((key) => {
-                    var value = key;
-                    var data = [];
-                    if (grouped.hasOwnProperty(key)) {
-                        data = grouped[key] as any[];
-                    }
-                    var name = data[0].title;
-                    var groups = data.map((m: any) => m.group).join(", ");
-                    var title = name + " (" + groups + ")";
-
-                    this.currentField.Values.push({ title, value });
+                mapped.filter((x) => x.group).forEach((str) => {
+                    this.currentField.Values.push({ title: str.title + " (" + str.group + ")", value: str.value });
                 });
 
-                this.currentField.Values = this.currentField.Values.sort((a, b) => { return a.title > b.title ? 1 : 0; });
+                this.currentField.Values = this.currentField.Values.sort((a, b) => a.title.localeCompare(b.title));
 
                 this.isLookupValuesLoading = false;
 
