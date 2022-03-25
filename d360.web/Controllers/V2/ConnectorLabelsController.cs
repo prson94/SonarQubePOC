@@ -1,28 +1,33 @@
-﻿using d360.core.entities;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
-using d360.web.Filters;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using System.Linq;
-using d360.web.Models.Attributes;
-using SpreadsheetLight;
-using System.IO;
-using Newtonsoft.Json;
+
+using d360.core.entities;
 using d360.core.entities.Process;
-using Dapper;
 using d360.core.enums;
-using System.Data;
+using d360.model.DataAccessLayer;
+using d360.model.validators;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+
+using Dapper;
+
+using Microsoft.Web.Http;
+
+using Newtonsoft.Json;
+
 using Resources;
+
+using SpreadsheetLight;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -37,14 +42,12 @@ namespace d360.web.Controllers.V2
     ]
     public class ConnectorLabelsController : BaseV2ApiController
     {
+        private readonly IConnectorLabelRepository ConnectorLabelRepository;
 
-        IConnectorLabelRepository ConnectorLabelRepository;
-
-        public ConnectorLabelsController(ICoreComponentSet set, IConnectorLabelRepository connectorLabelRepository): base(set)
+        public ConnectorLabelsController(ICoreComponentSet set, IConnectorLabelRepository connectorLabelRepository) : base(set)
         {
-            this.ConnectorLabelRepository = connectorLabelRepository;
+            ConnectorLabelRepository = connectorLabelRepository;
         }
-
 
         /// <summary>
         /// Retrieves a list of available labels by search term
@@ -64,6 +67,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetLabels(string q = null, bool isExact = false, bool getUseCount = false, Guid? exceptUid = null)
         {
             string labelsSql;
+
             if (isExact)
             {
                 labelsSql = $@"SELECT top 10 uid, Value
@@ -90,10 +94,10 @@ namespace d360.web.Controllers.V2
                                 {(exceptUid.HasValue ? " and cl.uid <> @exceptUid" : "")}
                                 order by Value";
             }
+
             var response = Company.Query<dynamic>(labelsSql, new { q, exceptUid }, ApiTimeout);
 
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
-
         }
 
         /// <summary>
@@ -170,11 +174,9 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> CreateOrGetLabel(ConnectorLabelPostModel label)
         {
-
-
             if (label == null || string.IsNullOrEmpty(label.Value) || label.Value.Trim() == "")
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest,ConnectorLabelAPIMessage.LabelValieNotEmpty))).ConfigureAwait(false);
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.LabelValieNotEmpty))).ConfigureAwait(false);
             }
 
             var labelValue = label.Value.Trim();
@@ -184,21 +186,21 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord))).ConfigureAwait(false);
             }
 
-
             if (labelValue.Length > 40)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest,ConnectorLabelAPIMessage.LabelMax40Char))).ConfigureAwait(false);
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.LabelMax40Char))).ConfigureAwait(false);
             }
 
-            dbRecord = new ConnectorLabel();
-            dbRecord.Value = labelValue;
+            dbRecord = new ConnectorLabel
+            {
+                Value = labelValue
+            };
             dbRecord.UpdatedBy = dbRecord.CreatedBy = Company.CurrentResourceID;
             dbRecord.UpdatedOn = dbRecord.CreatedOn = DateTime.UtcNow;
 
             Company.Add(dbRecord);
 
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dbRecord)));
-
         }
 
         /// <summary>
@@ -220,7 +222,6 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-
                 string isValid = isPageSizeAndNumValid(queryParams);
 
                 if (!string.IsNullOrEmpty(isValid))
@@ -235,7 +236,6 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorGetLabels, ex.Message);
-
             }
         }
 
@@ -270,7 +270,6 @@ namespace d360.web.Controllers.V2
                     throw new ArgumentNullException(ConnectorLabelAPIMessage.LabelAlreadyExists);
                 }
 
-
                 result = ConnectorLabelRepository.CreateConnectorLabel(model);
             }
             catch (Exception e)
@@ -278,10 +277,8 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorCreateLabel, e.Message);
             }
 
-            return ResponseMessage(Request.CreateResponse<ConnectorLabelApiModel>(HttpStatusCode.OK, result));
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
         }
-
-
 
         /// <summary>
         /// Updates the specified connector label with the values provided in the model.
@@ -305,7 +302,6 @@ namespace d360.web.Controllers.V2
             {
                 return errorMessageResponse(HttpStatusCode.NotFound, ConnectorLabelAPIMessage.ErrorUpdateLabel, string.Format(ConnectorLabelAPIMessage.UidNotFound, labelUid.ToString()));
             }
-
 
             ConnectorLabelApiModel result = new ConnectorLabelApiModel();
             try
@@ -332,7 +328,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorUpdateLabel, e.Message);
             }
 
-            return ResponseMessage(Request.CreateResponse<ConnectorLabelApiModel>(HttpStatusCode.OK, result));
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
         }
 
         /// <summary>
@@ -350,7 +346,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteByUid([FromBody]List<ConnectorLabelApiDeleteModel> labels)
+        public IHttpActionResult DeleteByUid([FromBody] List<ConnectorLabelApiDeleteModel> labels)
         {
 
             foreach (var label in labels)
@@ -398,12 +394,10 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> ExportToExcel()
         {
-
             var queryParams = Request.GetQueryNameValuePairs();
-
             var labels = await ConnectorLabelRepository.GetConnectorLabelsForExcel(queryParams);
-
             var document = new SLDocument();
+
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
@@ -489,7 +483,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (Guid.Parse(item) == Guid.Empty)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest,ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ApiMessages.CustomUidNotValid, item));
+                        return errorMessageResponse(HttpStatusCode.BadRequest, ConnectorLabelAPIMessage.ErrorConsolidateLabel, string.Format(ApiMessages.CustomUidNotValid, item));
                     }
                 }
 
@@ -523,8 +517,6 @@ namespace d360.web.Controllers.V2
                     var conn = trans.Connection;
                     try
                     {
-
-
                         foreach (var process in processes)
                         {
                             if (process.Diagram != null)
@@ -537,7 +529,6 @@ namespace d360.web.Controllers.V2
                                         link.labelUid = parentGuid;
                                     }
                                 }
-
 
                                 conn.Execute($@"
                                 update AssetProcessDiagram
@@ -553,7 +544,6 @@ namespace d360.web.Controllers.V2
                         }
                         conn.Execute($@"update ConnectorLabel set State = {(int)State.Deleted} where uid in @children", new { children }, transaction: trans);
                         trans.Commit();
-
                     }
                     catch (Exception ex)
                     {
@@ -566,9 +556,10 @@ namespace d360.web.Controllers.V2
                         }
                         catch
                         {
+                            //swallow exception here.
                         }
 
-                        throw ex;
+                        throw;
                     }
                 }
                 var result = ConnectorLabelAPIMessage.ConsolidateSucessfully;
@@ -578,12 +569,7 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, ConnectorLabelAPIMessage.ErrorConsolidateLabel, ex.Message);
-
             }
-
         }
-
-
     }
 }
-
