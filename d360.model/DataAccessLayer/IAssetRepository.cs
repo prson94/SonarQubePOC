@@ -71,8 +71,6 @@ namespace d360.model.DataAccessLayer
         
         bool IsReachedTransformationLimit(AssetTypeUpsert model);
 
-        Guid GetRuleUIDFromRuleID(int id);
-        
         Task<dynamic> GetAssetDetails(Asset asset);
         
         Task<List<extensions.PathComponent>> GetAssetPath(Guid assetUid);
