@@ -3,6 +3,8 @@ import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESS
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { ButtonModule } from "../../../../directives/ig-button-directive";
+import { TooltipModule } from "primeng/tooltip";
+import { DomSanitizer } from '@angular/platform-browser';
 
 export const IMAGE_PICKER_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -19,28 +21,33 @@ export const IMAGE_PICKER_ACCESSOR: any = {
     styleUrls: ["./image-picker.component.less"]
 })
 export class ImagePicker implements ControlValueAccessor, OnInit {
-    @Input() message = 'Choose an ICO file to display in the browser tab/taskbar';
+    @Input() message = '';
     @Input() imageType = '';
     @Input() allowedExtensions = '';
     @Input() maxHeight: number;
     @Input() maxWidth: number;
     @Input() maxSize: number;
 
+    @Input() chooseFileTooltip: string = 'Choose file';
+    @Input() restoreFileTooltip: string = 'Restore the file';
+
     accept = "";
     value = "";
+
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
 
     previewHeight: number = 0;
     previewWidth: number = 0;
 
-    isFormatValid: boolean = true;
-    isDimensionValid: boolean = true;
-
     invalidFormatMessage: string = 'File type not supported. Please choose a PNG, JPG or GIF image.';
     invalidDimensionMessage: string = 'File exceeds height [or width] limit. Please upload a file that has max file height of [40px].';
 
+    private file: any = {};
+    private image: any = {};
+
     constructor(public ref: ChangeDetectorRef,
+        public domSanitizer: DomSanitizer,
         public el: ElementRef) { }
 
     ngOnInit() {
@@ -90,61 +97,67 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
 
     clearValue() {
         this.value = "";
-        this.isFormatValid = true;
-        this.isDimensionValid = true;
+        this.file = {};
+        this.image = {};
         this.onModelChange(this.value);
         this.ref.markForCheck();
     }
 
     handleInputChange(e) {
         this.value = "";
-        this.isFormatValid = true;
-        this.isDimensionValid = true;
 
-        var file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
+        this.file = e.dataTransfer ? e.dataTransfer.files[0] : e.target.files[0];
         var reader = new FileReader();
 
-        console.log(file);
-
-        if (this.accept.indexOf(file.type) === -1) {
-            this.isFormatValid = false;
-            return;
-        }
-
         reader.onload = this._handleReaderLoaded.bind(this);
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(this.file);
     }
+
     _handleReaderLoaded(e) {
         let reader = e.target;
         var i = new Image();
         i.src = reader.result;
-        i.onload = () => {
-            if ((this.maxHeight && i.height > this.maxHeight)
-                || (this.maxWidth && i.width > this.maxWidth)) {
-                this.isDimensionValid = false;
-                this.ref.markForCheck();
-                return;
-            }
 
+        i.onload = () => {
+            this.image = i;
             this.value = reader.result;
             this.onModelChange(this.value);
             this.ref.markForCheck();
         };
-
     }
 
-    get validationMessage(): string {
-        if (!this.isFormatValid) {
+    get errorMessage(): string {
+        if (!this.value) {
+            return '';
+        }
+
+        if (this.accept.indexOf(this.file.type) === -1) {
             return this.invalidFormatMessage;
         }
-        if (!this.isDimensionValid) {
+
+        if ((this.maxHeight && this.image.height > this.maxHeight)
+            || (this.maxWidth && this.image.width > this.maxWidth)) {
             return this.invalidDimensionMessage;
         }
+
+        if (this.file.size > this.maxSize) {
+            let sizeStr = "";
+            var maxSizeKB = this.maxSize / 1024;
+            if (maxSizeKB > 1000) {
+                var maxSizeMB = maxSizeKB / 1024;
+                sizeStr = parseInt(maxSizeMB.toFixed(0)) + "MB";
+            }
+            else {
+                sizeStr = parseInt(maxSizeKB.toFixed(0)) + "kB";
+            }
+            return `File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
+        }
+
         return '';
     }
 
     public isValid() {
-        return this.isFormatValid && this.isDimensionValid;
+        return this.errorMessage.length === 0;
     }
 }
 
@@ -154,7 +167,9 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
         FormsModule,
         ReactiveFormsModule,
         DirectivesModule,
-        ButtonModule
+        ButtonModule,
+        TooltipModule
+
     ],
     declarations: [ImagePicker],
     exports: [ImagePicker]

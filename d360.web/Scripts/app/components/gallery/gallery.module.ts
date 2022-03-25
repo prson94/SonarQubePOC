@@ -73,8 +73,8 @@ import { GalleryCodeAreaComponent } from './gallery.codearea.component';
 import { CodeAreaModule } from '../shared/controls/codearea/codearea.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GalleryLocaleComponent } from './gallery.locale.component';
-import { ImagePickerModule } from '../shared/controls/file-picker/image-picker.component';
 import { GalleryImagePickerComponent } from './gallery.image-picker.component';
+import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.component';
 
 @NgModule({
     imports: [
@@ -117,7 +117,7 @@ import { GalleryImagePickerComponent } from './gallery.image-picker.component';
         SidePanelModule,
         CodeAreaModule,
         CodemirrorModule,
-        ImagePickerModule,
+        ImagePickerModule
     ],
     declarations: [
         GalleryComponent,

@@ -37,5 +37,9 @@ export class GalleryImagePickerComponent implements OnInit {
         this.properties.push({ Name: "allowedExtensions", Type: "string", Description: "Comma separated values of allowed file types", Default: "image/png,image/gif,image/jpg,image/jpeg" });
         this.properties.push({ Name: "maxHeight", Type: "number", Description: "Max image height", Default: "" });
         this.properties.push({ Name: "maxWidth", Type: "number", Description: "Max image width", Default: "" });
+        this.properties.push({ Name: "maxSize", Type: "number", Description: "Max image size in bytes", Default: "" });
+        this.properties.push({ Name: "message", Type: "string", Description: "User defined message to appear on right side of component", Default: "" });
+        this.properties.push({ Name: "chooseFileTooltip", Type: "string", Description: "Tooltip value of 'Choose file' button", Default: "Choose file" });
+        this.properties.push({ Name: "restoreFileTooltip", Type: "string", Description: "Tooltip value of 'Restore file' button", Default: "Restore the file" });
     }
 }

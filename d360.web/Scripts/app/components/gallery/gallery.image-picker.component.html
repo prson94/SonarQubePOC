@@ -45,7 +45,20 @@
     <div class="gallery-section">
         <h4>File Size limited to 1,048,576 bytes (1MB)</h4>
         <div>
-            <image-picker [imageType]="'LOGO'" [maxHeight]="100" [maxWidth]="100" [maxSize]="1048576"></image-picker>
+            <image-picker [imageType]="'LOGO'" [maxSize]="1048576"></image-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Custom Tooltip Values</h4>
+        <div>
+            <image-picker [chooseFileTooltip]="'Custom choose file tooltip value'" [restoreFileTooltip]="'Custom restore file tooltip value'"></image-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>With description text</h4>
+        <div>
+            <image-picker [message]="'Choose an ICO file to display in the browser tab/taskbar'"></image-picker>
+            <image-picker [message]="'The recommended image height is 300px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum size of 1MB'"></image-picker>
         </div>
     </div>
 </div>
