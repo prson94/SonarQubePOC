@@ -6,7 +6,7 @@
                  [style.max-width.px]="previewWidth" />
         </div>
         <div class="image-upload">
-            <input #input name="imageUrl" type="file" accept="{{accept}}" (change)="handleInputChange($event)" />
+            <input #input name="imageUrl" type="file" accept="{{allowedExtensions}}" (change)="handleInputChange($event)" />
             <button igButton
                     pTooltip="{{chooseFileTooltip}}"
                     tooltipPosition="top"

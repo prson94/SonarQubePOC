@@ -23,7 +23,7 @@ export const IMAGE_PICKER_ACCESSOR: any = {
 export class ImagePicker implements ControlValueAccessor, OnInit {
     @Input() message = '';
     @Input() imageType = '';
-    @Input() allowedExtensions = '';
+    @Input() allowedExtensions = 'image/png,image/gif,image/jpg,image/jpeg';
     @Input() maxHeight: number;
     @Input() maxWidth: number;
     @Input() maxSize: number;
@@ -31,7 +31,6 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
     @Input() chooseFileTooltip: string = 'Choose file';
     @Input() restoreFileTooltip: string = 'Restore the file';
 
-    accept = "";
     value = "";
 
     onModelChange: Function = () => { };
@@ -51,25 +50,30 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
         public el: ElementRef) { }
 
     ngOnInit() {
-        if (!this.allowedExtensions) {
-            this.accept = "image/png,image/gif,image/jpg,image/jpeg";
-        }
+        this.setPreviewDimensions();
+        this.setInvalidMessages();
+    }
 
-        if (this.imageType === 'ICO') {
-            this.previewHeight = 40;
-            this.previewWidth = 40;
-            this.accept = "image/ico,image/x-icon";
-            this.invalidFormatMessage = 'File type not supported. Please choose a ICO image.';
+    setPreviewDimensions() {
+        switch (this.imageType) {
+            case 'ICO':
+                this.previewHeight = 40;
+                this.previewWidth = 40;
+                this.allowedExtensions = "image/ico,image/x-icon";
+                this.invalidFormatMessage = 'File type not supported. Please choose a ICO image.';
+                break;
+            case 'LOGO':
+                this.previewHeight = 40;
+                this.previewWidth = 168;
+                break;
+            default:
+                this.previewHeight = 96;
+                this.previewWidth = 168;
+                break;
         }
-        else if (this.imageType === 'LOGO') {
-            this.previewHeight = 40;
-            this.previewWidth = 168;
-        }
-        else {
-            this.previewHeight = 96;
-            this.previewWidth = 168;
-        }
+    }
 
+    setInvalidMessages() {
         if (this.maxHeight) {
             this.invalidDimensionMessage = `File exceeds height limit. Please upload a file that has max file height of [${this.maxHeight}px].`;
         }
@@ -126,31 +130,44 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
         };
     }
 
+    validators = [
+        () => {
+            if (this.allowedExtensions.indexOf(this.file.type) === -1) {
+                return this.invalidFormatMessage;
+            }
+        },
+        () => {
+            if ((this.maxHeight && this.image.height > this.maxHeight)
+                || (this.maxWidth && this.image.width > this.maxWidth)) {
+                return this.invalidDimensionMessage;
+            }
+        },
+        () => {
+            if (this.file.size > this.maxSize) {
+                let sizeStr = "";
+                var maxSizeKB = this.maxSize / 1024;
+                if (maxSizeKB > 1000) {
+                    var maxSizeMB = maxSizeKB / 1024;
+                    sizeStr = parseInt(maxSizeMB.toFixed(0)) + "MB";
+                }
+                else {
+                    sizeStr = parseInt(maxSizeKB.toFixed(0)) + "kB";
+                }
+                return `File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
+            }
+        }
+    ]
+
     get errorMessage(): string {
         if (!this.value) {
             return '';
         }
 
-        if (this.accept.indexOf(this.file.type) === -1) {
-            return this.invalidFormatMessage;
-        }
-
-        if ((this.maxHeight && this.image.height > this.maxHeight)
-            || (this.maxWidth && this.image.width > this.maxWidth)) {
-            return this.invalidDimensionMessage;
-        }
-
-        if (this.file.size > this.maxSize) {
-            let sizeStr = "";
-            var maxSizeKB = this.maxSize / 1024;
-            if (maxSizeKB > 1000) {
-                var maxSizeMB = maxSizeKB / 1024;
-                sizeStr = parseInt(maxSizeMB.toFixed(0)) + "MB";
+        for (let i = 0; i < this.validators.length; i++) {
+            var error = this.validators[i]();
+            if (error) {
+                return error;
             }
-            else {
-                sizeStr = parseInt(maxSizeKB.toFixed(0)) + "kB";
-            }
-            return `File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
         }
 
         return '';
