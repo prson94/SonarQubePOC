@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import * as _ from 'lodash';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
@@ -14,6 +14,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { StringConstants } from '../../../static/string-constants';
 import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
+import { Table } from 'primeng/table';
 
 export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -25,7 +26,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
     selector: 'd3s-multiselect-grid',
     templateUrl: "multiselect-grid.component.html",
     providers: [MULTISELECT_GRID_VALUE_ACCESSOR, AssetService, AssetTypeService, ResourcesService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class MultiSelectGridComponent extends BaseComponent implements ControlValueAccessor, OnInit, OnDestroy {
@@ -34,6 +35,8 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     @Input() assetUid: string;
     @Input() targetAssetTypeUid: string;
     @Input() objectCardinality: string;
+    @Input() higlightedItem: any;
+    @Input() selectedAssetsDetail: any[] = [];
 
     @Output() onInfoClick = new EventEmitter();
     @Output() onSelected = new EventEmitter();
@@ -56,6 +59,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     public onModelTouched: Function = () => { };
 
     lazyLoadTotalCount: number = 0;
+    totalRecords: number = 0;
 
     searchAssetSub: Subscription;
 
@@ -63,7 +67,10 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     public title: string = 'MultiSelect Grid'
     private destroy = new Subject<void>();
 
+    @ViewChild('dt', { static: false }) dt: Table;
+
     constructor(
+        private elRef: ElementRef,
         private assetService: AssetService,
         private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private assetTypeService: AssetTypeService,
@@ -145,6 +152,10 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         usersParam["_pageSize"] = 10000;
         usersParam["_pageNum"] = 1;
 
+        if (this.advancedFilters) {
+            usersParam["_filter"] = `(${this.advancedFilters})`;
+        }
+
         forkJoin(
             this.relationshipService.getRelationships(this.intersectTypeUid, params),
             this.resourceService.getResourceLazy(usersParam)
@@ -172,6 +183,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             this.items = this.items.sort((a, b) => { return a.Text > b.Text ? 1 : -1; });
 
             this.lazyLoadTotalCount = this.items.length;
+            this.checkPreSelectedItems();
 
             this.isLoading = false;
             this.ref.markForCheck();
@@ -217,7 +229,10 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                     });
                 }
             });
+            this.totalRecords = this.items.length;
+
             this.lazyLoadTotalCount = this.items.length;
+            this.checkPreSelectedItems();
 
             this.isLoading = false;
             this.ref.markForCheck();
@@ -268,9 +283,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             params["_filter"] += ` and ([Path] ct '${this.simpleTextFilter}')`;
         }
 
-        if (this.lazyLoadTotalCount) {
-            params["_includeTotal"] = false;
-        }
+        params["_includeTotal"] = true;
 
         this.isLoading = true;
 
@@ -281,6 +294,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         this.searchAssetSub = this.assetService.getAssets(this.targetAssetTypeUid, params, true, false).subscribe((res) => {
             if (res.total) {
                 this.lazyLoadTotalCount = +res.total;
+                this.totalRecords = res.total;
             }
             this.items = [...[]];
             (res.items as any[]).forEach((item) => {
@@ -293,8 +307,22 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                 });
             });
             this.isLoading = false;
+            this.checkPreSelectedItems();
             this.ref.markForCheck();
         });
+    }
+
+    checkPreSelectedItems() {
+        this.selectedItems = [];
+        if (this.items && this.selectedAssetsDetail) {
+            this.items.forEach((item) => {
+                this.selectedAssetsDetail.forEach((sel) => {
+                    if (sel.Value === item.Value) {
+                        this.selectedItems.push(item);
+                    }
+                })
+            })
+        }
     }
 
     private getObjectTypeForTooltip(item: any): string {
@@ -353,13 +381,50 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     advancedFiltersChanged($event) {
         this.advancedFilters = $event.filter;
-        this.loadAssetsLazy(null);
+        if (this.isReferenceListType(this.targetAssetTypeUid)) {
+            this.loadReferenceListTypeData();
+        }
+        else if (this.targetClass === "User") {
+            this.loadUsers();
+        }
+        else {
+            this.loadAssetsLazy(null);
+        }
     }
     onSimpleSearch($event) {
         this.simpleTextFilter = $event;
-        this.loadAssetsLazy(null);
+        if (this.isReferenceListType(this.targetAssetTypeUid)) {
+            if (this.dt) {
+                this.dt.filterGlobal($event, 'contains');
+                setTimeout(() => {
+                    this.totalRecords = this.dt.totalRecords;
+                    this.ref.markForCheck();
+                }, 100);
+            }
+        }
+        else if (this.targetClass === "User") {
+            this.dt.filterGlobal($event, 'contains');
+            setTimeout(() => {
+                this.totalRecords = this.dt.totalRecords;
+                this.ref.markForCheck();
+            }, 100);
+        }
+        else {
+            this.loadAssetsLazy(null);
+        }
     }
     get selectionScrollHeight(): string {
-        return (window.innerHeight - 380) + "px";
+        var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('multiselect-grid-header')[0].getBoundingClientRect().height;
+        return (window.innerHeight - 348 - filterFieldHeight) + "px";
+    }
+
+    toggleSelectedItem(item: any) {
+        if (this.higlightedItem === item) {
+            this.higlightedItem = null;
+        }
+        else {
+            this.higlightedItem = item;
+        }
+        this.onInfoClick.emit(this.higlightedItem);
     }
 }

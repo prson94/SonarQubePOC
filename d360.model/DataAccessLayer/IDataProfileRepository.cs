@@ -1,10 +1,9 @@
-﻿using d360.core.entities;
-using d360.core.queue;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+
+using d360.core.entities;
+using d360.core.queue;
 
 namespace d360.model.DataAccessLayer
 {

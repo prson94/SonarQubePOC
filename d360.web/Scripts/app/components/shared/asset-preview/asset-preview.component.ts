@@ -12,6 +12,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 export class AssetPreviewComponent implements OnChanges, OnDestroy {
     @Input() assetUid: string = '';
     @Input() assetType: string = '';
+    @Input() assetTypeUid: string = '';
     @Input() hasOpenLink: boolean = true;
     @Input() hasEditLink: boolean = false;
 
@@ -32,7 +33,14 @@ export class AssetPreviewComponent implements OnChanges, OnDestroy {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if ((p === 'assetUid' || p === 'assetType') && this.assetType && this.assetUid) {
-                this.selectedAsset = { uid: this.assetUid, type: this.assetType };
+                this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+
+                if (this.assetType === 'ReferenceItem') {
+                    this.selectedReferenceItem = { uid: this.assetTypeUid, highlightUid: this.assetUid };
+                }
+                else {
+                    this.selectedAsset = { uid: this.assetUid, type: this.assetType };
+                }
             }
         }
     }

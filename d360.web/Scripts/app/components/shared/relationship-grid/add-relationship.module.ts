@@ -24,6 +24,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AssetDetailModule } from '../asset-detail/asset-detail.module';
 import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
 
 @NgModule({
@@ -52,7 +53,8 @@ import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
         TooltipModule,
         AssetEditorModule,
         AssetDetailModule,
-        AssetPreviewModule
+        AssetPreviewModule,
+        SharedGridPagingInfoModule
     ],
     declarations: [
         AddRelationshipComponent

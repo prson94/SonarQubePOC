@@ -29,10 +29,10 @@ namespace d360.model.helpers.filters.program
             }
         }
 
-
         public static void ValidateValueForType(string type, object value)
         {
             bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
+
             if (!hasApostrophe && !(type == "number" || type == "decimal" || type == "boolean" || type == "score" || type == "counter"))
             {
                 throw new FilterExpressionParserException("Text values should be placed within quotations.");
@@ -86,9 +86,9 @@ namespace d360.model.helpers.filters.program
                     escapedValue.Append(c);
                 }
             }
+
             return escapedValue.ToString();
         }
-
 
         public static string GetLogicalOperator(string value)
         {

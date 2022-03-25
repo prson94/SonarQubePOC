@@ -21,6 +21,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
+import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 
 declare var CurrentResourceID;
 
@@ -70,7 +71,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         private linkClickInterceptor: LinkClickInterceptor,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
@@ -181,7 +183,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         this.selection = event;
 
-        if (this.selection && this.selection.HasProfiling) {
+        if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             this.sidePanelLoading = true;                                  
             this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
@@ -207,7 +209,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         if (this.selection == null || this.sidePanelTab === 'detail') {
             return true;
         }
-        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+        if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             return this.selection.HasProfiling;
         }
     }

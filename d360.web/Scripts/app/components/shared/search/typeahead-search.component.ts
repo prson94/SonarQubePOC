@@ -155,6 +155,13 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.ref.markForCheck();
         }
     }
+
+    public showType(result: SearchResult): boolean {
+        if (result.Group === "Semantic Type") {
+            return false;
+        }
+        return (typeof result.Type !== "undefined");
+    }
 }
 
 import { NgModule } from '@angular/core';

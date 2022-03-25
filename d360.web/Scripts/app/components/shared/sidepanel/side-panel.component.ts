@@ -4,6 +4,7 @@ import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: 'side-panel',
@@ -46,7 +47,8 @@ export class SidePanelComponent extends BaseComponent {
 
     constructor(
         private stateService: StateService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService) {
         super(settingsService);
     }
 
@@ -120,12 +122,15 @@ export class SidePanelComponent extends BaseComponent {
                     if (state.selectedPanel != null && state.selectedPanel.length > 0) {
                         let b = this.buttons.find((b) => b.key === state.selectedPanel);
 
-                        if (b) {
+                        if (b || this.storageKey === "relationship-detail") {
                             this.selectedPanel = state.selectedPanel;
                         }
                     }
                 }
 
+            }
+            else if (this.selectedPanel === 'filters') {
+                this.expanded = true;
             }
         }
     }
@@ -174,7 +179,7 @@ export class SidePanelComponent extends BaseComponent {
             }));
         }
 
-        if (this.hasProfiling) {
+        if (this.hasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             this.buttons.push(new SidePanelButton({
                 label: 'Profiling',
                 tooltip: 'Profiling',

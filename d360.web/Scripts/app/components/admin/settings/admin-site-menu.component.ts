@@ -12,6 +12,7 @@ import { JsonResult } from '../../../models/jsonresult.model';
 
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: 'd3s-admin-site-menu',
@@ -66,7 +67,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         titleService: Title,
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        private featureFlagService: FeatureFlagsService
     ) {
         super(headerBreadcrumbService, titleService, settingsService);
     }

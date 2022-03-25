@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json.Serialization;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using Newtonsoft.Json.Serialization;
 
 namespace d360.model.helpers
 {
@@ -9,14 +10,13 @@ namespace d360.model.helpers
 
         public CustomJSONContractResolver(Dictionary<string, string> customPropertyMapping)
         {
-            this.PropertyMappings = customPropertyMapping;
+            PropertyMappings = customPropertyMapping;
         }
 
         protected override string ResolvePropertyName(string propertyName)
         {
-            string resolvedName = null;
-            var resolved = this.PropertyMappings.TryGetValue(propertyName, out resolvedName);
-            return (resolved) ? resolvedName : base.ResolvePropertyName(propertyName);
+            bool resolved = PropertyMappings.TryGetValue(propertyName, out string resolvedName);
+            return resolved ? resolvedName : base.ResolvePropertyName(propertyName);
         }
     }
 }

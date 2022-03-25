@@ -1,14 +1,16 @@
-﻿using Dapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+
+using Dapper;
+
 using static Dapper.SqlMapper;
 
 namespace d360.model.DataAccessLayer.repositories
 {
-    static class UDTExtensions
+    internal static class UDTExtensions
     {
         public static ICustomQueryParameter AsUDTParameter<T>(this IEnumerable<T> items)
         {
@@ -17,13 +19,13 @@ namespace d360.model.DataAccessLayer.repositories
                 throw new ArgumentNullException(nameof(items));
             }
 
-            var udtName = typeof(T).GetCustomAttribute<UDTNameAttribute>();
+            UDTNameAttribute udtName = typeof(T).GetCustomAttribute<UDTNameAttribute>();
             if (udtName == null)
             {
                 throw new ArgumentException($"Type {typeof(T).FullName} doesn't have attribute UDTNameAttribute");
             }
 
-            var properties = typeof(T)
+            PropertyInfo[] properties = typeof(T)
                 .GetProperties(
                     BindingFlags.Public
                     | BindingFlags.Instance
@@ -31,7 +33,7 @@ namespace d360.model.DataAccessLayer.repositories
                     | BindingFlags.GetProperty
                 );
 
-            var columns = properties
+            List<PropertyInfo> columns = properties
                 .Where(p => p.GetCustomAttribute<UDTOrderAttribute>() != null)
                 .OrderBy(p => p.GetCustomAttribute<UDTOrderAttribute>().Order)
                 .ToList();
@@ -41,13 +43,13 @@ namespace d360.model.DataAccessLayer.repositories
                 throw new ArgumentException($"Type {typeof(T).FullName} doesn't have public properties with UDTOrder attribute");
             }
 
-            var dataTable = new DataTable();
-            foreach (var column in columns)
+            DataTable dataTable = new DataTable();
+            foreach (PropertyInfo column in columns)
             {
                 dataTable.Columns.Add(column.Name);
             }
 
-            foreach (var item in items)
+            foreach (T item in items)
             {
                 dataTable.Rows.Add(columns.Select(column => column.GetValue(item)).ToArray());
             }

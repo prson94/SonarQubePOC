@@ -52,6 +52,8 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() hideLinks: boolean = false;
     @Input() hideClassName: boolean = false;
     @Input() groupMembersReadOnlyMode: boolean = true;
+    @Input() showOnlyFields: Set<string> = null;
+
     //if relationshipUid is sent we need to show both relationship data and related asset data
     @Input() relationshipUid: string = '';
     //baseAssetUid is used to determine on which side is our relationship
@@ -136,24 +138,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             }
         }
 
-        if (this.objectType === 'Resource') {
-            this.tab = 'detail';
-            this.useAccordion = false;
-            if (this.loadGroupSub) {
-                this.loadGroupSub.unsubscribe();
-            }
-            this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
-                .subscribe((res) => {
-                    this.userGroups = res.items;
-                });
-
-            this.hideLinks = !this.isAdmin;
-        }
-
-        if (this.objectType === 'Group' && updateTab) {
-            this.tab = 'members';
-            this.hideLinks = !this.isAdmin;
-        }
 
 
         if (this.relationshipUid) {
@@ -165,9 +149,29 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             detailSub
                 .subscribe((data) => {
                     this.model = data;
-                    this.rows = data.rows;
+                    this.rows = this.getRowsWithOnlyFilteredFields(data.rows);
                     this.objectID = data.ObjectID;
                     this.objectType = data.Object;
+
+                    if (this.objectType === 'Resource') {
+                        this.tab = 'detail';
+                        this.useAccordion = false;
+                        if (this.loadGroupSub) {
+                            this.loadGroupSub.unsubscribe();
+                        }
+                        this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
+                            .subscribe((res) => {
+                                this.userGroups = res.items;
+                            });
+
+                        this.hideLinks = !this.isAdmin;
+                    }
+
+                    if (this.objectType === 'Group' && updateTab) {
+                        this.tab = 'members';
+                        this.hideLinks = !this.isAdmin;
+                    }
+
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
@@ -235,6 +239,31 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
+        }
+    }
+
+    private getRowsWithOnlyFilteredFields(rows: DetailRow[]): DetailRow[] {
+        if (this.showOnlyFields == null) {
+            return rows;
+        }
+
+        return rows
+            .map((row) => ({
+                ...row,
+                FirstColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.FirstColumnFields),
+                SecondColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.SecondColumnFields)
+            }))
+            .filter((row) => 
+                ((row.FirstColumnFields?.length ?? 0) > 0)
+                || ((row.SecondColumnFields?.length ?? 0) > 0)
+            );
+
+        function getOnlyFilteredFields(allowedFields: Set<string>, fields: DetailField[] | null): DetailField[] {
+            if (fields == null) {
+                return null;
+            }
+
+            return fields.filter((f) => allowedFields.has(f.FieldName));
         }
     }
 

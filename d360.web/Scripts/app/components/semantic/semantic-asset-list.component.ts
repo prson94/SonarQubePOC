@@ -6,10 +6,11 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 import { SemanticType, SemanticTypeAsset } from '../../models/semantic-type.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { forkJoin } from 'rxjs';
+import { SemanticBaseComponent } from './semantics-base.component';
+import { FeatureFlagsService } from '../../services/featureflags.service';
 
 declare var CurrentResourceID;
 
@@ -20,7 +21,7 @@ declare var CurrentResourceID;
     providers: [DataProfileService],
 })
 
-export class SemanticTypeAssetListComponent extends AssetGridBaseComponent implements OnInit {
+export class SemanticTypeAssetListComponent extends SemanticBaseComponent implements OnInit {
 
     semanticType: SemanticType;
     private sub: any;
@@ -38,15 +39,16 @@ export class SemanticTypeAssetListComponent extends AssetGridBaseComponent imple
     resourceUid: any;
 
     constructor(private route: ActivatedRoute,
-        private router: Router,
+        protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+        private cdRef: ChangeDetectorRef,
+        private featureFlagService: FeatureFlagsService,) {
+        super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }    
 
     ngOnInit() {        
@@ -61,12 +63,14 @@ export class SemanticTypeAssetListComponent extends AssetGridBaseComponent imple
     }
 
     getData(uid: string) {
-        this.isLoading = true;
-        this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
-            this.semanticType = s.items[0];
-            this.isLoading = false;
-            this.cdRef.markForCheck();
-        });
+        if (this.semanticTypesEnabled) {
+            this.isLoading = true;
+            this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
+                this.semanticType = s.items[0];
+                this.isLoading = false;
+                this.cdRef.markForCheck();
+            });
+        }
     }
 
     selectAsset(asset: SemanticTypeAsset) {

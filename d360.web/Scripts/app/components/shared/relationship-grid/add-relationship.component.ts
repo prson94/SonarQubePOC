@@ -31,6 +31,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
     @Input() isVisible: boolean = false;
+    @Input() isFromModal: boolean = false;
 
     @Output() onClose = new EventEmitter();
     @Output() onAddComplete = new EventEmitter();
@@ -50,6 +51,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     selectedAssetsDetail: any[] = [];
     fieldValues: any = {};
     assetDetail: any = {};
+    higlightedItem: any = {};
 
     savingInProgress: boolean = false;
     previewAssetUid: string = "";
@@ -98,9 +100,16 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 
     close() {
         this.isVisible = false;
+        this.currentStep = AddRelationshipStep.SetRelationshipType;
         this.selectedRelationshipType = null;
         this.previewAssetUid = this.previewAssetType = "";
+        this.resetSelectedAssets();
         this.onClose.emit();
+    }
+
+    resetSelectedAssets() {
+        this.selectedAssets = [];
+        this.selectedAssetsDetail = [];
     }
 
     public initialLoad(): void {
@@ -143,7 +152,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                         thisCardinality = type.Subject.Cardinality;
                     }
 
-                    if (count > 0 && targetCardinality === "One" && thisCardinality === "Many") {
+                    if (count > 0 && thisCardinality === "One" && targetCardinality === "Many") {
                         disabledClass = 'disabled-cardinality-many';
                     }
                     if (count > 0 && targetCardinality === "One" && thisCardinality === "One") {
@@ -202,18 +211,29 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     get modalSubtitle(): string {
         let title: string = this.assetDetail.DisplayValue;
         if (this.currentStep === AddRelationshipStep.SetAssets) {
-            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            title += " - " + `${this.selectedRelationshipType.name}`;
         }
         if (this.currentStep === AddRelationshipStep.SetCustomFields) {
-            title += " - " + `<strong>${this.selectedRelationshipType.name}</strong>`;
+            title += " -" + `&nbsp;<strong>${this.selectedRelationshipType.name}</strong>&nbsp;`;
             if (this.selectedAssetsDetail.length > 1) {
-                title += " - " + this.selectedAssetsDetail.length + " items";
+                title += "- " + this.selectedAssetsDetail.length + " items";
             }
-            else {
-                title += " - " + this.selectedAssetsDetail[0].Text;
+            else if (this.selectedAssetsDetail[0]) {
+
+                title += "- " + this.selectedAssetsDetail[0].Text;
+            }
+            else if (this.selectedAssetsDetail && !Array.isArray(this.selectedAssetsDetail)) {
+                title += "- " + this.selectedAssetsDetail["Text"];
             }
         }
         return title;
+    }
+
+    get selectedAssetCount(): number {
+        if (!this.selectedAssetsDetail) {
+            return 0;
+        }
+        return this.selectedAssetsDetail.length;
     }
 
     confirmAssets() {
@@ -275,6 +295,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     onInfoClick($event) {
+        if (!$event) {
+            this.previewAssetType = this.previewAssetUid = "";
+            return;
+        }
         this.previewAssetUid = $event.Value;
         if (this.targetType === "BusinessAsset" || this.targetType === "TechnicalAsset") {
             this.previewAssetType = "Artifact";
@@ -284,6 +308,9 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         }
         else if (this.targetType === "User") {
             this.previewAssetType = "Resource";
+        }
+        else if (this.targetType === "Model") {
+            this.previewAssetType = "Taxonomy";
         }
         else {
             this.previewAssetType = this.targetType;

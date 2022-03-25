@@ -14,16 +14,16 @@ namespace d360.model.workflow
                 throw new Exception("INVALID XML SPECIFIED");
             }
 
-            var status = string.Empty;
+            string status = string.Empty;
 
             if (xml.Element("Status") != null)
             {
                 status = xml.Element("Status").Value;
             }
-            
+
             return new WorkflowStatusModel
             {
-                Status = status ?? "Draft",                
+                Status = status ?? "Draft",
             };
         }
     }

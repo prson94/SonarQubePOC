@@ -61,13 +61,14 @@ stages:
     variables:
       npm_config_cache: $(Pipeline.Workspace)/.npm
     pool:
-      vmImage: windows-2019
+      vmImage: ubuntu-20.04
     steps:
     - checkout: self
-    - template: build/steps/step-npm-build.yml@templates
-      parameters:
-        workingDir: 'd360.web'
-        buildScript: 'run build-dev-ops-prod'
+    - script: mkdir $(Build.Repository.LocalPath)/d360.web/Scripts/dist
+    - script: yarn
+      workingDirectory: 'd360.web'
+    - script: yarn run build-dev-ops-prod-linux
+      workingDirectory: 'd360.web'
     - publish: $(Build.Repository.LocalPath)/d360.web/Scripts/dist
       displayName: 'Publish bundled scripts for later use'
       artifact: dist

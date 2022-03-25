@@ -28,6 +28,17 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
     loadSub: Subscription;
     tab: string = 'items';
 
+    includedFields = new Set([
+        "Name",
+        "Description",
+        "Hierarchical",
+        "uid",
+        "ArtifactCreatedOn",
+        "ArtifactUpdatedOn", 
+        "Created By",
+        "Last Modified By"
+    ]);
+
     constructor(
         protected messagesService: MessagesObservableService,
         private router: Router,

@@ -46,6 +46,7 @@ export class TagDetail {
     ObjectID: number;
     TagsAsString: string;
     Tags: TagItem[];
+    HasProfiling?: any;
 }
 export class TagItem {
     Uid: number;
