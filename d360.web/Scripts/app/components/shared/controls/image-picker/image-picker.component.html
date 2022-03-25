@@ -22,8 +22,8 @@
 
         <div class="message" [innerHTML]="message"></div>
     </div>
-    <div *ngIf="!isValid()"
+    <div *ngIf="hasError"
          class="ig-text-required">
-        {{errorMessage}}
+        {{validationMessage}}
     </div>
 </div>

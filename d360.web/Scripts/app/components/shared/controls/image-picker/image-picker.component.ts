@@ -1,5 +1,5 @@
 ﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild, OnInit } from "@angular/core";
-import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
 import { ButtonModule } from "../../../../directives/ig-button-directive";
@@ -20,7 +20,7 @@ export const IMAGE_PICKER_ACCESSOR: any = {
     changeDetection: ChangeDetectionStrategy.OnPush,
     styleUrls: ["./image-picker.component.less"]
 })
-export class ImagePicker implements ControlValueAccessor, OnInit {
+export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     @Input() message = '';
     @Input() imageType = '';
     @Input() allowedExtensions = 'image/png,image/gif,image/jpg,image/jpeg';
@@ -35,6 +35,10 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
 
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
+    onValidationChange: Function = () => { };
+
+    hasError: boolean = false;
+    validationMessage: string = "";
 
     previewHeight: number = 0;
     previewWidth: number = 0;
@@ -99,10 +103,15 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
         this.onModelTouched = fn;
     }
 
+    registerOnValidatorChange(fn: () => void): void {
+        this.onValidationChange = fn;
+    }
+
     clearValue() {
         this.value = "";
         this.file = {};
         this.image = {};
+        this.validate();
         this.onModelChange(this.value);
         this.ref.markForCheck();
     }
@@ -126,55 +135,70 @@ export class ImagePicker implements ControlValueAccessor, OnInit {
             this.image = i;
             this.value = reader.result;
             this.onModelChange(this.value);
+            this.validate();
             this.ref.markForCheck();
         };
     }
 
-    validators = [
-        () => {
-            if (this.allowedExtensions.indexOf(this.file.type) === -1) {
-                return this.invalidFormatMessage;
+    defaultValidators = [
+        {
+            type: 'invalid-format',
+            validator: () => {
+                if (this.allowedExtensions.indexOf(this.file.type) === -1) {
+                    return this.invalidFormatMessage;
+                }
             }
         },
-        () => {
-            if ((this.maxHeight && this.image.height > this.maxHeight)
-                || (this.maxWidth && this.image.width > this.maxWidth)) {
-                return this.invalidDimensionMessage;
+        {
+            type: 'invalid-dimensions',
+            validator: () => {
+                if ((this.maxHeight && this.image.height > this.maxHeight)
+                    || (this.maxWidth && this.image.width > this.maxWidth)) {
+                    return this.invalidDimensionMessage;
+                }
             }
         },
-        () => {
-            if (this.file.size > this.maxSize) {
-                let sizeStr = "";
-                var maxSizeKB = this.maxSize / 1024;
-                if (maxSizeKB > 1000) {
-                    var maxSizeMB = maxSizeKB / 1024;
-                    sizeStr = parseInt(maxSizeMB.toFixed(0)) + "MB";
+        {
+            type: 'invalid-size',
+            validator: () => {
+                if (this.file.size > this.maxSize) {
+                    let sizeStr = "";
+                    var maxSizeKB = this.maxSize / 1024;
+                    if (maxSizeKB > 1000) {
+                        var maxSizeMB = maxSizeKB / 1024;
+                        sizeStr = parseInt(maxSizeMB.toFixed(0)) + "MB";
+                    }
+                    else {
+                        sizeStr = parseInt(maxSizeKB.toFixed(0)) + "kB";
+                    }
+                    return `File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
                 }
-                else {
-                    sizeStr = parseInt(maxSizeKB.toFixed(0)) + "kB";
-                }
-                return `File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
             }
         }
-    ]
+    ];
 
-    get errorMessage(): string {
-        if (!this.value) {
-            return '';
-        }
-
-        for (let i = 0; i < this.validators.length; i++) {
-            var error = this.validators[i]();
-            if (error) {
-                return error;
-            }
-        }
-
-        return '';
+    validate(control: AbstractControl = null): ValidationErrors {
+        const error = this.getValidationError(control ? control.value : this.value);
+        this.hasError = (error != null);
+        this.validationMessage = error ? error[Object.keys(error)[0]] : '';
+        return error;
     }
 
-    public isValid() {
-        return this.errorMessage.length === 0;
+    getValidationError(value: string) {
+        if (value == null || value.trim() === '') {
+            return null;
+        }
+
+        for (let i = 0; i < this.defaultValidators.length; i++) {
+            var errorMessage = this.defaultValidators[i].validator();
+            if (errorMessage) {
+                var err = {};
+                err[this.defaultValidators[i].type] = errorMessage;
+                return err;
+            }
+        }
+
+        return null;
     }
 }
 
