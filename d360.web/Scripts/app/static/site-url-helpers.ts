@@ -66,6 +66,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
+    static SITE_URL_ADMIN_BRANDING = 'branding';
     static SITE_URL_ADMIN_CUSTOM_API = 'customapi';
     static SITE_URL_ADMIN_MODELS = 'taxonomies';
     static SITE_URL_ADMIN_POLICIES = 'policies';
