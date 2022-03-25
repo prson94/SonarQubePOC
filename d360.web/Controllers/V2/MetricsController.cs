@@ -1,12 +1,4 @@
-﻿using d360.core.entities;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using d360.extensions;
-using d360.model;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -15,17 +7,27 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+
 using d360.core;
-using d360.web.Filters;
+using d360.core.entities;
+using d360.core.entities.Metric;
+using d360.core.enums;
 using d360.core.exceptions;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
-using System.ComponentModel.DataAnnotations;
-using Resources;
-using SpreadsheetLight;
-using d360.core.resources;
 using d360.core.queue;
+using d360.core.resources;
+using d360.extensions;
+using d360.model.DataAccessLayer;
 using d360.model.helpers.filters;
+using d360.web.Filters;
+using d360.web.Models;
+
+using Microsoft.Web.Http;
+
+using Resources;
+
+using SpreadsheetLight;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -54,6 +56,7 @@ namespace d360.web.Controllers.V2
                         ResultOperation = MetricRuleResultOperation.Average,
                         ResultPathUid = Guid.Empty
                     },
+
                     Governance = new MetricAssetDefinitionGovernanceViewModel
                     {
                         Check = MetricGovernanceCheckType.External,
@@ -126,18 +129,16 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        IQueueSource QueueSource;
-        IAssetRepository AssetRepository;
-        IMetricsRepository MetricsRepository;
-        IScoringRepository ScoringRepository;
+        private readonly IAssetRepository AssetRepository;
+        private readonly IMetricsRepository MetricsRepository;
+        private readonly IScoringRepository ScoringRepository;
 
-        public MetricsController(ICoreComponentSet set, IQueueSource queueSource, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
+        public MetricsController(ICoreComponentSet set, IScoringRepository scoringRepository, IMetricsRepository metricsRepository, IAssetRepository assetRepository)
             : base(set)
         {
-            QueueSource = queueSource;
-            this.ScoringRepository = scoringRepository;
-            this.MetricsRepository = metricsRepository;
-            this.AssetRepository = assetRepository;
+            ScoringRepository = scoringRepository;
+            MetricsRepository = metricsRepository;
+            AssetRepository = assetRepository;
         }
 
         #endregion
@@ -171,7 +172,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError , ApiMessages.UnknownErrorInvestigatingMessage);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
 
@@ -282,6 +283,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var allocation = Company.GetByUid<MetricAllocation>(model.AllocationUid);
+
                 if (allocation == null)
                 {
                     throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.NoAllocationForUid);
@@ -307,7 +309,7 @@ namespace d360.web.Controllers.V2
 
                     if (!parent.IsGroup)
                     {
-                        throw new WorkStatusException(HttpStatusCode.BadRequest,MetricsApiMessages.IsGroupTrueParentMetric);
+                        throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.IsGroupTrueParentMetric);
                     }
 
                     if (model.IsGroup || parent.ParentUid != null)
@@ -322,12 +324,14 @@ namespace d360.web.Controllers.V2
                 {
                     model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>();
                 }
+
                 model.ConditionGroups.ForEach(g =>
                 {
                     if (g.ConditionItems == null)
                     {
                         g.ConditionItems = new List<MetricAssetVersionConditionItemViewModel>();
                     }
+
                     g.ConditionItems.ForEach(i =>
                     {
                         if (i.Values == null)
@@ -356,7 +360,7 @@ namespace d360.web.Controllers.V2
                         }
                         else if (string.IsNullOrEmpty(item.ConditionFieldTypeName) && !item.ConditionIntersectTypeUid.HasValue)
                         {
-                            throw new WorkStatusException(HttpStatusCode.BadRequest,MetricsApiMessages.ConditionNotEmpty);
+                            throw new WorkStatusException(HttpStatusCode.BadRequest, MetricsApiMessages.ConditionNotEmpty);
                         }
                         else
                         {
@@ -395,15 +399,14 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(result.StatusCode, result.Error, result.Message);
             }
 
-            var isNew = (result.StatusCode == HttpStatusCode.Created);
+            var isNew = result.StatusCode == HttpStatusCode.Created;
+
             return successMessageResponse(
                     result.StatusCode,
                     $"{(isNew ? MetricsApiMessages.MetricAdded : MetricsApiMessages.MetricUpdated)}.",
                     $"{(isNew ? MetricsApiMessages.MetricAddedSuccessfully : MetricsApiMessages.MetricUpdatedSuccessfully)}."
             );
         }
-
-
 
         /// <summary>
         /// Allows you to remove a metric based on its Uid.
@@ -436,7 +439,6 @@ namespace d360.web.Controllers.V2
 
             return successMessageResponse(HttpStatusCode.OK, MetricsApiMessages.MetricRemoved, MetricsApiMessages.MetricRemoveMessage);
         }
-
 
         /// <summary>
         /// Gets a hierarchical structure of metrics and conditions associated with the asset type Uid provided.
@@ -475,7 +477,7 @@ namespace d360.web.Controllers.V2
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -506,7 +508,7 @@ namespace d360.web.Controllers.V2
 
                 if (assetType == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var results = await MetricsRepository.GetMetricPathOptionsBy(assetType.ID, scoreType);
@@ -557,7 +559,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
         /// <summary>
         /// Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
         /// </summary>
@@ -582,9 +583,11 @@ namespace d360.web.Controllers.V2
             {
                 DateTime effectiveDate = DateTime.MinValue;
                 var param = Request.GetQueryNameValuePairs();
+
                 if (param.Any(x => x.Key.ToLower() == "effectivedate"))
                 {
                     var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
+
                     if (!DateTime.TryParse(value, out effectiveDate))
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
@@ -613,6 +616,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var result = MetricsRepository.GetMetricHierarchyByAsset(allocation.Uid, assetUid, effectiveDate);
+                
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result))).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -645,16 +649,16 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                Guid _allocationUid;
-                Guid _assetUid;
 
-                var allocationStatus = validateScoreAllocation(allocationUid, out _allocationUid);
+                var allocationStatus = validateScoreAllocation(allocationUid, out Guid _allocationUid);
+
                 if (allocationStatus.StatusCode != HttpStatusCode.OK)
                 {
-                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode,ApiMessages.BadRequest, allocationStatus.Message)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(allocationStatus.StatusCode, ApiMessages.BadRequest, allocationStatus.Message)).ConfigureAwait(false);
                 }
 
-                var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out _assetUid);
+                var assetStatus = validateAsset(assetUid, Permission.ReadAsset, out Guid _assetUid);
+
                 if (assetStatus.StatusCode != HttpStatusCode.OK)
                 {
                     return await Task.FromResult(errorMessageResponse(assetStatus.StatusCode, "Bad request", assetStatus.Message)).ConfigureAwait(false);
@@ -662,12 +666,14 @@ namespace d360.web.Controllers.V2
 
                 DateTime effectiveDate = DateTime.MinValue;
                 var param = Request.GetQueryNameValuePairs();
+
                 if (param.Any(x => x.Key.ToLower() == "effectivedate"))
                 {
                     var value = param.FirstOrDefault(x => x.Key.ToLower() == "effectivedate").Value;
+
                     if (!DateTime.TryParse(value, out effectiveDate))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, MetricsApiMessages.InvalidEffectiveDate)).ConfigureAwait(false);
                     }
                 }
                 else
@@ -704,22 +710,24 @@ namespace d360.web.Controllers.V2
             try
             {
                 var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
                 if (!Company.HasAssetTypePermission(assetType.Object, assetType.ID, Permission.ReadAsset))
                 {
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.FieldNotAllowedForAssetType));
                 }
 
                 var models = MetricsRepository.GetMetricConditionsFields(assetTypeUid);
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models ?? new List<MetricFieldTypeViewModel>()));
             }
             catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError($"Metrics.GetMetricFieldsByAssetType => {errorMessage}");
+
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
             }
         }
-
 
         /// <summary>
         /// Post measure results to calculate a score internally.
@@ -741,12 +749,17 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.Forbidden, ApiMessages.EndpointNotAuthorizedMessage);
+                }
 
                 if (model == null || model.Count < 1)
+                {
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage));
+                }
 
                 var execution = getApiExecution(model.Count);
+
                 return ResponseMessage(
                     Request.CreateResponse(
                         HttpStatusCode.OK,
@@ -763,8 +776,6 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
-
-
 
         /// <summary>
         /// Gets a calculated score by asset type Uid
@@ -796,13 +807,13 @@ namespace d360.web.Controllers.V2
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
                 if (assetType == null)
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString()));
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
-
                 string isValid = isPageSizeAndNumValid(queryParams);
 
                 if (!string.IsNullOrEmpty(isValid))
@@ -843,20 +854,21 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid, string effectiveDate = null)
         {
             var asset = Company.Filter<Asset>(x => x.uid == uid, x => x.AssetType).FirstOrDefault();
+
             if (asset == null)
             {
                 return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()));
             }
 
             DateTime? effDate = null;
+
             if (!string.IsNullOrEmpty(effectiveDate))
             {
-                DateTime edt;
-                if (DateTime.TryParse(effectiveDate, out edt))
+                if (DateTime.TryParse(effectiveDate, out DateTime edt))
                 {
                     if (edt.Year < 1900 || edt.Year > DateTime.UtcNow.Year)
                     {
-                        return errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.InvalidDateYear, effectiveDate));
+                        return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.InvalidDateYear, effectiveDate));
                     }
 
                     effDate = edt;
@@ -889,6 +901,7 @@ namespace d360.web.Controllers.V2
         {
             int type = (int)scoreType;
             var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type }, ApiTimeout);
+           
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 
@@ -958,11 +971,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetDataQualityResults()
         {
             var queryParams = Request.GetQueryNameValuePairs();
-
             Asset asset = null;
-
             Asset ruleAsset = null;
-
             Guid _owningAssetUid;
             Guid? _evaluatedAssetUid = null;
             string _order = null;
@@ -975,10 +985,11 @@ namespace d360.web.Controllers.V2
             string _filter = null;
             string _simpleFilter = null;
 
-            var isRequestAnExport = Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || 
+            var isRequestAnExport = Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) ||
                 Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase);
 
             #region Model Validation
+
             if (queryParams.Any(q => q.Key == "_owningAssetUid"))
             {
                 if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_owningAssetUid").Value, out _owningAssetUid))
@@ -1004,14 +1015,12 @@ namespace d360.web.Controllers.V2
 
             if (queryParams.Any(q => q.Key == "_evaluatedAssetUid"))
             {
-                Guid tempEvaluatedUid;
-                if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value, out tempEvaluatedUid))
+                if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value, out Guid tempEvaluatedUid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(MetricsApiMessages.CustomUidNotValid, "EvaluatedAssetUid", queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value))).ConfigureAwait(false);
                 }
 
                 _evaluatedAssetUid = tempEvaluatedUid;
-
                 asset = AssetRepository.GetAssetByUID(_evaluatedAssetUid.Value);
 
                 if (asset == null)
@@ -1020,10 +1029,9 @@ namespace d360.web.Controllers.V2
                 }
                 else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.BadRequest, string.Format(MetricsApiMessages.CustomNotValid, "EvaluatedAssetUid", _evaluatedAssetUid.Value))).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(MetricsApiMessages.CustomNotValid, "EvaluatedAssetUid", _evaluatedAssetUid.Value))).ConfigureAwait(false);
                 }
             }
-
 
             if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset))
             {
@@ -1034,6 +1042,7 @@ namespace d360.web.Controllers.V2
             {
                 _order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
                 List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "PassFraction", "TotalCount" };
+                
                 if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomOrderMessage, "_order", _order, string.Join(",", _orderColumns.ToArray())));
@@ -1043,19 +1052,20 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key == "_direction"))
             {
                 _direction = queryParams.ToList().FirstOrDefault(q => q.Key == "_direction").Value;
+                
                 if (!_direction.Equals("asc", StringComparison.InvariantCultureIgnoreCase) && !_direction.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter,  ApiMessages.InvalidDirection);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, ApiMessages.InvalidDirection);
                 }
             }
 
             if (queryParams.Any(q => q.Key == "_effectiveDateStart"))
             {
-                DateTime _tempEffectiveDateStart;
-                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_effectiveDateStart").Value, out _tempEffectiveDateStart))
+                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_effectiveDateStart").Value, out DateTime _tempEffectiveDateStart))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomNotValid, "_effectiveDateStart"));
                 }
+
                 _effectiveDateStart = _tempEffectiveDateStart;
 
                 if (_effectiveDateStart == DateTime.MinValue)
@@ -1066,16 +1076,18 @@ namespace d360.web.Controllers.V2
 
             if (queryParams.Any(q => q.Key == "_effectiveDateEnd"))
             {
-                DateTime _tempEffectiveDateEnd;
-                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_effectiveDateEnd").Value, out _tempEffectiveDateEnd))
+                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_effectiveDateEnd").Value, out DateTime _tempEffectiveDateEnd))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomNotValid, "_effectiveDateEnd"));
                 }
+
                 _effectiveDateEnd = _tempEffectiveDateEnd;
+
                 if (_effectiveDateEnd == DateTime.MinValue)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomNotValid, "_effectiveDateEnd"));
                 }
+
                 if (_effectiveDateStart != null && _effectiveDateEnd < _effectiveDateStart)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomStartEndDateMessage, "_effectiveDateEnd", "_effectiveDateStart"));
@@ -1093,6 +1105,7 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key.ToLower() == "_filter"))
             {
                 _filter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+
                 if (string.IsNullOrEmpty(_filter))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomNotValid, "_filter"));
@@ -1102,6 +1115,7 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key.ToLower() == "_simplefilter"))
             {
                 _simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value;
+
                 if (string.IsNullOrEmpty(_simpleFilter))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidParameter, string.Format(MetricsApiMessages.CustomNotValid, "_simpleFilter"));
@@ -1121,11 +1135,12 @@ namespace d360.web.Controllers.V2
                 _pageSize = SettingsRepository.GetSettingValue<int>(Setting.MaxExcelExportRows);
             }
             else
-            { 
+            {
                 if (queryParams.Any(q => q.Key == "_pageNum"))
                 {
                     _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
                 }
+
                 if (queryParams.Any(q => q.Key == "_pageSize"))
                 {
                     _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
@@ -1143,8 +1158,8 @@ namespace d360.web.Controllers.V2
                 if (isRequestAnExport)
                 {
                     SLDocument document = new SLDocument();
-                    bool isExport = false;
-                    if (bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_isFriendlyNameExport").Value, out isExport) && isExport)
+
+                    if (bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_isFriendlyNameExport").Value, out bool isExport) && isExport)
                     {
                         document = CreateResponseDocumentForExport(dataQualityResult);
                     }
@@ -1175,20 +1190,17 @@ namespace d360.web.Controllers.V2
                 {
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataQualityResult));
                 }
-
             }
             catch (FilterExpressionParserException ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest,ApiMessages.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorFilterExpressionParse, errorMessage)).ConfigureAwait(false);
             }
             catch (Exception)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ApiMessages.UnknownErrorInvestigatingMessage);
             }
         }
-
-
 
         /// <summary>
         /// Create the data quality result for an asset / Rule
@@ -1224,11 +1236,10 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
-            List<DataQualityResponseModel> responseList = new List<DataQualityResponseModel>();
-
+            List<DataQualityResponseModel> responseList;
             var execution = getApiExecution(request.Count);
-
             responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(request, execution)).ConfigureAwait(false);
+            
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
@@ -1349,12 +1360,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteDataQualityResultsAsync(DataQualityDeleteModel model)
         {
             Asset asset = null;
-
             Asset ruleAsset = null;
-
             Guid? _OwningUid = null;
 
-            #region Model Validation            
+            #region Model Validation   
+            
             asset = null;
 
             DateTime runDateStart = new DateTime();
@@ -1371,12 +1381,12 @@ namespace d360.web.Controllers.V2
 
                 if (dataQualityAssetResult == null || dataQualityAssetResult.Count == 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound,ApiMessages.NotFound, String.Format(MetricsApiMessages.CustomUidNotFound, "Result", model.Uid.Value));
+                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(MetricsApiMessages.CustomUidNotFound, "Result", model.Uid.Value));
                 }
 
                 if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.OwningAssetUid.Value && x.Class == (int)ResultRelationClass.Owns))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
                 }
                 else
                 {
@@ -1385,9 +1395,8 @@ namespace d360.web.Controllers.V2
 
                 if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.EvaluatedAssetUid.Value && x.Class == (int)ResultRelationClass.EvaluatedBy))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
                 }
-
             }
 
             if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty)
@@ -1396,11 +1405,11 @@ namespace d360.web.Controllers.V2
 
                 if (ruleAsset == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, String.Format(DataQualityErrors.AssetNotFoundError, model.OwningAssetUid));
+                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(DataQualityErrors.AssetNotFoundError, model.OwningAssetUid));
                 }
                 else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule || ruleAsset.State == State.InActive)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NotFound, String.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.NotFound, string.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
                 }
 
                 _OwningUid = model.OwningAssetUid;
@@ -1419,11 +1428,11 @@ namespace d360.web.Controllers.V2
 
                 if (asset == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, MetricsApiMessages.EvalAssetNotFound, String.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid));
+                    return errorMessageResponse(HttpStatusCode.NotFound, MetricsApiMessages.EvalAssetNotFound, string.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid));
                 }
                 else if ((asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset) || asset.State == State.InActive)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, MetricsApiMessages.EvalAssetInvalid, String.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, MetricsApiMessages.EvalAssetInvalid, string.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
                 }
             }
 
@@ -1438,23 +1447,22 @@ namespace d360.web.Controllers.V2
                                    System.Globalization.DateTimeStyles.None,
                                    out effectiveDateStart))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd"));
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd"));
             }
 
             if (model.EffectiveDateEnd != null)
             {
-                DateTime effectiveDateEnd;
                 if (!DateTime.TryParseExact(model.EffectiveDateEnd,
                                    "yyyy-MM-dd",
                                    System.Globalization.CultureInfo.InvariantCulture,
                                    System.Globalization.DateTimeStyles.None,
-                                   out effectiveDateEnd))
+                                   out DateTime effectiveDateEnd))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd"));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd"));
                 }
                 else if (effectiveDateStart > effectiveDateEnd)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
                 }
 
             }
@@ -1465,23 +1473,22 @@ namespace d360.web.Controllers.V2
                                    System.Globalization.DateTimeStyles.None,
                                    out runDateStart))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss"));
+                return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss"));
             }
 
             if (model.RunDateEnd != null)
             {
-                DateTime runDateEnd;
                 if (!DateTime.TryParseExact(model.RunDateEnd,
                                    "yyyy-MM-dd HH:mm:ss",
                                    System.Globalization.CultureInfo.InvariantCulture,
                                    System.Globalization.DateTimeStyles.None,
-                                   out runDateEnd))
+                                   out DateTime runDateEnd))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss"));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss"));
                 }
                 else if (runDateStart > runDateEnd)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                    return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
                 }
             }
 
@@ -1489,12 +1496,14 @@ namespace d360.web.Controllers.V2
 
             var execution = getApiExecution(1);
             var responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution)).ConfigureAwait(false);
+            
             if (responseList == null)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, MetricsApiMessages.ErrorRuleResult, ApiMessages.UnknownErrorInvestigatingMessage);
             }
 
             var responseModel = responseList.FirstOrDefault();
+
             if (responseModel != null)
             {
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
@@ -1539,11 +1548,10 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
         {
-            List<DataQualityResponseModel> responseList = new List<DataQualityResponseModel>();
-
+            List<DataQualityResponseModel> responseList;
             var execution = getApiExecution(request.Count);
-
             responseList = await Task.FromResult(MetricsRepository.UpdateDataQualityResult(request, execution)).ConfigureAwait(false);
+            
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
@@ -1582,7 +1590,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostBulkDataQualityResultAsync(List<DataQualityInsertModel> request, bool triggersWorkflow = true)
         {
             var prefix = "Metrics.PostBulkDataQualityResultAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             try
             {
@@ -1641,8 +1649,11 @@ namespace d360.web.Controllers.V2
             try
             {
                 var assetDetail = Company.Filter<AssetDetail>(i => i.uid == assetUid).FirstOrDefault();
+                
                 if (assetDetail == null)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
+                }
 
                 var allocation = Company.Filter<MetricAllocation>(al =>
                   al.AssetTypeUid == assetDetail.AssetTypeUid &&
@@ -1659,10 +1670,10 @@ namespace d360.web.Controllers.V2
                 else
                 {
                     results = Company.Query<GraphPoints>(@"select [EffectiveDate]
-      ,[Value]
-  from [metrics].[Score]
-  where assetuid = @assetUid and AllocationUid = @allocationUid
-  order by effectivedate desc", new { allocationUid = allocation.Uid, assetUid }).ToList();
+                                                              ,[Value]
+                                                          from [metrics].[Score]
+                                                          where assetuid = @assetUid and AllocationUid = @allocationUid
+                                                          order by effectivedate desc", new { allocationUid = allocation.Uid, assetUid }).ToList();
                 }
 
                 List<GraphPoints> allPoints = new List<GraphPoints>();
@@ -1675,10 +1686,12 @@ namespace d360.web.Controllers.V2
                     {
                         if (!measure.IsGroup)
                         {
-                            var point = new GraphPoints();
-                            point.key = measure.Uid.ToString();
-                            point.EffectiveDate = item.EffectiveDate;
-                            point.Value = measure.AdjustedWeight;
+                            var point = new GraphPoints
+                            {
+                                key = measure.Uid.ToString(),
+                                EffectiveDate = item.EffectiveDate,
+                                Value = measure.AdjustedWeight
+                            };
                             allPoints.Add(point);
                         }
                         else
@@ -1687,18 +1700,22 @@ namespace d360.web.Controllers.V2
                             {
                                 foreach (var m in measure.Measures)
                                 {
-                                    var point = new GraphPoints();
-                                    point.key = m.Uid.ToString();
-                                    point.EffectiveDate = item.EffectiveDate;
-                                    point.Value = m.AdjustedWeight;
+                                    var point = new GraphPoints
+                                    {
+                                        key = m.Uid.ToString(),
+                                        EffectiveDate = item.EffectiveDate,
+                                        Value = m.AdjustedWeight
+                                    };
                                     allPoints.Add(point);
                                 }
                             }
 
-                            var measurePoint = new GraphPoints();
-                            measurePoint.key = measure.Uid.ToString();
-                            measurePoint.EffectiveDate = item.EffectiveDate;
-                            measurePoint.Value = measure.AdjustedWeight;// result;
+                            var measurePoint = new GraphPoints
+                            {
+                                key = measure.Uid.ToString(),
+                                EffectiveDate = item.EffectiveDate,
+                                Value = measure.AdjustedWeight// result;
+                            };
                             allPoints.Add(measurePoint);
                         }
                     }
@@ -1709,16 +1726,17 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, ex.Message)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, ex.Message)).ConfigureAwait(false);
 
             }
-
         }
 
         public class GraphPoints
         {
             public string key { get; set; }
+
             public DateTime EffectiveDate { get; set; }
+
             public decimal Value { get; set; }
         }
 
@@ -1751,7 +1769,9 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "PassFraction");
 
             #endregion
+
             #region Body
+
             foreach (var row in dataQualityResult.items)
             {
                 index = 1;
@@ -1770,8 +1790,11 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
             }
             doc.AutoFitColumn(1, 13);
+
             #endregion
+
             #endregion
+
             return doc;
         }
 
@@ -1787,6 +1810,7 @@ namespace d360.web.Controllers.V2
             #region Create the list sheet
 
             #region Header
+
             int index = 1;
             int rowNumber = 1;
 
@@ -1802,7 +1826,9 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "Rule Result UID");
 
             #endregion
+
             #region Body
+
             foreach (var row in dataQualityResult.items)
             {
                 index = 1;
@@ -1819,8 +1845,11 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
             doc.AutoFitColumn(1, 11);
+
             #endregion
+
             #endregion
+
             return doc;
         }
     }
