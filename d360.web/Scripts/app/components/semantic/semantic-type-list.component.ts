@@ -375,15 +375,15 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     deleteSemanticType(item: SemanticType) {
         this.dataProfileService.deleteSemanticType(item.qualifier)
             .subscribe(
-                result => {
+                (result) => {
                     this.showMessageForResult(this.messagesService, result, 'Semantic Type successfully deleted');
                     this.showDelete = false;
                     if (result.type !== 'error') {
-                        let currentIndex = this.semanticTypes.findIndex((s) => s.uid === this.selectedType.uid );
-                        let nextRow = currentIndex == this.semanticsTotal - 1 ? this.semanticsTotal - 2 : currentIndex;
+                        let currentIndex = this.semanticTypes.findIndex((s) => s.uid === this.selectedType.uid);
+                        let nextRow = currentIndex === this.semanticsTotal - 1 ? this.semanticsTotal - 2 : currentIndex;
                         this.getData(nextRow);
-                    }                    
+                    }
                 }
-            )
+            );
     }
 }

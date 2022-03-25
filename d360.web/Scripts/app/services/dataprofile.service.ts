@@ -294,8 +294,8 @@ export class DataProfileService extends BaseObservableService {
             .http
             .delete(`api/v2/dataprofiles/semantictypes/${qualifier}`, httpOptions)
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 }
