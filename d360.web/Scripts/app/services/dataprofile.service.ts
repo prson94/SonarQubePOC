@@ -281,5 +281,21 @@ export class DataProfileService extends BaseObservableService {
                     catchError((err) => this.handleError(err, false))
                 );
         }
-    }    
+    }
+
+    public deleteSemanticType(
+        qualifier: string
+    ): Observable<JsonResult> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this
+            .http
+            .delete(`api/v2/dataprofiles/semantictypes/${qualifier}`, httpOptions)
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
+    }
 }

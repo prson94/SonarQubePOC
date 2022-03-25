@@ -132,6 +132,9 @@ namespace d360.core.entities
 
         [JsonProperty("updatedOn")]
         public DateTime UpdatedOn { get; set; }
+
+        [JsonProperty("hasQualifiedAssets")]
+        public bool HasQualifiedAssets { get; set; }
     }
 
     public class PatchSemantic : SemanticBase
@@ -233,7 +236,7 @@ namespace d360.core.entities
             return incomingValue;
         }
 
-        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy)
+        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, bool hasQualifiedAssets = false)
         {
             return new GetSemantic
             {
@@ -270,7 +273,8 @@ namespace d360.core.entities
                 },
                 UpdatedOn = model.UpdatedOn,
                 ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
-                ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues)
+                ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues),
+                HasQualifiedAssets = hasQualifiedAssets
             };
         }
 

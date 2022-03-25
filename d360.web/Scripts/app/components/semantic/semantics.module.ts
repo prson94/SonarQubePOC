@@ -24,6 +24,7 @@ import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
 import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SemanticStatusDetailComponent } from './semantic-status-detail.component';
+import { SharedDeleteFormModule } from '../shared/delete.form';
 
 @NgModule({
     imports: [
@@ -43,7 +44,8 @@ import { SemanticStatusDetailComponent } from './semantic-status-detail.componen
         TooltipModule,
         AssetDetailModule,
         DataProfileModule,
-        SharedGridPagingInfoModule
+        SharedGridPagingInfoModule,
+        SharedDeleteFormModule
     ],
     declarations: [
         SemanticsComponent,
