@@ -1,0 +1,39 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.image-picker {
+  .flex-box {
+    display: flex;
+    align-items: center;
+  }
+
+  .image-preview {
+    border-radius: 0;
+    background-color: @ig-grey-t4;
+
+    img {
+      min-height: 40px;
+      min-width: 40px;
+      max-width: 168px;
+      max-height: 96px;
+      display: block;
+    }
+  }
+
+  .message {
+    font-size: 12px;
+    max-width: 320px;
+    color: @ig-grey;
+  }
+
+  .image-upload {
+    margin-right: 16px;
+
+    input {
+      display: none;
+    }
+
+    button {
+      margin-left: 16px;
+    }
+  }
+}
