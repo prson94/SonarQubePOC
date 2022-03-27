@@ -45,10 +45,16 @@ namespace d360.web.Filters
                         new ErrorResponse { title = ApiMessages.Forbidden, message = ApiMessages.ForbiddenUserNotAuthorizedMessage }
                     );
                     break;
-                case NotFoundBusinessLayerException notFoundException:
+                case NotFoundException notFoundException:
                     context.Response = context.Request.CreateResponse(
                         HttpStatusCode.NotFound,
                         new ErrorResponse { title = ApiMessages.NotFound, message = notFoundException.Message }
+                    );
+                    break;
+                case NotFoundBusinessLayerException exception:
+                    context.Response = context.Request.CreateResponse(
+                        HttpStatusCode.NotFound,
+                        new ErrorResponse { title = ApiMessages.NotFound, message = exception.Message }
                     );
                     break;
                 case InvalidRequestException invalidRequestException:
