@@ -10,5 +10,4 @@ namespace d360.model.DataAccessLayer
     {
         Task<ICollection<AssetType>> GetAncestryAsync(Guid assetUid, CancellationToken cancellationToken = default);
     }
-
 }
