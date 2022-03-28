@@ -42,7 +42,7 @@ namespace d360.model.DataAccessLayer.repositories
         {
             var preparedParameters = await PrepareAuditViewParametersAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderByList);
 
-            var result = await QueryDynamicPagedResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList, pageNum, pageSize);
+            var result = await QueryDynamicPagedResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList, pageNum, pageSize, CompanyContext.ApiTimeout);
 
             result.items = await PostProcessAuditCollectionAsync(result.items);
 
@@ -172,7 +172,7 @@ namespace d360.model.DataAccessLayer.repositories
         {
             var preparedParameters = await PrepareAuditViewParametersAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderByList);
 
-            var result = await QueryDynamicResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList);
+            var result = await QueryDynamicResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList,CompanyContext.ApiTimeout);
 
             result = await PostProcessAuditCollectionAsync(result);
 
