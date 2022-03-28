@@ -454,7 +454,8 @@ namespace d360.model.DataAccessLayer
 				from s in repoModels
 				join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
 				join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
-				select s.ToGetModel(c, u)
+				let p = CompanyContext.AssetDataProfile.Where(dp => s.Qualifier == dp.TypeQualifier).FirstOrDefault()
+				select s.ToGetModel(c, u, p != null)
 				).ToList();
 
 			return model;
