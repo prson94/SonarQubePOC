@@ -1,7 +1,8 @@
-﻿using d360.extensions;
-using d360.web.Models.Attributes;
-using System;
+﻿using System;
 using System.Web.Mvc;
+
+using d360.extensions;
+using d360.web.Models.Attributes;
 
 namespace d360.web.Controllers
 {
@@ -10,7 +11,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        public SearchController(ICoreComponentSet set): base(set)
+        public SearchController(ICoreComponentSet set) : base(set)
         {
         }
 
@@ -21,6 +22,7 @@ namespace d360.web.Controllers
         {
             Response.StatusCode = 308; // (int)System.Net.HttpStatusCode.PermanentRedirect; Enum not available
             Response.RedirectLocation = url;
+
             return Json(new { type = "error", title = "Permanent Redirect", message = "Permanent Redirect" }, JsonRequestBehavior.AllowGet);
         }
 
@@ -28,6 +30,7 @@ namespace d360.web.Controllers
         {
             Response.StatusCode = 308; // (int)System.Net.HttpStatusCode.PermanentRedirect; Enum not available
             Response.RedirectLocation = url;
+
             return new JsonNetResult { };
         }
 
@@ -71,11 +74,9 @@ namespace d360.web.Controllers
         [HttpPost, Route("rebuild/{Class:int}/{assetTypeUid:Guid}")]
         public JsonResult DoRebuild(int Class, Guid assetTypeUid)
         {
-            return DeprecatedRedirect("/api/v2/search/rebuild/"+Class.ToString()+"/"+assetTypeUid.ToString());
+            return DeprecatedRedirect("/api/v2/search/rebuild/" + Class.ToString() + "/" + assetTypeUid.ToString());
         }
 
         #endregion
     }
-
-
 }
