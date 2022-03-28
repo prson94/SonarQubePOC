@@ -3,6 +3,105 @@
            [showTitle]="false"
            [isVisible]="isVisible">
     <div class="theme-editor">
-        theme editor
+        <div class="form-header">
+            Create New Theme
+            <div class="sub-header">
+                Branding
+            </div>
+        </div>
+        <div class="theme-form">
+            <form [formGroup]="formGroup">
+                <div class="single-value-group">
+                    <ig-property-group [igformGroup]="formGroup" [title]="''" [shouldBePadded]="false" [showHeaderLine]="false">
+                        <div inputs>
+                            <div class="row">
+                                <label for="headerLogo" class="ig-label">Theme Name</label>
+                                <input igInput type="text" formControlName="name" required igSize="full" />
+                            </div>
+                        </div>
+                    </ig-property-group>
+                </div>
+                <ig-property-group [igformGroup]="formGroup" [title]="'Header Bar'" [shouldBePadded]="false" [showHeaderLine]="false">
+                    <div inputs>
+                        <div class="input-row">
+                            <label for="headerLogo">Header logo image</label>
+                            <image-picker formControlName="headerLogo" [imageType]="'LOGO'"></image-picker>
+                        </div>
+                        <div class="input-row">
+                            <label for="icon">Browser logo ico</label>
+                            <image-picker formControlName="icon" [imageType]="'ICO'"></image-picker>
+                        </div>
+                        <div class="input-row">
+                            <label for="headerBackColor">Background color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="headerBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="breadcrumbLinkColor">Breadcrumb link color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="breadcrumbLinkColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="buttonBackColor">Button color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="buttonBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                    </div>
+                </ig-property-group>
+
+                <ig-property-group [igformGroup]="formGroup" [title]="'Home Page'" [shouldBePadded]="false" [showHeaderLine]="false">
+                    <div inputs>
+                        <div class="input-row">
+                            <label for="homeBackground">Background image</label>
+                            <image-picker formControlName="homeBackground"></image-picker>
+                        </div>
+
+                    </div>
+                </ig-property-group>
+
+                <ig-property-group [igformGroup]="formGroup" [title]="'General'" [shouldBePadded]="false" [showHeaderLine]="false">
+                    <div inputs>
+                        <div class="input-row">
+                            <label for="primaryButtonBackColor">Primary button color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="primaryButtonBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="backColor">Background color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="backColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="tabLinkColor">Tab/link color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="tabLinkColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="tableHeaderBackColor">Table header color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="tableHeaderBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="tableRowBackColor">Table row selection</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="tableRowBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                    </div>
+                </ig-property-group>
+            </form>
+        </div>
+        <div class="action-bar">
+            <button igButton igAutoFocus label="Cancel" (click)="isVisible = false"></button>
+            <span class="grow"></span>
+            <button igButton class="ig-button-primary" label="Create" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress"></button>
+        </div>
     </div>
 </d3s-modal>

@@ -1,6 +1,6 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -20,11 +20,14 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { ThemeEditorComponent } from './theme-editor.component';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { ImagePickerModule } from '../../shared/controls/image-picker/image-picker.component';
+import { ColorPickerModule } from 'primeng/colorpicker';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule, 
 
         AdminBrandingRoutingModule,
 
@@ -46,7 +49,9 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
         IgBadgeModule,
         PopupMenuModule,
         PropertyGroupModule,
-        SiteModalModule
+        SiteModalModule,
+        ImagePickerModule,
+        ColorPickerModule
     ],
     declarations: [
         ThemeEditorComponent

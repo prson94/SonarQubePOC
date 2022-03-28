@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
@@ -7,17 +7,17 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 import * as _ from 'lodash';
 
-export interface CreatedBy {
+export class CreatedBy {
     uid: string;
     fullName: string;
 }
 
-export interface UpdatedBy {
+export class UpdatedBy {
     uid: string;
     fullName: string;
 }
 
-export interface Theme {
+export class Theme {
     uid: string;
     createdBy: CreatedBy;
     createdOn: Date;
@@ -65,9 +65,38 @@ export class BrandingService extends BaseObservableService {
                         return of(0);
                     } else {
                         this.handleError(err, true);
-                    }                    
+                    }
                 })
             );
     }
 
+    public saveTheme(theme: Theme): Observable<any> {
+        let url: string = '/api/v2/environment/themes';
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+
+        if (theme.uid) {
+            return this
+                .http
+                .put(url, theme, httpOptions)
+                .pipe(
+                    map((res: any) => {
+                        return res;
+                    }),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        else {
+            return this
+                .http
+                .post(url, theme, httpOptions)
+                .pipe(
+                    map((res: any) => {
+                        return res;
+                    }),
+                    catchError(err => this.handleError(err))
+                );
+        }
+    }
 }
