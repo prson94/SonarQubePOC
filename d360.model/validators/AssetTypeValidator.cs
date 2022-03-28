@@ -337,7 +337,7 @@ namespace d360.core.validators
 
 			string[] validFields = { "name", "sourceid", "textpath", "code" };
 
-			bool doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLowerInvariant() == fieldName.ToLowerInvariant());
+			bool doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
 			List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
 
 			if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
