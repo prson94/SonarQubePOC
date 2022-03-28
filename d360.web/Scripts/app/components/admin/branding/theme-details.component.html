@@ -1,0 +1,35 @@
+﻿<div class="asset-detail theme-detail">
+    <div class="asset-detail-header">
+        <div class="asset-name">{{theme.name}}</div>
+        <br />
+        <div>
+            <a>Edit</a><span class="grey-delimiter">|</span><a>Duplicate</a> | <a>Set as Current Theme</a>
+        </div>
+    </div>
+    <div class="windowtabs">
+        <button class="tab-selected">Details</button>
+        <button class="tab">Accesibility</button>
+    </div>
+    <div class="asset-detail-tabs">
+        <div *ngFor="let category of categories; let first=first">
+            <ig-property-group *ngIf="category.loaded && category.hasData"
+                               [expanded]="category.active"
+                               (expandedChange)="category.active = $event;"
+                               [title]="category.name"
+                               [showHeaderLine]="false"
+                               [shouldBePadded]="false">
+                <div readonly>
+                    <div *ngFor="let row of category.rows" class="theme-value-wrapper">
+                        <label class="ig-label">{{row.title}}</label>
+                        <ng-container *ngIf="row.type === 'color'">
+                            <div class="theme-color-value">
+                                <div class="color-box" [style.background-color]="row.value"></div>
+                                <div class="hex-value">{{row.value}}</div>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </ig-property-group>
+        </div>
+    </div>
+</div>

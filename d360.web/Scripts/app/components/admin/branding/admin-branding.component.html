@@ -1,41 +1,49 @@
 ﻿<div class="row admin-branding">
-
     <div class="col s12 overflow-container" style="display: flex">
-        <div class="tile tile-detail">
-
+        <div class="tile tile-detail grid-tile">
             <div class="actions-header">
                 <h2>Themes</h2>
+                <div class="flex-grow"></div>
                 <div class="grid-action-buttons">
                     <button igButton
                             pTooltip="Create New Group"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
-                            class="ig-button-primary"
                             icon="fa-plus">
                     </button>
                     <button igButton
                             pTooltip="Create New Group"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
-                            class="ig-button-primary"
-                            icon="fa-plus">
+                            icon="fa-download">
                     </button>
                     <button igButton
                             pTooltip="Create New Group"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
-                            class="ig-button-primary"
-                            icon="fa-plus">
+                            icon="fa-upload">
                     </button>
                 </div>
             </div>
 
+            <div class="themes">
+                <div class="theme-wrapper {{(selectedRow === theme ? 'selected' : '')}}" *ngFor="let theme of themes" (click)="selectedRow = theme">
+                    <svg width="158" height="80">
+                        <image xlink:href="/api/v2/environment/themes/ace6795f-460a-42ca-baef-f5feeab977de.svg?width=158" src="yourfallback.png" width="158" height="80" />
+                    </svg>
+                    <div class="theme-name">{{theme.name}}</div>
+                    <div class="flex-grow"></div>
+                    <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
 
-            <div class="theme-wrapper" *ngFor="let theme of themes">
-                <svg width="158" height="80">
-                    <image xlink:href="/api/v2/environment/themes/ace6795f-460a-42ca-baef-f5feeab977de.svg?width=158" src="yourfallback.png" width="158" height="80" />
-                </svg>
+                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectedRow = theme"></button>
+                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
+                                   [items]="menuItems"
+                                   #linkMenu
+                                   [tabIndex]="1"></ig-popup-menu>
+
+                </div>
             </div>
+
 
         </div>
         <div class="tile tile-detail side-panel">
@@ -48,9 +56,7 @@
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab">
                 <ng-container *ngIf="sidePanelOpen && selectedRow != null">
-                    <ng-container *ngIf="sidePanelTab === 'detail'">
-                        details
-                    </ng-container>
+                    <theme-detail [theme]="selectedRow"></theme-detail>
                 </ng-container>
             </side-panel>
         </div>

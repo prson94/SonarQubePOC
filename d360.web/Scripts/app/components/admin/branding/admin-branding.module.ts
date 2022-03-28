@@ -16,6 +16,10 @@ import { AdminBrandingComponent } from './admin-branding.component';
 import { AdminBrandingRoutingModule } from './admin-branding.routes';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { DirectivesModule } from '../../../directives/directives.module';
+import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
+import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
+import { ThemeDetailComponent } from './theme-details.component';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 
 @NgModule({
     imports: [
@@ -38,10 +42,14 @@ import { DirectivesModule } from '../../../directives/directives.module';
 
         IgMessageBoxModule,
         SidePanelModule,
-        DirectivesModule
+        DirectivesModule,
+        IgBadgeModule,
+        PopupMenuModule,
+        PropertyGroupModule
     ],
     declarations: [
-        AdminBrandingComponent
+        AdminBrandingComponent,
+        ThemeDetailComponent
     ],
     providers: [
     ]

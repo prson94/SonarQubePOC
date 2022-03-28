@@ -27,6 +27,13 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     sidePanelStorageKey: string;
     sidePanelTab: string = 'detail';
     selectedRow: any;
+
+    menuItems = [
+        { title: 'Edit' },
+        { title: 'Delete' },
+    ];
+
+
     constructor(
         private brandingService: BrandingService,
         protected router: Router,
@@ -48,7 +55,12 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     ngOnInit() {
         this.brandingService.getThemes().subscribe((res) => {
             this.themes = res;
+            console.log(this.themes);
             this.cdRef.markForCheck();
         })
+    }
+
+    clickMenuItem($event, item) {
+
     }
 }

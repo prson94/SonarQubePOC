@@ -23,6 +23,10 @@ export interface Theme {
     createdOn: Date;
     updatedBy: UpdatedBy;
     updatedOn: Date;
+    customCss: string;
+    headerLogo: string;
+    homeBackground: string;
+    icon: string;
     backColor: string;
     breadcrumbLinkColor: string;
     buttonBackColor: string;
