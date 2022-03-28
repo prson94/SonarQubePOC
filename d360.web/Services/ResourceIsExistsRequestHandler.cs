@@ -1,6 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+
 using d360.model.DataAccessLayer;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -21,6 +23,7 @@ namespace d360.web.Services
             if (request.Uid != null)
             {
                 var responsibilityType = await ResourceRepository.GetByUidAsync(request.Uid.Value);
+
                 if (responsibilityType == null)
                 {
                     if (request.ThrowNotFoundException)
