@@ -32,7 +32,8 @@
 		</div>
 	</div>
 	
-	<ig-regexp-tester *ngIf="showValueValidator"
+	<ig-regexp-tester 
+		*ngIf="showValueValidator"
 		[regexp]="value"
 		[isValidRegexp]="!hasError"
 		[disabled]="disabled">

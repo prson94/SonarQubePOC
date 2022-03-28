@@ -1,5 +1,11 @@
 import { Component, ChangeDetectionStrategy, Input } from "@angular/core";
 
+interface ComponentProperty {
+    Name: string;
+    Type: string;
+    Description: string;
+    Default: string;
+}
 
 @Component({
     selector: "gallery-component-properties",
@@ -10,11 +16,4 @@ import { Component, ChangeDetectionStrategy, Input } from "@angular/core";
 export class GalleryComponentPropertiesComponent {
     @Input() header: string;
     @Input() properties: ComponentProperty[];
-}
-
-interface ComponentProperty {
-    Name: string;
-    Type: string;
-    Description: string;
-    Default: string;
 }

@@ -12,35 +12,6 @@
   color: @ig-black;
   background: @ig-white;
 
-  .samples-button {
-    width: 24px;
-    background: rgba(0,0,0,0.07);
-    font-size: 14px;
-    line-height: 12px;
-    height: 24px;
-    border-radius: 4px;
-    border: none;
-
-    &:hover {
-      background: rgba(0,0,0,0.14);
-    }
-
-    &:active {
-      background: #00000036;
-    }
-
-    > i {
-      margin: 0px;
-    }
-  }
-}
-
-.ig-regexp-input.disabled {
-  opacity: 33%;
-  pointer-events: none;
-}
-
-.ig-regexp-input {
   padding-top: 6px;
   padding-bottom: 12px;
   padding-right: 16px;
@@ -49,17 +20,41 @@
     position: relative;
 
     .samples-button {
+      width: 24px;
+      background: rgba(0, 0, 0, 0.07);
+      font-size: 14px;
+      line-height: 12px;
+      height: 24px;
+      border-radius: 4px;
+      border: none;
       position: absolute;
       top: 4px;
       right: 4px;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.14);
+      }
+
+      &:active {
+        background: #00000036;
+      }
+
+      > i {
+        margin: 0;
+      }
     }
   }
-  
+
   ig-regexp-tester {
     display: block;
     margin-left: 24px;
     margin-top: 12px;
   }
+}
+
+.ig-regexp-input.disabled {
+  opacity: 33%;
+  pointer-events: none;
 }
 
 .ig-text-required {
