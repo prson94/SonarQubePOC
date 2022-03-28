@@ -94,6 +94,8 @@ namespace d360.model.DataAccessLayer
 							Tags.count as UseCount,
 							t.CreatedOn,
 							grc.uid as CreatedByUid,
+                            grc.FirstName CreatedByFirstName, 
+                            grc.LastName CreatedByLastName,
 							t.UpdatedOn,
 							gru.uid as UpdatedByUid
 						 from [tag] t
