@@ -73,6 +73,8 @@ import { GalleryCodeAreaComponent } from './gallery.codearea.component';
 import { CodeAreaModule } from '../shared/controls/codearea/codearea.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GalleryLocaleComponent } from './gallery.locale.component';
+import { GalleryImagePickerComponent } from './gallery.image-picker.component';
+import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.component';
 import { GalleryRegexpInputComponent } from './gallery.regexp-input.component';
 import { GalleryComponentPropertiesComponent } from './shared/gallery.component-properties.component';
 import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
@@ -118,7 +120,7 @@ import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.compon
         SidePanelModule,
         CodeAreaModule,
         CodemirrorModule,
-
+        ImagePickerModule,
         RegexpInputModule
     ],
     declarations: [
@@ -159,6 +161,7 @@ import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.compon
         GalleryModalDrawerComponent,
         GalleryCodeAreaComponent,
         GalleryLocaleComponent,
+        GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
     ],
     providers: [

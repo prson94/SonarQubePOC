@@ -1,4 +1,5 @@
 ﻿using Autofac;
+
 using d360.model.DataAccessLayer;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.validators;
@@ -15,15 +16,11 @@ namespace d360.model
             builder.RegisterType<ResponsibilityTypeRepository>().As<IResponsibilityTypeRepository>().InstancePerRequest();
             builder.RegisterType<AuditDapperRepository>().As<IAuditDapperRepository>().InstancePerRequest();
             builder.RegisterType<ApplicationHealthDapperRepository>().As<IApplicationHealthDapperRepository>().InstancePerRequest();
-            
             builder.RegisterGeneric(typeof(DapperQueryComposer<>)).As(typeof(IDapperQueryComposer<>)).InstancePerRequest();
-
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
             builder.RegisterType<SurveyApiModelValidator>().As<ISurveyApiModelValidator>().InstancePerRequest();
-
             builder.RegisterType<CommunityContext>().As<ICommunityContext>().InstancePerRequest();
             builder.RegisterType<CompanyContext>().As<ICompanyContext>().InstancePerRequest();
-
             builder.RegisterType<AssetRepository>().As<IAssetRepository>().InstancePerRequest();
             builder.RegisterType<CommentRepository>().As<ICommentRepository>().InstancePerRequest();
             builder.RegisterType<CrossReferencesRepository>().As<ICrossReferencesRepository>().InstancePerRequest();

@@ -1,25 +1,25 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using Dapper;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.Linq;
-using System.Threading.Tasks;
+
+using d360.core;
+using d360.core.entities;
+
+using Dapper;
+
+using Newtonsoft.Json;
 
 namespace d360.model
 {
     public class AssetResults
     {
         public int Count { get; set; }
+
         public IEnumerable<dynamic> Results { get; set; }
     }
 
-    partial class CompanyContext : BaseContext
+    public partial class CompanyContext : BaseContext
     {
         #region DbSets
 
@@ -46,6 +46,7 @@ namespace d360.model
         {
             value = value.Replace("*", "%").Replace("?", "_");
             value = isContains ? $"%{value}%" : $"{value}%";
+            
             return value;
         }
 
@@ -65,12 +66,14 @@ namespace d360.model
                     escapedValue += c;
                 }
             }
+
             return escapedValue;
         }
 
         public string DetermineSqlDataTypeForFieldType(FieldType f)
         {
-            var sqlDataType = "nvarchar";
+            string sqlDataType = "nvarchar";
+
             if (f.Type == DataType.JsonElement.ToString())
             {
                 FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);

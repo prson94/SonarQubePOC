@@ -5,10 +5,13 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { AuthenticationService } from '../../services/authentication.service';
 
 import { DataProfileService } from '../../services/dataprofile.service';
+import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { BaseComponent } from '../shared/base.component';
+import { SemanticBaseComponent } from './semantics-base.component';
 
 @Component({
     selector: 'semantic-detail',
@@ -49,14 +52,20 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     ])
 
     constructor(        
-        private router: Router,
+        protected router: Router,
         private dataProfileService: DataProfileService,
         private changeDetectorRef: ChangeDetectorRef,
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService,
+        private headerbreadcrumbservice: HeaderBreadcrumbService,
+        private featureFlagService: FeatureFlagsService,
     ) {
-        super(settingsService);        
+        super(settingsService);   
+
+        if (!featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+        } 
     }
 
     ngOnInit() {
@@ -64,6 +73,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        this.canViewUsers  = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
         this.getData();
     }
 

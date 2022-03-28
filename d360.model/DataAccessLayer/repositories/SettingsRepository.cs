@@ -1,14 +1,13 @@
-﻿using d360.core.enums;
+﻿using System.Collections.Generic;
+
+using d360.core.enums;
 using d360.model.DataAccessLayer.repositories;
-using System.Collections.Generic;
-using System.Linq;
-using Dapper;
 
 namespace d360.model.DataAccessLayer
 {
     public class SettingsRepository : BaseRepository, ISettingsRepository
     {
-        readonly ICompanyContext companyContext;
+        private readonly ICompanyContext companyContext;
 
         public SettingsRepository(ICompanyContext companyContext)
             : base(companyContext)

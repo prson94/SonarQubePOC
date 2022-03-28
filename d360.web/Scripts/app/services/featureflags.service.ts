@@ -1,6 +1,6 @@
 ﻿import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { LDClient, LDFlagSet, initialize, LDOptions } from "ldclient-js";
+import { LDClient, LDFlagSet, initialize } from "ldclient-js";
 import { Observable, Subject } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { BaseObservableService } from "./baseObservable.service";
@@ -10,6 +10,8 @@ export enum FeatureFlags {
     DistributedCacheFlag = "GovernDistributedCachePerm",
     BrandingThemeCustomCss = "GovernBrandingCustomCssPerm",
     BrandingThemeUiTemp = "GovernBrandingUiTemp20220531",
+    DataProfilingUiFlag = "GovernDataProfileUiPerm",
+    SemanticTypesUiFlag = "GovernSemanticTypesUiPerm",
 }
 
 @Injectable({
@@ -27,7 +29,9 @@ export class FeatureFlagsService extends BaseObservableService {
         this.flags = {
             "GovernDistributedCachePerm": false,
             "GovernBrandingCustomCssPerm": false,
-            "GovernBrandingUiTemp20220531": false
+            "GovernBrandingUiTemp20220531": false,
+            "GovernDataProfileUiPerm": false,
+            "GovernSemanticTypesUiPerm": false
         };
     }
 
@@ -57,6 +61,12 @@ export class FeatureFlagsService extends BaseObservableService {
             }
             if (flags[FeatureFlags.BrandingThemeUiTemp] !== undefined) {
                 this.flags[FeatureFlags.BrandingThemeUiTemp] = flags[FeatureFlags.BrandingThemeUiTemp];
+            }
+            if (flags[FeatureFlags.DataProfilingUiFlag] !== undefined) {
+                this.flags[FeatureFlags.DataProfilingUiFlag] = flags[FeatureFlags.DataProfilingUiFlag];
+            }
+            if (flags[FeatureFlags.SemanticTypesUiFlag] !== undefined) {
+                this.flags[FeatureFlags.SemanticTypesUiFlag] = flags[FeatureFlags.SemanticTypesUiFlag];
             }
             this.flagChange.next(this.flags);
         });

@@ -47,6 +47,11 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
         this.breadcrumbsService = breadcrumbService;
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+            if (ev.originalEvent && ev.originalEvent.path && ev.originalEvent.path.some((el) => el.tagName === 'ASSET-PREVIEW')) {
+                //ignore event as it came from relationship side panel
+                //avoid updating both side panels
+                return;
+            }
             this.nodeDeselected.emit(null);
             this.linkClickInterceptor.handleEvent(this, ev);
         });
@@ -80,7 +85,7 @@ export class ProcessDiagramSidePanelComponent extends DiagramBaseComponent imple
     //check for missing fields and set value to ''
     //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
-        if (this.isReadOnly) {
+        if (this.isReadOnly && !this.nodeData) {
             return;
         }
 

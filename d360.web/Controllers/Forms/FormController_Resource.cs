@@ -233,6 +233,7 @@ namespace d360.web.Controllers
             else
             {
                 group = Company.GetById<Group>(id);
+                group.Uid = Company.Assets.Where(x => x.Object == "Group" && x.ObjectID == group.ID).Select(x => x.uid).FirstOrDefault();
 
                 var primaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.PrimaryOwnerResourceID).FirstOrDefault();
                 var secondaryOwner = GetCompanyResources().Where(x => x.ResourceID == group.SecondaryOwnerResourceID).FirstOrDefault();

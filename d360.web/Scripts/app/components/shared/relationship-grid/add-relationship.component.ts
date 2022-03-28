@@ -31,6 +31,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     @Input() assetUid: string = "";
     @Input() assetTypeUid: string = "";
     @Input() isVisible: boolean = false;
+    @Input() isFromModal: boolean = false;
 
     @Output() onClose = new EventEmitter();
     @Output() onAddComplete = new EventEmitter();
@@ -102,7 +103,13 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         this.currentStep = AddRelationshipStep.SetRelationshipType;
         this.selectedRelationshipType = null;
         this.previewAssetUid = this.previewAssetType = "";
+        this.resetSelectedAssets();
         this.onClose.emit();
+    }
+
+    resetSelectedAssets() {
+        this.selectedAssets = [];
+        this.selectedAssetsDetail = [];
     }
 
     public initialLoad(): void {
@@ -211,8 +218,12 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             if (this.selectedAssetsDetail.length > 1) {
                 title += "- " + this.selectedAssetsDetail.length + " items";
             }
-            else {
+            else if (this.selectedAssetsDetail[0]) {
+
                 title += "- " + this.selectedAssetsDetail[0].Text;
+            }
+            else if (this.selectedAssetsDetail && !Array.isArray(this.selectedAssetsDetail)) {
+                title += "- " + this.selectedAssetsDetail["Text"];
             }
         }
         return title;
@@ -284,6 +295,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     onInfoClick($event) {
+        if (!$event) {
+            this.previewAssetType = this.previewAssetUid = "";
+            return;
+        }
         this.previewAssetUid = $event.Value;
         if (this.targetType === "BusinessAsset" || this.targetType === "TechnicalAsset") {
             this.previewAssetType = "Artifact";
@@ -293,6 +308,9 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         }
         else if (this.targetType === "User") {
             this.previewAssetType = "Resource";
+        }
+        else if (this.targetType === "Model") {
+            this.previewAssetType = "Taxonomy";
         }
         else {
             this.previewAssetType = this.targetType;

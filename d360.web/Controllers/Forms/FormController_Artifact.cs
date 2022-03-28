@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Data.Entity;
+using System.Globalization;
 using System.Net;
 using System.Web.Mvc;
 using d360.core.helpers;
@@ -78,7 +79,7 @@ namespace d360.web.Controllers
             var parentType = Company.GetParentType(at, type);
             if (intersectType != null)
             {
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(new CultureInfo("en"));
                 list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), ItemSize = 20 });
             }
 
@@ -128,7 +129,7 @@ namespace d360.web.Controllers
                         Required = true,
                         FieldName = "ParentUID",
                         Name = $"Parent {pluralize.Singularize(parentType.Name)}",
-                        FieldType = DataType.Lookup.ToString(),
+                        FieldType = DataType.Lookup.ToString(), 
                         Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""),
                         Items = parents,
                         VirtualScroll = parents.Count > 9,

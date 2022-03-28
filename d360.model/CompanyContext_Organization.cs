@@ -1,12 +1,10 @@
-﻿using d360.core;
+﻿using System.Data.Entity;
+
 using d360.core.entities;
-using Dapper;
-using System;
-using System.Data.Entity;
 
 namespace d360.model
 {
-    partial class CompanyContext: BaseContext
+    public partial class CompanyContext : BaseContext
     {
         #region DbSets
 
@@ -29,10 +27,6 @@ namespace d360.model
         public DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
 
         public DbSet<OrganizationType> OrganizationTypes { get; set; }
-
-        #endregion
-
-        #region Engine Methods
 
         #endregion
     }

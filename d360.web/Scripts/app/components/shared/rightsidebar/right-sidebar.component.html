@@ -21,7 +21,7 @@
             <span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
         </button>
-        <div class="asset-actions" [style.width]="assetActionWidth > 0 ? assetActionWidth + 'px' : null" [style.text-align]="'right'" *ngIf="assetAction && assetAction.isVisible">
+        <div [style.width]="assetActionWidth > 0 ? assetActionWidth + 'px' : null" [style.display]="'flex'" *ngIf="assetAction && assetAction.isVisible">
             <span class="grow"></span>
             <button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button">
                 <i class="fa fa-arrow-left"></i>Back

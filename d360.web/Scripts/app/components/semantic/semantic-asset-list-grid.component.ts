@@ -12,6 +12,8 @@ import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filter
 import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { SemanticBaseComponent } from './semantics-base.component';
+import { FeatureFlagsService } from '../../services/featureflags.service';
 
 @Component({
     selector: 'semantic-asset-list-grid',
@@ -20,7 +22,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     providers: [DataProfileService],
 })
 
-export class SemanticAssetListGridComponent extends AssetGridBaseComponent implements OnInit, OnChanges {
+export class SemanticAssetListGridComponent extends SemanticBaseComponent implements OnInit, OnChanges {
     @Input() semanticType: SemanticType;
     @Input() isSidePanel: boolean = false;
     @Output() assetCountUpdated = new EventEmitter();
@@ -62,20 +64,22 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
     ]    
 
     constructor(private route: ActivatedRoute,
-        private router: Router,
+        protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
-        protected settingsService: CompanySettingsService) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+        protected settingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService,
+    ) {
+        super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
         this.filterFieldsSubject.complete();
-
+        
         this.getData();
     }
 
@@ -84,17 +88,19 @@ export class SemanticAssetListGridComponent extends AssetGridBaseComponent imple
     }
 
     getData() {
-        this.isLoading = true;        
-        this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
-            this.assets = result.items;
-            if (!this.selectedAsset || !result.items.some((x) => (x.uid === this.selectedAsset.uid))) {
-                this.selectedAsset = result.items[0];
-                this.selectedAssetChanged.emit(this.selectedAsset);
-            }            
-            this.assetsTotal = result.total;
-            this.assetCountUpdated.emit({ assetCount: this.assetsTotal });
-            this.isLoading = false;
-        });
+        if (this.semanticTypesEnabled) {
+            this.isLoading = true;
+            this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
+                this.assets = result.items;
+                if (!this.selectedAsset || !result.items.some((x) => (x.uid === this.selectedAsset.uid))) {
+                    this.selectedAsset = result.items[0];
+                    this.selectedAssetChanged.emit(this.selectedAsset);
+                }
+                this.assetsTotal = result.total;
+                this.assetCountUpdated.emit({ assetCount: this.assetsTotal });
+                this.isLoading = false;
+            });
+        }       
     }
 
     advancedFiltersChanged($event: Filters) {

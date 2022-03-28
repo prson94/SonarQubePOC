@@ -34,8 +34,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "deployUrl": "/scripts/dist/chunks/",
-            "outputPath": "scripts/dist",
+            "deployUrl": "/Scripts/dist/chunks/",
+            "outputPath": "Scripts/dist",
             "index": "index.html",
             "main": "Scripts/main.ts",
             "polyfills": "Scripts/polyfills.ts",

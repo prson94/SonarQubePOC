@@ -1340,6 +1340,7 @@ namespace d360.web.Controllers.V2
             SwaggerProduces("application/json"),
             SwaggerParameter("uid", THEME_UID_FILTER_PARAMETER, DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of themes.", typeof(List<GetTheme>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetThemes(CancellationToken cancellationToken)
@@ -1537,7 +1538,7 @@ namespace d360.web.Controllers.V2
             SwaggerProduces("application/svg+xml", "image/svg+xml"),
             SwaggerResponse(HttpStatusCode.OK, "Returns an SVG thumbnail for the specified theme.", typeof(string)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse)),
-            SwaggerParameter("width", "Desired with of SVG file", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("width", "Desired width of SVG file", DataType = "integer", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetThemeSvgByUid(Guid uid)
         {
@@ -1684,12 +1685,14 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// 
         /// </remarks>
+        /// <param name="requestModel">An object containing the properties of the theme you want to create. See the example model for a list of all available properties.</param>
         /// <returns>The created theme.</returns>
         [
             HttpPost,
             Route("themes"),
             SwaggerConsumes("application/json"), 
             SwaggerProduces("application/json"),
+            SwaggerResponseRemoveDefaults,
             SwaggerResponse(HttpStatusCode.Created, "Returns the created theme.", typeof(GetTheme)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
@@ -1731,7 +1734,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Updates a theme based on the provided Uid.
         /// </summary>
+        /// <remarks>
+        /// If you leave any properties as null or not present, those properties will be cleared out from the theme you are updating.
+        /// </remarks>
         /// <param name="uid">The unique identifier of the theme.</param>
+        /// <param name="requestModel">An object containing the properties of the theme you want to update. See the example model for a list of all available properties.</param>
         /// <returns>The updated theme.</returns>
         [
             HttpPut,
@@ -1866,6 +1873,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpPut,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("themes/conversion/base64"),
             SwaggerConsumes("text/css"), SwaggerProduces("text/plain"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
@@ -1904,6 +1912,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpPut,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("themes/conversion/dataurl"),
             SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
             SwaggerProduces("text/plain"),

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.model.helpers.filters
 {
@@ -11,7 +7,7 @@ namespace d360.model.helpers.filters
     {
         public RelationFieldToken(FilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
-            this.dataProvider = fdp;
+            dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
             this.field = field;
             @operator = op;
@@ -19,25 +15,26 @@ namespace d360.model.helpers.filters
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.IsNullValue = true;
+                IsNullValue = true;
             }
         }
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            this.sqlParamsRef = sqlParams;
+            sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            var origQuery = $"{this.field} {this.@operator} {this.value.ToString().Trim('\'')}";
+            var origQuery = $"{field} {@operator} {value.ToString().Trim('\'')}";
 
-            var filterExpressionParser = new FilterExpressionParser(this.dataProvider, FilterExpressionParseType.Relationships);
+            var filterExpressionParser = new FilterExpressionParser(dataProvider, FilterExpressionParseType.Relationships);
             var query = filterExpressionParser.Parse(origQuery.Replace("$related:", ""), out sqlParams, out _);
 
             foreach (var item in sqlParams)
             {
                 string updatedKey = item.Key + "_" + parameterIdx;
                 query = query.Replace(item.Key, updatedKey);
-                this.sqlParamsRef.Add(updatedKey, item.Value);
+                sqlParamsRef.Add(updatedKey, item.Value);
             }
+
             return query;
         }
     }

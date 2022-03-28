@@ -847,7 +847,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
                 inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
                 where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).ToList();
 
-            var hasProfiling = Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault();
+            var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault() : false;
 
             switch (type)
             {
@@ -907,7 +907,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
                     topFiltersHidden.ForEach(i =>
                     {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true, loadLookupList: false));
 
                         col.id = i.ID.ToString();
                         col.hiddenfield = !i.IsListable;
@@ -1016,7 +1016,7 @@ select @fieldValue", new { fieldTypeID, obj = new DbString() { Value = obj, IsAn
 
                     topFiltersHiddenRuleType.ForEach(i =>
                     {
-                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true, loadLookupList: false));
 
                         col.id = i.ID.ToString();
                         col.hiddenfield = !i.IsListable;

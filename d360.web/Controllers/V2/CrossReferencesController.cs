@@ -616,46 +616,5 @@ namespace d360.web.Controllers.V2
 
         }
 
-        /// <summary>
-        /// GETs the rule uid from the provided rule id provided.
-        /// </summary>
-        /// <param name="id">The rule ID for which uid is required.</param>
-        /// <returns></returns>
-        [
-            HttpGet,
-            Route("temporary/rules/{id}"),
-            MapToApiVersion("2.0"),
-            SwaggerConsumes("application/json", "application/xml"),
-            SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.NotFound, "Rule ID not found.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true),
-            ]
-        public IHttpActionResult GetUidfromRuleID(int id)
-        {
-            var prefix = "CrossReference.GetUidfromRuleID => ";
-            var errorMessage = "";
-            try
-            {
-                var ruleUid = assetRepository.GetRuleUIDFromRuleID(id);
-                if (ruleUid == Guid.Empty)
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.RuleIDNotFound);
-                }
-
-                return ResponseMessage(
-                                    Request.CreateResponse(HttpStatusCode.OK, new { uid = ruleUid })
-                             );
-            }catch(Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.BadRequest, errorMessage);
-            }
-        }
-
-
     }
 }

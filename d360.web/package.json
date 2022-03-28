@@ -9,6 +9,7 @@
     "build": "node_modules\\.bin\\ng build",
     "buildProd": "node_modules\\.bin\\ng build --configuration=production --localize",
     "build-dev-ops-prod": "node ./replace.timestamp.js && node_modules\\.bin\\ng build --localize --configuration=production && node ./remove-hash-angular.js",
+    "build-dev-ops-prod-linux": "node ./replace.timestamp.js && node_modules/.bin/ng build --localize --configuration=production && node ./remove-hash-angular.js",
     "build-local-debug": "ng build --localize --watch --progress",
     "build-local-debug-no-localization": "ng build --localize=false --output-path=Scripts/dist/en --watch --progress",
     "updateBuild": "node ./replace.timestamp.js",

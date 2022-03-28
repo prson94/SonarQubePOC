@@ -1,7 +1,7 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail" *ngIf="!isLoading">
+<div class="row" *ngIf="!isLoading">
+    <div class="col s12" style="display: flex">
+        <div class="tile tile-detail main-panel">
             <header class="flex-header">
                 <d3s-tile-actions [hasAdd]="false"
                                   [hasFilterMode]="true"
@@ -12,7 +12,19 @@
                 </d3s-tile-actions>
                 <div class="clearfix"></div>
             </header>
-            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayPath','AssetType','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rowsPerPageOptions]="[10,20,50,100,200,500]" [rows]="10" [(selection)]="selected">
+            <p-table #dt
+                     [value]="tagUsage"
+                     selectionMode="single"
+                     [metaKeySelection]="true"
+                     [globalFilterFields]="['DisplayPath','AssetType','TagsAsString']"
+                     sortField="DisplayValue"
+                     [sortOrder]="1"
+                     [pageLinks]="3"
+                     [paginator]="true"
+                     [rowsPerPageOptions]="[10,20,50,100,200,500]"
+                     [rows]="10"
+                     [selection]="selection"
+                     (selectionChange)="selectAsset($event)">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'DisplayPath'" style="width: 20%">
@@ -39,18 +51,13 @@
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
+                    <tr [pSelectableRow]="item" (focus)="selectAsset(item)">
                         <td>{{item.DisplayPath}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
                             <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" ></d3s-tag-view>
                         </td>
                         <td>
-                            <div class="RowTools">
-                                <d3s-preview-tooltip [objectType]="item.Object"
-                                                     [objectId]="item.ObjectID"
-                                                     icon="info"></d3s-preview-tooltip>
-                            </div>
                         </td>
                     </tr>
                 </ng-template>
@@ -58,6 +65,71 @@
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-table>
+        </div>
+        <div class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selection"
+                        [panelApplies]="panelApplies"
+                        [hasProfiling]="hasProfiling"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab">
+                <ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">
+                    <d3s-loading [isLoading]="true"></d3s-loading>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">
+                    <ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">
+                        <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
+                    </ng-container>
+                    <ng-container *ngIf="sidePanelTab === 'detail'">
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                                         [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"
+                                         [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hasEditLink]="true"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         [interceptLinkClick]="true"></ig-asset-detail>
+
+                        <ng-container *ngIf="selectedReferenceItem">
+                            <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                                                  [highlightUid]="selectedReferenceItem.assetUid"
+                                                  [baseUrl]="selectedReferenceItem.url">
+                            </ig-asset-type-detail>
+                        </ng-container>
+                        <ng-container *ngIf="selectedTag">
+                            <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+                        </ng-container>
+                    </ng-container>
+                </ng-container>
+                <ng-container *ngIf="secondarySidePanelOpen && semanticType">
+                    <div #semanticTile class="secondary-side-panel">
+                        <div class="panel-header">
+                            <span class="header-label">Information</span>
+                            <div class="button-container">
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="'Close'" class="close-button"></button>
+                            </div>
+                        </div>
+                        <div class="details-container">
+                            <ng-container *ngIf="semanticType">
+                                <semantic-detail [qualifier]="semanticType.qualifier"
+                                                 [isSidePanel]="true"
+                                                 [showHeader]="true"
+                                                 [semanticType]="semanticType"
+                                                 (close)="secondarySidePanelOpen=false;"></semantic-detail>
+                            </ng-container>
+                        </div>
+                    </div>
+                </ng-container>
+            </side-panel>
         </div>
     </div>
 </div>

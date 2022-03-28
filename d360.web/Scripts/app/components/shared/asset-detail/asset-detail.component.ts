@@ -138,24 +138,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             }
         }
 
-        if (this.objectType === 'Resource') {
-            this.tab = 'detail';
-            this.useAccordion = false;
-            if (this.loadGroupSub) {
-                this.loadGroupSub.unsubscribe();
-            }
-            this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
-                .subscribe((res) => {
-                    this.userGroups = res.items;
-                });
-
-            this.hideLinks = !this.isAdmin;
-        }
-
-        if (this.objectType === 'Group' && updateTab) {
-            this.tab = 'members';
-            this.hideLinks = !this.isAdmin;
-        }
 
 
         if (this.relationshipUid) {
@@ -170,6 +152,26 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.rows = this.getRowsWithOnlyFilteredFields(data.rows);
                     this.objectID = data.ObjectID;
                     this.objectType = data.Object;
+
+                    if (this.objectType === 'Resource') {
+                        this.tab = 'detail';
+                        this.useAccordion = false;
+                        if (this.loadGroupSub) {
+                            this.loadGroupSub.unsubscribe();
+                        }
+                        this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
+                            .subscribe((res) => {
+                                this.userGroups = res.items;
+                            });
+
+                        this.hideLinks = !this.isAdmin;
+                    }
+
+                    if (this.objectType === 'Group' && updateTab) {
+                        this.tab = 'members';
+                        this.hideLinks = !this.isAdmin;
+                    }
+
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {

@@ -1,8 +1,9 @@
-﻿import { EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+﻿import { ElementRef, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
 import { Input, Component, OnChanges, SimpleChange, OnDestroy, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Table } from 'primeng/table';
 import { forkJoin, Observable, of, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { Param } from '../../../enums/param.enum';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { FieldType, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
@@ -92,7 +93,14 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         data.count = this.relationshipTypesResolvedNames.length;
         data.items = [];
         this.relationshipTypesResolvedNames.forEach((item) => {
-            data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+            if (params.filter) {
+                if (item["name"].toLowerCase().indexOf(params.filter.toLowerCase()) !== -1) {
+                    data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+                }
+            }
+            else {
+                data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+            }
         });
         return of(data);
     }
@@ -127,6 +135,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     private destroy = new Subject<void>();
 
     constructor(
+        private elRef: ElementRef,
         private cdRef: ChangeDetectorRef,
         private numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         private relationshipService: RelationshipsService,
@@ -218,23 +227,39 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadTypesSub.unsubscribe();
         }
 
-        this.loadTypesSub = forkJoin(
-            this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
-            this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
-            this.assetService.getUIDetailsForAssetUID(this.assetUid),
-            this.permissionService.getAssetPermissions(this.assetUid)
-        )
-            .subscribe((data) => {
-                this.relationshipTypes = data[0];
-                this.relationshipCounts = data[1];
-                this.assetDetail = data[2];
-                this.assetPermissions = data[3];
+        this.assetService.getUIDetailsForAssetUID(this.assetUid)
+            .subscribe((ad) => {
+                this.assetDetail = ad;
+                var permissionObs: Observable<Permissions> = this.permissionService.getAssetPermissions(this.assetUid);
 
-                this.processCountData();
+                if (ad.Object === 'Resource' || ad.Object === 'ReferenceItemType') {
+                    var p = new Permissions();
+                    p.AddRelationships = p.EditRelationships = p.DeleteRelationships = p.ReadRelationships = true;
+                    permissionObs = of(p);
+                }
 
-                this.areTypesLoaded = true;
-                this.cdRef.detectChanges();
+                if (ad.Object === 'ReferenceItemType') {
+                    this.assetTypeUid = '0000000a-0000-0000-0000-000000000009';
+                }
+
+                this.loadTypesSub = forkJoin(
+                    this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
+                    this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),
+                    permissionObs
+                )
+                    .subscribe((data) => {
+                        this.relationshipTypes = data[0];
+                        this.relationshipCounts = data[1];
+                        this.assetPermissions = data[2];
+
+                        this.processCountData();
+
+                        this.areTypesLoaded = true;
+                        this.cdRef.detectChanges();
+                    });
             });
+
+
     }
 
     updateCountData() {
@@ -291,7 +316,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         if (this.singleSelectedRelationship) {
             this.loadRelationshipsSub =
                 forkJoin(
-                    this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams()),
+                    this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams(false)),
                     this.gridDefinitionService.getGridDefinition(this.singleSelectedRelationship.uid, "IntersectType"))
                     .subscribe((result) => {
                         this.processGetRelationshipResponse(result[0], result[1]);
@@ -299,7 +324,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         else {
             this.loadRelationshipsSub =
-                this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams())
+                this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams(false))
                     .subscribe((result) => {
                         this.processGetRelationshipResponse(result);
                     });
@@ -361,9 +386,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.cdRef.detectChanges();
     }
 
-    getParams(): V2ApiFilters {
+    getParams(isExport: boolean): V2ApiFilters {
         var params = new V2ApiFilters();
-        params._pageSize = this.rowsPerPage;
+        params._pageSize = this.rowsPerPage ?? 10;
         if (this.dt) {
             params._pageNum = (this.dt.first / this.dt.rows) + 1;
             params._pageSize = this.dt.rows;
@@ -396,10 +421,19 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
         }
 
+        if (!isExport) {
+            params["_listcolorsasjson"] = true;
+        }
+
         return params;
     }
 
     get singleSelectedRelationship(): any {
+        if (this.relationshipCounts.length === 1) {
+            var uid = this.relationshipCounts[0].IntersectTypeUid;
+            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === uid.toLowerCase())[0];
+        }
+
         if (!this.advancedFilterData) {
             return null;
         }
@@ -407,8 +441,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         var relFilter = this.advancedFilterData.filter((x) => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
-            var selected = this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase());
-            return selected[0];
+            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase())[0];
         }
         return null;
     }
@@ -542,7 +575,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.isExportInProgress = true;
         this.relationshipService
             .getRelationshipsForAssetExcel(
-                this.assetUid, this.getParams(),
+                this.assetUid, this.getParams(true),
                 'Filtered ' + this.assetDetail.DisplayValue + ' Relationships',
                 () => { this.isExportInProgress = false; }
             );
@@ -551,5 +584,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     get fullRelationshipNameAsHTML(): string {
         return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp;</strong> - ${this.selectedRelAsset.target}`;
 
+    }
+    get selectionScrollHeight(): string {
+        var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('grid-actions-header')[0].getBoundingClientRect().height;
+        return (window.innerHeight - 348 - filterFieldHeight) + "px";
     }
 }

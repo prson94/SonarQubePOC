@@ -1,11 +1,11 @@
-﻿<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor {{previewAssetUid ? 'modal-extended' : ''}}"
+﻿<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor add-relationship-modal {{isFromModal ? 'relationship-modal-editor' : ''}}  {{previewAssetUid ? 'modal-extended' : ''}}"
            (onClose)="close();"
            [title]="'Add Relationships'"
            [subtitle]="modalSubtitle"
-           [appendToBody]="true"
+           [appendToBody]="isFromModal"
            [isVisible]="isVisible">
     <div class="add-relationship-editor">
-        <div *ngIf="currentStep === 'SetRelationshipType'">
+        <ng-container *ngIf="currentStep === 'SetRelationshipType'">
             <h2>Select a Relationship Type to see a list of Available Assets for creating relationships.</h2>
             <div class="simple-search">
                 <ig-search-field mode="Keypress"
@@ -31,7 +31,6 @@
                         <th>
                             Relationship Type
                         </th>
-                        <th width="200"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
@@ -39,9 +38,11 @@
                     <tr class="{{item.disabledClass}}" [pSelectableRow]="item.disabledClass ? null : item">
                         <td class="rel-name">
                             <p-tableRadioButton [pSelectableRow]="item.disabledClass ? null : item" [value]="item"></p-tableRadioButton>
-                            {{item.name}}
-                        </td>
-                        <td class="flex-grid">
+
+                            <span class="rel-text">
+                                {{item.name}}
+                            </span>
+
                             <div class="flex-grow"></div>
                             <i *ngIf="item.disabledClass === 'disabled-predicate'" class="fa fa-question-circle" pTooltip="Parent-child relationship type cannot be manually created" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                             <i *ngIf="item.disabledClass === 'disabled-cardinality-many'" class="fa fa-question-circle" pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
@@ -63,9 +64,9 @@
                 <span class="grow"></span>
                 <button igButton class="ig-button-primary" label="Select Assets > " (click)="currentStep = 'SetAssets'" [disabled]="!selectedRelationshipType?.uid"></button>
             </div>
-        </div>
+        </ng-container>
 
-        <div *ngIf="currentStep === 'SetAssets'">
+        <ng-container *ngIf="currentStep === 'SetAssets'">
             <div class="modal-side-panel" *ngIf="previewAssetUid">
                 <div class="side-panel-container" style="margin: 0;">
                     <div class="panel-header">
@@ -77,6 +78,7 @@
                 </div>
                 <asset-preview [assetUid]="previewAssetUid"
                                [assetType]="previewAssetType"
+                               [assetTypeUid]="targetTypeUid"
                                [hasEditLink]="false"
                                [hasOpenLink]="false"></asset-preview>
             </div>
@@ -85,28 +87,31 @@
                 Only a single asset can be related for {{subjectTypeCardinality === 2 ? 'Many-To-One' : 'One-To-One'}} relationship types
             </h2>
 
-            <d3s-multiselect-grid [(ngModel)]="selectedAssets"
-                                  [multiple]="targetTypeCardinality === 2"
-                                  [intersectTypeUid]="selectedType.Uid"
-                                  [assetUid]="assetUid"
-                                  [targetAssetTypeUid]="targetTypeUid"
-                                  [higlightedItem]="higlightedItem"
-                                  [objectCardinality]="targetTypeCardinality"
-                                  [selectedAssetsDetail]="selectedAssetsDetail"
-                                  (onInfoClick)="onInfoClick($event)"
-                                  (onSelected)="selectedAssetsDetail = $event"></d3s-multiselect-grid>
+            <div class="asset-list-grid">
+                <d3s-multiselect-grid [(ngModel)]="selectedAssets"
+                                      [multiple]="targetTypeCardinality === 2"
+                                      [intersectTypeUid]="selectedType.Uid"
+                                      [assetUid]="assetUid"
+                                      [targetAssetTypeUid]="targetTypeUid"
+                                      [higlightedItem]="higlightedItem"
+                                      [objectCardinality]="subjectTypeCardinality"
+                                      [selectedAssetsDetail]="selectedAssetsDetail"
+                                      (onInfoClick)="onInfoClick($event)"
+                                      (onSelected)="selectedAssetsDetail = $event"></d3s-multiselect-grid>
+            </div>
+
             <div class="action-bar no-padding">
                 <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;"></button>
+                <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;resetSelectedAssets()"></button>
 
                 <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
                 <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
             </div>
-        </div>
+        </ng-container>
 
 
-        <div *ngIf="currentStep === 'SetCustomFields'">
+        <ng-container *ngIf="currentStep === 'SetCustomFields'">
             <div class="relationship-fields-wrapper">
                 <asset-editor #dynamicEditor
                               [objectID]="selectedType.Uid"
@@ -124,8 +129,8 @@
                 <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
                 <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetAssets'"></button>
-                <button igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress" [loading]="savingInProgress"></button>
+                <button igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress || !dynamicEditor.isFormValid()" [loading]="savingInProgress"></button>
             </div>
-        </div>
+        </ng-container>
     </div>
 </d3s-modal>
