@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -14,6 +15,7 @@ namespace d360.web.Services
         {
             var request = new TRequest();
             setupAction?.Invoke(request);
+
             return mediator.Send(request, cancellationToken);
         }
 
