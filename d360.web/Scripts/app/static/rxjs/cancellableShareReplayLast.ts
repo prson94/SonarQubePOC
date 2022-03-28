@@ -84,7 +84,7 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
                     outerSubscribers.delete(subscriber);
                     tryDestroyInnerSubscription();
                 }
-            }
+            };
         });
     }
 }
