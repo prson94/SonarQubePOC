@@ -14,7 +14,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-admin-tags',
     templateUrl: 'admin-tags.component.html',
-    providers: [TagService]
+    providers: [TagService],
+    styles: ['table, th, td { border: 1px solid black!important}']
 })
 
 export class AdminTagsComponent extends AdminBaseComponent {
@@ -80,11 +81,20 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
         this.filters[event.prop] = event.value;
     }
+
+    randomDate(start, end) {
+        return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    }
+
     getTags() {
         this.isLoading = true;
-        this.tagsService.getTagsList().subscribe(res => {
-            if (res && res.length > 0) {
-                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
+        this.tagsService.getTagsList().subscribe((tags: TagType[]) => {
+            if (tags && tags.length > 0) {
+                tags.forEach((tag) => {
+                    tag.CreatedBy = ['Lu Er', 'Zhao Liu', 'Sun Qi', 'Wang Wu'][Math.floor(Math.random() * 4)];
+                    (tag as any).DateCreated = String(this.randomDate(new Date(2012, 0, 1), new Date())).split("GMT")[0];
+                })
+                this.tags = tags.sort((a, b) => a.Value.localeCompare(b.Value));
             }
             this.isLoading = false;
         }, err => this.error = err);

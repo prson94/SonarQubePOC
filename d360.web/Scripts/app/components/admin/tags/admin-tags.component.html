@@ -21,16 +21,24 @@
                          [(selection)]="selected">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th style="width: 20px;">
+                            <th style="width: 36px;">
                                 <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                             </th>
-                            <th [pSortableColumn]="'Value'" style="width: 60%">
+                            <th [pSortableColumn]="'Value'" style="width: 30%">
                                 Name
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
                             </th>
-                            <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                            <th [pSortableColumn]="'UseCount'" style="width: 13%">
                                 Use count
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'DateCreated'" style="width: 20%">
+                                Date Created
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'DateCreated'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'CreatedBy'" style="width: 20%">
+                                Created By
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedBy'"></d3s-sortIcon>
                             </th>
                             <th style="width: 110px"></th>
                         </tr>
@@ -47,11 +55,11 @@
                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                             </td>
                             <td (click)="selectSingleItem($event,item, el);">
-                                <a (click)="openTagDetails(item);">
-                                    {{item.Value}}
-                                </a>
+                                <a (click)="openTagDetails(item);">{{item.Value}}</a>
                             </td>
                             <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
+                            <td (click)="selectSingleItem($event,item, el);">{{item.DateCreated}}</td>
+                            <td (click)="selectSingleItem($event,item, el);">{{item.CreatedBy}}</td>
                             <td (click)="selectSingleItem($event,item, el);">
                                 <div class="RowTools">
                                     <d3s-preview-tooltip [objectType]="'Tag'"
