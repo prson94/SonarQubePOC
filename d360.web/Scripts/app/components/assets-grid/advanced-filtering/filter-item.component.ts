@@ -719,7 +719,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 res.forEach((item) => {
                     if (item.Name.indexOf("] - ")) {
                         var data = (item.Name as string).split("] - ");
-                        mapped.push({ value: item.Uid, title: data[1], group: data[0].replace("[", "") });
+                        mapped.push({ value: item.Uid, title: data[1], group: data[0].replace("[", ""), responsibility: item.ResponsibilityTypeId });
                     }
                     else {
                         mapped.push({ value: item.Uid, title: item.Name });
@@ -730,7 +730,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                     this.currentField.Values.push({ title: str.title, value: str.value });
                 });
                 mapped.filter((x) => x.group).forEach((str) => {
-                    this.currentField.Values.push({ title: str.title + " (" + str.group + ")", value: str.value });
+                    this.currentField.Values.push({ title: str.title + " (" + str.group + ")", value: str.value + "-" + str.responsibility });
                 });
 
                 this.currentField.Values = this.currentField.Values.sort((a, b) => a.title.localeCompare(b.title));
