@@ -28,6 +28,8 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     sidePanelTab: string = 'detail';
     selectedRow: any;
 
+    isEditorVisible: boolean = false;
+
     menuItems = [
         { title: 'Edit' },
         { title: 'Delete' },

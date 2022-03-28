@@ -12,15 +12,14 @@ import { IgMessageBoxModule } from '../../shared/controls/message-box/message-bo
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 import { SharedModule } from 'primeng/api';
-import { AdminBrandingComponent } from './admin-branding.component';
 import { AdminBrandingRoutingModule } from './admin-branding.routes';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.component';
-import { ThemeDetailComponent } from './theme-details.component';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
-import { ThemeEditorModule } from './theme-editor.module';
+import { ThemeEditorComponent } from './theme-editor.component';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 
 @NgModule({
     imports: [
@@ -37,23 +36,25 @@ import { ThemeEditorModule } from './theme-editor.module';
 
         //d3s        
         CoreModule,
-        PipesModule,        
+        PipesModule,
         TilesModule,
         AdminModule,
-        ThemeEditorModule,
 
         IgMessageBoxModule,
         SidePanelModule,
         DirectivesModule,
         IgBadgeModule,
         PopupMenuModule,
-        PropertyGroupModule
+        PropertyGroupModule,
+        SiteModalModule
     ],
     declarations: [
-        AdminBrandingComponent,
-        ThemeDetailComponent
+        ThemeEditorComponent
+    ],
+    exports: [
+        ThemeEditorComponent
     ],
     providers: [
     ]
 })
-export class AdminBrandingModule { }
+export class ThemeEditorModule { }

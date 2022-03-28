@@ -9,6 +9,7 @@
                             pTooltip="Create New Group"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
+                            (click)="selectedRow = null;isEditorVisible=true"
                             icon="fa-plus">
                     </button>
                     <button igButton
@@ -44,7 +45,6 @@
                 </div>
             </div>
 
-
         </div>
         <div class="tile tile-detail side-panel">
             <side-panel (expandedChange)="sidePanelOpen=$event"
@@ -62,3 +62,5 @@
         </div>
     </div>
 </div>
+
+<theme-editor [uid]="selectedRow?.uid" [isVisible]="isEditorVisible"></theme-editor>
