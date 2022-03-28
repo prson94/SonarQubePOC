@@ -28,14 +28,15 @@ namespace d360.web.Models.Attributes
             var response = httpContext.Response;
 
             if (filterContext.Result is FileResult)
+            {
                 //jquery.fileDownload uses this cookie to determine that a file download has completed successfully
                 response.AppendCookie(new HttpCookie(CookieName, "true") { Path = CookiePath });
-            else
-                //ensure that the cookie is removed in case someone did a file download without using jquery.fileDownload
-                if (httpContext.Request.Cookies[CookieName] != null)
-                {
-                    response.AppendCookie(new HttpCookie(CookieName, "true") { Expires = DateTime.Now.AddYears(-1), Path = CookiePath });
-                }
+            }
+            //ensure that the cookie is removed in case someone did a file download without using jquery.fileDownload
+            else if (httpContext.Request.Cookies[CookieName] != null)
+            {
+                response.AppendCookie(new HttpCookie(CookieName, "true") { Expires = DateTime.Now.AddYears(-1), Path = CookiePath });
+            }
         }
 
         public override void OnActionExecuted(ActionExecutedContext filterContext)
