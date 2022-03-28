@@ -1,16 +1,14 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.entities.Metric;
-using d360.core.enums;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Mvc;
+
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+
+using Newtonsoft.Json;
 
 namespace d360.web.Models
 {
@@ -30,6 +28,7 @@ namespace d360.web.Models
     public class PrimeSelectItem
     {
         public string label { get; set; }
+
         public string value { get; set; }
     }
 
@@ -46,16 +45,22 @@ namespace d360.web.Models
     public class AssetTypeEditorModel : BaseEditorModel
     {
         public AssetTypeUpsert AssetType { get; set; }
+
         public int? ParentID { get; set; } = null;
+
         public Guid? ParentUid { get; set; } = null;
+
         public List<PrimeSelectItem> Predicates { get; set; } = new List<PrimeSelectItem>();
+
         public List<PrimeSelectItem> Tokens { get; set; } = new List<PrimeSelectItem>();
+
         public List<PrimeSelectItem> Parents { get; set; } = new List<PrimeSelectItem>();
     }
 
     public class KnockoutDisplayItem
     {
         public string title { get; set; }
+
         public string value { get; set; }
     }
 
@@ -76,7 +81,9 @@ namespace d360.web.Models
     public class CompanySettingsIpRestrictionEditorModel
     {
         public string Name { get; set; }
+
         public string Start { get; set; }
+
         public string End { get; set; }
     }
 
@@ -90,69 +97,106 @@ namespace d360.web.Models
         }
 
         public bool DisableCommunityPosting { get; set; }
+
         public bool DisableIssueManagement { get; set; }
+
         public string CompanyLogo { get; set; }
+
         public bool SetLogoToDefault { get; set; }
+
         public string CurrentCompanyLogoPath { get; set; }
+
         public string CompanyIcon { get; set; }
+
         public bool SetIconToDefault { get; set; }
+
         public string CurrentCompanyIconPath { get; set; }
+
         public bool EnableShoppingCart { get; set; }
+
         public bool EnableOrganizations { get; set; }
+
         public string DefaultRoute { get; set; }
+
         public bool EnableSagacity { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }
+
         public List<SiteNav> SiteNav { get; set; } = new List<SiteNav>();
+
         public string DefaultSearchTypes { get; set; }
 
         public bool HideData3SixtyUsers { get; set; }
+
         public bool ShowAllUsersAPIKey { get; set; }
+
         public int WorkflowCatchAllGroup { get; set; }
 
         public bool ShowHomeAssignmentTile { get; set; }
+
         public bool ShowHomeBoardTile { get; set; }
+
         public bool ShowHomeActivityTile { get; set; }
+
         public bool ShowHomePageTitle { get; set; }
+
         public string HomePageTitleSize { get; set; }
+
         public string HomePageTitleColor { get; set; }
+
         public string HomePageBackgroundImage { get; set; }
+
         public bool ClearHomePageBackgroundImage { get; set; } = false;
+
         public string BrowserTitlePrefix { get; set; }
+
         public int WorkflowDigestEmailDays { get; set; }
+
         public int MaxDropdownItems { get; set; }
+
         public bool WriteActionDescription { get; set; }
 
         public int LineageVersion { get; set; } = 1;
+
         public int MaxExcelExportRows { get; set; }
+
         public string AllowedOrigins { get; set; }
+
         public string FramingDomains { get; set; }
+
         public bool HideHeaderBarControls { get; set; }
 
         public int AssetDefinitionColumnWidth { get; set; }
 
         public int DiagramMaxAvoidNodesLinkCount { get; set; }
+
         public string RequestCertificationDraft { get; set; }
     }
 
     public class DataQualityResult
     {
         public int PassCount { get; set; }
+
         public int FailCount { get; set; }
+
         public DateTime EffectiveDate { get; set; }
+
         public DateTime RunDate { get; set; }
+
         public int ID { get; set; }
     }
 
     public class DataQualityResultItem
     {
         public DataQualityResult Result { get; set; }
+
         public List<DataQualityAssetMapping> AssetsMappings { get; set; }
     }
 
     public class DataQualityAssetMapping
     {
         public string AssetPath { get; set; }
+
         public Guid? AssetUID { get; set; }
     }
 
@@ -223,6 +267,7 @@ namespace d360.web.Models
 
         [DataMember]
         public int RecordCount { get; set; }
+
         [DataMember]
         public bool UseTypeahead { get; set; }
 
@@ -231,19 +276,16 @@ namespace d360.web.Models
 
         [DataMember]
         public bool IsSemantic { get; set; }
+
         [DataMember]
         public bool VirtualScroll { get; set; }
+
         [DataMember]
         public int? ItemSize { get; set; }
 
         [DataMember]
-        public bool UseNativeLookupControl
-        {
-            get
-            {
-                return !(VirtualScroll || UseTypeahead);
-            }
-        }
+        public bool UseNativeLookupControl => !(VirtualScroll || UseTypeahead);
+
         [DataMember]
         public bool UseColorControl { get; set; }
 
@@ -285,21 +327,30 @@ namespace d360.web.Models
 
         [DataMember]
         public bool Selected { get; set; }
-
     }
 
     public class FieldTypeItemDisplayFieldEditorModel
     {
         public int FieldTypeID { get; set; }
+
         public string FieldTypeName { get; set; }
+
         public bool Show { get; set; }
+
         public int? SortOrder { get; set; }
+
         public string FilterValue { get; set; }
+
         public bool Filter { get; set; }
+
         public string Object { get; set; }
+
         public int ObjectID { get; set; }
+
         public string OverrideDisplayName { get; set; }
+
         public int DisplayOrder { get; set; }
+
         public int? Width { get; set; }
     }
 
@@ -311,28 +362,41 @@ namespace d360.web.Models
         }
 
         public bool Valid { get; set; }
+
         public string Message { get; set; }
     }
 
     public class FieldTypeRelationItemEditorModel
     {
         public int ID { get; set; }
+
         public int IntersectType { get; set; }
+
         public int ReferenceType { get; set; }
+
         public int? ChildIntersectType { get; set; }
+
         public int Direction { get; set; } = 0;
+
         public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
+
         public bool HideHeader { get; set; }
+
         public bool HideFooter { get; set; }
+
         public bool HideFilter { get; set; } = false;
+
         public string Object { get; set; }
+
         public int ObjectID { get; set; }
+
         public int RelationType { get; set; }
 
         public FieldValidity Validation()
         {
             var prefix = "You are missing a";
             var valid = new FieldValidity();
+
             if (IntersectType <= 0)
             {
                 valid.Valid = false;
@@ -379,17 +443,23 @@ namespace d360.web.Models
     public class FieldTypeOwnershipLookupEditorModel
     {
         public bool HideHeader { get; set; }
+
         public bool HideFooter { get; set; }
+
         public bool HideFilter { get; set; } = false;
+
         public string Object { get; set; }
+
         public int ObjectID { get; set; }
 
         public bool DisplayAssignmentSource { get; set; }
+
         public bool ExpandGroupMembership { get; set; }
 
         public FieldValidity Validation()
         {
             var valid = new FieldValidity();
+
             return valid;
         }
     }
@@ -411,7 +481,6 @@ namespace d360.web.Models
 
     public class FieldTypeEditorModel
     {
-
         public bool FieldIsUsed { get; set; }
 
         public FieldType FieldType { get; set; }
@@ -439,6 +508,7 @@ namespace d360.web.Models
         /// The error message to display to the user.
         /// </summary>
         public string message { get; set; }
+
         /// <summary>
         /// required; length=3,12; right:0,0; phone; ssn; zipCode; email; inline javascript function
         /// </summary>
@@ -454,7 +524,7 @@ namespace d360.web.Models
         public string UserName { get; set; }
 
         [Required]
-        [System.ComponentModel.DataAnnotations.DataType(System.ComponentModel.DataAnnotations.DataType.Password)]
+        [DataType(System.ComponentModel.DataAnnotations.DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; }
 
@@ -501,18 +571,22 @@ namespace d360.web.Models
 
         public TermsModel(Contract contract)
         {
-            this.Contract = contract;
-            this.Acceptance = new ContractAcceptance();
-            this.Acceptance.ContractID = contract.ID;
+            Contract = contract;
+            Acceptance = new ContractAcceptance
+            {
+                ContractID = contract.ID
+            };
         }
 
         public TermsModel(Contract contract, string redirectUri, bool isLastContract) : this(contract)
         {
-            this.RedirectUri = redirectUri;
-            this.IsLastContract = isLastContract;
+            RedirectUri = redirectUri;
+            IsLastContract = isLastContract;
         }
         public Contract Contract { get; set; }
+
         public ContractAcceptance Acceptance { get; set; }
+
         public string RedirectUri { get; set; } = null;
 
         public bool IsLastContract { get; set; } = false;
@@ -538,36 +612,32 @@ namespace d360.web.Models
         }
 
         public Contract Contract { get; set; }
+
         public ContractAcceptance ContractAcceptance { get; set; }
 
         public bool Accept { get; set; } = false;
 
-        public bool IsAccepted
-        {
-            get
-            {
-                return this.ContractAcceptance?.Accepted ?? false;
-            }
-        }
-
+        public bool IsAccepted => ContractAcceptance?.Accepted ?? false;
     }
 
     public class QuestionTypeItemEditorModel
     {
         public int ID { get; set; }
+
         public string Name { get; set; }
+
         public int Value { get; set; }
 
         public FieldValidity Validation()
         {
             var prefix = "You are missing a";
             var valid = new FieldValidity();
+
             if (string.IsNullOrEmpty(Name))
             {
                 valid.Valid = false;
                 valid.Message += $"{prefix} Name.";
             }
-
 
             return valid;
         }
@@ -578,9 +648,13 @@ namespace d360.web.Models
         public bool LimitedChangesOnly { get; set; }
 
         public int ID { get; set; }
+
         public int SurveyTypeID { get; set; }
+
         public string Name { get; set; }
+
         public string Description { get; set; }
+
         public QuestionDisplayStyle DisplayStyle { get; set; }
 
         public List<KnockoutDisplayItem> DisplayStyleOptions { get; set; }
@@ -607,27 +681,6 @@ namespace d360.web.Models
 
             return valid;
         }
-    }
-    public class AddGroup
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public Guid PrimaryOwnerUid { get; set; }
-        public Guid SecondaryOwnerUid { get; set; }
-        [DataMember]
-        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
-    }
-
-    public class UpdateGroup
-    {
-        public Guid Uid { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public Guid PrimaryOwnerUid { get; set; }
-        public Guid SecondaryOwnerUid { get; set; }
-        [DataMember]
-        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
-
     }
 
     #region Asset Browser
@@ -717,32 +770,49 @@ namespace d360.web.Models
     public class HelpMenuItem
     {
         public int ID { get; set; }
+
         public string Name { get; set; }
+
         public string Url { get; set; }
+
         public string Description { get; set; }
+
         public int visibility { get; set; }
+
         public int order { get; set; }
+
         public Guid uid { get; set; }
+
         public bool isEditable { get; set; }
+
         public bool isSystem { get; set; }
     }
 
     public class UpdateHelpMenuItem
     {
         public string Name { get; set; }
+
         public string Url { get; set; }
+
         public string Description { get; set; }
+
         public int visibility { get; set; }
+
         public int order { get; set; }
+
         public Guid uid { get; set; }
     }
 
     public class AddHelpMenuItem
     {
         public string Name { get; set; }
+
         public string Url { get; set; }
+
         public string Description { get; set; }
+
         public int visibility { get; set; }
+
         public int order { get; set; }
     }
 
@@ -754,13 +824,9 @@ namespace d360.web.Models
     public class HelpMenuItemMessage
     {
         public Guid uid { get; set; }
-        public string title { get; set; }
-        public string message { get; set; }
-    }
 
-    public class HelpMenuModel
-    {
-        public List<HelpMenuItem> Adds { get; set; }
-        public List<DeleteMenuItem> Deletes { get; set; }
+        public string title { get; set; }
+
+        public string message { get; set; }
     }
 }
