@@ -17,7 +17,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public ResponsibilitiesControllerTest()
         {
-            this.responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetApplicationUriProvider(), GetAssetRepository(), GetMediator(), GetResponsibilityRepository())
+            this.responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetAssetRepository(), GetMediator(), GetResponsibilityRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
