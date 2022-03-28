@@ -2115,7 +2115,6 @@ namespace d360.web.Controllers
 		{
 			var itemKey = $"{Community.CurrentClientID}.{Community.CurrentResourceID}";
 			var userModel = GetFeatureFlagUser();
-
 			var b = LaunchDarkly.Sdk.User.Builder(itemKey);
 
 			if (userModel != null)
