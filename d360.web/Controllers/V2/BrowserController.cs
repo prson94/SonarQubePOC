@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using Resources;
+using static Dapper.SqlMapper;
+using d360.core.exceptions;
 
 namespace d360.web.Controllers.V2
 {
@@ -41,49 +43,17 @@ namespace d360.web.Controllers.V2
             GraphFilterRepository = graphFilterRepository;
         }
 
-        async Task<HttpResponseMessage> getInitial(AssetBrowserInitialModel postModel)
+        private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal)
         {
-            try
+            var model = new AssetBrowserResponseModel
             {
-                var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @hopCount, @descendancy, @isAdmin, @includeNonLeaf";
-                var reader = await Company.QueryMultipleAsync(
-                    sql,
-                    new
-                    {
-                        ancestry = (int)postModel.ancestry,
-                        postModel.uid,
-                        resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin,
-                        postModel.hopCount,
-                        postModel.includeNonLeaf,
-                        descendancy = (int)postModel.descendancy
-                    },
-                    timeout: 120
-                );
+                nodes = reader.Read<AssetBrowserNode>().ToList(),
+                links = reader.Read<AssetBrowserLink>().ToList(),
+                hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
+                reveals = readReveal ? reader.Read<AssetBrowserRevealNode>().ToList() : null,
+            };
 
-                var model = new AssetBrowserResponseModel
-                {
-                    nodes = reader.Read<AssetBrowserNode>().ToList(),
-                    links = reader.Read<AssetBrowserLink>().ToList(),
-                    hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-                    reveals = reader.Read<AssetBrowserRevealNode>().ToList(),
-                    dataLimitReached = reader.Read<bool>().FirstOrDefault()
-                };
-
-                if (model.reveals.Count == 1)
-                {
-                    if (model.reveals[0].direction == AssetBrowserApiHopDirection.None)
-                    {
-                        model.reveals = null;
-                    }
-                }
-
-                return Request.CreateResponse(HttpStatusCode.OK, model);
-            }
-            catch (Exception ex)
-            {
-                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
+            return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
         /// <summary>
@@ -110,9 +80,90 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<HttpResponseMessage> GetInitialLineage(AssetBrowserLineageInitialModel model)
         {
-            var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf, descendancy = model.descendancy };
-            return await getInitial(o);
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+
+                var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = model.uid } };
+
+                var sql = @"exec graph.AssetBrowser_Lineage 
+@ancestry, @descendancy, @direction, 
+@assets, @resourceId, @currentHop, @hopCount, @intersects,
+@includeOwnershipBadges, @includeRelationBadges, null, @isAdmin";
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        ancestry = (int)model.ancestry,
+                        descendancy = (int)model.descendancy,
+                        direction = "A",
+                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        currentHop = 0,
+                        hopCount = model.hopCount,
+                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationBadges = true,
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
+
+                return buildAssetBrowserResponseModel(reader, true);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
         }
+
+        [
+            Route("lineage/hop"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetHopLineage(AssetBrowserLineageHopModel hopModel)
+        {
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+
+                var sql = @"exec graph.AssetBrowser_Lineage 
+@ancestry, @descendancy, @direction, 
+@assets, @resourceId, @currentHop, @hopCount, @intersects,
+@includeOwnershipBadges, @includeRelationBadges, @hierarchyKey, @isAdmin";
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        ancestry = (int)hopModel.ancestry,
+                        descendancy = (int)hopModel.descendancy,
+                        direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
+                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        currentHop = hopModel.currentHop, 
+                        hopCount = 1,
+                        intersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationBadges = true,
+                        hierarchyKey = hopModel.hierarchyKey,
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
+
+                return buildAssetBrowserResponseModel(reader, true);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
+
 
         [
             Route("impact/initial"),
@@ -123,10 +174,36 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetInitialImpact(AssetBrowserImpactInitialModel model)
+        public async Task<HttpResponseMessage> GetInitialImpact(AssetBrowserImpactInitialModel request)
         {
-            var o = new AssetBrowserInitialModel { ancestry = AssetBrowserAncestry.TypeOnly, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf };
-            return await getInitial(o);
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, null, null, @isAdmin";
+                var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = request.uid } };
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        hopCount = request.hopCount,
+                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationshipBadges = true,
+                        direction = "A",
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
+
+                return buildAssetBrowserResponseModel(reader, false);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
         }
 
         /// <summary>
@@ -157,97 +234,33 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf, @descendancy";
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
                     {
-                        ancestry = (int)hopModel.ancestry,
+                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        hopCount = 1,
+                        intersects = hopModel.intersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationshipBadges = true,
+                        direction = hopModel.direction == AssetBrowserApiHopDirection.Backward ? "B" : "F",
                         hopModel.hierarchyKey,
-                        assets = hopModel.assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
-                        preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
                         hopModel.predicateUid,
-                        direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-                        resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin,
-                        hopModel.includeNonLeaf,
-                        hopModel.descendancy
+                        isAdmin = Company.CurrentResourceIsAdmin
                     },
                     timeout: 60
                 );
 
-                var model = new AssetBrowserResponseModel
-                {
-                    nodes = reader.Read<AssetBrowserNode>().ToList(),
-                    links = reader.Read<AssetBrowserLink>().ToList(),
-                    hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-                    reveals = null,
-                };
-
-                return Request.CreateResponse(HttpStatusCode.OK, model);
+                return buildAssetBrowserResponseModel(reader, false);
             }
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
             }
-        }
-
-        [
-            Route("lineage/hop"),
-            HttpPost,
-            MapToApiVersion("2.0"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<HttpResponseMessage> GetHopLineage(AssetBrowserLineageHopModel hopModel)
-        {
-            try
-            {
-                var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf, @descendancy";
-                var reader = await Company.QueryMultipleAsync(
-                    sql,
-                    new
-                    {
-                        ancestry = (int)hopModel.ancestry,
-                        hopModel.hierarchyKey,
-                        assets = hopModel.assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
-                        preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
-                        direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-                        resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin,
-                        hopModel.includeNonLeaf,
-                        hopModel.descendancy
-                    },
-                    timeout: 60
-                );
-
-                var model = new AssetBrowserResponseModel
-                {
-                    nodes = reader.Read<AssetBrowserNode>().ToList(),
-                    links = reader.Read<AssetBrowserLink>().ToList(),
-                    hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-                    reveals = reader.Read<AssetBrowserRevealNode>().ToList()
-                };
-
-                return Request.CreateResponse(HttpStatusCode.OK, model);
-            }
-            catch (Exception ex)
-            {
-                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
-        }
-
-        [
-            Route("owners"),
-            HttpPost,
-            MapToApiVersion("2.0"),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<HttpResponseMessage> GetOwnerHopOldPath(AssetBrowserApiOwnerHopRequestModel criteria)
-        {
-            return await GetOwnerHop(criteria);
         }
 
         /// <summary>
@@ -277,21 +290,10 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var model = new HopModel
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                if (!showResources)
                 {
-                    links = new List<HopLinkResult>(),
-                    nodes = new List<HopNodeResult>()
-                };
-
-                string hashKey(string input)
-                {
-                    string returnValue = "";
-
-                    var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
-                    returnValue = string.Concat(hash.Select(b => b.ToString("x2")));
-                    returnValue = returnValue.Substring(2, returnValue.Length - 3);
-
-                    return returnValue;
+                    throw new GenericException(HttpStatusCode.Conflict, "Environment Conflict", "Your environment does not allow retrieval of owners in Asset Browser.");
                 }
 
                 var distinctOwners = new List<AssetBrowserOwnerModel>();
@@ -308,12 +310,11 @@ from	ResponsibilityDetail R
 		inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
 where	A.Uid in @assetUids
         and R.ResponsibilityTypeID = @ResponsibilityTypeId
-order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).ToList(), criteria.ResponsibilityTypeId });
+order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).ToList(), criteria.responsibilityTypeId });
 
-                // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
                 foreach (var o in owners)
                 {
-                    o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceId}");
+                    o.key = $"{criteria.hierarchyKey}_{criteria.responsibilityTypeId}|{o.resourceId}";
                     if (!distinctOwners.Any(d => d.key == o.key))
                     {
                         distinctOwners.Add(o);
@@ -322,7 +323,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
 
                 var ownerRelations = (
                                      from o in owners
-                                     join a in criteria.Assets on o.assetUid equals a.Uid
+                                     join a in criteria.assets on o.assetUid equals a.Uid
                                      select new AssetBrowserOwnerRelationModel
                                      {
                                          assetKey = a.Key,
@@ -333,55 +334,24 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                          ownerUid = o.resourceUid
                                      }).ToList();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new AssetBrowserOwnersModel { owners = distinctOwners, ownerRelations = ownerRelations });
-            }
-            catch (Exception ex)
-            {
-                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
-        }
-
-        [
-            Route("ownershipCounts/{uid:Guid}/{hopCount:int}/{includeNonLeaf:bool}/{ancestry:int}"),
-            HttpGet,
-            MapToApiVersion("2.0"),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<HttpResponseMessage> GetOwnershipCounts(Guid uid, int hopCount, bool includeNonLeaf, AssetBrowserAncestry ancestry)
-        {
-            try
-            {
-                var sql = "exec graph.AssetBrowser_OwnershipCounts @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf";
-                var res = await Company.QueryAsync(
-                    sql,
-                    new
-                    {
-                        ancestry = (int)ancestry,
-                        uid,
-                        resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin,
-                        hopCount,
-                        includeNonLeaf
-                    },
-                    timeout: 120
-                );
-
-                foreach (var item in res)
-                {
-                    if (!string.IsNullOrEmpty(item.owners))
-                    {
-                        item.owners = JsonConvert.DeserializeObject(item.owners);
+                return Request.CreateResponse(
+                    HttpStatusCode.OK, 
+                    new AssetBrowserOwnersModel 
+                    { 
+                        owners = distinctOwners, 
+                        ownerRelations = ownerRelations 
                     }
-                }
-
-                return Request.CreateResponse(HttpStatusCode.OK, res);
+                );
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
             }
         }
-
 
         /// <summary>
         /// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.

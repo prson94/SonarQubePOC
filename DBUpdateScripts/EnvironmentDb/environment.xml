@@ -352,6 +352,8 @@
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
+	<include file="scripts/Function.graph.GetBackwardLineage.xml"/>
+	<include file="scripts/Function.graph.GetForwardLineage.xml"/>
 	<include file="scripts/Function.metrics.CalculateRollupPath.xml"/>
     <include file="scripts/Function.utility.DeriveIntersectName.xml"/>
     <include file="scripts/Function.utility.FieldDetails.xml"/>
@@ -396,10 +398,8 @@
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
     <include file="scripts/Procedure.dbo.SimpleAssetSearch.xml"/>
     <include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
-	<include file="scripts/Procedure.graph.AssetBrowser_Initial.xml"/>
-	<include file="scripts/Procedure.graph.AssetBrowser_ImpactHop.xml"/>
-	<include file="scripts/Procedure.graph.AssetBrowser_LineageHop.xml"/>
-	<include file="scripts/Procedure.graph.AssetBrowser_OwnershipCounts.xml"/>
+	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
+	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeAssetExecution.xml"/>
 	<include file="scripts/Procedure.graph.SynchronizeRelationshipExecution.xml"/>

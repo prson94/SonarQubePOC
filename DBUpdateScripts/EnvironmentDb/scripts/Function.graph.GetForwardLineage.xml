@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Function.graph.GetForwardLineage-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<comment></comment>
+		<![CDATA[
+CREATE OR ALTER FUNCTION graph.GetForwardLineage
+(	
+	@currentHop int,
+	@endHop int,
+	@assetIds dbo.Ids readonly,
+	@intersectIds dbo.Ids readonly
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with f as (
+		select	I.IntersectID,
+				I.PredicateID,
+				I.PredicateUid,
+				I.PredicateName,
+				I.PredicateType,
+				@currentHop as SubjectHop,
+				H.ID as SubjectID,
+				@currentHop+1 as ObjectHop,
+				O.ID as ObjectID
+		from	@assetIds H
+				inner join Asset S on S.ID = H.Id
+				inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID and I.PredicateType in (1, 12, 13)
+				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+		union all
+		select	I.IntersectID,
+				I.PredicateID,
+				I.PredicateUid,
+				I.PredicateName,
+				I.PredicateType,
+				f.ObjectHop as SubjectHop,
+				f.ObjectID as SubjectID,
+				f.ObjectHop+1 as ObjectHop,
+				O.ID as ObjectID
+		from	f
+				inner join Asset S on S.ID = f.ObjectID and f.ObjectHop <= @endHop
+				inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID and I.PredicateType in (1, 12, 13) and I.IntersectID <> f.IntersectID and I.IntersectID not in (select Id from @intersectIds)
+				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+	)
+	select * from f
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

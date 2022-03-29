@@ -1,0 +1,366 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1">
+    <comment>GOV-14849</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[AssetBrowser_Impact]
+	@assets dbo.UidTable readonly
+	,@resourceId int
+	,@hopCount int
+	,@intersects dbo.Ids readonly
+	,@includeOwnershipBadges bit = 1
+	,@includeRelationBadges bit = 1
+	,@direction char(1) = 'A' -- (A)all, (B)ackward, (F)orward 	,@assets dbo.Ids readonly
+	,@hierarchyKey varchar(50) = null -- If this value is populated, you should link all relationships to this key. Not populated during initial load of AB.
+	,@predicateUid uniqueidentifier = null
+	,@isAdmin bit
+as
+begin
+	set nocount on;
+
+	-- Tables that will contain the data to return. This is the final data that should be loaded into these tables.
+	drop table if exists #edges;
+	create table #edges (
+		[from] varchar(100),
+		[to] varchar(100),
+		back varchar(7) default('#cccccc'),
+		[text] nvarchar(250),
+		linksJson varchar(max)
+		);
+
+	drop table if exists #nodes;
+	create table #nodes (
+		hop int,
+		initial bit,
+		hierarchyKey varchar(500),
+		focal bit,
+		leaf bit, 
+		childCount int default(0), 
+		template varchar(50),
+		[key] varchar(100),
+		[group] varchar(100),
+		[text] nvarchar(max), 
+		assetUid uniqueidentifier,
+		assetId bigint,
+		assetTypeId int,
+		assetTypeUid uniqueidentifier,
+		backAmount decimal(2,1),
+		back varchar(7),
+		icon varchar(25),
+		class int,
+		actionCount int,
+		useAsTransformation bit default(0),
+		hasAssetReadAccess bit default(1),
+		hasResponsibilityReadAccess bit default(1),
+		isSubjectInTransformation bit default(1)
+	);
+	create nonclustered index IX_TempNodes_HierarchyKey on #nodes (hierarchyKey asc);
+	create nonclustered index IX_TempNodes_Group on #nodes ([group] asc);
+	create nonclustered index IX_TempNodes_Key on #nodes ([key] asc);
+	
+	declare @a table (Salt int, Position int, Initial bit default(0), ID bigint, AssetTypeID int)
+	declare @i table (Position int, IntersectID int, PredicateID int, PredicateUid uniqueidentifier, [Text] nvarchar(250), PredicateType int, SubjectHierarchyKey varchar(50), SubjectKey varchar(50), SubjectSalt int, SubjectID bigint, ObjectHierarchyKey varchar(50), ObjectKey varchar(50), ObjectSalt int, ObjectID bigint)
+	declare @c int = 1,
+			@salt int = LEFT(CAST(RAND()*1000000000+999999 AS INT),3)	-- Random 3 digit number as salt
+
+	insert into @a (Salt, Position, Initial, ID)
+		select @salt, 0, 1, ID from @assets O inner join Asset A on A.Uid = O.Uid;
+
+	declare @hopIntersectIds dbo.Ids -- keeps track of intersects to stop including with each loop.
+
+	while @c <= @hopCount
+	begin
+		declare @newSalt int = LEFT(CAST(RAND()*1000000000+999999 AS INT),3)
+
+		if @direction = 'A' or @direction = 'F'
+		begin
+			insert into @i (Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
+				select	@c,
+						I.IntersectID,
+						I.PredicateID,
+						I.PredicateUid,
+						lower(I.PredicateName),
+						I.PredicateType,
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
+						@salt,
+						S.ID as SubjectID,
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						@newSalt,
+						O.ID as ObjectID
+				from	@a H
+						inner join Asset S on S.ID = H.ID and H.Salt = @salt
+						inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID 
+							and I.PredicateType between 1 and 13 
+							and I.IntersectID not in (select Id from @hopIntersectIds)
+							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
+						inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+		end
+
+		if @direction = 'A' or @direction = 'B'
+		begin
+			insert into @i (Position, IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHierarchyKey, SubjectKey, SubjectSalt, SubjectID, ObjectHierarchyKey, ObjectKey, ObjectSalt, ObjectID)
+				select	@c,
+						I.IntersectID,
+						I.PredicateID,
+						I.PredicateUid,
+						lower(I.PredicateInverse),
+						I.PredicateType,
+						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
+						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
+						@newSalt,
+						O.ID as SubjectID,
+						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
+						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
+						@salt,
+						S.ID as ObjectID
+				from	@a H
+						inner join Asset S on S.ID = H.ID and H.Salt = @salt
+						inner join PredicateIntersect I on I.Object = S.Object and I.ObjectID = S.ObjectID 
+							and I.PredicateType between 1 and 13 
+							and I.IntersectID not in (select Id from @hopIntersectIds)
+							and ((@predicateUid is null) OR (@predicateUid is not null and I.PredicateUid = @predicateUid))
+						inner join Asset O on O.Object = I.Subject and O.ObjectID = I.SubjectID
+		end
+
+		insert into @hopIntersectIds(Id)
+			select IntersectID from @i
+
+		insert into @a (Salt, Position, ID)
+			select distinct @newSalt, @c, ObjectID from @i where ObjectSalt = @newSalt
+
+		insert into @a (Salt, Position, ID)
+			select distinct @newSalt, @c, SubjectID from @i where SubjectSalt = @newSalt
+			
+		set @salt = @newSalt
+		set @c = @c + 1
+	end
+
+	update	T
+	set		T.AssetTypeID = S.AssetTypeID
+	from	@a T
+			inner join Asset S on S.ID = T.ID
+
+	-- if this is a hop, get rid of the starting root node
+	if @hierarchyKey is not null and @predicateUid is not null
+	begin
+		delete @a where Initial = 1
+	end
+
+	-- Add asset type node as parent levels.
+	insert into #nodes (hop, initial, hierarchyKey, focal, leaf, template, [key], [text], assetTypeId, assetTypeUid, backAmount, back, icon, class)
+		select	O.Salt as hop,
+				O.Initial,
+				'T|' + cast(O.Salt as varchar(3)) + '|' + cast(A.ID as varchar) as hierarchyKey,
+				cast(iif(O.Initial= 1, 1, 0) as bit) as focal,
+				0 as leaf,
+				'PortGroup' as template,
+				'T|' + cast(O.Salt as varchar(3)) + '|' + cast(A.ID as varchar) as [key],
+				A.Name as [text],
+				A.ID as assetTypeId,
+				A.Uid as assetTypeUid,
+				0 as backAmount,
+				coalesce(S.IconBackColor, '#000000') as back,
+				coalesce(S.Icon, 'fa-book') as icon,
+				A.class
+		from	(
+				select	Salt, Initial, Position, AssetTypeID
+				from	@a
+				group by Salt, Initial, Position, AssetTypeID
+				) O 
+				inner join AssetType A on A.ID = O.AssetTypeID 
+				left join AssetTypeStyle S on S.ID = A.ID
+		order by O.Position
+
+	-- Add asset nodes.
+	insert into #nodes (hop, initial, hierarchyKey, focal, leaf, template, [key], [group], [text], assetUid, assetId, assetTypeId, assetTypeUid, backAmount, back, icon, class)
+		select	O.Salt as hop,
+				O.Initial,
+				'T|' + cast(O.Salt as varchar(3)) + '|' + cast(A.AssetTypeID as varchar) as hierarchyKey,
+				cast(iif(O.Initial = 1, 1, 0) as bit) as focal,
+				1 as leaf,
+				'' as template,
+				'A|' + cast(O.Salt as varchar(3)) + '|' + cast(A.ID as varchar) as [key],
+				'T|' + cast(O.Salt as varchar(3)) + '|' + cast(A.AssetTypeID as varchar) as [group],
+				A.DisplayValue as [text],
+				A.uid as assetUid,
+				A.ID as assetId,
+				A.assetTypeId,
+				A.assetTypeUid,
+				0.2 as backAmount,
+				A.BackColor as back,
+				A.icon,
+				A.AssetTypeClass as class
+		from	@a O 
+				inner join AssetDetail A on A.ID = O.ID 
+		order by O.Position
+
+	-- Add edges
+	insert into #edges ([from], [to], [text], linksJson)
+		select	case 
+					when @hierarchyKey is not null and @direction = 'F' then @hierarchyKey
+					else [from]
+				end, 
+				case 
+					when @hierarchyKey is not null and @direction = 'B' then @hierarchyKey
+					else [to]
+				end,
+				string_agg([text], ', ') as [text],
+				(
+				select	distinct
+						intersectId as id,  
+						SubjectKey as [from],
+						ObjectKey as [to],
+						predicateId, 
+						predicateUid, 
+						predicateType
+				from	@i
+				where	SubjectHierarchyKey = g.[from]
+						and ObjectHierarchyKey = g.[to]
+				for json path
+				)
+		from	(
+				select	I.SubjectHierarchyKey as [from],
+						I.ObjectHierarchyKey as [to],
+						I.[text]
+				from	@i I
+				group by I.SubjectHierarchyKey,
+						I.ObjectHierarchyKey,
+						I.[text]
+				) g
+		group by [from], [to];
+
+	-- Update properties on nodes before returning.
+	update	T
+	set		T.childCount = C.[Count]
+	from	#nodes T
+			cross apply (
+				select count(1) as [Count] from #nodes where [group] = T.[key]
+			) C
+
+	if @hierarchyKey is null and @predicateUid is null
+	begin
+		update #nodes set template = 'FocalPortGroup' where initial = 1 and [group] is null
+	end
+
+	-- Update assets that have open actions
+	update	T
+	set		T.actionCount = C.[Count]
+	from	#nodes T
+			inner join Asset A on A.ID = T.assetId
+			cross apply (
+			select	count(1) as [Count] 
+			from	Issue 
+			where	Object = A.Object 
+					and ObjectID = A.ObjectID 
+					and CompletedOn is null
+			) C;
+
+	-- Update asset read permissions
+	drop table if exists #TempUserPremission;
+
+	with rs as
+	(
+	 select AssetTypeID from #nodes group by AssetTypeID
+	)
+	select distinct P.AssetID, H.AssetTypeID, P.PermissionsBitMask
+	into #TempUserPremission
+	from rs H
+	cross apply dbo.UserAssetPermissions(@resourceId, H.AssetTypeID) P; 
+			
+	create index ix_TempUserPremission on #TempUserPremission(AssetTypeID, AssetID);
+
+	IF EXISTS(SELECT 1 FROM #TempUserPremission)
+	BEGIN
+		update	H
+		set		HasAssetReadAccess = iif(P.PermissionsBitMask & 1 = 1, 1, 0),
+				HasResponsibilityReadAccess = iif(P.PermissionsBitMask & 32 = 32, 1, 0)
+		from	#nodes H
+				inner join #TempUserPremission P on P.AssetTypeID = H.AssetTypeID  AND P.AssetID = H.assetId;
+	
+		update	H
+		set		HasAssetReadAccess = iif(P.PermissionsBitMask & 1 = 1, 1, 0),
+				HasResponsibilityReadAccess = iif(P.PermissionsBitMask & 32 = 32, 1, 0)
+		from	#nodes H
+				inner join #TempUserPremission P on P.AssetTypeID = H.AssetTypeID  AND P.AssetID = 0;
+	END
+
+	select * from #nodes order by hop, hierarchyKey, [group];	-- 1. Asset nodes
+	select * from #edges;										-- 2. Edges
+
+	-- 3. Predicate/Owner badges for root assets.
+	select	H.hierarchyKey,
+			H.hierarchyKey as predictableId,
+			(
+			select	case @includeOwnershipBadges
+						when 1 then (
+									select		R.ResponsibilityTypeID as id,
+												R.ResponsibilityTypeName as [text],
+												count(1) as [count]
+									from		#nodes IH
+												inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
+												inner join ResponsibilityDetail R on (R.ApplyToType = 0 and R.AssetID = IH.assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID)
+									group by	R.ResponsibilityTypeID,
+												R.ResponsibilityTypeName		
+									for json path 
+									)
+						else null
+					end
+			) as ownersJson,
+			(
+			select	case @includeRelationBadges
+						when 1 then	(
+									select	*
+									from	(
+											select		I.PredicateID as predicateId,
+														I.PredicateUid as predicateUid,
+														I.PredicateName as [predicate],
+														1 as direction,
+														count(1) as [count]
+											from		#nodes IH
+														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
+														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
+											group by	I.PredicateID,
+														I.PredicateUid,
+														I.PredicateName
+											union
+											select		I.PredicateID as predicateId,
+														I.PredicateUid as predicateUid,
+														I.PredicateInverse as [predicate],
+														2 as direction,
+														count(1) as [count]
+											from		#nodes IH
+														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
+														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
+											group by	I.PredicateID,
+														I.PredicateUid,
+														I.PredicateInverse
+											) OO
+									for json path
+									)
+						else null
+					end
+			) as relationsJson
+	from	#nodes H
+	where	H.[group] is null
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

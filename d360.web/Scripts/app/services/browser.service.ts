@@ -6,20 +6,18 @@ import { Observable } from 'rxjs';
 import {
     AssetBrowserTranslationNode,
     AssetBrowserTranslationLink,
-    AssetBrowserDiagramAsset,
     AssetBrowserApiHopDirection,
     FilterAncestryMode,
     FilterSelectionsModel,
     StoredAssetBrowserFilterModel,
-
     AssetBrowserOwnersModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
     DiagramTypesModel,
     AssetBrowserResponseModel,
     AssetBrowserApiHopAssetRequestModel,
-    DiagramOwnerCount,
-    FilterDescendancyMode
+    FilterDescendancyMode,
+    AssetBrowserLineageRequest
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -47,61 +45,14 @@ export class BrowserService extends BaseObservableService {
     }
 
     private processResponse(response: AssetBrowserResponseModel) {
-        response.nodes.forEach(n => {
-
-            ////#region Select template
-
-            let templateName = "";
-            //if (!n.group) {
-            //    n.group = "";
-            //}
-            //if (n.group !== "") {
-            //    if (!n.leaf) {
-            //        templateName = "Group";
-            //    }
-            //}
-            //else {
-            //    templateName = n.focal ? "FocalPortGroup" : "PortGroup";
-            //}
-            //n.template = templateName;
-            n.nonHiddenTemplate = templateName;
-
-            ////#endregion
-
+        response.nodes.forEach((n) => {
+            n.nonHiddenTemplate = n.template;
             if (n.class.toString() === 'Diagram') {
                 n.class = AssetTypeClass.DiagramAsset;
             }
             n.class = AssetTypeClass[n.class] as any;
             n.icon = this.getIconUnicode(n.icon, n.class);
             n.isGroup = !n.leaf;
-
-            if (n.group !== "") {
-                if (!n.leaf) {
-                    templateName = "Group";
-
-                    if (n.assetUid === '00000000-0000-0000-0000-000000000000' && n.assetTypeUid === "00000000-0000-0000-0000-000000000000") {
-                        templateName = "AncestorGroupNodeOnlyText";
-
-                        n.relations = [];
-                        n.owners = [];
-
-                        var parent = response.nodes.filter((x) => x.key === n.group)[0];
-                        var children = response.nodes.filter((x) => x.group === n.key);
-                        if (children.length > 0) {
-                            //convert this node from group to leaf and update its children parent relationship
-                            children.forEach((c) => {
-                                c.group = parent.key;
-                            });
-                            templateName = "AncestorLeafNodeOnlyText";
-                            n.isGroup = false;
-                            n.leaf = true;
-                        }
-
-                        n.template = templateName;
-                        n.nonHiddenTemplate = templateName;
-                    }
-                }
-            }
         });
 
         //#region Load root data from hierarchy array
@@ -134,34 +85,6 @@ export class BrowserService extends BaseObservableService {
             }
         });
 
-        //#endregion
-
-        //#region Count number of children per hierarchy and group
-        try {
-            let groupMap: any = {};
-
-            response.nodes.forEach((node) => {
-                if (node.group) {
-                    let key = node.hierarchyKey + node.group;
-                    if (key in groupMap) {
-                        groupMap[key] += 1;
-                    }
-                    else {
-                        groupMap[key] = 1;
-                    }
-                }
-            });
-
-            response.nodes.forEach((node) => {
-                let key = node.hierarchyKey + node.key;
-                if (key in groupMap) {
-                    node["_childrenCount"] = groupMap[key];
-                }
-            });
-        }
-        catch (ex) {
-            console.warn(ex);
-        }
         //#endregion
     }
 
@@ -284,15 +207,14 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getInitialImpact(uid: string, numberOfHops: number, includeNonLeaf: boolean): Observable<AssetBrowserResponseModel> {
+    public getInitialImpact(uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/initial`;
         if (numberOfHops <= 0 || numberOfHops > 5)
             numberOfHops = 3;
 
         return this.http.post(url, {
             uid: uid,
-            hopCount: numberOfHops,
-            includeNonLeaf: includeNonLeaf
+            hopCount: numberOfHops
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
@@ -302,19 +224,15 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[], descendancy: FilterDescendancyMode): Observable<AssetBrowserResponseModel> {
+    public getImpactHop(hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], intersects: number[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/hop`;
 
         return this.http.post(url, {
-            ancestry: ancestry,
-            hierarchyKey: hierarchyKey,
             assets: assets,
-            preloadedIntersects: preloadedIntersects,
-            predicateUid: predicateUid,
             direction: direction,
-            includeNonLeaf: includeNonLeaf,
-            descendancy: descendancy
-            //includeDescendantAssets: includeDescendantAssets
+            hierarchyKey: hierarchyKey,
+            intersects: intersects,
+            predicateUid: predicateUid
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
@@ -324,18 +242,10 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getLineageHop(ancestry: FilterAncestryMode, hierarchyKey: string, direction: AssetBrowserApiHopDirection, includeNonLeaf: boolean, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[], descendancy: FilterDescendancyMode): Observable<AssetBrowserResponseModel> {
+    public getLineageHop(model: AssetBrowserLineageRequest): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/lineage/hop`;
 
-        return this.http.post(url, {
-            ancestry: ancestry,
-            hierarchyKey: hierarchyKey,
-            assets: assets,
-            preloadedIntersects: preloadedIntersects,
-            direction: direction,
-            includeNonLeaf: includeNonLeaf,
-            descendancy: descendancy
-        }).pipe(
+        return this.http.post(url, model).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
                 return response;
@@ -351,7 +261,12 @@ export class BrowserService extends BaseObservableService {
     public getOwnerHop(hierarchyKey: string, badgeIndex: number, responsibilityTypeId: number, responsibilityTypeName: string, assets: AssetBrowserApiHopAssetRequestModel[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/ownership/hop`;
 
-        return this.http.post(url, { Assets: assets, ResponsibilityTypeId: responsibilityTypeId }).pipe(
+        return this.http.post(url,
+            {
+                assets: assets,
+                hierarchyKey: hierarchyKey,
+                responsibilityTypeId: responsibilityTypeId
+            }).pipe(
             map((response: AssetBrowserOwnersModel) => {
                 return this.processOwnerResponse(hierarchyKey, badgeIndex, responsibilityTypeId, responsibilityTypeName, response);
             }),
@@ -428,12 +343,6 @@ export class BrowserService extends BaseObservableService {
     public getDiagramTypes(uid: string): Observable<DiagramTypesModel> {
         return this.http.get(`api/v2/browser/types/${uid}/me`).pipe(
             map((response: DiagramTypesModel) => response),
-            catchError(err => this.handleError(err)));
-    }
-
-    public getOwnerCounts(uid: string, hopCount: number, includeNonLeaf: boolean, ancestry: FilterAncestryMode): Observable<DiagramOwnerCount[]> {
-        return this.http.get(`api/v2/browser/ownershipCounts/${uid}/${hopCount}/${includeNonLeaf}/${ancestry}`).pipe(
-            map((response: DiagramOwnerCount[]) => response),
             catchError(err => this.handleError(err)));
     }
 

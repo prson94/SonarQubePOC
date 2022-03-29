@@ -86,13 +86,12 @@ export class AssetBrowserRevealNode {
 }
 
 export class AssetBrowserTranslationOwnerCount {
-    key: string;
-    responsibilityType: string;
-    responsibilityTypeId: number;
-    users: number[];
+    id: number;
+    text: string;
     count: number;
+    key: string;
+    users: number[];
     expanded: boolean;
-    id: string;
 }
 
 export class AssetBrowserTranslationRelationCount {
@@ -170,6 +169,7 @@ export class AssetBrowserTranslationNode {
     useAsTransformation: boolean;
     isSubjectInTransformation: boolean;
 
+    childCount: number;
     leaf: boolean;
     focal: boolean;
 
@@ -457,5 +457,16 @@ export class StoredAssetBrowserFilterModel {
 }
 
 //#endregion
+
+export class AssetBrowserLineageRequest {
+    ancestry: FilterAncestryMode;
+    descendancy: FilterDescendancyMode;
+    currentHop: number;
+    direction: AssetBrowserApiHopDirection;
+    includeNonLeaf: boolean;
+    assets: AssetBrowserApiHopAssetRequestModel[];
+    preloadedIntersects: number[];
+    hierarchyKey: string;
+}
 
 // #endregion
