@@ -21,7 +21,7 @@ export class BaseObservableService {
             tap(res => {
                 if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
-                    console.error('An error occurred[client side]:', error.statusText);
+                    console.error('An error occurred[client side]:', error);
                 } else {
                     // server side error
                     console.error('An error occurred[server side]', error);
