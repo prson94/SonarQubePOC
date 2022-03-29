@@ -9,10 +9,13 @@
                 Branding
             </div>
         </div>
-        <div class="gov-info-message" *ngIf="isCurrentTheme">
-            Applying changes to the current theme will affect current uses. Users will see the changes upon refreshing their screen once these changes are applied.
-        </div>
         <div class="theme-form" [style.max-height.px]="themeEditorHeight" *ngIf="formGroup">
+            <div class="gov-info-message" *ngIf="isCurrentTheme">
+                <i class="fa fa-info-circle"></i>
+                <span class="text-valu">
+                    Applying changes to the current theme will affect current uses. Users will see the changes upon refreshing their screen once these changes are applied.
+                </span>
+            </div>
             <form [formGroup]="formGroup">
                 <div class="single-value-group">
                     <ig-property-group [igformGroup]="formGroup" [title]="''" [shouldBePadded]="false" [showHeaderLine]="false">
@@ -28,14 +31,27 @@
                     <div inputs>
                         <div class="input-row">
                             <label for="headerLogo">Header logo image</label>
-                            <image-picker formControlName="headerLogo" [imageType]="'LOGO'"></image-picker>
+                            <image-picker formControlName="headerLogo" [imageType]="'LOGO'" [maxHeight]="40" [message]="'Choose a PNG,JPG or GIF image (maximum display height: 40 pixels)'"></image-picker>
                         </div>
                         <div class="input-row">
                             <label for="icon">Browser logo ico</label>
-                            <image-picker formControlName="icon" [imageType]="'ICO'"></image-picker>
+                            <image-picker formControlName="icon" [imageType]="'ICO'" [message]="'Choose an ICO file to display in the browser tab/taskbar'"></image-picker>
                         </div>
                         <div class="input-row">
-                            <label for="headerBackColor">Background color</label>
+                            <label for="headerBackColor">
+                                Background color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('headerBackColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
+                            <div class='headerBackColor-template'>
+                                <i class="fa fa-shopping-cart"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-home"></i>
+                                <i class="fa fa-question-circle"></i>
+                            </div>
                             <div class="color-picker-wrapper">
                                 <p-colorPicker formControlName="headerBackColor"></p-colorPicker>
                             </div>
@@ -76,7 +92,7 @@
                     <div inputs>
                         <div class="input-row">
                             <label for="homeBackground">Background image</label>
-                            <image-picker formControlName="homeBackground"></image-picker>
+                            <image-picker formControlName="homeBackground" [maxSize]="1048576" [message]="'The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.'"></image-picker>
                         </div>
 
                     </div>
@@ -116,12 +132,13 @@
                         </div>
                     </div>
                 </ig-property-group>
+
             </form>
         </div>
         <div class="action-bar">
             <button igButton igAutoFocus label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress"></button>
+            <button igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
         </div>
     </div>
 </d3s-modal>

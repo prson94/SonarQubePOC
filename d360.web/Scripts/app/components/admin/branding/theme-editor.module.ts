@@ -22,6 +22,7 @@ import { ThemeEditorComponent } from './theme-editor.component';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { ImagePickerModule } from '../../shared/controls/image-picker/image-picker.component';
 import { ColorPickerModule } from 'primeng/colorpicker';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -51,7 +52,8 @@ import { ColorPickerModule } from 'primeng/colorpicker';
         PropertyGroupModule,
         SiteModalModule,
         ImagePickerModule,
-        ColorPickerModule
+        ColorPickerModule,
+        TooltipModule
     ],
     declarations: [
         ThemeEditorComponent

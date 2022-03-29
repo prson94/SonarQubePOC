@@ -22,6 +22,7 @@ import { ThemeDetailComponent } from './theme-details.component';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { ThemeEditorModule } from './theme-editor.module';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -49,7 +50,8 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
         IgBadgeModule,
         PopupMenuModule,
         SiteModalModule,
-        PropertyGroupModule
+        PropertyGroupModule,
+        TooltipModule
     ],
     declarations: [
         AdminBrandingComponent,

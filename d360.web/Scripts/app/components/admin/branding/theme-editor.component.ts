@@ -100,4 +100,24 @@ export class ThemeEditorComponent implements OnChanges {
     get themeEditorHeight() {
         return window.innerHeight - 280;
     }
+
+    getTooltip(prop: string): string {
+
+        switch (prop) {
+            case 'headerBackColor':
+                return this.headerBackColorHtmlTemplate + `When choosing the color of the top navigation bar, bear in mind that it contains several important elements e.g. logo, search field, icons.`;
+            default:
+                return "";
+        }
+    }
+
+    get headerBackColorHtmlTemplate(): string {
+
+        return `<div class='headerBackColor-template'>
+<i class="fa fa-shopping-cart"></i>
+<i class="fa fa-star"></i>
+<i class="fa fa-home"></i>
+<i class="fa fa-question-circle"></i>
+</div>`;
+    }
 }
