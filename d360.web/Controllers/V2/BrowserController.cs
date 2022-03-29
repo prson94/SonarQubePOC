@@ -97,11 +97,11 @@ namespace d360.web.Controllers.V2
                         ancestry = (int)model.ancestry,
                         descendancy = (int)model.descendancy,
                         direction = "A",
-                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
                         resourceId = Company.CurrentResourceID,
                         currentHop = 0,
                         hopCount = model.hopCount,
-                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
                         includeOwnershipBadges = showResources,
                         includeRelationBadges = true,
                         isAdmin = Company.CurrentResourceIsAdmin
@@ -143,11 +143,11 @@ namespace d360.web.Controllers.V2
                         ancestry = (int)hopModel.ancestry,
                         descendancy = (int)hopModel.descendancy,
                         direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
                         resourceId = Company.CurrentResourceID,
                         currentHop = hopModel.currentHop, 
                         hopCount = 1,
-                        intersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        intersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
                         includeOwnershipBadges = showResources,
                         includeRelationBadges = true,
                         hierarchyKey = hopModel.hierarchyKey,
@@ -241,10 +241,10 @@ namespace d360.web.Controllers.V2
                     sql,
                     new
                     {
-                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
                         resourceId = Company.CurrentResourceID,
                         hopCount = 1,
-                        intersects = hopModel.intersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        intersects = hopModel.intersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
                         includeOwnershipBadges = showResources,
                         includeRelationshipBadges = true,
                         direction = hopModel.direction == AssetBrowserApiHopDirection.Backward ? "B" : "F",
@@ -343,9 +343,9 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
                     }
                 );
             }
-            catch (GenericException ex)
+            catch (GenericException)
             {
-                throw ex;
+                throw;
             }
             catch (Exception ex)
             {

@@ -79,7 +79,6 @@ namespace d360.web.Models
 
     public class AssetBrowserNodeRelationCount
     {
-        //public string key { get; set; }
         public string predicate { get; set; }
         public int predicateId { get; set; }
         public Guid predicateUid { get; set; }
