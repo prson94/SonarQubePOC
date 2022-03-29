@@ -27,6 +27,11 @@
                                 <div class="hex-value">{{row.value}}</div>
                             </div>
                         </ng-container>
+                        <ng-container *ngIf="row.type === 'img'">
+                            <div class="image-preview preview-{{row.style}}">
+                                <img src="{{row.value}}" />
+                            </div>
+                        </ng-container>
                     </div>
                 </div>
             </ig-property-group>

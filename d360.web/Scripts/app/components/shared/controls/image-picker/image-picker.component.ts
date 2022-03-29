@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild, OnInit } from "@angular/core";
+﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, OnInit, OnChanges, SimpleChanges } from "@angular/core";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
@@ -51,7 +51,17 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
 
     constructor(public ref: ChangeDetectorRef,
         public domSanitizer: DomSanitizer,
-        public el: ElementRef) { }
+        public el: ElementRef) {
+        setTimeout(() => {
+            if (this.value) {
+                var img = new Image();
+                img.src = this.value;
+                img.onload = () => {
+                    this.writeValue(this.getBase64Image(img));
+                }
+            }
+        }, 1)
+    }
 
     ngOnInit() {
         this.setPreviewDimensions();
@@ -199,6 +209,18 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         }
 
         return null;
+    }
+
+    getBase64Image(img: HTMLImageElement): string {
+        // We create a HTML canvas object that will create a 2d image
+        var canvas: HTMLCanvasElement = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        let ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+        // This will draw image
+        ctx.drawImage(img, 0, 0);
+        // Convert the drawn image to Data URL
+        return canvas.toDataURL("image/png");
     }
 }
 

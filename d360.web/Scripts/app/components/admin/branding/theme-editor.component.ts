@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BrandingService, Theme } from '../../../services/branding.service';
 
@@ -11,17 +11,21 @@ import { BrandingService, Theme } from '../../../services/branding.service';
     styleUrls: ["./theme-editor.component.less"]
 })
 
-export class ThemeEditorComponent {
+export class ThemeEditorComponent implements OnChanges {
     @Input() uid: string = '';
     @Input() isVisible: boolean = false;
+    @Input() theme: Theme;
 
+    @Output() onSave = new EventEmitter();
+    @Output() onCancel = new EventEmitter();
     data: Theme;
 
     savingInProgress: boolean = false;
     formGroup: FormGroup = null;
 
     constructor(private fb: FormBuilder,
-        private brandingService: BrandingService
+        private brandingService: BrandingService,
+        private cdRef: ChangeDetectorRef
     ) {
         this.formGroup = this.fb.group({
             name: [null, { validators: [Validators.required] }],
@@ -35,22 +39,62 @@ export class ThemeEditorComponent {
             backColor: [''],
             tabLinkColor: [''],
             tableHeaderBackColor: [''],
-            tableRowBackColor: ['']
+            tableRowBackColor: [''],
+            navbarBackColor: [''],
+            navbarBackColorSelected: ['']
+        });
+
+        this.setForm();
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if ((changes.uid && changes.uid.currentValue !== changes.uid.previousValue)
+            || (changes.theme && changes.theme.currentValue !== changes.theme.previousValue)
+        ) {
+            this.setForm();
+        }
+    }
+
+    setForm() {
+        var _th = this.theme ? this.theme : new Theme(true);
+        var properties = Object.keys(this.formGroup.controls);
+
+        properties.forEach((p) => {
+            var valObj = {};
+            valObj[p] = _th[p];
+            this.formGroup.patchValue(valObj);
         });
     }
 
     save() {
-        var theme = new Theme();
+        this.savingInProgress = true;
+        var _theme = new Theme();
+        if (this.theme?.uid) {
+            _theme.uid = this.theme.uid;
+        }
         var properties = Object.keys(this.formGroup.controls);
 
         properties.forEach((p) => {
-            var f = this.formGroup.controls[p];
-            theme[p] = this.formGroup.get(p).value;
+            _theme[p] = this.formGroup.get(p).value;
         });
-        console.log(theme);
 
-        this.brandingService.saveTheme(theme).subscribe((res) => {
-            console.log(res);
-        })
+        this.brandingService.saveTheme(_theme).subscribe((res) => {
+            if (res) {
+                this.onSave.emit();
+                this.setForm();
+            }
+            this.savingInProgress = false;
+            this.cdRef.markForCheck();
+        });
+    }
+
+    cancel() {
+        this.isVisible = false;
+        this.setForm();
+        this.onCancel.emit();
+    }
+
+    get themeEditorHeight() {
+        return window.innerHeight - 280;
     }
 }

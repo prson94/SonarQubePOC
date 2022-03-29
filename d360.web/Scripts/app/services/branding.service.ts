@@ -39,6 +39,34 @@ export class Theme {
     tableHeaderBackColor: string;
     tableRowBackColor: string;
     tabLinkColor: string;
+
+    headerLogoUri: string;
+    homeBackgroundUri: string;
+    iconUri: string;
+
+    svg: string;
+    menuItems: any[] = [];
+
+    constructor(setDefaultValues: boolean = false) {
+        if (setDefaultValues) {
+            this.headerLogo = "/Content/images/PreciselyLogo@2x.png";
+            this.icon = "/favicon.ico";
+            this.homeBackground = "/Content/images/HomeBG.png";
+
+            this.headerBackColor = "#1E2435";
+            this.breadcrumbLinkColor = "#FFFFFF";
+            this.buttonBackColor = "#B4B7BE";
+
+            this.navbarBackColor = "#ffffff";
+            this.navbarBackColorSelected = "#e4cfff";
+
+            this.primaryButtonBackColor = "#002d4b";
+            this.backColor = "#eff0f0";
+            this.tabLinkColor = "#002d4b";
+            this.tableHeaderBackColor = "#f1f2f3";
+            this.tableRowBackColor = "#e4cfff";
+        }
+    }
 }
 
 @Injectable()
@@ -77,6 +105,7 @@ export class BrandingService extends BaseObservableService {
         };
 
         if (theme.uid) {
+            url += "/" + theme.uid;
             return this
                 .http
                 .put(url, theme, httpOptions)

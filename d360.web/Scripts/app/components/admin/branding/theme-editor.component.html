@@ -4,12 +4,12 @@
            [isVisible]="isVisible">
     <div class="theme-editor">
         <div class="form-header">
-            Create New Theme
+            {{theme ? 'Edit Theme' : 'Create New Theme'}}
             <div class="sub-header">
                 Branding
             </div>
         </div>
-        <div class="theme-form">
+        <div class="theme-form" [style.max-height.px]="themeEditorHeight" *ngIf="formGroup">
             <form [formGroup]="formGroup">
                 <div class="single-value-group">
                     <ig-property-group [igformGroup]="formGroup" [title]="''" [shouldBePadded]="false" [showHeaderLine]="false">
@@ -47,6 +47,23 @@
                             <label for="buttonBackColor">Button color</label>
                             <div class="color-picker-wrapper">
                                 <p-colorPicker formControlName="buttonBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                    </div>
+                </ig-property-group>
+
+                <ig-property-group [igformGroup]="formGroup" [title]="'Navigation Sidebar'" [shouldBePadded]="false" [showHeaderLine]="false">
+                    <div inputs>
+                        <div class="input-row">
+                            <label for="navbarBackColor">Side menu color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="navbarBackColor"></p-colorPicker>
+                            </div>
+                        </div>
+                        <div class="input-row">
+                            <label for="navbarBackColorSelected">Side menu selection color</label>
+                            <div class="color-picker-wrapper">
+                                <p-colorPicker formControlName="navbarBackColorSelected"></p-colorPicker>
                             </div>
                         </div>
                     </div>
@@ -99,9 +116,9 @@
             </form>
         </div>
         <div class="action-bar">
-            <button igButton igAutoFocus label="Cancel" (click)="isVisible = false"></button>
+            <button igButton igAutoFocus label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" label="Create" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress"></button>
+            <button igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress"></button>
         </div>
     </div>
 </d3s-modal>

@@ -29,16 +29,14 @@
 
             <div class="themes">
                 <div class="theme-wrapper {{(selectedRow === theme ? 'selected' : '')}}" *ngFor="let theme of themes" (click)="selectedRow = theme">
-                    <svg width="158" height="80">
-                        <image xlink:href="/api/v2/environment/themes/ace6795f-460a-42ca-baef-f5feeab977de.svg?width=158" src="yourfallback.png" width="158" height="80" />
-                    </svg>
+                    <div class="svg-holder" [innerHTML]="sanitizer.bypassSecurityTrustHtml(theme.svg)"></div>
                     <div class="theme-name">{{theme.name}}</div>
                     <div class="flex-grow"></div>
                     <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
 
-                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectedRow = theme"></button>
-                    <ig-popup-menu (onSelect)="clickMenuItem($event, item)"
-                                   [items]="menuItems"
+                    <button igButton type="button" icon="fa-ellipsis-v" (click)="linkMenu.toggle($event);"></button>
+                    <ig-popup-menu (onSelect)="clickMenuItem($event, theme)"
+                                   [items]="theme.menuItems"
                                    #linkMenu
                                    [tabIndex]="1"></ig-popup-menu>
 
@@ -63,4 +61,4 @@
     </div>
 </div>
 
-<theme-editor [uid]="selectedRow?.uid" [isVisible]="isEditorVisible"></theme-editor>
+<theme-editor [uid]="selectedRow?.uid" [theme]="selectedRow" [isVisible]="isEditorVisible" (onSave)="onSave()" (onCancel)="onCancel()"></theme-editor>

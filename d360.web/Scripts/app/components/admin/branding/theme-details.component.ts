@@ -1,5 +1,4 @@
 ﻿import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { head } from 'lodash';
 import { Category } from '../../../models/object-detail.model';
 
 import { Theme } from '../../../services/branding.service';
@@ -26,20 +25,16 @@ export class ThemeDetailComponent implements OnChanges {
     }
 
     loadData() {
-        console.log("load");
         this.categories = [];
-
 
         var header = new Category('Header Bar');
         header.rows = [];
         header.rows.push(
-            { title: 'Header logo image', value: this.theme.headerLogo, type: "img" });
+            { title: 'Header logo image', value: this.theme.headerLogoUri, type: "img", style: "logo" });
         header.rows.push(
-            { title: 'Browser logo icon', value: this.theme.icon, type: "img" });
+            { title: 'Browser logo icon', value: this.theme.iconUri, type: "img", style: "icon" });
         header.rows.push(
             { title: 'Background color', value: this.theme.navbarBackColor, type: "color" });
-        header.rows.push(
-            { title: 'Background color selected', value: this.theme.navbarBackColorSelected, type: "color" });
         header.rows.push(
             { title: 'Background link color', value: this.theme.breadcrumbLinkColor, type: "color" });
         header.rows.push(
@@ -47,10 +42,16 @@ export class ThemeDetailComponent implements OnChanges {
         );
 
         var navSidebar = new Category('Navigation Sidebar');
+        navSidebar.rows.push(
+            { title: 'Side menu color', value: this.theme.navbarBackColor, type: "color" }
+        );
+        navSidebar.rows.push(
+            { title: 'Side menu selection color', value: this.theme.navbarBackColorSelected, type: "color" }
+        );
 
         var home = new Category('Home Page');
         home.rows.push(
-            { title: 'Background Image', value: this.theme.homeBackground, type: "img" });
+            { title: 'Background Image', value: this.theme.homeBackgroundUri, type: "img" });
 
         var general = new Category('General');
         general.rows.push(
