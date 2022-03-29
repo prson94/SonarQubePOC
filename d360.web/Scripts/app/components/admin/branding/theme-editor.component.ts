@@ -112,12 +112,14 @@ export class ThemeEditorComponent implements OnChanges {
     }
 
     get headerBackColorHtmlTemplate(): string {
-
+        var color = this.formGroup.get('headerBackColor').value;
+        console.log(color);
+        
         return `<div class='headerBackColor-template'>
-<i class="fa fa-shopping-cart"></i>
-<i class="fa fa-star"></i>
-<i class="fa fa-home"></i>
-<i class="fa fa-question-circle"></i>
+<i class="fa fa-shopping-cart" style="background-color:${color};"></i>
+<i class="fa fa-star" style="background-color:${color};"></i>
+<i class="fa fa-home selected" style="background-color:${color};"></i>
+<i class="fa fa-question-circle" style="background-color:${color};"></i>
 </div>`;
     }
 }
