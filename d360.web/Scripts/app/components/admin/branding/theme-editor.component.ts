@@ -23,6 +23,8 @@ export class ThemeEditorComponent implements OnChanges {
     savingInProgress: boolean = false;
     formGroup: FormGroup = null;
 
+    isCurrentTheme: boolean = false;
+
     constructor(private fb: FormBuilder,
         private brandingService: BrandingService,
         private cdRef: ChangeDetectorRef
@@ -57,6 +59,7 @@ export class ThemeEditorComponent implements OnChanges {
 
     setForm() {
         var _th = this.theme ? this.theme : new Theme(true);
+        this.isCurrentTheme = this.theme ? this.theme.isCurrent : false;
         var properties = Object.keys(this.formGroup.controls);
 
         properties.forEach((p) => {

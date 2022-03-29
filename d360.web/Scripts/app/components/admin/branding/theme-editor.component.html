@@ -9,6 +9,9 @@
                 Branding
             </div>
         </div>
+        <div class="gov-info-message" *ngIf="isCurrentTheme">
+            Applying changes to the current theme will affect current uses. Users will see the changes upon refreshing their screen once these changes are applied.
+        </div>
         <div class="theme-form" [style.max-height.px]="themeEditorHeight" *ngIf="formGroup">
             <form [formGroup]="formGroup">
                 <div class="single-value-group">

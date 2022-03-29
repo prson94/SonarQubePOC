@@ -26,10 +26,15 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     sidePanelLoading: boolean = false;
     sidePanelStorageKey: string = "gov-branding-side-panel";
     sidePanelTab: string = 'detail';
-    selectedRow: any;
+    selectedRow: Theme;
     defaultThemeUid: string = 'AAAAAAAA-0000-0000-0000-000000000001';
 
     isEditorVisible: boolean = false;
+    showDelete: boolean = false;
+    deleteInProgress: boolean = false;
+
+    isSetCurrentThemeVisible: boolean = false;
+    settingCurrentThemeInProgress: boolean = false;
 
     menuItemsDefaultOptions = [
         { title: 'Download' },
@@ -38,7 +43,6 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         { title: 'Set as Current Theme' },
         { title: 'Delete' },
     ];
-
 
     constructor(
         private brandingService: BrandingService,
@@ -59,19 +63,45 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.setCommonItems();
     }
 
+    isDefaultTheme(theme: Theme): boolean {
+        return theme.uid.toLowerCase() === this.defaultThemeUid.toLowerCase();
+    }
+
+    hasDownloadOption(theme: Theme): boolean {
+        return this.isDefaultTheme(theme) ? false : true;
+    }
+
+    hasEditOption(theme: Theme): boolean {
+        return this.isDefaultTheme(theme) ? false : true;
+    }
+
+    hasDuplicateOption(theme: Theme): boolean {
+        return true;
+    }
+
+    hasSetAsCurrentThemeOption(theme: Theme): boolean {
+        return theme.isCurrent ? false : true;
+    }
+
+    hasDeleteOption(theme: Theme): boolean {
+        return theme.isCurrent || this.isDefaultTheme(theme) ? false : true;
+    }
+
     ngOnInit() {
         this.brandingService.getThemes().subscribe((res) => {
             this.themes = res;
             this.themes.forEach((t) => {
                 t.svg = this.svg_markup(t);
-                if (t.uid.toLowerCase() === this.defaultThemeUid.toLowerCase()) {
-                    t.menuItems = [
-                        { title: 'Duplicate' }
-                    ];
-                }
-                else {
-                    t.menuItems = this.menuItemsDefaultOptions;
-                }
+                var menuItems = [];
+
+                this.hasDownloadOption(t) ? menuItems.push(this.menuItemsDefaultOptions[0]) : null;
+                this.hasEditOption(t) ? menuItems.push(this.menuItemsDefaultOptions[1]) : null;
+                this.hasDuplicateOption(t) ? menuItems.push(this.menuItemsDefaultOptions[2]) : null;
+                this.hasSetAsCurrentThemeOption(t) ? menuItems.push(this.menuItemsDefaultOptions[3]) : null;
+                this.hasDeleteOption(t) ? menuItems.push(this.menuItemsDefaultOptions[4]) : null;
+
+                t.menuItems = menuItems;
+
             })
             this.cdRef.markForCheck();
         })
@@ -98,7 +128,38 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             case 'Edit':
                 this.isEditorVisible = true;
                 break;
+            case 'Delete':
+                this.showDelete = true;
+                break;
+            case 'Set as Current Theme':
+                this.isSetCurrentThemeVisible = true;
+                break;
         }
+    }
 
+    delete() {
+        this.deleteInProgress = true;
+        this.brandingService.deleteTheme(this.selectedRow.uid)
+            .subscribe((res) => {
+                if (res) {
+                    this.showDelete = false;
+                }
+                this.deleteInProgress = false;
+                this.ngOnInit();
+                this.cdRef.markForCheck();
+            });
+    }
+
+    setAsCurrentTheme() {
+        this.settingCurrentThemeInProgress = true;
+        this.brandingService.setAsCurrentTheme(this.selectedRow.uid)
+            .subscribe((res) => {
+                if (res) {
+                    this.isSetCurrentThemeVisible = false;
+                }
+                this.settingCurrentThemeInProgress = false;
+                this.ngOnInit();
+                this.cdRef.markForCheck();
+            });
     }
 }

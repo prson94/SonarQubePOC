@@ -128,4 +128,30 @@ export class BrandingService extends BaseObservableService {
                 );
         }
     }
+
+    public deleteTheme(uid: string): Observable<any> {
+        let url: string = '/api/v2/environment/themes/' + uid;
+        return this
+            .http
+            .delete(url)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public setAsCurrentTheme(uid: string): Observable<any> {
+        let url: string = '/api/v2/environment/themes/' + uid + '/current';
+        return this
+            .http
+            .patch(url, null)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError(err => this.handleError(err))
+            );
+    }
 }

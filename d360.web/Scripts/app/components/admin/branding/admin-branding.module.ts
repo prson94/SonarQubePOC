@@ -21,6 +21,7 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
 import { ThemeDetailComponent } from './theme-details.component';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { ThemeEditorModule } from './theme-editor.module';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 
 @NgModule({
     imports: [
@@ -47,6 +48,7 @@ import { ThemeEditorModule } from './theme-editor.module';
         DirectivesModule,
         IgBadgeModule,
         PopupMenuModule,
+        SiteModalModule,
         PropertyGroupModule
     ],
     declarations: [
