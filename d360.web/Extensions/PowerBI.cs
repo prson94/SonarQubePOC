@@ -117,7 +117,7 @@ namespace d360.web.Extensions
 
                 if (!caps.Value.Any())
                 {
-                    throw new Exception("CANNOT FIND ANY CAPACITY GROUPS");
+                    throw new ArgumentException("CANNOT FIND ANY CAPACITY GROUPS");
                 }
 
                 client.Groups.AssignToCapacity(createdGrp.Id, new AssignToCapacityRequest { CapacityId = caps.Value.FirstOrDefault().Id });

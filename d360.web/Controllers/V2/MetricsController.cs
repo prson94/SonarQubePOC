@@ -1714,7 +1714,7 @@ namespace d360.web.Controllers.V2
                             {
                                 key = measure.Uid.ToString(),
                                 EffectiveDate = item.EffectiveDate,
-                                Value = measure.AdjustedWeight// result;
+                                Value = measure.AdjustedWeight
                             };
                             allPoints.Add(measurePoint);
                         }

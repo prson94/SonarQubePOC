@@ -18,7 +18,7 @@ namespace d360.web.Controllers
     public partial class FormController : BaseController
     {
         private readonly List<AssetTypeClass> allowedVersionClasses = 
-            new List<AssetTypeClass>() 
+            new List<AssetTypeClass> 
             { 
                 AssetTypeClass.BusinessAsset, 
                 AssetTypeClass.TechnicalAsset, 

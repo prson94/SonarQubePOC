@@ -116,9 +116,12 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix }
-				});
+				SendException(
+					ex, 
+					new Dictionary<string, string> 
+					{
+						{ "Endpoint Method", prefix }
+					});
 
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}
@@ -380,7 +383,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -415,7 +418,7 @@ namespace d360.web.Controllers.V2
 
 				if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
 				{
-					if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
+					if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 					{
 						throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
 					}
@@ -489,11 +492,11 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
 			}
 		}
 
@@ -534,7 +537,7 @@ namespace d360.web.Controllers.V2
 
 				if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
 				{
-					if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
+					if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 					{
 						throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
 					}
@@ -589,11 +592,14 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix }
-				});
+				SendException(
+					ex, 
+					new Dictionary<string, string> 
+					{
+						{ "Endpoint Method", prefix }
+					});
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
 			}
 		}
 
@@ -776,7 +782,7 @@ namespace d360.web.Controllers.V2
 					value = i.Uid
 				});
 
-				var patterns = new Dictionary<string, string>() 
+				var patterns = new Dictionary<string, string>
 				{
 					{ "Choose sample...", "" },
 					{ "Email", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
@@ -817,7 +823,7 @@ namespace d360.web.Controllers.V2
 					dataTypeOptions = dataTypeOptions.Where(x => x.value != "JsonElement").ToList();
 				}
 
-				var disallowedPathClasses = new List<AssetTypeClass>() {
+				var disallowedPathClasses = new List<AssetTypeClass> {
 					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 				};
@@ -827,7 +833,7 @@ namespace d360.web.Controllers.V2
 					dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path").ToList();
 				}
 
-				var disallowedScoreClasses = new List<AssetTypeClass>() {
+				var disallowedScoreClasses = new List<AssetTypeClass> {
 					AssetTypeClass.Organization,
 					AssetTypeClass.User,
 					AssetTypeClass.ReferenceItemType,
@@ -844,7 +850,7 @@ namespace d360.web.Controllers.V2
 					dataTypeOptions = dataTypeOptions.Where(x => x.value != "ComplexRelationLookup").ToList();
 				}
 
-				var jsonFieldType = new Dictionary<string, string>() {
+				var jsonFieldType = new Dictionary<string, string> {
 					{ "Boolean", "bit" },
 					{ "Date", "date" },
 					{ "Date With Time", "datetime" },
@@ -903,7 +909,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1057,7 +1063,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1083,7 +1089,7 @@ namespace d360.web.Controllers.V2
 			var prefix = "Fields.GetFieldTypeLookupTokens => ";
 			var errorMessage = "";
 
-			var excludedFieldTypes = new List<string>()
+			var excludedFieldTypes = new List<string>
 			{
 				DataType.Path.ToString(),
 				DataType.ComplexRelationLookup.ToString(),
@@ -1144,6 +1150,9 @@ namespace d360.web.Controllers.V2
 							list.Add("TextPath", "TextPath");
 						}
 						break;
+					default:
+						//do nothing.
+						break;
 				}
 
 				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }));
@@ -1157,7 +1166,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1238,7 +1247,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1313,7 +1322,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1405,7 +1414,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1455,7 +1464,6 @@ namespace d360.web.Controllers.V2
 
 				if (!allowedListTypes.Contains(listAssetObjectType))
 				{
-					//return nothing no error;
 					return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
 				}
 
@@ -1589,7 +1597,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1631,7 +1639,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1675,7 +1683,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1704,12 +1712,10 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				int id = 0;
 				if (assetTypeUid != null)
 				{
 					var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
 					Enum.TryParse(at.Object, out SystemObjects type);
-					id = at.ObjectID;
 				}
 				else
 				{
@@ -1733,9 +1739,12 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ "Endpoint Method", prefix }
-				});
+				SendException(
+					ex, 
+					new Dictionary<string, string> 
+					{
+						{ "Endpoint Method", prefix }
+					});
 
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}
@@ -1762,12 +1771,10 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				int id = 0;
 				if (assetTypeUid != null)
 				{
 					var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
 					Enum.TryParse(at.Object, out SystemObjects type);
-					id = at.ObjectID;
 				}
 				else
 				{
@@ -1791,7 +1798,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -1918,7 +1925,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -2008,7 +2015,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -2135,7 +2142,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -2199,7 +2206,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -2607,7 +2614,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix }
 				});
 
@@ -2876,7 +2883,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
+				SendException(ex, new Dictionary<string, string> {
 					{ "Endpoint Method", prefix}});
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
@@ -3089,7 +3096,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {{ "Endpoint Method", prefix}});
+				SendException(ex, new Dictionary<string, string> {{ "Endpoint Method", prefix}});
 
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}

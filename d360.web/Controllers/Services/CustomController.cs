@@ -608,7 +608,7 @@ namespace d360.web.Controllers.Services
                 if (lastModifiedDate != DateTime.MinValue)
                 {
                     responseMessage.Content.Headers.LastModified = new DateTimeOffset(lastModifiedDate,
-                              TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate)); ;
+                              TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate));
                 }
 
                 return responseMessage;
@@ -1710,7 +1710,7 @@ namespace d360.web.Controllers.Services
                 {
                     responseMessage.Content.Headers.LastModified = new DateTimeOffset((DateTime)lastModifiedDate,
                                  TimeZoneInfo.Local.GetUtcOffset((DateTime)lastModifiedDate));
-                };
+                }
 
                 return responseMessage;
 

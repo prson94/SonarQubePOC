@@ -69,7 +69,7 @@ namespace d360.web
 			set => Cache.SetItem("Users", value, true, 10);
 		}
 
-		private usercompany LoadUserFromDatabase(int companyID, string apiKey = null, string apiSecret = null, string apiReadOnlyKey = null, string username = null)
+		private usercompany LoadUserFromDatabase(int companyID, string apiKey = null, string apiSecret = null, string username = null)
 		{
 			usercompany u = null;
 
@@ -140,7 +140,7 @@ namespace d360.web
 						if (claim != null && claim.Identity != null && !string.IsNullOrEmpty(claim.Identity.Name))
 						{
 							jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {claim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
-							u = LoadUserFromDatabase(companyID, null, null, null, claim.Identity.Name);
+							u = LoadUserFromDatabase(companyID, null, null, claim.Identity.Name);
 							
 							if (u != null)
 							{

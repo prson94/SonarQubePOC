@@ -71,16 +71,16 @@ namespace d360.web.Controllers.V2
                         permissions.Add(Permission.ReadAsset.GetPermissionInfo());
                     }
 
-                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions)));
+                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions))).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.Permissions_Not_Supported)));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.Permissions_Not_Supported))).ConfigureAwait(false);
                 }
             }
             else
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "Asset")));
+                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "Asset"))).ConfigureAwait(false);
             }
         }
 
@@ -108,17 +108,17 @@ namespace d360.web.Controllers.V2
                 {
                     List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);
 
-                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions)));
+                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions))).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name)));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name))).ConfigureAwait(false);
                 }
 
             }
             else
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "AssetType")));
+                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "AssetType"))).ConfigureAwait(false);
             }
         }
 

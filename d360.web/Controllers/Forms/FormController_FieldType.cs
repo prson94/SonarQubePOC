@@ -91,7 +91,7 @@ namespace d360.web.Controllers
 					if (it == null)
 					{
 						var lookupObjectType = Company.Filter<AssetType>(i => i.ObjectID == ft.LookupObjectID && i.Object == ft.LookupObjectType + "Type").SingleOrDefault();
-						string listObjectType = lookupObjectType.Class + ":" + lookupObjectType.Name; ;
+						string listObjectType = lookupObjectType.Class + ":" + lookupObjectType.Name;
 						Predicate pred = Company.GetById<Predicate>(ft.FilterPredicateID.GetValueOrDefault());
 						string predicate = (ft.FilterPredicateDirection == true) ? pred.Inverse : pred.Name;
 						var filterObjectDetail = Company.Filter<AssetDetail>(i => i.ObjectID == ObjectID && i.Object == objectType).SingleOrDefault();

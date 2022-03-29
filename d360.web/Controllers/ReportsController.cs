@@ -214,7 +214,7 @@ namespace d360.web.Controllers
 
                     if (report.Responsibilities != null && report.Responsibilities.Count > 0)
                     {
-                        List<ResponsibilityDetail> currentUserResponsibilityType = new List<ResponsibilityDetail>();
+                        List<ResponsibilityDetail> currentUserResponsibilityType;
                         
                         if (!string.IsNullOrEmpty(report.ObjectType) && !report.ObjectType.Contains("Type"))
                         {

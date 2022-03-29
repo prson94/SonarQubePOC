@@ -66,7 +66,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetSurveysResultsAsync(string surveyTypeUid)
         {
             var prefix = "Surveys.GetSurveysResultsAsync => ";
-            string errorMessage;;
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -161,7 +161,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetSurveyTypes()
         {
             var prefix = "Surveys.GetSurveysTypesAsync => ";
-            string errorMessage;;
+            string errorMessage;
 
             try
             {
@@ -247,7 +247,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetSurveysResultsSummaryAsync(string surveyTypeUid)
         {
             var prefix = "Surveys.GetSurveysResultsAsync => ";
-            string errorMessage;;
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -356,7 +356,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteSurveyResultsAsync()
         {
             var prefix = "Surveys.DeleteSurveyResultsAsync => ";
-            string errorMessage;;
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
             {

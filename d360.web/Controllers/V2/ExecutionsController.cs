@@ -95,7 +95,7 @@ namespace d360.web.Controllers.V2
 				return await Task.FromResult(errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message)).ConfigureAwait(false);
 			}
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions)));
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions))).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -217,7 +217,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ExecutionUIDNotFound)).ConfigureAwait(false);
 				}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object))).ConfigureAwait(false);
 			}
 			catch (ArgumentException)
 			{
@@ -463,7 +463,7 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(executions.StatusCode, ApiMessages.InvalidRequest, executions.Message)).ConfigureAwait(false);
 				}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, executions))).ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
@@ -652,7 +652,7 @@ namespace d360.web.Controllers.V2
 				model.items = results;
 				model.total = total;
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
@@ -922,7 +922,7 @@ namespace d360.web.Controllers.V2
 				model.items = results;
 				model.total = total;
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
 			else
 			{
@@ -948,7 +948,7 @@ namespace d360.web.Controllers.V2
 				model.items = results;
 				model.total = total;
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
 			}
 		}
 
@@ -1135,7 +1135,7 @@ namespace d360.web.Controllers.V2
 					}
 				}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
@@ -1456,7 +1456,7 @@ namespace d360.web.Controllers.V2
 					Company.Enqueue(Config.GetValue<string>("BulkLoadQueue"), new BulkLoadInfo { CompanyID = Company.CurrentCompanyID, LoadID = load.ID, To = QueueAction.BulkLoad });
 					response.message = FormControllerApiMessage.FileUploadedAndQueueProcessing;
 					
-					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+					return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);
 				}
 				else
 				{

@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -135,7 +134,7 @@ namespace d360.web.Controllers.Services
 			document.SetCellValue(1, ++colIndex, "Status");
 			document.SetCellValue(1, ++colIndex, "Closing Notes");
 			document.SetCellValue(1, ++colIndex, "Action Type");
-			document.SetCellValue(1, ++colIndex, "Ellapsed Days");
+			document.SetCellValue(1, colIndex, "Ellapsed Days");
 
 			#endregion
 
@@ -154,7 +153,7 @@ namespace d360.web.Controllers.Services
 				document.SetCellValue(rowIndex, ++dataColIndex, row.ActivityName ?? "");
 				document.SetCellValue(rowIndex, ++dataColIndex, row.Notes ?? "");
 				document.SetCellValue(rowIndex, ++dataColIndex, row.IssueTypeName ?? "");
-				document.SetCellValue(rowIndex, ++dataColIndex, (row.EllapsedDays ?? "").ToString());
+				document.SetCellValue(rowIndex, dataColIndex, (row.EllapsedDays ?? "").ToString());
 			}
 
 			#endregion
@@ -181,7 +180,7 @@ namespace d360.web.Controllers.Services
 		[HttpGet, Route("workflowmonitor/filter/definition")]
 		public HttpResponseMessage GetFilerDefinition()
 		{
-			var filterValues = new List<string>() { "Business Asset", "Technical Asset", "Rule", "Policy", "Model", "Action", "Relationship" }.OrderBy(x => x).ToList();
+			var filterValues = new List<string> { "Business Asset", "Technical Asset", "Rule", "Policy", "Model", "Action", "Relationship" }.OrderBy(x => x).ToList();
 
 			var filterColumns = new List<GridFilterColumn>
 			{
@@ -278,7 +277,7 @@ namespace d360.web.Controllers.Services
 			var @event = Company.WorkflowEventRegistrations.Single(e => e.TypeID == id);
 			var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
 			var publishedVersion = Company.WorkflowVersions.Find(type.PublishedVersionID);
-			var model = new WorkflowDiagramModel()
+			var model = new WorkflowDiagramModel
 			{
 				Event = @event,
 				Nodes = nodes
@@ -329,7 +328,7 @@ namespace d360.web.Controllers.Services
 
 				if (itemStep == null)
 				{
-					throw new Exception(WorkflowApiMessages.InvalidWorkflowStepID);
+					throw new ArgumentNullException(nameof(itemStep), WorkflowApiMessages.InvalidWorkflowStepID);
 				}
 				else
 				{
@@ -381,7 +380,7 @@ namespace d360.web.Controllers.Services
 					return Request.CreateErrorResponse(HttpStatusCode.NotFound, WorkflowApiMessages.InvalidWorkflowStepID);
 				}
 
-				var isResourceReassignment = objectType.ToLower() == "resource";
+				var isResourceReassignment = objectType.ToLowerInvariant() == "resource";
 
 				var fieldElement = XElement.Parse(workflowItemStep.Fields);
 				var reassigned = new XElement("Reassigned");
@@ -443,12 +442,9 @@ namespace d360.web.Controllers.Services
 				var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
 				var isCompleted = false;
 
-				StringBuilder sb = new StringBuilder();
-
 				var root = XElement.Parse(itemStepsModel.Fields);
 
 				//increment the number of responses attribute
-
 				if (root.Attribute("NumberOfResponses") != null)
 				{
 					int.TryParse((string)root.Attribute("NumberOfResponses"), out numberOfResponses);
@@ -552,7 +548,9 @@ namespace d360.web.Controllers.Services
 					case FormResponseType.Majority:
 						//wait for all users to complete so we can determine what the majority says.
 						isCompleted = numberOfResponses >= (totalResources / 2) + 1;
-						//isCompleted = numberOfResponses >= totalResources;
+						break;
+					default:
+						//Do nothing.
 						break;
 				}
 
@@ -658,24 +656,23 @@ namespace d360.web.Controllers.Services
 					bool isDeleted = false;
 					ObjectDetail details = null;
 
-					switch (i.Item.Object)
+					if (i.Item.Object == "Issue")
 					{
-						case "Issue":
-							var issue = Company.Issues.Where(x => x.ID == i.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+						var issue = Company.Issues.Where(x => x.ID == i.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
 
-							if (issue != null)
+						if (issue != null)
+						{
+							details = new ObjectDetail
 							{
-								details = new ObjectDetail
-								{
-									Type = "Action",
-									Name = issue.Object,
-									TypeName = issue.IssueType.Name
-								};
-							}
-							break;
-						default:
-							details = Company.GetObjectDetail(i.Item.Object, i.Item.ObjectID);
-							break;
+								Type = "Action",
+								Name = issue.Object,
+								TypeName = issue.IssueType.Name
+							};
+						}
+					}
+					else
+					{
+						details = Company.GetObjectDetail(i.Item.Object, i.Item.ObjectID);
 					}
 
 					if (details == null)
@@ -691,7 +688,6 @@ namespace d360.web.Controllers.Services
 						if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
 						{
 							isCompletedByCurrentUser = true;
-							continue;
 						}
 					}
 
@@ -708,7 +704,7 @@ namespace d360.web.Controllers.Services
 				//submit the valid item steps
 				foreach (var i in validItemSteps)
 				{
-					await SubmitWorkflowForm((int)i.ItemID, (int)i.ID, model.Fields);
+					await SubmitWorkflowForm((int)i.ItemID, (int)i.ID, model.Fields).ConfigureAwait(false);
 				}
 
 				return Request.CreateResponse(HttpStatusCode.OK, new { success = true, totalCount = validItemSteps.Count(), omittedCount });
@@ -779,7 +775,7 @@ namespace d360.web.Controllers.Services
 				{
 					if (item.IntersectTypeID <= 0)
 					{
-						throw new Exception(WorkflowApiMessages.RelatioshipInvalid);
+						throw new ArgumentException(WorkflowApiMessages.RelatioshipInvalid);
 					}
 					//load the possible options for this relationship type into values array
 					var intersectType = Company.IntersectTypes.Where(x => x.ID == item.IntersectTypeID).FirstOrDefault();
@@ -794,7 +790,7 @@ namespace d360.web.Controllers.Services
 
 					if (reg == null)
 					{
-						throw new Exception(WorkflowApiMessages.RelationNotFoundRegistration);
+						throw new ArgumentNullException(nameof(reg), WorkflowApiMessages.RelationNotFoundRegistration);
 					}
 
 					var obj = reg.Object;
@@ -803,6 +799,7 @@ namespace d360.web.Controllers.Services
 					if (reg.Object == "IssueType")
 					{
 						var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
+
 						if (issue == null)
 						{
 							formError = true;
@@ -820,7 +817,7 @@ namespace d360.web.Controllers.Services
 					if (obj == intersectType.Subject && objId == intersectType.SubjectID)
 					{
 						// load the object items into the values array                        
-						item.AllowMultipleValues = !(intersectType.ObjectCardinality == Cardinality.One);
+						item.AllowMultipleValues = intersectType.ObjectCardinality != Cardinality.One;
 
 						item.Values.AddRange(
 							Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
@@ -828,7 +825,7 @@ namespace d360.web.Controllers.Services
 					}
 					else
 					{
-						item.AllowMultipleValues = !(intersectType.SubjectCardinality == Cardinality.One);
+						item.AllowMultipleValues = intersectType.SubjectCardinality != Cardinality.One;
 						// load the subject items into the value array
 						item.Values.AddRange(
 							Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
@@ -864,42 +861,41 @@ namespace d360.web.Controllers.Services
 								.ToList()
 						);
 					}
-					catch 
+					catch
 					{
-						//swallaw exception
+						//swallow exception
 					}
 				}
 			}
 
-			switch (itemStep.Item.Object)
+			if (itemStep.Item.Object == "Issue")
 			{
-				case "Issue":
-					var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+				var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
 
-					if (issue != null)
+				if (issue != null)
+				{
+					var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+					details = new ObjectDetail
 					{
-						var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
-						details = new ObjectDetail
-						{
-							Type = "Action",
-							Name = comment != null ? comment.Body : "",
-							TypeName = issue.IssueType.Name
-						};
+						Type = "Action",
+						Name = comment != null ? comment.Body : "",
+						TypeName = issue.IssueType.Name
+					};
 
-						if (issue.IssueType != null)
-						{
-							issueTypeName = issue.IssueType.Name;
-						}
-
-						issueItemDetails = Company.GetObjectDetail(issue.Object, issue.ObjectID);
-						issueObjectType = issue.Object;
-						typeName = details.TypeName;
+					if (issue.IssueType != null)
+					{
+						issueTypeName = issue.IssueType.Name;
 					}
-					break;
-				default:
-					details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
-					typeName = details != null ? details.TypeName : "";
-					break;
+
+					issueItemDetails = Company.GetObjectDetail(issue.Object, issue.ObjectID);
+					issueObjectType = issue.Object;
+					typeName = details.TypeName;
+				}
+			}
+			else
+			{
+				details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
+				typeName = details != null ? details.TypeName : "";
 			}
 
 			if (itemStep.Item.Object == "Intersect" && string.IsNullOrEmpty(typeName))
@@ -920,15 +916,13 @@ namespace d360.web.Controllers.Services
 				if (completedById == Company.CurrentResourceID && !isCompletedByCurrentUser)
 				{
 					isCompletedByCurrentUser = true;
-					continue;
 				}
 			}
 
 			// check if the user has access
 			var IsUserAllowedToComplete = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID && x.ResourceObjectID == Company.CurrentResourceID).Any();
-			
+
 			//See if there are more than one user and the response type is first response if so we can give option to reassign to a sigle user and clear other assignments.
-			var itemFields = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(itemStep.Fields));
 			var assignments = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == itemStep.ID).Count();
 			var IsClearAssignementsAllowed = (assignments > 1)
 				&& (formSettings.ResponseType == FormResponseType.FirstResponse);
@@ -947,10 +941,10 @@ namespace d360.web.Controllers.Services
 				IsFormInvalid = formError,
 				ObjectName = details == null ? "(unknown)" : details.Name,
 				ObjectType = itemStep.Item.Object,
-				ObjectID = itemStep.Item.ObjectID,
+				itemStep.Item.ObjectID,
 				ObjectTypeID = details?.TypeID ?? 0,
 				TypeName = typeName,
-				IsUserAllowedToComplete = IsUserAllowedToComplete,
+				IsUserAllowedToComplete,
 				IssueObject = issueObjectType,
 				IssueObjectID = issueItemDetails != null ? issueItemDetails.ID : 0,
 				IssueObjectName = issueItemDetails != null ? issueItemDetails.Name : "",
@@ -1037,7 +1031,7 @@ namespace d360.web.Controllers.Services
 					{
 						if (item.IntersectTypeID <= 0)
 						{
-							throw new Exception(WorkflowApiMessages.RelatioshipInvalid);
+							throw new ArgumentException(WorkflowApiMessages.RelatioshipInvalid);
 						}
 
 						//load the possible options for this relationship type into values array
@@ -1045,14 +1039,14 @@ namespace d360.web.Controllers.Services
 
 						if (intersectType == null)
 						{
-							throw new Exception(WorkflowApiMessages.RelationNotFoundIntersectType);
+							throw new ArgumentNullException(nameof(intersectType), WorkflowApiMessages.RelationNotFoundIntersectType);
 						}
 
 						var reg = Company.WorkflowEventRegistrations.Where(x => x.TypeID == typeID).FirstOrDefault();
 
 						if (reg == null)
 						{
-							throw new Exception(WorkflowApiMessages.RelationNotFoundRegistration);
+							throw new ArgumentNullException(nameof(reg), WorkflowApiMessages.RelationNotFoundRegistration);
 						}
 
 						var obj = reg.Object;
@@ -1061,10 +1055,10 @@ namespace d360.web.Controllers.Services
 						if (reg.Object == "IssueType")
 						{
 							var issue = Company.Issues.FirstOrDefault(i => i.ID == itemStep.Item.ObjectID);
-							
+
 							if (issue == null)
 							{
-								throw new Exception(WorkflowApiMessages.RelationNotFoundIssueObject);
+								throw new ArgumentNullException(nameof(issue), WorkflowApiMessages.RelationNotFoundIssueObject);
 							}
 
 							obj = issue.ObjectType;
@@ -1078,7 +1072,7 @@ namespace d360.web.Controllers.Services
 						if (obj == intersectType.Subject && objId == intersectType.SubjectID)
 						{
 							// load the object items into the values array                        
-							item.AllowMultipleValues = !(intersectType.ObjectCardinality == Cardinality.One);
+							item.AllowMultipleValues = intersectType.ObjectCardinality != Cardinality.One;
 
 							item.Values.AddRange(
 								Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Object, objectTypeId = intersectType.ObjectID })
@@ -1086,7 +1080,7 @@ namespace d360.web.Controllers.Services
 						}
 						else
 						{
-							item.AllowMultipleValues = !(intersectType.SubjectCardinality == Cardinality.One);
+							item.AllowMultipleValues = intersectType.SubjectCardinality != Cardinality.One;
 							// load the subject items into the value array
 							item.Values.AddRange(
 								Company.Query<System.Web.Mvc.SelectListItem>(itemSql, new { objectType = intersectType.Subject, objectTypeId = intersectType.SubjectID })
@@ -1122,35 +1116,33 @@ namespace d360.web.Controllers.Services
 									.ToList()
 							);
 						}
-						catch 
+						catch
 						{
 							//swallow exception
 						}
 					}
 				}
 
-				var formSettings = WorkflowItemStepSettingModel.ParseXml(XElement.Parse(versionStep.Settings));
 				var typeName = "";
 				var objectName = "";
 
-				switch (itemStep.Item.Object)
+				if (itemStep.Item.Object == "Issue")
 				{
-					case "Issue":
-						var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+					var issue = Company.Issues.Where(x => x.ID == itemStep.Item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
 
-						if (issue != null)
+					if (issue != null)
+					{
+						details = new ObjectDetail
 						{
-							details = new ObjectDetail
-							{
-								Type = "Action",
-								Name = issue.Object,
-								TypeName = issue.IssueType.Name
-							};
-						}
-						break;
-					default:
-						details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
-						break;
+							Type = "Action",
+							Name = issue.Object,
+							TypeName = issue.IssueType.Name
+						};
+					}
+				}
+				else
+				{
+					details = Company.GetObjectDetail(itemStep.Item.Object, itemStep.Item.ObjectID);
 				}
 
 				if (details != null)
@@ -1192,7 +1184,7 @@ namespace d360.web.Controllers.Services
 
 			if (items.Length > 0)
 			{
-				string inclause = string.Join(",", items.Select((s, i) => "@p" + i.ToString()).ToArray());
+				string inclause = string.Join(",", items.Select((_, i) => "@p" + i.ToString()).ToArray());
 				var parameters = new DynamicParameters();
 
 				for (var i = 0; i < items.Length; i++)
@@ -1202,11 +1194,11 @@ namespace d360.web.Controllers.Services
 
 				string sql = "";
 				sql = @"DELETE FROM [workflow].[ItemStepTransition] WHERE [FromItemStepID] IN (SELECT [ID] FROM [workflow].[ItemStep] WHERE [ItemID] IN (" + inclause + "))";
-				int rows = Company.Database.Connection.Execute(sql, parameters);
+				_ = Company.Database.Connection.Execute(sql, parameters);
 				sql = @"DELETE FROM [workflow].[ItemStep] WHERE [ItemID] IN  (" + inclause + ")";
-				rows = Company.Database.Connection.Execute(sql, parameters);
+				_ = Company.Database.Connection.Execute(sql, parameters);
 				sql = @"DELETE FROM [workflow].[Item] WHERE [ID] IN  (" + inclause + ")";
-				rows = Company.Database.Connection.Execute(sql, parameters);
+				_ = Company.Database.Connection.Execute(sql, parameters);
 			}
 
 			return Request.CreateResponse(HttpStatusCode.OK, items.Length);
@@ -1291,7 +1283,7 @@ namespace d360.web.Controllers.Services
 				{
 					type.ConditionText = WorkflowRegistrationCriteriaProcessor.ToPlainText(Company, type.Condition);
 				}
-				catch 
+				catch
 				{
 					//swallow exception
 				}
@@ -1364,27 +1356,27 @@ namespace d360.web.Controllers.Services
 
 			ObjectDetail objectDetails = null;
 			var actionAsset = new Asset();
-			switch (item.Object)
+
+			if (item.Object == "Issue")
 			{
-				case "Issue":
-					var issue = Company.Issues.Where(x => x.ID == item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
+				var issue = Company.Issues.Where(x => x.ID == item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
 
-					if (issue != null)
+				if (issue != null)
+				{
+					var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+					actionAsset = Company.Assets.FirstOrDefault(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID);
+
+					objectDetails = new ObjectDetail
 					{
-						var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
-						actionAsset = Company.Assets.FirstOrDefault(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID);
-
-						objectDetails = new ObjectDetail
-						{
-							Type = "Action",
-							Name = comment != null ? comment.Body : "",
-							TypeName = issue.IssueType.Name
-						};
-					}
-					break;
-				default:
-					objectDetails = Company.GetObjectDetail(item.Object, item.ObjectID);
-					break;
+						Type = "Action",
+						Name = comment != null ? comment.Body : "",
+						TypeName = issue.IssueType.Name
+					};
+				}
+			}
+			else
+			{
+				objectDetails = Company.GetObjectDetail(item.Object, item.ObjectID);
 			}
 
 			return Request.CreateResponse(HttpStatusCode.OK,
@@ -1425,7 +1417,7 @@ namespace d360.web.Controllers.Services
 								where
 									i.id = @itemId and v.typeid = @workflowId;";
 
-			var types = Company.Query<dynamic>(sql, new { workflowId = workflowId, itemId = itemId }).ToList();
+			var types = Company.Query<dynamic>(sql, new { workflowId, itemId }).ToList();
 
 			return Request.CreateResponse(HttpStatusCode.OK, types);
 		}
@@ -1562,22 +1554,17 @@ namespace d360.web.Controllers.Services
 				}
 
 				//Workflow type creation
-				var @type = new core.entities.Workflow.Type();
-				List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>()
-					{
-						WorkflowActivityType.Form,
-						WorkflowActivityType.EmailNotification,
-						WorkflowActivityType.HTTPRequest
-					};
-
-				@type.ID = 0;
-				@type.CreatedBy = Company.CurrentResourceID;
-				@type.CreatedOn = DateTime.UtcNow;
-				@type.UpdatedBy = Company.CurrentResourceID;
-				@type.UpdatedOn = DateTime.UtcNow;
-				@type.Name = otype.Name + " (Copy)";
-				@type.Description = otype.Description;
-				@type.State = otype.State;
+				var @type = new core.entities.Workflow.Type
+				{
+					ID = 0,
+					CreatedBy = Company.CurrentResourceID,
+					CreatedOn = DateTime.UtcNow,
+					UpdatedBy = Company.CurrentResourceID,
+					UpdatedOn = DateTime.UtcNow,
+					Name = otype.Name + " (Copy)",
+					Description = otype.Description,
+					State = otype.State
+				};
 
 				Company.Add(@type);
 				Company.SaveChanges();
@@ -1733,6 +1720,7 @@ namespace d360.web.Controllers.Services
 
 						Company.Add(version);
 						Company.SaveChanges();
+
 						versionID = version.ID;
 
 						if (model.Type.PublishedVersionID != null)
@@ -1833,12 +1821,6 @@ namespace d360.web.Controllers.Services
 
 					List<FieldType> fieldTypes = GetFieldsForDiagramModel(model);
 					Dictionary<int, int> keyMapping = new Dictionary<int, int>();
-					List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>()
-					{
-						WorkflowActivityType.Form,
-						WorkflowActivityType.EmailNotification,
-						WorkflowActivityType.HTTPRequest
-					};
 
 					if (newVersion)
 					{
@@ -1890,7 +1872,6 @@ namespace d360.web.Controllers.Services
 						{
 							model.Links.ForEach(l =>
 							{
-
 								int.TryParse(l.FromKey, out int from);
 								int.TryParse(l.ToKey, out int to);
 
@@ -1900,6 +1881,7 @@ namespace d360.web.Controllers.Services
 									ToVersionStepID = keyMapping[to],
 									Name = l.Name
 								};
+
 								link.FromVersionStepID = keyMapping[from];
 								link.ToVersionStepID = keyMapping[to];
 								link.Name = l.Name ?? "";
@@ -2130,9 +2112,11 @@ namespace d360.web.Controllers.Services
 			{
 				string IssueObjectType = string.Empty;
 				int IssueObjectId = -1;
+
 				if (!string.IsNullOrEmpty(model?.Event?.Condition))
 				{
 					string asXML;
+
 					if (model.Event.Condition.TrimStart().First() == '{')
 					{
 						asXML = JsonConvert.DeserializeXNode(model.Event.Condition).ToString();
@@ -2158,6 +2142,7 @@ namespace d360.web.Controllers.Services
 						}
 					}
 				}
+
 				if (IssueObjectId > 0 && !string.IsNullOrEmpty(IssueObjectType))
 				{
 					fieldTypes = fieldTypes.Union(getFieldTypes(IssueObjectId, IssueObjectType, true)).ToList();
@@ -2188,8 +2173,10 @@ namespace d360.web.Controllers.Services
 			if (fields != null && fields.form != null && fields.form["@description"] != null)
 			{
 				fields.form["@description"] = DeFormatWorkflowProperty(fields.form["@description"].ToString(), fieldTypes);
+
 				return JsonConvert.DeserializeXNode(fields.ToString(), "fields").ToString();
 			}
+
 			return data;
 		}
 
@@ -2224,6 +2211,7 @@ namespace d360.web.Controllers.Services
 					if (settings.HTTPRequest.Headers != null)
 					{
 						dynamic headers = new JArray(settings.HTTPRequest.Headers);
+
 						foreach (var header in headers)
 						{
 							header.value = FormatWorkflowProperty(header?.value?.ToString() ?? "", fieldTypes);
@@ -2241,7 +2229,7 @@ namespace d360.web.Controllers.Services
 		private string DeFormatMessageBodyTemplate(List<FieldType> fieldTypes, string data)
 		{
 			dynamic settings = XmlToDynamic(data);
-			
+
 			if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null || settings.HTTPRequest != null))
 			{
 				if (settings.MessageBodyTemplate != null)
@@ -2313,6 +2301,7 @@ namespace d360.web.Controllers.Services
 		public HttpResponseMessage DeleteWorkflow(int id, Guid? uid)
 		{
 			core.entities.Workflow.Type type;
+
 			if (uid.HasValue && uid.Value != Guid.Empty)
 			{
 				type = Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault();
@@ -2451,11 +2440,7 @@ namespace d360.web.Controllers.Services
 									left outer join [dbo].[issuetype] it on(iss.issuetypeid = it.id)                                    
 								where
 									wt.id = @typeId  and wvs.steptype = 2 and wvs.activitytype = 3 
-									and wv.[version]=@verid and wvs.id = @sid  
-								   
-						   ";
-
-
+									and wv.[version]=@verid and wvs.id = @sid";
 
 				var item = Company.Query<WorkflowAssignmentSummary>(sql, new { r = resourceId > 0 ? resourceId : Company.CurrentResourceID, typeId, verid = version, sid = stepId }).FirstOrDefault();
 
@@ -2491,7 +2476,7 @@ namespace d360.web.Controllers.Services
 		{
 			string issueSql = "", typeSql = "t.id in ({0}) and";
 
-			if (types != null && types.ToLower().Trim() == "all")
+			if (types != null && types.ToLowerInvariant().Trim() == "all")
 			{
 				typeSql = "";
 			}
@@ -2619,7 +2604,7 @@ namespace d360.web.Controllers.Services
 			var stream = new MemoryStream();
 			document.SaveAs(stream);
 			stream.Position = 0;
-			HttpResponseMessage result = null;
+			HttpResponseMessage result;
 			result = Request.CreateResponse(HttpStatusCode.OK);
 			result.Content = new StreamContent(stream);
 			result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
@@ -2690,7 +2675,7 @@ namespace d360.web.Controllers.Services
 			}
 
 			var sql = string.Format(QueryConstants.WorkflowAssignments, types);
-			var results = Company.Query<dynamic>(sql, new { resourceId = resourceId }).ToList();
+			var results = Company.Query<dynamic>(sql, new { resourceId }).ToList();
 
 			return Request.CreateResponse(HttpStatusCode.OK, results);
 		}
@@ -2736,14 +2721,12 @@ namespace d360.web.Controllers.Services
 			foreach (var result in results)
 			{
 				result.FieldsObject = (WorkflowItemStepDetail.FieldsModel)new XmlSerializer(typeof(WorkflowItemStepDetail.FieldsModel)).Deserialize(new StringReader(result.Fields));
-				var fields = result.FieldsObject;
 
 				if (result.ActivityType == WorkflowActivityType.Form && result.Complete == false)
 				{
 					var assignmentIds = Company.WorkflowItemAssignments.Where(x => x.ItemStepID == result.ID).Select(x => new { x.ResourceObject, x.ResourceObjectID });
 					var formattedUserList = Company.GlobalReportingResources.Where(x => assignmentIds.Any(a => a.ResourceObjectID == x.ResourceID)).ToList().Select(x => x.FullName);
 					result.Assignee = string.Join(", ", formattedUserList);
-
 				}
 			}
 
@@ -2760,12 +2743,14 @@ namespace d360.web.Controllers.Services
 						.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
 
 				string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
+
 				if (changedTypes != null)
 				{
 
 					foreach (var changedType in changedTypes.Split(','))
 					{
 						var types = changedType.Split('|');
+
 						if (types.Length == 2)
 						{
 							var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
@@ -2814,7 +2799,7 @@ namespace d360.web.Controllers.Services
 						{
 							JArray sfields = new JArray(stepFields.fields.form.field);
 							JObject jo = sfields.Children<JObject>()
-									.FirstOrDefault(o => o["@type"] != null && o["@type"].ToString() == "relationshipType" && o["@intersectTypeId"] != null); ;
+									.FirstOrDefault(o => o["@type"] != null && o["@type"].ToString() == "relationshipType" && o["@intersectTypeId"] != null);
 
 							int IntersectTypeId = jo != null && jo["@intersectTypeId"] != null ? Convert.ToInt32(jo["@intersectTypeId"]) : 0;
 							var interceptSql = @"SELECT	
@@ -2835,7 +2820,6 @@ namespace d360.web.Controllers.Services
 							JObject jo = sfields.Children<JObject>()
 									.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
 
-							//var sfield = sfields[0];
 							string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
 
 							if (changedTypes != null)
@@ -2896,17 +2880,18 @@ namespace d360.web.Controllers.Services
 		private List<WorkflowStepFieldChange> GetWorkFlowStepFieldChanges(WorkflowStepDetail detail)
 		{
 			List<WorkflowStepFieldChange> fieldChanges = new List<WorkflowStepFieldChange>();
-			
+
 			if (detail.Settings != null && detail.Settings.FieldUpdate != null && detail.Settings.FieldUpdate.Field != null)
 			{
 				dynamic fields = new JArray(detail.Settings.FieldUpdate.Field);
+
 				for (int i = 0; i < fields.Count; i++)
 				{
 					var fieldChange = new WorkflowStepFieldChange();
 					bool isFromActionForm = false;
 					var field = fields[i];
 					int fieldTypeId = field["@FieldId"] != null ? field["@FieldId"] : 0;
-					
+
 					if (fieldTypeId == 0)
 					{
 						continue;
@@ -2935,6 +2920,7 @@ namespace d360.web.Controllers.Services
 						{
 							List<string> vlist = new List<string>();
 							string fieldValue = string.Empty;
+
 							for (int k = 0; k < stepFields.fields.form.Count; k++)
 							{
 								JArray sfields = new JArray(stepFields.fields.form[k].field);
@@ -2942,22 +2928,21 @@ namespace d360.web.Controllers.Services
 									.FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
 								var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
 								var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
-								switch (fieldtype)
-								{
-									case "date":
-										fieldValue = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
-										break;
-									default:
-										if (fieldChange.AppendValue == "true")
-										{
-											vlist.AddRange(displayvalue.Split(','));
-										}
-										else
-										{
-											fieldValue = displayvalue;
-										}
 
-										break;
+								if (fieldtype == "date")
+								{
+									fieldValue = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+								}
+								else
+								{
+									if (fieldChange.AppendValue == "true")
+									{
+										vlist.AddRange(displayvalue.Split(','));
+									}
+									else
+									{
+										fieldValue = displayvalue;
+									}
 								}
 							}
 
@@ -2977,14 +2962,14 @@ namespace d360.web.Controllers.Services
 								.FirstOrDefault(o => o["@id"] != null && o["@id"].ToString() == formFieldId);
 							var displayvalue = jo != null && jo["@displayvalue"] != null ? jo["@displayvalue"].ToString() : "";
 							var fieldtype = jo != null && jo["@fieldtype"] != null ? jo["@fieldtype"].ToString() : "";
-							switch (fieldtype)
+
+							if (fieldtype == "date")
 							{
-								case "date":
-									fieldChange.Value = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
-									break;
-								default:
-									fieldChange.Value = displayvalue;
-									break;
+								fieldChange.Value = displayvalue != "" ? Convert.ToDateTime(displayvalue).ToShortDateString() : "";
+							}
+							else
+							{
+								fieldChange.Value = displayvalue;
 							}
 						}
 					}
@@ -3000,10 +2985,9 @@ namespace d360.web.Controllers.Services
 					if (isFromActionForm && formFieldId != null && stepId != 0)
 					{
 						var fieldData = formFieldId.Trim().Split('|');
-						var actionFieldType = fieldData[0];
 						var actionFieldTypeId = int.Parse(fieldData[1]);
 						var actionField = Company.Fields.FirstOrDefault(x => x.FieldTypeID == actionFieldTypeId && x.ObjectID == detail.ObjectID);
-						
+
 						if (fieldChange.Type == "Link")
 						{
 							fieldChange.Value = actionField?.Value;
@@ -3062,26 +3046,14 @@ namespace d360.web.Controllers.Services
 								var newWorkflowDetails = Company.Query<dynamic>(@"select i.Id, v.TypeId from workflow.item i 
 									inner join workflow.version v on v.id = i.versionid where [object] = 'Issue' and objectid = @newIssueId"
 									, new { newIssueId = (int)reassigned["@newIssueId"] }).FirstOrDefault();
+
 								if (newWorkflowDetails != null)
 								{
 									reassigned["@newItemId"] = newWorkflowDetails.Id;
 								}
 							}
 						}
-						else if (reassigned["@reassignType"] == "Resource" && reassigned["@toResourceId"] != null)
-						{
-							userList.Add((int)reassigned["@toResourceId"]);
-
-							if (reassigned["@fromResourceId"] != null)
-							{
-								userList.Add((int)reassigned["@fromResourceId"]);
-							}
-							if (reassigned["@byResourceId"] != null)
-							{
-								userList.Add((int)reassigned["@byResourceId"]);
-							}
-						}
-						else if (reassigned["@reassignType"] == "Resource" && reassigned["@objectType"] != null)
+						else if (reassigned["@reassignType"] == "Resource" && (reassigned["@toResourceId"] != null || reassigned["@objectType"] != null))
 						{
 							userList.Add((int)reassigned["@toResourceId"]);
 
@@ -3101,6 +3073,7 @@ namespace d360.web.Controllers.Services
 				{
 					//get all the users at once
 					var users = Company.GlobalReportingResources.Where(r => userList.Contains(r.ResourceID)).ToList();
+
 					//apply names
 					for (int i = 0; i < detail.ItemFields.Reassigned.Count; i++)
 					{
@@ -3145,6 +3118,7 @@ namespace d360.web.Controllers.Services
 								int objectId = (int)reassigned["@objectId"];
 								var objectType = (string)reassigned["@objectType"] ?? "";
 								var previousObjectName = "";
+
 								if (objectType == "ResponsibilityType")
 								{
 									var resp = Company.ResponsibilityTypes.Where(x => x.ID == objectId).FirstOrDefault();
@@ -3267,7 +3241,6 @@ namespace d360.web.Controllers.Services
 					detail.StateChange = (State)Convert.ToInt32(detail.Settings.State.Value);
 				}
 
-				string issueObject = null;
 				int issueObjectId = 0;
 
 				if (detail.Condition != null && detail.Condition.Condition != null)
@@ -3286,14 +3259,10 @@ namespace d360.web.Controllers.Services
 						if (condition["@ContextualFieldID"] != null)
 						{
 							var fieldId = condition["@ContextualFieldID"].Value;
-							switch (fieldId)
+
+							if (fieldId == "IssueObjectID")
 							{
-								case "IssueObject":
-									issueObject = condition["@Value"].Value;
-									break;
-								case "IssueObjectID":
-									int.TryParse(condition["@Value"].Value, out issueObjectId);
-									break;
+								int.TryParse(condition["@Value"].Value, out issueObjectId);
 							}
 						}
 						else
@@ -3328,7 +3297,7 @@ namespace d360.web.Controllers.Services
 					 where i.ID = @itemId";
 
 					var issueDetails = Company.Query<WorkflowStepIssueDetail>(issueSql, new { itemId = detail.ItemID }).FirstOrDefault();
-					
+
 					if (issueDetails != null)
 					{
 						detail.IssueDetails = issueDetails;
@@ -3339,7 +3308,7 @@ namespace d360.web.Controllers.Services
 				//deal with xml to json nonsense and load detail values
 				if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)
 				{
-					var eventInfo = new EventObjectInfo()
+					var eventInfo = new EventObjectInfo
 					{
 						Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), detail.Object),
 						ObjectID = detail.ObjectID,
@@ -3348,6 +3317,7 @@ namespace d360.web.Controllers.Services
 					};
 
 					List<int> responsiblities = new List<int>();
+
 					if (detail.Settings != null)
 					{
 						if (detail.Settings.MessageSubjectTemplate != null)
@@ -3382,11 +3352,11 @@ namespace d360.web.Controllers.Services
 							for (int i = 0; i < detail.Settings.ResponsibilityTypeID.Count; i++)
 							{
 								var resId = detail.Settings.ResponsibilityTypeID[i].Value;
-								
+
 								if (int.TryParse(resId, out int resIdInt))
 								{
 									var resp = Company.GetById<ResponsibilityType>(resIdInt);
-									
+
 									if (resp != null)
 									{
 										responsiblities.Add(resp.ID);
@@ -3434,9 +3404,9 @@ namespace d360.web.Controllers.Services
 							var e = emails.email[i];
 							string address = e["@address"].Value;
 
-							if (!resourceEmails.Any(r => r == address.ToLower()))
+							if (!resourceEmails.Any(r => r == address.ToLowerInvariant()))
 							{
-								resourceEmails.Add(address.ToLower());
+								resourceEmails.Add(address.ToLowerInvariant());
 							}
 						}
 
@@ -3447,8 +3417,8 @@ namespace d360.web.Controllers.Services
 							var e = emails.email[i];
 							string address = e["@address"].Value;
 
-							var res = emailResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
-						   
+							var res = emailResources.FirstOrDefault(r => r.Email.ToLowerInvariant() == address.ToLowerInvariant());
+
 							if (res != null)
 							{
 								e.name = res.FullName;
@@ -3462,7 +3432,6 @@ namespace d360.web.Controllers.Services
 								e.responsibility = (string)null;
 							}
 						}
-
 					}
 					else
 					{
@@ -3528,54 +3497,52 @@ namespace d360.web.Controllers.Services
 
 					SetReassignObjectName(detail);
 
-					switch (detail.ActivityType)
+					if (detail.ActivityType == WorkflowActivityType.EmailNotification || detail.ActivityType == WorkflowActivityType.Form)
 					{
-						case WorkflowActivityType.EmailNotification:
-						case WorkflowActivityType.Form:
-							detail.ItemSettings.hasEmails = false;
-							if (detail.ItemSettings.emails != null)
+						detail.ItemSettings.hasEmails = false;
+
+						if (detail.ItemSettings.emails != null)
+						{
+							var emails = detail.ItemSettings.emails;
+
+							if (emails.email != null)
 							{
-								var emails = detail.ItemSettings.emails;
+								detail.ItemSettings.hasEmails = true;
 
-								if (emails.email != null)
+								if (emails.email.GetType() != typeof(JArray))
 								{
-									detail.ItemSettings.hasEmails = true;
-
-									if (emails.email.GetType() != typeof(JArray))
-									{
-										emails.email = new JArray(emails.email);
-									}
-								}
-								else
-								{
-									detail.ItemSettings.emails.email = new JArray();
-								}
-
-								detail.ItemSettings.hasEmails = emails.email.Count > 0;
-
-								for (int i = 0; i < emails.email.Count; i++)
-								{
-									var e = emails.email[i];
-									string address = e["@address"].Value;
-									var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
-									
-									if (res != null)
-									{
-										e.name = res.FullName;
-										e.id = res.ResourceID;
-									}
-									else
-									{
-										e.name = (string)null;
-										e.id = 0;
-									}
+									emails.email = new JArray(emails.email);
 								}
 							}
 							else
 							{
-								detail.ItemSettings.emails = new { email = new JArray() };
+								detail.ItemSettings.emails.email = new JArray();
 							}
-							break;
+
+							detail.ItemSettings.hasEmails = emails.email.Count > 0;
+
+							for (int i = 0; i < emails.email.Count; i++)
+							{
+								var e = emails.email[i];
+								string address = e["@address"].Value;
+								var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email.ToLower() == address.ToLower());
+
+								if (res != null)
+								{
+									e.name = res.FullName;
+									e.id = res.ResourceID;
+								}
+								else
+								{
+									e.name = (string)null;
+									e.id = 0;
+								}
+							}
+						}
+						else
+						{
+							detail.ItemSettings.emails = new { email = new JArray() };
+						}
 					}
 
 					var resourceIds = new List<int>();
@@ -3589,9 +3556,11 @@ namespace d360.web.Controllers.Services
 							if (detail.Settings.MessageRecipientType == "SpecificUser")
 							{
 								users = new List<GlobalReportingResource>();
+
 								foreach (var email in ((string)detail.Settings.MessageToUser).Split(';'))
 								{
 									var user = Company.GlobalReportingResources.FirstOrDefault(g => g.Email.ToLower() == email);
+
 									if (user != null)
 									{
 										users.Add(user);
@@ -3616,18 +3585,18 @@ namespace d360.web.Controllers.Services
 								}
 
 								var ix = users.FindIndex(u => u.ResourceID == res.FromResourceID);
-								
+
 								if (ix > -1)
 								{
 									users.RemoveAt(ix);
 								}
 
 								var dx = users.FindIndex(u => u.ResourceID == res.ToResourceID);
-								
+
 								if (dx == -1)
 								{
 									var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
-									
+
 									if (assignee != null)
 									{
 										users.Add(assignee);
@@ -3666,7 +3635,9 @@ namespace d360.web.Controllers.Services
 							form.field = new JArray();
 						}
 
-						if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+						int resId = int.MinValue;
+
+						if (form["@ResourceID"] != null && form["@ResourceID"].Value != null && int.TryParse(form["@ResourceID"].Value, out resId))
 						{
 							if (!resourceIds.Any(r => r == resId))
 							{
@@ -3681,11 +3652,12 @@ namespace d360.web.Controllers.Services
 					for (int i = 0; i < detail.ItemFields.form.Count; i++)
 					{
 						var form = detail.ItemFields.form[i];
+						int resId = int.MinValue;
 
-						if (form["@ResourceID"] != null & form["@ResourceID"].Value != null & int.TryParse(form["@ResourceID"].Value, out int resId))
+						if (form["@ResourceID"] != null && form["@ResourceID"].Value != null && int.TryParse(form["@ResourceID"].Value, out resId))
 						{
 							var res = formResources.FirstOrDefault(r => r.ResourceID == resId);
-							
+
 							if (res != null)
 							{
 								form.resourceName = res.FullName;
@@ -3732,7 +3704,7 @@ namespace d360.web.Controllers.Services
 			document.SetCellValue(1, ++colIndex, "Assignee");
 			document.SetCellValue(1, ++colIndex, "Date Started");
 			document.SetCellValue(1, ++colIndex, "Date Completed");
-			document.SetCellValue(1, ++colIndex, "Workflow Step UID");
+			document.SetCellValue(1, colIndex, "Workflow Step UID");
 
 			#endregion
 
@@ -3751,7 +3723,7 @@ namespace d360.web.Controllers.Services
 				document.SetCellValue(rowIndex, ++dataColIndex, row.Assignee ?? "");
 				document.SetCellValue(rowIndex, ++dataColIndex, row.StartedOn != null ? row.StartedOn.ToShortDateString() : "");
 				document.SetCellValue(rowIndex, ++dataColIndex, row.CompletedOn != null ? row.CompletedOn.ToShortDateString() : "");
-				document.SetCellValue(rowIndex, ++dataColIndex, row.UID.ToString() ?? "");
+				document.SetCellValue(rowIndex, dataColIndex, row.UID.ToString() ?? "");
 			}
 
 			#endregion
@@ -3897,7 +3869,6 @@ namespace d360.web.Controllers.Services
 			return null;
 		}
 
-
 		private string MapWorkflowConditionsFromXml(string condtionXml, Dictionary<int, int> mappings)
 		{
 			if (!string.IsNullOrEmpty(condtionXml))
@@ -3941,7 +3912,7 @@ namespace d360.web.Controllers.Services
 					{
 						var field = fields;
 						var shouldUpdate = (field["@UseFormValue"] != null && field["@UseFormValue"].ToString().ToLower() == "true") || (field["@UseOutputValue"] != null && field["@UseOutputValue"].ToString().ToLower() == "true");
-						
+
 						if (shouldUpdate && mappings.ContainsKey((int)field["@FormStepId"]))
 						{
 							field["@FormStepId"] = mappings[(int)field["@FormStepId"]];
@@ -3962,7 +3933,7 @@ namespace d360.web.Controllers.Services
 					}
 				}
 
-				return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
+				return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings })).ToString();
 			}
 
 			return settingsString;
@@ -3984,7 +3955,7 @@ namespace d360.web.Controllers.Services
 					}
 				}
 
-				return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
+				return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings })).ToString();
 			}
 
 			return settingsString;
@@ -3992,7 +3963,7 @@ namespace d360.web.Controllers.Services
 
 		private void MapWorkflowHttpSettings(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping)
 		{
-			var parts = field.ToString().Split('|');
+			var parts = field.Split('|');
 			int.TryParse(parts[1], out int httpKey);
 
 			if (key != 0 && httpKey != 0)
@@ -4002,13 +3973,13 @@ namespace d360.web.Controllers.Services
 					httpKey = keyMapping[httpKey];
 				}
 
-				node.Settings = node.Settings.Replace(field.ToString(), $"[HTTPREQUEST|{httpKey}|{parts[2]}");
+				node.Settings = node.Settings.Replace(field, $"[HTTPREQUEST|{httpKey}|{parts[2]}");
 			}
 		}
 
 		private void MapWorkflowHttpResponseTokens(WorkflowVersionStep node, int key, string field, Dictionary<int, int> keyMapping)
 		{
-			var parts = field.ToString().Split('|');
+			var parts = field.Split('|');
 			int.TryParse(parts[1], out int httpKey);
 
 			if (key != 0 && httpKey != 0)
@@ -4018,7 +3989,7 @@ namespace d360.web.Controllers.Services
 					httpKey = keyMapping[httpKey];
 				}
 
-				node.Settings = node.Settings.Replace(field.ToString(), $"[HTTPRESPONSE|{httpKey}|{parts[2]}");
+				node.Settings = node.Settings.Replace(field, $"[HTTPRESPONSE|{httpKey}|{parts[2]}");
 			}
 		}
 
@@ -4041,7 +4012,7 @@ namespace d360.web.Controllers.Services
 					if (settings.HTTPResponse.Outputs.Count == null)
 					{
 						var output = settings.HTTPResponse.Outputs;
-						
+
 						if (int.TryParse(output.StepId.ToString(), out int stepId) && keyMapping.ContainsKey(stepId))
 						{
 							output.StepId = keyMapping[stepId].ToString();
@@ -4052,7 +4023,7 @@ namespace d360.web.Controllers.Services
 						for (int i = 0; i < settings.HTTPResponse.Outputs.Count; i++)
 						{
 							var output = settings.HTTPResponse.Outputs[i];
-							
+
 							if (int.TryParse(output.StepId.ToString(), out int stepId) && keyMapping.ContainsKey(stepId))
 							{
 								output.StepId = keyMapping[stepId].ToString();
@@ -4061,7 +4032,7 @@ namespace d360.web.Controllers.Services
 					}
 				}
 
-				return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings = settings })).ToString();
+				return JsonConvert.DeserializeXNode(JsonConvert.SerializeObject(new { settings })).ToString();
 			}
 
 			return settingsString;
@@ -4069,7 +4040,7 @@ namespace d360.web.Controllers.Services
 
 		private void MapNodeSettingsAndTokens(WorkflowDiagramNode n, Dictionary<int, int> keyMapping)
 		{
-			List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>()
+			List<WorkflowActivityType> tokenTypes = new List<WorkflowActivityType>
 					{
 						WorkflowActivityType.Form,
 						WorkflowActivityType.EmailNotification,
@@ -4078,7 +4049,6 @@ namespace d360.web.Controllers.Services
 
 			if (n.ActivityType == WorkflowActivityType.FieldChange)
 			{
-
 				if (!int.TryParse(n.Key, out int key))
 				{
 					return;

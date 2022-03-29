@@ -1135,7 +1135,7 @@ namespace d360.web.Controllers
 
                 var deletes = new AssetTypeDeletes
                 {
-                    new AssetTypeDelete() 
+                    new AssetTypeDelete
                     { 
                         Cascade = false,
                         ExecutionItemUid = Guid.NewGuid(),
