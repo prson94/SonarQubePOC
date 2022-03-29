@@ -808,7 +808,7 @@ namespace d360.extensions.search
                 }
                 else if (phrase.Contains("*"))
                 {
-                    if (phrase.EndsWith("*"))
+                    if (phrase.Count(c => c == '*') == 1 && phrase.EndsWith("*"))
                     {
                         strategy = STRATEGY_MatchPhrasePrefix;
                         phrase = phrase.TrimEnd('*');
