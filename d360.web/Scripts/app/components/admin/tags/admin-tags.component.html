@@ -2,13 +2,26 @@
 
 <div class="row">
     <div class="col l12 m12 s12">
-        <div class="tile tile-detail theme-new">
+        <div class="admin-tags-tile tile tile-detail theme-new">
             <header>
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <span *ngIf="!isLoading">
-                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <ng-container *ngIf="!isLoading">
+                <div class="grid-actions-header">
+                    <div class="simple-search">
+                        <input [(ngModel)]="filters.globalSearch"
+                               type="text"
+                               [hidden]="!showSimpleFilter"
+                               pInputText
+                               size="100"
+                               (input)="dt.filterGlobal($event.target.value, 'contains')"
+                               placeholder="Search..."
+                               class="grid-simple-filter">
+                    </div>
+                    <advanced-filtering></advanced-filtering>
+                </div>
+                
                 <p-table #dt
                          [value]="tags"
                          [globalFilterFields]="['Value','UseCount']"
@@ -75,7 +88,7 @@
                         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
-            </span>
+            </ng-container>
 
             <d3s-dynamic-editor [objectID]="selected[0]?.uid"
                                 [objectType]="'Tag'"
