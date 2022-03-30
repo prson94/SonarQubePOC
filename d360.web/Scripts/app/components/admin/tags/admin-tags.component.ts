@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AdvancedFilterFieldType } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { FieldType } from '../../../models/fieldtype-api.model';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -40,6 +42,54 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: TagType;
+
+    filterFieldList: AdvancedFilterFieldType[] = [
+        {
+            Name: 'Name',
+            FriendlyName: 'Name',
+            Type: new FieldType("Text"),
+            Category: ""
+        },
+        {
+            Name: 'Qualifier',
+            FriendlyName: 'Qualifier',
+            Type: new FieldType("Text"),
+            Category: ""
+        },
+        {
+            Name: 'Status',
+            FriendlyName: 'Status',
+            Type: new FieldType("Lookup"),            
+            Category: "",
+            // ValueLoader: this.getFilterValues.bind(this, "status"),
+            RemovePopulatedOperator: true
+        },
+        {
+            Name: 'Priority',
+            FriendlyName: 'Priority',
+            Type: new FieldType("Number"),
+            Category: ""
+        },
+        {
+            Name: 'BaseType',
+            FriendlyName: 'Base Type',
+            Type: new FieldType("Lookup"),
+            // ValueLoader: this.getFilterValues.bind(this, "baseType"),
+            Category: ""
+        },
+        {
+            Name: 'CreatedOn',
+            FriendlyName: 'Date Created',
+            Type: new FieldType("DateTime"),
+            Category: ""
+        },
+        {
+            Name: 'UpdatedOn',
+            FriendlyName: 'Date Last Modified',
+            Type: new FieldType("DateTime"),
+            Category: ""
+        }
+    ]
 
     constructor(
         private router: Router,

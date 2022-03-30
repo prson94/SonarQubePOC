@@ -168,12 +168,14 @@ export class AdvancedFilteringComponent implements OnChanges {
         }
 
         this.visible = false;
+        // debugger;
         forkJoin(
             this.settingsService.getOperators(true),
             this.getFieldsObs(),
             this.getScoreAllocationObs(),
             this.getRelationshipTypeObs()
         ).subscribe((response) => {
+            // debugger;
             this.operators = response[0];
             let res = response[1] as AdvancedFilterFieldType[];
             this.allocations = response[2];
@@ -249,6 +251,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     private processLoadedData(res: AdvancedFilterFieldType[], newFiltersPushed: boolean = false) {
         var tempFields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
+        // debugger;
         res.forEach((f) => {
             if (FieldTypeHelper.isFieldForOperatorAdvancedFilters(f.Type)) {
                 var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
