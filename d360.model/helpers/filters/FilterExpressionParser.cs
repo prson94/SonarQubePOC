@@ -292,6 +292,10 @@ namespace d360.model.helpers
                     DefaultFilter val = new DefaultFilter(fieldName, fieldName, SqlFieldType.Text);
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
+                else if (fieldName.StartsWith("$ownedbyandresponsibility"))
+                {
+                    return new OwnerAndResponsibilityFieldToken(fdp, field, op, value, paramIdx);
+                }
                 else if (fieldName.StartsWith("$owned"))
                 {
                     return new OwnerFieldToken(fdp, field, op, value, paramIdx);

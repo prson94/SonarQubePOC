@@ -527,6 +527,10 @@ export class AdvancedFilterFieldConditionCollection {
                     if (cond.field === SystemFields.OwnedByFieldCode) {
                         if ((r.value as string).length === 36) {
                             subConditions.push(cond.getCopyWithNewValue(r.value));
+                        } else if ((r.value as string).length > 36) {
+                            let ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value)
+                            ownerAndResponsibilitySubCondition.field = "$OwnedByAndResponsibility";
+                            subConditions.push(ownerAndResponsibilitySubCondition);
                         }
                     }
                     else {
@@ -659,6 +663,7 @@ export class Filters {
 
     public applyFilters(params: any) {
         delete params["_filter"];
+        debugger;
         if (this.filter) {
             params._filter = this.filter;
         }
