@@ -16,7 +16,7 @@ export class SearchService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsService) { super(messagesService); }
 
-    private getEmptyResult(): SearchResults {
+    public getEmptyResult(): SearchResults {
         let result = new SearchResults();
         result.Results = [];
         result.Aggregations = { category: []};

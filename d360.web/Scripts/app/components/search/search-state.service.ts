@@ -1,8 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { SearchFullResult, SearchQuery, SearchAggregationFilter, SearchFieldFilter, SearchState, SearchCheckTreeVal, SearchConnector } from '../../models/search-result.model';
-import { tap, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { Observable, BehaviorSubject, pipe, Subscription } from 'rxjs';
+import { tap, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject, Subscription, of } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
@@ -279,7 +279,14 @@ export class SearchStateService extends BaseObservableService {
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
             tap(val => { this._treeLoading.next(true) }),
-            switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery))
+            switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery).pipe(
+                catchError((err) => {
+                    if (err === "ConnectionError") {
+                        this._connectionError.next(true);
+                    }
+                    return of(this.searchService.getEmptyResult());
+                }))
+            )
         ).subscribe(
             (res) => {
                 var filterTree = this.buildTree(res.Aggregations.category.map((val) => {
@@ -313,12 +320,6 @@ export class SearchStateService extends BaseObservableService {
                 }
                 this._categories.next(filterTree);
                 this._treeLoading.next(false);
-            },
-            (err) => {
-                if (err === "ConnectionError") {
-                    this._connectionError.next(true);
-                }
-                this._treeLoading.next(false);
             }
         );
 
@@ -329,7 +330,14 @@ export class SearchStateService extends BaseObservableService {
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
             tap(val => { this._loading.next(true); }),
-            switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery))
+            switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery).pipe(
+                catchError((err) => {
+                    if (err === "ConnectionError") {
+                        this._connectionError.next(true);
+                    }
+                    return of(this.searchService.getEmptyResult());
+                })
+            ))
         ).subscribe(
             (res) => {
                 if (initialQuery && res.ElapsedMS.Query === 0) {
@@ -341,12 +349,6 @@ export class SearchStateService extends BaseObservableService {
                     this._results.next(res.Results);
                     this._loading.next(false);
                 }
-            },
-            (err) => {
-                if (err === "ConnectionError") {
-                    this._connectionError.next(true);
-                }
-                this._loading.next(false);
             }
         );
     }
