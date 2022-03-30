@@ -47,19 +47,33 @@
                                    tooltipStyleClass="ig-tooltip"></i>
                             </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="headerBackColor"></p-colorPicker>
+                                <p-colorPicker formControlName="headerBackColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="breadcrumbLinkColor">Breadcrumb link color</label>
+                            <label for="breadcrumbLinkColor">
+                                Breadcrumb link color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('breadcrumbLinkColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="breadcrumbLinkColor"></p-colorPicker>
+                                <p-colorPicker formControlName="breadcrumbLinkColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="buttonBackColor">Button color</label>
+                            <label for="buttonBackColor">
+                                Button color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('buttonBackColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="buttonBackColor"></p-colorPicker>
+                                <p-colorPicker formControlName="buttonBackColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                     </div>
@@ -68,15 +82,29 @@
                 <ig-property-group [igformGroup]="formGroup" [title]="'Navigation Sidebar'" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
-                            <label for="navbarBackColor">Side menu color</label>
+                            <label for="navbarBackColor">
+                                Side menu color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('navbarBackColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="navbarBackColor"></p-colorPicker>
+                                <p-colorPicker formControlName="navbarBackColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="navbarBackColorSelected">Side menu selection color</label>
+                            <label for="navbarBackColorSelected">
+                                Side menu selection color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('navbarBackColorSelected')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="navbarBackColorSelected"></p-colorPicker>
+                                <p-colorPicker formControlName="navbarBackColorSelected" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                     </div>
@@ -85,7 +113,14 @@
                 <ig-property-group [igformGroup]="formGroup" [title]="'Home Page'" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
-                            <label for="homeBackground">Background image</label>
+                            <label for="homeBackground">
+                                Background image
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('homeBackground')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <image-picker formControlName="homeBackground" [maxSize]="1048576" [message]="'The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.'"></image-picker>
                         </div>
 
@@ -95,33 +130,68 @@
                 <ig-property-group [igformGroup]="formGroup" [title]="'General'" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
-                            <label for="primaryButtonBackColor">Primary button color</label>
+                            <label for="primaryButtonBackColor">
+                                Primary button color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('primaryButtonBackColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="primaryButtonBackColor"></p-colorPicker>
+                                <p-colorPicker formControlName="primaryButtonBackColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="backColor">Background color</label>
+                            <label for="backColor">
+                                Background color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('backColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="backColor"></p-colorPicker>
+                                <p-colorPicker formControlName="backColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="tabLinkColor">Tab/link color</label>
+                            <label for="tabLinkColor">
+                                Tab/link color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('tabLinkColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="tabLinkColor"></p-colorPicker>
+                                <p-colorPicker formControlName="tabLinkColor" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="tableHeaderBackColor">Table header color</label>
+                            <label for="tableHeaderBackColor">
+                                Table header color
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('tableHeaderBackColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="tableHeaderBackColor"></p-colorPicker>
+                                <p-colorPicker formControlName="tableHeaderBackColor" [appendTo]="'body'" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="tableRowBackColor">Table row selection</label>
+                            <label for="tableRowBackColor">
+                                Table row selection
+                                <i class="fa fa-question-circle help-icon"
+                                   [escape]="false"
+                                   [pTooltip]="getTooltip('tableRowBackColor')"
+                                   tooltipPosition="top"
+                                   tooltipStyleClass="ig-tooltip"></i>
+                            </label>
                             <div class="color-picker-wrapper">
-                                <p-colorPicker formControlName="tableRowBackColor"></p-colorPicker>
+                                <p-colorPicker formControlName="tableRowBackColor" [appendTo]="'body'" [appendTo]="'body'"></p-colorPicker>
                             </div>
                         </div>
                     </div>
