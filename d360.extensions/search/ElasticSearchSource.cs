@@ -295,9 +295,10 @@ namespace d360.extensions.search
         {
             using (var community = GetDBConnection())
             {
-                var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
+//                var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
 
-                SearchServerUrl = db.SearchServer ?? DEFAULT_SEARCH_SERVER;
+//                SearchServerUrl = db.SearchServer ?? DEFAULT_SEARCH_SERVER;
+                SearchServerUrl = "192.168.33.17:9200";
             }
 
             if (string.IsNullOrEmpty(SearchServerUrl))
@@ -1302,17 +1303,7 @@ namespace d360.extensions.search
                 sReq.Explain = true;
             }
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
@@ -1392,17 +1383,7 @@ namespace d360.extensions.search
                 };
             }
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
@@ -1457,17 +1438,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             searchResults.aggregations.all_types?.buckets?.ForEach(b =>
             {
@@ -1746,17 +1717,7 @@ namespace d360.extensions.search
                 Size = size
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
@@ -1852,17 +1813,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
@@ -1888,6 +1839,32 @@ namespace d360.extensions.search
             }
 
             return result;
+        }
+
+        private SearchResultsModel PerformSearch(int companyID, SearchRequest sReq)
+        {
+            var client = GetElasticClient(companyID);
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
+
+            if (!response.Success)
+            {
+                if (response.OriginalException.InnerException.Message == "Unable to connect to the remote server")
+                {
+                    throw new SearchServerConnectionException(
+                        response.OriginalException,
+                        string.Join(", ", client.ConnectionSettings.ConnectionPool.Nodes.Select(n => n.Uri.OriginalString)),
+                        client.ConnectionSettings.DefaultIndex
+                    );
+                }
+                else
+                {
+                    throw new SearchResultsException(response.OriginalException);
+                }
+            }
+
+            return JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
         }
 
         private string GetDisplayName(SearchResultsHitModel h)

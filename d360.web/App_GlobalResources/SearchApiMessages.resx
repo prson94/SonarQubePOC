@@ -129,6 +129,9 @@
   <data name="FieldUnsupported" xml:space="preserve">
     <value>The field filters '{0}' are not supported</value>
   </data>
+  <data name="NoSearchServerConnection" xml:space="preserve">
+    <value>Cannot connect to the search server</value>
+  </data>
   <data name="SizeTooBig" xml:space="preserve">
     <value>The maximum value for size is {0}</value>
   </data>
