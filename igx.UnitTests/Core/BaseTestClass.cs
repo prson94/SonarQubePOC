@@ -26,6 +26,7 @@ using d360.core;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using AutoFixture;
 using d360.model.helpers.filters;
 using MediatR;
 using d360.web.Controllers;
@@ -34,8 +35,16 @@ using LaunchDarkly.Sdk.Server;
 
 namespace igx.UnitTests
 {
-    public class BaseTest
+    public abstract class BaseTest
     {
+        protected Fixture Fixture { get; }
+
+        protected BaseTest()
+        {
+            Fixture = new Fixture();
+            Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        }
+
         #region Mock Interfaces
         public ICommunityContext GetCommunity()
         {

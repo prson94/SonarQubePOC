@@ -30,11 +30,10 @@ using d360.model.helpers.filters;
 using System.Data.Entity;
 using SpreadsheetLight;
 using d360.model.helpers;
-using System.Data;
+using System.Runtime.Serialization;
 using System.Threading;
 using d360.core.Models;
-using d360.model.helpers;
-using System.Web;
+using d360.web.Services;
 
 namespace d360.web.Controllers.V2
 {
@@ -52,18 +51,29 @@ namespace d360.web.Controllers.V2
 
         IQueueSource QueueSource;
         IStorageProvider Storage;
-        IAssetRepository AssetRepository;
         ITagRepository tagRepository;
         IRelationshipRepository relationshipRepository;
         IFieldsRepository fieldsRepository;
 
-        public AssetsController(ICoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
-            IRelationshipRepository relationshipRepository, IFieldsRepository fieldsRepository)
-            : base(set)
+        private IAssetRepository AssetRepository { get; }
+
+        private IAssetTypeRepository AssetTypeRepository { get; }
+
+        public AssetsController(
+            ICoreComponentSet set,
+            IStorageProvider storage,
+            IQueueSource queueSource,
+            IAssetRepository repository,
+            ITagRepository tagRepository,
+            IRelationshipRepository relationshipRepository,
+            IFieldsRepository fieldsRepository,
+            IAssetTypeRepository assetTypeRepository
+        ) : base(set)
         {
             QueueSource = queueSource;
             Storage = storage;
-            this.AssetRepository = repository;
+            AssetTypeRepository = assetTypeRepository;
+            AssetRepository = repository;
             this.tagRepository = tagRepository;
             this.relationshipRepository = relationshipRepository;
             this.fieldsRepository = fieldsRepository;
@@ -3328,5 +3338,44 @@ select Level, ISNULL(Name,'Level '+ cast(Level as nvarchar(10))) as Name, Descri
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
+
+        [SwaggerProduces("application/json")]
+        [SwaggerResponse(HttpStatusCode.OK, "Ancestry for a given asset type.", typeof(ICollection<AssetTypeAncestryModel>))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))]
+        [HttpGet]
+        [Route("types/{assetTypeUid}/ancestry")]
+        public async Task<IHttpActionResult> GetTypeAncestry(Guid assetTypeUid, CancellationToken cancellationToken)
+        {
+            ValidateParameters();
+
+            var entities = await AssetTypeRepository.GetAncestryAsync(assetTypeUid, cancellationToken);
+            if (entities.Count == 0)
+            {
+                throw new NotFoundBusinessLayerException($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");
+            }
+
+            var result = entities.Select(x => new AssetTypeAncestryModel
+            {
+                Uid = x.uid,
+                Name = x.Name
+            }).ToArray();
+
+            return Ok(result);
+        }
+
+        #region Request / Response models
+
+        public class AssetTypeAncestryModel
+        {
+            [DataMember]
+            public Guid Uid { get; set; }
+
+            [DataMember]
+            public string Name { get; set; }
+        }
+
+        #endregion Request / Response models
     }
 }
