@@ -7,6 +7,7 @@ using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using Microsoft.ApplicationInsights;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
 using Resources;
@@ -39,12 +40,15 @@ namespace d360.web.Controllers.V2
         private readonly ISearchSource SearchSource;
         private readonly IAssetRepository AssetRepository;
         private readonly ISemanticsRepository SemanticsRepository;
+        private readonly TelemetryClient Telemetry;
 
         public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository) : base(set)
         {
             SearchSource = searchSource;
             AssetRepository = assetRepository;
             SemanticsRepository = semanticsRepository;
+            Telemetry = new TelemetryClient();
+
         }
 
         /// <summary>
@@ -168,6 +172,11 @@ namespace d360.web.Controllers.V2
                 }
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response)).ConfigureAwait(false);
             }
+            catch (SearchServerConnectionException ex)
+            {
+                Telemetry.TrackException(ex);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, SearchApiMessages.NoSearchServerConnection, ex.Message)).ConfigureAwait(false);
+            }
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
@@ -225,6 +234,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res))).ConfigureAwait(false);
+            }
+            catch (SearchServerConnectionException ex)
+            {
+                Telemetry.TrackException(ex);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, SearchApiMessages.NoSearchServerConnection, ex.Message)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
