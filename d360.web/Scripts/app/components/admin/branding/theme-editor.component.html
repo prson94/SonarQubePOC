@@ -213,7 +213,22 @@
         <div class="action-bar">
             <button igButton igAutoFocus label="Cancel" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
+            <button *ngIf="!isCurrentTheme" igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
+            <button *ngIf="isCurrentTheme" igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="confirmCurrentThemeSaveVisible = true" [disabled]="!formGroup.valid"></button>
         </div>
+    </div>
+</d3s-modal>
+
+<d3s-modal *ngIf="isCurrentTheme" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="confirmCurrentThemeSaveVisible=false"
+           [title]="'Change Current Theme'"
+           [isVisible]="confirmCurrentThemeSaveVisible">
+    <div class="content">
+        Are you sure you want to make changes to the current theme, which will cause the app to look different the next time users refresh or log in?
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="isSetCurrentThemeVisible = false" [disabled]="settingCurrentThemeInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label=" {{theme ? 'Apply Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
     </div>
 </d3s-modal>

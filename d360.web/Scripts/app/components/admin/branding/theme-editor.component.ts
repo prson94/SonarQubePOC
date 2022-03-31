@@ -21,6 +21,8 @@ export class ThemeEditorComponent implements OnChanges {
     @Output() onCancel = new EventEmitter();
     data: Theme;
 
+    confirmCurrentThemeSaveVisible: boolean = false;
+
     savingInProgress: boolean = false;
     formGroup: FormGroup = null;
     hasCustomCss: boolean = false;
@@ -93,6 +95,7 @@ export class ThemeEditorComponent implements OnChanges {
                 this.setForm();
             }
             this.savingInProgress = false;
+            this.confirmCurrentThemeSaveVisible = false;
             this.cdRef.markForCheck();
         });
     }
