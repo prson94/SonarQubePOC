@@ -1,13 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { SiteMenuModel, SiteNav, SiteNavPermission } from '../models/site-menu.model';
+import { SiteMenu, SiteMenuItem, SiteMenuModel, SiteNav, SiteNavPermission } from '../models/site-menu.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SecondaryNavPostModel } from '../models/secondaryNav.model';
-import { IS_QUERY, ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 @Injectable({
     providedIn: 'root'
@@ -17,11 +16,7 @@ export class SiteMenuService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getMenu(): Observable<SiteMenuModel> {
-        return this.http
-            .get(
-                'navigation/sitemenu',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
+        return this.http.get('navigation/sitemenu')
             .pipe(
                 map(response => <SiteMenuModel>response),
                 catchError(err => this.handleError(err))
@@ -94,11 +89,7 @@ export class SiteMenuService extends BaseObservableService {
     }
 
     getSiteNavItems(): Observable<SiteNav[]> {
-        return this.http
-            .get(
-                'navigation/GetSiteNavItems',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
+        return this.http.get('navigation/GetSiteNavItems')
             .pipe(
                 map(response => <SiteNav[]>response),
                 map(r => {
@@ -195,11 +186,7 @@ export class SiteMenuService extends BaseObservableService {
             );
     }
     getCounts() {
-        return this.http
-            .get(
-                'navigation/GetCounts',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
+        return this.http.get(`navigation/GetCounts`)
             .pipe(
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))
@@ -210,14 +197,13 @@ export class SiteMenuService extends BaseObservableService {
         let options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
-            }),
-            context: new HttpContext().set(IS_QUERY, true)
+            })
         }
 
         return this.http.post(`navigation/secondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
-            );
+        );
     }
 }
