@@ -227,7 +227,7 @@
         Are you sure you want to make changes to the current theme, which will cause the app to look different the next time users refresh or log in?
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="isSetCurrentThemeVisible = false" [disabled]="settingCurrentThemeInProgress"></button>
+        <button igButton igAutoFocus label="Cancel" (click)="confirmCurrentThemeSaveVisible = false" [disabled]="savingInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label=" {{theme ? 'Apply Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
     </div>

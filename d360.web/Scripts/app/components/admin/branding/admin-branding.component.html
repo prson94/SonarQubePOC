@@ -13,17 +13,22 @@
                             (click)="selectedRow = null;isEditorVisible=true"
                             icon="fa-plus">
                     </button>
-                    <button igButton
-                            pTooltip="Create New Group"
+                    <button *ngIf="selectedRow && selectedRow.hasDownloadOption"
+                            igButton
+                            pTooltip="Download"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
-                            icon="fa-download">
+                            icon="fa-download"
+                            (click)="download()">
                     </button>
+                    <input #uploadInput type="file" class="file-input" (change)="onFileSelected($event)" hidden>
                     <button igButton
-                            pTooltip="Create New Group"
+                            [loading]="isThemeUploading"
+                            pTooltip="Import"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
-                            icon="fa-upload">
+                            icon="fa-upload"
+                            (click)="uploadInput.click()">
                     </button>
                 </div>
             </div>
@@ -95,5 +100,28 @@
         <button igButton igAutoFocus label="Cancel" (click)="isSetCurrentThemeVisible = false" [disabled]="settingCurrentThemeInProgress"></button>
         <span class="grow"></span>
         <button igButton class="ig-button-primary" label="Set as Current Theme" (click)="setAsCurrentTheme();" [loading]="settingCurrentThemeInProgress" [disabled]="settingCurrentThemeInProgress"></button>
+    </div>
+</d3s-modal>
+
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="shouldRename=false"
+           title="{{(canReplace ? 'Replace or Rename the Theme' : 'Rename the Theme')}}"
+           [isVisible]="shouldRename">
+    <div class="content" *ngIf="!canReplace">
+        The theme you are trying to upload has the same name as the theme you are currently using. Rename the theme to complete the upload process.
+       </div>
+    <div class="content" *ngIf="canReplace">
+        There is already a theme called <strong>{{existingThemeName}}</strong>. You can either replace an existing theme or rename it.
+    </div>
+    <div class="content-input" *ngIf="themeToLoad">
+        <label>Theme Name</label>
+        <input igInput type="text" igSize="full" [(ngModel)]="themeToLoad.name" />
+
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="resetUpload()" [disabled]="isThemeUploading"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Rename Theme" (click)="triggerRename();" [loading]="isThemeUploading" [disabled]="isThemeUploading || themeToLoad?.name === existingThemeName"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button *ngIf="canReplace" igButton class="ig-button-primary" label="Replace Theme" (click)="uploadTheme(true);" [loading]="isThemeUploading" [disabled]="isThemeUploading"></button>
     </div>
 </d3s-modal>

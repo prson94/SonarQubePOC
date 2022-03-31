@@ -23,6 +23,7 @@ import { PropertyGroupModule } from '../../shared/controls/property-group/proper
 import { ThemeEditorModule } from './theme-editor.module';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { ButtonModule } from 'primeng/button';
 
 @NgModule({
     imports: [
@@ -51,7 +52,8 @@ import { TooltipModule } from 'primeng/tooltip';
         PopupMenuModule,
         SiteModalModule,
         PropertyGroupModule,
-        TooltipModule
+        TooltipModule,
+        ButtonModule
     ],
     declarations: [
         AdminBrandingComponent,

@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
@@ -35,6 +35,8 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     isSetCurrentThemeVisible: boolean = false;
     settingCurrentThemeInProgress: boolean = false;
+
+    preselectThemeName: string = "";
 
     menuItemsDefaultOptions = [
         { title: 'Download' },
@@ -81,6 +83,15 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
             });
             this.isLoading = false;
+
+            if (this.preselectThemeName) {
+                var preselectedItem = this.themes.filter((x) => x.name === this.preselectThemeName);
+                if (preselectedItem.length > 0) {
+                    this.selectedRow = preselectedItem[0];
+                }
+                this.preselectThemeName = "";
+            }
+
             this.cdRef.markForCheck();
         })
     }
@@ -157,6 +168,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
         this.isLoading = true;
         this.cdRef.markForCheck();
+        this.preselectThemeName = theme.name;
 
         this.brandingService.saveTheme(theme)
             .subscribe((res) => {
@@ -175,5 +187,89 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             return this.getUniqueName(name, idx + 1);
         }
         return checkName;
+    }
+
+    download() {
+        var sJson = JSON.stringify(this.selectedRow._orig);
+        var element = document.createElement('a');
+        element.setAttribute('href', "data:text/json;charset=UTF-8," + encodeURIComponent(sJson));
+        element.setAttribute('download', "primer-server-task.json");
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click(); // simulate click
+        document.body.removeChild(element);
+    }
+
+
+    isThemeUploading: boolean = false;
+    file: File;
+    themeToLoad: Theme;
+
+    shouldRename: boolean = false;
+    canReplace: boolean = false;
+
+    existingThemeName: string = "";
+    existingThemeUid: string = "";
+
+    @ViewChild('uploadInput') fileInputEl: ElementRef;
+    onFileSelected(event) {
+        this.themeToLoad = null;
+        this.file = event.target.files[0]
+        let fileReader = new FileReader();
+        fileReader.onload = (e) => {
+            this.themeToLoad = JSON.parse(fileReader.result as string);
+            this.themeToLoad.uid = null;
+            this.themeToLoad.isCurrent = null;
+            this.checkUploadTheme();
+        }
+
+        fileReader.readAsText(this.file);
+    }
+
+    resetUpload() {
+        this.isThemeUploading = false;
+        this.file = null;
+        this.themeToLoad = null;
+        this.shouldRename = false;
+        this.existingThemeName = "";
+        this.existingThemeUid = "";
+        this.fileInputEl.nativeElement.value = "";
+    }
+
+    checkUploadTheme() {
+        var existingItem = this.themes.find((x) => x.name === this.themeToLoad.name);
+
+        if (existingItem) {
+            this.shouldRename = true;
+            this.existingThemeName = existingItem.name;
+            this.existingThemeUid = existingItem.uid;
+            if (!existingItem.isCurrent && !existingItem.isDefaultTheme) {
+                this.canReplace = true;
+            }
+        }
+        else {
+            this.uploadTheme();
+        }
+
+        this.cdRef.markForCheck();
+    }
+
+    uploadTheme(replaceExisting: boolean = false) {
+        this.isThemeUploading = true;
+        this.preselectThemeName = this.themeToLoad.name;
+        if (replaceExisting) {
+            this.themeToLoad.uid = this.existingThemeUid;
+        }
+        this.brandingService.saveTheme(this.themeToLoad)
+            .subscribe((res) => {
+                this.ngOnInit();
+                this.isThemeUploading = false;
+                this.resetUpload();
+                this.cdRef.markForCheck();
+            });
+    }
+
+    triggerRename() {
+        this.checkUploadTheme();
     }
 }
