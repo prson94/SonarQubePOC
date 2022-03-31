@@ -52,15 +52,6 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     constructor(public ref: ChangeDetectorRef,
         public domSanitizer: DomSanitizer,
         public el: ElementRef) {
-        setTimeout(() => {
-            if (this.value) {
-                var img = new Image();
-                img.src = this.value;
-                img.onload = () => {
-                    this.writeValue(this.getBase64Image(img));
-                }
-            }
-        }, 1)
     }
 
     ngOnInit() {
@@ -209,18 +200,6 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         }
 
         return null;
-    }
-
-    getBase64Image(img: HTMLImageElement): string {
-        // We create a HTML canvas object that will create a 2d image
-        var canvas: HTMLCanvasElement = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        let ctx: CanvasRenderingContext2D = canvas.getContext("2d");
-        // This will draw image
-        ctx.drawImage(img, 0, 0);
-        // Convert the drawn image to Data URL
-        return canvas.toDataURL("image/png");
     }
 }
 

@@ -49,11 +49,11 @@ export class Theme {
     svg: string;
     menuItems: any[] = [];
 
-    constructor(setDefaultValues: boolean = false) {
+    constructor(setDefaultValues: boolean = false, brandingService: BrandingService = null) {
         if (setDefaultValues) {
-            this.headerLogo = "/Content/images/PreciselyLogo@2x.png";
-            this.icon = "/favicon.ico";
-            this.homeBackground = "/Content/images/HomeBG.png";
+            this.headerLogo = brandingService.headerLogoDefault;
+            this.icon = brandingService.iconDefault;
+            this.homeBackground = brandingService.homeBackgroundDefault;
 
             this.headerBackColor = "#1E2435";
             this.breadcrumbLinkColor = "#FFFFFF";
@@ -101,11 +101,40 @@ export class Theme {
 @Injectable()
 export class BrandingService extends BaseObservableService {
 
+    public headerLogoDefault = "/Content/images/PreciselyLogo@2x.png";
+    public iconDefault = "/favicon.ico";
+    public homeBackgroundDefault = "/Content/images/HomeBG.png";
+
     constructor(
         private http: HttpClient,
         messagesService: MessagesObservableService
     ) {
         super(messagesService);
+
+        this.loadDefaultImage("headerLogoDefault");
+        this.loadDefaultImage("iconDefault");
+        this.loadDefaultImage("homeBackgroundDefault");
+    }
+
+    loadDefaultImage(propName) {
+        var img = new Image();
+        img.src = this[propName];
+        img.onload = () => {
+            this[propName] = this.getBase64Image(img);
+        }
+    }
+
+
+    getBase64Image(img: HTMLImageElement): string {
+        // We create a HTML canvas object that will create a 2d image
+        var canvas: HTMLCanvasElement = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        let ctx: CanvasRenderingContext2D = canvas.getContext("2d");
+        // This will draw image
+        ctx.drawImage(img, 0, 0);
+        // Convert the drawn image to Data URL
+        return canvas.toDataURL();
     }
 
     public getThemes(): Observable<Theme[] | number> {

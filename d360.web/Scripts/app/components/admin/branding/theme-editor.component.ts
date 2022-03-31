@@ -50,8 +50,6 @@ export class ThemeEditorComponent implements OnChanges {
             navbarBackColorSelected: ['']
         });
 
-        this.setForm();
-
         if (featureFlagService.flags[FeatureFlags.BrandingThemeCustomCss]) {
             this.hasCustomCss = true;
         }
@@ -66,7 +64,7 @@ export class ThemeEditorComponent implements OnChanges {
     }
 
     setForm() {
-        var _th = this.theme ? this.theme : new Theme(true);
+        var _th = this.theme ? this.theme : new Theme(true, this.brandingService);
         this.isCurrentTheme = this.theme ? this.theme.isCurrent : false;
         var properties = Object.keys(this.formGroup.controls);
 
