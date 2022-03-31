@@ -18,6 +18,8 @@ export class UpdatedBy {
 }
 
 export class Theme {
+    private defaultThemeUid: string = 'AAAAAAAA-0000-0000-0000-000000000001';
+
     uid: string;
     createdBy: CreatedBy;
     createdOn: Date;
@@ -67,6 +69,33 @@ export class Theme {
             this.tableRowBackColor = "#e4cfff";
         }
     }
+
+
+    public get isDefaultTheme(): boolean {
+        return this.uid.toLowerCase() === this.defaultThemeUid.toLowerCase();
+    }
+
+    public get hasDownloadOption(): boolean {
+        return this.isDefaultTheme ? false : true;
+    }
+
+    public get hasEditOption(): boolean {
+        return this.isDefaultTheme ? false : true;
+    }
+
+    public get hasDuplicateOption(): boolean {
+        return true;
+    }
+
+    public get hasSetAsCurrentThemeOption(): boolean {
+        return this.isCurrent ? false : true;
+    }
+
+    public get hasDeleteOption(): boolean {
+        return this.isCurrent || this.isDefaultTheme ? false : true;
+    }
+
+    public _orig: Theme;
 }
 
 @Injectable()
@@ -79,15 +108,26 @@ export class BrandingService extends BaseObservableService {
         super(messagesService);
     }
 
-    public getThemes(): Observable<Theme[]> {
-
+    public getThemes(): Observable<Theme[] | number> {
         let url: string = '/api/v2/environment/themes';
 
         return this
             .http
             .get(url)
             .pipe(
-                map((response) => <any>response),
+                map((res: Theme[]) => {
+                    var themes: Theme[] = [];
+                    res.forEach((source) => {
+                        var target = new Theme();
+                        target._orig = source;
+                        var sourceProps = Object.keys(source);
+                        sourceProps.forEach((prop) => {
+                            target[prop] = source[prop];
+                        });
+                        themes.push(target);
+                    });
+                    return themes;
+                }),
                 catchError((err) => {
                     if (err?.status === 409) {
                         return of(0);

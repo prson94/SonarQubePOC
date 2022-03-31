@@ -1,6 +1,7 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
+import * as _ from 'lodash';
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -27,7 +28,6 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     sidePanelStorageKey: string = "gov-branding-side-panel";
     sidePanelTab: string = 'detail';
     selectedRow: Theme;
-    defaultThemeUid: string = 'AAAAAAAA-0000-0000-0000-000000000001';
 
     isEditorVisible: boolean = false;
     showDelete: boolean = false;
@@ -63,46 +63,24 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.setCommonItems();
     }
 
-    isDefaultTheme(theme: Theme): boolean {
-        return theme.uid.toLowerCase() === this.defaultThemeUid.toLowerCase();
-    }
-
-    hasDownloadOption(theme: Theme): boolean {
-        return this.isDefaultTheme(theme) ? false : true;
-    }
-
-    hasEditOption(theme: Theme): boolean {
-        return this.isDefaultTheme(theme) ? false : true;
-    }
-
-    hasDuplicateOption(theme: Theme): boolean {
-        return true;
-    }
-
-    hasSetAsCurrentThemeOption(theme: Theme): boolean {
-        return theme.isCurrent ? false : true;
-    }
-
-    hasDeleteOption(theme: Theme): boolean {
-        return theme.isCurrent || this.isDefaultTheme(theme) ? false : true;
-    }
-
     ngOnInit() {
-        this.brandingService.getThemes().subscribe((res) => {
+        this.isLoading = true;
+        this.brandingService.getThemes().subscribe((res: Theme[]) => {
             this.themes = res;
             this.themes.forEach((t) => {
                 t.svg = this.svg_markup(t);
                 var menuItems = [];
 
-                this.hasDownloadOption(t) ? menuItems.push(this.menuItemsDefaultOptions[0]) : null;
-                this.hasEditOption(t) ? menuItems.push(this.menuItemsDefaultOptions[1]) : null;
-                this.hasDuplicateOption(t) ? menuItems.push(this.menuItemsDefaultOptions[2]) : null;
-                this.hasSetAsCurrentThemeOption(t) ? menuItems.push(this.menuItemsDefaultOptions[3]) : null;
-                this.hasDeleteOption(t) ? menuItems.push(this.menuItemsDefaultOptions[4]) : null;
+                t.hasDownloadOption ? menuItems.push(this.menuItemsDefaultOptions[0]) : null;
+                t.hasEditOption ? menuItems.push(this.menuItemsDefaultOptions[1]) : null;
+                t.hasDuplicateOption ? menuItems.push(this.menuItemsDefaultOptions[2]) : null;
+                t.hasSetAsCurrentThemeOption ? menuItems.push(this.menuItemsDefaultOptions[3]) : null;
+                t.hasDeleteOption ? menuItems.push(this.menuItemsDefaultOptions[4]) : null;
 
                 t.menuItems = menuItems;
 
-            })
+            });
+            this.isLoading = false;
             this.cdRef.markForCheck();
         })
     }
@@ -124,17 +102,25 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     clickMenuItem($event, item) {
         this.selectedRow = item;
-        switch ($event.value) {
+        var value = $event.value ?? $event;
+        switch (value) {
             case 'Edit':
                 this.isEditorVisible = true;
                 break;
             case 'Delete':
                 this.showDelete = true;
                 break;
+            case 'Duplicate':
+                this.duplicateSelectedTheme();
+                break;
             case 'Set as Current Theme':
                 this.isSetCurrentThemeVisible = true;
                 break;
         }
+    }
+
+    linkClicked($event) {
+        this.clickMenuItem($event, this.selectedRow);
     }
 
     delete() {
@@ -161,5 +147,33 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                 this.ngOnInit();
                 this.cdRef.markForCheck();
             });
+    }
+
+    duplicateSelectedTheme() {
+        var theme = _.cloneDeep(this.selectedRow._orig);
+        theme.name = this.getUniqueName(this.selectedRow.name, 0);
+        theme.isCurrent = false;
+        theme.uid = "";
+
+        this.isLoading = true;
+        this.cdRef.markForCheck();
+
+        this.brandingService.saveTheme(theme)
+            .subscribe((res) => {
+                this.ngOnInit();
+                this.cdRef.markForCheck();
+
+            });
+    }
+
+    getUniqueName(name: string, idx: number) {
+        var checkName = name;
+        if (idx > 0) {
+            checkName += ` (${idx})`;
+        }
+        if (this.themes.some((x) => x.name === checkName)) {
+            return this.getUniqueName(name, idx + 1);
+        }
+        return checkName;
     }
 }

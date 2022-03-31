@@ -1,6 +1,7 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BrandingService, Theme } from '../../../services/branding.service';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: "theme-editor",
@@ -22,12 +23,13 @@ export class ThemeEditorComponent implements OnChanges {
 
     savingInProgress: boolean = false;
     formGroup: FormGroup = null;
-
+    hasCustomCss: boolean = false;
     isCurrentTheme: boolean = false;
 
     constructor(private fb: FormBuilder,
         private brandingService: BrandingService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        featureFlagService?: FeatureFlagsService
     ) {
         this.formGroup = this.fb.group({
             name: [null, { validators: [Validators.required] }],
@@ -47,6 +49,10 @@ export class ThemeEditorComponent implements OnChanges {
         });
 
         this.setForm();
+
+        if (featureFlagService.flags[FeatureFlags.BrandingThemeCustomCss]) {
+            this.hasCustomCss = true;
+        }
     }
 
     ngOnChanges(changes: SimpleChanges) {

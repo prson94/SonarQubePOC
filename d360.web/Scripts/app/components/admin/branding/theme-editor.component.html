@@ -197,6 +197,17 @@
                     </div>
                 </ig-property-group>
 
+
+                <ig-property-group *ngIf="hasCustomCss" [igformGroup]="formGroup" [title]="'Home Page'" [shouldBePadded]="false" [showHeaderLine]="false">
+                    <div inputs>
+                            <div class="css-warning">
+                                <i class="fa fa-exclamation-triangle"></i>
+                                You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Infogix to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.
+                            </div>
+                            <codearea formControlName="customCss"></codearea>
+                    </div>
+                </ig-property-group>
+
             </form>
         </div>
         <div class="action-bar">

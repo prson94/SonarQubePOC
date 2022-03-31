@@ -1,4 +1,5 @@
-﻿import { ChangeDetectionStrategy, Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { head } from 'lodash';
 import { Category } from '../../../models/object-detail.model';
 
 import { Theme } from '../../../services/branding.service';
@@ -14,6 +15,8 @@ import { Theme } from '../../../services/branding.service';
 export class ThemeDetailComponent implements OnChanges {
     @Input() theme: Theme;
 
+    @Output() linkClicked = new EventEmitter();
+
     categories: Category[] = new Array<Category>();
 
     constructor() {
@@ -28,6 +31,7 @@ export class ThemeDetailComponent implements OnChanges {
         this.categories = [];
 
         var header = new Category('Header Bar');
+        header.active = true;
         header.rows = [];
         header.rows.push(
             { title: 'Header logo image', value: this.theme.headerLogoUri, type: "img", style: "logo" });

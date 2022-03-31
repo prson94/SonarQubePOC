@@ -1,9 +1,16 @@
 ﻿<div class="asset-detail theme-detail">
     <div class="asset-detail-header">
-        <div class="asset-name">{{theme.name}}</div>
+        <div class="flex-grid">
+            <div class="asset-name">{{theme.name}}</div>
+            <div class="flex-grow"></div>
+            <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
+        </div>
+        <div *ngIf="theme.isDefaultTheme" class="class-name">Default theme</div>
         <br />
         <div>
-            <a>Edit</a><span class="grey-delimiter">|</span><a>Duplicate</a> | <a>Set as Current Theme</a>
+            <a (click)="linkClicked.emit('Edit')" *ngIf="theme.hasEditOption">Edit</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption">Duplicate</a> <span *ngIf="theme.hasDuplicateOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Set as Current Theme')" *ngIf="theme.hasSetAsCurrentThemeOption">Set as Current Theme</a>
         </div>
     </div>
     <div class="windowtabs">

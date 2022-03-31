@@ -23,6 +23,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { ImagePickerModule } from '../../shared/controls/image-picker/image-picker.component';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TooltipModule } from 'primeng/tooltip';
+import { CodeAreaModule } from '../../shared/controls/codearea/codearea.component';
 
 @NgModule({
     imports: [
@@ -53,7 +54,8 @@ import { TooltipModule } from 'primeng/tooltip';
         SiteModalModule,
         ImagePickerModule,
         ColorPickerModule,
-        TooltipModule
+        TooltipModule,
+        CodeAreaModule
     ],
     declarations: [
         ThemeEditorComponent
