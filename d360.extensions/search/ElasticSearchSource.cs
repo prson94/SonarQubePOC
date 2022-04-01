@@ -173,8 +173,8 @@ namespace d360.extensions.search
         protected string SearchServerUrl { get; set; }
 
         public int? IndexFieldLimit { get; set; }
-        public byte NGramMin { get; set; } = 0;
-        public byte NGramMax { get; set; } = 0;
+        public byte NGramMin { get; set; }
+        public byte NGramMax { get; set; }
 
         #region Utility methods
 
