@@ -507,6 +507,7 @@ export class AdvancedFilterFieldConditionCollection {
         if (this.filters.length === 0) {
             return "";
         }
+        const lenghtOfTheGuid = 36;
         let queries: string[] = [];
         let valuesArr: any[];
         this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
@@ -525,9 +526,9 @@ export class AdvancedFilterFieldConditionCollection {
 
                 valuesArr.filter((v) => v.value !== "").forEach((r) => {
                     if (cond.field === SystemFields.OwnedByFieldCode) {
-                        if ((r.value as string).length === 36) {
+                        if ((r.value as string).length === lenghtOfTheGuid) {
                             subConditions.push(cond.getCopyWithNewValue(r.value));
-                        } else if ((r.value as string).length > 36) {
+                        } else if ((r.value as string).length > lenghtOfTheGuid) {
                             let ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value)
                             ownerAndResponsibilitySubCondition.field = "$OwnedByAndResponsibility";
                             subConditions.push(ownerAndResponsibilitySubCondition);
