@@ -663,7 +663,6 @@ export class Filters {
 
     public applyFilters(params: any) {
         delete params["_filter"];
-        debugger;
         if (this.filter) {
             params._filter = this.filter;
         }

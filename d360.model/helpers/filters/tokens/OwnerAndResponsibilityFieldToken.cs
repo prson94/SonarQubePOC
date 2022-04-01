@@ -5,6 +5,8 @@ namespace d360.model.helpers.filters
 {
     public class OwnerAndResponsibilityFieldToken : FilterBaseToken, IFilterToken 
     {
+        private const int LENGHT_OF_THE_GUID = 36;
+
         public OwnerAndResponsibilityFieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
             dataProvider = fdp;
@@ -24,8 +26,8 @@ namespace d360.model.helpers.filters
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
             var valueStr = value.ToString().Trim('\'');
-            var owner = valueStr.Substring(0, 36);
-            var responsibility = valueStr.Substring(37);
+            var owner = valueStr.Substring(0, LENGHT_OF_THE_GUID);
+            var responsibility = valueStr.Substring(LENGHT_OF_THE_GUID + 1);
             sqlParamsRef.Add($"@filter_{parameterIdx}", owner);
             sqlParamsRef.Add($"@filter_res_{parameterIdx}", responsibility);
 
