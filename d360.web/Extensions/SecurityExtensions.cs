@@ -1,7 +1,8 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
+
+using Microsoft.IdentityModel.Tokens;
 
 namespace d360.web.Extensions
 {
@@ -25,7 +26,7 @@ namespace d360.web.Extensions
         /// <param name="shouldValidateLifetime">A boolean to indicate whether the JWT lifetime should be validated.</param>
         /// <returns></returns>
         public static ClaimsPrincipal ValidateJwtIdentityToken(this string identityToken,
-            string nameClaimType, 
+            string nameClaimType,
             string audience, bool shouldValidateAudience,
             string issuer, bool shouldValidateIssuer,
             IList<IdentityModel.Jwk.JsonWebKey> keys,
@@ -52,7 +53,7 @@ namespace d360.web.Extensions
             {
                 NameClaimType = nameClaimType,
                 ValidateAudience = shouldValidateAudience,
-                
+
                 ValidateLifetime = shouldValidateLifetime,
                 RequireExpirationTime = shouldRequireExpirationTime,
 
@@ -64,6 +65,7 @@ namespace d360.web.Extensions
 
                 RequireSignedTokens = shouldRequireSignedTokens
             };
+
             if (!string.IsNullOrEmpty(audience))
             {
                 parameters.ValidAudience = audience;

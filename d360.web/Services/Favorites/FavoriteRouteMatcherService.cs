@@ -1,13 +1,15 @@
-﻿using d360.core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using d360.core;
 using d360.core.entities.Membership;
 using d360.core.enums;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+
 using SmartFormat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace d360.web.Services.Favorites
 {
@@ -16,6 +18,7 @@ namespace d360.web.Services.Favorites
         public FavoriteRouteMatchResult MatchRoute(FavoriteShortModel f)
         {
             var matchResults = matchers.Select(matcher => TryMatchRoute(f, matcher)).Where(r => r != null).ToList();
+            
             if (!matchResults.Any())
             {
                 return TryMatchRoute(f, UnknownRouteMatcher);
@@ -34,14 +37,17 @@ namespace d360.web.Services.Favorites
         public FavoriteRouteMatchResult TryMatchRoute(FavoriteShortModel f, FavoriteRouteMatcher matcher)
         {
             var routeParams = TryMatchRoute(matcher, f.Route);
+
             if (routeParams == null)
             {
                 return null;
             }
 
-            var req = new FavoritesObjectDetailsRequest();
-            req.FavoriteId = f.Id;
-            req.ObjectType = matcher.ObjectType;
+            var req = new FavoritesObjectDetailsRequest
+            {
+                FavoriteId = f.Id,
+                ObjectType = matcher.ObjectType
+            };
 
             if (routeParams.ContainsKey("assetId"))
             {
@@ -121,6 +127,7 @@ namespace d360.web.Services.Favorites
             }
 
             var routes = matcher.RoutePatterns.Select(pattern => Smart.Format(ToFormattableString(pattern), favoriteDetails));
+
             return routes;
         }
 
@@ -165,6 +172,7 @@ namespace d360.web.Services.Favorites
             route = SanitizeRoute(route);
             var routePatternRegex = RoutePatternToRegex(routePattern);
             var match = routePatternRegex.Match(route);
+
             if (!match.Success)
             {
                 return null;
@@ -175,6 +183,7 @@ namespace d360.web.Services.Favorites
                 .ToDictionary(g => g.Name, g => g.Value);
 
             routeParams.Add("route", route);
+
             return routeParams;
         }
 
@@ -218,14 +227,14 @@ namespace d360.web.Services.Favorites
             return new Regex(routePattern, RegexOptions.IgnoreCase);
         }
 
-        private static FavoriteRouteMatcher UnknownRouteMatcher = new FavoriteRouteMatcher
+        private static readonly FavoriteRouteMatcher UnknownRouteMatcher = new FavoriteRouteMatcher
         {
             RoutePattern = ".*",
             PageType = FavoritePageType.Unknown,
             GetName = (name, routeParams) => "/" + routeParams["route"]
         };
 
-        private static IEnumerable<FavoriteRouteMatcher> matchers = new[]
+        private static readonly IEnumerable<FavoriteRouteMatcher> matchers = new[]
         {
             // asset type
             new FavoriteRouteMatcher
@@ -400,7 +409,6 @@ namespace d360.web.Services.Favorites
                 ObjectType = SystemObjects.ReferenceItemType
             },
 
-
             // shared
             new FavoriteRouteMatcher
             {
@@ -571,7 +579,7 @@ namespace d360.web.Services.Favorites
             },
             new FavoriteRouteMatcher
             {
-                RoutePattern = "semantics/:uid",                
+                RoutePattern = "semantics/:uid",
                 PageType = FavoritePageType.Artifact,
                 GetName = WithTabName(PageNames.DefinitionTab),
                 ObjectType = SystemObjects.SemanticType,
@@ -594,6 +602,5 @@ namespace d360.web.Services.Favorites
         {
             return (_, p) => name;
         }
-
     }
 }

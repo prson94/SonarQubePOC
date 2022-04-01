@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace d360.web.Handlers
 {
@@ -24,10 +20,9 @@ namespace d360.web.Handlers
 
             try
             {
-                object isHead;
                 if (response.RequestMessage != null)
                 {
-                    response.RequestMessage.Properties.TryGetValue(Head, out isHead);
+                    response.RequestMessage.Properties.TryGetValue(Head, out object isHead);
 
                     if (isHead != null && ((bool)isHead))
                     {
@@ -47,6 +42,7 @@ namespace d360.web.Handlers
             }
             catch
             {
+                //swallow exception here.
             }
 
             return response;

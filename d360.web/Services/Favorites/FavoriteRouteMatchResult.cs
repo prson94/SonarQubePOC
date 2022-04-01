@@ -1,5 +1,6 @@
-﻿using d360.model.DataAccessLayer;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Services.Favorites
 {

@@ -1,13 +1,12 @@
-﻿import { Observable } from "rxjs";
+﻿import {Observable} from "rxjs";
 import { catchError, map, shareReplay } from "rxjs/operators";
-import { HttpClient, HttpContext } from "@angular/common/http";
-import { Injectable } from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Injectable} from '@angular/core';
 
-import { FollowDetail, FollowInfo } from '../models/follower.model';
+import {FollowDetail, FollowInfo} from '../models/follower.model';
 
-import { MessagesObservableService } from './messages-observable.service';
-import { BaseObservableService } from "./baseObservable.service";
-import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
+import {MessagesObservableService} from './messages-observable.service';
+import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable({
     providedIn: 'root'
@@ -48,10 +47,7 @@ export class FollowerService extends BaseObservableService {
         if (!this._followInfoCache.has(cacheKey)) {
             this._followInfoCache.set(cacheKey, this
                 .http
-                .get(
-                    `api/followinfo/${type}/${id}`,
-                    { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-                )
+                .get(`api/followinfo/${type}/${id}`)
                 .pipe(
                     map(response => <FollowInfo>response),
                     catchError(err => this.handleError(err)),

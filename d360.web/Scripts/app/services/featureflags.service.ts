@@ -1,9 +1,8 @@
-﻿import { HttpClient, HttpContext } from "@angular/common/http";
+﻿import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { LDClient, LDFlagSet, initialize } from "ldclient-js";
 import { Observable, Subject } from "rxjs";
 import { catchError, map } from "rxjs/operators";
-import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 
@@ -37,11 +36,7 @@ export class FeatureFlagsService extends BaseObservableService {
     }
 
     initialize(): Observable<string> {
-        return this.http
-            .get(
-                'api/v2/environment/featureflaginfo',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
+        return this.http.get('api/v2/environment/featureflaginfo')
             .pipe(
                 map((response: any) => {
                     this.clientId = response.clientId;
@@ -49,7 +44,7 @@ export class FeatureFlagsService extends BaseObservableService {
                     this.currentUser = response.user;
                 }),
                 catchError((err) => this.handleError(err))
-            );
+        );
     }
 
     createClientConnection() {
@@ -93,4 +88,4 @@ export class FeatureFlagsService extends BaseObservableService {
             this.ldClient.identify({ key: 'anon', anonymous: true });
         }
     }
-}
+ }

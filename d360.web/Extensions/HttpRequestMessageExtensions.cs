@@ -33,6 +33,7 @@ namespace System.Net.Http
             // IEnumerable<KeyValuePair<string,string>> - right!
             // per microsoft documentation this cannot return null. https://docs.microsoft.com/en-us/previous-versions/aspnet/mt174875(v=vs.118)
             var match = request.GetQueryNameValuePairs().FirstOrDefault(kv => string.Compare(kv.Key, key, true) == 0);
+
             if (string.IsNullOrEmpty(match.Value))
             {
                 return null;

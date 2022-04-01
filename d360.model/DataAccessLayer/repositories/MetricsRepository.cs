@@ -1219,31 +1219,34 @@ namespace d360.model.DataAccessLayer
 							var assetVersionRollupPathFilters = new List<MetricAssetVersionRollupPathFilter>();
 							var assetVersionRollupPathFilterValues = new List<MetricAssetVersionRollupPathFilterValue>();
 
-							if (model.Definition.DataQuality.Filters.Count > 0)
+							if (model.Definition.DataQuality.Filters != null)
 							{
-								model.Definition.DataQuality.Filters.ForEach(f =>
+								if (model.Definition.DataQuality.Filters.Count > 0)
 								{
-									var assetVersionRollupPathFilter = new MetricAssetVersionRollupPathFilter
+									model.Definition.DataQuality.Filters.ForEach(f =>
 									{
-										AssetTypeID = f.AssetTypeID,
-										AssetVersionRollupPathUid = assetVersionRollupPath.Uid,
-										FieldTypeID = f.FieldTypeID,
-										Operator = f.Operator,
-										Uid = Guid.NewGuid()
-									};
-									assetVersionRollupPathFilters.Add(assetVersionRollupPathFilter);
+										var assetVersionRollupPathFilter = new MetricAssetVersionRollupPathFilter
+										{
+											AssetTypeID = f.AssetTypeID,
+											AssetVersionRollupPathUid = assetVersionRollupPath.Uid,
+											FieldTypeID = f.FieldTypeID,
+											Operator = f.Operator,
+											Uid = Guid.NewGuid()
+										};
+										assetVersionRollupPathFilters.Add(assetVersionRollupPathFilter);
 
-									f.Values.ForEach(v =>
-									{
-										assetVersionRollupPathFilterValues.Add(
-											new MetricAssetVersionRollupPathFilterValue
-											{
-												AssetVersionRollupPathFilterUid = assetVersionRollupPathFilter.Uid,
-												Value = v
-											}
-										);
+										f.Values.ForEach(v =>
+										{
+											assetVersionRollupPathFilterValues.Add(
+												new MetricAssetVersionRollupPathFilterValue
+												{
+													AssetVersionRollupPathFilterUid = assetVersionRollupPathFilter.Uid,
+													Value = v
+												}
+											);
+										});
 									});
-								});
+								}
 							}
 
 							Company.Connection.Execute("insert into metrics.AssetVersionRollupPath (Uid, RollupPathUid, AssetVersionUid, FilterMatchType) values (@Uid, @RollupPathUid, @AssetVersionUid, @FilterMatchType)", assetVersionRollupPath, transaction: trans);

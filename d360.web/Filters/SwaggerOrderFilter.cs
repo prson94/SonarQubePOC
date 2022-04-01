@@ -1,6 +1,6 @@
-﻿using Swashbuckle.Swagger;
-using System.Linq;
+﻿using System.Linq;
 
+using Swashbuckle.Swagger;
 
 namespace d360.web.Filters
 {

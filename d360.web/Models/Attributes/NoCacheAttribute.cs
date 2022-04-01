@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Web;
-using System.Web.Http.Controllers;
 using System.Web.Mvc;
 
 namespace d360.web.Models.Attributes
@@ -15,7 +11,9 @@ namespace d360.web.Models.Attributes
         {
             //Required to set no-cache headers on web controller calls. Without this the header will be overwritten with "private" before it is sent to the client
             if (filterContext.HttpContext.Request.HttpMethod == "GET")
+            {
                 filterContext.HttpContext.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            }
 
             base.OnResultExecuting(filterContext);
         }

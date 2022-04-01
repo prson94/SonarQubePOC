@@ -1,8 +1,10 @@
-﻿using Resources;
-using Swashbuckle.Swagger;
-using System;
+﻿using System;
 using System.Linq;
 using System.Web.Http.Description;
+
+using Resources;
+
+using Swashbuckle.Swagger;
 
 namespace d360.web.Filters
 {
@@ -26,6 +28,7 @@ namespace d360.web.Filters
             foreach (var httpParameter in httpParameters)
             {
                 var attribute = GetAttribute(httpParameter);
+
                 if (attribute == null)
                 {
                     continue;
@@ -44,6 +47,7 @@ namespace d360.web.Filters
         private static SwaggerDescriptionAttribute GetAttribute(System.Web.Http.Controllers.HttpParameterDescriptor httpParameter)
         {
             var attributes = httpParameter.GetCustomAttributes<SwaggerDescriptionAttribute>();
+
             if (attributes.Count > 1)
             {
                 throw new InvalidOperationException("Impossible to have several SwaggerDescriptionAttribute");
@@ -55,6 +59,7 @@ namespace d360.web.Filters
         private static Parameter GetSwaggerParameter(Operation operation, System.Web.Http.Controllers.HttpParameterDescriptor httpParameter)
         {
             var existingSwaggerParameters = operation.parameters.Where(p => p.name == httpParameter.ParameterName).ToList();
+            
             if (existingSwaggerParameters.Count > 1)
             {
                 throw new InvalidOperationException($"Found several swagger parameters named {httpParameter.ParameterName}");

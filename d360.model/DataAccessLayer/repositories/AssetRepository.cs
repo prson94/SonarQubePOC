@@ -4378,7 +4378,7 @@ namespace d360.model.DataAccessLayer
 			where TypeID = @id
 					and[Type] = @Object
 					and IsVisible = 1)
-			select Res.SecurityAssetUid as Uid, o.Name, o.Type,o.SecurityAssetName
+			select Res.SecurityAssetUid as Uid, o.Name, o.Type, o.SecurityAssetName, o.ResponsibilityTypeId
 			from owners o
 			cross apply(
 			select top 1 * from

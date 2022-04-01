@@ -1,17 +1,18 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.model;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+
+using Resources;
 
 namespace d360.web.Controllers
 {
@@ -27,6 +28,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
 
             var items = new List<SelectListItem>();
+
             //artifacts
             items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Class).ThenBy(i => i.Name).Select(i => new { i.Object, i.ObjectID, i.Name, i.Class }).ToList().Select(i => new SelectListItem { Text = $"{i.Class.GetDisplayName()} :: {i.Name}", Value = $"{i.Object}|{i.ObjectID}" }));
 
@@ -38,10 +40,47 @@ namespace d360.web.Controllers
 
             var orderedItems = items.OrderBy(x => x.Text).ToList();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = orderedItems });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
+            list.Add(new EditableField 
+            {
+                Row = 1,
+                Column = 1,
+                Required = true, 
+                FieldName = "Name",
+                Name = "Name",
+                FieldType = DataType.Text.ToString(), 
+                Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) 
+            });
+            
+            list.Add(new EditableField 
+            {
+                Row = 1, 
+                Column = 2,
+                Required = true,
+                FieldName = "Object",
+                Name = "Assign Survey To",
+                FieldType = DataType.Lookup.ToString(), 
+                Items = orderedItems 
+            });
+            
+            list.Add(new EditableField 
+            { 
+                Row = 2,
+                Column = 1,
+                Required = true,
+                FieldName = "ValidForDays",
+                Name = "# of Days before user can retake",
+                FieldType = DataType.Number.ToString() 
+            });
+            
+            list.Add(new EditableField 
+            {
+                Row = 3, 
+                Column = 1,
+                Required = false,
+                FieldName = "Description",
+                Name = "Description",
+                FieldType = DataType.Html.ToString() 
+            });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -53,10 +92,50 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();
             var a = Company.GetById<SurveyType>(id);
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });            
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString(), Value = a.ValidForDays.ToString() });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
+            list.Add(new EditableField 
+            { 
+                FieldName = "ID",
+                FieldType = DataType.Hidden.ToString(), 
+                Value = a.ID.ToString() 
+            });
+            
+            list.Add(new EditableField 
+            { 
+                Row = 1,
+                Column = 1, 
+                Required = true,
+                FieldName = "Name",
+                Name = "Name", 
+                FieldType = DataType.Text.ToString(),
+                Value = a.Name, Validations = checkAndAddValidation(fieldType: "Text",
+                                                                    friendlyName: "Name",
+                                                                    required: true,
+                                                                    pattern: "",
+                                                                    minLength: 1,
+                                                                    maxLength: 250) 
+            });
+           
+            list.Add(new EditableField
+            { 
+                Row = 1,
+                Column = 2, 
+                Required = true, 
+                FieldName = "ValidForDays",
+                Name = "# of Days before user can retake",
+                FieldType = DataType.Number.ToString(), 
+                Value = a.ValidForDays.ToString() 
+            });
+           
+            list.Add(new EditableField 
+            { 
+                Row = 2, 
+                Column = 1,
+                Required = false, 
+                FieldName = "Description", 
+                Name = "Description",
+                FieldType = DataType.Html.ToString(), 
+                Value = a.Description
+            });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -71,15 +150,18 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 if (!form.HasKeys())
                 {
                     throw new NoFormDataException(FormControllerApiMessage.SurveyType);
                 }
+
                 var otVal = form["Object"].Split('|').ToList();
                 var ot = (SystemObjects)Enum.Parse(typeof(SystemObjects), otVal[0]);
-                var oid = int.Parse(otVal[1]);                
+                var oid = int.Parse(otVal[1]);
 
                 var model = new SurveyType
                 {
@@ -87,7 +169,7 @@ namespace d360.web.Controllers
                     Object = ot.ToString(),
                     ObjectID = oid,
                     ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1),
-                    Description = parseTextField(form,"Description")
+                    Description = parseTextField(form, "Description")
                 };
                 Company.Add(model);
 
@@ -100,6 +182,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -110,22 +193,24 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 if (!form.HasKeys())
                 {
                     throw new NoFormDataException(FormControllerApiMessage.SurveyType);
                 }
-                var id = parseIntField(form, "ID");
-                // delete this surveys questions..
 
+                var id = parseIntField(form, "ID");
+
+                // delete this surveys questions..
                 Company.Delete<Question>(i => i.Survey.SurveyTypeID == id);
                 Company.Delete<Survey>(i => i.SurveyTypeID == id);
-
                 Company.Delete<QuestionType>(i => i.SurveyTypeID == id);
                 Company.Delete<SurveyType>(i => i.ID == id);
 
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -134,6 +219,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -144,18 +230,23 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 if (!form.HasKeys())
                 {
                     throw new NoFormDataException(FormControllerApiMessage.SurveyType);
                 }
+
                 var id = parseIntField(form, "ID");
                 var model = Company.GetById<SurveyType>(id);
+
                 if (model == null)
                 {
                     throw new NotFoundException(FormControllerApiMessage.SurveyType);
                 }
+
                 model.Name = parseTextField(form, "Name");
                 model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
                 model.Description = parseTextField(form, "Description");
@@ -171,6 +262,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -244,7 +336,9 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+                }
 
                 var val = model.Validation();
 
@@ -273,7 +367,7 @@ namespace d360.web.Controllers
 
                 Company.Add(qt);
 
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated,FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -282,6 +376,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -292,16 +387,19 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+                }
 
                 if (!form.HasKeys())
                 {
                     throw new NoFormDataException(FormControllerApiMessage.ResponseType);
                 }
+
                 var id = parseIntField(form, "ID");
                 Company.Delete<QuestionType>(i => i.ID == id);
 
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved,FormControllerApiMessage.SurveyQuestion), id.ToString(), "delete", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.SurveyQuestion), id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -310,6 +408,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
@@ -320,7 +419,9 @@ namespace d360.web.Controllers
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                }
 
                 var val = model.Validation();
 
@@ -335,6 +436,7 @@ namespace d360.web.Controllers
                 {
                     throw new NotFoundException(FormControllerApiMessage.Question);
                 }
+
                 qt.Name = model.Name;
                 qt.DisplayStyle = model.DisplayStyle;
                 qt.Description = model.Description;
@@ -378,7 +480,7 @@ namespace d360.web.Controllers
 
                 Company.Update(qt);
 
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated,FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "update", HttpStatusCode.OK);
+                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "update", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -387,6 +489,7 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 SendException(ex);
+
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }

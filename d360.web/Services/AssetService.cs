@@ -9,6 +9,7 @@ namespace d360.web.Services
         public string GetAssetName(AssetType assetType)
         {
             var prefix = GetPrefix(assetType);
+
             return string.IsNullOrWhiteSpace(prefix) ? assetType.Name : $"{prefix}: {assetType.Name}";
         }
 

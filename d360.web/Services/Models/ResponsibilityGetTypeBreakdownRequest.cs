@@ -1,13 +1,14 @@
 ﻿using System;
+
 using MediatR;
 
 namespace d360.web.Services
 {
-    public class ResponsibilityGetTypeBreakdownRequest: IRequest<ResponsibilityGetTypeBreakdownResponse>
+    public class ResponsibilityGetTypeBreakdownRequest : IRequest<ResponsibilityGetTypeBreakdownResponse>
     {
         public ResponsibilityGetTypeBreakdownRequest()
         {
-            
+
         }
 
         //TODO: change to init setter later

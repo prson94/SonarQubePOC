@@ -1,9 +1,4 @@
-﻿using d360.core.enums;
-using d360.model;
-using Microsoft.Owin;
-using NetTools;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,9 +6,15 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using d360.core.enums;
+
+using Microsoft.Owin;
+
+using NetTools;
+
 namespace d360.web
 {
-    public class IpRestrictionMiddleware: BaseMiddleware
+    public class IpRestrictionMiddleware : BaseMiddleware
     {
         public class CompanyIpSetting
         {
@@ -23,13 +24,19 @@ namespace d360.web
             }
 
             public string UrlPrefix { get; set; }
+            
             public string Value { get; set; }
 
-            List<IpRange> ranges;
-            public List<IpRange> Ranges {
-                get {
+            private List<IpRange> ranges;
+            public List<IpRange> Ranges
+            {
+                get
+                {
                     if (ranges == null)
+                    {
                         ranges = XElement.Parse(Value).Elements("ip").Select(i => new IpRange { Start = i.Element("start").Value, End = i.Element("end").Value }).ToList();
+                    }
+
                     return ranges;
                 }
             }
@@ -39,10 +46,11 @@ namespace d360.web
         public class IpRange
         {
             public string Start { get; set; }
+            
             public string End { get; set; }
         }
 
-        Func<IDictionary<string, object>, Task> _next;
+        private readonly Func<IDictionary<string, object>, Task> _next;
         public IpRestrictionMiddleware(Func<IDictionary<string, object>, Task> next)
         {
             _next = next;
@@ -83,15 +91,20 @@ namespace d360.web
                             var rangeTest = IPAddressRange.Parse(string.Format("{0} - {1}", range.Start, range.End));
                             isCurrentIpAllowed = rangeTest.Contains(IPAddress.Parse(currentIp));
 
-                            if (isCurrentIpAllowed) break;
+                            if (isCurrentIpAllowed)
+                            {
+                                break;
+                            }
                         }
 
                         if (!isCurrentIpAllowed)
                         {
                             context.Response.Write(string.Format("IP Address [{0}] Not Allowed", currentIp));
+                            
                             return;
                         }
                     }
+
                     context.Response.Headers.AppendValues("Platform", new string[] { "Data360 Govern" });
                 }
             }
@@ -104,10 +117,9 @@ namespace d360.web
                     {"Host", host }
                 };
                 var telemetry = new Microsoft.ApplicationInsights.TelemetryClient();
-                
-                telemetry.TrackException(e, properties);                
-            }
 
+                telemetry.TrackException(e, properties);
+            }
 
             await _next.Invoke(environment);
         }
