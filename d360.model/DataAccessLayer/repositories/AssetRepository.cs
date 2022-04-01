@@ -1238,7 +1238,7 @@ namespace d360.model.DataAccessLayer
 				fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 			}
 
-			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.keypath");
+			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.displaypath");
 
 			if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
 			{
@@ -1306,7 +1306,7 @@ namespace d360.model.DataAccessLayer
 					{(includeColor ? "ACJ.ColorJson as Color," : "")}
 					{(includeProfilingCheck ? profilingCheckFields : "")}
 					{(includeSegments ? "Node.Segments," : "")}
-					Node.KeyPath as [Path]
+					Node.DisplayPath as [Path]
 					{fieldsSql}
 					{(includePermissionDetails ? includePermissionFields : "")} 
 					{hierarchyParentUidCol}
