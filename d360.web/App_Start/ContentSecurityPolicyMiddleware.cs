@@ -1,17 +1,19 @@
-﻿using d360.core.enums;
-using Microsoft.Owin;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using d360.core.enums;
+
+using Microsoft.Owin;
+
 namespace d360.web
 {
     public class ContentSecurityPolicyMiddleware : BaseMiddleware
     {
-        readonly Func<IDictionary<string, object>, Task> _next;
-        
+        private readonly Func<IDictionary<string, object>, Task> _next;
+
         private readonly Dictionary<string, List<string>> Permissive = new Dictionary<string, List<string>>
         {
             { "default-src", new List<string>{"*", "data:", "blob:", "filesystem:", "ws:", "wss:", "'unsafe-inline'", "'unsafe-eval'" } },
@@ -22,7 +24,7 @@ namespace d360.web
             { "font-src", new List<string>{ "*", "data:", "blob:", "'unsafe-inline'" } },
             { "frame-src", new List<string>{ "*" } },
             { "frame-ancestors", new List<string>{ "'self'" } },
-            { "worker-src", new List<string>{ "blob:" } }            
+            { "worker-src", new List<string>{ "blob:" } }
     };
 
         public ContentSecurityPolicyMiddleware(Func<IDictionary<string, object>, Task> next)
@@ -35,25 +37,26 @@ namespace d360.web
             IOwinContext context = new OwinContext(environment);
             IOwinResponse response = context.Response;
             IOwinRequest request = context.Request;
-            
+
             int? companyID = request.Get<int?>("CompanyID");
-            
+
             if (companyID.HasValue)
             {
                 var ctx = CreateOwinCompanyContext(companyID.Value);
                 string ancestor = ctx.GetSettingValue<string>(Setting.FramingDomains);
 
                 //If company has a frame setting, a CSP header should be added to allow the frame ancestors
-                if(!string.IsNullOrEmpty(ancestor))
+                if (!string.IsNullOrEmpty(ancestor))
                 {
                     //Get base permissive CSP
                     Dictionary<string, List<string>> directives = Permissive.ToDictionary(d => d.Key, d => d.Value.ToList());
 
                     //Add the allowed ancestors from the setting
-                    if(!directives.ContainsKey("frame-ancestors"))
+                    if (!directives.ContainsKey("frame-ancestors"))
                     {
                         directives.Add("frame-ancestors", new List<string>());
                     }
+
                     List<string> frameAncestors = ancestor.Split(',').ToList().Select(a => a.Trim()).ToList();
                     directives["frame-ancestors"].AddRange(frameAncestors);
 
@@ -63,7 +66,8 @@ namespace d360.web
                         request.Set("CompanyFrameRequestStart", true);
                     }
 
-                    response.OnSendingHeaders(s => {
+                    response.OnSendingHeaders(s =>
+                    {
                         var res = (IOwinResponse)s;
 
                         string directiveString = string.Join("; ", directives
@@ -74,6 +78,7 @@ namespace d360.web
                     }, response);
                 }
             }
+
             await _next.Invoke(environment).ConfigureAwait(false);
         }
 
@@ -92,7 +97,9 @@ namespace d360.web
                 if (request.Headers.ContainsKey("Sec-Fetch-Dest"))
                 {
                     var dest = request.Headers.Get("Sec-Fetch-Dest");
-                    if( !dest.Equals("iframe") && !dest.Equals("frame")) {
+
+                    if (!dest.Equals("iframe") && !dest.Equals("frame"))
+                    {
                         return false;
                     }
                 }
@@ -107,24 +114,23 @@ namespace d360.web
                 string referrer = new Uri(request.Headers.Get("Referer")).Host;
 
                 //Check if referrer host matches any of the valid frame ancestors
-                return frameAncestors.Any(host => {
+                return frameAncestors.Any(host =>
+                {
                     var m = hostRegex.Match(host);
+
                     if (m.Success)
                     {
                         var g = m.Groups[0].ToString();
+
                         //Since the frame ancestor host may contain a wildcard, just match the end of the referrer
                         return referrer.EndsWith(g);
                     }
+
                     return false;
                 });
             }
-            return false;
-        }
 
-        private class CompanyFrameAncestor
-        {
-            public int CompanyID { get; set; }
-            public string FrameAncestor { get; set; }
+            return false;
         }
     }
 }

@@ -316,7 +316,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         if (this.singleSelectedRelationship) {
             this.loadRelationshipsSub =
                 forkJoin(
-                    this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams()),
+                    this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams(false)),
                     this.gridDefinitionService.getGridDefinition(this.singleSelectedRelationship.uid, "IntersectType"))
                     .subscribe((result) => {
                         this.processGetRelationshipResponse(result[0], result[1]);
@@ -324,7 +324,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         else {
             this.loadRelationshipsSub =
-                this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams())
+                this.relationshipService.getRelationshipsForAsset(this.assetUid, this.getParams(false))
                     .subscribe((result) => {
                         this.processGetRelationshipResponse(result);
                     });
@@ -386,7 +386,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.cdRef.detectChanges();
     }
 
-    getParams(): V2ApiFilters {
+    getParams(isExport: boolean): V2ApiFilters {
         var params = new V2ApiFilters();
         params._pageSize = this.rowsPerPage ?? 10;
         if (this.dt) {
@@ -402,7 +402,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadPageNumberAfterDeletion = -1;
         }
 
+        let sortFieldExists: boolean = false;
         if (this.sortField) {
+            sortFieldExists = this.getAdvancedFilterFields.some((f) => f.Name.toLowerCase() === this.sortField.toLowerCase());
+        }
+
+        if (this.sortField && sortFieldExists) {
             params._order = this.sortField;
         }
         if (this.sortOrder) {
@@ -419,6 +424,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         if (this.singleSelectedRelationship) {
             params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
+        }
+
+        if (!isExport) {
+            params["_listcolorsasjson"] = true;
         }
 
         return params;
@@ -571,7 +580,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.isExportInProgress = true;
         this.relationshipService
             .getRelationshipsForAssetExcel(
-                this.assetUid, this.getParams(),
+                this.assetUid, this.getParams(true),
                 'Filtered ' + this.assetDetail.DisplayValue + ' Relationships',
                 () => { this.isExportInProgress = false; }
             );

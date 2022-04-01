@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "locale";
+    activeControl: string = "image-picker";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },
@@ -54,7 +54,8 @@ export class GalleryComponent implements OnInit {
         { label: "Modal", key: "modal", type: "Overlay" },
         { label: "Modal Drawer", key: "modal-drawer", type: "Overlay" },
         { label: "Code Area", key: "codearea", type: "Form" },
-        { label: "Localization", key: "locale", type: "Misc" }
+        { label: "Localization", key: "locale", type: "Misc" },
+        { label: "File Picker", key: "image-picker", type: "Form" }
     ];
 
     categories: any[] = [];

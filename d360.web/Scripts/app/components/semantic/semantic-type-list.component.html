@@ -95,7 +95,7 @@
                                 <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
                                     <div style="display:inline-block">
                                         <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
-                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #menu [tabIndex]="1"></ig-popup-menu>
                                     </div>
                                 </td>
                             </tr>
@@ -162,3 +162,20 @@
         </div>
     </div>
 </div>
+<d3s-delete-form [callback]="theDeleteCallback"
+                 [items]="selectedType"
+                 [showAsModal]="true"
+                 [modalTitle]="'Delete Semantic Type'"
+                 [modalCssClasses]="'medium-dialog'"
+                 [isModalVisible]="showDelete"
+                 [method]="'callback'"
+                 (onCancel)="showDelete=false;">
+    <div prompt>
+        <p>
+            Are you sure you want to delete this semantic type?<br />
+            Please note that this operation cannot be undone.
+        </p>
+    </div>
+
+
+</d3s-delete-form>

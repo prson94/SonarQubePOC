@@ -94,7 +94,7 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
 
                                     using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.TableLock, transaction))
                                     {
-                                        bulkCopy.BatchSize = resources.Count;
+                                        bulkCopy.BatchSize = 5000; //We may put this value to the configs, but I'm not sure it's valuable at this point.
                                         bulkCopy.DestinationTableName = "#users";
                                         bulkCopy.BulkCopyTimeout = 300;
 

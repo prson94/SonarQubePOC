@@ -80,7 +80,8 @@ namespace d360.model.DataAccessLayer.repositories
             IReadOnlyList<string> whereStatementList,
             IReadOnlyList<OrderByModel> orderByList,
             int pageNum,
-            int pageSize
+            int pageSize,
+            int? commandTimeout = 30
         )
         {
             Preconditions.NotNull(whereStatementList, nameof(whereStatementList));
@@ -94,7 +95,7 @@ namespace d360.model.DataAccessLayer.repositories
             var query = $"select count(1) from ({source}) A {whereSql};" +
                         $"select * from ({source}) A {whereSql} {orderBySql} {offsetSql};";
 
-            var reader = await QueryComposer.QueryMultipleAsync(query, dynamicParameters, 30);
+            var reader = await QueryComposer.QueryMultipleAsync(query, dynamicParameters, commandTimeout);
             result.total = await reader.ReadSingleAsync<int>();
             result.pageNum = pageNum;
             result.pageSize = pageSize;
@@ -107,7 +108,8 @@ namespace d360.model.DataAccessLayer.repositories
             string source,
             SqlMapper.IDynamicParameters dynamicParameters,
             IReadOnlyList<string> whereStatementList,
-            IReadOnlyList<OrderByModel> orderByList
+            IReadOnlyList<OrderByModel> orderByList,
+            int? commandTimeout = 30
         )
         {
             Preconditions.NotNull(whereStatementList, nameof(whereStatementList));
@@ -118,7 +120,7 @@ namespace d360.model.DataAccessLayer.repositories
 
             var query = $"select * from ({source}) A {whereSql} {orderBySql}";
 
-            var result = await QueryComposer.QueryListAsync<T>(query, dynamicParameters, 30);
+            var result = await QueryComposer.QueryListAsync<T>(query, dynamicParameters, commandTimeout);
 
             return result;
         }

@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
+
 using d360.model;
 using d360.web.Services;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace d360.web.Filters
 {
@@ -13,7 +13,8 @@ namespace d360.web.Filters
         {
             using (var scope = actionContext.ControllerContext.Configuration.DependencyResolver.BeginScope())
             {
-                var companyContext = (ICompanyContext) scope.GetService(typeof(ICompanyContext));
+                var companyContext = (ICompanyContext)scope.GetService(typeof(ICompanyContext));
+                
                 if (companyContext.CurrentResourceIsAdmin == false)
                 {
                     throw new ForbiddenBusinessLayerException();

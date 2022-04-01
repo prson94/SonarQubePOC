@@ -1,16 +1,16 @@
-﻿using Microsoft.Owin;
-using Owin;
-using System.Diagnostics;
+﻿using System;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
-using d360.web.Models.Attributes;
-using System;
-using Autofac;
+
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
-using d360.web.Handlers;
-using MediatR.Extensions.Autofac.DependencyInjection;
+
+using d360.web.Models.Attributes;
+
+using Microsoft.Owin;
+
+using Owin;
 
 [assembly: OwinStartup(typeof(d360.web.Startup))]
 
@@ -23,7 +23,7 @@ namespace d360.web
             #region Mvc
 
             MvcHandler.DisableMvcResponseHeader = true; // Security (by obscurity) disable ASP MVC Version header i.e. X-AspNetMvc-Version:5.2
-            
+
             GlobalFilters.Filters.Add(new AiHandleErrorAttribute());
             GlobalFilters.Filters.Add(new NoCacheAttribute());
 
@@ -32,7 +32,6 @@ namespace d360.web
                 GlobalFilters.Filters.Add(new RequireHttpsAttribute());
                 GlobalFilters.Filters.Add(new ValidateContractsAttribute());
             }
-
 
             ViewEngines.Engines.Clear();
             ViewEngines.Engines.Add(new RazorViewEngine());
@@ -44,9 +43,8 @@ namespace d360.web
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             RouteTable.Routes.IgnoreRoute("{resource}.ico");
 
-
             RouteTable.Routes.MapMvcAttributeRoutes();  // MVC Routes
-                        
+
             RouteTable.Routes.MapRoute(
                 name: "API-Fallback",
                 url: "api/{*url}", // a/{*url}
@@ -59,7 +57,6 @@ namespace d360.web
                 defaults: new { controller = "Home", action = "App" }
             );
 
-
             #endregion
 
             #region Autofac
@@ -68,20 +65,20 @@ namespace d360.web
             {
                 var di = new DiModel();
 
-                var container = di.GetContainer();                
-                
+                var container = di.GetContainer();
+
                 DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
 
                 app.UseAutofacMiddleware(container);
                 app.UseAutofacMvc();
 
                 // For WebAPI:
-                var config = GlobalConfiguration.Configuration; 
+                var config = GlobalConfiguration.Configuration;
                 config.DependencyResolver = new AutofacWebApiDependencyResolver(container);
 
-                app.UseAutofacWebApi(config);                
+                app.UseAutofacWebApi(config);
             }
-            catch (Exception)
+            catch
             {
                 //surpress any startup exception 
             }

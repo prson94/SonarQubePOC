@@ -3349,17 +3349,6 @@ namespace d360.model.DataAccessLayer
 			return reached;
 		}
 
-		public Guid GetRuleUIDFromRuleID(int ruleid)
-		{
-			var asset = CompanyContext.Filter<Asset>(i => i.ObjectID == ruleid && i.Object == "Rule").SingleOrDefault();
-			if (asset == null)
-			{
-				return Guid.Empty;
-			}
-
-			return asset.uid;
-		}
-
 		public async Task<dynamic> GetAssetDetails(Asset asset)
 		{
 			var dbArgs = new DynamicParameters();

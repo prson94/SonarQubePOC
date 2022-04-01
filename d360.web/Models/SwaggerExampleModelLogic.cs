@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using Swashbuckle.Swagger;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http.Description;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+using Swashbuckle.Swagger;
 
 namespace d360.web.Models
 {
@@ -35,6 +37,7 @@ namespace d360.web.Models
                 var serializerSettings = SerializerSettings(controllerSerializerSettings, null, null, ignoreNulls: true);
                 var jsonString = JsonConvert.SerializeObject(value, serializerSettings);
                 var result = JsonConvert.DeserializeObject(jsonString);
+                
                 return result;
             }
         }
@@ -42,24 +45,19 @@ namespace d360.web.Models
         private static void SetRequestModelExamples(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
             var controllerSerializerSettings = apiDescription?.ActionDescriptor?.ControllerDescriptor?.Configuration?.Formatters?.JsonFormatter?.SerializerSettings;
-
             var requestAttributes = apiDescription.GetControllerAndActionAttributes<SwaggerRequestExampleAttribute>();
 
             foreach (var attr in requestAttributes)
             {
                 var schema = schemaRegistry.GetOrRegister(attr.RequestType);
-
                 var parameter = operation.parameters.FirstOrDefault(p => p.@in == "body" && (p.schema?.@ref == schema.@ref || p.schema?.items?.@ref == schema.@ref));
 
                 if (parameter != null)
                 {
                     var serializerSettings = SerializerSettings(controllerSerializerSettings, attr.ContractResolver, attr.JsonConverter, ignoreNulls: true);
-
                     var provider = (IExamplesProvider)Activator.CreateInstance(attr.ExamplesProviderType);
-
-                    // name = attr.RequestType.Name; // this doesn't work for generic types, so need to to schema.ref split
-
                     var parts = schema.@ref?.Split('/');
+
                     if (parts == null)
                     {
                         continue;
@@ -78,6 +76,7 @@ namespace d360.web.Models
         private static object FormatJson(IExamplesProvider provider, JsonSerializerSettings serializerSettings, bool includeMediaType)
         {
             object examples;
+
             if (includeMediaType)
             {
                 examples = new Dictionary<string, object>
@@ -94,12 +93,14 @@ namespace d360.web.Models
 
             var jsonString = JsonConvert.SerializeObject(examples, serializerSettings);
             var result = JsonConvert.DeserializeObject(jsonString);
+
             return result;
         }
 
         private static JsonSerializerSettings SerializerSettings(JsonSerializerSettings controllerSerializerSettings, IContractResolver attributeContractResolver, JsonConverter attributeJsonConverter, bool ignoreNulls)
         {
             var serializerSettings = DuplicateSerializerSettings(controllerSerializerSettings);
+
             if (attributeContractResolver != null)
             {
                 serializerSettings.ContractResolver = attributeContractResolver;
@@ -161,16 +162,12 @@ namespace d360.web.Models
     public class InvalidTypeException : ArgumentException
     {
         public override string ParamName { get; }
+
         public Type InvalidType { get; }
+
         public Type ExpectedType { get; }
 
-        public override string Message
-        {
-            get
-            {
-                return $"Expected {ParamName} to implement {ExpectedType}. {InvalidType} does not.";
-            }
-        }
+        public override string Message => $"Expected {ParamName} to implement {ExpectedType}. {InvalidType} does not.";
 
         public InvalidTypeException(string paramName, Type invalidType, Type expectedType)
         {

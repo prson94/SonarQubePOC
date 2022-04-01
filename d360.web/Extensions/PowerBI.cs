@@ -1,9 +1,4 @@
-﻿using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.PowerBI.Api.V2;
-using Microsoft.PowerBI.Api.V2.Models;
-using Microsoft.Rest;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,22 +7,28 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.PowerBI.Api.V2;
+using Microsoft.PowerBI.Api.V2.Models;
+using Microsoft.Rest;
+
+using Newtonsoft.Json;
+
 namespace d360.web.Extensions
 {
     public class DataSourceCredentials
     {
         public string credentialType { get; set; }
+
         public BasicCredentials basicCredentials { get; set; }
     }
 
     public class PowerBI
     {
-        static string apiEndpointUri = "https://api.powerbi.com";
-
+        private static readonly string apiEndpointUri = "https://api.powerbi.com";
         private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
         public const string PowerBiServiceRootUrl = "https://api.powerbi.com/v1.0/myorg/";
-
 
         /// <summary>
         /// Imports a Power BI Desktop file (pbix) into the Power BI Embedded service
@@ -57,9 +58,7 @@ namespace d360.web.Extensions
 
                 return import;
             }
-
         }
-
 
         /// <summary>
         /// Removes a published dataset from a given workspace.
@@ -72,13 +71,11 @@ namespace d360.web.Extensions
         /// <returns></returns>
         public static async Task DeleteDataset(string user, string pwd, string clientId, string groupId, string datasetId)
         {
-
             using (var client = await CreateClient(user, pwd, clientId))
             {
                 await client.Datasets.DeleteDatasetByIdAsync(groupId, datasetId);
             }
         }
-
 
         public static async Task<PowerBIClient> CreateClient(string user, string pwd, string clientId, AuthenticationResult auth = null)
         {
@@ -107,7 +104,7 @@ namespace d360.web.Extensions
             }
         }
 
-        public async static Task<Group> CreateWorkspace(string pbiUser, string pbiPwd, string clientId, string groupName)
+        public static async Task<Group> CreateWorkspace(string pbiUser, string pbiPwd, string clientId, string groupName)
         {
             // Create a provision token required to create a new workspace within your collection            
             using (var client = await CreateClient(pbiUser, pbiPwd, clientId))
@@ -118,7 +115,10 @@ namespace d360.web.Extensions
                 var createdGrp = await client.Groups.CreateGroupAsync(grp);
                 var caps = await client.Capacities.GetCapacitiesAsync();
 
-                if (!caps.Value.Any()) throw new Exception("CANNOT FIND ANY CAPACITY GROUPS");
+                if (!caps.Value.Any())
+                {
+                    throw new ArgumentException("CANNOT FIND ANY CAPACITY GROUPS");
+                }
 
                 client.Groups.AssignToCapacity(createdGrp.Id, new AssignToCapacityRequest { CapacityId = caps.Value.FirstOrDefault().Id });
 
@@ -129,7 +129,6 @@ namespace d360.web.Extensions
         public static async Task UpdateConnectionCredentials(string pbiUser, string pbiPwd, string clientId, string groupId, string username, string password, string connectionString = "")
         {
             var credential = new UserPasswordCredential(pbiUser, pbiPwd);
-
             var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
             var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
 
@@ -143,7 +142,10 @@ namespace d360.web.Extensions
                 // Get the newly created dataset from the previous import process
                 var datasets = await client.Datasets.GetDatasetsAsync(groupId);
 
-                if (datasets == null || datasets.Value == null) return;
+                if (datasets == null || datasets.Value == null)
+                {
+                    return;
+                }
 
                 //update the first sql data source..
                 foreach (var dataset in datasets.Value)
@@ -151,8 +153,10 @@ namespace d360.web.Extensions
                     // Optionally udpate the connectionstring details if preent
                     if (!string.IsNullOrWhiteSpace(connectionString))
                     {
-                        ConnectionDetails det = new ConnectionDetails();
-                        det.ConnectionString = connectionString;
+                        ConnectionDetails det = new ConnectionDetails
+                        {
+                            ConnectionString = connectionString
+                        };
 
                         await client.Datasets.SetAllDatasetConnectionsAsync(groupId, dataset.Id, det);
                     }
@@ -194,8 +198,10 @@ namespace d360.web.Extensions
 
                             // prepare PATCH request
                             var method = new HttpMethod("PATCH");
-                            var request = new HttpRequestMessage(method, restUrlPatchCredentials);
-                            request.Content = patchRequestBody;
+                            var request = new HttpRequestMessage(method, restUrlPatchCredentials)
+                            {
+                                Content = patchRequestBody
+                            };
 
                             request.Headers.Add("Accept", "application/json");
                             request.Headers.Add("Authorization", "Bearer " + authenticationResult.AccessToken);

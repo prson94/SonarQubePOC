@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
+
+using Newtonsoft.Json;
 
 namespace d360.web.Models.Formatters
 {
@@ -14,7 +15,7 @@ namespace d360.web.Models.Formatters
 
         public override Guid ReadJson(JsonReader reader, Type objectType, Guid existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            throw new NotImplementedException();            
+            throw new NotImplementedException();
         }
     }
 }

@@ -9,7 +9,7 @@ import { DataProfileService } from '../../services/dataprofile.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { SemanticType } from '../../models/semantic-type.model';
+import { SemanticSource, SemanticType } from '../../models/semantic-type.model';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { Observable, of, ReplaySubject, Subscription } from 'rxjs';
 import { FieldType } from '../../models/fieldtype-api.model';
@@ -17,6 +17,8 @@ import { LazyLoadEvent } from 'primeng/api';
 import { StringConstants } from '../../static/string-constants';
 import { SemanticBaseComponent } from './semantics-base.component';
 import { FeatureFlagsService } from '../../services/featureflags.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AuthenticationService } from '../../services/authentication.service';
 
 declare var CurrentResourceID;
 
@@ -48,14 +50,12 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     sortField: string;
     sortOrder: number;
     isExportInProgress: boolean = false;
+    theDeleteCallback: Function;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
 
-    menuItems: any[] = [
-        { title: "Open" },
-        { title: "Open in New Tab" },
-    ];
+    readonly menuKey = '~menu';
 
     filterFieldList: AdvancedFilterFieldType[] = [
         {
@@ -152,6 +152,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     secondarySidePanel: string;
     resourceUid: any;
     secondarySidePanelOpen: boolean;
+    showDelete: boolean = false;
 
     constructor(private route: ActivatedRoute,
         protected router: Router,
@@ -161,8 +162,11 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private featureFlagService: FeatureFlagsService) {
+        private featureFlagService: FeatureFlagsService,
+        private messagesService: MessagesObservableService,
+        private authenticationService: AuthenticationService) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
+        this.theDeleteCallback = this.deleteSemanticType.bind(this);
     }
 
     ngOnInit() {
@@ -176,14 +180,31 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         this.displayBreadCrumbs();
     }
 
-    getData() {
+    getData(selectedIndex: number = 0) {
         this.isLoading = true;
         this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((p) => {
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
             if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
-                this.selectRow(this.semanticTypes[0]);
+                this.selectRow(this.semanticTypes[selectedIndex]);
             }            
+           
+            this.semanticTypes.forEach((i) => {
+
+                i[this.menuKey] = [
+                    { title: "Open" },
+                    { title: "Open in New Tab" },
+                ];
+
+                if (this.authenticationService.isAdmin && SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {
+                    if (!i.hasQualifiedAssets) {
+                        i[this.menuKey].push({ title: "Delete" });
+                    } else {
+                        i[this.menuKey].push({ title: "Delete", disabled: true, tooltip: "This semantic type cannot be removed as it has already been used for classifying assets." });
+                    }                    
+                }
+            });
+
             this.isLoading = false;
         });
     }
@@ -236,7 +257,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     selectRow(row: any) {
         this.secondarySidePanelOpen = false;
-        this.selectedType = row;
+        this.selectedType = row;        
         if (this.selectedType) {
             this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, this.displayBreadCrumbs.bind(this), null);
         }        
@@ -258,12 +279,18 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     clickMenuItem(event: any, item: SemanticType) {
         let key = event.value.toLowerCase();
 
-        if (key === 'open') {
-            this.selectSemanticType(item);
-        } else if (key === 'open in new tab') {
-            this.selectSemanticType(item, true);
+        switch (key) {
+            case 'open':
+                this.selectSemanticType(item);
+                break;
+            case 'open in new tab':
+                this.selectSemanticType(item, true);
+                break;
+            case 'delete':
+                this.showDelete = true;
+                break;
         }
-    }    
+    }        
 
     displayBreadCrumbs() {
         this.sub = this.route.params.subscribe((params) => {
@@ -343,5 +370,20 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         } else {
             this.secondarySidePanel = "status";
         }
+    }
+
+    deleteSemanticType(item: SemanticType) {
+        this.dataProfileService.deleteSemanticType(item.qualifier)
+            .subscribe(
+                (result) => {
+                    this.showMessageForResult(this.messagesService, result, 'Semantic Type successfully deleted');
+                    this.showDelete = false;
+                    if (result.type !== 'error') {
+                        let currentIndex = this.semanticTypes.findIndex((s) => s.uid === this.selectedType.uid);
+                        let nextRow = currentIndex === this.semanticsTotal - 1 ? this.semanticsTotal - 2 : currentIndex;
+                        this.getData(nextRow);
+                    }
+                }
+            );
     }
 }
