@@ -278,6 +278,8 @@
 	<include file="scripts/View.dbo.ResponsibilityDetail.xml"/>
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
+	<include file="scripts/View.graph.AssetNodeDisplayPath.xml"/>
+	<include file="scripts/View.graph.AssetNodeKeyPath.xml"/>
     <include file="scripts/View.utility.ArtifactAssetParent.xml"/>
     <include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>

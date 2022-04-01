@@ -268,7 +268,7 @@ namespace d360.model.helpers
                     if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
                     {
                         selects.Add($"h{f.RelationIndex + 1}p.displaypath AS [H{f.RelationIndex + 1}__assetPath]");
-                        joins.Add($"LEFT JOIN graph.assetnodedisplaypath H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
+                        joins.Add($"LEFT JOIN graph.AssetNode H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
                     }
                     
                     if (f.FieldTypeName.ToLowerInvariant() == "code")

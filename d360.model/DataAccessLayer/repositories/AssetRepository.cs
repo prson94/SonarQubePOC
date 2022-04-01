@@ -1238,7 +1238,7 @@ namespace d360.model.DataAccessLayer
 				fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 			}
 
-			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("kp.keypath");
+			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.keypath");
 
 			if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
 			{
@@ -1255,8 +1255,7 @@ namespace d360.model.DataAccessLayer
 						left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 						left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 						{string.Join("\n", fieldJoins)}
-						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
-						left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNode Node on Node.ID = a.ID" : "")} 
 						{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 						{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 						{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1282,10 +1281,9 @@ namespace d360.model.DataAccessLayer
 			var countSql = $@"
 				select  count(*)
 				from    Asset A 
-				{(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
+				left join graph.AssetNode Node on Node.id = a.id 
 				{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{string.Join("\n", countJoins)}
-				{(hasKeyPathCountFiltering ? "left join graph.AssetNodeKeyPath KP on KP.ID = a.ID" : "")} 
 				{hierarchyParentUidSelect}
 				{(includeParentInCount ? parentApplySQL : "")}
 				{whereSql}";
@@ -1308,17 +1306,16 @@ namespace d360.model.DataAccessLayer
 					{(includeColor ? "ACJ.ColorJson as Color," : "")}
 					{(includeProfilingCheck ? profilingCheckFields : "")}
 					{(includeSegments ? "Node.Segments," : "")}
-					KP.KeyPath as [Path]
+					Node.KeyPath as [Path]
 					{fieldsSql}
 					{(includePermissionDetails ? includePermissionFields : "")} 
 					{hierarchyParentUidCol}
 				{(useTempTableForResults ? " into #results " : "")}
 				from Asset A
+				left join graph.AssetNode Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{string.Join("\n", fieldJoins)}
-				{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
-				left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
 				{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1550,7 +1547,7 @@ namespace d360.model.DataAccessLayer
 			var sql = $@"
 				select	P.[uid],
 						P.[keypath] as [path]  
-				from	graph.AssetNodeKeyPath P		                
+				from	graph.AssetNode P		                
 				where P.assetTypeId = @assetTypeId
 				order by P.ID
 				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
@@ -1559,7 +1556,7 @@ namespace d360.model.DataAccessLayer
 			if (includeTotal)
 			{
 				var countSql = $@"select count(1) 
-				from	graph.AssetNodeKeyPath P		                
+				from	graph.AssetNode P		                
 				where P.assetTypeId = @assetTypeId";
 
 				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
@@ -2270,8 +2267,7 @@ namespace d360.model.DataAccessLayer
 			var countSql = $@"
 							select	count(1)
 							from	graph.AssetNode N
-									inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
-							where	P.DisplayPath like @phrase {prefilterSql}
+							where	N.DisplayPath like @phrase {prefilterSql}
 							";
 
 										var sql = $@"
@@ -2281,11 +2277,10 @@ namespace d360.model.DataAccessLayer
 									coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
 									N.Segments as SegmentsXml
 							from	graph.AssetNode N
-									inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
 									inner join AssetType T on T.ID = N.AssetTypeID
 									left join AssetTypeStyle S on S.ID = T.ID
-							where	P.DisplayPath like @phrase {prefilterSql}
-							order by P.DisplayPath asc
+							where	N.DisplayPath like @phrase {prefilterSql}
+							order by N.DisplayPath asc
 							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 							";
 
@@ -3360,7 +3355,7 @@ namespace d360.model.DataAccessLayer
 				select
 					A.[UID] as [uid],
 					COALESCE(StatusColor.FormattedValue, f.FormattedValue, ft.DefaultFormattedValue) as Status,
-					KP.KeyPath as Path,
+					Node.KeyPath as Path,
 					ADV.DisplayValue,
 					AT.Name as TypeName,
 					A.Object,
@@ -3371,7 +3366,6 @@ namespace d360.model.DataAccessLayer
 				left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
 				left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
 				left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
-				left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
 				left join AssetDisplayValue ADV on ADV.AssetID = A.ID
 				outer apply(
 								select FormattedValue = 
@@ -3828,12 +3822,11 @@ namespace d360.model.DataAccessLayer
 								A.UpdatedOn,
 								ACJ.ColorJson as Color,
 								{(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
-								KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
+								Node.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
 								{string.Join(",\n", fieldColumns)}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
-								left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
-								left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+								left join graph.AssetNode Node on Node.ID = a.ID 
 								cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 								outer apply (
 									select  T.[uid]

@@ -51,7 +51,7 @@ namespace d360.model.DataAccessLayer
 					CRA.ForeColor as IconForeColor
 			from	CommentRelation CR
 					inner join AssetDetail CRA on CRA.ID = CR.AssetID and CR.CommentID = C.ID
-					inner join graph.AssetNodeDisplayPath AD on AD.ID = CRA.ID
+					inner join graph.AssetNode AD on AD.ID = CRA.ID
 					cross apply GetAssetUrlById(CRA.ID) U
 			for		json path
 			), '[]') as TagsJson";
@@ -637,7 +637,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 								inner join P ON C.ID = P.ID
 								inner join Asset O on O.ID = P.AssetID
 								inner join AssetType T on T.ID = O.AssetTypeID
-								inner join graph.AssetNodeDisplayPath AP on AP.ID = O.ID
+								inner join graph.AssetNode AP on AP.ID = O.ID
 								outer apply [dbo].[GetAssetUrlById](O.ID) AUrl";
 
 			var countWhereSql = whereSql + (string.IsNullOrEmpty(whereSql) ? "where " : " and ") + "C.ParentID is null";
@@ -711,7 +711,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 								inner join P ON C.ID = P.ID
 								inner join Asset O on O.ID = P.AssetID
 								inner join AssetType T on T.ID = O.AssetTypeID
-								inner join graph.AssetNodeDisplayPath AP on AP.ID = O.ID
+								inner join graph.AssetNode AP on AP.ID = O.ID
 								outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
 						ORDER BY	C.ParentID, C.CreatedOn DESC";
 

@@ -2424,8 +2424,8 @@ namespace d360.model.DataAccessLayer
 								select	R.ResultUid,
 										R.OwningAssetUid,
 										E.EvaluatedAssetUid,
-										EKP.KeyPath as EvaluatedAssetPath,
-										EDP.DisplayPath as EvaluatedAssetDisplayPath,
+										EP.KeyPath as EvaluatedAssetPath,
+										EP.DisplayPath as EvaluatedAssetDisplayPath,
 										E.Segments as EvaluatedAssetSegments,
 										P.[Path] as EvaluatedAssetTypePath,
 										E.Class as EvaluatedAssetTypeClass,
@@ -2438,8 +2438,7 @@ namespace d360.model.DataAccessLayer
 								from	R
 										left join E on E.ResultUid = R.ResultUid
 										outer apply dbo.GetAssetTypeTextPathById(E.EvaluatedAssetTypeId, ' > ') P
-										left join[graph].[AssetNodeDisplayPath] EDP on EDP.ID = E.EvaluatedAssetId 
-										left join[graph].[AssetNodeKeyPath] EKP on EKP.ID = E.EvaluatedAssetId 
+										left join graph.AssetNode EP on EP.ID = E.EvaluatedAssetId 
 								{whereStatement} 
 								{orderSql} 
 								offset((@pageNum - 1) * @pageSize) rows fetch next @pageSize rows only";

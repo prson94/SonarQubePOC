@@ -974,7 +974,7 @@ namespace d360.model.DataAccessLayer
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
 							inner join Asset A ON A.ID = AT.AssetID
-							inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+							inner join graph.AssetNode Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
 							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
 							{(addtagasstingfilter ? " cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags) " : "")}
@@ -1008,7 +1008,7 @@ namespace d360.model.DataAccessLayer
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
 							inner join Asset A ON A.ID = AT.AssetID
-							inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+							inner join graph.AssetNode Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
 							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
 							cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags)
