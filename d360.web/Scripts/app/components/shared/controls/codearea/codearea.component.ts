@@ -2,7 +2,7 @@
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { EditorModule } from 'primeng/editor';
-import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { CodemirrorComponent, CodemirrorModule } from '@ctrl/ngx-codemirror';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
 import 'codemirror/addon/display/placeholder';
@@ -10,7 +10,7 @@ import 'codemirror/addon/display/placeholder';
 export const CODE_EDITOR_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => CodeArea),
-    multi: true    
+    multi: true
 };
 
 @Component({
@@ -27,7 +27,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
     @Input() disabled: boolean = false;
     @Input() readonly: boolean = false;
     @Input() required: boolean = false;
-    @Input() igSize: string = "";    
+    @Input() igSize: string = "";
     @Output() isValid = new EventEmitter();
 
     value = "";
@@ -64,6 +64,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
             switch (this.codeType.toLocaleLowerCase()) {
                 case "css":
                     this.editorConfig.mode = { name: "css", json: false };
+                    this.editorConfig.theme = "custom-css-theme";
                     this.validationMessage = "CSS is not well formed. Please review and update.";
                     break;
                 default:
@@ -79,8 +80,8 @@ export class CodeArea implements ControlValueAccessor, OnInit {
 
     ngAfterViewInit() {
         if (this.required) {
-            this.codeComponent.nativeElement.setAttribute("required");            
-        }                
+            this.codeComponent["nativeElement"].setAttribute("required");
+        }
     }
 
     writeValue(obj: any): void {
@@ -100,16 +101,22 @@ export class CodeArea implements ControlValueAccessor, OnInit {
     get isCodeValid() {
         let valid = true;
         if (this.codeType.toLocaleLowerCase() === "json") {
-            let json = this.value;            
+            let json = this.value;
             try {
                 if (json && json.trim() !== "") {
                     let j = JSON.parse(json);
                 } else if (this.required) {
                     valid = false;
-                }                
+                }
             } catch (e) {
                 valid = false;
-            }               
+            }
+        }
+        if (this.codeType.toLocaleLowerCase() === "css") {
+            if (this.el.nativeElement.getElementsByClassName("cm-error").length > 0) {
+                valid = false;
+                this.validationMessage = "CSS is not well formed. Please review and update.";
+            }
         }
         this.isValid.emit({ isvalid: valid });
         return valid;
