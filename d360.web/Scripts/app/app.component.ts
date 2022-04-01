@@ -17,7 +17,6 @@ declare var ResourceEmail;
 declare var DataDogApplicationId;
 declare var DataDogClientToken;
 declare var DataDogService;
-declare var PRODUCTION;
 
 @Component({
     selector: 'd3s-app',
@@ -100,8 +99,8 @@ export class AppComponent implements AfterContentInit, OnDestroy {
 
     private enableDataDog() {
         try {
-            // Only turn on datadog Real user monitoring when Govern is in prod mode we dont want errors from developers building govern reported.
-            if (PRODUCTION) {
+        // Only turn on datadog Real user monitoring when Govern is in prod mode we dont want errors from developers building govern reported.
+        if (environment.production) {
                 datadogRum.init({
                     applicationId: DataDogApplicationId,
                     clientToken: DataDogClientToken,
@@ -122,7 +121,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
                 });
 
                 datadogRum.startSessionReplayRecording();
-            }
+           }
         }
         catch {
             console.log("Datadog Real user monitoring cannot be initialized!")
