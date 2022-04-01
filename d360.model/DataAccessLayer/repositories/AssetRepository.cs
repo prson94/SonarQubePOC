@@ -1238,7 +1238,7 @@ namespace d360.model.DataAccessLayer
 				fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 			}
 
-			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("kp.keypath");
+			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("node.displaypath");
 
 			if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
 			{
@@ -1256,7 +1256,7 @@ namespace d360.model.DataAccessLayer
 						left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 						{string.Join("\n", fieldJoins)}
 						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
-						left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+						left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
 						{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 						{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 						{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1282,10 +1282,9 @@ namespace d360.model.DataAccessLayer
 			var countSql = $@"
 				select  count(*)
 				from    Asset A 
-				{(includeAssetPathInCount ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
+				{(includeAssetPathInCount || hasKeyPathCountFiltering ? " left join graph.AssetNodeDisplayPath Node on Node.id = a.id" : "")} 
 				{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{string.Join("\n", countJoins)}
-				{(hasKeyPathCountFiltering ? "left join graph.AssetNodeKeyPath KP on KP.ID = a.ID" : "")} 
 				{hierarchyParentUidSelect}
 				{(includeParentInCount ? parentApplySQL : "")}
 				{whereSql}";
@@ -1308,7 +1307,7 @@ namespace d360.model.DataAccessLayer
 					{(includeColor ? "ACJ.ColorJson as Color," : "")}
 					{(includeProfilingCheck ? profilingCheckFields : "")}
 					{(includeSegments ? "Node.Segments," : "")}
-					KP.KeyPath as [Path]
+					Node.DisplayPath as [Path]
 					{fieldsSql}
 					{(includePermissionDetails ? includePermissionFields : "")} 
 					{hierarchyParentUidCol}
@@ -1317,8 +1316,7 @@ namespace d360.model.DataAccessLayer
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{string.Join("\n", fieldJoins)}
-				{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID" : "")} 
-				left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+				left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
 				{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
