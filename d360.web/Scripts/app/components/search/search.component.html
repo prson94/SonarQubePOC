@@ -41,7 +41,15 @@
 
             </div>
             <div class="cardlist">
-                <div *ngIf="!(searchStateService.loading | async) && (searchStateService.resultCount | async) == 0">
+                <div *ngIf="(searchStateService.connectionError | async)">
+                    <div class="row">
+                        <div class="tile tile-detail search-nodata">
+                            <header>No Connection to Search Server.</header>
+                            <span style="padding-left:15px">Cannot connect to the search server at the moment. Please try again later.</span>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!(searchStateService.loading | async) &&!(searchStateService.connectionError | async) && (searchStateService.resultCount | async) == 0">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">
                             <header>Your search did not find any results.</header>

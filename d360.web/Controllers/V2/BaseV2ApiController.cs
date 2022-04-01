@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Resources;
+using d360.utils.excel;
 
 namespace d360.web.Controllers.V2
 {
@@ -33,7 +34,7 @@ namespace d360.web.Controllers.V2
                 return Company.ApiTimeout;
             }
         }
-        
+
         protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
         {
             fieldTypes.ForEach(f =>
@@ -376,8 +377,9 @@ namespace d360.web.Controllers.V2
 
             if (template.TemplateFile != null)
             {
-                document = new SLDocument(new MemoryStream(template.TemplateFile));
+                document = SLDocumentFactory.CreateCopyFrom(new MemoryStream(template.TemplateFile));
                 document.AddWorksheet(worksheetName);
+                document.SelectWorksheet(worksheetName);
             }
             else
             {

@@ -35,6 +35,28 @@ export class GalleryCodeAreaComponent implements OnInit {
     }
     `;
 
+    exampleCodeCss: string = `body {
+     padding: 0;
+     margin: 0;
+     background: #f7f7f7;
+}
+
+/** Header styles **/
+.header {
+     background-image: url('https://path-to-image.jpg');
+     height: 400px;
+     background-position: center center;
+}
+
+.main p {
+     color: black;
+     text-align: center;
+     line-height: 24px;
+     font-family: 'Raleway', sans-serif;
+     font-size: 16px;
+     font-weight: 400;
+}`;
+
     ngOnInit(): void {
         this.properties = new Array();
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Whether or not the codearea control is disabled", Default: "false" });

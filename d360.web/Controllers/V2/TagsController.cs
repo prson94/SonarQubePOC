@@ -74,22 +74,26 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Retrieves a list of all tags.
         /// </summary>                
-        [
-            HttpGet, MapToApiVersion("2.0"), Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("uid", "The Uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_tag", "Search term that filters on the name of the tag.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by tag name.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
-
-        ]
+        [HttpGet]
+        [MapToApiVersion("2.0")]
+        [Route("")]
+        [SwaggerConsumes("application/json")]
+        [SwaggerProduces("application/json")]
+        [SwaggerParameter("uid", "The Uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false)]
+        [SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false)]
+        [SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false)]
+        [SwaggerParameter("_tag", "Search term that filters on the name of the tag.", DataType = "string", ParameterType = "query", Required = false)]
+        [SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by tag name.", DataType = "string",
+            ParameterType = "query", Required = false)]
+        [SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.",
+            DataType = "string", ParameterType = "query", Required = false)]
+        [SwaggerParameter("_includeTotal",
+            "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.",
+            DataType = "boolean", ParameterType = "query", Required = false)]
+        [SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>))]
+        [SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse))]
+        [SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))]
         public async Task<IHttpActionResult> Get()
         {
             try
@@ -114,7 +118,6 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorFetchTags, ex.Message);
-
             }
         }
 
@@ -789,4 +792,3 @@ namespace d360.web.Controllers.V2
 
     }
 }
-

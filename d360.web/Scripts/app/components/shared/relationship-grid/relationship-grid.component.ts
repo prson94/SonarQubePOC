@@ -402,7 +402,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.loadPageNumberAfterDeletion = -1;
         }
 
+        let sortFieldExists: boolean = false;
         if (this.sortField) {
+            sortFieldExists = this.getAdvancedFilterFields.some((f) => f.Name.toLowerCase() === this.sortField.toLowerCase());
+        }
+
+        if (this.sortField && sortFieldExists) {
             params._order = this.sortField;
         }
         if (this.sortOrder) {
