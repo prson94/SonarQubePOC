@@ -121,7 +121,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     private navigateQuery(q: string) {
-        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`
+        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`;
         if (!this.keepFilter) {
             SearchSession.removeState(q);
         }
