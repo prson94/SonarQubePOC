@@ -1,8 +1,10 @@
-﻿using d360.core;
-using Swashbuckle.Swagger;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
+
+using d360.core;
+
+using Swashbuckle.Swagger;
 
 
 namespace d360.web.Filters
@@ -14,7 +16,9 @@ namespace d360.web.Filters
         public void Apply(Schema schema, SchemaRegistry schemaRegistry, Type type)
         {
             if (schema?.properties == null || type == null)
+            {
                 return;
+            }
 
             var excludedProperties = type.GetProperties()
                                          .Where(t =>
@@ -24,7 +28,9 @@ namespace d360.web.Filters
             foreach (var excludedProperty in excludedProperties)
             {
                 if (schema.properties.ContainsKey(excludedProperty.Name))
+                {
                     schema.properties.Remove(excludedProperty.Name);
+                }
             }
         }
 

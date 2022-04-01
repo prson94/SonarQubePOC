@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+
 using d360.core.types;
+
 using Resources;
 
 namespace d360.web.Utilities
 {
-    public class RequestValidator: IRequestValidator
+    public class RequestValidator : IRequestValidator
     {
         private ITypeServiceProvider TypeServiceProvider { get; }
         private const int DefaultPageSize = 200;

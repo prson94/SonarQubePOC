@@ -1,12 +1,11 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Web;
+
+using d360.core;
+using d360.core.entities;
+
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Models
 {
@@ -78,7 +77,7 @@ namespace d360.web.Models
 
         public IdResponse(T id)
         {
-            this.Id = id;
+            Id = id;
         }
     }
 

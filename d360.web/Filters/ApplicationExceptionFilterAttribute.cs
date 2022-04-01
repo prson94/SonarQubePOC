@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using System.Net.Http;
 using System.Web.Http.Filters;
+
 using d360.core.exceptions;
 using d360.web.Models;
 using d360.web.Services;
+
 using Resources;
 
 namespace d360.web.Filters
