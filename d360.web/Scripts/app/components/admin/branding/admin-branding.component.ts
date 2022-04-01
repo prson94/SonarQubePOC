@@ -98,7 +98,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     svg_markup(theme: Theme) {
         return `<svg width="158" height="80">
-                   <image xlink:href="/api/v2/environment/themes/${theme.uid}.svg?width=158" width="158" height="80" />
+                   <image xlink:href="/api/v2/environment/themes/${theme.uid}.svg?width=158&cache=${theme.updatedOn}" width="158" height="80" />
                 </svg>`;
     }
 

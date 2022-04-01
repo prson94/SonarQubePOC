@@ -266,6 +266,9 @@ namespace d360.core.entities
             existing.CustomCss = model.CustomCss.ParseBase64CustomCss();
             existing.Name = model.Name;
             existing.IsCurrent = model.IsCurrent;
+            existing.HeaderBackColor = model.HeaderBackColor;
+            existing.BreadcrumbLinkColor = model.BreadcrumbLinkColor;
+            existing.ButtonBackColor = model.ButtonBackColor;
             existing.NavBarBackColor = model.NavBarBackColor;
             existing.NavBarBackSelectedColor = model.NavBarBackSelectedColor;
             existing.PrimaryButtonBackColor = model.PrimaryButtonBackColor;

@@ -100,7 +100,6 @@ export class Theme {
 
 @Injectable()
 export class BrandingService extends BaseObservableService {
-
     public headerLogoDefault = "/Content/images/PreciselyLogo@2x.png";
     public iconDefault = "/favicon.ico";
     public homeBackgroundDefault = "/Content/images/HomeBG.png";
@@ -110,31 +109,6 @@ export class BrandingService extends BaseObservableService {
         messagesService: MessagesObservableService
     ) {
         super(messagesService);
-
-        this.loadDefaultImage("headerLogoDefault");
-        this.loadDefaultImage("iconDefault");
-        this.loadDefaultImage("homeBackgroundDefault");
-    }
-
-    loadDefaultImage(propName) {
-        var img = new Image();
-        img.src = this[propName];
-        img.onload = () => {
-            this[propName] = this.getBase64Image(img);
-        }
-    }
-
-
-    getBase64Image(img: HTMLImageElement): string {
-        // We create a HTML canvas object that will create a 2d image
-        var canvas: HTMLCanvasElement = document.createElement("canvas");
-        canvas.width = img.width;
-        canvas.height = img.height;
-        let ctx: CanvasRenderingContext2D = canvas.getContext("2d");
-        // This will draw image
-        ctx.drawImage(img, 0, 0);
-        // Convert the drawn image to Data URL
-        return canvas.toDataURL();
     }
 
     public getThemes(): Observable<Theme[] | number> {
@@ -167,11 +141,28 @@ export class BrandingService extends BaseObservableService {
             );
     }
 
+    private isFromUrl(str: string): boolean {
+        return str.toLowerCase().startsWith("http");
+    }
+
     public saveTheme(theme: Theme): Observable<any> {
         let url: string = '/api/v2/environment/themes';
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
+
+        //exclude images from request if images are not base64 which means they were not updated
+        if (!theme.headerLogo || this.isFromUrl(theme.headerLogo)) {
+            delete theme.headerLogo;
+        }
+
+        if (!theme.icon || this.isFromUrl(theme.icon)) {
+            delete theme.icon;
+        }
+
+        if (!theme.homeBackground || this.isFromUrl(theme.homeBackground)) {
+            delete theme.homeBackground;
+        }
 
         if (theme.uid) {
             url += "/" + theme.uid;

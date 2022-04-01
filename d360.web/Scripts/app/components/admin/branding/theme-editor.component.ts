@@ -64,10 +64,20 @@ export class ThemeEditorComponent implements OnChanges {
     }
 
     setForm() {
-        var _th = this.theme ? this.theme : new Theme(true, this.brandingService);
+        let _th: Theme;
+        if (this.theme) {
+            this.theme.headerLogo = this.theme.headerLogoUri;
+            this.theme.homeBackground = this.theme.homeBackgroundUri;
+            this.theme.icon = this.theme.iconUri;
+            _th = this.theme;
+        }
+        else {
+            _th = new Theme(true, this.brandingService);
+        }
+
         this.isCurrentTheme = this.theme ? this.theme.isCurrent : false;
         var properties = Object.keys(this.formGroup.controls);
-
+        this.formGroup.reset();
         properties.forEach((p) => {
             var valObj = {};
             valObj[p] = _th[p];

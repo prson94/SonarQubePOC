@@ -41,8 +41,8 @@ namespace d360.core
 
         private static List<MimeTypeExtensionMapItem> items = new List<MimeTypeExtensionMapItem> {
             new MimeTypeExtensionMapItem { Extension = ".gif", MimeType = "image/gif"},
-            new MimeTypeExtensionMapItem { Extension = ".ico", MimeType = "image/vnd.microsoft.icon"},
             new MimeTypeExtensionMapItem { Extension = ".ico", MimeType = "image/x-icon"},
+            new MimeTypeExtensionMapItem { Extension = ".ico", MimeType = "image/vnd.microsoft.icon"},
             new MimeTypeExtensionMapItem { Extension = ".jpg", MimeType = "image/jpeg"},
             new MimeTypeExtensionMapItem { Extension = ".png", MimeType = "image/png"},
             new MimeTypeExtensionMapItem { Extension = ".xlam", MimeType = "application/vnd.ms-excel.addin.macroEnabled.12"},
@@ -56,13 +56,13 @@ namespace d360.core
 
         public static string GetExtension(string mimeType)
         {
-            var item = items.SingleOrDefault(i => i.MimeType.ToLower().Equals(mimeType.Trim().ToLower()));
+            var item = items.FirstOrDefault(i => i.MimeType.ToLower().Equals(mimeType.Trim().ToLower()));
             return (item == null) ? null : item.Extension;
         }
 
         public static string GetMimeType(string extension)
         {
-            var item = items.SingleOrDefault(i => i.Extension.ToLower().Equals(extension.Trim().ToLower()));
+            var item = items.FirstOrDefault(i => i.Extension.ToLower().Equals(extension.Trim().ToLower()));
             return (item == null) ? null : item.MimeType;
         }
     }
