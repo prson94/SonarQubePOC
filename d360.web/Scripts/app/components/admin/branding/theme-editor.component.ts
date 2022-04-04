@@ -66,9 +66,9 @@ export class ThemeEditorComponent implements OnChanges {
     setForm() {
         let _th: Theme;
         if (this.theme) {
-            this.theme.headerLogo = this.theme.headerLogoUri;
-            this.theme.homeBackground = this.theme.homeBackgroundUri;
-            this.theme.icon = this.theme.iconUri;
+            this.theme.headerLogo = this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault;
+            this.theme.homeBackground = this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault;
+            this.theme.icon = this.theme.iconUri ?? this.brandingService.iconDefault;
             _th = this.theme;
         }
         else {

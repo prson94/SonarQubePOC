@@ -162,20 +162,29 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     duplicateSelectedTheme() {
         var theme = _.cloneDeep(this.selectedRow._orig);
+        let uid = theme.uid;
         theme.name = this.getUniqueName(this.selectedRow.name, 0);
         theme.isCurrent = false;
         theme.uid = "";
+        theme.headerLogoUri = theme.homeBackgroundUri = theme.iconUri = null;
 
         this.isLoading = true;
         this.cdRef.markForCheck();
         this.preselectThemeName = theme.name;
 
-        this.brandingService.saveTheme(theme)
-            .subscribe((res) => {
-                this.ngOnInit();
-                this.cdRef.markForCheck();
+        this.brandingService.getBase64Data(uid).subscribe((res) => {
+            theme.headerLogo = res.headerLogo;
+            theme.homeBackground = res.homeBackground;
+            theme.icon = res.icon;
+            this.brandingService.saveTheme(theme)
+                .subscribe((res) => {
+                    this.ngOnInit();
+                    this.cdRef.markForCheck();
 
-            });
+                });
+        })
+
+
     }
 
     getUniqueName(name: string, idx: number) {

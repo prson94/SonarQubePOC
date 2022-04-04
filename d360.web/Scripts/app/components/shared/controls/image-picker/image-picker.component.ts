@@ -111,13 +111,14 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
 
     clearValue() {
         this.value = "";
-        if (this.defaultImage) {
-            this.value = this.defaultImage;
-            this.loadImageFromURL(this.value);
-        }
         this.file = {};
         this.image = {};
-        this.validate();
+        if (this.defaultImage) {
+            this.value = this.defaultImage;
+        }
+        else {
+            this.validate();
+        }
         this.onModelChange(this.value);
         this.ref.markForCheck();
     }
@@ -140,20 +141,6 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         i.onload = () => {
             this.image = i;
             this.value = reader.result;
-            this.onModelChange(this.value);
-            this.validate();
-            this.ref.markForCheck();
-        };
-    }
-
-    loadImageFromURL(url: string) {
-        var i = new Image();
-        i.src = url;
-
-        i.onload = () => {
-            this.image = i;
-            console.log(this.image);
-            this.value = "";
             this.onModelChange(this.value);
             this.validate();
             this.ref.markForCheck();

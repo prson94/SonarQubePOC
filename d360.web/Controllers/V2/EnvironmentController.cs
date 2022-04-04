@@ -14,6 +14,7 @@ using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -104,7 +105,7 @@ namespace d360.web.Controllers.V2
                             break;
                     }
 
-                    return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action =ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
+                    return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action = ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
                 }
                 else
                 {
@@ -231,7 +232,7 @@ namespace d360.web.Controllers.V2
                 {
                     settings = settings.Where(s => (int)s.ID == settingId.Value).ToList();
                 }
-                
+
                 if (settingId.HasValue && settings.Count() == 0)
                 {
                     return ReturnApiError(HttpStatusCode.NotFound, ApiMessages.SettingIDNotFound);
@@ -407,7 +408,7 @@ namespace d360.web.Controllers.V2
                     break;
             }
 
-            if(setting.ID == Setting.CompanyLogo || setting.ID == Setting.CompanyIcon || setting.ID == Setting.HomePageBackgroundImage)
+            if (setting.ID == Setting.CompanyLogo || setting.ID == Setting.CompanyIcon || setting.ID == Setting.HomePageBackgroundImage)
             {
                 if (!value.IsValidImageData())
                 {
@@ -456,7 +457,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("settings"), 
+            Route("settings"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage UpdateSetting(CompanySettingApiUpdateModel model)
@@ -504,7 +505,7 @@ namespace d360.web.Controllers.V2
             }
 
             if (models == null || models.Count == 0)
-            { 
+            {
                 return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
             }
 
@@ -540,7 +541,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetOperators(bool isForAdvancedFilters = false)
         {
-            var response = Operator.Equals.GetAsList().OrderBy(x=> x.SortOrder);
+            var response = Operator.Equals.GetAsList().OrderBy(x => x.SortOrder);
             if (isForAdvancedFilters)
             {
                 response = Operator.Equals.GetAsListForAdvancedFilters().OrderBy(x => x.SortOrder);
@@ -634,22 +635,22 @@ namespace d360.web.Controllers.V2
                 var pageSize = 200;
                 var whereClause = "";
                 bool includeTotal = true;
-                
+
                 List<string> whereClauseItems = new List<string>();
 
-                string[] columns = 
-                { 
-                    "action", 
-                    "user agent", 
-                    "host", 
-                    "browser language", 
-                    "timestamp" , 
-                    "assettypename", 
-                    "assettypeuid", 
-                    "assetuid", 
-                    "assetdisplayvalue", 
-                    "class", 
-                    "assetTypeuid2" 
+                string[] columns =
+                {
+                    "action",
+                    "user agent",
+                    "host",
+                    "browser language",
+                    "timestamp" ,
+                    "assettypename",
+                    "assettypeuid",
+                    "assetuid",
+                    "assetdisplayvalue",
+                    "class",
+                    "assetTypeuid2"
                 };
 
                 #region handle queryparams
@@ -659,7 +660,7 @@ namespace d360.web.Controllers.V2
                     var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
                     if (!allowedDirections.Contains(order.Trim().ToLower()))
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(),ApiMessages.InvalidDirection)).ConfigureAwait(false);
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, HttpStatusCode.BadRequest.ToString(), ApiMessages.InvalidDirection)).ConfigureAwait(false);
                     }
 
                     orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
@@ -688,7 +689,7 @@ namespace d360.web.Controllers.V2
                             else
                             {
                                 code = HttpStatusCode.BadRequest;
-                                errorMessage =ApiMessages.Invalid_Order;
+                                errorMessage = ApiMessages.Invalid_Order;
                             }
                         }
                         else if (key == "_pagenum")
@@ -705,9 +706,9 @@ namespace d360.web.Controllers.V2
                                 if (pageSize < 1) { pageSize = 1; }
                             }
                         }
-                        else if(key == "_includetotal")
+                        else if (key == "_includetotal")
                         {
-                            if(!bool.TryParse(q.Value, out includeTotal))
+                            if (!bool.TryParse(q.Value, out includeTotal))
                             {
                                 includeTotal = true;
                             }
@@ -742,12 +743,12 @@ namespace d360.web.Controllers.V2
                                 whereClauseItems.Add("stat.Timestamp <= @endDate");
                             }
                         }
-                        else if(key == "_resourceuid")
+                        else if (key == "_resourceuid")
                         {
                             Guid ruid = Guid.Empty;
-                            if (Guid.TryParse(q.Value,out ruid))
+                            if (Guid.TryParse(q.Value, out ruid))
                             {
-                                if(Company.GlobalReportingResources.Any(x => x.Uid == ruid) && ruid != Guid.Empty)
+                                if (Company.GlobalReportingResources.Any(x => x.Uid == ruid) && ruid != Guid.Empty)
                                 {
                                     whereClauseItems.Add("gr.uid = @resourceUid");
                                     dbArgs.Add("resourceUid", ruid);
@@ -769,7 +770,7 @@ namespace d360.web.Controllers.V2
                             Guid auid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out auid))
                             {
-                                if(Company.Assets.Any(x => x.uid == auid) && auid != Guid.Empty) 
+                                if (Company.Assets.Any(x => x.uid == auid) && auid != Guid.Empty)
                                 {
                                     whereClauseItems.Add("a.uid = @assetuid");
                                     dbArgs.Add("assetuid", auid);
@@ -791,7 +792,7 @@ namespace d360.web.Controllers.V2
                             Guid atuid = Guid.Empty;
                             if (Guid.TryParse(q.Value, out atuid))
                             {
-                                if(Company.AssetTypes.Any(x => x.uid == atuid) && atuid != Guid.Empty)
+                                if (Company.AssetTypes.Any(x => x.uid == atuid) && atuid != Guid.Empty)
                                 {
                                     whereClauseItems.Add("(att.uid = @assettypeuid or att2.uid = @assettypeuid )");
                                     dbArgs.Add("assettypeuid", atuid);
@@ -825,9 +826,9 @@ namespace d360.web.Controllers.V2
 
                 }
 
-                
 
-                if(whereClauseItems.Count > 0)
+
+                if (whereClauseItems.Count > 0)
                 {
                     whereClause = $" where {string.Join(" and ", whereClauseItems.ToArray()) } ";
                 }
@@ -880,7 +881,7 @@ namespace d360.web.Controllers.V2
 
                 var response = await Company.QueryAsync<dynamic>(sql, dbArgs);
 
-                
+
                 if (includeTotal)
                 {
                     var count = await Company.QueryFirstOrDefaultAsync<int>(countSql, dbArgs);
@@ -896,9 +897,9 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() { {"Endpoint Method", "Environment.GetUsageDetails => "} });
+                SendException(ex, new Dictionary<string, string>() { { "Endpoint Method", "Environment.GetUsageDetails => " } });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
 
@@ -937,23 +938,23 @@ namespace d360.web.Controllers.V2
                                                                                 inner join assettype att on a.assetTypeId = att.id 
                                                                                 where att.class in @includedClassTypes",
                                                                             new { includedClassTypes = includedAssetClasses }).ConfigureAwait(false);
-              
+
                 var allusers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
                                                                             WHERE gr.Email not like '%@infogix.com'
                                                                             and gr.Email not like '%@data3sixty.com'
                                                                             and gr.Email not like '%@precisely.com'
                                                                             and gr.State = 1").ConfigureAwait(false);
-            
 
-              
+
+
                 var allAdminUsers = await Company.QueryFirstOrDefaultAsync<int>(@"SELECT count(*) from reporting.global_resource GR 
                                                                             WHERE gr.Email not like '%@infogix.com'
                                                                             and gr.Email not like '%@data3sixty.com'
                                                                             and gr.Email not like '%@precisely.com'
                                                                             and gr.State = 1 
                                                                             and gr.IsAdministrator = 1").ConfigureAwait(false);
-              
-                
+
+
                 var contributorSql = @"
                     DROP TABLE if exists #AssetTypesWithResponsibilities
                     CREATE TABLE #AssetTypesWithResponsibilities
@@ -1113,7 +1114,7 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuVisibilityError)).ConfigureAwait(false);
                     }
-                    if(item.order < 0)
+                    if (item.order < 0)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.HelpMenuOrderError)).ConfigureAwait(false);
                     }
@@ -1134,9 +1135,9 @@ namespace d360.web.Controllers.V2
                 }
 
                 Company.SaveChanges();
-                foreach(var i in uids)
+                foreach (var i in uids)
                 {
-                    result.Add(new HelpMenuItemMessage{ uid = i, title = ApiMessages.HelpMenuItemsCreated, message = ApiMessages.HelpItemsAdded });
+                    result.Add(new HelpMenuItemMessage { uid = i, title = ApiMessages.HelpMenuItemsCreated, message = ApiMessages.HelpItemsAdded });
                 }
                 return await Task.FromResult<IHttpActionResult>(
                             ResponseMessage(
@@ -1402,7 +1403,8 @@ namespace d360.web.Controllers.V2
                 css.Append(customCss);
 
                 return ResponseMessage(
-                    new HttpResponseMessage { 
+                    new HttpResponseMessage
+                    {
                         Content = new StringContent(css.ToString(), Encoding.UTF8, "text/css"),
                         StatusCode = HttpStatusCode.OK
                     });
@@ -1455,7 +1457,7 @@ namespace d360.web.Controllers.V2
                 css.AppendLine("}");
 
                 css.AppendLine("");
-                css.Append(theme.CustomCss+"");
+                css.Append(theme.CustomCss + "");
 
                 return ResponseMessage(
                     new HttpResponseMessage
@@ -1690,7 +1692,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("themes"),
-            SwaggerConsumes("application/json"), 
+            SwaggerConsumes("application/json"),
             SwaggerProduces("application/json"),
             SwaggerResponseRemoveDefaults,
             SwaggerResponse(HttpStatusCode.Created, "Returns the created theme.", typeof(GetTheme)),
@@ -1743,7 +1745,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             Route("themes/{uid:Guid}"),
-            SwaggerConsumes("application/json"), 
+            SwaggerConsumes("application/json"),
             SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the updated theme.", typeof(GetTheme)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
@@ -1963,6 +1965,75 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Helper endpoint to convert an theme images to base64 string.
+        /// </summary>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            Route("themes/{uid}/base64data"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
+            SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> Base64Images(Guid uid)
+        {
+            const string ERROR_HEADING = "Error converting css";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
+                }
+
+                var theme = Company.Themes.AsNoTracking().FirstOrDefault(x => x.Uid == uid);
+                var response = new ThemeBase64Data();
+                if (theme.HomePageBackgroundExtension != null)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_background{theme.HomePageBackgroundExtension}";
+                        await _storage.GetFileStream("themes", url, stream);
+                        response.HomeBackground = stream.ToArray().GetDataUrlFromStream(theme.HomePageBackgroundExtension);
+                    }
+                }
+
+                if (theme.BrowserIconExtension != null)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        
+                        var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
+                        await _storage.GetFileStream("themes", url, stream);
+                        response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);
+                    }
+                }
+
+                if (theme.HeaderLogoExtension != null)
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_logo{theme.HeaderLogoExtension}";
+                        await _storage.GetFileStream("themes", url, stream);
+                        response.HeaderLogo = stream.ToArray().GetDataUrlFromStream(theme.HeaderLogoExtension);
+                    }
+                }
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+            }
+            catch (GenericException ex)
+            {
+                throw ex;
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, ERROR_HEADING, ApiMessages.UnknownErrorInvestigatingMessage);
+            }
+        }
+
+
         #endregion
 
         private bool IsDark(string htmlColor)
@@ -1977,18 +2048,18 @@ namespace d360.web.Controllers.V2
             return IsDark(htmlColor) ? "#ffffff" : "#222222";
         }
 
-        private string ErrorAsSvg(string message, int width=330, int height=175)
+        private string ErrorAsSvg(string message, int width = 330, int height = 175)
         {
             int partitionSize = 4;
             List<string> words = message.Split(' ').ToList();
             var svg = new StringBuilder();
             svg.AppendLine($@"<svg version=""1.2"" xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 330 175"" width=""{width}"" height=""{height}"">");
             svg.AppendLine(@"<text lengthAdjust=""spacing"" x=""5"" y=""20"">");
-            
-            for (int i = 0; i < Math.Ceiling((double)words.Count/ partitionSize); i++)
+
+            for (int i = 0; i < Math.Ceiling((double)words.Count / partitionSize); i++)
             {
                 var offset = i * partitionSize;
-                var line = string.Join(" ",words.GetRange(offset, Math.Min(partitionSize, words.Count - offset)));
+                var line = string.Join(" ", words.GetRange(offset, Math.Min(partitionSize, words.Count - offset)));
                 svg.AppendLine($@"<tspan textLength=""320"" x=""0"" dy=""{i}em"" font-size=""1.6em"">{HttpUtility.HtmlEncode(line)}</tspan>");
             }
 

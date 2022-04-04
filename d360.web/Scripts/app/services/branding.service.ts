@@ -145,6 +145,12 @@ export class BrandingService extends BaseObservableService {
         return str.toLowerCase().startsWith("http");
     }
 
+    private isDefaultImage(str: string): boolean {
+        return this.headerLogoDefault.toLowerCase() === str.toLowerCase()
+            || this.homeBackgroundDefault.toLowerCase() === str.toLowerCase()
+            || this.iconDefault.toLowerCase() === str.toLowerCase();
+    }
+
     public saveTheme(theme: Theme): Observable<any> {
         let url: string = '/api/v2/environment/themes';
         const httpOptions = {
@@ -162,6 +168,18 @@ export class BrandingService extends BaseObservableService {
 
         if (!theme.homeBackground || this.isFromUrl(theme.homeBackground)) {
             delete theme.homeBackground;
+        }
+
+        if (this.isDefaultImage(theme.headerLogo ?? "")) {
+            theme.headerLogo = "";
+        }
+
+        if (this.isDefaultImage(theme.icon ?? "")) {
+            theme.icon = "";
+        }
+
+        if (this.isDefaultImage(theme.homeBackground ?? "")) {
+            theme.homeBackground = "";
         }
 
         if (theme.uid) {
@@ -207,6 +225,19 @@ export class BrandingService extends BaseObservableService {
         return this
             .http
             .patch(url, null)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getBase64Data(uid: string): Observable<any> {
+        let url: string = '/api/v2/environment/themes/' + uid + '/base64data';
+        return this
+            .http
+            .get(url)
             .pipe(
                 map((res: any) => {
                     return res;
