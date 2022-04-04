@@ -191,10 +191,10 @@ namespace d360.web.Controllers.V2
                     sql,
                     new
                     {
-                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
                         resourceId = Company.CurrentResourceID,
                         hopCount = request.hopCount,
-                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
+                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
                         includeOwnershipBadges = showResources,
                         includeRelationshipBadges = true,
                         direction = "A",

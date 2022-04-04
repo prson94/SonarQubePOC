@@ -197,7 +197,7 @@ export class BrowserService extends BaseObservableService {
             uid: uid,
             hopCount: numberOfHops,
             includeNonLeaf: includeNonLeaf,
-            descendancy: descendancy
+            descendancy
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
@@ -231,8 +231,8 @@ export class BrowserService extends BaseObservableService {
             assets: assets,
             direction: direction,
             hierarchyKey: hierarchyKey,
-            intersects: intersects,
-            predicateUid: predicateUid
+            intersects,
+            predicateUid
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);
@@ -265,7 +265,7 @@ export class BrowserService extends BaseObservableService {
             {
                 assets: assets,
                 hierarchyKey: hierarchyKey,
-                responsibilityTypeId: responsibilityTypeId
+                responsibilityTypeId
             }).pipe(
             map((response: AssetBrowserOwnersModel) => {
                 return this.processOwnerResponse(hierarchyKey, badgeIndex, responsibilityTypeId, responsibilityTypeName, response);
