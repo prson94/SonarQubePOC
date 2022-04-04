@@ -20,7 +20,7 @@ namespace igx.UnitTests.V2ControllerTests
 
         public MetricsControllerTest()
         {
-            this.metricsController = new MetricsController(GetCoreComponentSet(), GetQueue(), GetScoringRepository(), GetMetricsRepository(), GetAssetRepository())
+            this.metricsController = new MetricsController(GetCoreComponentSet(), GetScoringRepository(), GetMetricsRepository(), GetAssetRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

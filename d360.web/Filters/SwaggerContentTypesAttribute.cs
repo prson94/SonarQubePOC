@@ -1,9 +1,9 @@
-﻿using Swashbuckle.Swagger;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Http.Description;
+
+using Swashbuckle.Swagger;
 
 namespace d360.web.Filters
 {
@@ -12,6 +12,7 @@ namespace d360.web.Filters
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
             var attribute = apiDescription.GetControllerAndActionAttributes<SwaggerConsumesAttribute>().SingleOrDefault();
+
             if (attribute == null)
             {
                 return;
@@ -38,6 +39,7 @@ namespace d360.web.Filters
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
             var attribute = apiDescription.GetControllerAndActionAttributes<SwaggerProducesAttribute>().SingleOrDefault();
+            
             if (attribute == null)
             {
                 return;

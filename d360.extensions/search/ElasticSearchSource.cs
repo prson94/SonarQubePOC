@@ -173,6 +173,8 @@ namespace d360.extensions.search
         protected string SearchServerUrl { get; set; }
 
         public int? IndexFieldLimit { get; set; }
+        public byte NGramMin { get; set; }
+        public byte NGramMax { get; set; }
 
         #region Utility methods
 
@@ -326,6 +328,35 @@ namespace d360.extensions.search
                         .NumberOfReplicas(1)
                         .NumberOfShards(2)
                         .Setting("index.mapping.total_fields.limit", IndexFieldLimit)
+                        .Analysis(a => a
+                            .CharFilters(cf => cf
+                                .Mapping("underscore2space", mca => mca
+                                    .Mappings(new []
+                                    {
+                                        "_ => \\u0020"
+                                    })
+                                )
+                            )
+                            .Tokenizers(t => t
+                                .NGram("d3s_ngram", ng => ng
+                                    .MinGram(NGramMin)
+                                    .MaxGram(NGramMax)
+                                    .TokenChars( new[] { TokenChar.Letter, TokenChar.Digit } )
+                                )
+                            )
+                            .Analyzers(aa => aa
+                                .Custom("default", ca => ca
+                                    .CharFilters("underscore2space")
+                                    .Tokenizer("standard")
+                                    .Filters("standard", "lowercase")
+                                )
+                                .Custom("default_ngram", ca => ca
+                                    .CharFilters("underscore2space")
+                                    .Tokenizer("d3s_ngram")
+                                    .Filters("standard", "lowercase")
+                                )
+                            )
+                        )
                     ).Mappings(ms => ms
                         .Map("_doc", m => m
                             .DateDetection(false)
@@ -333,6 +364,19 @@ namespace d360.extensions.search
                                 .Object<dynamic>(o => o
                                     .Dynamic(true)
                                     .Name(DYNAMIC_FIELD)
+                                    .Properties(p => p
+                                        .Text(t => t
+                                            .Name("Name")
+                                            .Fields(f => f
+                                                .Keyword(k => k
+                                                    .Name("keyword")
+                                                    .IgnoreAbove(256)
+                                                )
+                                            )
+                                            .Analyzer(NGramMin == 0 ? "default" : "default_ngram")
+                                            .SearchAnalyzer("default")
+                                        )
+                                    )
                                 )
                                 .Object<dynamic>(o => o
                                     .Name(D3S_FIELD)
@@ -1302,17 +1346,7 @@ namespace d360.extensions.search
                 sReq.Explain = true;
             }
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
@@ -1392,17 +1426,7 @@ namespace d360.extensions.search
                 };
             }
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
             {
@@ -1457,17 +1481,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             searchResults.aggregations.all_types?.buckets?.ForEach(b =>
             {
@@ -1746,17 +1760,7 @@ namespace d360.extensions.search
                 Size = size
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
@@ -1852,17 +1856,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
-
-            if (!response.Success)
-            {
-                throw new ArgumentException(response.OriginalException.Message);
-            }
-
-            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+            var searchResults = PerformSearch(companyID, sReq);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
@@ -1888,6 +1882,32 @@ namespace d360.extensions.search
             }
 
             return result;
+        }
+
+        private SearchResultsModel PerformSearch(int companyID, SearchRequest sReq)
+        {
+            var client = GetElasticClient(companyID);
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
+
+            if (!response.Success)
+            {
+                if (response.OriginalException.InnerException.Message == "Unable to connect to the remote server")
+                {
+                    throw new SearchServerConnectionException(
+                        response.OriginalException,
+                        string.Join(", ", client.ConnectionSettings.ConnectionPool.Nodes.Select(n => n.Uri.OriginalString)),
+                        client.ConnectionSettings.DefaultIndex
+                    );
+                }
+                else
+                {
+                    throw new SearchResultsException(response.OriginalException);
+                }
+            }
+
+            return JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
         }
 
         private string GetDisplayName(SearchResultsHitModel h)

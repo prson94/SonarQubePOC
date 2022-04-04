@@ -1,30 +1,29 @@
-﻿using d360.core;
-using d360.core.enums;
-using d360.model;
-using d360.web.Filters;
-using d360.web.Models;
-using Dapper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
+using System.Runtime.Serialization;
 using System.Web.Http;
 using System.Xml.Linq;
-using System.Xml.Serialization;
-using System.Xml;
-using System.Xml.Schema;
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Microsoft.ApplicationInsights;
+
+using d360.core;
 using d360.core.entities;
+using d360.core.enums;
+using d360.model;
+using d360.web.Models;
+
+using Dapper;
+
 using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
-using d360.model.DataAccessLayer;
+
+using Newtonsoft.Json;
+
 using Resources;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.Services
 {
@@ -33,22 +32,26 @@ namespace d360.web.Controllers.Services
     internal class CustomApiSortField
     {
         public string FieldName { get; set; }
+
         public bool IsAscending { get; set; }
     }
 
     internal class MultiSelectField
     {
-
         public int EntityFieldTypeID { get; set; }
 
         public string ItemName { get; set; } = "item";
+        
         public object[] Items { get; set; }
+       
         public List<int> Values { get; set; } = new List<int>();
+        
         public List<int> Fields { get; set; } = new List<int>();
+        
         public string XmlFieldOverrideName { get; set; }
+        
         public string JsonFieldOverrideName { get; set; }
     }
-
 
     public class JsonResultLinkModel
     {
@@ -58,40 +61,50 @@ namespace d360.web.Controllers.Services
         internal const string PREV = "previous";
 
         public string rel { get; set; }
+        
         public string href { get; set; }
     }
 
     public class JsonResultsModel
     {
         public int total { get; set; }
+        
         public IEnumerable<dynamic> items { get; set; }
+        
         public List<JsonResultLinkModel> _links { get; set; }
     }
 
     public class JsonVersionModel
     {
         public string APIVersionNumber { get; set; }
+        
         public string ImplementationVersion { get; set; }
     }
 
     internal interface IFilterModel
     {
         string FieldName { get; set; }
+        
         bool Negated { get; set; }
     }
+
     internal class BaseFilterModel
     {
         public string FieldName { get; set; }
+        
         public bool Negated { get; set; }
     }
+
     internal class SingleValueFilterModel : BaseFilterModel, IFilterModel
     {
         public string Value { get; set; }
     }
+
     internal class MultiValueFilterModel : BaseFilterModel, IFilterModel
     {
         public List<string> Values { get; set; }
     }
+
     /// <summary>
     /// Should support the following filter functions:
     /// 
@@ -107,10 +120,14 @@ namespace d360.web.Controllers.Services
     internal class RangeValueFilterModel : BaseFilterModel, IFilterModel
     {
         public string StartValue { get; set; }
+        
         public bool StartInclusive { get; set; }
+        
         public string EndValue { get; set; }
+        
         public bool EndInclusive { get; set; }
     }
+
     internal enum SearchFilterType
     {
         Contains,
@@ -118,6 +135,7 @@ namespace d360.web.Controllers.Services
         Prefix,
         Suffix
     }
+
     /// <summary>
     /// Should support the following filter functions:
     /// 
@@ -147,7 +165,7 @@ namespace d360.web.Controllers.Services
         public List<string> Values { get; set; }
     }
 
-    [DataContract(Namespace = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/error", Name ="Error")]
+    [DataContract(Namespace = "http://www.api.londonmarketgroup.co.uk/schema/2017/07/error", Name = "Error")]
     public class HttpCustomApiError
     {
         public HttpCustomApiError(string message, HttpStatusCode code)
@@ -157,13 +175,13 @@ namespace d360.web.Controllers.Services
         }
 
         [JsonProperty(Order = 1)]
-        [DataMember(Order=1)]
+        [DataMember(Order = 1)]
         public string Message { get; set; }
+        
         [JsonProperty(Order = 2)]
-        [DataMember(Order =2)]
+        [DataMember(Order = 2)]
         public int Code { get; set; }
     }
-
 
     #endregion
 
@@ -177,16 +195,14 @@ namespace d360.web.Controllers.Services
     ]
     public class CustomController : BaseApiController
     {
-
         #region DI
 
-        public CustomController(CoreComponentSet set): base(set)
+        public CustomController(CoreComponentSet set) : base(set)
         {
 
         }
 
         #endregion
-
 
         #region Error Handling Helper
 
@@ -196,11 +212,11 @@ namespace d360.web.Controllers.Services
 
             var acceptHeaders = Request.Headers.Accept;
             var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
-            return Request.CreateResponse<HttpCustomApiError>(status, err, asJson ? "application/json": "application/xml");
+
+            return Request.CreateResponse<HttpCustomApiError>(status, err, asJson ? "application/json" : "application/xml");
         }
 
         #endregion
-
 
         #region Multiselect Helpers
 
@@ -217,10 +233,12 @@ namespace d360.web.Controllers.Services
                     mlList.Value.Values = new List<int>();
 
                     var key = mlList.Key.Name;
+
                     if (mlList.Value.JsonFieldOverrideName != null && asJson)
                     {
                         key = mlList.Value.JsonFieldOverrideName;
                     }
+
                     if (mlList.Value.XmlFieldOverrideName != null && !asJson)
                     {
                         key = mlList.Value.XmlFieldOverrideName;
@@ -232,6 +250,7 @@ namespace d360.web.Controllers.Services
                         {
                             continue;
                         }
+
                         var ids = (val ?? "").ToString().Split(',');
                         mlList.Value.Values = new List<int>();
 
@@ -253,10 +272,12 @@ namespace d360.web.Controllers.Services
                     field.Value.Items = null;
 
                     var key = field.Key.Name;
+
                     if (field.Value.JsonFieldOverrideName != null && asJson)
                     {
                         key = field.Value.JsonFieldOverrideName;
                     }
+
                     if (field.Value.XmlFieldOverrideName != null && !asJson)
                     {
                         key = field.Value.XmlFieldOverrideName;
@@ -316,10 +337,8 @@ namespace d360.web.Controllers.Services
                     var assetObj = asset as IDictionary<string, object>;
                     //remove the original values as they are no longer needed
                     assetObj.Remove(key);
-
                 }
             }
-
         }
 
         private void ConvertMultiSelectValuesToXml(Dictionary<FieldType, MultiSelectField> multiSelectDetails, XElement asset, Dictionary<string, string> namespaces = null)
@@ -334,6 +353,7 @@ namespace d360.web.Controllers.Services
                     }
 
                     var key = field.Key.Name;
+
                     if (field.Value.XmlFieldOverrideName != null)
                     {
                         key = field.Value.XmlFieldOverrideName;
@@ -366,6 +386,7 @@ namespace d360.web.Controllers.Services
                 foreach (var field in multiSelectDetails)
                 {
                     var key = field.Key.Name;
+
                     if (field.Value.JsonFieldOverrideName != null)
                     {
                         key = field.Value.JsonFieldOverrideName;
@@ -381,7 +402,6 @@ namespace d360.web.Controllers.Services
 
         #endregion
 
-
         /// <summary>
         /// Sends back data based on a custom route.
         /// </summary>
@@ -396,11 +416,9 @@ namespace d360.web.Controllers.Services
         SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))]
         public HttpResponseMessage GetSingletonBasedOnRoute(string service, string endpoint, string version, string entityFormat, string key)
         {
-
             try
             {
-                var config = (
-                             from s in Company.ApiServices
+                var config = from s in Company.ApiServices
                              from e in s.Endpoints
                              from v in e.Versions
                              from en in v.Entities
@@ -427,11 +445,11 @@ namespace d360.web.Controllers.Services
                                  f.FieldType,
                                  EntityUri = u,
                                  Endpoint = e
-                             });
+                             };
 
                 if (config.Count() <= 0)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
+                    return CreateCustomApiError(HttpStatusCode.NotFound, OthersMessages.EndPointNotFound);
                 }
 
                 var acceptHeaders = Request.Headers.Accept;
@@ -443,13 +461,13 @@ namespace d360.web.Controllers.Services
                 #region Base SQL statements
 
                 var sql = @"
-    select  D.[key] as id 
-            {0} 
-    from    AssetApiModel A
-            cross apply utility.GetAssetBusinessKey(A.ID) D 
-            {1} 
-    where   A.AssetTypeID = @id
-            and D.[key] = @key";
+                            select  D.[key] as id 
+                                    {0} 
+                            from    AssetApiModel A
+                                    cross apply utility.GetAssetBusinessKey(A.ID) D 
+                                    {1} 
+                            where   A.AssetTypeID = @id
+                                    and D.[key] = @key";
 
                 #endregion
 
@@ -459,19 +477,10 @@ namespace d360.web.Controllers.Services
                 // special case for reference item lists
                 // add the code field with same value as id
                 var assetTypeId = config.First().AssetType.ID;
-                // gov=4840 lloyds changed there mind they dont want this after all
-                /*var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
-                
-                if (assetType != null && assetType.Object == "ReferenceItemType")
-                {
-                    columnSql += ", D.[Key] as [Code]";
-                }*/
 
-                var dbArgs = new Dapper.DynamicParameters();
+                var dbArgs = new DynamicParameters();
                 dbArgs.Add("id", assetTypeId);
                 dbArgs.Add("key", key);
-
-
 
                 var lastmodifiedDateSql = @"
                     select  O.UpdatedOn
@@ -535,7 +544,6 @@ namespace d360.web.Controllers.Services
                     }
 
                     fieldSql += $" left join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
-
                 }
 
                 // Now, format the SQL to get the items.
@@ -546,7 +554,7 @@ namespace d360.web.Controllers.Services
 
                 if (asset == null)
                 {
-                    return Request.CreateErrorResponse(HttpStatusCode.NotFound,OthersMessages.ItemNotFound);
+                    return Request.CreateErrorResponse(HttpStatusCode.NotFound, OthersMessages.ItemNotFound);
                 }
 
                 //process multiselect values
@@ -559,7 +567,7 @@ namespace d360.web.Controllers.Services
                 if (asJson)
                 {
                     var dic = (IDictionary<string, object>)asset;
-                    var exp = new ExpandoObject() as IDictionary<string, Object>;
+                    var exp = new ExpandoObject() as IDictionary<string, object>;
 
                     ConvertMultiSelectValueToJson(multiSelectDetails, asset);
 
@@ -573,7 +581,7 @@ namespace d360.web.Controllers.Services
 
                     exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, rel = JsonResultLinkModel.CANO } });
 
-                    responseMessage =   Request.CreateResponse(HttpStatusCode.OK, exp as object, "application/json");
+                    responseMessage = Request.CreateResponse(HttpStatusCode.OK, exp as object, "application/json");
                 }
                 else
                 {
@@ -594,20 +602,18 @@ namespace d360.web.Controllers.Services
                     xLinks.Add(link);
                     xAsset.Add(xLinks);
 
-                    responseMessage=  Request.CreateResponse(HttpStatusCode.OK, xAsset, "application/xml");
-
+                    responseMessage = Request.CreateResponse(HttpStatusCode.OK, xAsset, "application/xml");
                 }
 
                 if (lastModifiedDate != DateTime.MinValue)
                 {
                     responseMessage.Content.Headers.LastModified = new DateTimeOffset(lastModifiedDate,
-                              TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate)); ;
+                              TimeZoneInfo.Local.GetUtcOffset(lastModifiedDate));
                 }
 
                 return responseMessage;
 
                 #endregion End: Collection endpoint processing
-
             }
             catch (Exception r)
             {
@@ -630,7 +636,6 @@ namespace d360.web.Controllers.Services
         SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))]
         public HttpResponseMessage GetCollectionBasedOnRoute(string service, string endpoint, string version, string entityFormat)
         {
-
             try
             {
                 if (Request.RequestUri.ToString().Length > 16000)
@@ -677,13 +682,11 @@ namespace d360.web.Controllers.Services
 
                 if (config.Count <= 0)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
+                    return CreateCustomApiError(HttpStatusCode.NotFound, OthersMessages.EndPointNotFound);
                 }
 
                 var maxAge = config[0].MaximumCacheAge;
-
                 var acceptHeaders = Request.Headers.Accept;
-
                 var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
 
                 #region Begin: Collection endpoint processing
@@ -693,27 +696,28 @@ namespace d360.web.Controllers.Services
                 #region Base SQL statements
 
                 var countSql = @"
-    select  count(1)
-    from    AssetApiModel A
-            {0} 
-    where   A.AssetTypeID = @id";
+                                select  count(1)
+                                from    AssetApiModel A
+                                        {0} 
+                                where   A.AssetTypeID = @id";
 
-                var sql = @"
-    select  D.[Key] as id
-            {0}
-    from    AssetApiModel A
-            inner join Asset O on O.ID = A.ID
-            cross apply utility.GetAssetBusinessKey(A.ID) D 
-            {1} 
-    where   A.AssetTypeID = @id
-            {2}
-            {3}";
+                                            var sql = @"
+                                select  D.[Key] as id
+                                        {0}
+                                from    AssetApiModel A
+                                        inner join Asset O on O.ID = A.ID
+                                        cross apply utility.GetAssetBusinessKey(A.ID) D 
+                                        {1} 
+                                where   A.AssetTypeID = @id
+                                        {2}
+                                        {3}";
 
                 #endregion
 
                 #region Page Size Processing
 
                 int pageSize = 200;
+
                 if (queryParams.Any(i => i.Key == "_pageSize"))
                 {
                     var queryPageSize = queryParams.SingleOrDefault(i => i.Key == "_pageSize");
@@ -725,7 +729,9 @@ namespace d360.web.Controllers.Services
                         }
 
                         if (pageSize > 200)
-                            return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages._PageSizeMax200);
+                        {
+                            return CreateCustomApiError(HttpStatusCode.BadRequest, OthersMessages._PageSizeMax200);
+                        }
                     }
                 }
 
@@ -734,9 +740,11 @@ namespace d360.web.Controllers.Services
                 #region Page Number Processing
 
                 int pageNumber = 1;
+
                 if (queryParams.Any(i => i.Key == "_pageNum"))
                 {
                     var queryPageNumber = queryParams.SingleOrDefault(i => i.Key == "_pageNum");
+
                     if (!string.IsNullOrEmpty(queryPageNumber.Value))
                     {
                         if (!int.TryParse(queryPageNumber.Value, out pageNumber))
@@ -745,8 +753,10 @@ namespace d360.web.Controllers.Services
                         }
                     }
 
-                    if(pageNumber < 1)
-                        return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages._PageNumGT0);
+                    if (pageNumber < 1)
+                    {
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, OthersMessages._PageNumGT0);
+                    }
                 }
                 var currentPageNumber = pageNumber; //Nees to stay in this location as it records the unchanged current page, that will be used in later page number query string links.
 
@@ -755,6 +765,7 @@ namespace d360.web.Controllers.Services
                 #region Order Processing
 
                 List<CustomApiSortField> arrSort = null;
+
                 if (queryParams.Any(i => i.Key == "_order"))
                 {
                     var sort = queryParams.SingleOrDefault(i => i.Key == "_order");
@@ -772,6 +783,7 @@ namespace d360.web.Controllers.Services
 
                 List<string> arrSelect = null;
                 int arrSelectValidFieldCount = 0;
+
                 if (queryParams.Any(i => i.Key == "_select"))
                 {
                     var select = queryParams.SingleOrDefault(i => i.Key == "_select");
@@ -783,8 +795,8 @@ namespace d360.web.Controllers.Services
                 #region Field Filter Processing
 
                 var filterErrors = new List<string>();
-
                 var filters = new List<IFilterModel>();
+
                 foreach (var qp in queryParams.Where(i => i.Key != "_pageNum" && i.Key != "_pageSize" && i.Key != "_order" && i.Key != "_select"))
                 {
                     var fieldToFilter = qp.Key;
@@ -792,6 +804,7 @@ namespace d360.web.Controllers.Services
 
                     // 1. check to see if the value is negated (has a ! at the first character of the filter query string value. This negates all comma-delimited values.)
                     var isNegated = fieldValueToFilterBy.StartsWith("!");
+                    
                     if (isNegated)
                     {
                         fieldValueToFilterBy = fieldValueToFilterBy.Remove(0, 1); //Now, remove this c=! so it does not interfere with further processing.
@@ -814,6 +827,7 @@ namespace d360.web.Controllers.Services
                             {
                                 fieldValueToFilterBy = fieldValueToFilterBy.Replace("range(", "").Replace(")", "");
                                 var rangeValues = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
+                                
                                 if (rangeValues.Count == 4)
                                 {
                                     filter.StartValue = rangeValues[0];
@@ -828,7 +842,8 @@ namespace d360.web.Controllers.Services
                             }
                             else if (fieldValueToFilterBy.Contains(".."))
                             {
-                                var rangeValues = fieldValueToFilterBy.Split(new string[1]{ ".." }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
+                                var rangeValues = fieldValueToFilterBy.Split(new string[1] { ".." }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()).ToList();
+                                
                                 if (rangeValues.Count == 2)
                                 {
                                     filter.StartValue = rangeValues[0];
@@ -851,7 +866,7 @@ namespace d360.web.Controllers.Services
                             }
                             else if (fieldValueToFilterBy.EndsWith("..."))
                             {
-                                fieldValueToFilterBy = fieldValueToFilterBy.Remove(fieldValueToFilterBy.Length-1-3, 3).Trim();
+                                fieldValueToFilterBy = fieldValueToFilterBy.Remove(fieldValueToFilterBy.Length - 1 - 3, 3).Trim();
                                 filter.StartValue = fieldValueToFilterBy;
                                 filter.StartInclusive = true;
                                 filter.EndValue = null;
@@ -996,7 +1011,7 @@ namespace d360.web.Controllers.Services
                 if (filterErrors.Count > 0)
                 {
                     //There are errors parsing the filters. Return an error HTTP status to the caller.                    
-                    return CreateCustomApiError(HttpStatusCode.BadRequest,string.Format(OthersMessages.FilterExpressionErrors, string.Join("; ", filterErrors)));
+                    return CreateCustomApiError(HttpStatusCode.BadRequest, string.Format(OthersMessages.FilterExpressionErrors, string.Join("; ", filterErrors)));
                 }
 
                 var columnSql = "";
@@ -1004,19 +1019,7 @@ namespace d360.web.Controllers.Services
                 var additionalWhereSql = "";
                 var orderSql = "";
                 var defaultOrderBySql = " order by D.[key]";
-                var defaultOrderBySqlSet = false;
-
-                // special case for reference item lists
-                // add the code field with same value as id
-                //var assetTypeId = config.First().AssetType.ID;
-                // gov-4840 lloyds doesnt want this after all
-                /*var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == assetTypeId);
-
-                
-                 if (assetType != null && assetType.Object == "ReferenceItemType")
-                 {
-                     columnSql += ", D.[Key] as [Code]";
-                 }*/
+                var defaultOrderBySqlSet = false;                
 
                 Dictionary<FieldType, MultiSelectField> multiSelectDetails = new Dictionary<FieldType, MultiSelectField>();
 
@@ -1026,6 +1029,7 @@ namespace d360.web.Controllers.Services
                     var fieldName = f.FieldType.Name;
                     var fieldDataType = f.FieldType.Type;
                     System.Data.DbType fieldDbType;
+
                     // Determine SQL Server data type.
                     switch (fieldDataType)
                     {
@@ -1084,7 +1088,6 @@ namespace d360.web.Controllers.Services
 
                         if (arrSelect != null)
                         {
-
                             if (!arrSelect.Contains(fieldName))
                             {
                                 includeColumn = false;
@@ -1126,7 +1129,7 @@ namespace d360.web.Controllers.Services
                             JsonFieldOverrideName = f.JsonFieldNameOverride,
                             XmlFieldOverrideName = f.XmlFieldNameOverride
                         });
-                        formattedValueColumnSql =  $"F{fID}.Value";
+                        formattedValueColumnSql = $"F{fID}.Value";
                     }
 
 
@@ -1138,12 +1141,14 @@ namespace d360.web.Controllers.Services
                     if (includeJoin)
                     {
                         var filter = filters.FirstOrDefault(i => i.FieldName == fieldName);
+
                         if (filter != null)
                         {
                             fieldSql += $" inner join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
                             var fieldFilterSql = "";
                             var @operator = filter.Negated ? "<>" : "=";
-                            var conjunction = (filter.Negated ? " and " : " or ");
+                            var conjunction = filter.Negated ? " and " : " or ";
+
                             if (filter is SingleValueFilterModel)
                             {
                                 var singleValueFilter = filter as SingleValueFilterModel;
@@ -1203,7 +1208,9 @@ namespace d360.web.Controllers.Services
                                         columnName = "F.Value";
                                     }
                                     else
+                                    {
                                         additionalWhereSql += " cross apply dbo.GetAssetDisplayValueById(A.ID) D";
+                                    }
 
                                     var values = string.Join(",", multiValueFilter.Values.Select((v, i) => $"@{multiValueFilter.FieldName}{i + 1}"));
 
@@ -1286,7 +1293,11 @@ namespace d360.web.Controllers.Services
                                 var loopNumber = 1;
                                 foreach (var v in searchFilter.Values)
                                 {
-                                    if (!string.IsNullOrEmpty(fieldFilterSql)) fieldFilterSql += conjunction;
+                                    if (!string.IsNullOrEmpty(fieldFilterSql))
+                                    {
+                                        fieldFilterSql += conjunction;
+                                    }
+
                                     var likeFormat = "";
                                     switch (searchFilter.Type)
                                     {
@@ -1310,10 +1321,12 @@ namespace d360.web.Controllers.Services
                                             likeFormat = "{0}";
                                             break;
                                     }
+
                                     if (searchFilter.CaseSensitive)
                                     {
                                         fieldFilterSql += " Collate SQL_Latin1_General_CP1_CS_AS";
                                     }
+
                                     dbArgs.Add($"@{filter.FieldName}{loopNumber}", string.Format(likeFormat, v), fieldDbType);
                                     loopNumber++;
                                 }
@@ -1338,9 +1351,10 @@ namespace d360.web.Controllers.Services
                     if (f.AllowSort && arrSort != null && includeJoin)
                     {
                         var sRaw = arrSort.FirstOrDefault(s => s.FieldName == fieldName);
+
                         if (sRaw != null)
                         {
-                            orderSql += ((string.IsNullOrEmpty(orderSql)) ? " order by " : ", ") + $"{formattedValueColumnSql}";
+                            orderSql += (string.IsNullOrEmpty(orderSql) ? " order by " : ", ") + $"{formattedValueColumnSql}";
                             orderSql += sRaw.IsAscending ? " asc" : " desc";
                             arrSort.Remove(sRaw);
                         }
@@ -1379,7 +1393,11 @@ namespace d360.web.Controllers.Services
 
                             foreach (var v in multiValueFilter.Values)
                             {
-                                if (!string.IsNullOrEmpty(dateFieldString)) dateFieldString += " OR ";
+                                if (!string.IsNullOrEmpty(dateFieldString))
+                                {
+                                    dateFieldString += " OR ";
+                                }
+
                                 dateFieldString += $"O.UpdatedOn {@operator} @{filter.FieldName}{loopNumber}";
                                 dbArgs.Add($"@{filter.FieldName}{loopNumber}", v, System.Data.DbType.DateTime);
                                 loopNumber++;
@@ -1393,8 +1411,15 @@ namespace d360.web.Controllers.Services
                         {
                             var rangeFilter = filter as RangeValueFilterModel;
 
-                            if (rangeFilter.StartValue == ".") rangeFilter.StartValue = string.Empty;
-                            if (rangeFilter.EndValue == ".") rangeFilter.EndValue = string.Empty;
+                            if (rangeFilter.StartValue == ".")
+                            {
+                                rangeFilter.StartValue = string.Empty;
+                            }
+
+                            if (rangeFilter.EndValue == ".")
+                            {
+                                rangeFilter.EndValue = string.Empty;
+                            }
 
                             if (!string.IsNullOrEmpty(rangeFilter.StartValue) && string.IsNullOrEmpty(rangeFilter.EndValue))
                             {
@@ -1439,11 +1464,13 @@ namespace d360.web.Controllers.Services
                         }
                         else if (filter is SearchFilterModel)
                         {
-                            return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages.SearchFilterInvalid);
+                            return CreateCustomApiError(HttpStatusCode.BadRequest, OthersMessages.SearchFilterInvalid);
                         }
 
                         if (!string.IsNullOrEmpty(additionalWhereSql))
+                        {
                             additionalWhereSql = " and " + additionalWhereSql;
+                        }
 
                         filters.Remove(filter);
                     }
@@ -1459,9 +1486,10 @@ namespace d360.web.Controllers.Services
                     {
 
                         var sRaw = arrSort.FirstOrDefault(s => s.FieldName == "_last_modified");
+
                         if (sRaw != null)
                         {
-                            orderSql += ((string.IsNullOrEmpty(orderSql)) ? " order by " : ", ") + "O.UpdatedOn";
+                            orderSql += (string.IsNullOrEmpty(orderSql) ? " order by " : ", ") + "O.UpdatedOn";
                             orderSql += sRaw.IsAscending ? " asc" : " desc";
                             arrSort.Remove(sRaw);
                         }
@@ -1471,50 +1499,53 @@ namespace d360.web.Controllers.Services
                 #endregion
 
                 #region VALIDATION: Has user included any sort fields that are not valid on this endpoint? If so, throw error.
+                
                 if (arrSort != null)
                 {
                     if (arrSort.Count > 0)
                     {
-                        return CreateCustomApiError(HttpStatusCode.BadRequest,OthersMessages.InvalidField_OrderParameter);
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, OthersMessages.InvalidField_OrderParameter);
                     }
                 }
+
                 #endregion
 
                 #region VALIDATION: Has user included any filter fields that are not valid on this endpoint? If so, throw error.
+               
                 if (filters != null)
                 {
                     if (filters.Count > 0)
                     {
                         var badFilterFieldNames = string.Join(", ", filters.Select(i => i.FieldName));
 
-                        return CreateCustomApiError(HttpStatusCode.BadRequest,string.Format(OthersMessages.InvalidFieldFilterParameter,badFilterFieldNames));
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, string.Format(OthersMessages.InvalidFieldFilterParameter, badFilterFieldNames));
                     }
                 }
+
                 #endregion
 
                 #region VALIDATION: Has the user included any select fields that are not valid on this endpoint? If so, throw an error.
 
-
-                if(arrSelect != null && arrSelect.Count > 0)
+                if (arrSelect != null && arrSelect.Count > 0)
                 {
-                    if(arrSelect.Count != arrSelectValidFieldCount)
+                    if (arrSelect.Count != arrSelectValidFieldCount)
                     {
                         var badSelectFieldNames = string.Join(", ", arrSelect);
 
-                        return CreateCustomApiError(HttpStatusCode.BadRequest,string.Format(OthersMessages.InvalidFieldSelectQueryParameter,badSelectFieldNames));
+                        return CreateCustomApiError(HttpStatusCode.BadRequest, string.Format(OthersMessages.InvalidFieldSelectQueryParameter, badSelectFieldNames));
                     }
                 }
 
                 #endregion
 
                 var lastmodifiedDateSql = @"
-                    select max(O.UpdatedOn) as UpdatedOn
-                    from    AssetApiModel A
-                            inner join Asset O on O.ID = A.ID
-                            cross apply utility.GetAssetBusinessKey(A.ID) D 
-                            {0} 
-                    where   A.AssetTypeID = @id
-                            {1}";
+                                            select max(O.UpdatedOn) as UpdatedOn
+                                            from    AssetApiModel A
+                                                    inner join Asset O on O.ID = A.ID
+                                                    cross apply utility.GetAssetBusinessKey(A.ID) D 
+                                                    {0} 
+                                            where   A.AssetTypeID = @id
+                                                    {1}";
 
                 //Add final dynamic parameter.
                 dbArgs.Add("@id", config.First().AssetType.ID, System.Data.DbType.Int32);
@@ -1534,7 +1565,9 @@ namespace d360.web.Controllers.Services
 
                 // Page number is 0-based.
                 if (pageNumber > 0)
+                {
                     pageNumber -= 1;
+                }
 
                 //Set paging in t-sql statement.
                 sql += $" OFFSET({pageNumber * pageSize}) ROWS FETCH NEXT ({pageSize}) ROWS ONLY";
@@ -1550,7 +1583,7 @@ namespace d360.web.Controllers.Services
                 if (!requestUri.Contains("_pageSize="))
                 {
                     //add in the page size with the default value
-                    if(string.IsNullOrEmpty(Request.RequestUri.Query))
+                    if (string.IsNullOrEmpty(Request.RequestUri.Query))
                     {
                         requestUri += $"?_pageSize={pageSize}";
                     }
@@ -1558,14 +1591,13 @@ namespace d360.web.Controllers.Services
                     {
                         requestUri += $"&_pageSize={pageSize}";
                     }
-
                 }
 
                 var canoUri = requestUri;
                 var nextUri = requestUri;
                 var prevUri = requestUri;
 
-                nextUri = (nextUri.Contains("_pageNum=")) ?
+                nextUri = nextUri.Contains("_pageNum=") ?
                     nextUri.Replace($"_pageNum={currentPageNumber}", $"_pageNum={currentPageNumber + 1}") :
                     nextUri + $"&_pageNum={currentPageNumber + 1}";
 
@@ -1573,10 +1605,8 @@ namespace d360.web.Controllers.Services
                     prevUri.Replace($"_pageNum={currentPageNumber}", $"_pageNum={currentPageNumber - 1}") :
                     prevUri + $"&_pageNum={currentPageNumber - 1}";
 
-                var showPrevLink = (currentPageNumber > 1) && (count > ((currentPageNumber-1) * pageSize));
-                var showNextLink = (count > (currentPageNumber * pageSize));
-
-
+                var showPrevLink = (currentPageNumber > 1) && (count > ((currentPageNumber - 1) * pageSize));
+                var showNextLink = count > (currentPageNumber * pageSize);
 
                 #endregion
 
@@ -1589,7 +1619,7 @@ namespace d360.web.Controllers.Services
                     for (int i = 0; i < res.Count(); i++)
                     {
                         var dic = (IDictionary<string, object>)res[i];
-                        var exp = new ExpandoObject() as IDictionary<string, Object>;
+                        var exp = new ExpandoObject() as IDictionary<string, object>;
 
                         GetMultiSelectValues(multiSelectDetails, res[i], true);
                         ConvertMultiSelectValueToJson(multiSelectDetails, res[i]);
@@ -1597,18 +1627,27 @@ namespace d360.web.Controllers.Services
                         foreach (var property in dic)
                         {
                             if (property.Value != null)
+                            {
                                 exp.Add(property.Key, property.Value);
+                            }
                         }
+
                         res[i] = exp;
                     }
 
                     var json = new JsonResultsModel { total = count, items = res, _links = new List<JsonResultLinkModel>() };
 
                     json._links.Add(new JsonResultLinkModel { href = canoUri, rel = JsonResultLinkModel.CANO });
+                    
                     if (showNextLink)
+                    {
                         json._links.Add(new JsonResultLinkModel { href = nextUri, rel = JsonResultLinkModel.NEXT });
+                    }
+
                     if (showPrevLink)
+                    {
                         json._links.Add(new JsonResultLinkModel { href = prevUri, rel = JsonResultLinkModel.PREV });
+                    }
 
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
                 }
@@ -1648,6 +1687,7 @@ namespace d360.web.Controllers.Services
                         link.Add(new XAttribute("rel", JsonResultLinkModel.NEXT), new XAttribute("href", nextUri));
                         xLinks.Add(link);
                     }
+
                     if (showPrevLink)
                     {
                         link = DynamicHelper.GetXElement("link", namespaces, xLinks);
@@ -1667,15 +1707,18 @@ namespace d360.web.Controllers.Services
                 responseMessage.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { MaxAge = new TimeSpan(0, 0, 0, maxAge) };
 
                 if (lastModifiedDate.HasValue && lastModifiedDate != DateTime.MinValue)
-                    responseMessage.Content.Headers.LastModified = new DateTimeOffset(((DateTime)lastModifiedDate),
-                                 TimeZoneInfo.Local.GetUtcOffset(((DateTime)lastModifiedDate))); ;
+                {
+                    responseMessage.Content.Headers.LastModified = new DateTimeOffset((DateTime)lastModifiedDate,
+                                 TimeZoneInfo.Local.GetUtcOffset((DateTime)lastModifiedDate));
+                }
+
                 return responseMessage;
 
                 #endregion End: Collection endpoint processing
             }
             catch (Exception r)
             {
-                SendException(r, new Dictionary<string,string>());
+                SendException(r, new Dictionary<string, string>());
 
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, OthersMessages.ServerErrorOccurred);
             }
@@ -1686,8 +1729,8 @@ namespace d360.web.Controllers.Services
             return Request.RequestUri.AbsoluteUri;
         }
 
-
         #region Version Endpoints
+
         /// <summary>
         /// Returns the version information of the current custom api.
         /// </summary>
@@ -1722,7 +1765,7 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return CreateCustomApiError(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
+                    return CreateCustomApiError(HttpStatusCode.NotFound, OthersMessages.EndPointNotFound);
                 }
 
                 var acceptHeaders = Request.Headers.Accept;
@@ -1739,7 +1782,7 @@ namespace d360.web.Controllers.Services
                 {
                     var json = new JsonVersionModel { APIVersionNumber = apiVersion, ImplementationVersion = governVersion };
 
-                    responseMessage = Request.CreateResponse(HttpStatusCode.OK, json , "application/json");
+                    responseMessage = Request.CreateResponse(HttpStatusCode.OK, json, "application/json");
                 }
                 else
                 {
@@ -1764,9 +1807,11 @@ namespace d360.web.Controllers.Services
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, OthersMessages.ServerErrorOccurred);
             }
         }
+
         #endregion
 
         #region Health Endpoints
+
         /// <summary>
         /// Returns the Health, is used to check if the backend of the system is up / down
         /// </summary>
@@ -1803,7 +1848,7 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.NotFound,OthersMessages.EndPointNotFound);
+                    return Request.CreateResponse(HttpStatusCode.NotFound, OthersMessages.EndPointNotFound);
                 }
             }
             catch (Exception)

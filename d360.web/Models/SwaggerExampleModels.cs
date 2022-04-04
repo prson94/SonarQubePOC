@@ -12,8 +12,7 @@ namespace d360.web.Models
     {
         public object GetExamples()
         {
-            return //new AssetInserts() {
-                new AssetInsert
+            return new AssetInsert
                 {
                     ExecutionItemUid = Guid.Empty,
                     ParentUid = Guid.Empty,
@@ -22,7 +21,6 @@ namespace d360.web.Models
                         { "MyApiFieldName2", "My Field value" }
                     }
                 };
-            //};
         }
     }
 
@@ -74,8 +72,7 @@ namespace d360.web.Models
     {
         public object GetExamples()
         {
-            return //new AssetUpdates() {
-                new AssetUpdate
+            return new AssetUpdate
                 {
                     ExecutionItemUid = Guid.Empty,
                     Uid = Guid.Empty,
@@ -85,7 +82,6 @@ namespace d360.web.Models
                         { "MyApiFieldName2", "My Field value" }
                     }
                 };
-            //};
         }
     }
 
@@ -130,7 +126,6 @@ namespace d360.web.Models
         }
     }
 
-
     #region Asset Browser
 
     public class GetAssetLineagePostModelExample : IExamplesProvider
@@ -160,10 +155,9 @@ namespace d360.web.Models
                 PredicateUid = Guid.Empty,
                 SubjectUid = Guid.Empty,
                 ObjectUid = Guid.Empty,
-                SubjectCardinality = core.enums.Cardinality.Many,
-                ObjectCardinality = core.enums.Cardinality.Many
+                SubjectCardinality = Cardinality.Many,
+                ObjectCardinality = Cardinality.Many
             };
-
         }
     }
 
@@ -178,10 +172,9 @@ namespace d360.web.Models
                 PredicateUid = Guid.Empty,
                 SubjectUid = Guid.Empty,
                 ObjectUid = Guid.Empty,
-                SubjectCardinality = core.enums.Cardinality.Many,
-                ObjectCardinality = core.enums.Cardinality.Many
+                SubjectCardinality = Cardinality.Many,
+                ObjectCardinality = Cardinality.Many
             };
-
         }
     }
 
@@ -198,13 +191,8 @@ namespace d360.web.Models
         }
     }
 
-
     #endregion
-    #region Workflow Type Examples
 
-
-
-    #endregion
     #region Data Quality Examples
     public class DataQualityUpdateExample : IExamplesProvider
     {
@@ -343,6 +331,7 @@ namespace d360.web.Models
             };
         }
     }
+
     public class ResponsibilitiesDeleteExample : IExamplesProvider
     {
         public object GetExamples()
@@ -351,6 +340,7 @@ namespace d360.web.Models
                 new ResponsibilityOverrideDeleteModel() { ResourceUid = Guid.Empty };
         }
     }
+
     #endregion
 
     #region Export Template Examples

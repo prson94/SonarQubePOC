@@ -1,16 +1,20 @@
-﻿using d360.model.DataAccessLayer;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
+using d360.web.Models;
+
+using Microsoft.Web.Http;
+
 using Newtonsoft.Json;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -20,13 +24,13 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/health")
-        
+
     ]
     public class HealthController : BaseV2ApiController
     {
         private IApplicationHealthDapperRepository ApplicationHealthDapperRepository { get; }
 
-        public HealthController(CoreComponentSet set, IApplicationHealthDapperRepository applicationHealthDapperRepository): base(set)
+        public HealthController(CoreComponentSet set, IApplicationHealthDapperRepository applicationHealthDapperRepository) : base(set)
         {
             ApplicationHealthDapperRepository = applicationHealthDapperRepository;
         }
@@ -35,16 +39,16 @@ namespace d360.web.Controllers.V2
         /// Get the health of the system
         /// </summary>
         /// <returns>An HTTP status code</returns>
-        [HttpGet,
+        [
+            HttpGet,
             Route(""),
-             SwaggerResponse(HttpStatusCode.OK, "API call was successful and connect to the database"),
+            SwaggerResponse(HttpStatusCode.OK, "API call was successful and connect to the database"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "API call was not successful and cannot connect to the database"),
-           
-            ]
+        ]
         public async Task<IHttpActionResult> GetHealth()
         {
             var prefix = "Health.GetHealth => ";
-            var errorMessage = "";
+
             try
             {
                 if (Company.Connection.State != System.Data.ConnectionState.Open)
@@ -57,9 +61,6 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                
-
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });

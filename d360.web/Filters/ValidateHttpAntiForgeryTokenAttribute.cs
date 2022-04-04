@@ -7,6 +7,7 @@ using System.Web.Helpers;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Web.Mvc;
+
 // See http://aspnet13.orcsweb.com/web-api/overview/security/preventing-cross-site-request-forgery-(csrf)-attacks
 namespace d360.web.Filters
 {
@@ -40,13 +41,13 @@ namespace d360.web.Filters
 
         private bool IsAjaxRequest(HttpRequestMessage request)
         {
-            IEnumerable<string> xRequestedWithHeaders;
-            if (request.Headers.TryGetValues("X-Requested-With", out xRequestedWithHeaders))
+            if (request.Headers.TryGetValues("X-Requested-With", out IEnumerable<string> xRequestedWithHeaders))
             {
                 string headerValue = xRequestedWithHeaders.FirstOrDefault();
-                if (!String.IsNullOrEmpty(headerValue))
+
+                if (!string.IsNullOrEmpty(headerValue))
                 {
-                    return String.Equals(headerValue, "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+                    return string.Equals(headerValue, "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -55,16 +56,17 @@ namespace d360.web.Filters
 
         private void ValidateRequestHeader(HttpRequestMessage request)
         {
-            string cookieToken = String.Empty;
-            string formToken = String.Empty;
+            string cookieToken = string.Empty;
+            string formToken = string.Empty;
 
-            IEnumerable<string> tokenHeaders;
-            if (request.Headers.TryGetValues(RequestVerificationTokenName, out tokenHeaders))
+            if (request.Headers.TryGetValues(RequestVerificationTokenName, out IEnumerable<string> tokenHeaders))
             {
                 string tokenValue = tokenHeaders.FirstOrDefault();
-                if (!String.IsNullOrEmpty(tokenValue))
+
+                if (!string.IsNullOrEmpty(tokenValue))
                 {
                     string[] tokens = tokenValue.Split(':');
+                    
                     if (tokens.Length == 2)
                     {
                         cookieToken = tokens[0].Trim();

@@ -1,9 +1,8 @@
-﻿using d360.web.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Web;
+
+using d360.web.Utilities;
+
 namespace WebApp
 {
     public class ChunkLocaleJSHandler : IHttpHandler
@@ -17,6 +16,7 @@ namespace WebApp
                 var localeCode = InternationalizationUtilities.GetUserLocaleCode();
                 fileToServe = fileToServe.Replace("chunks", localeCode);
             }
+
             FileInfo jsFile = new FileInfo(context.Server.MapPath(fileToServe));
             context.Response.ClearContent();
             context.Response.ContentType = "text/javascript";
@@ -24,14 +24,8 @@ namespace WebApp
             context.Response.TransmitFile(jsFile.FullName);
             context.Response.Flush();
             context.Response.End();
+        }
 
-        }
-        public bool IsReusable
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReusable => false;
     }
 }

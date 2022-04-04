@@ -1,6 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+
 using d360.model.DataAccessLayer;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -23,8 +25,11 @@ namespace d360.web.Services
             await Mediator.EntityValidators().ResponsibilityTypeIsExists(request.ResponsibilityTypeUid, cancellationToken);
 
             // act
-            var result = new ResponsibilityGetTypeBreakdownResponse();
-            result.Data = await ResponsibilityRepository.GetResponsibilityTypeBreakdownAsync(request.ResponsibilityTypeUid);
+            var result = new ResponsibilityGetTypeBreakdownResponse
+            {
+                Data = await ResponsibilityRepository.GetResponsibilityTypeBreakdownAsync(request.ResponsibilityTypeUid)
+            };
+
             return result;
         }
     }

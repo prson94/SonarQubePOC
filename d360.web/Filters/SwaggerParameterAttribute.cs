@@ -16,10 +16,15 @@ namespace d360.web.Filters
         }
 
         public string Name { get; private set; }
+
         public string DataType { get; set; }
+
         public string ParameterType { get; set; }
+
         public string Description { get; private set; }
+
         public bool Required { get; set; } = false;
+
         public Type Enum { get; set; }
     }
 
@@ -27,7 +32,6 @@ namespace d360.web.Filters
     {
         public void Apply(Operation operation, SchemaRegistry schema, ApiDescription description)
         {
-
             var attributes = description.ActionDescriptor.GetCustomAttributes<SwaggerParameterAttribute>();
 
             if (operation.parameters == null)

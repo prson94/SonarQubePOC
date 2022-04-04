@@ -1,6 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+
 using d360.model.DataAccessLayer;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -20,6 +22,7 @@ namespace d360.web.Services
         public async Task<int?> Handle(Argument request, CancellationToken cancellationToken)
         {
             request.Route = request.Route.Trim();
+
             return await favoritesRepository.GetFavoriteIdByRoute(request.ResourceId, request.Route);
         }
 

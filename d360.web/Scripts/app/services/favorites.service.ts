@@ -1,14 +1,13 @@
 import { Observable, Subject, forkJoin } from "rxjs";
 import { catchError, map, shareReplay, takeUntil, tap } from "rxjs/operators";
-import { HttpClient, HttpContext } from "@angular/common/http";
-import { Injectable } from '@angular/core';
+import {HttpClient} from "@angular/common/http";
+import {Injectable} from '@angular/core';
 
-import { FavoriteApiModel, FavoriteViewModel, HomepageAndFavoritesModel } from '../models/favorite.model';
-import { JsonResult } from '../models/jsonresult.model';
+import { FavoriteApiModel, FavoriteViewModel, HomepageAndFavoritesModel} from '../models/favorite.model';
+import {JsonResult} from '../models/jsonresult.model';
 
-import { MessagesObservableService } from './messages-observable.service';
-import { BaseObservableService } from "./baseObservable.service";
-import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
+import {MessagesObservableService} from './messages-observable.service';
+import {BaseObservableService} from "./baseObservable.service";
 
 @Injectable({
     providedIn: 'root'
@@ -24,10 +23,7 @@ export class FavoritesService extends BaseObservableService {
     getFavorites(): Observable<FavoriteViewModel[]> {
         return this
             .http
-            .get(
-                'api/v2/membership/users/me/favorites',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
+            .get(`api/v2/membership/users/me/favorites`)
             .pipe(
                 map(response => <FavoriteApiModel[]>response),
                 catchError(err => this.handleError(err))
@@ -37,9 +33,7 @@ export class FavoritesService extends BaseObservableService {
     deleteCurrentUsersFavoritesV2(favoriteIds: number[]): Observable<JsonResult> {
         return this
             .http
-            .delete('api/v2/membership/users/me/favorites/bulk', {
-                body: favoriteIds
-            })
+            .delete('api/v2/membership/users/me/favorites/bulk', { body: favoriteIds })
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err => this.handleError(err)),
@@ -59,11 +53,9 @@ export class FavoritesService extends BaseObservableService {
     }
 
     GetHomePage(): Observable<FavoriteApiModel> {
-        return this.http
-            .get(
-                'api/v2/membership/users/me/getHomePage',
-                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
-            )
+        return this
+            .http
+            .get(`api/v2/membership/users/me/getHomePage`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

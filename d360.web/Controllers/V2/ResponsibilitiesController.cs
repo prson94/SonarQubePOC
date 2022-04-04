@@ -1,29 +1,31 @@
-﻿using d360.core.entities;
-using d360.model;
-using d360.web.Filters;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Dapper;
-using d360.model.DataAccessLayer;
-using Resources;
-using System.Diagnostics;
 using System.Web.Http.Description;
+
+using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
+using d360.web.Models;
 using d360.web.Services;
 using d360.web.Utilities;
-using DocumentFormat.OpenXml.Drawing;
+
 using MediatR;
+
+using Microsoft.Web.Http;
+
+using Resources;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -37,13 +39,11 @@ namespace d360.web.Controllers.V2
     ]
     public class ResponsibilitiesController : BaseV2ApiController
     {
-        private IApplicationUriProvider ApplicationUriProvider { get; }
         private readonly IAssetRepository AssetRepository;
         private IMediator Mediator { get; }
-        private IResponsibilityRepository ResponsibilityRepository;
+        private readonly IResponsibilityRepository ResponsibilityRepository;
 
-        public ResponsibilitiesController(ICoreComponentSet set, 
-            IApplicationUriProvider applicationUriProvider, 
+        public ResponsibilitiesController(ICoreComponentSet set,
             IAssetRepository assetRepository,
             IMediator mediator,
             IResponsibilityRepository responsibilityRepository
@@ -51,9 +51,8 @@ namespace d360.web.Controllers.V2
             : base(set)
         {
             Mediator = mediator;
-            ApplicationUriProvider = applicationUriProvider;
-            this.ResponsibilityRepository = responsibilityRepository;
-            this.AssetRepository = assetRepository;
+            ResponsibilityRepository = responsibilityRepository;
+            AssetRepository = assetRepository;
         }
 
         /// <summary>
@@ -71,7 +70,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityTypesAsync()
         {
             var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -111,7 +110,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityTypeAsync(Guid uid)
         {
             var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
             {
@@ -146,16 +145,16 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of claims for assignment.", typeof(List<ClaimsViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-       ]
+        ]
         public async Task<HttpResponseMessage> GetClaimsAsync()
         {
             var prefix = "Responsibilities.GetClaimsAsync => ";
-            var errorMessage = "";
-
+            string errorMessage;
 
             try
             {
                 var claims = await ResponsibilityRepository.GetClaims();
+
                 return Request.CreateResponse(HttpStatusCode.OK, claims);
             }
             catch (Exception ex)
@@ -168,6 +167,7 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
         /// <summary>
         /// Retrieves a list of responsibility types that are applicable for the specified AssetTypeUid.
         /// </summary>
@@ -185,8 +185,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
         {
             var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
-            var errorMessage = "";
-
+            string errorMessage;
             var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
             if (assetType == null)
@@ -232,10 +231,12 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
         {
             var prefix = "Responsibilities.GetResponsibilityTypeAllocationsAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+            }
 
             try
             {
@@ -270,10 +271,12 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsByAssetAsync(Guid assetTypeUid)
         {
             var prefix = "Responsibilities.GetResponsibilityTypeAllocationsByAssetAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+            }
 
             try
             {
@@ -311,11 +314,12 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
         {
             var prefix = "Responsibilities.PostResponsibilityTypeAllocationsAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-
+            }
 
             try
             {
@@ -323,6 +327,7 @@ namespace d360.web.Controllers.V2
 
                 //valdiate the responsibilitytype uid passed in
                 ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
+                
                 if (responsibility == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
@@ -331,6 +336,7 @@ namespace d360.web.Controllers.V2
                 foreach (var allocation in model)
                 {
                     AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
+                   
                     if (assetType == null)
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
@@ -341,6 +347,7 @@ namespace d360.web.Controllers.V2
                         });
                         continue;
                     }
+
                     List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
                     {
                         AssetTypeClass.BusinessAsset,
@@ -350,14 +357,16 @@ namespace d360.web.Controllers.V2
                         AssetTypeClass.Policy,
                         AssetTypeClass.Reference
                     };
+
                     if (!allowedClasses.Contains(assetType.Class))
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message =string.Format (ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+                            Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -370,6 +379,7 @@ namespace d360.web.Controllers.V2
                             Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -381,6 +391,7 @@ namespace d360.web.Controllers.V2
                             Message = ActionApiMessages.UniqueAllocation,
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -417,11 +428,12 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PutResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
         {
             var prefix = "Responsibilities.PutResponsibilityTypeAllocationsAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-
+            }
 
             try
             {
@@ -444,6 +456,7 @@ namespace d360.web.Controllers.V2
                             Message = ActionApiMessages.InvalidAssetTypeUid,
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -461,9 +474,10 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format (ResponsibilityApiMessages.InvalidAssetTypeClass,assetType.Class.ToString()),
+                            Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -473,9 +487,10 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided,string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
+                            Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -487,6 +502,7 @@ namespace d360.web.Controllers.V2
                             Message = ResponsibilityApiMessages.AllocationNotFound,
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -522,13 +538,12 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteResponsibilityTypeAllocationsAsync(Guid uid, ResponsibilityTypeAllocationDeleteModel model)
         {
             var prefix = "Responsibilities.DeleteResponsibilityTypeAllocationsAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
             }
-
 
             try
             {
@@ -551,6 +566,7 @@ namespace d360.web.Controllers.V2
                             Message = ActionApiMessages.InvalidAssetTypeUid,
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -563,14 +579,16 @@ namespace d360.web.Controllers.V2
                         AssetTypeClass.Policy,
                         AssetTypeClass.ReferenceItemType
                     };
+
                     if (!allowedClasses.Contains(assetType.Class))
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format (ResponsibilityApiMessages.InvalidAssetTypeClass,assetType.Class.ToString()),
+                            Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -582,10 +600,12 @@ namespace d360.web.Controllers.V2
                             Message = ResponsibilityApiMessages.AllocationNotFound,
                             Success = false
                         });
+
                         continue;
                     }
 
                     string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibility, assetType);
+                    
                     if (ownershipLookupMessage != "")
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
@@ -594,6 +614,7 @@ namespace d360.web.Controllers.V2
                             Message = ownershipLookupMessage,
                             Success = false
                         });
+
                         continue;
                     }
 
@@ -611,7 +632,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
         /// <summary>
         /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.
         /// </summary>
@@ -628,10 +648,12 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityRulesForTypeAsync(Guid responsibilityTypeUid)
         {
             var prefix = "Responsibilities.GetResponsibilityRulesForTypeAsync => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+            }
 
             try
             {
@@ -650,8 +672,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
-
         /// <summary>
         /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.  Rules applied to groups and organizations are enumerated to the actual count of users contained therein.  Rules applying to a type are enumerated down to the count of assets within the given type.
         /// </summary>
@@ -668,10 +688,12 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilityRulesStats(Guid responsibilityTypeRuleUid)
         {
             var prefix = "Responsibilities.GetResponsibilityRulesStats => ";
-            var errorMessage = "";
+            string errorMessage;
 
             if (!Company.CurrentResourceIsAdmin)
+            {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+            }
 
             try
             {
@@ -712,7 +734,7 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetResponsibilities()
         {
             var prefix = "Responsibilities.GetResponsibilities => ";
-            var errorMessage = "";
+            string errorMessage;
 
             try
             {
@@ -725,10 +747,7 @@ namespace d360.web.Controllers.V2
                 Guid assetTypeUidFilter = Guid.Empty;
                 string pageSize = "5";
                 string pageNum = "1";
-                int _pageSize;
-                int _pageNum;
                 var timeout = 300;
-
 
                 foreach (var q in queryParams.ToList())
                 {
@@ -790,14 +809,13 @@ namespace d360.web.Controllers.V2
                 }
 
                 //validation dont allow assigneeuid filter across entire universe
-
                 if (assigneeUidFilter != Guid.Empty && assetTypeUidFilter == Guid.Empty && assetUidFilter == Guid.Empty)
                 {
                     return ReturnApiError(HttpStatusCode.BadRequest, ResponsibilityApiMessages.assigneeUidFilterValidation);
                 }
 
-                int.TryParse(pageSize, out _pageSize);
-                int.TryParse(pageNum, out _pageNum);
+                int.TryParse(pageSize, out int _pageSize);
+                int.TryParse(pageNum, out int _pageNum);
 
                 AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, responsibilityUidFilter, assigneeUidFilter, assetUidFilter, assetTypeUidFilter, _pageSize, _pageNum, timeout);
 
@@ -832,7 +850,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> InsertResponsibilityTypes(List<ResponsibilityTypeInsertModel> responsibilityTypes)
         {
             var prefix = "Responsibilities.InsertResponsibilityTypes => ";
-            var errorMessage = "";
+            string errorMessage;
+
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
@@ -866,6 +885,7 @@ namespace d360.web.Controllers.V2
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
                     }
+
                     if (type.Description?.Trim().Length > 4000)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length))).ConfigureAwait(false);
@@ -874,9 +894,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+                
                 if (existingUids.Any())
                 {
                     errorMessage = string.Format(ResponsibilityApiMessages.ResponsibilityUidNonUnique, string.Join(", ", existingUids.Select(i => i.ToString())));
+                    
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, errorMessage))).ConfigureAwait(false);
                 }
 
@@ -892,8 +914,8 @@ namespace d360.web.Controllers.V2
                 });
 
                 List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
+                
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-
             }
             catch (Exception ex)
             {
@@ -919,7 +941,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetOwnershipOfAsset(Guid assetUid)
         {
             var prefix = "Responsibilities.GetOwnershipOfAsset => ";
-            var errorMessage = "";
+            string errorMessage;
 
             try
             {
@@ -929,7 +951,6 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
                 }
-
 
                 var res = await ResponsibilityRepository.GetOwnership(assetUid);
 
@@ -962,7 +983,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetAssetHasOwnership(Guid assetUid)
         {
             var prefix = "Responsibilities.GetAssetHasOwnership => ";
-            var errorMessage = "";
+            string errorMessage;
 
             try
             {
@@ -972,7 +993,6 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
                 }
-
 
                 var res = await ResponsibilityRepository.HasOwnership(assetUid);
 
@@ -988,7 +1008,6 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
             }
         }
-
 
         /// <summary>
         /// Updates responsibility types of a given responsibility types list.
@@ -1008,7 +1027,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> UpdateResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypes)
         {
             var prefix = "Responsibilities.UpdateResponsibilityTypes => ";
-            var errorMessage = "";
+            string errorMessage;
+            
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
@@ -1077,7 +1097,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypes)
         {
             var prefix = "Responsibilities.DeleteResponsibilityTypes => ";
-            var errorMessage = "";
+            string errorMessage;
+
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
@@ -1104,7 +1125,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
         /// <summary>
         /// Adds responsibility override to asset for a given Resource Uid list.
         /// </summary>
@@ -1125,18 +1145,20 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePostModel model)
         {
             var prefix = "Responsibilities.AddResponsibilitiesOverride => ";
-            var errorMessage = "";
+            string errorMessage;
+            
             try
             {
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
+                
                 if (asset == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
                 }
 
-
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
+                
                 if (responsibility == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()))).ConfigureAwait(false);
@@ -1146,7 +1168,6 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
                 }
-
 
                 bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
@@ -1191,7 +1212,6 @@ namespace d360.web.Controllers.V2
                 ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
                 return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ResponsibilityApiMessages.ResponsibilitySuccessAddMessage)).ConfigureAwait(false);
-
             }
             catch (Exception ex)
             {
@@ -1220,7 +1240,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> BulkAddResponsibilitiesOverride(List<BulkResponsibilityOverridePostModel> models)
         {
             var prefix = "Responsibilities.BulkAddResponsibilitiesOverride => ";
-            var errorMessage = "";
+            string errorMessage;
+          
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
@@ -1229,7 +1250,6 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(models.Count);
-
                 ApiExecutionInfo executionInfo = await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
 
                 var result = Request.CreateResponse(
@@ -1250,10 +1270,9 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError,ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
         }
-
 
         /// <summary>
         /// Deletes responsibility overrides from asset for a given Resource Uid list.
@@ -1276,17 +1295,20 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] List<ResponsibilityOverrideDeleteModel> resourceUids)
         {
             var prefix = "Responsibilities.DeleteResponsibilitiesOverride => ";
-            var errorMessage = "";
+            string errorMessage;
+
             try
             {
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
+
                 if (asset == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
                 }
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
+               
                 if (responsibility == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()))).ConfigureAwait(false);
@@ -1297,12 +1319,11 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
                 }
 
-
                 bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
                 if (!isValidResponsibilityForAsset)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest,ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset)).ConfigureAwait(false);
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset)).ConfigureAwait(false);
                 }
 
                 if (resourceUids.Count == 0)
@@ -1341,7 +1362,6 @@ namespace d360.web.Controllers.V2
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
                 return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ResponsibilityApiMessages.ResponsibilitySuccessDeleteMessage)).ConfigureAwait(false);
-
             }
             catch (Exception ex)
             {
@@ -1396,7 +1416,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PostResponsibilityRules => ";
-            var errorMessage = "";
+            string errorMessage;
+
             try
             {
 
@@ -1413,6 +1434,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
+               
                 if (existingUids.Any())
                 {
                     errorMessage = string.Format(ResponsibilityApiMessages.DuplicateResponsibilityRule, string.Join(", ", existingUids.Select(i => i.ToString())));
@@ -1422,6 +1444,7 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(responsibilityRules.Count);
 
                 var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -1475,7 +1498,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PutResponsibilityRules => ";
-            var errorMessage = "";
+            string errorMessage;
+
             try
             {
 
@@ -1492,8 +1516,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(responsibilityRules.Count);
-
                 var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
@@ -1538,6 +1562,7 @@ namespace d360.web.Controllers.V2
 
             // convert result to UI (API) representation.
             var result = response.Data;
+
             return Ok(result);
         }
 
@@ -1571,6 +1596,7 @@ namespace d360.web.Controllers.V2
 
             // convert result to UI (API) representation.
             var result = response.Data;
+
             return Ok(result);
         }
 
@@ -1606,6 +1632,7 @@ namespace d360.web.Controllers.V2
 
             // convert result to UI (API) representation.
             var result = response.ItemCollection;
+
             return Ok(result);
         }
 
@@ -1655,10 +1682,12 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> TestResponsibilityRules(string testType, [FromBody] ResponsibilityRuleUpsertModel responsibilityRule)
         {
             var prefix = "Relationships.TestResponsibilityRules => ";
-            var errorMessage = "";
+            string errorMessage;
+
             try
             {
                 var allowedTests = new[] { "when", "then" };
+
                 if (!allowedTests.Contains(testType.ToLower()))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidTestType)).ConfigureAwait(false);
@@ -1674,6 +1703,7 @@ namespace d360.web.Controllers.V2
                 var includeThen = testType.ToLower() == "then";
 
                 var pageValid = isPageSizeAndNumValid(queryParams);
+
                 if (!string.IsNullOrEmpty(pageValid))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, pageValid)).ConfigureAwait(false);

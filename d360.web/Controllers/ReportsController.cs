@@ -1,21 +1,22 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.model;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using Microsoft.PowerBI.Api.V2;
-using Microsoft.Rest;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.Entity;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using System.Data.Entity;
-using System.Net;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using System.Configuration;
+
+using d360.core;
+using d360.core.entities;
 using d360.core.entities.Views;
-using d360.model.DataAccessLayer;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.PowerBI.Api.V2;
+using Microsoft.Rest;
+
 using Resources;
 
 namespace d360.web.Controllers
@@ -36,7 +37,6 @@ namespace d360.web.Controllers
         private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
         private static readonly string pbiUrl = "https://api.powerbi.com";
-
 
         [Route("powerbi/tokens/{reportId}")]
         public async Task<JsonNetResult> GetPowerBITokens(string reportId)
@@ -99,6 +99,7 @@ namespace d360.web.Controllers
             if (!Company.CurrentResourceIsAdmin)
             {
                 Response.StatusCode = (int)HttpStatusCode.Forbidden;
+
                 return null;
             }
 
@@ -106,14 +107,23 @@ namespace d360.web.Controllers
 
             foreach (var report in reports)
             {
-                if (report.Responsibilities == null) continue;
+                if (report.Responsibilities == null)
+                {
+                    continue;
+                }
+
                 var visibleTo = "";
+
                 foreach (var responsibility in report.Responsibilities)
                 {
                     if (!string.IsNullOrEmpty(visibleTo))
+                    {
                         visibleTo += ",";
+                    }
+
                     visibleTo += responsibility.ResponsibilityTypeID.ToString();
                 }
+
                 report.VisibleTo = string.IsNullOrEmpty(visibleTo) ? null : visibleTo;
             }
 
@@ -129,6 +139,7 @@ namespace d360.web.Controllers
 
                 SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
                 var objectId = id;
+
                 if (objectType == SystemObjects.Artifact || objectType == SystemObjects.Taxonomy)
                 {
                     var asset = Company.AssetDetails.Where(x => x.Object == objectType.ToString() && x.ObjectID == id).First();
@@ -139,19 +150,25 @@ namespace d360.web.Controllers
                 var reports = Company.Filter<Report>(x => x.ObjectType == type && x.ObjectID == objectId && x.ReportType != "legacy").Include(rpt => rpt.Responsibilities).OrderBy(i => i.Name).ToList();
 
                 List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
+                
                 if (!string.IsNullOrEmpty(type) && !isType)
                 {
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
                     var asset = Company.GetAssetDetail(type, id);
 
                     if (asset != null)
+                    {
                         currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
-
+                    }
                 }
                 else if (isType)
+                {
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == id && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                }
                 else
+                {
                     currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                }
 
                 var currentUserResponsibilityTypeIDList = new List<int>();
 
@@ -177,8 +194,11 @@ namespace d360.web.Controllers
                                 break;
                             }
                         }
+
                         if (!userHasAccess)
+                        {
                             reports.RemoveAt(i);
+                        }
                     }
                 }
 
@@ -194,16 +214,21 @@ namespace d360.web.Controllers
 
                     if (report.Responsibilities != null && report.Responsibilities.Count > 0)
                     {
-                        List<core.entities.Views.ResponsibilityDetail> currentUserResponsibilityType = new List<core.entities.Views.ResponsibilityDetail>();
+                        List<ResponsibilityDetail> currentUserResponsibilityType;
+                        
                         if (!string.IsNullOrEmpty(report.ObjectType) && !report.ObjectType.Contains("Type"))
                         {
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
                             currentUserResponsibilityType.AddRange(Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == report.ObjectType + "Type" && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
                         }
                         else if (report.ObjectType.Contains("Type"))
+                        {
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
+                        }
                         else
+                        {
                             currentUserResponsibilityType = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == report.ObjectType && x.ResourceID == Company.CurrentResourceID).ToList();
+                        }
 
                         var currentUserResponsibilityTypeIDList = new List<int>();
 
@@ -222,8 +247,11 @@ namespace d360.web.Controllers
                                 break;
                             }
                         }
+
                         if (!userHasAccess)
+                        {
                             reports.RemoveAt(i);
+                        }
                     }
                 }
 
@@ -236,7 +264,7 @@ namespace d360.web.Controllers
         {
             var report = Company.Reports.Include(rpt => rpt.Responsibilities).FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
 
-            if(report == null)
+            if (report == null)
             {
                 return new HttpNotFoundResult();
             }
@@ -246,19 +274,25 @@ namespace d360.web.Controllers
             bool isType = type.Contains("Type");
 
             List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
+
             if (!string.IsNullOrEmpty(type) && !isType)
             {
                 currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
                 var asset = Company.AssetTypes.FirstOrDefault(x => x.Object == (type + "Type") && x.ObjectID == report.ObjectID);
 
                 if (asset != null)
+                {
                     currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.ID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
-
+                }
             }
             else if (isType)
+            {
                 currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == report.ObjectID && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
+            }
             else
+            {
                 currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+            }
 
             var currentUserResponsibilityTypeIDList = new List<int>();
 
@@ -280,9 +314,13 @@ namespace d360.web.Controllers
                         break;
                     }
                 }
+
                 if (!userHasAccess)
+                {
                     report = null;
+                }
             }
+
             return new JsonNetResult { Data = report, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
@@ -290,6 +328,7 @@ namespace d360.web.Controllers
         public JsonNetResult GetHomePageReports()
         {
             var reports = Company.Filter<Report>(r => r.ShowOnHomePage && r.ReportType.ToLower() != "legacy").ToList();
+
             return new JsonNetResult
             {
                 Data = reports,
