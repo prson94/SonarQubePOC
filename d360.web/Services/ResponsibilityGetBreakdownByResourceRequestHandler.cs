@@ -1,9 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using d360.model.DataAccessLayer;
 using d360.model.DataAccessLayer.repositories;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -30,19 +31,24 @@ namespace d360.web.Services
 
             var aggregateCollection = await ResponsibilityRepository.GetResponsibilityBreakdownByResourceAsync(request.ResourceUid, request.ResponsibilityTypeUid);
 
-            var response = new ResponsibilityGetBreakdownByResourceResponse();
-            response.ItemCollection = aggregateCollection.Select(Convert).ToArray();
+            var response = new ResponsibilityGetBreakdownByResourceResponse
+            {
+                ItemCollection = aggregateCollection.Select(Convert).ToArray()
+            };
 
             return response;
         }
 
         private ResponsibilityGetBreakdownByResourceModel Convert(ResponsibilityBreakdownByResourceAggregate aggregate)
         {
-            var result = new ResponsibilityGetBreakdownByResourceModel();
-            result.Name = AssetService.GetAssetName(aggregate.AssetType);
-            result.Class = aggregate.AssetType.Class.ToString();
-            result.AssetTypeUid = aggregate.AssetType.uid;
-            result.AssetCount = aggregate.AssetCount;
+            var result = new ResponsibilityGetBreakdownByResourceModel
+            {
+                Name = AssetService.GetAssetName(aggregate.AssetType),
+                Class = aggregate.AssetType.Class.ToString(),
+                AssetTypeUid = aggregate.AssetType.uid,
+                AssetCount = aggregate.AssetCount
+            };
+
             return result;
         }
     }

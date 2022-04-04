@@ -1,46 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace d360.model.workflow
 {
     public class WorkflowFieldUpdateSettings
     {
-        private static string FIELD_ID = "FieldId";
-        private static string VALUE = "Value";
-        private static string CURRENT_DATE = "UseCurrentDate";
-        private static string CLEAR_VALUE = "ClearValue";
-        private static string USEFORM_VALUE = "UseFormValue";
-        private static string FORM_FIELD_ID = "FormFieldId";
-        private static string FORM_STEP_ID = "FormStepId";
-        private static string APPEND_VALUE = "AppendValue";
-        private static string OBJECT_TYPE = "ObjectType";
-        private static string IS_ACTION_FORM = "IsActionForm";
-        private static string USE_OUTPUT_VALUE = "UseOutputValue";
+        private static readonly string FIELD_ID = "FieldId";
+        private static readonly string VALUE = "Value";
+        private static readonly string CURRENT_DATE = "UseCurrentDate";
+        private static readonly string CLEAR_VALUE = "ClearValue";
+        private static readonly string USEFORM_VALUE = "UseFormValue";
+        private static readonly string FORM_FIELD_ID = "FormFieldId";
+        private static readonly string FORM_STEP_ID = "FormStepId";
+        private static readonly string APPEND_VALUE = "AppendValue";
+        private static readonly string OBJECT_TYPE = "ObjectType";
+        private static readonly string IS_ACTION_FORM = "IsActionForm";
+        private static readonly string USE_OUTPUT_VALUE = "UseOutputValue";
 
         public int FieldID { get; set; }
 
         public string Value { get; set; }
 
         public string ObjectType { get; set; }
+        
         public bool CurrentDate { get; set; }
+        
         public bool ClearValue { get; set; }
 
         public bool AppendValue { get; set; }
 
         public bool UseFormValue { get; set; }
+        
         public bool IsActionForm { get; set; }
+        
         public bool UseOutputValue { get; set; }
+        
         public string FormField { get; set; }
+        
         public int FormStepID { get; set; }
-
 
         public static WorkflowFieldUpdateSettings ParseXml(XElement xml)
         {
-            var model = new WorkflowFieldUpdateSettings();
+            WorkflowFieldUpdateSettings model = new WorkflowFieldUpdateSettings();
 
             int fieldId = 0;
             string value = "";
@@ -56,12 +56,12 @@ namespace d360.model.workflow
 
             if (xml.Attribute(FIELD_ID) != null)
             {
-                int.TryParse(xml.Attribute(FIELD_ID).Value, out fieldId);                
+                int.TryParse(xml.Attribute(FIELD_ID).Value, out fieldId);
             }
 
-            if(xml.Attribute(VALUE) != null)
+            if (xml.Attribute(VALUE) != null)
             {
-                value = xml.Attribute(VALUE).Value;                
+                value = xml.Attribute(VALUE).Value;
             }
 
             if (xml.Attribute(OBJECT_TYPE) != null)
@@ -70,16 +70,16 @@ namespace d360.model.workflow
             }
 
             if (xml.Attribute(CURRENT_DATE) != null)
-            {                
+            {
                 bool.TryParse(xml.Attribute(CURRENT_DATE).Value, out isCurrentDate);
             }
 
-            if(xml.Attribute(CLEAR_VALUE) != null)
+            if (xml.Attribute(CLEAR_VALUE) != null)
             {
                 bool.TryParse(xml.Attribute(CLEAR_VALUE).Value, out isClearValue);
             }
 
-            if(xml.Attribute(USEFORM_VALUE) != null)
+            if (xml.Attribute(USEFORM_VALUE) != null)
             {
                 bool.TryParse(xml.Attribute(USEFORM_VALUE).Value, out useFormValue);
             }
@@ -99,7 +99,7 @@ namespace d360.model.workflow
                 int.TryParse(xml.Attribute(FORM_STEP_ID).Value, out formStepId);
             }
 
-            if(xml.Attribute(APPEND_VALUE) != null)
+            if (xml.Attribute(APPEND_VALUE) != null)
             {
                 bool.TryParse(xml.Attribute(APPEND_VALUE).Value, out isAppendValue);
             }

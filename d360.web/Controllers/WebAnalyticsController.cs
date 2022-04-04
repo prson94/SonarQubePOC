@@ -1,16 +1,13 @@
-﻿using d360.core;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using Microsoft.Web.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.ServiceModel.Channels;
-using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
+
+using d360.core;
+using d360.web.Filters;
 
 namespace d360.web.Controllers
 {
@@ -19,8 +16,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-
-        public D3SWebAnalyticsController(CoreComponentSet set): base(set)
+        public D3SWebAnalyticsController(CoreComponentSet set) : base(set)
         {
 #if DEBUG
             Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -38,20 +34,21 @@ namespace d360.web.Controllers
             public string ObjectName { get; set; }
         }
 
-
         [Route("LogActivity"), HttpPost()]
         [ValidateHttpAntiForgeryToken]
         public void PostLogActivity(WebActivityEntity value)
-        {            
+        {
             try
             {
                 string IP = "0.0.0.0";
+
                 try
                 {
                     IP = GetClientIp(Request);
                 }
                 catch
-                {                    
+                {
+                    //swallow exception here.
                 }
 
                 Company.AddWebStatistic(
@@ -65,8 +62,6 @@ namespace d360.web.Controllers
                     Company.CurrentResourceID,
                     DateTime.UtcNow
                 );
-                
-
             }
             catch (Exception e)
             {
@@ -87,7 +82,7 @@ namespace d360.web.Controllers
                 }
                 else if (request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
                 {
-                    RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)this.Request.Properties[RemoteEndpointMessageProperty.Name];
+                    RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)Request.Properties[RemoteEndpointMessageProperty.Name];
                     return prop.Address;
                 }
                 else if (HttpContext.Current != null)
@@ -99,12 +94,11 @@ namespace d360.web.Controllers
                     return null;
                 }
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 SendException(ex, new Dictionary<string, string>());
-                throw ex;
+                throw;
             }
         }
     }
-    
 }

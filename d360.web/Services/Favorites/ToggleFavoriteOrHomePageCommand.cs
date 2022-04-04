@@ -1,14 +1,18 @@
-﻿using d360.core.entities;
-using d360.core.entities.Membership;
-using d360.model;
-using d360.model.DataAccessLayer;
-using MediatR;
-using Resources;
-using SmartFormat;
-using System.Data.Entity;
+﻿using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using d360.core.entities;
+using d360.core.entities.Membership;
+using d360.model;
+using d360.model.DataAccessLayer;
+
+using MediatR;
+
+using Resources;
+
+using SmartFormat;
 
 namespace d360.web.Services.Favorites
 {
@@ -44,13 +48,13 @@ namespace d360.web.Services.Favorites
 
             var favoriteDetails = (await favoritesRepository.GetFavoriteDetails(new[] { routeMatch.ObjectId })).SingleOrDefault();
             var isCorrect = IsCorrectFavorite(routeMatch, favoriteDetails);
+
             if (!isCorrect)
             {
                 throw new InvalidRequestException(Smart.Format(ApiMessages.FavoriteUnknownObject, new { request.Route }));
             }
 
             request.Route = matcherService.GetNormalizedRoute(request.Route, routeMatch.Matcher, favoriteDetails);
-
             var isNewHomePage = await GetIsNewHomePage(request);
 
             await ToggleFavorite(
@@ -67,6 +71,7 @@ namespace d360.web.Services.Favorites
         {
             var isNonArtifact = routeMatch.Matcher.PageType != FavoritePageType.Artifact;
             var favoriteExists = favoriteDetails != null;
+
             return isNonArtifact || favoriteExists;
         }
 
@@ -79,6 +84,7 @@ namespace d360.web.Services.Favorites
 
             var currentHome = await companyContext.Filter<Favorite>(x => x.ResourceID == request.ResourceId && x.IsHomePage).FirstOrDefaultAsync();
             bool isNewHomePage = true;
+
             if (currentHome != null)
             {
                 if (request.Route == currentHome.Route)
@@ -118,6 +124,7 @@ namespace d360.web.Services.Favorites
 
             var routes = matcherService.GetAllPossibleRoutes(request.Route, routeMatch.Matcher, @object);
             var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && routes.Contains(f.Route));
+            
             if (existing == null)
             {
                 companyContext.Add(newFavorite);

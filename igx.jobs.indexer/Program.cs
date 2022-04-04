@@ -157,6 +157,14 @@ namespace igx.jobs.indexer
                 source.IndexFieldLimit = SuggestedIndexLimit;
             }
 
+            var (nGramMin, nGramMax) = GetNGramLimits(companyConn);
+            if(nGramMin > 0)
+            {
+                source.NGramMin = nGramMin;
+                source.NGramMax = nGramMax;
+            }
+
+
             List<AssetTypeClass> classes = new List<AssetTypeClass> {
                 AssetTypeClass.BusinessAsset,
                 AssetTypeClass.TechnicalAsset,
@@ -254,6 +262,14 @@ namespace igx.jobs.indexer
                             FROM [dbo].[FieldType]
                         ) a;";
             return context.Query<int>(sql).FirstOrDefault();
+        }
+
+        private static Tuple<byte, byte> GetNGramLimits(SqlConnection context)
+        {
+            float _ngram = context.Query<float>("SELECT Boost FROM dbo.SearchBoost WHERE Field = '_ngram'").FirstOrDefault();
+            byte nGramMin = (byte)Math.Truncate(_ngram);
+            byte nGramMax = (byte)(((decimal)_ngram % 1) * 100);
+            return new Tuple<byte, byte>(nGramMin, nGramMax);
         }
 
         #endregion

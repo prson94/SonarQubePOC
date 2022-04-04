@@ -28,7 +28,7 @@ stages:
   displayName: 'Build .Net core solution'
   dependsOn: []
   jobs:
-  - template: build/jobs/job-dotnet-core-build.yml@templates
+  - template: build/jobs/job-function-consumption-dotnet-core-build.yml@templates
     parameters:
       solutionPath: igx.functions/igx.functions.consumption.csproj
       workingDirectory: igx.functions

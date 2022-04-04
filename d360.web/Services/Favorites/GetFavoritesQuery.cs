@@ -2,9 +2,11 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using d360.core.entities.Membership;
 using d360.model.DataAccessLayer;
 using d360.web.Services.Favorites;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -61,8 +63,8 @@ namespace d360.web.Services
         {
             var isNonArtifact = routeMatch.Matcher.PageType != FavoritePageType.Artifact;
             var favoriteExists = favoriteDetails != null;
+            
             return isNonArtifact || favoriteExists;
         }
-
     }
 }

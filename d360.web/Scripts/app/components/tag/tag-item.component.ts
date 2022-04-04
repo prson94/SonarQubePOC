@@ -16,11 +16,14 @@ import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { CompanySettingsService } from '../../services/settings.service';
+import { SemanticType } from '../../models/semantic-type.model';
+import { DataProfileService } from '../../services/dataprofile.service';
+import { SelectAssetService } from '../../services/select-asset.service';
 
 
 @Component({
     selector: 'd3s-tag-item',
-    providers: [RulesService, PermissionsService, TagService, GridDefinitionService, AuthenticationService],
+    providers: [RulesService, PermissionsService, TagService, GridDefinitionService, AuthenticationService, DataProfileService],
     templateUrl: 'tag-item.component.html',
     host: { 'class': 'gov-detail-page' }
 })
@@ -30,7 +33,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     tagUid: number;
     tag: TagType;
     tagUsage: TagDetail[];
-    selected: TagDetail;
+    selection: TagDetail;
+    
+    // sidepanel properties
+    sidePanelOpen: boolean = false;
+    sidePanelTab: string;
+    hasProfiling: boolean = false;
+    sidePanelStorageKey: string;
+    sidePanelLoading: boolean = false;
+    dataProfile: any;
+    secondarySidePanelOpen: boolean;
+    semanticType: SemanticType;
+    selectedReferenceItem: any;
+    selectedTag: any;
+    selectedAsset: any;
+
     private currentAreaName: string;
     private isAdmin: boolean = false;
     private backUrl: string;
@@ -45,7 +62,9 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     constructor(private route: ActivatedRoute,
         private router: Router,
         private loc: Location,
+        private dataProfileService: DataProfileService,
         protected tagsService: TagService,
+        protected selectAssetService: SelectAssetService,
         protected titleService: Title,
         protected messagesService: MessagesObservableService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -58,6 +77,24 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
 
+    }
+
+    get panelApplies(): boolean {
+        if (this.selection == null || this.sidePanelTab === 'detail') {
+            return true;
+        }
+        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+            return this.selection.HasProfiling;
+        }
+    }
+
+    selectAsset(event: any) {
+        this.selectAssetService.selectAsset(event, this);
+    }
+
+    secondaryPanelOpen(event: any) {
+        this.secondarySidePanelOpen = true;
+        this.semanticType = event.semanticType;
     }
 
     updateSort(event) {
@@ -137,10 +174,9 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                     this.tagsService.getTagDetails(this.tag.uid)
                         .subscribe(data => {
-
                             this.tagUsage = data.items;
                             if (this.tagUsage.length > 0) {
-                                this.selected = this.tagUsage[0];
+                                this.selection = this.tagUsage[0];
                             }
                             this.tagUsage.forEach(tu => {
                                 tu.TagsAsString = tu.Tags.map(x => x.Value).join('|');

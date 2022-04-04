@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+
 using MediatR;
 
 namespace d360.web.Services
@@ -24,6 +24,7 @@ namespace d360.web.Services
                 // request throw if entity not found
                 ThrowNotFoundException = true
             };
+
             return Mediator.Send(request, cancellationToken);
         }
 
@@ -36,6 +37,7 @@ namespace d360.web.Services
                 // request throw if entity not found
                 ThrowNotFoundException = true
             };
+
             return Mediator.Send(request, cancellationToken);
         }
     }

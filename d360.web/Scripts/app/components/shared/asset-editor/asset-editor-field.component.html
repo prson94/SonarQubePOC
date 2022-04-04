@@ -177,8 +177,10 @@
                                          [rows]="20"
                                          [virtualScroll]="true"
                                          [lazy]="true"
-                                         (onLazyLoad)="loadListLazy($event)"
-                                         [loading]="isLookupValuesLoading"
+                                         selectionMode="multiple"
+                                         [metaKeySelection]="false"
+                                         (onLazyLoad)="loadListLazy($event)"                                         
+                                         [loading]="isLookupValuesLoading"                                         
                                          [loadingIcon]="'fa fa-spinner fa-spin'">
                                     <ng-template pTemplate="emptymessage" let-columns>
                                         <tr>
@@ -194,10 +196,15 @@
                                             </th>
                                         </tr>
                                     </ng-template>
-                                    <ng-template pTemplate="body" let-item>
-                                        <tr (click)="selectSingleItem($event,item);">
+                                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                                        <tr [pSelectableRow]="item" 
+                                            [pSelectableRowIndex]="rowIndex"
+                                            (click)="selectSingleItem($event,item);">
                                             <td class="first-col" *ngIf="field?.MultiSelect">
-                                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                                <p-tableCheckbox 
+                                                    [value]="item" 
+                                                    [pSelectableRow]="item">
+                                                </p-tableCheckbox>
                                             </td>
                                             <td>
                                                 <div *ngIf="field.UseColorControl" class="ig-colorfield-item item-value">

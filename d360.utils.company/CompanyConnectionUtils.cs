@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
-using Dapper;
+
 using d360.core;
 using d360.core.entities;
-using d360.core.enums;
-using System.Configuration;
+
+using Dapper;
 
 namespace d360.utils.company
 {
@@ -23,7 +24,9 @@ namespace d360.utils.company
             using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
             {
                 if (cnn.State != System.Data.ConnectionState.Open)
+                {
                     cnn.Open();
+                }
 
                 var company = cnn.Query<dynamic>(
                     @"select  ds.Server, ds.Username, ds.Password from company c inner join databaseserver ds on c.databaseserverid = ds.id and c.Id = @companyID",
@@ -54,7 +57,10 @@ namespace d360.utils.company
                     new { id = companyID }
                 ).SingleOrDefault();
 
-                if (db == null) throw new Exception("Invalid company id or database server id.  Cannot load server information.");
+                if (db == null)
+                {
+                    throw new ArgumentNullException(nameof(db), "Invalid company id or database server id.  Cannot load server information.");
+                }
 
                 return new SqlConnection(GetConnectionString(companyID, db.Server, db.Username, db.Password));
             }
@@ -70,14 +76,13 @@ namespace d360.utils.company
                     new { id = companyID }
                 ).SingleOrDefault();
 
-                if (db == null) throw new Exception("Invalid company id or database server id.  Cannot load server information.");
+                if (db == null)
+                {
+                    throw new ArgumentNullException(nameof(db), "Invalid company id or database server id.  Cannot load server information.");
+                }
 
                 return new SqlConnection(GetConnectionString(companyID, db.Server, db.Username, db.Password));
             }
-        }
-        public static string GetEventTopicName(int companyID)
-        {
-            return ConfigurationManager.AppSettings["EventBusTopicName"].ToString();
         }
 
         public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings(string connectionString)

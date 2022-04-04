@@ -1,39 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace d360.model.workflow
 {
-
-
     public class WorkflowHttpRequestSettingsModel
     {
-        private static string METHOD_VALUE = "Method";
-        private static string URL_VALUE = "Url";
-        private static string HEADERS_VALUE = "Headers";
-        private static string TIMEOUT_VALUE = "Timeout";
-        private static string BODY_VALUE = "Body";
-        private static string STATUS_CODE_VALUE = "StatusCode";
-        private static string LOOKUPFIELDSPASSEDBYVALUE_VALUE = "lookupFieldsPassedByValue";
+        private static readonly string METHOD_VALUE = "Method";
+        private static readonly string URL_VALUE = "Url";
+        private static readonly string HEADERS_VALUE = "Headers";
+        private static readonly string TIMEOUT_VALUE = "Timeout";
+        private static readonly string BODY_VALUE = "Body";
+        private static readonly string STATUS_CODE_VALUE = "StatusCode";
+        private static readonly string LOOKUPFIELDSPASSEDBYVALUE_VALUE = "lookupFieldsPassedByValue";
 
         public string Method { get; set; }
 
         public string Url { get; set; }
+        
         public int Timeout { get; set; }
+        
         public int StatusCode { get; set; }
+        
         public string Body { get; set; }
+        
         public List<WorkflowHttpRequestHeader> Headers { get; set; }
+        
         public bool LookupFieldsPassedByValue { get; set; }
+        
         public Uri FormattedUrl { get; set; }
-
 
         public static WorkflowHttpRequestSettingsModel ParseXml(XElement xml)
         {
-            var model = new WorkflowHttpRequestSettingsModel();
-            var headers = new List<WorkflowHttpRequestHeader>();
+            WorkflowHttpRequestSettingsModel model = new WorkflowHttpRequestSettingsModel();
+            List<WorkflowHttpRequestHeader> headers = new List<WorkflowHttpRequestHeader>();
             int timeout = 90;
             int statusCode = 0;
             bool lookupFieldsPassedByValue = false;
@@ -71,12 +71,12 @@ namespace d360.model.workflow
             {
                 int.TryParse(xml.Element(STATUS_CODE_VALUE).Value, out statusCode);
             }
-            model.StatusCode = statusCode;
 
+            model.StatusCode = statusCode;
 
             if (xml.Element(HEADERS_VALUE) != null)
             {
-                foreach (var field in xml.Elements(HEADERS_VALUE))
+                foreach (XElement field in xml.Elements(HEADERS_VALUE))
                 {
                     headers.Add(WorkflowHttpRequestHeader.ParseXml(field));
                 }
@@ -86,24 +86,23 @@ namespace d360.model.workflow
 
             return model;
         }
-
-
-
     }
 
     public class WorkflowHttpRequestHeader
     {
         public string Key { get; set; }
+
         public string Value { get; set; }
 
         public static WorkflowHttpRequestHeader ParseXml(XElement xml)
         {
-            var model = new WorkflowHttpRequestHeader();
+            WorkflowHttpRequestHeader model = new WorkflowHttpRequestHeader();
 
             if (xml.Element("key") != null)
             {
                 model.Key = xml.Element("key").Value;
             }
+
             if (xml.Element("value") != null)
             {
                 model.Value = xml.Element("value").Value;

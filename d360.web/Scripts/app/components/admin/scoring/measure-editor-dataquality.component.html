@@ -203,7 +203,7 @@
                             <div class="condition-group-header">
                                 Condition Group {{cg.DisplayOrder}}
                             </div>
-                            <div class="input-actions">
+                            <div class="input-actions-override input-actions">
                                 <button type="button" icon="fa-ellipsis-v" igButton (click)="menu.toggle($event)" pTooltip="Condition Group Actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                 <ig-popup-menu (onSelect)="menuClicked($event, cg.DisplayOrder, cg.Position)" [items]="menuOptions(cg.DisplayOrder != 1, cg.DisplayOrder != conditionGroups.length)" #menu [tabIndex]="1"></ig-popup-menu>
                             </div>

@@ -83,7 +83,7 @@ export class AssetLookupListComponent extends BaseComponent implements OnDestroy
                         if (idx === -1) {
                             p.push({
                                 ResourceName: c.ResourceName,
-                                ResourceUid: c.ResourceUid,
+                                ResourceUid: c.ResourceUid ?? c.SecurityAssetUid,
                                 ResponsibilityTypes: [c.ResponsibilityTypeName],
                                 ResourceItemUrl: c.ResourceItemUrl,
                             });

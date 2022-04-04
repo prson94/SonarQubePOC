@@ -16,23 +16,13 @@
             </ng-container>
             <ng-container *ngIf="!isLoading">
                 <div class="grid-actions-header" style="padding-left:16px">
-                    <div style="width:100%">
-                        <label style="vertical-align:middle; line-height:24px;" class="ig-label">Items</label>
-                    </div>                    
-                    <div class="grid-action-buttons">
-                        <div pTooltip="Export to Excel"
-                             tooltipPosition="left"
-                             tooltipStyleClass="ig-tooltip">
-                            <button igButton
-                                    [disabled]="isExportInProgress"
-                                    [igDataCy]="'Semantic_Status_Export'"
-                                    icon="fa-download"
-                                    [loading]="isExportInProgress"
-                                    (click)="export()">
-                            </button>
-                        </div>
+                    <div style="width: 100%">
+                        <label class="ig-label">Items</label>
                     </div>
-                </div>
+                    <div class="export-link">
+                        <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
+                    </div>
+                </div>                                    
                 <div class="row asset-grid-wrapper" style="padding-left:16px">
                     <p-table [value]="statuses" class="status-table">
                         <ng-template pTemplate="header">

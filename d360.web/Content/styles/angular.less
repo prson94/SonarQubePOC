@@ -1751,9 +1751,6 @@ label {
 }
 /* multiselect grid control footer*/
 .multiselect-grid-sel {
-  text-align: left;
-  padding-top: 10px;
-
   p {
     font-weight: normal;
   }
@@ -3854,7 +3851,6 @@ button.tab-scroller {
 
       .p-checkbox {
         .p-checkbox-box {
-          border: 1px solid @ig-purple;
           border-radius: 2px !important;
         }
 
@@ -4127,6 +4123,9 @@ button.tab-scroller {
 .gov-detail-page {
   .tile-detail {
     padding: 5px 18px;
+    &.side-panel {
+      padding: 0;
+    }
 
     header {
       padding: 0px !important;
@@ -6890,6 +6889,23 @@ table {
       min-width: 40px;
       border: none;
       margin-right: 8px;
+      margin-top: 4px;
+    }
+  }
+}
+
+.add-relationship-modal {
+  padding-top: 0 !important;
+  height: 100%;
+
+  .add-relationship-editor {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .action-bar {
+      flex-grow: 1;
+      align-items: end;
     }
   }
 }

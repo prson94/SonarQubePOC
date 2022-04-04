@@ -619,21 +619,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 else {
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
-
-                    if (this.actionAfterSaved) {
-                        window.setTimeout(() => {
-                            this.actionAfterSaved();
-                            this.actionAfterSaved = null;
-                            this.isSavingChangesModalOpened = false;
-                            this.load(true);
-                            this.cdRef.detectChanges();
-
-                        }, 100)
-                    } else {
-                        this.load(true);
-                        this.cdRef.detectChanges();
-
-                    }
+                    this.load(true);
+                    this.cdRef.markForCheck();
                 }
             },
                 err => {
@@ -648,8 +635,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     load(isFromSave: boolean = false) {
-
-        var selectedItem = this.selectedNodeData;
+        let selectedItem = null;
+        if (this.selectedNodeData) {
+            selectedItem = { key: this.selectedNodeData.key, Name: this.selectedNodeData.Name };
+        }
         this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {
@@ -686,10 +675,28 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }).toString();
 
                 if (selectedItem) {
-                    var name = this.selectedNodeData['Name'];
-                    var selectedNode = this.myDiagram.nodes.filter(x => x.data['Name'] == name).first();
+                    var name = selectedItem['Name'];
+                    var selectedNode = this.myDiagram.nodes.filter(x => x.data['Name'] === name).first();
+
+                    if (!selectedNode) {
+                        var key = selectedItem['key'];
+                        selectedNode = this.myDiagram.nodes.filter(x => x.data['key'] === key).first();
+                    }
                     if (selectedNode) {
+                        this.selectedNodeData = selectedNode.data;
                         this.myDiagram.select(selectedNode);
+                    }
+                }
+
+                if (isFromSave) {
+
+                    if (this.actionAfterSaved) {
+                        window.setTimeout(() => {
+                            this.actionAfterSaved();
+                            this.actionAfterSaved = null;
+                            this.isSavingChangesModalOpened = false;
+                            this.cdRef.detectChanges();
+                        }, 10)
                     }
                 }
 
@@ -742,6 +749,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     m.set(data, 'refItemColor', self.getNodeColor(data));
                     m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
                 }
+
+                self.selectedNodeData["Name"] = formData.Name;
 
                 m.nodeDataArray = m.nodeDataArray.sort((a, b) => {
                     var numberA = +a['StepNo'];

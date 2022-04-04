@@ -86,12 +86,25 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.assignTagsFromData();
         this.genericMessageServiceSub = this.genericMessageService.getMessage().subscribe(
             message => {
-                if (message
-                    && message.messageType === GenericMessageType.Tags
-                    && message.uid === this.assetUID
-                    && message.data.length !== this.tags.length) {
-                    this.tags = message.data;
-                    this.ref.detectChanges();
+                if (message) {
+                    if (message.messageType === GenericMessageType.AddTag) {
+                        if ((message.assetUIDList && message.assetUIDList.indexOf(this.assetUID) > -1) || message.uid === this.assetUID) {
+                            let tagExists = false;
+                            this.tags.forEach(x => {
+                                if (x.Value == message.data) {
+                                    tagExists = true;
+                                }
+                            });
+                            if (!tagExists) {
+                                this.tags = this.tags.concat([{ Value: message.data, uid: null }]);
+                                this.ref.detectChanges();
+                            }
+                        }
+                    } else if (message.messageType === GenericMessageType.DeleteTag
+                        && ((message.assetUIDList && message.assetUIDList.indexOf(this.assetUID) > -1) || message.uid === this.assetUID)) {
+                        this.tags = this.tags.filter((x) => x.Value !== message.data);
+                        this.ref.detectChanges();
+                    }
                 }
             }
         );
@@ -223,7 +236,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 let tag = new TagApiModel();
                 tag.AssetUID = uid;
                 tag.TagName = event.Value;
-                this.tags = this.tags.concat([tag])
+                tags = tags.concat([tag])
             })
         } else {
             let tag = new TagApiModel();
@@ -279,8 +292,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                 this.savingTag = false;
                                 this.genericMessageService.sendMessage({
                                     uid: this.assetUID,
-                                    messageType: GenericMessageType.Tags,
-                                    data: this.tags
+                                    assetUIDList: this.assetUIDList,
+                                    messageType: GenericMessageType.AddTag,
+                                    data: event.Value
                                 });
                                 this.tagsChanged.emit();
                                 this.EditingTagsLoading = false;
@@ -316,8 +330,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                             this.EditingTagsLoading = false;
                                             this.genericMessageService.sendMessage({
                                                 uid: this.assetUID,
-                                                messageType: GenericMessageType.Tags,
-                                                data: this.tags
+                                                assetUIDList: this.assetUIDList,
+                                                messageType: GenericMessageType.AddTag,
+                                                data: event.Value
                                             });
                                             this.tagsChanged.emit();
                                             this.ref.markForCheck();
@@ -369,8 +384,9 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 }
                 this.genericMessageService.sendMessage({
                     uid: this.assetUID,
-                    messageType: GenericMessageType.Tags,
-                    data: this.tags
+                    assetUIDList: this.assetUIDList,
+                    messageType: GenericMessageType.DeleteTag,
+                    data: selectedTag.Value
                 });
                 this.tagsChanged.emit();
                 this.deletingTag = false;

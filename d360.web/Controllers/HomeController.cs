@@ -1,19 +1,16 @@
-﻿using System.Web.Mvc;
-using d360.core.entities;
-using d360.model;
-using d360.web.Filters;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Web.Mvc;
+
+using d360.core.entities;
 using d360.core.enums;
+using d360.extensions;
+using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-using System;
-using d360.extensions.caching;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using d360.web.caching;
-using d360.model.DataAccessLayer;
-using d360.extensions;
 
 namespace d360.web.Controllers
 {
@@ -22,7 +19,7 @@ namespace d360.web.Controllers
     {
         #region DI
 
-        readonly ICachingProvider Cache;
+        private readonly ICachingProvider Cache;
 
         public HomeController(ICoreComponentSet set, ICachingProvider cache)
             : base(set)
@@ -32,11 +29,11 @@ namespace d360.web.Controllers
 
         #endregion
 
-
         [ValidateContracts(Ignore = true), AllowAnonymous, Route("unsupported")]
         public ActionResult Unsupported()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+
             return View("Unsupported");
         }
 
@@ -48,7 +45,9 @@ namespace d360.web.Controllers
         public async Task<ActionResult> App()
         {
             if (!updateContractValidationCache())
+            {
                 return RedirectToAction("terms", new { redirectUri = HttpContext.Request.Path });
+            }
 
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
@@ -58,6 +57,7 @@ namespace d360.web.Controllers
             ViewData.Add("SingleSignOn", await IsSingleSignOn());
 
             var res = Company.GlobalReportingResources.Where(x => x.ResourceID == Company.CurrentResourceID).FirstOrDefault();
+
             if (res != null)
             {
                 ViewData.Add("ResourceName", res.FullName);
@@ -71,7 +71,6 @@ namespace d360.web.Controllers
                 ViewData.Add("ResourceUid", "");
             }
 
-
             return View("App");
         }
 
@@ -82,35 +81,38 @@ namespace d360.web.Controllers
             ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
 
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
-
             validations = validations.Where(v => !v.Accepted && ((v.IsFirstUser && v.ContractType == ContractType.OrganizationTermsOfUse) || v.ContractType == ContractType.ResourceTermsOfUse || v.OrganizationID == null));
 
             if (validations.Any())
             {
-                
-
                 ContractValidation contractValidation = validations.OrderBy(v => (int)v.ContractType).ThenBy(v => v.OrganizationID.HasValue ? 1 : 0).First();
                 var contract = Company.GetById<Contract>(contractValidation.ContractID);
                 var orgs = validations.Where(v => v.ContractType == ContractType.OrganizationTermsOfUse && v.OrganizationID != null).Select(v => (int)v.OrganizationID).Distinct();
 
-
-                var termsModel = new TermsModel(contract);
-                termsModel.RedirectUri = redirectUri;
-                termsModel.IsLastContract = validations.Count() == 1;
+                var termsModel = new TermsModel(contract)
+                {
+                    RedirectUri = redirectUri,
+                    IsLastContract = validations.Count() == 1
+                };
 
                 if (contract.OrganizationID != null && contract.ContractType == ContractType.OrganizationTermsOfUse && validations.Count(v => v.ContractID == contract.ID) == 1)
+                {
                     termsModel.IsLastOrgContract = true;
+                }
 
                 if (orgs.Count() > 0 && validations.Count(v => v.ContractType == ContractType.OrganizationTermsOfUse && v.OrganizationID == null) > 0)
+                {
                     termsModel.OrgsWithContracts = orgs.ToList();
+                }
 
-                    return View(termsModel);
-
+                return View(termsModel);
             }
             else
             {
                 if (!string.IsNullOrEmpty(redirectUri) && !redirectUri.StartsWith("//") && Uri.IsWellFormedUriString(redirectUri, UriKind.Relative))
+                {
                     return Redirect(redirectUri);
+                }
                 else
                 {
                     return RedirectToAction("App");
@@ -122,12 +124,13 @@ namespace d360.web.Controllers
         public ActionResult Terms(TermsModel model)
         {
             if (model == null)
+            {
                 return RedirectToAction("terms");
+            }
 
             var resource = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == Company.CurrentResourceID);
             List<OrganizationInvitation> invites = new List<OrganizationInvitation>();
             List<OrganizationResource> orgResources = new List<OrganizationResource>();
-
 
             if (resource != null)
             {
@@ -138,7 +141,6 @@ namespace d360.web.Controllers
             var contract = model.Contract;
             var acceptance = model.Acceptance;
             var isLastContract = model.IsLastContract;
-
 
             if (contract.OrganizationID.HasValue)
             {
@@ -180,7 +182,9 @@ namespace d360.web.Controllers
                 }
 
                 if (invite != null)
+                {
                     Company.Delete(invite); //remove the invite
+                }
             }
             else
             {
@@ -189,9 +193,11 @@ namespace d360.web.Controllers
                     invites.ForEach(i =>
                     {
                         var res = Company.GlobalReportingResources.FirstOrDefault(r => r.Email == i.Email);
+
                         if (res != null)
                         {
                             var oRes = Company.OrganizationResources.FirstOrDefault(o => i.OrganizationID == o.OrganizationID && o.ResourceID == res.ResourceID);
+                            
                             if (oRes == null)
                             {
                                 Company.OrganizationResources.Add(new OrganizationResource
@@ -218,12 +224,16 @@ namespace d360.web.Controllers
                 });
 
                 if (contract.ContractType == ContractType.OrganizationTermsOfUse) //default org TOU, need to update each org user is a member of
+                {
                     orgRes.ForEach(o =>
                     {
                         if (model.OrgsWithContracts.Contains(o.OrganizationID))
+                        {
                             return;
+                        }
 
                         var org = Company.GetById<Organization>(o.OrganizationID);
+
                         if (org != null)
                         {
                             org.Accepted = true;
@@ -232,6 +242,7 @@ namespace d360.web.Controllers
                             Company.Update(org);
                         }
                     });
+                }
             }
 
             acceptance.ContractID = contract.ID;
@@ -253,11 +264,13 @@ namespace d360.web.Controllers
         public ActionResult NotFound()
         {
             Response.StatusCode = 404;
+
             return Json(
-                new {
+                new
+                {
                     title = "Error",
                     message = "The requested URL was not found. Please check the URL and all parameters are correct."
-                }, 
+                },
                 JsonRequestBehavior.AllowGet);
         }
 
@@ -278,6 +291,7 @@ namespace d360.web.Controllers
             if (cacheRes != null)
             {
                 var com = cacheRes.Companies.FirstOrDefault(c => c.ID == Company.CurrentCompanyID);
+
                 if (com != null)
                 {
                     if (!com.ContractsAccepted)
@@ -305,6 +319,5 @@ namespace d360.web.Controllers
 
             return contractsAccepted;
         }
-
     }
 }

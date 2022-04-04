@@ -40,6 +40,7 @@ import { AssetStyleService } from './services/asset-style.service';
 import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
+import { SelectAssetService } from './services/select-asset.service';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -128,6 +129,7 @@ export function localeInitializer(localeId: string) {
         StateService,
         CookieService,
         TitleAndTabsService,
+        SelectAssetService,
         SiteMenuService,
         { provide: LOCALE_ID, useFactory: localeIdFactory },
         {

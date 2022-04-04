@@ -1,13 +1,4 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.web.Filters;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -15,7 +6,18 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+
+using d360.core.entities;
+using d360.core.enums;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
+using d360.web.Models;
+
+using Microsoft.Web.Http;
+
 using Resources;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -24,9 +26,9 @@ namespace d360.web.Controllers.V2
     {
         #region DI
 
-        readonly ICommentRepository Comments;
+        private readonly ICommentRepository Comments;
 
-        public CommentsController(ICoreComponentSet set, ICommentRepository comments): base(set)
+        public CommentsController(ICoreComponentSet set, ICommentRepository comments) : base(set)
         {
             Comments = comments;
         }
@@ -51,7 +53,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> AddComment(CommentApiPostModel comment)
         {
             try
-            {               
+            {
                 var detail = await Comments.AddComment(comment);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, detail));
             }
@@ -61,6 +63,7 @@ namespace d360.web.Controllers.V2
                 {
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentCreatePermission}
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     "Error adding comment",
@@ -83,7 +86,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("toggle", "If true the vote will be removed if it already exists.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.Created, "The request was accepted and the vote was registered.", null),
             SwaggerResponse(HttpStatusCode.OK, "The request was accepted but the user already used this emoji on the comment.", null),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
         ]
@@ -116,6 +119,7 @@ namespace d360.web.Controllers.V2
                 {
                     new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = $"Comment with Uid {commentUid} does not exist." }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.VotingOnCommentUsingEmoji,
@@ -137,7 +141,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Removed the comment.", null),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public IHttpActionResult DeleteComment(Guid commentUid)
@@ -150,7 +154,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError , CommentsAPIMessages.CommentRetryRemove);
+                    return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, CommentsAPIMessages.CommentRetryRemove);
                 }
             }
             catch (Exception ex)
@@ -160,6 +164,7 @@ namespace d360.web.Controllers.V2
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentCreatePermission },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.ErrorDeletingComment,
@@ -168,7 +173,7 @@ namespace d360.web.Controllers.V2
                 );
             }
         }
-        
+
         /// <summary>
         /// Use this endpoint to unregister your vote for a particular comment.
         /// </summary>
@@ -185,8 +190,10 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteVote(Guid commentUid, Emoji emoji)
         {
-            try {
+            try
+            {
                 Comments.DeleteVote(commentUid, Company.CurrentResourceID, emoji);
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
             }
             catch (Exception ex)
@@ -195,6 +202,7 @@ namespace d360.web.Controllers.V2
                 {
                     new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.RestrictVoteRemove,
@@ -214,7 +222,7 @@ namespace d360.web.Controllers.V2
             HttpPut,
             Route("{commentUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(Object)),
+            SwaggerResponse(HttpStatusCode.OK, "Editing a comment.", typeof(object)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -223,6 +231,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var detail = await Comments.EditComment(commentUid, comment);
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, detail));
             }
             catch (Exception ex)
@@ -232,6 +241,7 @@ namespace d360.web.Controllers.V2
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid) }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.ErrorUpdateComment,
@@ -292,6 +302,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
                 var comments = await Comments.GetCommentDetails(queryParams);
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, comments));
             }
             catch (Exception ex)
@@ -300,6 +311,7 @@ namespace d360.web.Controllers.V2
                 {
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.CommentViewPermission }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.ErrorGetComment,
@@ -317,7 +329,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{commentUid:Guid}/votes/{emoji}/users"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the list of voters using a particular emoji on a specific comment.", typeof(List<CommentVoterDetail>)), 
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of voters using a particular emoji on a specific comment.", typeof(List<CommentVoterDetail>)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -327,6 +339,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var model = await Comments.GetCommentVotersByCommentAndEmoji(commentUid, emoji);
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }
             catch (Exception ex)
@@ -336,6 +349,7 @@ namespace d360.web.Controllers.V2
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.ErrorGetVoterBasedOnCommentEmoji,
@@ -344,7 +358,6 @@ namespace d360.web.Controllers.V2
                 );
             }
         }
-
 
         /// <summary>
         /// Returns an array of votes for a specific comment.
@@ -355,7 +368,7 @@ namespace d360.web.Controllers.V2
             Route("{commentUid:Guid}/votes"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of votes on a specific comment.", typeof(List<CommentVoteDetail>)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)), 
+            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -364,6 +377,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var model = await Comments.GetCommentVotesByCommentUid(commentUid);
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }
             catch (Exception ex)
@@ -373,6 +387,7 @@ namespace d360.web.Controllers.V2
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.VotePermission},
                     new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(CommentsAPIMessages.CommentNotFound, commentUid.ToString()) }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.ErrorGetVoterBasedOnComment,
@@ -400,6 +415,7 @@ namespace d360.web.Controllers.V2
 
                 DateTime dateStart;
                 DateTime dateEnd = DateTime.UtcNow;
+
                 if (days == 0)
                 {
                     dateStart = new DateTime(2000, 1, 1);
@@ -408,6 +424,7 @@ namespace d360.web.Controllers.V2
                 {
                     dateStart = (days < 0) ? dateEnd.AddDays(days) : dateEnd.AddDays(-days);
                 }
+
                 if (resourceId == 0)
                 {
                     resourceId = Company.CurrentResourceID;
@@ -418,7 +435,8 @@ namespace d360.web.Controllers.V2
 
                 Func<CommentType, int> getCommentCategoryCount = delegate (CommentType ct)
                 {
-                    var commentsItem = (counts.FirstOrDefault(x => x.CommentType == ct));
+                    var commentsItem = counts.FirstOrDefault(x => x.CommentType == ct);
+
                     return commentsItem == null ? 0 : commentsItem.Count;
                 };
 
@@ -435,6 +453,7 @@ namespace d360.web.Controllers.V2
                     new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.ErrorInvalidDatasetMessage },
                     new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = CommentsAPIMessages.RollupCountPermission }
                 };
+
                 return DetermineUnhandledException(
                     ex,
                     CommentsAPIMessages.ErrorGetRollupCount,

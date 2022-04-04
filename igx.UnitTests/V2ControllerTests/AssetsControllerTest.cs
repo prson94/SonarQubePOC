@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,11 +11,14 @@ using d360.core.entities;
 using d360.model;
 using d360.model.DataAccessLayer;
 using igx.UnitTests.Core;
-using System.Web.Http.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Threading;
+using System.Web.Http.Results;
+using AutoFixture;
+using AutoFixture.Xunit2;
+using FluentAssertions;
 using Moq;
 
 namespace igx.UnitTests
@@ -25,16 +27,21 @@ namespace igx.UnitTests
     [Trait("Unit tests", "Asset controller")]
     public class AssetControllerTest : BaseTest
     {
+        private Mock<IAssetTypeRepository> AssetTypeRepositoryMock { get; set; }
 
         internal AssetsController assetsController;
+
         public AssetControllerTest()
         {
-            this.assetsController = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetAssetRepository(), GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository())
+            AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
+
+            this.assetsController = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetAssetRepository(), GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
         }
+
         [Fact]
         public async void GetAssetTypesAsync()
         {
@@ -831,7 +838,7 @@ namespace igx.UnitTests
                 return Task.FromResult<object>(Task.CompletedTask);
             });
 
-            var assetsControllerTemp = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository())
+            var assetsControllerTemp = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -845,6 +852,26 @@ namespace igx.UnitTests
             Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             Assert.NotNull(str);
            
+        }
+
+        [Theory, AutoData]
+        public async Task AssetTypeAncestry(Guid assetTypeUid, CancellationToken cancellationToken)
+        {
+            // arrange
+            var assetTypes = Fixture.Create<ICollection<AssetType>>();
+            AssetTypeRepositoryMock.Setup(x => x.GetAncestryAsync(assetTypeUid, cancellationToken)).ReturnsAsync(assetTypes);
+
+            // act
+            var result = await assetsController.GetTypeAncestry(assetTypeUid, cancellationToken);
+            var contentResult = result.Should().BeOfType<OkNegotiatedContentResult<AssetsController.AssetTypeAncestryModel[]>>().Subject;
+
+            // assert
+            // actually this part of method should call converter which also should be mocked...
+            contentResult.Content.Length.Should().Be(assetTypes.Count);
+            foreach (var contentItem in contentResult.Content)
+            {
+                assetTypes.Should().Contain(x => x.uid == contentItem.Uid && x.Name == contentItem.Name);
+            }
         }
     }
 }

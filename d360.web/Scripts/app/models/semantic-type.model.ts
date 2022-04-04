@@ -60,6 +60,7 @@ export class SemanticType {
     threshold: number;
     validLocales: string[];
     validList: string[];
+    hasQualifiedAssets: boolean = false;
 
     public static getBaseTypeText(baseType: string): string {
         switch (baseType.toString().toLocaleLowerCase()) {

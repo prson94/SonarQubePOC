@@ -21,7 +21,6 @@ namespace igx.UnitTests.V2ControllerTests
 
             Controller = new ResponsibilitiesController(
                 GetCoreComponentSet(),
-                MockApplicationUriProvider.Object,
                 MockAssetRepository.Object,
                 MockMediator.Object,
                 MockResponsibilityRepository.Object

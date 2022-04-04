@@ -193,7 +193,13 @@ export class DataProfileService extends BaseObservableService {
                 .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' })})
                 .pipe(
                     map((response) => <SemanticTypeGetResponse>response),
-                    catchError((err) => this.handleError(err, false))
+                    catchError((err) => {
+                        if (err?.status === 409) {
+                            return of(new SemanticTypeGetResponse());
+                        } else {
+                            this.handleError(err, true);
+                        }
+                    })
                 );
         }        
     }
@@ -239,7 +245,13 @@ export class DataProfileService extends BaseObservableService {
                 .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) })
                 .pipe(
                     map((response) => <SemanticTypeGetAssetsResponse>response),
-                    catchError((err) => this.handleError(err, false))
+                    catchError((err) => {
+                        if (err?.status === 409) {
+                            return of(new SemanticTypeGetAssetsResponse());
+                        } else {
+                            this.handleError(err, true);
+                        }
+                    })
                 );           
         } 
     }
@@ -269,5 +281,21 @@ export class DataProfileService extends BaseObservableService {
                     catchError((err) => this.handleError(err, false))
                 );
         }
-    }    
+    }
+
+    public deleteSemanticType(
+        qualifier: string
+    ): Observable<JsonResult> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this
+            .http
+            .delete(`api/v2/dataprofiles/semantictypes/${qualifier}`, httpOptions)
+            .pipe(
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
+            );
+    }
 }

@@ -1,9 +1,9 @@
 trigger:
   branches:
-    include: 
+    include:
       - '*sprint*'
   paths:
-    include: 
+    include:
       - '/'
     exclude:
     - '/igx.functions'
@@ -20,7 +20,7 @@ pr:
     include:
     - '*sprint*'
   paths:
-    include: 
+    include:
       - '/'
     exclude:
     - '/igx.functions'
@@ -53,27 +53,28 @@ stages:
 - stage: BUNDLE_SCRIPTS
   displayName: 'Bundle scripts'
   dependsOn: []
-  jobs: 
+  jobs:
   - job: BundleScripts
     displayName: "Bundle scripts"
     timeoutInMinutes: 0
     cancelTimeoutInMinutes: 5
     variables:
       npm_config_cache: $(Pipeline.Workspace)/.npm
-    pool: 
-      vmImage: windows-2019
+    pool:
+      vmImage: ubuntu-20.04
     steps:
-    - checkout: self   
-    - template: build/steps/step-npm-build.yml@templates
-      parameters:
-        workingDir: 'd360.web'
-        buildScript: 'run build-dev-ops-prod'
+    - checkout: self
+    - script: mkdir $(Build.Repository.LocalPath)/d360.web/Scripts/dist
+    - script: yarn
+      workingDirectory: 'd360.web'
+    - script: yarn run build-dev-ops-prod-linux
+      workingDirectory: 'd360.web'
     - publish: $(Build.Repository.LocalPath)/d360.web/Scripts/dist
       displayName: 'Publish bundled scripts for later use'
       artifact: dist
 - stage: BUILD
   displayName: 'Build solution'
-  dependsOn: 
+  dependsOn:
   - UNIT_TESTS
   - BUNDLE_SCRIPTS
   jobs:
@@ -100,6 +101,19 @@ stages:
         solutionToBuild: d360.web/d360.web.csproj
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
         buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
+    - template: build/steps/step-azure-key-vault.yml@templates
+      parameters:
+        secretsFilter: blackduckApi
+    - template: build/steps/step-blackduck-nuget.yml@templates
+      parameters:
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-UI'
+        blackDuckScanDirectory: $PWD
+    - template: build/steps/step-blackduck-npm.yml@templates
+      parameters:
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-UI'
+        blackDuckScanDirectory: $PWD/d360.web
     - template: build/steps/step-govern-attribution-report.yml@templates
     - task: ArchiveFiles@2
       displayName: 'Add License Attirubtion File to Distro'

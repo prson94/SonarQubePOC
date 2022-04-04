@@ -14,14 +14,14 @@ namespace d360.web.Filters
             {
                 if (filterContext.HttpContext.Request.IsAjaxRequest()) // if it is ajax request.
                 {
-                    this.ValidateRequestHeader(filterContext.HttpContext.Request); // run the validation.
+                    ValidateRequestHeader(filterContext.HttpContext.Request); // run the validation.
                 }
                 else
                 {
                     AntiForgery.Validate();
                 }
             }
-            catch (HttpAntiForgeryException )
+            catch (HttpAntiForgeryException)
             {
                 throw new HttpAntiForgeryException("Anti forgery token not found");
             }
@@ -32,9 +32,11 @@ namespace d360.web.Filters
             string cookieToken = string.Empty;
             string formToken = string.Empty;
             string tokenValue = request.Headers["RequestVerificationToken"]; // read the header key and validate the tokens.
+
             if (!string.IsNullOrEmpty(tokenValue))
             {
                 string[] tokens = tokenValue.Split(':');
+
                 if (tokens.Length == 2)
                 {
                     cookieToken = tokens[0].Trim();
