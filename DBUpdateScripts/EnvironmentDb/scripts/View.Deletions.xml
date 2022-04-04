@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="View.Deletions.v1">
+  <changeSet author="Pappas" id="View.Deletions.v2">
   <comment></comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -27,6 +27,10 @@ GO
 drop view if exists [reporting].[RuleImplementations_All]
 GO
 drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
+GO
+drop view if exists [graph].[AssetNodeDisplayPath]
+GO
+drop view if exists [graph].[AssetNodeKeyPath]
 		]]>
     </sql>
 	<rollback></rollback>

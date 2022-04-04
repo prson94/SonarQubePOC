@@ -493,8 +493,8 @@ namespace d360.model.DataAccessLayer
 
 			if (includeAssetPath || orderByAssetPath)
 			{
-				fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Object on ANDP_Object.Id = O.Id ");
-				fieldJoins.Add(" left join graph.AssetNodeDisplayPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
+				fieldJoins.Add(" left join graph.AssetNode ANDP_Object on ANDP_Object.Id = O.Id ");
+				fieldJoins.Add(" left join graph.AssetNode ANDP_Subject on ANDP_Subject.Id = S.Id ");
 			}
 
 			if (isExport)
@@ -587,11 +587,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 								left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID 
 								left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
 								left join AssetType ST2 on S.ID is null and ST2.Object = I.Subject and ST2.ObjectID = I.SubjectID
-								left join graph.AssetNodeKeyPath SKP on SKP.ID = S.ID
+								left join graph.AssetNode SKP on SKP.ID = S.ID
 								left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
 								left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
 								left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.ObjectID = I.ObjectID
-								left join graph.AssetNodeKeyPath OKP on OKP.ID = O.ID 
+								left join graph.AssetNode OKP on OKP.ID = O.ID 
 								";
 			var whereClause = " WHERE I.[Uid] = @uid ";
 			dbArgs.Add("@uid", uid);

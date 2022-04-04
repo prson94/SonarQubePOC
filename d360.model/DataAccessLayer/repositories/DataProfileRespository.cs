@@ -557,7 +557,7 @@ namespace d360.model.DataAccessLayer
 
 			sqlJoins = $@" AssetDataProfile ADP
 							inner join 
-							[graph].AssetNodeDisplayPath NDP on NDP.ID=adp.AssetID
+							[graph].AssetNode NDP on NDP.ID=adp.AssetID
 							outer apply 
 							(
 							select 
@@ -651,7 +651,7 @@ namespace d360.model.DataAccessLayer
 			string whereConditions = $@"where 
 										 ADP.ProfileSetDate = maxProfileDate.profileSetDate";
 			string sqlJoins = $@"  inner join 
-							[graph].AssetNodeDisplayPath NDP WITH (NOEXPAND) on NDP.ID=adp.AssetID and adp.AssetId != @assetId
+							[graph].AssetNode NDP WITH (NOEXPAND) on NDP.ID=adp.AssetID and adp.AssetId != @assetId
 							outer apply 
 							(
 							select 
@@ -846,7 +846,7 @@ namespace d360.model.DataAccessLayer
 										,ATP.Path as AssetTypePath
 										,tagString as AssetTags
 									into #tempAssetDetails
-									from graph.AssetNodeDisplayPath AN
+									from graph.AssetNode AN
 									cross apply dbo.GetAssetTypeTextPathById(AN.AssetTypeID, ' > ') ATP
 									outer apply
 									(   select                
