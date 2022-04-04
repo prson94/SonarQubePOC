@@ -31,11 +31,11 @@
                     <div inputs>
                         <div class="input-row">
                             <label for="headerLogo">Header logo image</label>
-                            <image-picker formControlName="headerLogo" [imageType]="'LOGO'" [maxHeight]="40" [message]="'Choose a PNG,JPG or GIF image (maximum display height: 40 pixels)'"></image-picker>
+                            <image-picker [defaultImage]="getDefaultImage('headerLogo')" formControlName="headerLogo" [imageType]="'LOGO'" [maxHeight]="40" [message]="'Choose a PNG,JPG or GIF image (maximum display height: 40 pixels)'"></image-picker>
                         </div>
                         <div class="input-row">
                             <label for="icon">Browser logo ico</label>
-                            <image-picker formControlName="icon" [imageType]="'ICO'" [message]="'Choose an ICO file to display in the browser tab/taskbar'"></image-picker>
+                            <image-picker [defaultImage]="getDefaultImage('icon')" formControlName="icon" [imageType]="'ICO'" [message]="'Choose an ICO file to display in the browser tab/taskbar'"></image-picker>
                         </div>
                         <div class="input-row">
                             <label for="headerBackColor">
@@ -121,7 +121,7 @@
                                    tooltipPosition="top"
                                    tooltipStyleClass="ig-tooltip"></i>
                             </label>
-                            <image-picker formControlName="homeBackground" [maxSize]="1048576" [message]="'The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.'"></image-picker>
+                            <image-picker [defaultImage]="getDefaultImage('homeBackground')" formControlName="homeBackground" [maxSize]="1048576" [message]="'The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.'"></image-picker>
                         </div>
 
                     </div>

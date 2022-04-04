@@ -118,6 +118,18 @@ export class ThemeEditorComponent implements OnChanges {
         return window.innerHeight - 280;
     }
 
+    getDefaultImage(prop: string): string {
+        switch (prop.toLowerCase()) {
+            case "icon":
+                return this.brandingService.iconDefault;
+            case "homebackground":
+                return this.brandingService.homeBackgroundDefault;
+            case "headerlogo":
+                return this.brandingService.headerLogoDefault;
+            default: return null;
+        }
+    }
+
     getTooltip(prop: string): string {
 
         switch (prop) {

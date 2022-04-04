@@ -23,6 +23,7 @@ export const IMAGE_PICKER_ACCESSOR: any = {
 export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     @Input() message = '';
     @Input() imageType = '';
+    @Input() defaultImage = '';
     @Input() allowedExtensions = 'image/png,image/gif,image/jpg,image/jpeg';
     @Input() maxHeight: number;
     @Input() maxWidth: number;
@@ -110,6 +111,10 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
 
     clearValue() {
         this.value = "";
+        if (this.defaultImage) {
+            this.value = this.defaultImage;
+            this.loadImageFromURL(this.value);
+        }
         this.file = {};
         this.image = {};
         this.validate();
@@ -135,6 +140,20 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         i.onload = () => {
             this.image = i;
             this.value = reader.result;
+            this.onModelChange(this.value);
+            this.validate();
+            this.ref.markForCheck();
+        };
+    }
+
+    loadImageFromURL(url: string) {
+        var i = new Image();
+        i.src = url;
+
+        i.onload = () => {
+            this.image = i;
+            console.log(this.image);
+            this.value = "";
             this.onModelChange(this.value);
             this.validate();
             this.ref.markForCheck();

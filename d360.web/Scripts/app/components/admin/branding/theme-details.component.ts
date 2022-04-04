@@ -2,7 +2,7 @@
 import { head } from 'lodash';
 import { Category } from '../../../models/object-detail.model';
 
-import { Theme } from '../../../services/branding.service';
+import { BrandingService, Theme } from '../../../services/branding.service';
 
 @Component({
     selector: "theme-detail",
@@ -19,7 +19,7 @@ export class ThemeDetailComponent implements OnChanges {
 
     categories: Category[] = new Array<Category>();
 
-    constructor() {
+    constructor(private brandingService: BrandingService) {
 
     }
 
@@ -34,9 +34,9 @@ export class ThemeDetailComponent implements OnChanges {
         header.active = true;
         header.rows = [];
         header.rows.push(
-            { title: 'Header logo image', value: this.theme.headerLogoUri, type: "img", style: "logo" });
+            { title: 'Header logo image', value: this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault, type: "img", style: "logo" });
         header.rows.push(
-            { title: 'Browser logo icon', value: this.theme.iconUri, type: "img", style: "icon" });
+            { title: 'Browser logo icon', value: this.theme.iconUri ?? this.brandingService.iconDefault, type: "img", style: "icon" });
         header.rows.push(
             { title: 'Background color', value: this.theme.navbarBackColor, type: "color" });
         header.rows.push(
@@ -55,7 +55,7 @@ export class ThemeDetailComponent implements OnChanges {
 
         var home = new Category('Home Page');
         home.rows.push(
-            { title: 'Background Image', value: this.theme.homeBackgroundUri, type: "img" });
+            { title: 'Background Image', value: this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault, type: "img" });
 
         var general = new Category('General');
         general.rows.push(
