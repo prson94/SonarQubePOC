@@ -2352,15 +2352,15 @@ namespace d360.web.Controllers.V2
 								cast(a.uid as nvarchar(36)) as value,
 								coalesce(node.DisplayPath,'Path Missing') as text 
 								from Asset A
-								 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+								 inner join graph.AssetNode Node on Node.id = a.id
 								where a.AssetTypeID = @parentAssetTypeId {whereQuery}
 								order by node.displaypath 
 								{pagingQuery}
 								option(recompile);
 
 								select count(*) from Asset A
-								 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
-								where a.AssetTypeID = @parentAssetTypeId {whereQuery};";
+								 inner join graph.AssetNode Node on Node.ID = A.ID
+								where A.AssetTypeID = @parentAssetTypeId {whereQuery};";
 					}
 					else
 					{
@@ -2468,14 +2468,14 @@ namespace d360.web.Controllers.V2
 								declare @assetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
 
 								select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
-								 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+								 inner join graph.AssetNode Node on Node.id = a.id
 								where a.AssetTypeID = @assetTypeId {whereQuery}
 								order by node.displaypath
 								{pagingQuery}
 								OPTION(RECOMPILE);
 
 								select count(*) from Asset A
-								 inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+								 inner join graph.AssetNode Node on Node.id = a.id
 								where a.AssetTypeID = @assetTypeId {whereQuery};";
 
 					var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
