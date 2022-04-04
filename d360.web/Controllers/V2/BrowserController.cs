@@ -23,6 +23,8 @@ using Microsoft.Web.Http;
 using Newtonsoft.Json;
 
 using Resources;
+using static Dapper.SqlMapper;
+using d360.core.exceptions;
 
 using Swashbuckle.Swagger.Annotations;
 
@@ -46,369 +48,334 @@ namespace d360.web.Controllers.V2
 			GraphFilterRepository = graphFilterRepository;
 		}
 
-		private async Task<HttpResponseMessage> getInitial(AssetBrowserInitialModel postModel)
-		{
-			try
-			{
-				var sql = "exec graph.AssetBrowser_Initial @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf, @includeDescendantAssets";
-				var reader = await Company.QueryMultipleAsync(
-					sql,
-					new
-					{
-						ancestry = (int)postModel.ancestry,
-						postModel.uid,
-						resourceId = Company.CurrentResourceID,
-						isAdmin = Company.CurrentResourceIsAdmin,
-						postModel.hopCount,
-						postModel.includeNonLeaf,
-						postModel.includeDescendantAssets
-					},
-					timeout: 120
-				);
+        private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal)
+        {
+            var model = new AssetBrowserResponseModel
+            {
+                nodes = reader.Read<AssetBrowserNode>().ToList(),
+                links = reader.Read<AssetBrowserLink>().ToList(),
+                hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
+                reveals = readReveal ? reader.Read<AssetBrowserRevealNode>().ToList() : null,
+            };
 
-				var model = new AssetBrowserResponseModel
-				{
-					nodes = reader.Read<AssetBrowserNode>().ToList(),
-					links = reader.Read<AssetBrowserLink>().ToList(),
-					hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-					reveals = reader.Read<AssetBrowserRevealNode>().ToList(),
-					dataLimitReached = reader.Read<bool>().FirstOrDefault()
-				};
+            return Request.CreateResponse(HttpStatusCode.OK, model);
+        }
 
-				if (model.reveals.Count == 1)
-				{
-					if (model.reveals[0].direction == AssetBrowserApiHopDirection.None)
-					{
-						model.reveals = null;
-					}
-				}
+        /// <summary>
+        /// Retrieves lineage relationships for the specified set of assets.
+        /// </summary>
+        /// <remarks>
+        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
+        /// </remarks>
+        /// <param name="model">
+        /// An object containing:
+        /// 1. ancestry: AllAncestors, DirectAncestor, TypeOnly. 
+        /// 2. uid: The Uid of the asset you are initially loading lineage for.
+        /// 4. hopCount: The number of hops, or traversals, you want to pull. The more hops, the slower the API response.
+        /// </param>
+        /// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
+        [
+            Route("lineage/initial"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetInitialLineage(AssetBrowserLineageInitialModel model)
+        {
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-				return Request.CreateResponse(HttpStatusCode.OK, model);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-			}
-		}
+                var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = model.uid } };
 
-		/// <summary>
-		/// Retrieves lineage relationships for the specified set of assets.
-		/// </summary>
-		/// <remarks>
-		/// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
-		/// </remarks>
-		/// <param name="model">
-		/// An object containing:
-		/// 1. ancestry: AllAncestors, DirectAncestor, TypeOnly. 
-		/// 2. uid: The Uid of the asset you are initially loading lineage for.
-		/// 4. hopCount: The number of hops, or traversals, you want to pull. The more hops, the slower the API response.
-		/// </param>
-		/// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
-		[
-			Route("lineage/initial"),
-			HttpPost,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetInitialLineage(AssetBrowserLineageInitialModel model)
-		{
-			var o = new AssetBrowserInitialModel { ancestry = model.ancestry, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf, includeDescendantAssets = model.includeDescendantAssets };
-			
-			return await getInitial(o);
-		}
+                var sql = @"exec graph.AssetBrowser_Lineage 
+@ancestry, @descendancy, @direction, 
+@assets, @resourceId, @currentHop, @hopCount, @intersects,
+@includeOwnershipBadges, @includeRelationBadges, null, @isAdmin";
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        ancestry = (int)model.ancestry,
+                        descendancy = (int)model.descendancy,
+                        direction = "A",
+                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        currentHop = 0,
+                        hopCount = model.hopCount,
+                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationBadges = true,
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
 
-		[
-			Route("impact/initial"),
-			HttpPost,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetInitialImpact(AssetBrowserImpactInitialModel model)
-		{
-			var o = new AssetBrowserInitialModel { ancestry = AssetBrowserAncestry.TypeOnly, hopCount = model.hopCount, uid = model.uid, includeNonLeaf = model.includeNonLeaf };
-			
-			return await getInitial(o);
-		}
+                return buildAssetBrowserResponseModel(reader, true);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
 
-		/// <summary>
-		/// Retrieves relationships for the specified set of assets for use in an impact diagram.
-		/// </summary>
-		/// <remarks>
-		/// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
-		/// </remarks>
-		/// <param name="hopModel">
-		/// An object containing:
-		/// 1. assets: A set of asset you want to retrieve lineage for. 
-		/// 2. preloadedIntersects: A true/false value indicating whether this call is from clicking a Reveal button, or is from an initial call to get starting lineage.
-		/// 3. direction: An enumeration value (Backward, Both, Forward) indicating the direction you want to traverse when getting relationships. Backward is upstream, Forward is downstream.
-		/// 4. ancestry: AllAncestors, DirectAncestor, TypeOnly.
-		/// 5. predicateuid: The Uid of the predicate you want to pull non-lineage relationships for.
-		/// </param>
-		/// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
-		[
-			Route("impact/hop"),
-			HttpPost,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetHopImpact(AssetBrowserImpactHopModel hopModel)
-		{
-			try
-			{
-				var sql = "exec graph.AssetBrowser_ImpactHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @predicateUid, @direction, @resourceId, @isAdmin, @includeNonLeaf, @includeDescendantAssets";
-				var reader = await Company.QueryMultipleAsync(
-					sql,
-					new
-					{
-						ancestry = (int)hopModel.ancestry,
-						hopModel.hierarchyKey,
-						assets = hopModel.assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
-						preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
-						hopModel.predicateUid,
-						direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-						resourceId = Company.CurrentResourceID,
-						isAdmin = Company.CurrentResourceIsAdmin,
-						hopModel.includeNonLeaf,
-						hopModel.includeDescendantAssets
-					},
-					timeout: 60
-				);
+        [
+            Route("lineage/hop"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetHopLineage(AssetBrowserLineageHopModel hopModel)
+        {
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-				var model = new AssetBrowserResponseModel
-				{
-					nodes = reader.Read<AssetBrowserNode>().ToList(),
-					links = reader.Read<AssetBrowserLink>().ToList(),
-					hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-					reveals = null,
-				};
+                var sql = @"exec graph.AssetBrowser_Lineage 
+@ancestry, @descendancy, @direction, 
+@assets, @resourceId, @currentHop, @hopCount, @intersects,
+@includeOwnershipBadges, @includeRelationBadges, @hierarchyKey, @isAdmin";
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        ancestry = (int)hopModel.ancestry,
+                        descendancy = (int)hopModel.descendancy,
+                        direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
+                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        currentHop = hopModel.currentHop, 
+                        hopCount = 1,
+                        intersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationBadges = true,
+                        hierarchyKey = hopModel.hierarchyKey,
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
 
-				return Request.CreateResponse(HttpStatusCode.OK, model);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-			}
-		}
+                return buildAssetBrowserResponseModel(reader, true);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
 
-		[
-			Route("lineage/hop"),
-			HttpPost,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetHopLineage(AssetBrowserLineageHopModel hopModel)
-		{
-			try
-			{
-				var sql = "exec graph.AssetBrowser_LineageHop @ancestry, @hierarchyKey, @assets, @preloadedIntersects, @direction, @resourceId, @isAdmin, @includeNonLeaf, @includeDescendantAssets";
-				var reader = await Company.QueryMultipleAsync(
-					sql,
-					new
-					{
-						ancestry = (int)hopModel.ancestry,
-						hopModel.hierarchyKey,
-						assets = hopModel.assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
-						preloadedIntersects = hopModel.preloadedIntersects.AsTableValuedParameter("dbo.Ids", new List<string>() { "Id" }),
-						direction = (hopModel.direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-						resourceId = Company.CurrentResourceID,
-						isAdmin = Company.CurrentResourceIsAdmin,
-						hopModel.includeNonLeaf,
-						hopModel.includeDescendantAssets
-					},
-					timeout: 60
-				);
 
-				var model = new AssetBrowserResponseModel
-				{
-					nodes = reader.Read<AssetBrowserNode>().ToList(),
-					links = reader.Read<AssetBrowserLink>().ToList(),
-					hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
-					reveals = reader.Read<AssetBrowserRevealNode>().ToList()
-				};
+        [
+            Route("impact/initial"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetInitialImpact(AssetBrowserImpactInitialModel request)
+        {
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-				return Request.CreateResponse(HttpStatusCode.OK, model);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-			}
-		}
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, null, null, @isAdmin";
+                var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = request.uid } };
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        assets = assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        hopCount = request.hopCount,
+                        intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationshipBadges = true,
+                        direction = "A",
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
 
-		[
-			Route("owners"),
-			HttpPost,
-			MapToApiVersion("2.0"),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public async Task<HttpResponseMessage> GetOwnerHopOldPath(AssetBrowserApiOwnerHopRequestModel criteria)
-		{
-			return await GetOwnerHop(criteria);
-		}
+                return buildAssetBrowserResponseModel(reader, false);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
 
-		/// <summary>
-		/// Retrieves owners for the specified set of assets.
-		/// </summary>
-		/// <remarks>
-		/// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
-		/// </remarks>
-		/// <param name="criteria">
-		/// An object containing:
-		/// 1. Assets: A set of asset you want to retrieve lineage for. 
-		/// 2. IsReveal: A true/false value indicating whether this call is from clicking a Reveal button, or is from an initial call to get starting lineage.
-		/// 3. Hops: A starting point, which will be used to generate unique key values that are used in the Asset Browser UI.
-		/// 4. Direction: An enumeration value (Backward, Both, Forward) indicating the direction you want to traverse when getting relationships. Backward is upstream, Forward is downstream.
-		/// </param>
-		/// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
-		[
-			Route("ownership/hop"),
-			HttpPost,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserOwnersModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetOwnerHop(AssetBrowserApiOwnerHopRequestModel criteria)
-		{
-			try
-			{
-				var model = new HopModel
-				{
-					links = new List<HopLinkResult>(),
-					nodes = new List<HopNodeResult>()
-				};
+        /// <summary>
+        /// Retrieves relationships for the specified set of assets for use in an impact diagram.
+        /// </summary>
+        /// <remarks>
+        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
+        /// </remarks>
+        /// <param name="hopModel">
+        /// An object containing:
+        /// 1. assets: A set of asset you want to retrieve lineage for. 
+        /// 2. preloadedIntersects: A true/false value indicating whether this call is from clicking a Reveal button, or is from an initial call to get starting lineage.
+        /// 3. direction: An enumeration value (Backward, Both, Forward) indicating the direction you want to traverse when getting relationships. Backward is upstream, Forward is downstream.
+        /// 4. ancestry: AllAncestors, DirectAncestor, TypeOnly.
+        /// 5. predicateuid: The Uid of the predicate you want to pull non-lineage relationships for.
+        /// </param>
+        /// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
+        [
+            Route("impact/hop"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetHopImpact(AssetBrowserImpactHopModel hopModel)
+        {
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-				string hashKey(string input)
-				{
-					string returnValue = "";
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
+                var reader = await Company.QueryMultipleAsync(
+                    sql,
+                    new
+                    {
+                        assets = hopModel.assets.AsTableValuedParameter("dbo.UidTable", new List<string> { "Uid" }),
+                        resourceId = Company.CurrentResourceID,
+                        hopCount = 1,
+                        intersects = hopModel.intersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
+                        includeOwnershipBadges = showResources,
+                        includeRelationshipBadges = true,
+                        direction = hopModel.direction == AssetBrowserApiHopDirection.Backward ? "B" : "F",
+                        hopModel.hierarchyKey,
+                        hopModel.predicateUid,
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    },
+                    timeout: 60
+                );
 
-					var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
-					returnValue = string.Concat(hash.Select(b => b.ToString("x2")));
-					returnValue = returnValue.Substring(2, returnValue.Length - 3);
+                return buildAssetBrowserResponseModel(reader, false);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
 
-					return returnValue;
-				}
+        /// <summary>
+        /// Retrieves owners for the specified set of assets.
+        /// </summary>
+        /// <remarks>
+        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
+        /// </remarks>
+        /// <param name="criteria">
+        /// An object containing:
+        /// 1. Assets: A set of asset you want to retrieve lineage for. 
+        /// 2. IsReveal: A true/false value indicating whether this call is from clicking a Reveal button, or is from an initial call to get starting lineage.
+        /// 3. Hops: A starting point, which will be used to generate unique key values that are used in the Asset Browser UI.
+        /// 4. Direction: An enumeration value (Backward, Both, Forward) indicating the direction you want to traverse when getting relationships. Backward is upstream, Forward is downstream.
+        /// </param>
+        /// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
+        [
+            Route("ownership/hop"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserOwnersModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetOwnerHop(AssetBrowserApiOwnerHopRequestModel criteria)
+        {
+            try
+            {
+                var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
+                if (!showResources)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Environment Conflict", "Your environment does not allow retrieval of owners in Asset Browser.");
+                }
 
 				var distinctOwners = new List<AssetBrowserOwnerModel>();
 
-				var owners = 
-					await Company.QueryAsync<AssetBrowserOwnerModel>(@"
-																		select	distinct
-																				A.Uid as assetUid,
-																				R.ResourceName as displayValue, 
-																				'fa-user' as icon,
-																				RE.Uid as resourceUid,
-																				R.resourceId
-																		from	ResponsibilityDetail R
-																				inner join Asset A on ( (A.ID = R.AssetID) OR (R.AssetID = 0 and A.AssetTypeID = R.AssetTypeID) ) and R.IsVisible = 1
-																				inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
-																		where	A.Uid in @assetUids
-																				and R.ResponsibilityTypeID = @ResponsibilityTypeId
-																		order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).ToList(), criteria.ResponsibilityTypeId });
+                var owners = await Company.QueryAsync<AssetBrowserOwnerModel>(@"
+select	distinct
+		A.Uid as assetUid,
+		R.ResourceName as displayValue, 
+		'fa-user' as icon,
+		RE.Uid as resourceUid,
+        R.resourceId
+from	ResponsibilityDetail R
+		inner join Asset A on ( (A.ID = R.AssetID) OR (R.AssetID = 0 and A.AssetTypeID = R.AssetTypeID) ) and R.IsVisible = 1
+		inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
+where	A.Uid in @assetUids
+        and R.ResponsibilityTypeID = @ResponsibilityTypeId
+order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).ToList(), criteria.responsibilityTypeId });
 
-				// Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
-				foreach (var o in owners)
-				{
-					o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceId}");
-					
-					if (!distinctOwners.Any(d => d.key == o.key))
-					{
-						distinctOwners.Add(o);
-					}
-				}
+                foreach (var o in owners)
+                {
+                    o.key = $"{criteria.hierarchyKey}_{criteria.responsibilityTypeId}|{o.resourceId}";
+                    if (!distinctOwners.Any(d => d.key == o.key))
+                    {
+                        distinctOwners.Add(o);
+                    }
+                }
 
-				var ownerRelations = (
-									 from o in owners
-									 join a in criteria.Assets on o.assetUid equals a.Uid
-									 select new AssetBrowserOwnerRelationModel
-									 {
-										 assetKey = a.Key,
-										 assetUid = a.Uid,
-										 backColor = o.backColor,
-										 foreColor = o.foreColor,
-										 ownerKey = o.key,
-										 ownerUid = o.resourceUid
-									 }).ToList();
+                var ownerRelations = (
+                                     from o in owners
+                                     join a in criteria.assets on o.assetUid equals a.Uid
+                                     select new AssetBrowserOwnerRelationModel
+                                     {
+                                         assetKey = a.Key,
+                                         assetUid = a.Uid,
+                                         backColor = o.backColor,
+                                         foreColor = o.foreColor,
+                                         ownerKey = o.key,
+                                         ownerUid = o.resourceUid
+                                     }).ToList();
 
-				return Request.CreateResponse(HttpStatusCode.OK, new AssetBrowserOwnersModel { owners = distinctOwners, ownerRelations = ownerRelations });
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-			}
-		}
+                return Request.CreateResponse(
+                    HttpStatusCode.OK, 
+                    new AssetBrowserOwnersModel 
+                    { 
+                        owners = distinctOwners, 
+                        ownerRelations = ownerRelations 
+                    }
+                );
+            }
+            catch (GenericException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
 
-		[
-			Route("ownershipCounts/{uid:Guid}/{hopCount:int}/{includeNonLeaf:bool}/{ancestry:int}"),
-			HttpGet,
-			MapToApiVersion("2.0"),
-			ApiExplorerSettings(IgnoreApi = true)
-		]
-		public async Task<HttpResponseMessage> GetOwnershipCounts(Guid uid, int hopCount, bool includeNonLeaf, AssetBrowserAncestry ancestry)
-		{
-			try
-			{
-				var sql = "exec graph.AssetBrowser_OwnershipCounts @ancestry, @uid, @resourceId, @isAdmin, @hopCount, @includeNonLeaf";
-				var res = await Company.QueryAsync(
-					sql,
-					new
-					{
-						ancestry = (int)ancestry,
-						uid,
-						resourceId = Company.CurrentResourceID,
-						isAdmin = Company.CurrentResourceIsAdmin,
-						hopCount,
-						includeNonLeaf
-					},
-					timeout: 120
-				);
-
-				foreach (var item in res)
-				{
-					if (!string.IsNullOrEmpty(item.owners))
-					{
-						item.owners = JsonConvert.DeserializeObject(item.owners);
-					}
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, res);
-			}
-			catch (Exception ex)
-			{
-				return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-			}
-		}
-
-		/// <summary>
-		/// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.
-		/// </summary>
-		/// <returns>Lists of filters for the asset browser.</returns>
-		[
-			Route("filters"),
-			ApiExplorerSettings(IgnoreApi = true),
-			HttpGet,
-			MapToApiVersion("2.0"),
-			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
-		]
-		public async Task<HttpResponseMessage> GetAssetBrowserFilters()
-		{
-			try
-			{
-				#region
+        /// <summary>
+        /// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.
+        /// </summary>
+        /// <returns>Lists of filters for the asset browser.</returns>
+        [
+            Route("filters"),
+            ApiExplorerSettings(IgnoreApi = true),
+            HttpGet,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetAssetBrowserFilters()
+        {
+            try
+            {
+                #region
 
 				var sql = @"
 							with H as	(

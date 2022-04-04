@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.Deletions-v1.3">
+  <changeSet author="Pappas" id="Procedure.Deletions-v1.4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -84,6 +84,14 @@ GO
 drop procedure if exists [lineage].[GetByObject]
 GO
 drop procedure if exists [dbo].[GetComplexLookupByAsset]
+GO
+drop procedure if exists [graph].[AssetBrowser_ImpactHop]
+GO
+drop procedure if exists [graph].[AssetBrowser_Initial]
+GO
+drop procedure if exists [graph].[AssetBrowser_LineageHop]
+GO
+drop procedure if exists [graph].[AssetBrowser_OwnershipCounts]
 		]]>
     </sql>
     <rollback>

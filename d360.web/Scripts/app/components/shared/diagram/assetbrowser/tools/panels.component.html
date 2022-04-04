@@ -1,5 +1,5 @@
 ﻿<div class="asset-browser-button-group">
-    <button *ngIf="diagramType != 3" type="button" pTooltip="Add Lineage" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Add Lineage" (click)="execute_Add()" [class]="'icon mr8' + (addSelected ? ' selected' : '') + (enableAdd ? '' : ' disabled')" [disabled]="!enableAdd"><i class="fa fa-plus"></i></button>
+    <!--<button *ngIf="diagramType != 3" type="button" pTooltip="Add Lineage" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Add Lineage" (click)="execute_Add()" [class]="'icon mr8' + (addSelected ? ' selected' : '') + (enableAdd ? '' : ' disabled')" [disabled]="!enableAdd"><i class="fa fa-plus"></i></button>-->
     <button *ngIf="diagramType != 3" type="button" pTooltip="Refresh Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Refresh Diagram" class="dark icon mr8" (click)="execute(7)"><i class="fa fa-refresh"></i></button>
     <button *ngIf="diagramType != 3" type="button" pTooltip="Download as PNG" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Download as PNG" (click)="execute(3)" [class]="'icon mr8' + (enableDownload ? '' : ' disabled')" [disabled]="!enableDownload"><i class="fa fa-download"></i></button>
     <div *ngIf="diagramType != 3" class="button-spacer"></div>

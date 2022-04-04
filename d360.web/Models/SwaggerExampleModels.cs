@@ -126,24 +126,6 @@ namespace d360.web.Models
         }
     }
 
-    #region Asset Browser
-
-    public class GetAssetLineagePostModelExample : IExamplesProvider
-    {
-        public object GetExamples()
-        {
-            return new AssetBrowserApiHopRequestModel
-            {
-                Direction = AssetBrowserApiHopDirection.Both,
-                Hops = 3,
-                PredicateUid = Guid.Empty,
-                Assets = new List<AssetBrowserApiHopAssetRequestModel>() { new AssetBrowserApiHopAssetRequestModel { Uid = Guid.Empty } }
-            };
-        }
-    }
-
-    #endregion
-
     #region RelationshipType Example
     public class RelationshipTypeInsertExample : IExamplesProvider
     {

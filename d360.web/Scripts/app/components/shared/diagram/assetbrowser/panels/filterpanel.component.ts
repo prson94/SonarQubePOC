@@ -68,6 +68,14 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     }
 
     /**
+    * Called by the Descendancy dropdown control when selected value is updated.
+    * @returns Nothing
+    */
+    public descendancyChange() {
+        this.apply.emit({ Type: AssetBrowserFilterChangeEventType.Descendancy, Model: this.current });
+    }
+
+    /**
     * Called by the Hop Count dropdown control when selected value is updated.
     * @returns Nothing
     */

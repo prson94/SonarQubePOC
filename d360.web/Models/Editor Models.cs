@@ -693,12 +693,6 @@ namespace d360.web.Models
         Both = 3
     }
 
-    public enum AssetBrowserApiHopType
-    {
-        Lineage = 1,
-        Impact = 2
-    }
-
     public enum AssetBrowserDiagramType
     {
         Lineage = 1,
@@ -707,44 +701,16 @@ namespace d360.web.Models
     }
 
     [DataContract]
-    public class AssetBrowserApiHopRequestModel
-    {
-        [DataMember]
-        public bool Initial { get; set; }
-
-        [DataMember]
-        public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
-
-        [DataMember]
-        public List<AssetBrowserApiHopIgnoreRequestModel> RelationsToIgnore { get; set; }
-
-        [DataMember]
-        public AssetBrowserApiHopDirection Direction { get; set; } = AssetBrowserApiHopDirection.Both;
-
-        [DataMember]
-        public AssetBrowserDiagramType DiagramType { get; set; } = AssetBrowserDiagramType.Impact;
-
-        [DataMember]
-        public AssetBrowserApiHopType HopType { get; set; } = AssetBrowserApiHopType.Impact;
-
-        [DataMember]
-        public Guid? PredicateUid { get; set; }
-
-        [DataMember]
-        public int Hops { get; set; } = 3;
-
-        [DataMember]
-        public bool LeafOnly { get; set; } = true;
-    }
-
-    [DataContract]
     public class AssetBrowserApiOwnerHopRequestModel
     {
         [DataMember]
-        public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
+        public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
 
         [DataMember]
-        public int ResponsibilityTypeId { get; set; }
+        public string hierarchyKey { get; set; }
+
+        [DataMember]
+        public int responsibilityTypeId { get; set; }
     }
 
     [DataContract]
@@ -755,13 +721,6 @@ namespace d360.web.Models
 
         [DataMember]
         public string Key { get; set; }
-    }
-
-    [DataContract]
-    public class AssetBrowserApiHopIgnoreRequestModel
-    {
-        [DataMember]
-        public Guid Uid { get; set; }
     }
 
     #endregion
