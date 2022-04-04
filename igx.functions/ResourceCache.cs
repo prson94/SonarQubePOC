@@ -5,6 +5,7 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -57,17 +58,21 @@ namespace igx.functions.consumption
 
                                 #region Get updated resources
 
-                                var resources = cnn.Query<GlobalReportingResource>(@"
-select R.ID as ResourceID, 
-R.FirstName, 
-R.LastName, 
-C.LastLoggedInOn, 
-R.Email, 
-C.[State], 
-C.IsAdministrator,
-R.[uid],
-R.UpdatedOn
-from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @c", new { c = c.CompanyID }).ToList();
+                                var resources = await cnn.ExecuteReaderAsync(
+                                sql: @"
+										select R.ID as ResourceID, 
+											R.FirstName, 
+											R.LastName, 
+											C.LastLoggedInOn, 
+											R.Email, 
+											C.[State], 
+											C.IsAdministrator,
+											R.[uid],
+											R.UpdatedOn
+										from [Resource] R 
+										inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
+                                param: new { c.CompanyID });
+                                var updatedResourceIDs = new HashSet<int>(resources.RecordsAffected);
 
                                 #endregion
 
@@ -98,70 +103,40 @@ from [Resource] R inner join CompanyResource C on C.ResourceID = R.ID and C.Comp
                                         bulkCopy.DestinationTableName = "#users";
                                         bulkCopy.BulkCopyTimeout = 300;
 
-                                        var table = new DataTable();
-
-                                        var columnName = "ResourceID";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "FirstName";
-                                        var dc = table.Columns.Add(columnName, typeof(string));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "LastName";
-                                        table.Columns.Add(columnName, typeof(string));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "LastLoggedInOn";
-                                        table.Columns.Add(columnName, typeof(DateTime));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "Email";
-                                        table.Columns.Add(columnName, typeof(string));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "State";
-                                        table.Columns.Add(columnName, typeof(int));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "IsAdministrator";
-                                        table.Columns.Add(columnName, typeof(bool));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "uid";
-                                        table.Columns.Add(columnName, typeof(Guid));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        columnName = "UpdatedOn";
-                                        table.Columns.Add(columnName, typeof(DateTime));
-                                        bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                                        foreach (var item in resources)
+                                        using (DataTable table = PrepareSourceTable(bulkCopy))
                                         {
-                                            var row = table.NewRow();
+                                            while (resources.Read())
+                                            {
+                                                var resourceId = resources.GetInt32("ResourceID");
+                                                updatedResourceIDs.Add(resourceId);
 
-                                            row["ResourceID"] = item.ResourceID;
-                                            row["FirstName"] = item.FirstName;
-                                            row["LastName"] = item.LastName;
-                                            if (item.LastLoggedInOn.HasValue)
-                                                row["LastLoggedInOn"] = item.LastLoggedInOn.Value;
-                                            else
-                                                row["LastLoggedInOn"] = DBNull.Value;
+                                                var row = table.NewRow();
 
-                                            row["Email"] = item.Email;
-                                            row["State"] = (int)item.State;
-                                            row["IsAdministrator"] = item.IsAdministrator;
-                                            row["uid"] = item.Uid;
-                                            if (item.UpdatedOn.HasValue)
-                                                row["UpdatedOn"] = item.UpdatedOn.Value;
-                                            else
-                                                row["UpdatedOn"] = DBNull.Value;
+                                                row["ResourceID"] = resourceId;
+                                                row["FirstName"] = resources["FirstName"];
+                                                row["LastName"] = resources["LastName"];
+                                                row["LastLoggedInOn"] = resources["LastLoggedInOn"];
+                                                row["Email"] = resources["Email"];
+                                                row["State"] = resources["State"];
+                                                row["IsAdministrator"] = resources["IsAdministrator"];
+                                                row["uid"] = resources["uid"];
+                                                row["UpdatedOn"] = resources["UpdatedOn"];
 
+                                                table.Rows.Add(row);
 
-                                            table.Rows.Add(row);
+                                                //We read rows from DataReader and then send them to the server by 5000 items chanks.
+                                                if (table.Rows.Count % 5000 == 0)
+                                                {
+                                                    await bulkCopy.WriteToServerAsync(table);
+                                                    table.Rows.Clear();
+                                                }
+                                            }
+
+                                            if (table.Rows.Count > 0)
+                                            {
+                                                await bulkCopy.WriteToServerAsync(table);
+                                            }
                                         }
-
-                                        await bulkCopy.WriteToServerAsync(table);
                                     }
 
                                     int rowsAffected = await companyConnection.ExecuteAsync(@"
@@ -204,8 +179,7 @@ select count(1) from @mergeResults;
                                     commandTimeout: 300
                                     );
 
-                                    log.WriteLine($"Found {resources.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
-
+                                    log.WriteLine($"Found {resources.RecordsAffected} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
 
                                     transaction.Commit();
                                 }
@@ -217,7 +191,6 @@ select count(1) from @mergeResults;
                                 try
                                 {
                                     var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-                                    var updatedResourceIDs = resources.Select(i => i.ResourceID).ToList();
                                     var deletedCount = 0;
                                     currentResourceIDs.ForEach(cr =>
                                     {
@@ -267,6 +240,49 @@ select count(1) from @mergeResults;
             }
 
             CoreFunction.AIFlush();
+        }
+
+        private static DataTable PrepareSourceTable(SqlBulkCopy bulkCopy)
+        {
+            var table = new DataTable();
+
+            var columnName = "ResourceID";
+            table.Columns.Add(columnName, typeof(int));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "FirstName";
+            table.Columns.Add(columnName, typeof(string));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "LastName";
+            table.Columns.Add(columnName, typeof(string));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "LastLoggedInOn";
+            table.Columns.Add(columnName, typeof(DateTime));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "Email";
+            table.Columns.Add(columnName, typeof(string));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "State";
+            table.Columns.Add(columnName, typeof(int));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "IsAdministrator";
+            table.Columns.Add(columnName, typeof(bool));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "uid";
+            table.Columns.Add(columnName, typeof(Guid));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            columnName = "UpdatedOn";
+            table.Columns.Add(columnName, typeof(DateTime));
+            bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+            return table;
         }
     }
 }
