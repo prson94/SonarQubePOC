@@ -28,6 +28,8 @@ export class ThemeEditorComponent implements OnChanges {
     hasCustomCss: boolean = false;
     isCurrentTheme: boolean = false;
 
+    changesMade: boolean = false;
+
     constructor(private fb: FormBuilder,
         private brandingService: BrandingService,
         private cdRef: ChangeDetectorRef,
@@ -47,7 +49,12 @@ export class ThemeEditorComponent implements OnChanges {
             tableHeaderBackColor: [''],
             tableRowBackColor: [''],
             navbarBackColor: [''],
-            navbarBackColorSelected: ['']
+            navbarBackColorSelected: [''],
+            customCss: ['']
+        });
+
+        this.formGroup.valueChanges.subscribe((val) => {
+            this.changesMade = true;
         });
 
         if (featureFlagService.flags[FeatureFlags.BrandingThemeCustomCss]) {
@@ -83,6 +90,7 @@ export class ThemeEditorComponent implements OnChanges {
             valObj[p] = _th[p];
             this.formGroup.patchValue(valObj);
         });
+        this.changesMade = false;
     }
 
     save() {

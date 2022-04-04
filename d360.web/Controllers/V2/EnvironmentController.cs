@@ -1875,7 +1875,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpPut,
-            ApiExplorerSettings(IgnoreApi = true),
+            ApiExplorerSettings(IgnoreApi = false),
             Route("themes/conversion/base64"),
             SwaggerConsumes("text/css"), SwaggerProduces("text/plain"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),

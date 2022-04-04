@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from "rxjs";
-import { catchError, map } from "rxjs/operators";
+import { catchError, map, throwIfEmpty } from "rxjs/operators";
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
@@ -182,6 +182,9 @@ export class BrandingService extends BaseObservableService {
             theme.homeBackground = "";
         }
 
+        theme.customCss  = theme.customCss ? window.btoa(theme.customCss) : null;
+
+       
         if (theme.uid) {
             url += "/" + theme.uid;
             return this
@@ -238,6 +241,22 @@ export class BrandingService extends BaseObservableService {
         return this
             .http
             .get(url)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public cssToBase64(data: string): Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'text/css' }),
+        };
+        let url: string = '/api/v2/environment/themes/conversion/base64';
+        return this
+            .http
+            .put(url, data, httpOptions)
             .pipe(
                 map((res: any) => {
                     return res;
