@@ -206,3 +206,8 @@ export enum Direction {
     Forward = 2,
     Both = 3
 }
+
+export interface AssetTypeAncestry {
+    Uid: string;
+    Name: string;
+}

@@ -7,7 +7,8 @@ import {
     Lookups,
     FieldTypeRelationItemEditorModel,
     FieldTypeItemDisplayFieldEditorModel,
-    Direction
+    Direction,
+    AssetTypeAncestry
 } from '../../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -141,6 +142,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
     public enableListSingleSegment: boolean = false;
+    public assetTypeAncestries: AssetTypeAncestry[] = [];
 
     constructor(private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
@@ -170,9 +172,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         console.log('ngOnInit');
         console.log(this.assetTypeUid);
-        this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((response) => {
-            console.log('getAssetTypeAncestry response');
-            console.log(response);
+        this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((assetTypeAncestries: AssetTypeAncestry[]) => {
+            this.assetTypeAncestries = assetTypeAncestries;
         });
     }
 
@@ -185,6 +186,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
         }
     }
+
+    selectListSegment(event) {
+        _.set(this.model, 'FieldType.Type.Path.Definition.AssetTypeUid', event);
+    }
+
     currentFieldType(item: FieldTypeAPIModelField): string {
         if (item.Type) {
             return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
@@ -239,7 +245,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     };
 
     private load(): void {
-        console.log('load');
         if (this.name && (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid)) {
             this.actionName = 'Edit';
             this.isLoading = true;
@@ -249,8 +254,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.getFieldTypeEditorHandler(ret);
                     this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                         .subscribe(s => {
-                            console.log('s:');
-                            console.log(s);
                             this.getLookupsHandler(s);
                             this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                                 .subscribe(formData => {
@@ -888,7 +891,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType === "Path") {
             if (this.enableListSingleSegment) {
-                return this.model.FieldType.Type[this.currentType].ListSingleSegment !== null;
+                return this.model.FieldType.Type[this.currentType]?.Definition?.AssetTypeUid !== null;
             }
         }
 
@@ -1521,20 +1524,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     onEnableListSingleResponsibilityType(event: boolean) {
-        console.log('this.model:');
-        console.log(this.model);
         this.enableListSingleResponsibilityType = event;
         if (!event) {
             this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid = null;
         }
     }
 
-    onEnableListSingleSegment(event: boolean) {
-        console.log('this.model:');
-        console.log(this.model);
+    onListSingleSegment(event: boolean) {
         this.enableListSingleSegment = event;
         if (!event) {
-            // this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid = null;
+            this.model.FieldType.Type[this.currentType].Definition.AssetTypeUid = null;
         }
     }
 

@@ -1003,16 +1003,19 @@
                     <p-checkbox binary="true"
                                 name="enableListSingleSegment"
                                 [ngModel]="enableListSingleSegment"
-                                (ngModelChange)="onEnableListSingleSegment($event);"
+                                (ngModelChange)="onListSingleSegment($event);"
                                 label="List Single Segment"></p-checkbox>
-                    <p-dropdown name="selectResponsibilityType"
+                    <p-dropdown name="selectListSegment"
                                 [required]="enableListSingleSegment"
                                 [disabled]="!enableListSingleSegment"
                                 [ngModelOptions]="{standalone: true}"
-                                [options]="lookups.FieldResponsibilityTypes"
-                                [(ngModel)]="model.FieldType.Type[currentType].ListSingleSegment"
+                                [options]="assetTypeAncestries"
+                                [ngModel]="model.FieldType.Type[currentType]?.Definition?.AssetTypeUid"
+                                (ngModelChange)="selectListSegment($event)"
                                 [placeholder]="getListSingleSegmentPlaceholder()"
                                 [ngStyle]="{'width': '60%', 'padding-left': '10px'}"
+                                optionLabel="Name"
+                                optionValue="Uid"
                                 ngDefaultControl></p-dropdown>
                 </div>
             </div>

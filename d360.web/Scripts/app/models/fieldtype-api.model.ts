@@ -487,7 +487,11 @@ export class Path implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     Search: Search = new Search();
     DisplayInColumn: boolean = false;
-    ListSingleSegment: any = null;
+    Definition: PathDefinition = new PathDefinition();
+}
+
+export class PathDefinition {
+    AssetTypeUid: string = null;
 }
 
 export class Tag implements ICommonOptions {
