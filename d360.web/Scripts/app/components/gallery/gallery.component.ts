@@ -21,7 +21,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    activeControl: string = "image-picker";
+    activeControl: string = "regexp-input";
     controls = [
         { label: "Switch Input", key: "switch", type: "Form" },
         { label: "Button Directive", key: "button", type: "Form" },
@@ -55,7 +55,8 @@ export class GalleryComponent implements OnInit {
         { label: "Modal Drawer", key: "modal-drawer", type: "Overlay" },
         { label: "Code Area", key: "codearea", type: "Form" },
         { label: "Localization", key: "locale", type: "Misc" },
-        { label: "File Picker", key: "image-picker", type: "Form" }
+        { label: "File Picker", key: "image-picker", type: "Form" },
+        { label: "Regexp Input", key: "regexp-input", type: "Form" }
     ];
 
     categories: any[] = [];

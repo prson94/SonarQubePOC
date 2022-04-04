@@ -1,0 +1,76 @@
+﻿<div class="tile tile-detail">
+	<header>
+		Regexp Input Component
+	</header>
+	<p>
+		Angular component that allows to input regular expression and test it
+	</p>
+</div>
+<div class="tile tile-detail">
+	<header>Basic Usage</header>
+	<code>{{sampleUsage}}</code>
+</div>
+<div class="tile tile-detail">
+	<header>Examples</header>
+	<div class="gallery-section">
+		<h4>Standard</h4>
+		<div>
+			<ig-regexp-input [(ngModel)]="exampleStandard">
+			</ig-regexp-input>
+		</div>
+	</div>
+
+	<div class="gallery-section">
+		<h4>Required</h4>
+		<div>
+			<ig-regexp-input [(ngModel)]="exampleRequired"
+				required>
+			</ig-regexp-input>
+		</div>
+	</div>
+
+	<div class="gallery-section">
+		<h4>No samples</h4>
+		<div>
+			<ig-regexp-input [(ngModel)]="exampleNoSamples"
+				[showSamples]="false">
+			</ig-regexp-input>
+		</div>
+	</div>
+	<div class="gallery-section">
+		<h4>No value validator</h4>
+		<div>
+			<ig-regexp-input [(ngModel)]="exampleNoValueValidator"
+				[showValueValidator]="false">
+			</ig-regexp-input>
+		</div>
+	</div>
+	<div class="gallery-section">
+		<h4>
+			No samples & no value validator
+		</h4>
+		<div>
+			<ig-regexp-input [(ngModel)]="exampleNoSamplesAndNoValueValidator"
+				[showSamples]="false"
+				[showValueValidator]="false">
+			</ig-regexp-input>
+		</div>
+	</div>
+
+	<div class="gallery-section">
+		<h4>Disabled</h4>
+		<div>
+			<ig-regexp-input [(ngModel)]="exampleDisabled"
+				disabled>
+			</ig-regexp-input>
+		</div>
+	</div>
+</div>
+
+<gallery-component-properties [header]="'Properties'"
+	[properties]="properties">
+</gallery-component-properties>
+
+<gallery-component-properties [header]="'Events'"
+	[properties]="events">
+</gallery-component-properties>
