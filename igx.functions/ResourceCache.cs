@@ -191,18 +191,18 @@ select count(1) from @mergeResults;
                                 try
                                 {
                                     var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-                                    var deletedCount = 0;
+                                    var toDeleteIds = currentResourceIDs.Intersect(updatedResourceIDs);
+
                                     currentResourceIDs.ForEach(cr =>
                                     {
                                         if (!updatedResourceIDs.Contains(cr))
                                         {
-                                            companyConnection.Execute("delete reporting.Global_Resource where ResourceID = @r", new { r = cr });
-                                            deletedCount++;
+                                            companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { toDeleteIds });
                                         }
                                     });
 
-                                    if (deletedCount > 0)
-                                        log.WriteLine("Removed {0} users for company {1}.", deletedCount, c.CompanyID);
+                                    if (toDeleteIds.Any())
+                                        log.WriteLine("Removed {0} users for company {1}.", toDeleteIds.Count(), c.CompanyID);
                                 }
                                 catch (Exception ex)
                                 {
