@@ -140,6 +140,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
+    public enableListSingleSegment: boolean = false;
 
     constructor(private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
@@ -166,6 +167,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.numberOfAssetsForType = +res[0].count + 1;
                 }
             });
+
+        console.log('ngOnInit');
+        console.log(this.assetTypeUid);
+        this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((response) => {
+            console.log('getAssetTypeAncestry response');
+            console.log(response);
+        });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -231,6 +239,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     };
 
     private load(): void {
+        console.log('load');
         if (this.name && (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid)) {
             this.actionName = 'Edit';
             this.isLoading = true;
@@ -240,6 +249,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.getFieldTypeEditorHandler(ret);
                     this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                         .subscribe(s => {
+                            console.log('s:');
+                            console.log(s);
                             this.getLookupsHandler(s);
                             this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                                 .subscribe(formData => {
@@ -875,6 +886,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
         }
 
+        if (this.currentType === "Path") {
+            if (this.enableListSingleSegment) {
+                return this.model.FieldType.Type[this.currentType].ListSingleSegment !== null;
+            }
+        }
+
         if (!this.isValidationPatternValid()) {
             valid = false;
         }
@@ -1504,9 +1521,20 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     onEnableListSingleResponsibilityType(event: boolean) {
+        console.log('this.model:');
+        console.log(this.model);
         this.enableListSingleResponsibilityType = event;
         if (!event) {
             this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid = null;
+        }
+    }
+
+    onEnableListSingleSegment(event: boolean) {
+        console.log('this.model:');
+        console.log(this.model);
+        this.enableListSingleSegment = event;
+        if (!event) {
+            // this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid = null;
         }
     }
 
@@ -1522,6 +1550,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public getSelectResponsibilityTypePlaceholder() {
         //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
         return this.enableListSingleResponsibilityType ? "Value Required" : " ";
+    }
+
+    public getListSingleSegmentPlaceholder() {
+        //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
+        return this.enableListSingleSegment ? "Value Required" : " ";
     }
 
     private isValidationPatternValid() {

@@ -994,6 +994,30 @@
             </div>
         </simple-accordion>
 
+        <!-- asset path -->
+        <simple-accordion *ngIf="currentType == 'Path'"
+                          header="Asset Path"
+                          active="false">
+            <div class="row">
+                <div class="col s12" style="margin: 10px 0 0 0; display: flex;">
+                    <p-checkbox binary="true"
+                                name="enableListSingleSegment"
+                                [ngModel]="enableListSingleSegment"
+                                (ngModelChange)="onEnableListSingleSegment($event);"
+                                label="List Single Segment"></p-checkbox>
+                    <p-dropdown name="selectResponsibilityType"
+                                [required]="enableListSingleSegment"
+                                [disabled]="!enableListSingleSegment"
+                                [ngModelOptions]="{standalone: true}"
+                                [options]="lookups.FieldResponsibilityTypes"
+                                [(ngModel)]="model.FieldType.Type[currentType].ListSingleSegment"
+                                [placeholder]="getListSingleSegmentPlaceholder()"
+                                [ngStyle]="{'width': '60%', 'padding-left': '10px'}"
+                                ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+        </simple-accordion>
+
         <simple-accordion header="Descriptions"
                           active="false">
             <div class="row">

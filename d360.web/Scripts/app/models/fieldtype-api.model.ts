@@ -487,6 +487,7 @@ export class Path implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     Search: Search = new Search();
     DisplayInColumn: boolean = false;
+    ListSingleSegment: any = null;
 }
 
 export class Tag implements ICommonOptions {
