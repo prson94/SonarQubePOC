@@ -108,11 +108,11 @@ export class ColorSelector implements ControlValueAccessor {
     private isHexColor(hex) {
         return typeof hex === 'string'
             && hex.length === 6
-            && !isNaN(Number('0x' + hex))
+            && !isNaN(Number('0x' + hex));
     }
 
     private allEqual(input) {
-        return input.split('').every(char => char === input[0]);
+        return input.split('').every((char) => char === input[0]);
     }
 
     private hasPairs(input: string) {

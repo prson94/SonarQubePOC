@@ -197,7 +197,7 @@ export class BrandingService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -244,7 +244,7 @@ export class BrandingService extends BaseObservableService {
                     map((res: any) => {
                         return res;
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
         else {
@@ -255,7 +255,7 @@ export class BrandingService extends BaseObservableService {
                     map((res: any) => {
                         return res;
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
     }
@@ -269,7 +269,7 @@ export class BrandingService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -282,7 +282,7 @@ export class BrandingService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -295,7 +295,7 @@ export class BrandingService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -311,7 +311,7 @@ export class BrandingService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 }

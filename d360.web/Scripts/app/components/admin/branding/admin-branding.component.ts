@@ -71,7 +71,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             this.themes = res;
             this.selectedRow = null;
             this.themes.forEach((t) => {
-                t.svg = this.svg_markup(t);
+                t.svg = this.svgMarkup(t);
                 var menuItems = [];
 
                 t.hasDownloadOption ? menuItems.push(this.menuItemsDefaultOptions[0]) : null;
@@ -94,10 +94,10 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             }
 
             this.cdRef.markForCheck();
-        })
+        });
     }
 
-    svg_markup(theme: Theme) {
+    svgMarkup(theme: Theme) {
         return `<svg width="158" height="80">
                    <image xlink:href="/api/v2/environment/themes/${theme.uid}.svg?width=158&cache=${theme.updatedOn}" width="158" height="80" />
                 </svg>`;
@@ -242,14 +242,14 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     @ViewChild('uploadInput') fileInputEl: ElementRef;
     onFileSelected(event) {
         this.themeToLoad = null;
-        this.file = event.target.files[0]
+        this.file = event.target.files[0];
         let fileReader = new FileReader();
         fileReader.onload = (e) => {
             this.themeToLoad = JSON.parse(fileReader.result as string);
             this.themeToLoad.uid = null;
             this.themeToLoad.isCurrent = null;
             this.checkUploadTheme();
-        }
+        };
 
         fileReader.readAsText(this.file);
     }

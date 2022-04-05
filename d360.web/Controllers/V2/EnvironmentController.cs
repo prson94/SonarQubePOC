@@ -41,7 +41,7 @@ namespace d360.web.Controllers.V2
     public class EnvironmentController : BaseV2ApiController
     {
         readonly IThemeRepository ThemeRepository;
-        IStorageProvider _storage;
+        readonly IStorageProvider _storage;
 
         public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IStorageProvider storage) : base(set)
         {
@@ -147,7 +147,9 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return ReturnApiError(HttpStatusCode.Forbidden, ApiMessages.ForbiddenUserNotAuthorizedMessage);
+            }
 
             //delete the old css file
             try
@@ -220,9 +222,13 @@ namespace d360.web.Controllers.V2
             if (!string.IsNullOrEmpty(_settingId))
             {
                 if (!int.TryParse(_settingId, out int val) || val <= 0)
+                {
                     return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.SettingIDNotValid);
+                }
                 else
+                {
                     settingId = val;
+                }
             }
 
             try
