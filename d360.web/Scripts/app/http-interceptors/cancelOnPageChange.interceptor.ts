@@ -40,7 +40,7 @@ export class CancelOnPageChangeInterceptor implements HttpInterceptor {
 
                             this.http.${req.method.toLowerCase()}(
                                 '${req.url}', 
-                                { context: new HttpContext().set(SYSTEM_WIDE_API_GET_CALL, true) }
+                                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
                             )
                         `);
                 }));
