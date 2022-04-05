@@ -17,7 +17,7 @@ export class ReuseInterceptor implements HttpInterceptor {
     }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        if (req.method === 'GET') {
+        if (isQueryRequest(req)) {
             return this.reuseRequest(req, next);
         }
 
