@@ -669,7 +669,6 @@
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
     <Compile Include="Utilities\IRequestValidator.cs" />
     <Compile Include="Utilities\RequestValidator.cs" />
-    <Compile Include="Utilities\TracePrefixAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Data\Documentation.XML">

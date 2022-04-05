@@ -960,11 +960,35 @@ namespace d360.model.DataAccessLayer
 				whereClause += $" and ({string.Join(whereConnector, whereClauses)})";
 			}
 
-			var ctestring = $@";with cte as (
-						select AssetID, T.uid as TagUid, T.Value from AssetTag AT
+            var ctestring = $@"
+                ;with cte as (
+	                SELECT AssetID
+                         , t.uid AS TagUid
+                         , t.Value
+                         , grc.uid CreatedByUid
+                         , at.CreatedOn
+                         , grc.FirstName AS CreatedByFirstName
+                         , grc.LastName AS CreatedByLastName
+                      FROM AssetTag at
+                     INNER JOIN Tag t ON T.ID = at.TagID
+                      LEFT JOIN reporting.Global_Resource grc ON at.CreatedBy = grc.ResourceID                          
+                )
+            ";
 
-							inner join Tag T on T.ID = at.TagID
-						)";
+            var tagsCrossApply = @"
+                CROSS APPLY (
+                    SELECT Value
+                         , TagUid AS uid
+                         , CreatedByUid
+                         , CreatedOn
+                         , CreatedByFirstName
+                         , CreatedByLastName 
+                      FROM cte 
+                     WHERE AssetId = A.Id 
+                     ORDER BY Value 
+                     FOR JSON PATH
+                ) AssetTags (Tags)
+            ";
 
 			if (includeTotal)
 			{
@@ -974,10 +998,10 @@ namespace d360.model.DataAccessLayer
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
 							inner join Asset A ON A.ID = AT.AssetID
-							inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+							inner join graph.AssetNode Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
 							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
-							{(addtagasstingfilter ? " cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags) " : "")}
+							{(addtagasstingfilter ? $" {tagsCrossApply} " : "")}
 						{whereClause}";
 
 				result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
@@ -1008,10 +1032,10 @@ namespace d360.model.DataAccessLayer
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
 							inner join Asset A ON A.ID = AT.AssetID
-							inner join graph.AssetNodeDisplayPath Node on Node.id = a.id
+							inner join graph.AssetNode Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
 							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
-							cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags)
+							{tagsCrossApply}
 						{whereClause}
 						{sortClause}
 						{pagingSql}

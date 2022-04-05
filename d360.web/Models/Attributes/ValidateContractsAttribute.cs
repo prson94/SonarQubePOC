@@ -11,7 +11,10 @@ namespace d360.web.Models.Attributes
         public override void OnAuthorization(AuthorizationContext filterContext)
         {
             if (Ignore)
+            {
                 return;
+            }
+
             try
             {
                 bool contractsAccepted = filterContext.HttpContext.GetOwinContext().Get<bool>("ContractsValidated");

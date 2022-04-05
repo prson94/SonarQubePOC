@@ -304,7 +304,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 {
 						 fieldJoins.Add($@"outer apply (
 							select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-							from    graph.AssetNodeDisplayPath 
+							from    graph.AssetNode 
 							where   ID IN ({assetIdFinalQuery})
 							having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
 						) {tableAlias}");

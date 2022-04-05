@@ -1,9 +1,10 @@
-﻿using System;
+﻿using System.Linq;
 using System.Net.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using System.Linq;
+
 using d360.web.Models;
+
 using Resources;
 
 namespace d360.web.Controllers.V2
@@ -12,7 +13,6 @@ namespace d360.web.Controllers.V2
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-
             //Check model validity on PUT, POST and DELETE method.
             //Throw error only if it is caused by JSON
             if (actionContext.Request.Method == HttpMethod.Post
@@ -26,7 +26,6 @@ namespace d360.web.Controllers.V2
                         .Any(x => x.Exception.Source == "Newtonsoft.Json");
 
                     //"   at Newtonsoft.Json.Utilities.EnumUtils.ParseEnum(Type enumType, String value, Boolean disallowNumber)\r\n   at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.EnsureType(JsonReader reader, Object value, CultureInfo culture, JsonContract contract, Type targetType)"
-
                     if (isJsonParsingError)
                     {
                         var errorTitle = ApiMessages.InvalidJson;
@@ -52,6 +51,7 @@ namespace d360.web.Controllers.V2
                         }
                         catch
                         {
+                            //swallow exception here.
                         }
 
                         throw new RestApiException(System.Net.HttpStatusCode.BadRequest, errorTitle, errorMessage);

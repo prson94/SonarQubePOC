@@ -1,21 +1,3 @@
-using ComponentSpace.SAML2.Assertions;
-using ComponentSpace.SAML2.Profiles.SingleLogout;
-using ComponentSpace.SAML2.Profiles.SSOBrowser;
-using ComponentSpace.SAML2.Protocols;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.helpers;
-using d360.extensions.azuregraph;
-using d360.extensions.mail;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.web.Extensions;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using Dapper;
-using IdentityModel.Client;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -33,21 +15,41 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Security;
 using System.Xml;
-using d360.core;
-using Resources;
+
+using ComponentSpace.SAML2.Assertions;
+using ComponentSpace.SAML2.Profiles.SingleLogout;
+using ComponentSpace.SAML2.Profiles.SSOBrowser;
+using ComponentSpace.SAML2.Protocols;
+
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.helpers;
 using d360.extensions;
+using d360.extensions.azuregraph;
+using d360.web.Extensions;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+
+using Dapper;
+
+using IdentityModel.Client;
+
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+
+using Resources;
 
 namespace d360.web.Controllers
 {
     [RoutePrefix(""), ValidateContracts(Ignore = true)]
     public class AuthenticationController : BaseController
     {
-        const string APP_ID = "https://data3sixty.com/ui";
-        const string SessionIndexCookieName = "SessionIndex";
+        private const string APP_ID = "https://data3sixty.com/ui";
+        private const string SessionIndexCookieName = "SessionIndex";
 
         #region DI
 
-        TelemetryClient Telemetry;
+        private readonly TelemetryClient Telemetry;
 
         public AuthenticationController(ICoreComponentSet set, IMailProvider mail)
             : base(set)
@@ -74,7 +76,6 @@ namespace d360.web.Controllers
 
             // Serialize the authentication request to XML for transmission.
             var authnRequestXml = authnRequest.ToXml();
-
             Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = $"createAuthnRequest => Idp Endpoint: {Community.CurrentCompanySsoModel.IdpSsoEndpoint}" });
 
             return authnRequestXml;
@@ -91,6 +92,7 @@ namespace d360.web.Controllers
                     if (Community.CurrentCompanySsoModel.IdpCertificateFile != null)
                     {
                         var x509Certificate = new X509Certificate2(Community.CurrentCompanySsoModel.IdpCertificateFile);
+                        
                         if (SAMLAssertionSignature.Verify(assertionXml, x509Certificate))
                         {
                             Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = "AssertionConsumerService => Response SAML is signed AND verified." }); //Trace.TraceInformation("AssertionConsumerService => Response SAML is signed AND verified.");
@@ -116,14 +118,13 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Error, Message = ex.Message + ((ex.InnerException != null) ? ex.InnerException.Message : "") });
-
             }
-
         }
 
         private Parameters loadExtraParametersFromOpenIdSettings(CompanyOpenIdAuthenticationSettings authenticationSettings)
         {
             Parameters extras = null;
+
             if (authenticationSettings.extraParameters != null && authenticationSettings.extraParameters.Properties() != null)
             {
                 if (authenticationSettings.extraParameters.Properties().Count() > 0)
@@ -136,11 +137,12 @@ namespace d360.web.Controllers
                     }
                 }
             }
+
             return extras;
         }
 
         private ActionResult parseUserInfoAndLogin(
-            string userName, string firstName, string lastName, 
+            string userName, string firstName, string lastName,
             List<string> groups = null, Dictionary<string, string> customClaims = null,
             string relayState = null,
             System.Action customAction = null)
@@ -153,8 +155,8 @@ namespace d360.web.Controllers
                 resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
 
                 // If user is assigned to any groups in SAML claims, then check to see if any of those groups should be assigned as admin. If so, assign the user as admin.
-
                 bool isCompanyAdministrator = false;
+
                 if (groups?.Any() == true)
                 {
                     isCompanyAdministrator = Community.CompanyDomainGroups.Any(g =>
@@ -176,6 +178,7 @@ namespace d360.web.Controllers
                         {
                             firstName = "Unknown";
                         }
+
                         if (string.IsNullOrEmpty(lastName))
                         {
                             lastName = "Unknown";
@@ -223,6 +226,7 @@ namespace d360.web.Controllers
                 else
                 {
                     var companyResource = Community.Filter<CompanyResource>(i => i.CompanyID == Community.CurrentCompanyID && i.ResourceID == resource.ID).SingleOrDefault();
+                    
                     if (companyResource == null)
                     {
                         if (Community.CurrentCompanySsoModel.AllowNewUserLogin)
@@ -236,6 +240,7 @@ namespace d360.web.Controllers
                                 State = CompanyResourceState.Active
                             };
                             Community.Add(companyResource);
+
                             if (!Company.Any<GlobalReportingResource>(gr => gr.ResourceID == resource.ID))
                             {
                                 Company.Add(new GlobalReportingResource
@@ -323,9 +328,11 @@ namespace d360.web.Controllers
                     // Create a login context for the asserted identity.
 
                     #region Process Group claims
+
                     if (groups?.Any() == true)
                     {
                         var governHasGroups = Company.Groups.Any(g => g.IsActiveDirectoryGroup);
+
                         if (governHasGroups)
                         {
                             if (Company.Connection.State != ConnectionState.Open)
@@ -346,7 +353,6 @@ namespace d360.web.Controllers
                                         row["Name"] = g.Trim();
                                         dt.Rows.Add(row);
                                     });
-
 
                                     sqlBulkCopy.ColumnMappings.Add("Name", "Name");
                                     sqlBulkCopy.DestinationTableName = "#ADGroups";
@@ -391,7 +397,7 @@ namespace d360.web.Controllers
                                             trans.Rollback();
                                         }
                                     }
-                                    catch 
+                                    catch
                                     {
                                         // Do nothing.
                                     }
@@ -485,7 +491,6 @@ namespace d360.web.Controllers
                             // http://www.foxnews.com
                             // //stackoverflow.com
                             // www.cnn.com, /artifact, /artifact/1 will be treated as relative urls and will just get stuck on end of current path
-
                             if (!relayState.Contains("//"))
                             {
                                 redirectURL = relayState;
@@ -494,13 +499,11 @@ namespace d360.web.Controllers
                     }
                     catch (Exception e)
                     {
-
                         var properties = new Dictionary<string, string>
                             {
                                 {"ResourceID",resource.ID.ToString() }
                             };
                         Telemetry.TrackException(e, properties);
-
                         redirectURL = "/#";
                     }
 
@@ -545,6 +548,7 @@ namespace d360.web.Controllers
             {
                 case AuthenticationType.Saml:
                     #region
+
                     var authnRequestXml = createAuthnRequest();
 
                     Telemetry.TrackTrace(new TraceTelemetry { SeverityLevel = SeverityLevel.Verbose, Message = $"Login => relayState: {returnUrl}" });
@@ -590,7 +594,8 @@ namespace d360.web.Controllers
                     }
 
                     return new EmptyResult();
-                    #endregion
+
+                #endregion
                 case AuthenticationType.OpenId:
                     var authenticationSettings = Community.CurrentCompanySsoModel.StructuredAuthenticationSettings;
 
@@ -598,6 +603,7 @@ namespace d360.web.Controllers
                     {
                         return new HttpStatusCodeResult(HttpStatusCode.InternalServerError, ApiMessages.MissingConfigInfo);
                     }
+
                     var state = Community.GenerateOpenIdRequestValue();
                     var nonce = Community.GenerateOpenIdRequestValue();
                     var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
@@ -607,19 +613,21 @@ namespace d360.web.Controllers
                     var ru = new RequestUrl($"{authenticationSettings.baseUri}/authorize");
 
                     var url = ru.CreateAuthorizeUrl(
-                        clientId: authenticationSettings.clientId, 
-                        responseType: "code", 
+                        clientId: authenticationSettings.clientId,
+                        responseType: "code",
                         scope: "openid profile email infogix", //infogix
-                        callbackUri, 
-                        state, 
-                        nonce, 
+                        callbackUri,
+                        state,
+                        nonce,
                         responseMode: "form_post",
                         extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
                         );
+
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
                     ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+
                     return View();
             }
         }
@@ -632,11 +640,7 @@ namespace d360.web.Controllers
             var telemetry = new TelemetryClient();
 
             SAMLResponse samlResponse = null;
-            string relayState = null;
-
-            XmlElement samlResponseXml = null;
-
-            ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out samlResponseXml, out relayState);
+            ServiceProvider.ReceiveSAMLResponseByHTTPPost(Request, out XmlElement samlResponseXml, out string relayState);
 
             Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => samlResponseXml: {samlResponseXml.InnerXml}", SeverityLevel = SeverityLevel.Information });
 
@@ -675,7 +679,6 @@ namespace d360.web.Controllers
                     verifySignature(samlAssertionXml);
 
                     samlAssertion = new SAMLAssertion(samlAssertionXml);
-
                 }
                 else
                 {
@@ -731,7 +734,8 @@ namespace d360.web.Controllers
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attributes are: {submittedAttributes}", SeverityLevel = SeverityLevel.Verbose });
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"AssertionConsumerService => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel = SeverityLevel.Information });
 
-                System.Action addSamlAssertionToCookie = () => {
+                System.Action addSamlAssertionToCookie = () =>
+                {
                     if (!string.IsNullOrEmpty(samlAssertion.ID))
                     {
                         var samlCookie = new HttpCookie(SessionIndexCookieName, samlAssertion.ID)
@@ -781,6 +785,7 @@ namespace d360.web.Controllers
 
             var baseUri = authenticationSettings.baseUri;
             var openIdRequest = Community.GetOpenIdRequest(state);
+
             if (openIdRequest == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthentication);
@@ -799,6 +804,7 @@ namespace d360.web.Controllers
                 Method = HttpMethod.Post,
                 RedirectUri = redirectUri
             });
+
             if (response.IsError)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
@@ -806,10 +812,9 @@ namespace d360.web.Controllers
 
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
-            
             var accessToken = handler.ReadJwtToken(response.AccessToken);
-
             var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
+
             if (openIdRequest.Nonce != incomingNonce)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
@@ -890,31 +895,30 @@ namespace d360.web.Controllers
             #endregion
 
             string redirectUrl = openIdRequest.RedirectUrl;
+
             try
             {
                 Community.RemoveOpenIdRequest(openIdRequest);
             }
             catch (Exception ex)
             {
-                this.SendException(ex, new Dictionary<string, string> { { "State", openIdRequest.State } });
+                SendException(ex, new Dictionary<string, string> { { "State", openIdRequest.State } });
             }
-            
 
             try
             {
                 var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
                 var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false });
                 var discoDoc = disco.GetAsync().Result;
-
-
                 var keySet = await client.GetJsonWebKeySetAsync($"{baseUri}/keys");
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(authenticationSettings.nameClaimType,
-                    authenticationSettings.audience, false, 
-                    discoDoc.Issuer, (discoDoc.Issuer!=null), 
+                    authenticationSettings.audience, false,
+                    discoDoc.Issuer, (discoDoc.Issuer != null),
                     keySet.KeySet.Keys, true, true, true, false);
 
-                System.Action addOpenIdTokenToContext = () => {
+                System.Action addOpenIdTokenToContext = () =>
+                {
                     var properties = new Microsoft.Owin.Security.AuthenticationProperties();
                     var expiresAt = DateTime.UtcNow + TimeSpan.FromSeconds(response.ExpiresIn);
 
@@ -929,7 +933,7 @@ namespace d360.web.Controllers
                         );
                 };
 
-                return parseUserInfoAndLogin(userName, firstName, lastName, 
+                return parseUserInfoAndLogin(userName, firstName, lastName,
                     groups, customClaims,
                     redirectUrl, addOpenIdTokenToContext);
             }
@@ -947,7 +951,7 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
-          
+
             if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
             {
                 ReturnUrl = "";
@@ -961,8 +965,7 @@ namespace d360.web.Controllers
                     FormsAuthentication.SetAuthCookie(model.UserName, false);
                     if (!string.IsNullOrEmpty(ReturnUrl))
                     {
-                        Uri testUri;
-                        Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out testUri);
+                        Uri.TryCreate(ReturnUrl, UriKind.RelativeOrAbsolute, out Uri testUri);
 
                         if (testUri.IsAbsoluteUri)
                         {
@@ -984,6 +987,7 @@ namespace d360.web.Controllers
             }
 
             ModelState.AddModelError(ApiMessages.UnknownError, UNKNOWN_ERROR_MESSAGE);
+
             return View("Login", model);
         }
 
@@ -992,6 +996,7 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+
             return View("Logout");
         }
 
@@ -1013,7 +1018,7 @@ namespace d360.web.Controllers
                     {
                         var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/slo-callback";
                         var ru = new RequestUrl($"{authenticationSettings.baseUri}/logout");
-                        var url = ru.CreateEndSessionUrl(idToken, 
+                        var url = ru.CreateEndSessionUrl(idToken,
                             callbackUri,
                             extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)
                         );
@@ -1052,16 +1057,14 @@ namespace d360.web.Controllers
 
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
-            return View("Logout");
 
+            return View("Logout");
         }
 
-        bool setTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
+        private bool setTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
         {
             var success = true;
-
             var termsOfUses = Company.Filter<Contract>(i => i.ContractType == ContractType.ResourceTermsOfUse && (!i.OrganizationID.HasValue || i.OrganizationID == registration.OrganizationID)).ToList();
-
             var termsOfUseToDisplay = termsOfUses.Where(i => i.OrganizationID.HasValue).ToList();
 
             if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
@@ -1081,12 +1084,10 @@ namespace d360.web.Controllers
             return success;
         }
 
-        bool setOrgAndUserTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
+        private bool setOrgAndUserTermsOfUseText(OrganizationRegistration registration, RegisterModel model)
         {
             var success = true;
-
             var termsOfUses = Company.Filter<Contract>(i => (!i.OrganizationID.HasValue || i.OrganizationID == registration.OrganizationID)).ToList();
-
             var termsOfUseToDisplay = termsOfUses.Where(i => i.OrganizationID.HasValue).ToList();
 
             if (termsOfUseToDisplay == null || termsOfUseToDisplay.Count == 0)
@@ -1116,7 +1117,7 @@ namespace d360.web.Controllers
         public async Task<ActionResult> Register(Guid? registrationId = null, RegisterStep startStep = RegisterStep.Initial)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary()); 
+            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
 
             var model = new RegisterModel { Step = startStep, RegistrationID = registrationId, Accept = false };
             model.IsUsingActiveDirectory = isUsingActiveDirectory();
@@ -1125,6 +1126,7 @@ namespace d360.web.Controllers
             if (registrationId.HasValue)
             {
                 var registration = Company.GetById<OrganizationRegistration>(registrationId.Value);
+
                 if (registration != null)
                 {
                     model.Step = registration.Step;
@@ -1133,6 +1135,7 @@ namespace d360.web.Controllers
                     {
                         model.Message = "You have already registered.";
                     }
+
                     model.Email = registration.Email ?? " ";
 
                     switch (registration.Step)
@@ -1174,7 +1177,7 @@ namespace d360.web.Controllers
         }
 
         private async Task<InvitedUserResult> registerAzureActiveDirectoryGuest(string email, string firstName, string lastName, string title, string url)
-        {            
+        {
             var settings = SettingsRepository.GetSettingsAsDictionary();
             var tenantId = settings["AzureADTenant"];     //ad tenant / directory id
             var clientSecret = settings["AzureGraphAPIKey"]; // key for application from azure portal
@@ -1205,6 +1208,7 @@ namespace d360.web.Controllers
                 {
                     case RegisterStep.Initial:
                         #region
+
                         System.Net.Mail.MailAddress address = null;
                         try
                         {
@@ -1215,7 +1219,8 @@ namespace d360.web.Controllers
 
                             if (string.IsNullOrEmpty(emailDomain))
                             {
-                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoEmailDomainResolved);
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoEmailDomainResolved);
+
                                 return View(model);
                             }
 
@@ -1223,7 +1228,6 @@ namespace d360.web.Controllers
 
                             var domain = Company.OrganizationDomains.FirstOrDefault(d => d.Domain == emailDomain);
                             var orgs = Company.Filter<Organization>(i => i.AdministratorEmail == model.Email && (i.Accepted ?? false) == false && i.State == State.Active);
-
 
                             if (orgs.Any())
                             {
@@ -1254,7 +1258,6 @@ namespace d360.web.Controllers
                                 }
 
                                 return View(model);
-
                             }
                             else if (domain != null)
                             {
@@ -1287,12 +1290,10 @@ namespace d360.web.Controllers
                                 }
 
                                 return View(model);
-
                             }
                             else
                             {
                                 var invite = Company.OrganizationInvitationDetails.FirstOrDefault(i => i.Email == model.Email);
-
 
                                 if (invite != null)
                                 {
@@ -1325,15 +1326,16 @@ namespace d360.web.Controllers
                                 }
                                 else
                                 {
-                                    ModelState.AddModelError( OthersMessages.Unauthorized, OthersMessages.OrganisationNotYetRegistered);
+                                    ModelState.AddModelError(OthersMessages.Unauthorized, OthersMessages.OrganisationNotYetRegistered);
+
                                     return View(model);
                                 }
-
                             }
                         }
                         catch (Exception)
                         {
                             ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
+
                             return View(model);
                         }
 
@@ -1343,11 +1345,11 @@ namespace d360.web.Controllers
                         if (!model.RegistrationID.HasValue)
                         {
                             ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                             return View(model);
                         }
 
                         {
-
                             var registration = Company.GetById<OrganizationRegistration>(model.RegistrationID.Value);
                             if (registration != null)
                             {
@@ -1436,8 +1438,8 @@ namespace d360.web.Controllers
                                 if (model.IsUsingActiveDirectory)
                                 {
                                     var aadReturnDomain = Company.CurrentCompanyDomain;
-
                                     var host = Request.Headers["Host"];
+
                                     if (host.Contains(".data3sixty"))
                                     {
                                         aadReturnDomain = $"https://{aadReturnDomain}.data3sixty.com/";
@@ -1462,11 +1464,13 @@ namespace d360.web.Controllers
                                 }
 
                                 model.Step = registration.Step;
+
                                 return View(model);
                             }
                             else
                             {
                                 ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
                         }
@@ -1480,18 +1484,21 @@ namespace d360.web.Controllers
                             if (!model.RegistrationID.HasValue)
                             {
                                 ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
 
                             if (!model.Password.Equals(model.ConfirmPassword))
                             {
                                 ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.PasswordNotMatch);
+
                                 return View(model);
                             }
 
                             if (!Regex.Match(model.Password, Resources.Validation.Password_Regex).Success)
                             {
-                                ModelState.AddModelError(ApiMessages.Invalid,string.Format(OthersMessages.NotMeetPasswordRule,Resources.Validation.Password_Requirements));
+                                ModelState.AddModelError(ApiMessages.Invalid, string.Format(OthersMessages.NotMeetPasswordRule, Resources.Validation.Password_Requirements));
+                                
                                 return View(model);
                             }
 
@@ -1555,12 +1562,14 @@ namespace d360.web.Controllers
                             else
                             {
                                 ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
                             ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
+
                             return View(model);
                         }
 
@@ -1572,7 +1581,8 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoRegistrationFound);
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
 
@@ -1596,7 +1606,6 @@ namespace d360.web.Controllers
                                         Username = model.Email
                                     };
                                     Community.Add(resource);
-
                                     Community.Add(new CompanyResource { CompanyID = Community.CurrentCompanyID, IsAdministrator = false, State = CompanyResourceState.Active, ResourceID = resource.ID });
                                 }
                                 else
@@ -1617,10 +1626,10 @@ namespace d360.web.Controllers
                                     }
                                 }
 
-
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotThisUser );
+                                    ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotThisUser);
+
                                     return View(model);
                                 }
 
@@ -1646,7 +1655,8 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotSetOrgResource);
+                                        ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotSetOrgResource);
+                                       
                                         return View(model);
                                     }
 
@@ -1666,6 +1676,7 @@ namespace d360.web.Controllers
                                     var aadReturnDomain = Company.CurrentCompanyDomain;
 
                                     var host = Request.Headers["Host"];
+
                                     if (host.Contains(".data3sixty"))
                                     {
                                         aadReturnDomain = $"https://{aadReturnDomain}.data3sixty.com/";
@@ -1690,17 +1701,20 @@ namespace d360.web.Controllers
                                 }
 
                                 model.Step = registration.Step;
+
                                 return View(model);
                             }
                             else
                             {
                                 ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
                             ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
+
                             return View(model);
                         }
                     case RegisterStep.TermsOfUse:
@@ -1711,7 +1725,8 @@ namespace d360.web.Controllers
 
                             if (!model.RegistrationID.HasValue)
                             {
-                                ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoRegistrationFound);
+                                ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
 
@@ -1724,14 +1739,16 @@ namespace d360.web.Controllers
 
                                 if (!model.Accept ?? false)
                                 {
-                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.MustAcceptTermsOfUse);
+                                    ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.MustAcceptTermsOfUse);
+
                                     return View(model);
                                 }
 
                                 var resource = Community.Filter<Resource>(i => i.Email == model.Email, i => i.CompanyResources).SingleOrDefault();
                                 if (resource == null)
                                 {
-                                    ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.NoResourceAccount);
+                                    ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoResourceAccount);
+
                                     return View(model);
                                 }
                                 else
@@ -1739,6 +1756,7 @@ namespace d360.web.Controllers
                                     if (!resource.CompanyResources.Any(i => i.CompanyID == Community.CurrentCompanyID))
                                     {
                                         ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResoourceAccountNotAllocatedToCompany);
+
                                         return View(model);
                                     }
                                 }
@@ -1766,7 +1784,8 @@ namespace d360.web.Controllers
 
                                     if (orgResource == null)
                                     {
-                                        ModelState.AddModelError(ApiMessages.Invalid,OthersMessages.ResourceNotSetOrgResource);
+                                        ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.ResourceNotSetOrgResource);
+
                                         return View(model);
                                     }
 
@@ -1787,6 +1806,7 @@ namespace d360.web.Controllers
                                     var aadReturnDomain = Company.CurrentCompanyDomain;
 
                                     var host = Request.Headers["Host"];
+
                                     if (host.Contains(".data3sixty"))
                                     {
                                         aadReturnDomain = $"https://{aadReturnDomain}.data3sixty.com/";
@@ -1805,17 +1825,20 @@ namespace d360.web.Controllers
                                 }
 
                                 model.Step = registration.Step;
+
                                 return View(model);
                             }
                             else
                             {
                                 ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.NoRegistrationFound);
+
                                 return View(model);
                             }
                         }
                         catch (Exception)
                         {
                             ModelState.AddModelError(ApiMessages.Invalid, OthersMessages.InvalidEmail);
+
                             return View(model);
                         }
 
@@ -1845,6 +1868,7 @@ namespace d360.web.Controllers
                     {
                         return false;
                     }
+
                     break;
                 }
             }
@@ -1893,8 +1917,7 @@ namespace d360.web.Controllers
                     {
                         Company.ResourcePasswordResets.RemoveRange(pending);
                         Company.SaveChanges();
-                    }                   
-
+                    }
                 }
 
                 //if there are no records add one and send the reset email
@@ -1926,6 +1949,7 @@ namespace d360.web.Controllers
 
             //redirect to login page
             FormsAuthentication.RedirectToLoginPage();
+
             return new EmptyResult();
         }
 
@@ -1934,6 +1958,7 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+
             return View("Reset");
         }
 
@@ -1953,9 +1978,11 @@ namespace d360.web.Controllers
                     if (resetRequest != null)
                     {
                         var resource = Company.GlobalReportingResources.Where(x => x.ResourceID == resetRequest.ResourceID).FirstOrDefault();
+
                         if (resource != null)
                         {
                             bool success = false;
+
                             // check that the request is less then 24 hours old
                             if ((resetRequest.CreateDate - DateTime.UtcNow).TotalDays < 1)
                             {
@@ -1970,6 +1997,7 @@ namespace d360.web.Controllers
                             {
                                 ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
                                 ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+
                                 return View("ResetMessage");
                             }
                         }
@@ -1978,6 +2006,7 @@ namespace d360.web.Controllers
             }
 
             FormsAuthentication.RedirectToLoginPage();
+
             return new EmptyResult();
         }
 
@@ -1985,6 +2014,7 @@ namespace d360.web.Controllers
         public ActionResult NoAccess()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+
             return View("NoAccess");
         }
 
@@ -1992,6 +2022,7 @@ namespace d360.web.Controllers
         public ActionResult Error()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+
             return View("../Shared/GenericError");
         }
 
@@ -1999,8 +2030,8 @@ namespace d360.web.Controllers
         public ActionResult InactiveCompany()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
+
             return View("InactiveCompany");
         }
-
     }
 }

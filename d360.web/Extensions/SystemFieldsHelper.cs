@@ -1,8 +1,10 @@
-﻿using d360.core;
+﻿using System.Collections.Generic;
+
+using d360.core;
 using d360.core.entities;
 using d360.web.Models;
+
 using Resources;
-using System.Collections.Generic;
 
 namespace d360.web.Extensions
 {
@@ -68,6 +70,5 @@ namespace d360.web.Extensions
                 Category = FieldInfo.SystemFieldCategory
             };
         }
-
     }
 }

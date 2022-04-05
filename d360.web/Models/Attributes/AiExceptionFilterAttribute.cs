@@ -1,5 +1,6 @@
-﻿using Microsoft.ApplicationInsights;
-using System.Web.Http.ExceptionHandling;
+﻿using System.Web.Http.ExceptionHandling;
+
+using Microsoft.ApplicationInsights;
 
 namespace d360.web.Models.Attributes
 {
@@ -19,8 +20,8 @@ namespace d360.web.Models.Attributes
                 var Telemetry = new TelemetryClient();
                 Telemetry.TrackException(context.Exception);
             }
+
             base.Log(context);
         }
     }
-    
 }
