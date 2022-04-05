@@ -73,7 +73,7 @@ namespace igx.functions.consumption
 										from [Resource] R 
 										inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
 								param: new { c.CompanyID });
-								var updatedResourceIDs = new HashSet<int>(resources.RecordsAffected);
+								var updatedResourceIDs = new HashSet<int>(resources.RecordsAffected > 0 ? resources.RecordsAffected : 0);
 
 								#endregion
 
