@@ -24,6 +24,7 @@ import { ThemeEditorModule } from './theme-editor.module';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
+import { CodeAreaModule } from '../../shared/controls/codearea/codearea.component';
 
 @NgModule({
     imports: [
@@ -53,7 +54,8 @@ import { ButtonModule } from 'primeng/button';
         SiteModalModule,
         PropertyGroupModule,
         TooltipModule,
-        ButtonModule
+        ButtonModule,
+        CodeAreaModule
     ],
     declarations: [
         AdminBrandingComponent,

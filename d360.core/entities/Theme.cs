@@ -54,6 +54,8 @@ namespace d360.core.entities
 
         [JsonProperty("customCssUri")]
         public string CustomCssUri { get; set; }
+        [JsonProperty("customCss")]
+        public string CustomCss { get; set; }
 
         [JsonProperty("headerLogoUri")]
         public string HeaderLogoUri { get; set; }
@@ -198,6 +200,7 @@ namespace d360.core.entities
                 CustomCssUri = string.IsNullOrEmpty(model.CustomCss) ?
                     null :
                     $"/api/v2/environment/themes/{model.Uid}/custom.css",
+                CustomCss = model.CustomCss,
                 BackColor = model.BackColor,
                 BreadcrumbLinkColor = model.BreadcrumbLinkColor,
                 ButtonBackColor = model.ButtonBackColor,

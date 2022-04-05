@@ -69,6 +69,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.isLoading = true;
         this.brandingService.getThemes().subscribe((res: Theme[]) => {
             this.themes = res;
+            this.selectedRow = null;
             this.themes.forEach((t) => {
                 t.svg = this.svg_markup(t);
                 var menuItems = [];

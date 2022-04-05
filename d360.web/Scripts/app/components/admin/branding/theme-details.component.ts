@@ -3,6 +3,7 @@ import { head } from 'lodash';
 import { Category } from '../../../models/object-detail.model';
 
 import { BrandingService, Theme } from '../../../services/branding.service';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: "theme-detail",
@@ -18,9 +19,13 @@ export class ThemeDetailComponent implements OnChanges {
     @Output() linkClicked = new EventEmitter();
 
     categories: Category[] = new Array<Category>();
+    hasCustomCss: boolean = false;
 
-    constructor(private brandingService: BrandingService) {
-
+    constructor(private brandingService: BrandingService,
+        featureFlagService?: FeatureFlagsService) {
+        if (featureFlagService.flags[FeatureFlags.BrandingThemeCustomCss]) {
+            this.hasCustomCss = true;
+        }
     }
 
     ngOnChanges(simpleChange: SimpleChanges) {
@@ -77,6 +82,14 @@ export class ThemeDetailComponent implements OnChanges {
         this.categories.push(navSidebar);
         this.categories.push(home);
         this.categories.push(general);
+
+        if (this.hasCustomCss) {
+            var css = new Category('CSS Customization');
+            css.rows.push(
+                { title: '', value: this.theme.customCss, type: "code" });
+
+            this.categories.push(css);
+        }
 
         this.categories.forEach((cat) => {
             cat.loaded = true;

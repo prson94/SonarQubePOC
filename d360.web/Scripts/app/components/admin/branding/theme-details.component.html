@@ -15,7 +15,6 @@
     </div>
     <div class="windowtabs">
         <button class="tab-selected">Details</button>
-        <button class="tab">Accesibility</button>
     </div>
     <div class="asset-detail-tabs">
         <div *ngFor="let category of categories; let first=first">
@@ -38,6 +37,9 @@
                             <div class="image-preview preview-{{row.style}}">
                                 <img src="{{row.value}}" />
                             </div>
+                        </ng-container>
+                        <ng-container *ngIf="row.type === 'code'">
+                            <codearea [(ngModel)]="row.value" [readonly]="true" [codeType]="'css'"></codearea>
                         </ng-container>
                     </div>
                 </div>
