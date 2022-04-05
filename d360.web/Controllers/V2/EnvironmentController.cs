@@ -621,8 +621,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, "Forbidden your not an admin.")).ConfigureAwait(false);
-
+                }
 
                 var queryParams = Request.GetQueryNameValuePairs();
                 string isValid = isPageSizeAndNumValid(queryParams);
