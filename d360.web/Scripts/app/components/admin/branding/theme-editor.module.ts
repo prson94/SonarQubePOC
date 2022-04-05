@@ -21,9 +21,9 @@ import { PropertyGroupModule } from '../../shared/controls/property-group/proper
 import { ThemeEditorComponent } from './theme-editor.component';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { ImagePickerModule } from '../../shared/controls/image-picker/image-picker.component';
-import { ColorPickerModule } from 'primeng/colorpicker';
 import { TooltipModule } from 'primeng/tooltip';
 import { CodeAreaModule } from '../../shared/controls/codearea/codearea.component';
+import { ColorSelectorModule } from '../../shared/controls/color-selector/color-selector.component';
 
 @NgModule({
     imports: [
@@ -53,7 +53,7 @@ import { CodeAreaModule } from '../../shared/controls/codearea/codearea.componen
         PropertyGroupModule,
         SiteModalModule,
         ImagePickerModule,
-        ColorPickerModule,
+        ColorSelectorModule,
         TooltipModule,
         CodeAreaModule
     ],

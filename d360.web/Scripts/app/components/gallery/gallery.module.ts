@@ -75,6 +75,8 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GalleryLocaleComponent } from './gallery.locale.component';
 import { GalleryImagePickerComponent } from './gallery.image-picker.component';
 import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.component';
+import { ColorSelectorModule } from '../shared/controls/color-selector/color-selector.component';
+import { GalleryColorSelectorComponent } from './gallery.color-selector.component';
 
 @NgModule({
     imports: [
@@ -117,7 +119,8 @@ import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.
         SidePanelModule,
         CodeAreaModule,
         CodemirrorModule,
-        ImagePickerModule
+        ImagePickerModule,
+        ColorSelectorModule
     ],
     declarations: [
         GalleryComponent,
@@ -154,7 +157,8 @@ import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.
         GalleryModalDrawerComponent,
         GalleryCodeAreaComponent,
         GalleryLocaleComponent,
-        GalleryImagePickerComponent
+        GalleryImagePickerComponent,
+        GalleryColorSelectorComponent
     ],
     providers: [
         GalleryGuard,

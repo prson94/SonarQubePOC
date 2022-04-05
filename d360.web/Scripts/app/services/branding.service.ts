@@ -80,7 +80,7 @@ export class Theme {
         if (!this.buttonBackColor) {
             this.buttonBackColor = "#B4B7BE";
         }
-        if (this.navbarBackColor) {
+        if (!this.navbarBackColor) {
             this.navbarBackColor = "#ffffff";
         }
         if (!this.navbarBackColorSelected) {
