@@ -70,6 +70,39 @@ export class Theme {
         }
     }
 
+    public fillDefaultValues() {
+        if (!this.headerBackColor) {
+            this.headerBackColor = "#1E2435";
+        }
+        if (!this.breadcrumbLinkColor) {
+            this.breadcrumbLinkColor = "#FFFFFF";
+        }
+        if (!this.buttonBackColor) {
+            this.buttonBackColor = "#B4B7BE";
+        }
+        if (this.navbarBackColor) {
+            this.navbarBackColor = "#ffffff";
+        }
+        if (!this.navbarBackColorSelected) {
+            this.navbarBackColorSelected = "#e4cfff";
+        }
+        if (!this.primaryButtonBackColor) {
+            this.primaryButtonBackColor = "#002d4b";
+        }
+        if (!this.backColor) {
+            this.backColor = "#eff0f0";
+        }
+        if (!this.tabLinkColor) {
+            this.tabLinkColor = "#002d4b";
+        }
+        if (!this.tableHeaderBackColor) {
+            this.tableHeaderBackColor = "#f1f2f3";
+        }
+        if (!this.tableRowBackColor) {
+            this.tableRowBackColor = "#e4cfff";
+        }
+    }
+
 
     public get isDefaultTheme(): boolean {
         return this.uid.toLowerCase() === this.defaultThemeUid.toLowerCase();
@@ -151,6 +184,23 @@ export class BrandingService extends BaseObservableService {
             || this.iconDefault.toLowerCase() === str.toLowerCase();
     }
 
+    public validateTheme(theme: Theme): Observable<any> {
+        let url: string = '/api/v2/environment/themes?validationOnly=true';
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+
+        return this
+            .http
+            .post(url, theme, httpOptions)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     public saveTheme(theme: Theme): Observable<any> {
         let url: string = '/api/v2/environment/themes';
         const httpOptions = {
@@ -182,9 +232,9 @@ export class BrandingService extends BaseObservableService {
             theme.homeBackground = "";
         }
 
-        theme.customCss  = theme.customCss ? window.btoa(theme.customCss) : null;
+        theme.customCss = theme.customCss ? window.btoa(theme.customCss) : null;
 
-       
+
         if (theme.uid) {
             url += "/" + theme.uid;
             return this

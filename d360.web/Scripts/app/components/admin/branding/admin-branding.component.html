@@ -21,7 +21,7 @@
                             icon="fa-download"
                             (click)="download()">
                     </button>
-                    <input #uploadInput type="file" class="file-input" (change)="onFileSelected($event)" hidden>
+                    <input #uploadInput type="file" class="file-input" accept=".json" (change)="onFileSelected($event)" hidden>
                     <button igButton
                             [loading]="isThemeUploading"
                             pTooltip="Import"

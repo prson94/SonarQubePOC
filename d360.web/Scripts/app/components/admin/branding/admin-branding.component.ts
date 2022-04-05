@@ -247,19 +247,29 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     }
 
     checkUploadTheme() {
-        var existingItem = this.themes.find((x) => x.name === this.themeToLoad.name);
+        var _toValidate = _.cloneDeep(this.themeToLoad);
+        _toValidate.name = "temp_" + Date.now().toString();
+        this.brandingService.validateTheme(_toValidate)
+            .subscribe((res) => {
+                if (res) {
+                    var existingItem = this.themes.find((x) => x.name === this.themeToLoad.name);
 
-        if (existingItem) {
-            this.shouldRename = true;
-            this.existingThemeName = existingItem.name;
-            this.existingThemeUid = existingItem.uid;
-            if (!existingItem.isCurrent && !existingItem.isDefaultTheme) {
-                this.canReplace = true;
-            }
-        }
-        else {
-            this.uploadTheme();
-        }
+                    if (existingItem) {
+                        this.shouldRename = true;
+                        this.existingThemeName = existingItem.name;
+                        this.existingThemeUid = existingItem.uid;
+                        if (!existingItem.isCurrent && !existingItem.isDefaultTheme) {
+                            this.canReplace = true;
+                        }
+
+                    }
+                    else {
+                        this.uploadTheme();
+                    }
+                    this.cdRef.markForCheck();
+                }
+            });
+
 
         this.cdRef.markForCheck();
     }

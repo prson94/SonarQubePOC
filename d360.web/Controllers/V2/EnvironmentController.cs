@@ -1700,7 +1700,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostTheme(PostTheme requestModel)
+        public async Task<IHttpActionResult> PostTheme(PostTheme requestModel, [FromUri] bool validationOnly = false)
         {
             try
             {
@@ -1719,7 +1719,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var responseModel = await ThemeRepository.PostThemeAsync(requestModel);
+                var responseModel = await ThemeRepository.PostThemeAsync(requestModel, validationOnly);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
             }
@@ -1875,7 +1875,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpPut,
-            ApiExplorerSettings(IgnoreApi = false),
+            ApiExplorerSettings(IgnoreApi = true),
             Route("themes/conversion/base64"),
             SwaggerConsumes("text/css"), SwaggerProduces("text/plain"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding theme.", typeof(string)),
@@ -2004,7 +2004,7 @@ namespace d360.web.Controllers.V2
                 {
                     using (var stream = new MemoryStream())
                     {
-                        
+
                         var url = $"{Company.CurrentCompanyID}/{theme.Uid.ToString().ToLowerInvariant()}_icon{theme.BrowserIconExtension}";
                         await _storage.GetFileStream("themes", url, stream);
                         response.Icon = stream.ToArray().GetDataUrlFromStream(theme.BrowserIconExtension);

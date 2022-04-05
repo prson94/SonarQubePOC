@@ -34,7 +34,7 @@ export class ThemeDetailComponent implements OnChanges {
 
     loadData() {
         this.categories = [];
-
+        this.theme.fillDefaultValues();
         var header = new Category('Header Bar');
         header.active = true;
         header.rows = [];
