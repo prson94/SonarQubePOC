@@ -1,4 +1,4 @@
-﻿<span *ngIf="listLength===0">---</span>
+﻿<span *ngIf="listLength===0"></span>
 <ul *ngIf="listLength > 0" class="ownershiplist {{(listLength === 1 ? 'single-entry' : '')}}">
     <li *ngFor="let owner of list; let i = index" [ngClass]="{'noshow': ((i >= moreLimit) && !showMore)}">
          <span>
