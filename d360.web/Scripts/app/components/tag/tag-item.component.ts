@@ -19,6 +19,8 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { SelectAssetService } from '../../services/select-asset.service';
+import { Subscription } from 'rxjs';
+import { AssetDetailClickEvent, LinkClickInterceptor } from '../../services/href-click-service';
 
 
 @Component({
@@ -47,6 +49,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     selectedReferenceItem: any;
     selectedTag: any;
     selectedAsset: any;
+    hrefSub: Subscription;
 
     private currentAreaName: string;
     private isAdmin: boolean = false;
@@ -72,11 +75,14 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private authService: AuthenticationService,
+        private linkClickInterceptor: LinkClickInterceptor,
         private ref: ChangeDetectorRef
     ) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
-
+        this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((assetDetailClickEvent: AssetDetailClickEvent) => {
+            this.linkClickInterceptor.handleEvent(this, assetDetailClickEvent);
+        });
     }
 
     get panelApplies(): boolean {
