@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -153,6 +154,42 @@ namespace d360.web.Controllers
             {
                 userName = userName.ToLower();
                 resource = Community.Filter<Resource>(i => i.Username.ToLower() == userName).SingleOrDefault();
+                
+                //If there is a domain whitelist, make sure the user has access
+                string domainWhitelistString = SettingsRepository.GetSetting(Setting.EmailDomainWhitelist).Value;
+                bool isDomainWhitelisted;
+                
+                //For internal use, bypass the whitelist
+                var host = Request.Headers["Host"];
+                if (host.Contains("-pcy") || host.Contains("-d3s") || host.Contains("-igx"))
+                {
+                    isDomainWhitelisted = true;
+                }
+                else if (!string.IsNullOrWhiteSpace(domainWhitelistString))
+                {
+                    isDomainWhitelisted = false;
+                    var domainWhitelist = domainWhitelistString.Split(',');
+                    var userEmail = new MailAddress(userName);
+                    var userDomain = userEmail.Host;
+
+                    foreach(var domain in domainWhitelist)
+                    {
+                        if (string.Equals(userDomain, domain.Trim(), StringComparison.OrdinalIgnoreCase) == true)
+                        {
+                            isDomainWhitelisted = true;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    isDomainWhitelisted = true;
+                }
+
+                if (isDomainWhitelisted == false)
+                {
+                    return Redirect("/noaccess");
+                }
 
                 // If user is assigned to any groups in SAML claims, then check to see if any of those groups should be assigned as admin. If so, assign the user as admin.
                 bool isCompanyAdministrator = false;
