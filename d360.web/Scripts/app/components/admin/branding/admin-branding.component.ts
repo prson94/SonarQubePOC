@@ -203,13 +203,31 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         var sJson = JSON.stringify(this.selectedRow._orig);
         var element = document.createElement('a');
         element.setAttribute('href', "data:text/json;charset=UTF-8," + encodeURIComponent(sJson));
-        element.setAttribute('download', "primer-server-task.json");
+        element.setAttribute('download', this.getExportName(this.selectedRow));
         element.style.display = 'none';
         document.body.appendChild(element);
         element.click(); // simulate click
         document.body.removeChild(element);
     }
 
+    getExportName(theme: Theme): string {
+        var dateParts = new Date(theme.updatedOn).toDateString().split(" ");
+        return `${theme.name}_${this.getEnvironment()}_${dateParts[2] + dateParts[1] + dateParts[3]}.json`;
+    }
+
+    getEnvironment(): string {
+        var url = window.location.href.toLowerCase();
+        if (url.indexOf(".dev.")) {
+            return "DEV";
+        }
+        if (url.indexOf(".uat.")) {
+            return "UAT";
+        }
+        if (url.indexOf(".preview.")) {
+            return "PREVIEW";
+        }
+        return "PROD";
+    }
 
     isThemeUploading: boolean = false;
     file: File;
