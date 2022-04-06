@@ -6,6 +6,12 @@ import { ButtonModule } from "../../../../directives/ig-button-directive";
 import { TooltipModule } from "primeng/tooltip";
 import { DomSanitizer } from '@angular/platform-browser';
 import { ColorPickerModule } from "primeng/colorpicker";
+import { forEach } from "core-js/js/array";
+
+export class ColorSelecterEvaluator {
+    evaluator: Function;
+    result: Function;
+}
 
 export const COLOR_SELECTOR_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -29,9 +35,12 @@ export class ColorSelector implements ControlValueAccessor {
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };
 
+    valueEvaluators: ColorSelecterEvaluator[] = [];
+
     constructor(public ref: ChangeDetectorRef,
         public domSanitizer: DomSanitizer,
         public el: ElementRef) {
+        this.populateEvaluators();
     }
 
     writeValue(obj: any): void {
@@ -61,41 +70,11 @@ export class ColorSelector implements ControlValueAccessor {
         }
         hexCode = this.textBoxValue.split("#")[1];
 
-        if (!this.allEqual(hexCode) && hexCode.length === 5) {
-            hexCode = hexCode + "0";
-        }
-
-        if (this.allEqual(hexCode) && hexCode.length === 5) {
-            hexCode = hexCode.slice(0, 2).repeat(3);
-        }
-
-        if (!this.allEqual(hexCode) && this.hasPairs(hexCode)) {
-            hexCode = hexCode.repeat(2).slice(0, 6);
-        }
-
-        if (hexCode.length === 4 && !this.allEqual(hexCode) && !this.hasPairs(hexCode)) {
-            hexCode = hexCode + "00";
-        }
-
-        if (this.allEqual(hexCode) && hexCode.length === 4) {
-            hexCode = hexCode.slice(0, 2).repeat(3);
-        }
-
-        if (hexCode.length === 3 && this.allEqual(hexCode)) {
-            hexCode = hexCode.repeat(2);
-        }
-
-        if (hexCode.length === 3 && !this.allEqual(hexCode)) {
-            hexCode = hexCode[0].repeat(2) + hexCode[1].repeat(2) + hexCode[2].repeat(2);
-        }
-
-        if (hexCode.length === 2) {
-            hexCode = hexCode.repeat(3);
-        }
-
-        if (hexCode.length === 1) {
-            hexCode = hexCode.repeat(6);
-        }
+        this.valueEvaluators.forEach((e) => {
+            if (e.evaluator(hexCode)) {
+                hexCode = e.result(hexCode);
+            }
+        });
 
         if (this.isHexColor(hexCode)) {
             this.writeValue("#" + hexCode);
@@ -117,6 +96,106 @@ export class ColorSelector implements ControlValueAccessor {
 
     private hasPairs(input: string) {
         return input.length === 4 && input[0] === input[2] && input[1] && input[3];
+    }
+
+    private populateEvaluators() {
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #12345
+                return !this.allEqual(value) && value.length === 5;
+            },
+            result: (value: string) => {
+                //output #123456
+                return value + "0";
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #11111
+                return this.allEqual(value) && value.length === 5;
+            },
+            result: (value: string) => {
+                //output #111111
+                return value.slice(0, 2).repeat(3);
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #1212
+                return !this.allEqual(value) && this.hasPairs(value);
+            },
+            result: (value: string) => {
+                //output #121212
+                return value.repeat(2).slice(0, 6);
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #1234
+                return value.length === 4 && !this.allEqual(value) && !this.hasPairs(value);
+            },
+            result: (value: string) => {
+                //output #123400
+                return value + "00";
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #1111
+                return this.allEqual(value) && value.length === 4;
+            },
+            result: (value: string) => {
+                //output #111111
+                return value.slice(0, 2).repeat(3);
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #222
+                return value.length === 3 && this.allEqual(value);
+            },
+            result: (value: string) => {
+                //output #222222
+                return value.repeat(2);
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #121
+                return value.length === 3 && !this.allEqual(value);
+            },
+            result: (value: string) => {
+                //output #112211
+                return value[0].repeat(2) + value[1].repeat(2) + value[2].repeat(2);
+            }
+        });
+
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #11 or #12
+                return value.length === 2;
+            },
+            result: (value: string) => {
+                //output #111111 or #121212
+                return value.repeat(3);
+            }
+        });
+        this.valueEvaluators.push({
+            evaluator: (value: string) => {
+                //input #1
+                return value.length === 1;
+            },
+            result: (value: string) => {
+                //output #111111
+                return value.repeat(6)
+            }
+        });
     }
 }
 
