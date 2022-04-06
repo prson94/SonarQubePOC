@@ -321,7 +321,16 @@ namespace d360.extensions.search
             var indexName = GetCompanyIndexName(companyID);
             var client = GetElasticClient(companyID);
 
-            if (!client.IndexExists(indexName).Exists)
+            var existsResponse = client.IndexExists(indexName);
+            if(!existsResponse.IsValid)
+            {
+                throw new SearchServerConnectionException(
+                    existsResponse.OriginalException,
+                    string.Join(", ", client.ConnectionSettings.ConnectionPool.Nodes.Select(n => n.Uri.OriginalString)),
+                    indexName
+                );
+            }
+            else if (!existsResponse.Exists)
             {
                 CreateIndexDescriptor indexDescriptor = new CreateIndexDescriptor(indexName)
                     .Settings(s => s
