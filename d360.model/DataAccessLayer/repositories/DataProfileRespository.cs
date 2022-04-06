@@ -651,7 +651,7 @@ namespace d360.model.DataAccessLayer
 			string whereConditions = $@"where 
 										 ADP.ProfileSetDate = maxProfileDate.profileSetDate";
 			string sqlJoins = $@"  inner join 
-							[graph].AssetNode NDP WITH (NOEXPAND) on NDP.ID=adp.AssetID and adp.AssetId != @assetId
+							[graph].AssetNode NDP on NDP.ID=adp.AssetID and adp.AssetId != @assetId
 							outer apply 
 							(
 							select 
