@@ -181,11 +181,8 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                 .subscribe((res) => {
                     this.ngOnInit();
                     this.cdRef.markForCheck();
-
                 });
-        })
-
-
+        });
     }
 
     getUniqueName(name: string, idx: number) {

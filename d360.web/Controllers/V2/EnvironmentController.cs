@@ -156,7 +156,9 @@ namespace d360.web.Controllers.V2
             {
                 await _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch { }
+            catch {
+                //no handling of this case
+            }
 
             try
             {
@@ -170,7 +172,9 @@ namespace d360.web.Controllers.V2
                     SettingsRepository.DeleteSetting(Setting.CustomCSSLocation);
                 }
             }
-            catch { }
+            catch {
+                //no handling of this case
+            }
 
             return Request.CreateResponse(HttpStatusCode.OK, ApiMessages.StyleUpdated);
         }

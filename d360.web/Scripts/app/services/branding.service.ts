@@ -158,7 +158,7 @@ export class BrandingService extends BaseObservableService {
                         target._orig = source;
                         var sourceProps = Object.keys(source);
                         sourceProps.forEach((prop) => {
-                            target[prop] = source[prop];
+                            target[`${prop}`] = source[`${prop}`];
                         });
                         themes.push(target);
                     });

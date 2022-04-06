@@ -87,7 +87,7 @@ export class ThemeEditorComponent implements OnChanges {
         this.formGroup.reset();
         properties.forEach((p) => {
             var valObj = {};
-            valObj[p] = _th[p];
+            valObj[`${p}`] = _th[`${p}`];
             this.formGroup.patchValue(valObj);
         });
         this.changesMade = false;
@@ -102,7 +102,7 @@ export class ThemeEditorComponent implements OnChanges {
         var properties = Object.keys(this.formGroup.controls);
 
         properties.forEach((p) => {
-            _theme[p] = this.formGroup.get(p).value;
+            _theme[`${p}`] = this.formGroup.get(`${p}`).value;
         });
 
         this.brandingService.saveTheme(_theme).subscribe((res) => {
