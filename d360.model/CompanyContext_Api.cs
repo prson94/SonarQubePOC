@@ -11943,6 +11943,7 @@ EG.GroupUid
 					DataProfileTable.Columns.Add("ExecutionItemUid", typeof(Guid));
 					DataProfileTable.Columns.Add("AssetUid", typeof(Guid));
 					DataProfileTable.Columns.Add("ProfileSetDate", typeof(DateTime));
+					DataProfileTable.Columns.Add("ProfileIdentifier", typeof(string));
 
 					DataProfileTable.Columns.Add("SampleCount", typeof(long));
 					DataProfileTable.Columns.Add("NullCount", typeof(long));
@@ -12006,6 +12007,7 @@ EG.GroupUid
 						}
 						row["AssetUid"] = item.assetUid;
 						row["ProfileSetDate"] = item.profileSetDate.Date;
+						row["ProfileIdentifier"] = item.profileIdentifier ?? (object)DBNull.Value;
 
 						row["SampleCount"] = item.sampleCount ?? (object)DBNull.Value;
 						row["NullCount"] = item.nullCount ?? (object)DBNull.Value;
@@ -12168,6 +12170,7 @@ EG.GroupUid
 								bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 								bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
 								bulkCopy.ColumnMappings.Add("ProfileSetDate", "ProfileSetDate");
+								bulkCopy.ColumnMappings.Add("ProfileIdentifier", "ProfileIdentifier");
 								bulkCopy.ColumnMappings.Add("SampleCount", "SampleCount");
 								bulkCopy.ColumnMappings.Add("NullCount", "NullCount");
 								bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
@@ -12361,6 +12364,7 @@ EG.GroupUid
 										WHEN NOT MATCHED THEN
 										INSERT ([AssetID]
 													,[ProfileSetDate]
+													,[ProfileIdentifier]
 													,[SampleCount]
 													,[NullCount]
 													,[BlankCount]
@@ -12398,6 +12402,7 @@ EG.GroupUid
 												VALUES
 													(EDP.AssetID
 													,EDP.ProfileSetDate
+													,EDP.ProfileIdentifier
 													,EDP.SampleCount
 													,EDP.NullCount
 													,EDP.BlankCount

@@ -19,6 +19,9 @@ namespace d360.core.entities
         public DateTime ProfileSetDate { get; set; }
 
         [DataMember]
+        public string ProfileIdentifier { get; set; }
+
+        [DataMember]
         public long? SampleCount { get; set; }
 
         [DataMember]
@@ -140,6 +143,10 @@ namespace d360.core.entities
         [DataType(System.ComponentModel.DataAnnotations.DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime profileSetDate { get; set; }
+
+        [DataMember]
+        [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
+        public string profileIdentifier { get; set; }
 
         [DataMember]
         public long? sampleCount { get; set; }
@@ -273,6 +280,7 @@ namespace d360.core.entities
         public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples)
         {
             assetUid = uid;
+            profileIdentifier = profile.ProfileIdentifier;
             blankCount = profile.BlankCount;
             cardinality = profile.Cardinality;
             confidence = profile.Confidence;
