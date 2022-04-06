@@ -129,6 +129,9 @@
   <data name="FirstNameMissing" xml:space="preserve">
     <value>Must provide a First Name</value>
   </data>
+  <data name="FirstNameTooLong" xml:space="preserve">
+    <value>First Name must be less or equal to 250 characters in length</value>
+  </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
     <value>An internal server error occurred</value>
   </data>
@@ -137,6 +140,9 @@
   </data>
   <data name="LastNameMissing" xml:space="preserve">
     <value>Must provide a Last Name</value>
+  </data>
+  <data name="LastNameTooLong" xml:space="preserve">
+    <value>Last Name must be less or equal to 250 characters in length</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
     <value>CurrentPassword parameter value missing.</value>
