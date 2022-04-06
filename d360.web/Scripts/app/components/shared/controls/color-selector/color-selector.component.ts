@@ -193,7 +193,7 @@ export class ColorSelector implements ControlValueAccessor {
             },
             result: (value: string) => {
                 //output #111111
-                return value.repeat(6)
+                return value.repeat(6);
             }
         });
     }
