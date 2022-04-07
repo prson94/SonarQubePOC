@@ -581,13 +581,13 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (user.FirstName != null && user.FirstName.Length >= 250)
+				if (user.FirstName != null && user.FirstName.Length > 250)
                 {
 					success = false;
 					messages.Add(MemberShipErrors.FirstNameTooLong);
 				}
 
-				if (user.LastName != null && user.LastName.Length >= 250)
+				if (user.LastName != null && user.LastName.Length > 250)
 				{
 					success = false;
 					messages.Add(MemberShipErrors.LastNameTooLong);
