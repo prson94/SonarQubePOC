@@ -11984,11 +11984,12 @@ EG.GroupUid
                     DataTable DataProfileTable = new DataTable();
                     DataTable DataProfileSampleTable = new DataTable();
 
-                    DataProfileTable.Columns.Add("ExecutionID", typeof(Guid));
-                    DataProfileTable.Columns.Add("ItemNumber", typeof(int));
-                    DataProfileTable.Columns.Add("ExecutionItemUid", typeof(Guid));
-                    DataProfileTable.Columns.Add("AssetUid", typeof(Guid));
-                    DataProfileTable.Columns.Add("ProfileSetDate", typeof(DateTime));
+					DataProfileTable.Columns.Add("ExecutionID", typeof(Guid));
+					DataProfileTable.Columns.Add("ItemNumber", typeof(int));
+					DataProfileTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+					DataProfileTable.Columns.Add("AssetUid", typeof(Guid));
+					DataProfileTable.Columns.Add("ProfileSetDate", typeof(DateTime));
+					DataProfileTable.Columns.Add("ProfileIdentifier", typeof(string));
 
                     DataProfileTable.Columns.Add("SampleCount", typeof(long));
                     DataProfileTable.Columns.Add("NullCount", typeof(long));
@@ -12040,18 +12041,19 @@ EG.GroupUid
                     {
                         DataRow row = DataProfileTable.NewRow();
 
-                        row["ExecutionID"] = execution.ExecutionID;
-                        row["ItemNumber"] = itemNumber;
-                        if (item.ExecutionItemUid.HasValue)
-                        {
-                            row["ExecutionItemUid"] = item.ExecutionItemUid;
-                        }
-                        else
-                        {
-                            row["ExecutionItemUid"] = DBNull.Value;
-                        }
-                        row["AssetUid"] = item.assetUid;
-                        row["ProfileSetDate"] = item.profileSetDate.Date;
+						row["ExecutionID"] = execution.ExecutionID;
+						row["ItemNumber"] = itemNumber;
+						if (item.ExecutionItemUid.HasValue)
+						{
+							row["ExecutionItemUid"] = item.ExecutionItemUid;
+						}
+						else
+						{
+							row["ExecutionItemUid"] = DBNull.Value;
+						}
+						row["AssetUid"] = item.assetUid;
+						row["ProfileSetDate"] = item.profileSetDate.Date;
+						row["ProfileIdentifier"] = item.profileIdentifier ?? (object)DBNull.Value;
 
                         row["SampleCount"] = item.sampleCount ?? (object)DBNull.Value;
                         row["NullCount"] = item.nullCount ?? (object)DBNull.Value;
@@ -12202,22 +12204,23 @@ EG.GroupUid
                         {
                             #region Bulk Copy Data Profile
 
-                            using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
-                            {
-                                BatchSize = DataProfileTable.Rows.Count,
-                                DestinationTableName = "[api].[ExecutionAssetDataProfile]",
-                                BulkCopyTimeout = SqlBulkBatchTimeout
-                            })
-                            {
-                                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-                                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                                bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-                                bulkCopy.ColumnMappings.Add("ProfileSetDate", "ProfileSetDate");
-                                bulkCopy.ColumnMappings.Add("SampleCount", "SampleCount");
-                                bulkCopy.ColumnMappings.Add("NullCount", "NullCount");
-                                bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
-                                bulkCopy.ColumnMappings.Add("MeanValue", "MeanValue");
+							using (SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, transaction)
+							{
+								BatchSize = DataProfileTable.Rows.Count,
+								DestinationTableName = "[api].[ExecutionAssetDataProfile]",
+								BulkCopyTimeout = SqlBulkBatchTimeout
+							})
+							{
+								bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+								bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+								bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+								bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+								bulkCopy.ColumnMappings.Add("ProfileSetDate", "ProfileSetDate");
+								bulkCopy.ColumnMappings.Add("ProfileIdentifier", "ProfileIdentifier");
+								bulkCopy.ColumnMappings.Add("SampleCount", "SampleCount");
+								bulkCopy.ColumnMappings.Add("NullCount", "NullCount");
+								bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
+								bulkCopy.ColumnMappings.Add("MeanValue", "MeanValue");
 
                                 bulkCopy.ColumnMappings.Add("MinimumValue", "MinimumValue");
                                 bulkCopy.ColumnMappings.Add("MaximumValue", "MaximumValue");
@@ -12407,6 +12410,7 @@ EG.GroupUid
 										WHEN NOT MATCHED THEN
 										INSERT ([AssetID]
 													,[ProfileSetDate]
+													,[ProfileIdentifier]
 													,[SampleCount]
 													,[NullCount]
 													,[BlankCount]
@@ -12444,6 +12448,7 @@ EG.GroupUid
 												VALUES
 													(EDP.AssetID
 													,EDP.ProfileSetDate
+													,EDP.ProfileIdentifier
 													,EDP.SampleCount
 													,EDP.NullCount
 													,EDP.BlankCount

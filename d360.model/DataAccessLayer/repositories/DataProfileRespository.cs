@@ -153,108 +153,7 @@ namespace d360.model.DataAccessLayer
 									{whereConditions}
 									";
 
-			string dataProfileSQL = $@"select
-								A.[Uid] as assetUid
-								,ADP.[ProfileSetDate]
-								,ADP.[SampleCount]
-								,ADP.[NullCount]
-								,ADP.[BlankCount]
-								,ADP.[MeanValue] as mean
-								,ADP.[MinimumValue] as min
-								,ADP.[MaximumValue] as max
-								,ADP.[MinimumLength] as minLength
-								,ADP.[MaximumLength] as maxLength
-								,ADP.[StandardDeviation]
-								,ADP.[Multiline]
-								,ADP.[RegExp]
-								,ADP.[Confidence]
-								,ADP.[Type]
-								,ADP.[TypeQualifier]                                
-								,ADP.[LogicalType]
-								,ADP.[LeadingWhiteSpace]
-								,ADP.[LeadingZeroCount]
-								,ADP.[TrailingWhiteSpace]
-								,ADP.[MatchCount]
-								,ADP.[OutlierCardinality]
-								{(includeSamples ? ",JSON_QUERY(outlierDetail.[value]) as outlierDetail" : "")}
-								,ADP.[KeyConfidence]
-								,ADP.[DataSignature]
-								,ADP.[StructureSignature]
-								,ADP.[Cardinality]
-								{(includeSamples ? ",JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail" : "")}
-								,ADP.[ShapeCardinality] as shapesCardinality
-								{(includeSamples ? ",JSON_QUERY(shapesDetail.[value]) as shapesDetail" : "")}
-								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
-								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
-								,ADP.TotalCount
-								,ADP.OutlierCount
-								,ADP.DetectionLocale
-								,ADP.FtaVersion
-								,ADP.DecimalSeparator
-							from 
-								#assetdataprofileids ids
-								inner join 
-								AssetDataProfile ADP on ids.ID = ADP.ID	                            
-								Inner Join 
-								Asset A on A.ID = ADP.AssetID    
-							{(includeSamples ? $@"
-									outer apply (            
-									select  (
-											select [key], [value] as Count
-																from AssetDataProfileSample
-																where
-																	AssetDataProfileId = ADP.ID
-																	and
-																	lower(SampleType) = 'outlierdetail'
-																for json path
-																) as [value]
-														) outlierDetail
-									outer apply (
-													select  (
-															select [key], [value] as Count
-															from AssetDataProfileSample
-															where
-																AssetDataProfileId = ADP.ID
-																and
-																lower(SampleType) = 'cardinalitydetail'
-															for json path
-															) as [value]
-													) cardinalityDetail
-									outer apply (
-													select  (
-															select [key], [value] as Count
-															from AssetDataProfileSample
-															where
-																AssetDataProfileId = ADP.ID
-																and
-																lower(SampleType) = 'shapesdetail'
-															for json path
-															) as [value]
-													) shapesDetail
-									outer apply (
-													select  (
-															select [value]
-															from AssetDataProfileSample
-															where
-																AssetDataProfileId = ADP.ID
-																and
-																lower(SampleType) = 'bottomk'
-															for json path
-															) as [value]
-													) bottomK
-									outer apply (
-													select  (
-															select [value]
-															from AssetDataProfileSample
-															where
-																AssetDataProfileId = ADP.ID
-																and
-																lower(SampleType) = 'topk'
-															for json path
-															) as [value]
-													) topK "
-								: "")}
-								order by ids.[ProfileSetDate] desc";
+			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples, "inner join #assetdataprofileids ids on ids.ID = ADP.ID");
 
 			dbArgs.Add("@startDate", startDate.Date);
 			dbArgs.Add("@endDate", endDate.Date);
@@ -265,6 +164,7 @@ namespace d360.model.DataAccessLayer
 						order by ADP.[ProfileSetDate] desc
 						{offset}
 						{dataProfileSQL}
+						order by ADP.[ProfileSetDate] desc
 						for Json Path";
 
 			var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
@@ -292,6 +192,81 @@ namespace d360.model.DataAccessLayer
 
 			return results;
 		}
+
+		public async Task<AssetDataProfilesApiViewModel> GetDataProfiles(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var dbArgs = new DynamicParameters();
+			var results = new AssetDataProfilesApiViewModel
+			{
+				pageNum = CompanyContext.ParsePageNumber(queryParams, 1),
+				pageSize = CompanyContext.ParsePageSize(queryParams)
+			};
+			string offset = CompanyContext.ParsePageOffsetSql(results.pageNum, results.pageSize);
+			string whereConditions = $@" Where ADP.ProfileIdentifier = @profileIdentifier ";
+
+			
+			bool includeTotal = true;
+			Guid assetUid;
+			Asset asset;
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
+			{
+				if (Guid.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_assetuid").Value, out assetUid))
+                {
+					asset = CompanyContext.Filter<Asset>(o => o.uid == assetUid).FirstOrDefault();
+					if (asset == null)
+					{
+						throw new GenericException(System.Net.HttpStatusCode.NotFound, AssetTypeErrors.NotFound, CommentErrors.AssetUidNotFound);
+					}
+					else
+                    {
+						dbArgs.Add("@assetId", asset.ID);
+						whereConditions += " and ADP.AssetID = @assetId "; 
+					}
+				}
+			}
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
+			}
+
+			bool includeSamples = true;
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includesamples"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includesamples").Value, out includeSamples);
+			}
+
+			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples);
+
+			dbArgs.Add("@profileIdentifier", profileIdentifier);
+
+
+			var countSql = $"select count(*) from AssetDataProfile ADP {whereConditions}";
+
+			if (includeTotal)
+            {
+				results.total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
+			}
+			else
+            {
+				results.total = null;
+            }
+
+			string sql = $@"
+						{dataProfileSQL}
+						{whereConditions}
+						order by ADP.[ProfileSetDate] desc
+						{offset}
+						for Json Path";
+			var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
+			var json = string.Join("", jsonStrings);
+
+			results.items = JsonConvert.DeserializeObject<List<DataProfileModel>>(string.IsNullOrEmpty(json) ? "[]" : json);
+
+			return results;
+		}
+
 
 		public List<DataProfileUpsertResponse> UpsertDataProfiles(List<DataProfileUpsertModel> DataProfileUpsertModels, ApiExecution execution, bool isInsert)
 		{
@@ -941,6 +916,110 @@ namespace d360.model.DataAccessLayer
 							{countQuery}
 							";
 			return sql;
+		}
+
+		private string GetDataProfilesBaseSQL(bool includeSamples, string joinSql = null)
+        {
+			return $@"select
+								A.[Uid] as assetUid
+								,ADP.[ProfileSetDate]
+								,ADP.[ProfileIdentifier]
+								,ADP.[SampleCount]
+								,ADP.[NullCount]
+								,ADP.[BlankCount]
+								,ADP.[MeanValue] as mean
+								,ADP.[MinimumValue] as min
+								,ADP.[MaximumValue] as max
+								,ADP.[MinimumLength] as minLength
+								,ADP.[MaximumLength] as maxLength
+								,ADP.[StandardDeviation]
+								,ADP.[Multiline]
+								,ADP.[RegExp]
+								,ADP.[Confidence]
+								,ADP.[Type]
+								,ADP.[TypeQualifier]                                
+								,ADP.[LogicalType]
+								,ADP.[LeadingWhiteSpace]
+								,ADP.[LeadingZeroCount]
+								,ADP.[TrailingWhiteSpace]
+								,ADP.[MatchCount]
+								,ADP.[OutlierCardinality]
+								{(includeSamples ? ",JSON_QUERY(outlierDetail.[value]) as outlierDetail" : "")}
+								,ADP.[KeyConfidence]
+								,ADP.[DataSignature]
+								,ADP.[StructureSignature]
+								,ADP.[Cardinality]
+								{(includeSamples ? ",JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail" : "")}
+								,ADP.[ShapeCardinality] as shapesCardinality
+								{(includeSamples ? ",JSON_QUERY(shapesDetail.[value]) as shapesDetail" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
+								,ADP.TotalCount
+								,ADP.OutlierCount
+								,ADP.DetectionLocale
+								,ADP.FtaVersion
+								,ADP.DecimalSeparator
+							from 
+								AssetDataProfile ADP
+								{(!string.IsNullOrWhiteSpace(joinSql) ? joinSql : "")}
+								Inner Join Asset A on A.ID = ADP.AssetID    
+							{(includeSamples ? $@"
+									outer apply (            
+									select  (
+											select [key], [value] as Count
+																from AssetDataProfileSample
+																where
+																	AssetDataProfileId = ADP.ID
+																	and
+																	lower(SampleType) = 'outlierdetail'
+																for json path
+																) as [value]
+														) outlierDetail
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'cardinalitydetail'
+															for json path
+															) as [value]
+													) cardinalityDetail
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'shapesdetail'
+															for json path
+															) as [value]
+													) shapesDetail
+									outer apply (
+													select  (
+															select [value]
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'bottomk'
+															for json path
+															) as [value]
+													) bottomK
+									outer apply (
+													select  (
+															select [value]
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'topk'
+															for json path
+															) as [value]
+													) topK "
+					: "")}";
 		}
 	}
 }

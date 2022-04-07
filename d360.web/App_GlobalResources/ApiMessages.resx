@@ -747,4 +747,7 @@
   <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
     <value>No intersect type found with intersectTypeUid provided.</value>
   </data>
+  <data name="InvalidProfileIdentifier" xml:space="preserve">
+    <value>Invalid profile identifier.</value>
+  </data>
 </root>

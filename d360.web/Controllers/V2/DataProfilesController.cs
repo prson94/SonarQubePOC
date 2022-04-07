@@ -121,20 +121,134 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Retrieves Data Profile results for a identifier.
+        /// </summary>
+        /// <param name="profileIdentifier">The profile identifier.</param>
+        /// <returns>A list of Data Profile results</returns>
+        [
+            HttpGet,
+            Route("identifier/{profileIdentifier}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesApiViewModel)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "Allows filtering results based on an asset uid", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetDataProfiles(string profileIdentifier)
+        {
+            var prefix = "DataProfiles.GetDataProfilesByIdentifier => ";
+            try
+            {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
+                var queryParams = Request.GetQueryNameValuePairs();
+                var validationResult = ValidateDataProfileGetParameters(profileIdentifier, queryParams);
+
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }
+
+                var results = await DataProfiles.GetDataProfiles(profileIdentifier, queryParams);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (GenericException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        private WorkHttpStatus ValidateDataProfileGetParameters(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            if (string.IsNullOrWhiteSpace(profileIdentifier))
+            {
+               return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidProfileIdentifier);
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_assetuid"))
+            {
+                if (!Guid.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_assetuid").Value, out Guid assetUid))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+                }
+                else
+                {
+                    var asset = AssetRepository.GetAssetByUID(assetUid);
+                    if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+                    }
+                }
+            }
+
+            return ValidateDataProfileBaseParameters(queryParams);
+        }
+
         private WorkHttpStatus ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
+            {
+                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out _))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidStartDate);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
+            {
+
+                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out _))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidEndDate);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includechildassets"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out _))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
+                }
+            }
+
+            return ValidateDataProfileBaseParameters(queryParams);
+        }
+
+        private WorkHttpStatus ValidateDataProfileBaseParameters(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
-            }
-
-            var asset = AssetRepository.GetAssetByUID(assetUid);
-
-            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
             }
 
             if (isValid.Length > 0)
@@ -144,40 +258,15 @@ namespace d360.web.Controllers.V2
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
             {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out _))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidIncludeTotal);
                 }
             }
 
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
-            {
-                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out DateTime endDate))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidStartDate);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
-            {
-
-                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out DateTime endDate))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidEndDate);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_includechildassets"))
-            {
-                if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
-                }
-            }
-
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includesamples"))
             {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out bool includeTotal))
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out _))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidParameterMessage, queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, "_includeSamples"));
                 }
@@ -185,6 +274,7 @@ namespace d360.web.Controllers.V2
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
+
 
         /// <summary>
         /// Provides support for adding Data Profile records.
