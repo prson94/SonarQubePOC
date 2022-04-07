@@ -627,11 +627,21 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
 						uid as assigneeUid 
 				from	reporting.Global_Resource 
 				where	[State] = {(int)CompanyResourceState.Active} " + hideUsersSql +
-                @"order by LastName + ', ' + FirstName
+				@"order by LastName + ', ' + FirstName
 				for json auto
-				) as [values]
+				) as [values],
+				(
+					select
+							assetType.uid as assigneeTypeUid
+					from	FieldType FT
+					join dbo.AssetType assetType
+						on assetType.Object = FT.Object
+						and assetType.ObjectID = FT.ObjectID
+					where	FT.[Object] = @type
+							and FT.ObjectID = @id
+				) as assigneeTypeUid
 for json path, WITHOUT_ARRAY_WRAPPER
-").ToList();
+", new { type = type.ToString(), id }).ToList();
 
 			}
 
