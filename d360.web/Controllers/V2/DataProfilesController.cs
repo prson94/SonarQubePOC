@@ -1678,7 +1678,7 @@ namespace d360.web.Controllers.V2
                         parseMatchTypeForExport(row.MatchType),
                         parseBaseTypeForExport(row.BaseType),
                         row.JsonPayloadStructured != null ? JsonConvert.SerializeObject(row.JsonPayloadStructured, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) : "",
-                        row.HeaderFilterStructured != null ? string.Join(" | ", row.HeaderFilterStructured.values.Select((v) => v.@operator + " '" + v.value + "'")) : "",
+                        row.HeaderFilter,
                         row.HeaderFilterConfidence.HasValue ? row.HeaderFilterConfidence.ToString() + "%" : "",
                         row.RegularExpression,
                         row.ValidValuesStructured != null ? string.Join(" | ", row.ValidValuesStructured) : "",
