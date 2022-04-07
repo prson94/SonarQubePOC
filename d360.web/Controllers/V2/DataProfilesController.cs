@@ -680,37 +680,36 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal), ct (contains) and nct (not contains) which allows usage of (*) symbol as wildcard
         ///     
         ///     Example :
         ///     
-        ///     Comparison Operators
-        ///     * Equals operator -{fieldname} eq 'Data'
-        ///     * Not equals operator -{fieldname} ne 'Data'
-        ///     * Contains operator -{fieldname} ct 'Data'  
-        ///     * Greater than operator -{fieldname} gt 99
-        ///     * Greater than or equal operator -{fieldname} ge 99
-        ///     * Less than operator -{fieldname} lt 99
-        ///     * Less than or equal operator -{fieldname} le 99
-        ///     * Not populated operator -{fieldname} eq null
-        ///     * populated operator -{fieldname} ne null
-        ///     * Tag Contains Match Any (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
-        ///     * Tag Contains Match All (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
-        ///     * Tag Does not Contain Match Any (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
-        ///     * Tag Does not Contain Match All (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
-        ///     * AssetPath Contains (Match All)Operator (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
-        ///     * AssetPath Contains (Match Any)Operator (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
-        ///     * AssetPath Contains  Operator ({AssetPathFieldName} ct 'APValue1')
-        ///     * AssetPath Does not contain Operator ({AssetPathFieldName} nct 'APValue1')
-        ///     * AssetPath is Operator ({AssetPathFieldName} eq 'APValue1')
-        ///     * AssetPath is not Operator ({AssetPathFieldName} ne 'APValue1')
-        ///     * AssetPath Start with Operator {AssetPathFieldName} ct 'APValue1*'
-        ///     * AssetPath End with Operator {AssetPathFieldName} ct '*APValue1'
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///         - AssetPath Contains - {AssetPathFieldName} ct 'APValue1'
+		///         - AssetPath Does not contain - {AssetPathFieldName} nct 'APValue1'
+		///         - AssetPath Is Operator - {AssetPathFieldName} eq 'APValue1'
+		///         - AssetPath Is not Operator - {AssetPathFieldName} ne 'APValue1'
+		///         - AssetPath Start with Operator - {AssetPathFieldName} ct 'APValue1*'
+		///         - AssetPath End with Operator - {AssetPathFieldName} ct '*APValue1'
         ///     
-        ///     Logical Operators
-        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///         - Tag Contains Match Any (or) - (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
+		///         - Tag Contains Match All(and) - (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
+		///         - Tag Does not Contain Match Any(or) - (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
+		///         - Tag Does not Contain Match All(and) - (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
+		///         - AssetPath Contains (Match All(and)) - (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
+		///         - AssetPath Contains (Match Any(or)) - (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
         /// </remarks>
         ///
         /// <param name="assetUid">The unique identifier of an asset.</param>
@@ -870,25 +869,24 @@ namespace d360.web.Controllers.V2
         /// </summary>
         ///<remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-        ///     
-        ///     Example :
-        ///     
-        ///     Comparison Operators
-        ///     * Equals operator -{fieldname} eq 'Data'
-        ///     * Not equals operator -{fieldname} ne 'Data'
-        ///     * Contains operator -{fieldname} ct 'Data'  
-        ///     * Greater than operator -{fieldname} gt 99
-        ///     * Greater than or equal operator -{fieldname} ge 99
-        ///     * Less than operator -{fieldname} lt 99
-        ///     * Less than or equal operator -{fieldname} le 99
-        ///     * Not populated operator -{fieldname} eq null
-        ///     * populated operator -{fieldname} ne null
-        ///     
-        ///     Logical Operators
-        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+		///     
+		///     Example :
+		///     
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///     
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// </remarks>
         ///
         /// <param name="typeQualifier">Semantic Type to retrive results for.</param>
@@ -1274,25 +1272,24 @@ namespace d360.web.Controllers.V2
         ///  - **effectiveDate**
         ///  
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-        ///     
-        ///     Example :
-        ///     
-        ///     Comparison Operators
-        ///     * Equals operator -{fieldname} eq 'Data'
-        ///     * Not equals operator -{fieldname} ne 'Data'
-        ///     * Contains operator -{fieldname} ct 'Data'  
-        ///     * Greater than operator -{fieldname} gt 99
-        ///     * Greater than or equal operator -{fieldname} ge 99
-        ///     * Less than operator -{fieldname} lt 99
-        ///     * Less than or equal operator -{fieldname} le 99
-        ///     * Not populated operator -{fieldname} eq null
-        ///     * populated operator -{fieldname} ne null
-        ///     
-        ///     Logical Operators
-        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+		///     
+		///     Example :
+		///     
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///     
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// </remarks>
         /// <returns>A list of semantic types based on the provided filtering and sorting criteria.</returns>
         [
@@ -1768,7 +1765,7 @@ namespace d360.web.Controllers.V2
                         parseMatchTypeForExport(row.MatchType),
                         parseBaseTypeForExport(row.BaseType),
                         row.JsonPayloadStructured != null ? JsonConvert.SerializeObject(row.JsonPayloadStructured, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) : "",
-                        row.HeaderFilterStructured != null ? string.Join(" | ", row.HeaderFilterStructured.values.Select((v) => v.@operator + " '" + v.value + "'")) : "",
+                        row.HeaderFilter,
                         row.HeaderFilterConfidence.HasValue ? row.HeaderFilterConfidence.ToString() + "%" : "",
                         row.RegularExpression,
                         row.ValidValuesStructured != null ? string.Join(" | ", row.ValidValuesStructured) : "",

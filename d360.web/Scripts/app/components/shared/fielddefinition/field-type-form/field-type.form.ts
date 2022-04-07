@@ -43,7 +43,13 @@ import { CompanySettingsService } from '../../../../services/settings.service';
                 color: #5c5e60 !important;
                 font-size: 1rem;
                 font-weight: bold;
-            }`
+            }
+        
+            .sort-container {
+                display: flex;
+                gap: 12px;
+            }
+        `
     ],
     providers: [FieldsObservableService, ObjectDetailService, AssetService],
 })

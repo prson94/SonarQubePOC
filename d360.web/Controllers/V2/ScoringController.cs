@@ -430,24 +430,23 @@ namespace d360.web.Controllers.V2
 		/// <remarks>
 		/// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
 		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-		/// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-		///
+		///     
 		///     Example :
 		///     
-		///     Comparison Operators
-		///     * Equals operator -{fieldname} eq 'Data'
-		///     * Not equals operator -{fieldname} ne 'Data'
-		///     * Contains operator -{fieldname} ct 'Data'  
-		///     * Greater than operator -{fieldname} gt 99
-		///     * Greater than or equal operator -{fieldname} ge 99
-		///     * Less than operator -{fieldname} lt 99
-		///     * Less than or equal operator -{fieldname} le 99
-		///     * Not populated operator -{fieldname} eq null
-		///     * populated operator -{fieldname} ne null
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
 		///     
-		///     Logical Operators
-		///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-		///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
 		/// </remarks>
 		/// <returns>The object containing rule results.</returns>
 		[

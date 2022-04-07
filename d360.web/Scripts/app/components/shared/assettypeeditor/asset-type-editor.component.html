@@ -163,20 +163,6 @@
                                 <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
                             </div>
                         </div>
-
-                        <div class="FieldName">Text Color</div>
-                        <div class="row">
-                            <div class="col s12">
-                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor" [attr.data-cy]="'AssetType_Field_IconForeColor'"></p-colorPicker>
-                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" [attr.data-cy]="'AssetType_Field_IconForeColorText'" style="padding:2px;width:65px" />
-                            </div>
-                            <div class="col s12">
-                                <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
-                            </div>
-                        </div>
-                        <div>
-                            <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor" class="errorMessage">Foreground and background color cannot be the same</div>
-                        </div>
                     </div>
                     <div class="FieldName">Icon</div>
                     <div class="row">

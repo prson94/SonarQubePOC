@@ -2326,6 +2326,7 @@ namespace d360.model.DataAccessLayer
 				i.IsRequired,
 				i.ColumnOrder,
 				i.SortOrder,
+				i.SortByAscending,
 				ObjectType = i.Object,
 				i.ObjectID,
 				i.Type,
@@ -2843,6 +2844,13 @@ namespace d360.model.DataAccessLayer
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
+				if (execution.Error > 0) {
+					var error = string.Join(",", results.Where(x => !string.IsNullOrEmpty(x.Message)).Select(x => x.Message).ToArray());
+					if (error.Length > constants.ERROR_MESSAGE_CHARACTER_LIMIT) { 
+						error = error.Substring(0, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					}
+					execution.ErrorMessage = error;
+				}
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
