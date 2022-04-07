@@ -1854,7 +1854,7 @@ namespace d360.web.Controllers.V2
 				var list = Company.GetFieldTypesByObject(type, id)
 					.Where(i => !restrictedTypes.Contains(i.Type))
 					.Select(i => new { i.ID, i.Name })
-					.ToDictionary(i => i.Name, i => i.ID);
+					.ToDictionary(i => i.Name, i => i.ID, StringComparer.InvariantCultureIgnoreCase);
 
 				if (type == SystemObjects.ReferenceItemType)
 				{
@@ -1881,6 +1881,10 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
+					if (list.ContainsKey("DisplayValue"))
+					{
+						return ReturnApiError(HttpStatusCode.BadRequest, "DisplayValue is a reserved API name and can't be used here");
+					}
 					list.Add("DisplayValue", 0);
 				}
 
