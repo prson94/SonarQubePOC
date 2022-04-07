@@ -129,7 +129,7 @@ namespace d360.web.Controllers.V2
         /// <returns>A list of Data Profile results</returns>
         [
             HttpGet,
-            Route("{profileIdentifier}"),
+            Route("identifier/{profileIdentifier}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesApiViewModel)),
             SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
@@ -143,7 +143,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetDataProfiles(string profileIdentifier)
         {
-            var prefix = "DataProfiles.GetDataProfiles => ";
+            var prefix = "DataProfiles.GetDataProfilesByIdentifier => ";
             try
             {
                 // FeatureFlag Check
