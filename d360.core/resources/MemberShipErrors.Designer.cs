@@ -97,6 +97,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to First Name must be less or equal to 250 characters in length.
+        /// </summary>
+        public static string FirstNameTooLong {
+            get {
+                return ResourceManager.GetString("FirstNameTooLong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An internal server error occurred.
         /// </summary>
         public static string InternalServerErrorMsg {
@@ -120,6 +129,15 @@ namespace d360.core.resources {
         public static string LastNameMissing {
             get {
                 return ResourceManager.GetString("LastNameMissing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Last Name must be less or equal to 250 characters in length.
+        /// </summary>
+        public static string LastNameTooLong {
+            get {
+                return ResourceManager.GetString("LastNameTooLong", resourceCulture);
             }
         }
         
