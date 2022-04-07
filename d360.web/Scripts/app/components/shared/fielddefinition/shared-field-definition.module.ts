@@ -28,6 +28,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
 
 import { FieldTypeForm } from './field-type-form/field-type.form';
 import { FieldDefinitionComponent } from './field-definition.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @NgModule({
     imports: [
@@ -55,6 +56,7 @@ import { FieldDefinitionComponent } from './field-definition.component';
         SharedModule,
         TableModule,
         TooltipModule,
+        RadioButtonModule
     ],
     declarations: [
         FieldTypeForm,

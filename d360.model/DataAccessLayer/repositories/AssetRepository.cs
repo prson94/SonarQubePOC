@@ -2326,6 +2326,7 @@ namespace d360.model.DataAccessLayer
 				i.IsRequired,
 				i.ColumnOrder,
 				i.SortOrder,
+				i.SortByAscending,
 				ObjectType = i.Object,
 				i.ObjectID,
 				i.Type,

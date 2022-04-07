@@ -95,6 +95,9 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         [DataMember]
+        public bool SortByAscending { get; set; }
+
+        [DataMember]
         public string DefaultValue { get; set; }
 
         public string DefaultFormattedValue { get; set; }
@@ -256,6 +259,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsDisplayable { get; set; }
