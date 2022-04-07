@@ -1,0 +1,27 @@
+﻿<ig-asset-detail *ngIf="selectedAsset"
+                 [objectUID]="selectedAsset.uid"
+                 [objectType]="selectedAsset.type"
+                 [useAccordion]="true"
+                 [shouldBePadded]="false"
+                 [showHeader]="true"
+                 [showHeaderLine]="false"
+                 [spacerHeight]="'16px'"
+                 [tooltipAlign]="'left'"
+                 [isSidePanel]="true"
+                 [hasEditLink]="hasEditLink"
+                 [hasOpenLink]="hasOpenLink"
+                 [hasAddRelationshipsPermissions]="false"
+                 [hasModifyRelationshipsPermissions]="false"
+                 [hasDeleteRelationshipsPermissions]="false"
+                 [interceptLinkClick]="true"
+                 (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>
+
+<ng-container *ngIf="selectedReferenceItem">
+    <ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+                          [highlightUid]="selectedReferenceItem.assetUid"
+                          [baseUrl]="selectedReferenceItem.url">
+    </ig-asset-type-detail>
+</ng-container>
+<ng-container *ngIf="selectedTag">
+    <ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>
+</ng-container>

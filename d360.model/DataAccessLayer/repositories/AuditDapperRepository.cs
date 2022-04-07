@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+
 using d360.core.entities;
 using d360.model.helpers.filters;
+
 using Dapper;
 
 namespace d360.model.DataAccessLayer.repositories
@@ -42,7 +44,7 @@ namespace d360.model.DataAccessLayer.repositories
         {
             var preparedParameters = await PrepareAuditViewParametersAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderByList);
 
-            var result = await QueryDynamicPagedResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList, pageNum, pageSize);
+            var result = await QueryDynamicPagedResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList, pageNum, pageSize, CompanyContext.ApiTimeout);
 
             result.items = await PostProcessAuditCollectionAsync(result.items);
 
@@ -115,9 +117,7 @@ namespace d360.model.DataAccessLayer.repositories
             dbArgs.Add("startDate", startDate, DbType.DateTime2);
             dbArgs.Add("endDate", endDate, DbType.DateTime2);
 
-            DynamicParameters advFilterArgs = null;
-            List<string> advFilterStatements = null;
-            ParseAdvancedFilterQueryParameter(CompanyContext, filter, fieldList, out advFilterArgs, out advFilterStatements);
+            ParseAdvancedFilterQueryParameter(CompanyContext, filter, fieldList, out DynamicParameters advFilterArgs, out List<string> advFilterStatements);
 
             if (advFilterArgs != null && advFilterStatements != null)
             {
@@ -172,7 +172,7 @@ namespace d360.model.DataAccessLayer.repositories
         {
             var preparedParameters = await PrepareAuditViewParametersAsync(assetUid, assetTypeUid, action, startDate, endDate, filter, orderByList);
 
-            var result = await QueryDynamicResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList);
+            var result = await QueryDynamicResultsAsync<AssetAuditApiItemModel>(preparedParameters.viewName, preparedParameters.parameters, preparedParameters.whereStatementList, preparedParameters.orderByList,CompanyContext.ApiTimeout);
 
             result = await PostProcessAuditCollectionAsync(result);
 

@@ -1,0 +1,67 @@
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { PipesModule } from "../../../pipes/pipes.module";
+import { CoreModule } from "../core.module";
+import { IgColorPickerModule } from "../controls/color-picker/color-picker.module";
+import { TagViewModule } from "../tags/d3s-tag-view.module";
+import { SharedObjectDetailsModule } from "../objectdetails/shared-object-details.module";
+import { PropertyGroupModule } from "../controls/property-group/property-group.component";
+import { TilesModule } from "../tiles/tiles.module";
+import { TableModule } from "primeng/table";
+import { AdvancedFiltersModule } from "../../assets-grid/advanced-filtering/advanced-filtering.module";
+import { SearchFieldModule } from "../controls/search-field/search-field.component";
+import { PortalsModule } from "../portals/portals.module";
+import { SidePanelModule } from '../sidepanel/side-panel.module';
+import { PopupMenuModule } from '../controls/popup-menu/popup-menu.component';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DirectivesModule } from '../directives/directives.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { AddRelationshipComponent } from './add-relationship.component';
+import { IgBadgeModule } from '../controls/badge/badge.module';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { TooltipModule } from 'primeng/tooltip';
+import { AssetEditorModule } from '../asset-editor/asset-editor.module';
+import { AssetDetailModule } from '../asset-detail/asset-detail.module';
+import { AssetPreviewModule } from '../asset-preview/asset-preview.module';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+
+
+@NgModule({
+    imports: [
+        CommonModule,
+        FormsModule,
+        CoreModule,
+        PipesModule,
+        IgColorPickerModule,
+        PropertyGroupModule,
+        TagViewModule,
+        SharedObjectDetailsModule,
+        SharedDynamicGridEditorModule,
+        TilesModule,
+        TableModule,
+        AdvancedFiltersModule,
+        SearchFieldModule,
+        PortalsModule,
+        SidePanelModule,
+        PopupMenuModule,
+        CheckboxModule,
+        DirectivesModule,
+        SiteModalModule,
+        IgBadgeModule,
+        SearchFieldModule,
+        TooltipModule,
+        AssetEditorModule,
+        AssetDetailModule,
+        AssetPreviewModule,
+        SharedGridPagingInfoModule
+    ],
+    declarations: [
+        AddRelationshipComponent
+    ],
+    exports: [
+        AddRelationshipComponent
+    ],
+    providers: []
+})
+export class AddRelationshipModule { }

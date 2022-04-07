@@ -24,6 +24,7 @@ import { PortalsModule } from "../portals/portals.module";
 import { AssetTypeDetailComponent } from "./asset-type-detail.component";
 import { FieldValueComponent } from "./field-value.component";
 import { ReferenceModule } from "../../reference/reference.module";
+import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 
 
 @NgModule({
@@ -48,7 +49,8 @@ import { ReferenceModule } from "../../reference/reference.module";
         PeopleResponsibilitiesModule,
         DynamicFieldNameModule,
         PortalsModule,
-        ReferenceModule
+        ReferenceModule,
+        AssetDetailModule
     ],
     declarations: [
         AssetTypeDetailComponent,

@@ -73,6 +73,11 @@ import { GalleryCodeAreaComponent } from './gallery.codearea.component';
 import { CodeAreaModule } from '../shared/controls/codearea/codearea.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GalleryLocaleComponent } from './gallery.locale.component';
+import { GalleryImagePickerComponent } from './gallery.image-picker.component';
+import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.component';
+import { GalleryRegexpInputComponent } from './gallery.regexp-input.component';
+import { GalleryComponentPropertiesComponent } from './shared/gallery.component-properties.component';
+import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
 
 @NgModule({
     imports: [
@@ -114,10 +119,15 @@ import { GalleryLocaleComponent } from './gallery.locale.component';
         ModalDrawerModule,
         SidePanelModule,
         CodeAreaModule,
-        CodemirrorModule
+        CodemirrorModule,
+        ImagePickerModule,
+        RegexpInputModule
     ],
     declarations: [
         GalleryComponent,
+
+        GalleryComponentPropertiesComponent,
+
         GallerySwitchComponent,
         GalleryButtonComponent,
         GalleryIconPickerComponent,
@@ -150,7 +160,9 @@ import { GalleryLocaleComponent } from './gallery.locale.component';
         GalleryModalComponent,
         GalleryModalDrawerComponent,
         GalleryCodeAreaComponent,
-        GalleryLocaleComponent
+        GalleryLocaleComponent,
+        GalleryImagePickerComponent,
+        GalleryRegexpInputComponent,
     ],
     providers: [
         GalleryGuard,

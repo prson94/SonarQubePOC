@@ -56,7 +56,13 @@ export class DataProfileService extends BaseObservableService {
             .get(url, httpOptions)
             .pipe(
                 map((response) => <any>response),
-                catchError((err) => this.handleError(err, true))
+                catchError((err) => {
+                    if (err?.status === 409) {
+                        return of(0);
+                    } else {
+                        this.handleError(err, true);
+                    }                    
+                })
             );
     }
 
@@ -187,7 +193,13 @@ export class DataProfileService extends BaseObservableService {
                 .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' })})
                 .pipe(
                     map((response) => <SemanticTypeGetResponse>response),
-                    catchError((err) => this.handleError(err, false))
+                    catchError((err) => {
+                        if (err?.status === 409) {
+                            return of(new SemanticTypeGetResponse());
+                        } else {
+                            this.handleError(err, true);
+                        }
+                    })
                 );
         }        
     }
@@ -233,8 +245,57 @@ export class DataProfileService extends BaseObservableService {
                 .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) })
                 .pipe(
                     map((response) => <SemanticTypeGetAssetsResponse>response),
-                    catchError((err) => this.handleError(err, false))
+                    catchError((err) => {
+                        if (err?.status === 409) {
+                            return of(new SemanticTypeGetAssetsResponse());
+                        } else {
+                            this.handleError(err, true);
+                        }
+                    })
                 );           
         } 
+    }
+
+    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null): Observable<any> {
+        
+        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}/`;        
+
+        if (isExport) {
+            this.
+                http
+                .get(`${url}?`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe((data) => {
+                    let filename = `Semantic Type Status List`;
+                    this.downloadFile(data, filename);
+                    if (callback) {
+                        callback();
+                    }
+                });
+
+        } else {
+            return this
+                .http
+                .get(url, { headers: new HttpHeaders({ 'Content-Type': 'application/json' }) })
+                .pipe(
+                    map((response) => <any>response),
+                    catchError((err) => this.handleError(err, false))
+                );
+        }
+    }
+
+    public deleteSemanticType(
+        qualifier: string
+    ): Observable<JsonResult> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        return this
+            .http
+            .delete(`api/v2/dataprofiles/semantictypes/${qualifier}`, httpOptions)
+            .pipe(
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
+            );
     }
 }

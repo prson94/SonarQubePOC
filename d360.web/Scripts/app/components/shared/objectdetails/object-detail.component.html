@@ -70,9 +70,14 @@
                                    [hasAdd]="hasAddRelationshipsPermissions"
                                    [hasDelete]="hasDeleteRelationshipsPermissions"></d3s-synonyms-tile>
             </simple-accordion>
-            <simple-accordion *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" [header]="systemPropertiesCategory.name" [active]="systemPropertiesCategory.active">
+            <ng-container *ngIf="useAccordion; else noAccordion">
+                <simple-accordion *ngIf="systemPropertiesCategory.loaded && systemPropertiesCategory.hasData" [header]="systemPropertiesCategory.name" [active]="systemPropertiesCategory.active">
+                    <object-detail-category [category]="systemPropertiesCategory" assetUID="assetUID"></object-detail-category>
+                </simple-accordion>
+            </ng-container>
+            <ng-template #noAccordion>
                 <object-detail-category [category]="systemPropertiesCategory" assetUID="assetUID"></object-detail-category>
-            </simple-accordion>
+            </ng-template>
         </div>
     </div>
 </div>

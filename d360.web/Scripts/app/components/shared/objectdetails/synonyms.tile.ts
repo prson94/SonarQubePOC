@@ -1,4 +1,4 @@
-﻿import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Output, Component, OnChanges, SimpleChange, ElementRef } from '@angular/core';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipV2 } from '../../../models/relationship.model';
@@ -58,6 +58,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         private objectDetailService: ObjectDetailService,
         private relationshipsService: RelationshipsService,
         private linkClickInterceptor: LinkClickInterceptor,
+        private el: ElementRef,
         protected settingsService: CompanySettingsService,
         private router: Router) {
         super(settingsService);
@@ -183,11 +184,18 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url));
     }
 
-    synonymClicked($event, data: any) {
+    synonymClicked($event, data: any, type: string) {
         if (this.interceptLinkClick) {
             data["IsSynonym"] = true;
-            this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.convertClassicUrl(data.Url));
-            return;
+            data["type"] = type;
+            if (type === "SP" && data.ParentUrl) {
+                this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.convertClassicUrl(data.ParentUrl));
+                return;
+            }
+            if (type === "S" && data.Url) {
+                this.linkClickInterceptor.sendEvent($event, data, SiteUrlHelpers.convertClassicUrl(data.Url));
+                return;
+            }
         }
     }
 
@@ -208,6 +216,13 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
                 this.isLoadingItems = false;
             }
         );
+    }
+
+    private deselectElement() {
+        window.setTimeout(() => {
+            var trElement = this.el.nativeElement.querySelector("tr.p-highlight");
+            trElement.classList.remove("p-highlight");
+        }, 1000);
     }
 
     protected clearSearch() {

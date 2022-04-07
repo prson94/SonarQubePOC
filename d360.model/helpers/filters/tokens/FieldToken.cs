@@ -1,19 +1,20 @@
-﻿using d360.core.entities;
-using d360.model.helpers.filters.program;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+
+using d360.core.entities;
+using d360.model.helpers.filters.program;
 
 namespace d360.model.helpers.filters
 {
     public class FieldToken : FilterBaseToken, IFilterToken
     {
-        IFieldValueValidator fieldValueValidator;
+        private IFieldValueValidator fieldValueValidator;
 
         public FieldToken(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
-            this.dataProvider = fdp;
+            dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
             this.field = field;
             @operator = op;
@@ -21,7 +22,7 @@ namespace d360.model.helpers.filters
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.IsNullValue = true;
+                IsNullValue = true;
             }
         }
 
@@ -31,29 +32,37 @@ namespace d360.model.helpers.filters
             {
                 throw new MethodAccessException("Method can be used only when Field Type is loaded. Use LoadFieldType() method before.");
             }
+
             sqlParamsRef = sqlParams;
             stringBuilder.Clear();
-            if (this.fieldType.Type == "Path")
+
+            if (fieldType.Type == "Path")
             {
                 value = value.ToString().ToLower(CultureInfo.InvariantCulture);
+                
                 if (value.ToString().StartsWith("'"))
                 {
                     value = ((string)value).TrimStart('\'');
                 }
+                
                 if (value.ToString().EndsWith("'"))
                 {
                     value = ((string)value).TrimEnd('\'');
                 }
+                
                 var values = value.ToString().Split('>').ToList();
+                
                 for (int i = 0; i < values.Count; i++)
                 {
                     values[i] = values[i].Trim();
                 }
+                
                 if (value.ToString().EndsWith("*") && @operator == "ct")
                 {
                     value = ((string)value).TrimEnd('*');
                     @operator = "sw";
                 }
+                
                 if (value.ToString().StartsWith("*") && @operator == "ct")
                 {
                     value = ((string)value).TrimStart('*');
@@ -61,7 +70,7 @@ namespace d360.model.helpers.filters
                 }
 
                 string pName = $"@filter_{ parameterIdx}";
-                string formattedSql = "";
+                string formattedSql;
                 switch (@operator)
                 {
                     case "ge":
@@ -90,10 +99,12 @@ namespace d360.model.helpers.filters
                         break;
                     default: //default is eq
                         string resultValue = "1";
+                        
                         if (@operator == "ne")
                         {
                             resultValue = "0";
                         }
+                        
                         if (values.Count > 1)
                         {
                             var segmentFilterList = new List<string>();
@@ -115,21 +126,23 @@ namespace d360.model.helpers.filters
 
                 sqlParamsRef.Add(pName, value);
             }
-            else if (!this.IsNullValue)
+            else if (!IsNullValue)
             {
-                if (!FilterHelpers.IsValidOperatorForFieldType(this.CurrentFieldType, @operator))
+                if (!FilterHelpers.IsValidOperatorForFieldType(CurrentFieldType, @operator))
                 {
-                    throw new FilterExpressionParserException($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
+                    throw new FilterExpressionParserException($"Operator '{@operator}' is not valid for '{CurrentFieldType}' on field {field}");
                 }
 
-                FilterHelpers.ValidateValueForType(this.CurrentFieldType, value);
+                FilterHelpers.ValidateValueForType(CurrentFieldType, value);
 
-                var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
+                var valueValidation = fieldValueValidator.CheckValue(value, field, @operator);
+                
                 if (!valueValidation.Status)
                 {
                     throw new FormatException(valueValidation.Message);
                 }
-                this.value = valueValidation.UpdatedValue;
+                
+                value = valueValidation.UpdatedValue;
 
                 UpdateTokenValueForType();
             }
@@ -143,10 +156,11 @@ namespace d360.model.helpers.filters
 
         private void UpdateTokenForNullValue()
         {
-            if (!(new[] { "eq", "ne" }.Contains(@operator)))
+            if (!new[] { "eq", "ne" }.Contains(@operator))
             {
                 throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
             }
+
             var fieldSql = GetColumnValueSyntax(fieldType.ID);
 
             stringBuilder.Append(fieldSql);
@@ -156,17 +170,18 @@ namespace d360.model.helpers.filters
         public void LoadFieldType(FieldType ft, IReadOnlyList<string> fieldColumns)
         {
             fieldType = ft;
+
             if (fieldColumns != null)
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
             }
+            
             if (fieldColumn == null && fieldColumns != null)
             {
                 fieldColumn = fieldColumns.FirstOrDefault(x => x.ToLowerInvariant().Contains($"[{fieldType.Name.ToLowerInvariant()}]"));
             }
 
-            this.fieldValueValidator = GetValueValidator();
+            fieldValueValidator = GetValueValidator();
         }
-
     }
 }

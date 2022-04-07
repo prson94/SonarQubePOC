@@ -97,6 +97,15 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot connect to the search server.
+        /// </summary>
+        public static string NoSearchServerConnection {
+            get {
+                return ResourceManager.GetString("NoSearchServerConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The maximum value for size is {0}.
         /// </summary>
         public static string SizeTooBig {

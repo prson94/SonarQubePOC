@@ -1,19 +1,21 @@
-﻿using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using d360.core.entities;
-using System.Data.Entity.ModelConfiguration.Conventions;
-using d360.extensions;
-using System;
-using System.Data.Entity.Infrastructure;
-using d360.core.entities.Contracts;
-using System.Linq.Expressions;
 using System.Data;
-using d360.core.exceptions;
-using System.Data.SqlClient;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.SqlServer;
 using System.Data.Common;
+using System.Data.Entity;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.ModelConfiguration.Conventions;
+using System.Data.Entity.SqlServer;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Linq.Expressions;
+
+using d360.core.entities;
+using d360.core.entities.Contracts;
+using d360.core.exceptions;
+using d360.extensions;
+
 using Dapper;
 
 namespace d360.model
@@ -66,39 +68,37 @@ namespace d360.model
     public abstract class BaseContext : DbContext, IDisposable, IDbContext, IBaseContext
     {
         public int CurrentResourceID { get; set; }
+        
         public int CurrentClientID { get; set; }
+        
         public int CurrentCompanyID { get; set; }
+        
         public int CurrentDomainSettingID { get; set; }
+        
         public string CurrentCompanyDomain { get; set; }
+        
         public bool CurrentResourceIsAdmin { get; set; }
 
         public string CompanyConnectionString { get; set; }
-               
+
         internal ICachingProvider Caching;
 
         public ObjectContext ObjectContext
         {
             get
             {
-                try
-                {
-                    return ((IObjectContextAdapter)this).ObjectContext;
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
+                return ((IObjectContextAdapter)this).ObjectContext;
             }
         }
 
-        public SqlConnection Connection { get { return (Database.Connection as SqlConnection); } }
+        public SqlConnection Connection => (Database.Connection as SqlConnection);
 
         public BaseContext()
         {
             SetDefaultEntityFrameworkCommandTimeout();
         }
 
-        public BaseContext(string connectionString): base(connectionString)
+        public BaseContext(string connectionString) : base(connectionString)
         {
             CompanyConnectionString = connectionString;
             SetDefaultEntityFrameworkCommandTimeout();
@@ -141,25 +141,26 @@ namespace d360.model
 
         public IQueryable<T> Filter<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : BaseObject
         {
-            return GetWithIncludes<T>(includes).Where(predicate);
+            return GetWithIncludes(includes).Where(predicate);
         }
 
         public IQueryable<T> Filter<T>(Expression<Func<T, bool>> predicate, out int total, int index = 0, int size = 50, params Expression<Func<T, object>>[] includes) where T : BaseObject
         {
             int skipCount = index * size;
-            var resetSet = predicate != null ?
-                getWithIncludes<T>(includes).Where(predicate) :
-                getWithIncludes<T>(includes).AsQueryable();
+            IQueryable<T> resetSet = predicate != null ?
+                getWithIncludes(includes).Where(predicate) :
+                getWithIncludes(includes).AsQueryable();
             resetSet = skipCount == 0 ?
-                resetSet.Take<T>(size) :
-                resetSet.Skip<T>(skipCount).Take<T>(size);
+                resetSet.Take(size) :
+                resetSet.Skip(skipCount).Take(size);
             total = resetSet.Count();
+
             return resetSet;
         }
 
         public IQueryable<T> GetWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject
         {
-            return getWithIncludes<T>(includes);
+            return getWithIncludes(includes);
         }
 
         protected IEnumerable<BaseObject> GetChangedOrNewEntities()
@@ -171,51 +172,51 @@ namespace d360.model
 
         public T GetById<T>(Guid id) where T : BaseGuidObject
         {
-            return Set<T>().SingleOrDefault(i => i.ID == id) as T;
+            return Set<T>().SingleOrDefault(i => i.ID == id);
         }
 
         public T GetById<T>(Guid id, params Expression<Func<T, object>>[] includes) where T : BaseGuidObject
         {
-            return getWithIncludes<T>(includes).Where(i => i.ID == id).SingleOrDefault();
+            return getWithIncludes(includes).Where(i => i.ID == id).SingleOrDefault();
         }
-
 
         public T GetById<T>(int id) where T : BaseIntObject
         {
-            return Set<T>().SingleOrDefault(i => i.ID == id) as T;
+            return Set<T>().SingleOrDefault(i => i.ID == id);
         }
 
         public T GetById<T>(int id, params Expression<Func<T, object>>[] includes) where T : BaseIntObject
         {
-            return getWithIncludes<T>(includes).Where(i => i.ID == id).SingleOrDefault();
+            return getWithIncludes(includes).Where(i => i.ID == id).SingleOrDefault();
         }
 
         public T GetById<T>(long id) where T : BaseLongObject
         {
-            return Set<T>().SingleOrDefault(i => i.ID == id) as T;
+            return Set<T>().SingleOrDefault(i => i.ID == id);
         }
 
         public T GetById<T>(long id, params Expression<Func<T, object>>[] includes) where T : BaseLongObject
         {
-            return getWithIncludes<T>(includes).Where(i => i.ID == id).SingleOrDefault();
+            return getWithIncludes(includes).Where(i => i.ID == id).SingleOrDefault();
         }
 
         public T GetByUid<T>(Guid uid, params Expression<Func<T, object>>[] includes) where T : BaseUidObject
         {
-            return Set<T>().SingleOrDefault(i => i.Uid == uid) as T;
+            return Set<T>().SingleOrDefault(i => i.Uid == uid);
         }
 
         internal IQueryable<T> getWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject
-        {            
-            var itemWithIncludes = Set<T>() as DbQuery<T>;
+        {
+            DbQuery<T> itemWithIncludes = Set<T>() as DbQuery<T>;
             if (includes.Length > 0)
             {
-                foreach (var path in (includes[0].Body.ToString().Contains("Convert((") ? includes.Skip(1) : includes))
+                foreach (Expression<Func<T, object>> path in (includes[0].Body.ToString().Contains("Convert((") ? includes.Skip(1) : includes))
                 {
                     itemWithIncludes = (DbQuery<T>)itemWithIncludes.Include(path); //ObjectQuery
                 }
             }
-            return itemWithIncludes.AsQueryable<T>();
+
+            return itemWithIncludes.AsQueryable();
         }
 
         public new IDbSet<T> Set<T>() where T : class
@@ -253,14 +254,13 @@ namespace d360.model
             }
             else
             {
-                this.Set<T>().Add(entity);
+                Set<T>().Add(entity);
             }
 
-            int numRecords = 0;
-
+            int numRecords;
             try
             {
-                numRecords = this.SaveChanges();
+                numRecords = SaveChanges();
             }
             catch (InvalidOperationException ex)
             {
@@ -285,13 +285,15 @@ namespace d360.model
 
         public DbDataReader Read(string sql)
         {
-            var cmd = Database.Connection.CreateCommand();
+            DbCommand cmd = Database.Connection.CreateCommand();
             cmd.CommandText = sql;
             cmd.CommandType = CommandType.Text;
+            
             if (Database.Connection.State != (ConnectionState.Open | ConnectionState.Fetching | ConnectionState.Executing))
             {
                 Database.Connection.Open();
             }
+
             return cmd.ExecuteReader();
         }
 
@@ -299,11 +301,12 @@ namespace d360.model
         {
             while (reader.Read())
             {
-                var values = new List<object>();
+                List<object> values = new List<object>();
                 for (int i = 0; i < reader.FieldCount; i++)
                 {
                     values.Add(reader.GetValue(i));
                 }
+
                 yield return values.ToArray();
             }
         }
@@ -327,19 +330,19 @@ namespace d360.model
 
             base.OnModelCreating(modelBuilder);
 
-            base.Configuration.AutoDetectChangesEnabled = false;
-            base.Configuration.ProxyCreationEnabled = false;
-            base.Configuration.LazyLoadingEnabled = false;
+            Configuration.AutoDetectChangesEnabled = false;
+            Configuration.ProxyCreationEnabled = false;
+            Configuration.LazyLoadingEnabled = false;
         }
 
         public IQueryable<T> Table<T>() where T : class
         {
-            return this.Set<T>();
+            return Set<T>();
         }
 
         private void SetDefaultEntityFrameworkCommandTimeout()
         {
-            var adapter = (IObjectContextAdapter)this;
+            IObjectContextAdapter adapter = this;
             if (adapter != null)
             {
                 adapter.ObjectContext.CommandTimeout = 2 * 60; // 2 minute ef command timeout value in seconds (default is 30 seconds)
@@ -350,7 +353,7 @@ namespace d360.model
 
         #region Keys
 
-        
+
         internal string CACHE_KEY_SSO_MODELS = "Company_SsoModels";
         internal string CACHE_KEY_CONNECTION_STRINGS = "Company_ConnectionStrings";
 

@@ -75,7 +75,9 @@
                                         <span class="ig-colorfield-item detail" style="display: inline-flex !important;">
                                             <span class="ig-colorfield-swatch" [style.background-color]="getCertificationStatusColor(semanticDetails.status)"></span>
                                             <span class="ig-colorfield-item-label">
-                                                {{(semanticDetails.status==="InReview" ? "Under Review" : semanticDetails.status)}}
+                                                <a (click)="linkClicked.emit()">
+                                                    {{(semanticDetails.status==="InReview" ? "Under Review" : semanticDetails.status)}}
+                                                </a>
                                             </span>
                                         </span>
                                     </div>
@@ -198,15 +200,15 @@
                                 <label class="ig-label" style="margin-right:5px">
                                     Created By
                                 </label>
-                                <div class="ig-value" *ngIf="semanticDetails.createdBy.id"><a (click)="navigateToUser(semanticDetails.createdBy.id)">{{semanticDetails.createdBy.fullName}}</a></div>
-                                <div class="ig-value" *ngIf="!semanticDetails.createdBy.id">{{semanticDetails.createdBy.fullName}}</div>
+                                <div class="ig-value" *ngIf="semanticDetails.createdBy.uid && canViewUsers"><a (click)="linkClicked.emit({ resourceUid: semanticDetails.createdBy.uid })">{{semanticDetails.createdBy.fullName}}</a></div>
+                                <div class="ig-value" *ngIf="!semanticDetails.createdBy.uid || !canViewUsers">{{semanticDetails.createdBy.fullName}}</div>
                             </div>
                             <div class="row">
                                 <label class="ig-label" style="margin-right:5px">
                                     Last Modified By
                                 </label>
-                                <div class="ig-value" *ngIf="semanticDetails.updatedBy.id && canViewUsers"><a (click)="navigateToUser(semanticDetails.updatedBy.id)">{{semanticDetails.updatedBy.fullName}}</a></div>
-                                <div class="ig-value" *ngIf="!semanticDetails.updatedBy.id || !canViewUsers">{{semanticDetails.updatedBy.fullName}}</div>
+                                <div class="ig-value" *ngIf="semanticDetails.updatedBy.uid && canViewUsers"><a (click)="linkClicked.emit({ resourceUid: semanticDetails.updatedBy.uid })">{{semanticDetails.updatedBy.fullName}}</a></div>
+                                <div class="ig-value" *ngIf="!semanticDetails.updatedBy.uid || !canViewUsers">{{semanticDetails.updatedBy.fullName}}</div>
                             </div>                            
                         </div>
                     </ig-property-group>

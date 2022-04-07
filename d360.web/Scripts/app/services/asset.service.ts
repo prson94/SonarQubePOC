@@ -120,7 +120,7 @@ export class AssetService extends BaseObservableService {
         return this.http.get(`/api/v2/assets/counts/byAssetType?class=${cs.toString()}` + qString)
             .pipe(map(res => { return <AssetCount[]>res }),
                 catchError(err => this.handleError(err, true)));
-        }
+    }
 
     public getAssetCountOfArtifactTypeUid(uid: string): Observable<any> {
         return this.http.get(`/api/v2/assets/count/${uid}`)
@@ -146,11 +146,13 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    public getAssets(assetTypeUid: string, params: any, onlyListableFields: boolean = false): Observable<any> {
+    public getAssets(assetTypeUid: string, params: any, onlyListableFields: boolean = false, includeOwnershipLookup: boolean = true): Observable<any> {
         var qString = '';
         if (onlyListableFields) {
             params._onlyListableFields = true;
-            params._includeOwnershipLookup = true;
+            if (includeOwnershipLookup) {
+                params._includeOwnershipLookup = true;
+            }
         }
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');

@@ -1,0 +1,92 @@
+﻿@import "../../../../../Content/styles/_Variables.less";
+
+.add-relationship-editor {
+  padding: 0 24px 24px 24px;
+  max-width: 800px;
+
+  ig-search-field {
+    width: 100%;
+    margin-bottom: 8px;
+
+    .ig-search-field.has-tooltip {
+      width: 100%;
+    }
+  }
+
+  h2 {
+    margin-bottom: 8px !important;
+  }
+
+  .ig-badge {
+    min-width: 30px;
+  }
+
+  .rel-name {
+    display: flex;
+
+    .rel-text {
+      margin-top: 1px;
+    }
+  }
+
+  .disabled-predicate,
+  .disabled-cardinality-many,
+  .disabled-cardinality-one {
+    cursor: default;
+
+    &:hover {
+      background: white !important;
+    }
+
+    .rel-name {
+      opacity: 0.33;
+    }
+  }
+
+  .relationship-fields-wrapper {
+    .add-asset-form {
+      padding: 0;
+    }
+  }
+
+  .multiselect-grid-header {
+    display: flex;
+    margin-bottom: 8px;
+
+    ig-search-field {
+      margin-bottom: 0;
+    }
+
+    .multiselect-grid-sel {
+      padding-left: 12px;
+      line-height: 34px;
+    }
+  }
+
+  table {
+    td {
+      i.fa {
+        line-height: 24px;
+        margin-right: 8px;
+        color: @ig-purple;
+      }
+    }
+
+    .asset-selection {
+      display: flex;
+
+      button {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  .back-button {
+    margin-right: 12px;
+  }
+}
+
+.p-datatable-scrollable-body {
+  overflow-y: auto !important;
+}

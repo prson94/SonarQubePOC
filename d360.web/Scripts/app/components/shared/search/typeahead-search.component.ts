@@ -1,5 +1,7 @@
 import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
+import { SearchService } from '../../../services/search.service';
+import { AuthenticationService } from '../../../services/authentication.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -27,6 +29,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     public results: SearchResult[];
     private searchSub: ISubscription
     private defaultSearchOptions: string[];
+    private availableSearchOptions: string[];
     private endSearchAllOption: SearchResult;
     private endSearchAllTypeToken: string = '__SHOWALL__';
     private options: string[];
@@ -38,6 +41,8 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     constructor(
         private router: Router,
         private settingsService: CompanySettingsService,
+        private searchService: SearchService,
+        private authenticationService: AuthenticationService,
         private typeaheadSearchService: TypeaheadSearchService,
         private ref: ChangeDetectorRef
     ) {
@@ -52,8 +57,12 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.result.Name = this.defaultValue;
         }
 
-        this.options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-        this.createSubscription();
+        this.authenticationService.checkCurrentUserAdmin().subscribe((isAdmin) => {
+            this.searchService.getSearchCategories(isAdmin, false).subscribe((res) => {
+                this.availableSearchOptions = res.map((c) => c.value);
+                this.setOptions(!this.searchOptions ? this.defaultSearchOptions : this.searchOptions);
+            });
+        });
     }
 
     createSubscription() {
@@ -75,13 +84,17 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.result.Name = this.defaultValue;
         }
         if (changes['searchOptions']) {
-            this.options = this.searchOptions;
-            this.createSubscription();
+            this.setOptions(this.searchOptions);
         }
     }
 
     ngOnDestroy(): void {
         if (this.searchSub) this.searchSub.unsubscribe();
+    }
+
+    private setOptions(options: string[]) {
+        this.options = this.availableSearchOptions?.length ? options.filter((o) => this.availableSearchOptions.indexOf(o) !== -1) : options;
+        this.createSubscription();
     }
 
     syncSearchText(event) {
@@ -108,8 +121,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     private navigateQuery(q: string) {
-        let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${options ? options.join(',') : ''}`
+        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${this.options ? this.options.join(',') : ''}`;
         if (!this.keepFilter) {
             SearchSession.removeState(q);
         }
@@ -154,6 +166,13 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             }
             this.ref.markForCheck();
         }
+    }
+
+    public showType(result: SearchResult): boolean {
+        if (result.Group === "Semantic Type") {
+            return false;
+        }
+        return (typeof result.Type !== "undefined");
     }
 }
 

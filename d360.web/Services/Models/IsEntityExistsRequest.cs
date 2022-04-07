@@ -7,8 +7,8 @@ namespace d360.web.Services
 
     }
 
-    internal abstract class IsEntityExistsRequest<TResponse>: IRequest<TResponse>
-        where TResponse: IsEntityExistsResponse
+    internal abstract class IsEntityExistsRequest<TResponse> : IRequest<TResponse>
+        where TResponse : IsEntityExistsResponse
     {
         protected IsEntityExistsRequest()
         {

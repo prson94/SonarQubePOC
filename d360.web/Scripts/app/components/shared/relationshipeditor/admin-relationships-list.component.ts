@@ -15,7 +15,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class AdminRelationshipsListComponent extends BaseComponent implements OnChanges {
     relationships: RelationshipType[] = [];
 
-    @Input() filterToName: string;
+    private id: number = null;
+    private subject: string = "";
+    private predicate: string = "";
+    private object: string = "";
+
+    @Input() filterToName: string = "";
 
     @Input() objectType: string;
     @Input() objectID: number;
@@ -35,6 +40,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         private cdRef: ChangeDetectorRef
     ) {
         super(settingsService);
+        this.filterToName = '';
         this.theDeleteCallback = this.deleteRelationship.bind(this);
     }
 
@@ -54,8 +60,8 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         }
     }
 
-    private export() {
-        this.relationshipsService.exportRelationshipTypes();
+    private export() {        
+        this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.id ?? null, this.subject ?? "", this.predicate ?? "", this.object ?? "");
     }
 
     private filterResults() {
@@ -88,7 +94,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 .subscribe(result => {
                     this.relationships = result ?? [];
                     this.isLoading = false;
-                    if (this.relationships) {
+                    if (this.relationships && !this.showEditor) {
                         if (this.relationships.length > 0) {
                             this.selected = this.relationships[0];
                             this.selectedChange.emit(this.selected)
@@ -102,7 +108,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                     this.relationships = result ?? [];
                     this.filterResults();
                     this.isLoading = false;
-                    if (this.relationships) {
+                    if (this.relationships && !this.showEditor) {
                         if (this.relationships.length > 0) {
                             this.selected = this.relationships[0];
                             this.selectedChange.emit(this.selected)
@@ -177,8 +183,15 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     }
 
     onFilter($event) {
+        this.id = $event.filters["Id"]?.value;
+        this.subject = $event.filters["Subject.Name"]?.value;
+        this.predicate = $event.filters["Predicate.Name"]?.value;
+        this.object = $event.filters["Object.Name"]?.value;
+
         if ($event && $event.filteredValue) {
             this.selected = $event.filteredValue[0];
+            this.filterToName = $event.filters?.global?.value;            
+
             if (this.selected) {
                 this.selectedChange.emit(this.selected)
             }

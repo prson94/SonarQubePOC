@@ -88,11 +88,11 @@ stages:
       parameters:
         whitesourceApiKey: $(whitesourceApiKey)
         projectName: 'Responsibility Rule Processor'
-    - template: build/steps/step-blackduck-detect.yml@templates
+    - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
-        blackduckApi: $(blackduckApi)
-        artifactName: ResponsibilityRuleProcessor
-        blackDuckScanDirectory: $(build.sourcesdirectory)/igx.jobs.responsibilityruleprocessor
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-Webjob-ResponsibilityRuleProcessor'
+        blackDuckScanDirectory: $PWD/igx.jobs.responsibilityruleprocessor
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: Responsibility Rule Processor'
       inputs:

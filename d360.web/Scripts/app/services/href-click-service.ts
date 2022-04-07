@@ -21,6 +21,8 @@ export class AssetDetailClickEvent {
     uid: string;
     assetTypeUid: string;
     url: string;
+
+    originalEvent: any;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -33,6 +35,8 @@ export class LinkClickInterceptor {
         var adcEv = new AssetDetailClickEvent();
         adcEv.type = AssetDetailClickType.Undefined;
         adcEv.url = url;
+
+        adcEv.originalEvent = origEvent;
 
         if (origEvent) {
             origEvent.preventDefault();
@@ -147,10 +151,18 @@ export class LinkClickInterceptor {
             if (data.IsSynonym) {
                 adcEv.event = origEvent;
                 adcEv.type = AssetDetailClickType.Asset;
-                adcEv.objectId = data.ObjectID;
-                adcEv.objectType = data.Object;
-                adcEv.uid = data.AssetUid;
-                adcEv.assetTypeUid = data.AssetTypeUid;
+                if (data.type === "SP") {
+                    adcEv.objectId = data.ParentID;
+                    adcEv.objectType = data.Object;
+                    adcEv.uid = data.ParentAssetUid;
+                    adcEv.assetTypeUid = data.ParentAssetTypeUid;
+                }
+                else {
+                    adcEv.objectId = data.ObjectID;
+                    adcEv.objectType = data.Object;
+                    adcEv.uid = data.AssetUid;
+                    adcEv.assetTypeUid = data.AssetTypeUid;
+                }
             }
 
             //if click comes from Reference List type link

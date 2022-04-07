@@ -27,7 +27,7 @@
             </div>
             <div class="row asset-grid-wrapper">
                 <div class="col s12">
-                    <p-table #dt                   
+                    <p-table #dt
                              [value]="semanticTypes"
                              selectionMode="single"
                              [(selection)]="selectedType"
@@ -44,7 +44,7 @@
                              [loadingIcon]="'fa fa-spinner fa-spin'"
                              [lazy]="true"
                              (onLazyLoad)="lazyLoad($event)"
-                             [style]="{ 'width': '100%' }"                             
+                             [style]="{ 'width': '100%' }"
                              (selectionChange)="selectRow($event)">
                         <ng-template pTemplate="header">
                             <tr>
@@ -95,7 +95,7 @@
                                 <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
                                     <div style="display:inline-block">
                                         <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
-                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
+                                        <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #menu [tabIndex]="1"></ig-popup-menu>
                                     </div>
                                 </td>
                             </tr>
@@ -117,17 +117,65 @@
                         [expanded]="sidePanelOpen"
                         [storageKey]="sidePanelStorageKey"
                         [selectedPanel]="sidePanelTab"
-                        [selectedItem]="selectedType"
-                        hasDetail="true">                
-                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">   
+                        [hasSelectedItem]="selectedType ? true : false"
+                        hasDetail="true">
+                <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'detail'">
                     <ng-container *ngIf="selectedType">
                         <semantic-detail [qualifier]="selectedType.qualifier"
                                          [isSidePanel]="true"
                                          [showHeader]="true"
-                                         [semanticType]="selectedType"></semantic-detail>
+                                         [semanticType]="selectedType"
+                                         (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>
                     </ng-container>
-                </ng-container>                
+                </ng-container>   
+                <ng-container *ngIf="secondarySidePanelOpen">
+                    <div #semanticTile class="secondary-side-panel">
+                        <div class="panel-header">
+                            <span class="header-label">Information</span>
+                            <div class="button-container">
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                            </div>
+                        </div>
+                        <div class="details-container">
+                            <div>
+                                <ng-container *ngIf="resourceUid && secondarySidePanel=='user'">
+                                    <ig-asset-detail [objectUID]="resourceUid"
+                                                     [objectType]="'Resource'"
+                                                     [useAccordion]="true"
+                                                     [shouldBePadded]="true"
+                                                     [showHeader]="true"
+                                                     [showHeaderLine]="false"
+                                                     [spacerHeight]="'16px'"
+                                                     [tooltipAlign]="'left'"
+                                                     [isSidePanel]="true"
+                                                     [interceptLinkClick]="true"
+                                                     (close)="secondarySidePanelOpen=false;"></ig-asset-detail>
+                                </ng-container>
+                                <ng-container *ngIf="secondarySidePanel=='status'">
+                                    <semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
             </side-panel>
         </div>
     </div>
-</div>            
+</div>
+<d3s-delete-form [callback]="theDeleteCallback"
+                 [items]="selectedType"
+                 [showAsModal]="true"
+                 [modalTitle]="'Delete Semantic Type'"
+                 [modalCssClasses]="'medium-dialog'"
+                 [isModalVisible]="showDelete"
+                 [method]="'callback'"
+                 (onCancel)="showDelete=false;">
+    <div prompt>
+        <p>
+            Are you sure you want to delete this semantic type?<br />
+            Please note that this operation cannot be undone.
+        </p>
+    </div>
+
+
+</d3s-delete-form>

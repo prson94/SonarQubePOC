@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.graph.AssetNode-v1">
+  <changeSet author="Pappas" id="Table.graph.AssetNode-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,11 +24,42 @@ BEGIN
 		[State] [int] NOT NULL,
 		[UpdatedOn] [datetime] NOT NULL,
 		[Class] [int] NULL,
+		[DisplayPath]  AS ([graph].[GetPath]([Segments],' > ',' / ')) PERSISTED,
+		[KeyPath]  AS ([graph].[GetKeyPath]([Segments])) PERSISTED,
 		CONSTRAINT [PK_GraphAssetNode] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 	AS NODE
 END
 
+IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'ReformattedSegments')
+BEGIN
+	alter table graph.AssetNode drop column ReformattedSegments
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'DisplayPath')
+BEGIN
+	alter table graph.AssetNode add [DisplayPath] AS ([graph].[GetPath]([Segments],' > ',' / ')) PERSISTED
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'KeyPath')
+BEGIN
+	alter table graph.AssetNode add [KeyPath] AS ([graph].[GetKeyPath]([Segments])) PERSISTED
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.graph.AssetNode-Indexes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode] ON [graph].[AssetNode] ( [UpdatedOn] ASC )
@@ -63,39 +94,15 @@ IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode
 BEGIN
 	CREATE XML INDEX [IX_XML_GraphAssetNode_Segments_Path] ON [graph].[AssetNode] ( [Segments] ) USING XML INDEX [IX_XML_GraphAssetNode_Segments_Primary] FOR PATH WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.graph.AssetNode-FullText-v1" runInTransaction="false">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'AssetNode')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_DisplayPath')
 BEGIN
-	CREATE FULLTEXT INDEX ON [graph].[AssetNode] KEY INDEX [PK_GraphAssetNode] ON [FieldCatalog] WITH STOPLIST [emptyStopList]
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_DisplayPath] ON [graph].[AssetNode] ( [DisplayPath] ASC )
 END
 
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Properties' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_KeyPath')
 BEGIN
-	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Properties] LANGUAGE 1033)
-END
-
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Path' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
-BEGIN
-	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Path] LANGUAGE 1033)
-END
-
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Segments' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
-BEGIN
-	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Segments] LANGUAGE 1033)
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_KeyPath] ON [graph].[AssetNode] ( [KeyPath] ASC )
 END
 		]]>
     </sql>
@@ -105,191 +112,5 @@ END
 		]]>
 	</rollback>
   </changeSet>
-  
-  <changeSet author="Pappas" id="Table.graph.AssetNode-XSD-v1" runInTransaction="false">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from [sys].[xml_schema_collections] where name = 'GraphSegmentXsdSchema')
-BEGIN
-	CREATE XML SCHEMA COLLECTION GraphSegmentXsdSchema AS  
-	N'<?xml version="1.0" encoding="UTF-16"?>  
-	<xsd:schema  
-		elementFormDefault="qualified"   
-		attributeFormDefault="unqualified"  
-		xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-
-		<xsd:simpleType name="NullableInt">
-			<xsd:union memberTypes="IntegerType empty"/>
-		</xsd:simpleType>
-		<xsd:simpleType name="NullableLong">
-			<xsd:union memberTypes="LongType empty"/>
-		</xsd:simpleType>
-		<xsd:simpleType name="IntegerType">
-			<xsd:restriction base="xsd:integer"/>
-		</xsd:simpleType>
-		<xsd:simpleType name="LongType">
-			<xsd:restriction base="xsd:long"/>
-		</xsd:simpleType>
-		<xsd:simpleType name="empty">
-			<xsd:restriction base="xsd:string">
-				<xsd:maxLength value="0"/>
-			</xsd:restriction>
-		</xsd:simpleType>
-		
-		<xsd:element name="path">  
-			<xsd:complexType>
-				<xsd:sequence>
-					<xsd:element name="segment" minOccurs="0" maxOccurs="unbounded">
-						<xsd:complexType>
-							<xsd:sequence>
-								<xsd:element name="level" type="xsd:integer" />  
-								<xsd:element name="position" type="xsd:integer" />  
-								<xsd:element name="assetTypeId" type="xsd:integer" />  
-								<xsd:element name="assetId" type="xsd:long" />  
-								<xsd:element name="parentLevel" type="NullableInt" />  
-								<xsd:element name="parentPosition" type="NullableInt"/>  
-								<xsd:element name="parentAssetId" type="NullableLong" /> 
-								<xsd:element name="value" type="xsd:string" />
-								<xsd:element name="leaf" type="xsd:boolean" />
-							</xsd:sequence>
-						</xsd:complexType>
-					</xsd:element>
-				</xsd:sequence>  
-			</xsd:complexType>  
-		</xsd:element>  
-	</xsd:schema>'; 
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Core" id="Table.graph.AssetNode-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'ReformattedSegments')
-BEGIN
-	alter table graph.AssetNode add ReformattedSegments xml(GraphSegmentXsdSchema) null
-END
-
-IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Primary')
-BEGIN
-	CREATE PRIMARY XML INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Primary] ON [graph].[AssetNode] ( ReformattedSegments )
-END
-
-IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Path')
-BEGIN
-	CREATE XML INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Path] ON [graph].[AssetNode] ( ReformattedSegments ) USING XML INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Primary] FOR PATH
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-  
-  <changeSet author="Core" id="Table.graph.AssetNode-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Path')
-BEGIN
-	DROP INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Path] ON [graph].[AssetNode]
-END
-
-IF EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Primary')
-BEGIN
-	DROP INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Primary] ON [graph].[AssetNode]
-END
-
-IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'ReformattedSegments')
-BEGIN
-	alter table graph.AssetNode drop column ReformattedSegments
-	alter table graph.AssetNode add ReformattedSegments xml null 
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>  
-
-  <changeSet author="Puneet Gupta" id="Table.graph.AssetNode_Drop_FullText_Index-v4" runInTransaction="false">
-  <comment>GOV-13535</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF EXISTS (select f.* from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'AssetNode')
-BEGIN
-	DROP FULLTEXT INDEX ON [graph].[AssetNode]
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF NOT EXISTS (select f.* from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'AssetNode')
-BEGIN
-	CREATE FULLTEXT INDEX ON [graph].[AssetNode] KEY INDEX [PK_GraphAssetNode] ON [FieldCatalog] WITH STOPLIST [emptyStopList]
-END
-
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Properties' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
-BEGIN
-	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Properties] LANGUAGE 1033)
-END
-
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Path' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
-and COL_LENGTH('[graph].[AssetNode]','Path') IS NOT NULL
-BEGIN
-	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Path] LANGUAGE 1033)
-END
-
-IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Segments' inner join sys.objects t on t.object_id = f.object_id and t.name = 'AssetNode')
-BEGIN
-	ALTER FULLTEXT INDEX ON [graph].[AssetNode] ADD ([Segments] LANGUAGE 1033)
-END
-		]]>
-	</rollback>
-  </changeSet>  
-
-  <changeSet author="Puneet Gupta" id="Table.graph.AssetNode_Drop_path_column-v5">
-  <comment>GOV-13536</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-if COL_LENGTH('[graph].[AssetNode]','Path') IS NOT NULL
-BEGIN
-	alter table [graph].[AssetNode] DROP COLUMN IF EXISTS [Path]
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-if COL_LENGTH('[graph].[AssetNode]','Path') IS NULL
-BEGIN
-	alter table graph.AssetNode add [Path] [nvarchar](2500) NULL
-END
-		]]>
-	</rollback>
-  </changeSet>  
 
 </databaseChangeLog>

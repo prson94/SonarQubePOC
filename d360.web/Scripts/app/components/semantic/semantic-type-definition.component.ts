@@ -11,7 +11,11 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { Subscription } from 'rxjs';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SemanticBaseComponent } from './semantics-base.component';
+import { FeatureFlagsService } from '../../services/featureflags.service';
 
+
+declare var CurrentResourceID;
 
 @Component({
     selector: 'semantic-definition',
@@ -20,7 +24,7 @@ import { SecondaryNavItem } from '../../models/secondaryNav.model';
 })
 
 
-export class SemanticDefinitionComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+export class SemanticDefinitionComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
    
     private semanticType: SemanticType
     private sub: any;
@@ -31,19 +35,24 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
     tab: string = 'detail';
     navigationItemsSubs: Subscription[] = [];
     semanticAssetsCount: number;
-
+    resourceUid: string;
+    sidePanelTab: string = 'detail';
+    sidePanelOpen: boolean = true;
+    sidePanelLoading: boolean = false;
+    sidePanelStorageKey: string;
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
+        protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         webAnalyticsService: WebAnalyticsService,
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private featureFlagService: FeatureFlagsService
     ) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+        super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
     }
 
 
@@ -58,16 +67,19 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
     }
 
     getData(uid: string) {
-        this.isLoading = true;
-        this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
-            this.semanticType = s.items[0];
-            this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {
-                this.semanticAssetsCount = result.total;
-                this.displayBreadCrumbs();
-                this.isLoading = false;
-            });                        
-            this.cdRef.markForCheck();
-        });
+        if (this.semanticTypesEnabled) {
+            this.isLoading = true;
+            this.dataProfileService.getSemanticTypes(1, 1, "", `uid eq '${uid}'`).subscribe((s) => {
+                this.semanticType = s.items[0];
+                this.sidePanelStorageKey = 'Semantic_Definition' + this.semanticType + '_' + CurrentResourceID;
+                this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, 1, this.semanticType.threshold).subscribe((result) => {
+                    this.semanticAssetsCount = result.total;
+                    this.displayBreadCrumbs();
+                    this.isLoading = false;
+                });
+                this.cdRef.markForCheck();
+            });
+        }        
     }
 
     ngOnDestroy() {
@@ -99,5 +111,15 @@ export class SemanticDefinitionComponent extends AssetGridBaseComponent implemen
                 this.secondaryNavService.showHeader(true);
             });
         });
+    }
+
+    handleLinkClick($event: any) {
+        if ($event?.resourceUid) {
+            this.resourceUid = $event.resourceUid;
+            this.sidePanelTab = 'detail';
+        } else {
+            this.sidePanelTab = 'status';
+        }
+
     }
 }

@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using d360.core.entities;
+
 using d360.core.entities.Graph;
-using d360.extensions;
 
 namespace d360.model.DataAccessLayer
 {
@@ -16,7 +12,7 @@ namespace d360.model.DataAccessLayer
 
         public GraphFilterRepository(ICompanyContext context)
         {
-            this.Company = context;
+            Company = context;
         }
 
         public List<GraphFilter> GetGraphFiltersByUser(int ownerId)
@@ -37,7 +33,9 @@ namespace d360.model.DataAccessLayer
         public bool CreateGraphFilter(GraphFilter model)
         {
             if (model.OwnedBy == 0)
+            {
                 model.OwnedBy = Company.CurrentResourceID;
+            }
 
             model.Uid = Guid.NewGuid();
             return Company.Add(model);
@@ -46,10 +44,14 @@ namespace d360.model.DataAccessLayer
         public bool UpdateGraphFilter(GraphFilter model)
         {
             if (model.OwnedBy == 0)
+            {
                 model.OwnedBy = Company.CurrentResourceID;
+            }
 
-            if(model.IsDefault)
+            if (model.IsDefault)
+            {
                 Company.Execute($@"UPDATE [graph].[Filter] SET IsDefault = 0 WHERE IsDefault = 1 AND OwnedBy = @OwnedBy", new { OwnedBy = Company.CurrentResourceID });
+            }
 
             return Company.Update(model);
         }

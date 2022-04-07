@@ -229,7 +229,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         this.model.StructuredDefinition.When.push(whenItem);
     }
 
-    private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem): Promise<void> {
+    private loadWhenValuesForFieldType(item: ResponsibilityTypeRelationRuleDefinitionWhenItem, event: any = null): Promise<void> {
         item.IsBool = false;
         if (item.FieldTypeID) {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
@@ -269,6 +269,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.ValueOptions = [];
                 item.IsLookup = false;
             }
+        }
+        
+        if (event) {
+            item.Value = null;
         }
 
         return null;
@@ -381,6 +385,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             .subscribe((d) => {
                 this.thenFieldTypes = d.FieldTypes;
                 this.thenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
+                if (this.model && this.model.StructuredDefinition
+                    && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null
+                    && this.model.StructuredDefinition.Then.Conditions.length > 0) {
+                    for (let item of this.model.StructuredDefinition.Then.Conditions) {
+                        this.loadThenValuesForFieldType(item, false);
+                    }
+                }
             });
 
         return Promise.all(promises).then(() => { });

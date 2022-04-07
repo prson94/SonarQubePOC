@@ -133,7 +133,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Url.
+        ///   Looks up a localized string similar to Asset URL.
         /// </summary>
         internal static string AssetUrlColumn {
             get {
@@ -147,6 +147,15 @@ namespace Resources {
         internal static string BaseTypeColumn {
             get {
                 return ResourceManager.GetString("BaseTypeColumn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color.
+        /// </summary>
+        internal static string ColorColumn {
+            get {
+                return ResourceManager.GetString("ColorColumn", resourceCulture);
             }
         }
         
@@ -237,6 +246,24 @@ namespace Resources {
         internal static string ElementTopKNotEmpty {
             get {
                 return ResourceManager.GetString("ElementTopKNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This endpoint is not accessible..
+        /// </summary>
+        internal static string EndpointNotAccessible {
+            get {
+                return ResourceManager.GetString("EndpointNotAccessible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error on request..
+        /// </summary>
+        internal static string ErrorOnRequest {
+            get {
+                return ResourceManager.GetString("ErrorOnRequest", resourceCulture);
             }
         }
         
@@ -439,7 +466,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos; and &apos;path&apos;..
+        ///   Looks up a localized string similar to Invalid value for parameter &apos;_order&apos;. Allowed values are &apos;confidence&apos;, &apos;path&apos; or &apos;assettypepath&apos;..
         /// </summary>
         internal static string OrderInvalid {
             get {
@@ -574,11 +601,29 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Filtered Asset list for {0} {1}.
+        /// </summary>
+        internal static string SemanticTypeAssetExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeAssetExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filtered Semantic Types List {0}.xlsx.
         /// </summary>
         internal static string SemanticTypeExportFilename {
             get {
                 return ResourceManager.GetString("SemanticTypeExportFilename", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Type Status List {0}.xlsx.
+        /// </summary>
+        internal static string SemanticTypeStatusExportFilename {
+            get {
+                return ResourceManager.GetString("SemanticTypeStatusExportFilename", resourceCulture);
             }
         }
         
@@ -597,15 +642,6 @@ namespace Resources {
         internal static string SemanticTypeURLColumn {
             get {
                 return ResourceManager.GetString("SemanticTypeURLColumn", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Filtered Asset list for {0} {1}.
-        /// </summary>
-        internal static string SemanticTypeAssetExportFilename {
-            get {
-                return ResourceManager.GetString("SemanticTypeAssetExportFilename", resourceCulture);
             }
         }
         
@@ -669,6 +705,15 @@ namespace Resources {
         internal static string TypeQualifierInvalid {
             get {
                 return ResourceManager.GetString("TypeQualifierInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Url.
+        /// </summary>
+        internal static string UrlColumn {
+            get {
+                return ResourceManager.GetString("UrlColumn", resourceCulture);
             }
         }
         

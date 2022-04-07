@@ -1,57 +1,62 @@
-﻿using d360.model.helpers.filters.program;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+
+using d360.model.helpers.filters.program;
 
 namespace d360.model.helpers.filters
 {
     public class DefaultFieldToken : FilterBaseToken, IFilterToken
     {
-        readonly IFieldValueValidator fieldValueValidator;
+        private readonly IFieldValueValidator fieldValueValidator;
 
         public DefaultFieldToken(IFilterDataProvider fdp, string field, string op, object value, DefaultFilter @default, int? paramIdx = null)
         {
-            this.dataProvider = fdp;
+            dataProvider = fdp;
             parameterIdx = paramIdx ?? -1;
             this.field = field;
             @operator = op;
             this.value = value;
-            this.defaultFilter = @default;
+            defaultFilter = @default;
 
             if (this.value != null && this.value.ToString().ToLower(CultureInfo.InvariantCulture) == "null")
             {
-                this.IsNullValue = true;
+                IsNullValue = true;
             }
-            this.fieldValueValidator = GetValueValidator();
-        }
 
+            fieldValueValidator = GetValueValidator();
+        }
 
         public string GetSqlExpression(Dictionary<string, object> sqlParams)
         {
-            this.sqlParamsRef = sqlParams;
-
+            sqlParamsRef = sqlParams;
             value = value.ToString().ToLower(CultureInfo.InvariantCulture);
+
             if (defaultFilter.SqlFieldType == SqlFieldType.Xml)
             {
                 if (value.ToString().StartsWith("'"))
                 {
                     value = ((string)value).TrimStart('\'');
                 }
+                
                 if (value.ToString().EndsWith("'"))
                 {
                     value = ((string)value).TrimEnd('\'');
                 }
+                
                 var values = value.ToString().Split('>').ToList();
                 for (int i = 0; i < values.Count; i++)
                 {
                     values[i] = values[i].Trim();
                 }
+                
                 if (value.ToString().EndsWith("*") && @operator == "ct")
                 {
                     value = ((string)value).TrimEnd('*');
                     @operator = "sw";
                 }
+                
                 if (value.ToString().StartsWith("*") && @operator == "ct")
                 {
                     value = ((string)value).TrimStart('*');
@@ -59,7 +64,7 @@ namespace d360.model.helpers.filters
                 }
 
                 string pName = $"@filter_{ parameterIdx}";
-                string formattedSql = "";
+                string formattedSql;
                 switch (@operator)
                 {
                     case "ge":
@@ -109,29 +114,31 @@ namespace d360.model.helpers.filters
                         }
                         break;
                 }
-                stringBuilder.AppendFormat(formattedSql, defaultFilter.SqlExpression, pName);
 
+                stringBuilder.AppendFormat(formattedSql, defaultFilter.SqlExpression, pName);
                 sqlParamsRef.Add(pName, value);
             }
             else
             {
-                if (!FilterHelpers.IsValidOperatorForFieldType(this.CurrentFieldType, @operator))
+                if (!FilterHelpers.IsValidOperatorForFieldType(CurrentFieldType, @operator))
                 {
-                    throw new FilterExpressionParserException($"Operator '{@operator}' is not valid for '{this.CurrentFieldType}' on field {field}");
+                    throw new FilterExpressionParserException($"Operator '{@operator}' is not valid for '{CurrentFieldType}' on field {field}");
                 }
 
-                if (!this.IsNullValue)
+                if (!IsNullValue)
                 {
-                    FilterHelpers.ValidateValueForType(this.CurrentFieldType, value);
+                    FilterHelpers.ValidateValueForType(CurrentFieldType, value);
 
-                    var valueValidation = this.fieldValueValidator.CheckValue(this.value, this.field, this.@operator);
+                    var valueValidation = fieldValueValidator.CheckValue(value, field, @operator);
+                    
                     if (!valueValidation.Status)
                     {
                         throw new FormatException(valueValidation.Message);
                     }
-                    this.value = valueValidation.UpdatedValue;
-
+                    
+                    value = valueValidation.UpdatedValue;
                     value = value.ToString().Trim('\'');
+
                     if (@operator == "ct" || @operator == "nct")
                     {
                         bool isStartWith = value.ToString().Last() == '*';
@@ -162,14 +169,15 @@ namespace d360.model.helpers.filters
 
                     sqlParamsRef.Add($"@filter_{parameterIdx}", value);
 
-                    this.AppendNullOperatorForNotOperators(defaultFilter.SqlExpression);
+                    AppendNullOperatorForNotOperators(defaultFilter.SqlExpression);
                 }
                 else
                 {
-                    if (!(new[] { "eq", "ne" }.Contains(@operator)))
+                    if (!new[] { "eq", "ne" }.Contains(@operator))
                     {
                         throw new FormatException($"NULL value filter can be used only with 'eq' and 'ne' operator!");
                     }
+
                     stringBuilder.Append(defaultFilter.SqlExpression);
                     stringBuilder.Append(FilterHelpers.GetSQLNullOperator(@operator));
                 }

@@ -4,6 +4,7 @@ import { PopupMenuItem } from '../controls/popup-menu/popup-menu.component';
 import { BaseComponent } from '../base.component';
 import { StateService } from '../../../services/state.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
 @Component({
     selector: 'side-panel',
@@ -17,6 +18,7 @@ export class SidePanelComponent extends BaseComponent {
 
     @Input() hasDetail: boolean = false;
     @Input() hasProfiling: boolean = false;
+    @Input() hasFilter: boolean = false;
     @Input() disableProfiling: boolean = false;
 
     @Input() expanded: boolean = false;
@@ -45,7 +47,8 @@ export class SidePanelComponent extends BaseComponent {
 
     constructor(
         private stateService: StateService,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService) {
         super(settingsService);
     }
 
@@ -61,6 +64,9 @@ export class SidePanelComponent extends BaseComponent {
         let loadState = false;
 
         if (changes['hasProfiling'] && !changes['hasProfiling'].isFirstChange() && changes['hasProfiling'].currentValue !== changes['hasProfiling'].previousValue) {
+            loadButtons = true;
+        }
+        if (changes['hasFilter'] && !changes['hasFilter'].isFirstChange() && changes['hasFilter'].currentValue !== changes['hasFilter'].previousValue) {
             loadButtons = true;
         }
         if (changes['hasDetail'] && !changes['hasDetail'].isFirstChange() && changes['hasDetail'].currentValue !== changes['hasDetail'].previousValue) {
@@ -116,12 +122,15 @@ export class SidePanelComponent extends BaseComponent {
                     if (state.selectedPanel != null && state.selectedPanel.length > 0) {
                         let b = this.buttons.find((b) => b.key === state.selectedPanel);
 
-                        if (b) {
+                        if (b || this.storageKey === "relationship-detail") {
                             this.selectedPanel = state.selectedPanel;
                         }
                     }
                 }
 
+            }
+            else if (this.selectedPanel === 'filters') {
+                this.expanded = true;
             }
         }
     }
@@ -141,6 +150,20 @@ export class SidePanelComponent extends BaseComponent {
 
         this.extraButtons.forEach((b) => this.buttons.push(b));
 
+        if (this.hasFilter) {
+            this.buttons.push(new SidePanelButton({
+                label: 'Filters',
+                tooltip: 'Filters',
+                disabledTooltip: '',
+                nothingSelectedMessage: '',
+                notApplicableMessage: '',
+                multipleSelectedMessage: '',
+                key: 'filters',
+                icon: 'fa-filter',
+                visible: true
+            }));
+        }
+
         if (this.hasDetail) {
             this.buttons.push(new SidePanelButton({
                 label: 'Information',
@@ -156,7 +179,7 @@ export class SidePanelComponent extends BaseComponent {
             }));
         }
 
-        if (this.hasProfiling) {
+        if (this.hasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             this.buttons.push(new SidePanelButton({
                 label: 'Profiling',
                 tooltip: 'Profiling',

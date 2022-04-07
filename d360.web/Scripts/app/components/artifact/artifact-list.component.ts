@@ -21,6 +21,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
+import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 
 declare var CurrentResourceID;
 
@@ -57,6 +58,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     selectedTag: any;
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
+    secondarySidePanel: string = "detail";
+    resourceUid: any;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -68,7 +71,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         private dataProfileService: DataProfileService,
         secondaryNavService: SecondaryNavService,
         private linkClickInterceptor: LinkClickInterceptor,
-        protected settingsService: CompanySettingsService) {
+        protected settingsService: CompanySettingsService,
+        private featureFlagService: FeatureFlagsService) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
@@ -162,13 +166,12 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
                         this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                         if (this.artifactType.HasV2Workflows) {
-                            this.secondaryNavService
-                                .showItem(
-                                    new SecondaryNavItem(
-                                        'Workflow',
-                                        'workflowmonitor',
-                                        ['fa-usb'],
-                                        `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`));
+                            this.secondaryNavService.showItem(
+                                new SecondaryNavItem('Workflow',
+                                                     'workflowmonitor',
+                                                     ['fa-usb'],
+                                                     `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`)
+                            );
                         }
                     });
                     this.navigationItemsSubs.push(breadCrumbsSub);
@@ -180,7 +183,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         this.selection = event;
 
-        if (this.selection && this.selection.HasProfiling) {
+        if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             this.sidePanelLoading = true;                                  
             this.dataProfileService.getDataProfiles(this.selection.AssetUid).subscribe(
                 (r) => {
@@ -206,7 +209,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
         if (this.selection == null || this.sidePanelTab === 'detail') {
             return true;
         }
-        if (this.selection != null && this.sidePanelTab === 'dataprofile') {
+        if (this.selection != null && this.sidePanelTab === 'dataprofile' && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             return this.selection.HasProfiling;
         }
     }
@@ -234,7 +237,18 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     secondaryPanelOpen(event: any) {
-        this.secondarySidePanelOpen = true;
-        this.semanticType = event.semanticType;
-    }
+        this.secondarySidePanelOpen = true;        
+        if (event) {
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }
+            if (event.semanticType) {
+                this.secondarySidePanel = "detail";
+                this.semanticType = event.semanticType;
+            }            
+        } else {
+            this.secondarySidePanel = "status";
+        }
+    }    
 }

@@ -123,7 +123,7 @@
                                     <p-dropdown [ngModelOptions]="{standalone: true}" [options]="whenCheckTypes" (onChange)="item.Value=null;item.FieldTypeID=null;item.IntersectTypeID=null;item.ValueOptions=[]" [(ngModel)]="item.CheckType" [style]="{ 'width' : '95%','min-width' : '6em' }"></p-dropdown>
                                 </td>
                                 <td>
-                                    <p-dropdown *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%','min-width' : '6em' }" (onChange)="loadWhenValuesForFieldType(item)"></p-dropdown>
+                                    <p-dropdown *ngIf="item.CheckType == 'F'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenFieldTypes" [(ngModel)]="item.FieldTypeID" [style]="{ 'width' : '95%','min-width' : '6em' }" (onChange)="loadWhenValuesForFieldType(item, $event)"></p-dropdown>
                                     <p-dropdown *ngIf="item.CheckType == 'R'" [ngModelOptions]="{standalone: true}" appendTo="body" [options]="whenIntersectTypes" [(ngModel)]="item.IntersectTypeID" [style]="{ 'width' : '95%','min-width' : '6em' }" (onChange)="loadValuesForIntersectType(item)"></p-dropdown>
                                 </td>
                                 <td>

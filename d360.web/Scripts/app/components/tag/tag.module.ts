@@ -2,8 +2,6 @@
 import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 
-
-
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
@@ -22,6 +20,12 @@ import { TagRoutingModule } from './tag.routes';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score.module';
+import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
+import { DataProfileModule } from '../shared/dataprofile/dataprofile.module';
+import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
+import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
+import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
+import { SemanticsModule } from '../semantic/semantics.module';
 
 @NgModule({
     imports: [
@@ -42,6 +46,12 @@ import { SharedAssetScoreModule } from '../shared/asset-score/shared-asset-score
         PipesModule,
         TagViewModule,
         TilesModule,
+        SidePanelModule,
+        DataProfileModule,
+        AssetDetailModule,
+        AssetTypeDetailModule,
+        TaggedAssetDetailModule,
+        SemanticsModule,
         
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        

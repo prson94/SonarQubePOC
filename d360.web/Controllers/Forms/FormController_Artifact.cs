@@ -1,18 +1,19 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.model;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using Dapper;
-using Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Data.Entity;
+using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
 using d360.core.helpers;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+
+using Resources;
 
 namespace d360.web.Controllers
 {
@@ -21,6 +22,7 @@ namespace d360.web.Controllers
         #region Artifact
 
         #region Field Generation
+
         [Route("Diagram_AddFields"), NonNullableParameters]
         public JsonResult Diagram_AddFields(int at, int p)
         {
@@ -41,8 +43,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
-            list = (
-                loadDynamicFields(
+            list = loadDynamicFields(
                     SystemObjects.Task.ToString(),
                     id,
                     list,
@@ -50,8 +51,7 @@ namespace d360.web.Controllers
                     Company.GetFieldRelationsByObject(SystemObjects.Task, id).ToList(),
                     2,
                     loadOnlySelectedLookupValue: true
-                )
-            );
+                );
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -62,6 +62,7 @@ namespace d360.web.Controllers
         public JsonResult Asset_AddFields(SystemObjects type, int at, int p)
         {
             var sType = type.ToString();
+
             if (!Company.HasAssetTypePermission(type, at, Permission.AddAsset))
             {
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
@@ -76,10 +77,11 @@ namespace d360.web.Controllers
             ).SingleOrDefault();
 
             var parentType = Company.GetParentType(at, type);
+
             if (intersectType != null)
             {
-                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), ItemSize = 20 });
+                var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(new CultureInfo("en"));
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = (p > 0) ? p.ToString() : null, ItemSize = 20 });
             }
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(type, at).ToList(), 2, loadLookupValues: false);
@@ -104,7 +106,6 @@ namespace d360.web.Controllers
 
             var parentType = Company.GetParentType(a.AssetType.ObjectID, type);
 
-
             if (PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 if (parentType != null)
@@ -112,14 +113,14 @@ namespace d360.web.Controllers
                     var parent = Company.GetParentObject(a.ObjectID, obj);
 
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                    var parents = Company.Query<SelectListItem>(
-           $@"select 
+                    var parents = Company.Query<SelectListItem>($@"select 
                                     lower(convert(nvarchar(36), A.uid)) as Value, 
                                     AN.DisplayPath as Text 	
                                         from Asset A 
-                                        inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
-                                        where A.AssetTypeID = {parentType.ID} and A.ID = {parent.ID}").OrderBy(i => i.Text).ToList();
-
+                                        inner join graph.AssetNode AN on AN.ID = A.ID 
+                                        where A.AssetTypeID = {parentType.ID} and A.ID = {parent.ID}")
+                        .OrderBy(i => i.Text)
+                        .ToList();
 
                     list.Add(new EditableField
                     {
@@ -129,7 +130,7 @@ namespace d360.web.Controllers
                         FieldName = "ParentUID",
                         Name = $"Parent {pluralize.Singularize(parentType.Name)}",
                         FieldType = DataType.Lookup.ToString(),
-                        Value = ((parent != null) ? (parent.uid.ToString() ?? "").ToLower() : ""),
+                        Value = (parent != null) ? (parent.uid.ToString() ?? "").ToLower() : "",
                         Items = parents,
                         VirtualScroll = parents.Count > 9,
                         ItemSize = 20,
@@ -139,8 +140,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            list = (
-                loadDynamicFields(
+            list = loadDynamicFields(
                     obj.ToString(),
                     id,
                     list,
@@ -148,8 +148,7 @@ namespace d360.web.Controllers
                     Company.GetFieldRelationsByObject(obj, id).ToList(),
                     2,
                     loadOnlySelectedLookupValue: true
-                )
-            );
+                );
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -168,9 +167,11 @@ namespace d360.web.Controllers
                 var model = new AssetTypeEditorModel();
 
                 Guid? parentUid = null;
+                
                 if (parentID.HasValue && parentID > 0)
                 {
                     var parentAssetType = Company.Query<AssetType>("select * from AssetType where class = @class and ObjectID = @parentID", new { @class, parentID }).FirstOrDefault();
+                    
                     if (parentAssetType != null)
                     {
                         parentUid = parentAssetType.uid;
@@ -180,9 +181,9 @@ namespace d360.web.Controllers
                 var loadPredicates = false;
                 var parentPredicateType = PredicateType.InterTypeHierarchy;
                 var loadParentReferenceItemOptions = false;
-
                 var ot = SystemObjects.ArtifactType;
                 var appendTitle = "";
+
                 switch (@class)
                 {
                     case AssetTypeClass.BusinessAsset:
@@ -243,9 +244,9 @@ namespace d360.web.Controllers
                             Notes = assetType.Notes,
                             IconStyle = new IconStyleInsert()
                             {
-                                ForeColor = ((style != null) ? style.IconForeColor : "#FFF"),
-                                BackColor = ((style != null) ? style.IconBackColor : "#000"),
-                                Icon = ((style != null) ? style.Icon : null)
+                                ForeColor = (style != null) ? style.IconForeColor : "#FFF",
+                                BackColor = (style != null) ? style.IconBackColor : "#000",
+                                Icon = (style != null) ? style.Icon : null
                             },
                             Hierarchy = new HierarchyInsert()
                             {
@@ -322,7 +323,6 @@ namespace d360.web.Controllers
                             i.Predicate.Type == parentPredicateType
                         ).FirstOrDefault();
 
-
                         if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference) //If model or policy you must always have a predicate to load.
                         {
                             loadPredicates = true;
@@ -342,7 +342,6 @@ namespace d360.web.Controllers
                                 model.AssetType.ParentUid = parentAssetType.uid;
                             }
 
-
                             model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
@@ -353,7 +352,6 @@ namespace d360.web.Controllers
 
                     model = new AssetTypeEditorModel()
                     {
-
                         AssetType = new AssetTypeUpsert()
                         {
                             DisplayFormat = "{Name}",
@@ -375,14 +373,13 @@ namespace d360.web.Controllers
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };
 
-
-
                     if (@class == AssetTypeClass.Reference)
                     {
                         model.AssetType.DisplayFormat = "{Code}";
                         model.Tokens.Clear(); // remove the name token for reference item type it isnt created by default.
                         model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                     }
+
                     model.FormName = string.Format(FormInfo.Edit_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
                 }

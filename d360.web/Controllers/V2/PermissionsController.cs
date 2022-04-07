@@ -3,21 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web.Http;
-using d360.core;
+
 using d360.core.entities;
+using d360.core.entities.Permissions;
 using d360.core.enums;
-using d360.extensions;
-using d360.model;
+using d360.core.resources;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+
 using Microsoft.Web.Http;
+
 using Swashbuckle.Swagger.Annotations;
-using d360.core.resources;
-using d360.core.entities.Permissions;
 
 namespace d360.web.Controllers.V2
 {
@@ -33,12 +32,14 @@ namespace d360.web.Controllers.V2
     public class PermissionsController : BaseV2ApiController
     {
         #region DI
-        IAssetRepository AssetRepository;
 
-        public PermissionsController(ICoreComponentSet set, IAssetRepository repository): base(set)
+        private readonly IAssetRepository AssetRepository;
+
+        public PermissionsController(ICoreComponentSet set, IAssetRepository repository) : base(set)
         {
             AssetRepository = repository;
         }
+
         #endregion
 
         /// <summary>
@@ -59,7 +60,7 @@ namespace d360.web.Controllers.V2
         {
             Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
-            if(asset != null)
+            if (asset != null)
             {
                 if (SupportsPermissions(asset.AssetType.Class))
                 {
@@ -70,18 +71,17 @@ namespace d360.web.Controllers.V2
                         permissions.Add(Permission.ReadAsset.GetPermissionInfo());
                     }
 
-                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions)));
+                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions))).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, String.Format(Permissions.Permissions_Not_Supported)));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.Permissions_Not_Supported))).ConfigureAwait(false);
                 }
             }
             else
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, String.Format(Permissions.UID_not_Found, "Asset")));
+                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "Asset"))).ConfigureAwait(false);
             }
-
         }
 
         /// <summary>
@@ -101,23 +101,24 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetAssetTypePermissionsByUid(Guid assetTypeUid)
         {
             AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
             if (assetType != null)
             {
                 if (SupportsPermissions(assetType.Class))
                 {
                     List<PermissionInfo> permissions = Company.GetTypePermissions(assetType.Object, assetType.ObjectID);
 
-                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions)));
+                    return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions))).ConfigureAwait(false);
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, String.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name)));
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, string.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name))).ConfigureAwait(false);
                 }
 
             }
             else
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, String.Format(Permissions.UID_not_Found, "AssetType")));
+                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(Permissions.UID_not_Found, "AssetType"))).ConfigureAwait(false);
             }
         }
 
@@ -132,6 +133,7 @@ namespace d360.web.Controllers.V2
             List<PermissionInfo> permissions = Permission.DeleteAsset.GetList();
 
             Dictionary<string, bool> permissionsList = new Dictionary<string, bool>();
+
             // mark true for any matching entries in the passed permissions list.
             bool isAdmin = Company.CurrentResourceIsAdmin;
             permissions.ForEach(p =>
@@ -150,7 +152,7 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns true if permissions are supported</returns>
         private bool SupportsPermissions(AssetTypeClass assetTypeClass)
         {
-            if(new[] { AssetTypeClass.Generic, AssetTypeClass.Organization, AssetTypeClass.User, AssetTypeClass.Group }.Contains(assetTypeClass))
+            if (new[] { AssetTypeClass.Generic, AssetTypeClass.Organization, AssetTypeClass.User, AssetTypeClass.Group }.Contains(assetTypeClass))
             {
                 return false;
             }
@@ -160,5 +162,4 @@ namespace d360.web.Controllers.V2
             }
         }
     }
-
 }

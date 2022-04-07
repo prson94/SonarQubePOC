@@ -1,28 +1,27 @@
-﻿using d360.core.exceptions;
-using d360.model;
-using d360.model.DataAccessLayer;
-using d360.web.Models;
-using Microsoft.Web.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 
+using d360.core.exceptions;
+using d360.web.Models;
+
+using Microsoft.Web.Http;
+
 namespace d360.web.Controllers.V2
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
     [
-    ApiVersion("2.0"),
-    RoutePrefix("api/v{version:apiVersion}/errors"), Authorize
+        ApiExplorerSettings(IgnoreApi = true),
+        ApiVersion("2.0"),
+        RoutePrefix("api/v{version:apiVersion}/errors"), Authorize
     ]
     public class ErrorsController : BaseV2ApiController
     {
         #region DI
 
-        public ErrorsController(CoreComponentSet set): base(set)
+        public ErrorsController(CoreComponentSet set) : base(set)
         {
 
         }
@@ -41,10 +40,13 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                IDictionary<string, string> properties = new Dictionary<string, string>();
-                properties.Add("name", model.Name);
-                properties.Add("stacktrace", model.Stack);
-                this.SendException(new ClientSideException(model.Message), properties);
+                IDictionary<string, string> properties = new Dictionary<string, string>
+                {
+                    { "name", model.Name },
+                    { "stacktrace", model.Stack }
+                };
+                SendException(new ClientSideException(model.Message), properties);
+
                 return Request.CreateResponse(HttpStatusCode.OK);
             }
             catch (Exception ex)
@@ -52,6 +54,7 @@ namespace d360.web.Controllers.V2
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
         }
+
         #endregion
     }
 }

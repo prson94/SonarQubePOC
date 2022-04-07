@@ -1,37 +1,38 @@
-﻿using d360.core.entities;
-using d360.model;
-using d360.web.Models;
-using d360.web.Filters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
-using Microsoft.Web.Http;
-using Swashbuckle.Swagger.Annotations;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Description;
+
+using d360.core.entities;
+using d360.web.Filters;
+using d360.web.Models;
+
+using Microsoft.Web.Http;
+
 using Resources;
-using d360.model.DataAccessLayer;
+
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
     [
-    ApiVersion("2.0"),
-    RoutePrefix("api/v{version:apiVersion}/customendpoints"),
-    Authorize
-]
+        ApiExplorerSettings(IgnoreApi = true),
+        ApiVersion("2.0"),
+        RoutePrefix("api/v{version:apiVersion}/customendpoints"),
+        Authorize
+    ]
     public class CustomEndpointsController : BaseV2ApiController
     {
-
         #region DI
 
-        public CustomEndpointsController(CoreComponentSet set): base(set)
+        public CustomEndpointsController(CoreComponentSet set) : base(set)
         {
-
         }
+
         #endregion
 
         /// <summary>
@@ -40,13 +41,13 @@ namespace d360.web.Controllers.V2
         /// <param name="versionId">End Point Version Id</param>
         /// <returns>The field types</returns>
         [
-              HttpGet,
-              Route("Version/FieldEditor/FieldTypes"),
-              SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-              SwaggerResponse(HttpStatusCode.OK, "A list of Field types"),
-              SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-              SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-          ]
+            HttpGet,
+            Route("Version/FieldEditor/FieldTypes"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of Field types"),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetFieldTypes(int versionId)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -58,16 +59,15 @@ namespace d360.web.Controllers.V2
 
             if (entity == null)
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound,ApiMessages.ApiEntryNotFound)).ConfigureAwait(false);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.ApiEntryNotFound)).ConfigureAwait(false);
             }
 
             var fieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList();
-     
-            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fieldTypes))).ConfigureAwait(false);
 
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fieldTypes))).ConfigureAwait(false);
         }
 
-        
+
         /// <summary>
         /// Gets the lookupFields for a fieldtypeID
         /// </summary>
@@ -84,7 +84,9 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetLookupFields(int fieldTypeId)
         {
             if (!Company.CurrentResourceIsAdmin)
+            {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
+            }
 
             var fieldType = Company.GetById<FieldType>(fieldTypeId);
 
@@ -93,23 +95,17 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ApiMessages.FieldTypeNotFound)).ConfigureAwait(false);
             }
 
-
             if (!fieldType.AllowMultipleValues || fieldType.LookupObjectType != "ReferenceItem")
             {
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new List<System.Web.Mvc.SelectListItem>()))).ConfigureAwait(false);
             }
-
-
 
             var fields = Company.FieldTypes
                 .Where(f => f.Object == "ReferenceItemType" && f.ObjectID == fieldType.LookupObjectID)
                 .Select(i => new System.Web.Mvc.SelectListItem { Text = i.FriendlyName, Value = i.ID.ToString() })
                 .ToList();
 
-
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fields))).ConfigureAwait(false);
-
-
         }
 
         /// <summary>
@@ -152,7 +148,6 @@ namespace d360.web.Controllers.V2
                 .ToList();
 
             var selectedFields = multiSelectFieldTypes.Where(i => multiSelectRecords.Contains(i.Value)).ToList();
-
             var fieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList();
 
             var Data = new
@@ -163,11 +158,8 @@ namespace d360.web.Controllers.V2
                 selectedFields
             };
 
-
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, Data))).ConfigureAwait(false);
-
         }
-
 
         /// <summary>
         /// Adds a given  field type based on the specific field type
@@ -175,17 +167,17 @@ namespace d360.web.Controllers.V2
         /// <param name="model">API Entity Field Type</param>
         /// <returns>An HTTP status code and newly added field type</returns>
         [
-    HttpPost,
-    Route("Version/FieldEditor/Field"),
-    SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-   SwaggerResponse(HttpStatusCode.OK, "API Entity Field Type", typeof(ApiEntityFieldType)),
-    SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-]
-
+            HttpPost,
+            Route("Version/FieldEditor/Field"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "API Entity Field Type", typeof(ApiEntityFieldType)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+        ]
         public async Task<IHttpActionResult> AddCustomAPIVersionField(ApiEntityFieldType model)
         {
             var prefix = "CustomEndPoints.AddCustomAPIVersionField => ";
+
             if (!Company.CurrentResourceIsAdmin)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.ForbiddenUserNotAuthorizedMessage)).ConfigureAwait(false);
@@ -215,7 +207,7 @@ namespace d360.web.Controllers.V2
 
                     if (existing == null)
                     {
-                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound,ApiMessages.ApiEntryNotFound));
+                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, ApiMessages.ApiEntryNotFound));
                     }
 
                     var existingMultiSelect = Company.ApiEntityFieldTypeMultiSelectFields.Where(i => i.EntityFieldTypeID == model.ID).ToList();
@@ -235,9 +227,10 @@ namespace d360.web.Controllers.V2
                     {
                         Company.ApiEntityFieldTypeMultiSelectFields.AddRange(model.MultiSelectFields);
                     }
+
                     Company.SaveChanges();
-                    
                 }
+
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -250,10 +243,6 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
-
-           
-
         }
-
     }
 }

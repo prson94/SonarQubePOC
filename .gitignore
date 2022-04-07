@@ -56,7 +56,6 @@
 /d360.web/Scripts/app/*.map
 /d360.web/Scripts/app/*.js
 /d360.web/Content/quill/v1.3.4/*.min.css
-/d360.web/Content/primeng/v7.1.3/*.min.css
 /d360.web/Content/styles/typeahead.min.css
 /d360.web/Content/styles/typeahead.css
 /d360.web/Content/styles/selectlistinfoitem.css
@@ -90,11 +89,11 @@
 /d360.web/Scripts/dist/*.map
 /d360.web/App_Data
 /d360.web/Content/quill/v1.3.7/quill.snow.min.css
-/d360.web/Content/primeng/v12.0.2/theme.min.css
-/d360.web/Content/primeng/v12.0.2/theme.css
-/d360.web/Content/primeng/v12.0.2/primeng.min.css
-/d360.web/Content/primeng/v12.0.2/default.min.css
-/d360.web/Content/primeng/v12.0.2/default.css
+/d360.web/Content/primeng/theme.min.css
+/d360.web/Content/primeng/theme.css
+/d360.web/Content/primeng/primeng.min.css
+/d360.web/Content/primeng/default.min.css
+/d360.web/Content/primeng/default.css
 /d360.web/Scripts/lib
 
 
@@ -113,3 +112,5 @@
 /d360.web/Scripts/dist/en
 /d360.web/Scripts/dist/en-gb
 /DBUpdateScripts/EnvironmentDb/liquibase.properties
+/d360.web/.vscode/**
+/d360.web/Content/primeng/v12.0.2

@@ -366,6 +366,18 @@ namespace d360.extensions
         }
     }
 
+    public class SearchServerConnectionException : Exception
+    {
+        public string Server { get; set; }
+        public string Index { get; set; }
+        public SearchServerConnectionException(Exception ex, string server, string index)
+            : base("Cannot connect to Search Server.", ex)
+        {
+            Server = server;
+            Index = index;
+        }
+    }
+
     public class SearchResultsException : Exception
     {
         public SearchResultsException(Exception ex)

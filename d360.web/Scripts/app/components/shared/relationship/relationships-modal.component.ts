@@ -1,11 +1,10 @@
-﻿import {Component, Input, OnInit, OnDestroy, EventEmitter, Output, ViewChild} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../../shared/base.component';
-import {PermissionsService} from '../../../services/permissions.service';
-import {ObjectDetailService} from '../../../services/object-detail.service';
+﻿import { Component, Input, OnInit, OnDestroy, EventEmitter, Output, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../../shared/base.component';
+import { PermissionsService } from '../../../services/permissions.service';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ObjectRelationshipsComponent } from './object-relationships.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 /* FIXME: Extract templates and styles to their own files
@@ -16,26 +15,21 @@ import { CompanySettingsService } from '../../../services/settings.service';
     providers: [PermissionsService, ObjectDetailService]
 })
 
-export class RelationshipsModalComponent extends BaseComponent implements OnInit, OnDestroy {
+export class RelationshipsModalComponent extends BaseComponent implements OnDestroy {
     private sub: any;
 
-    @Input() objectID: number;
-    @Input() objectType: string;
+    @Input() assetUid: number;
+    @Input() assetTypeUid: string;
     @Input() isModalVisible: boolean = false;
     @Input() subtitle: string;
     @Output() onClose = new EventEmitter;
 
-
-    @ViewChild(ObjectRelationshipsComponent, { static: false }) private relationComponent: ObjectRelationshipsComponent;  
-
     componentTitle: string = 'Relationships';
-    
+
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private permissionsService: PermissionsService,
-        private objectDetailService: ObjectDetailService,
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         breadcrumbService: HeaderBreadcrumbService
@@ -49,18 +43,7 @@ export class RelationshipsModalComponent extends BaseComponent implements OnInit
         this.cancel();
     }
 
-    ngOnInit() {    
-            this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-    }
-
-    closeRelationshipComponent() {
-        if (this.relationComponent) {
-            this.relationComponent.ngOnDestroy();
-        }
-    }
-
     cancel() {
-        this.closeRelationshipComponent();
         this.isModalVisible = false;
         this.onClose.emit(null);
     }

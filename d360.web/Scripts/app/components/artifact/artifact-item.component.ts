@@ -22,6 +22,7 @@ import { CompanySettingEnum } from '../../models/settings.model';
 import { AssetDetailClickType, LinkClickInterceptor } from '../../services/href-click-service';
 import { AssetService } from '../../services/asset.service';
 import { SemanticType } from '../../models/semantic-type.model';
+import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 
 declare var CurrentResourceID;
 
@@ -51,6 +52,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
     selectedTag: any;
     semanticType: SemanticType;
     secondarySidePanelOpen: boolean;
+    secondarySidePanel: string = 'detail';
+    resourceUid: string;
 
     constructor(
         private route: ActivatedRoute,
@@ -64,7 +67,8 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
         private dataProfileService: DataProfileService,
         protected settingsService: CompanySettingsService,
         private linkClickInterceptor: LinkClickInterceptor,
-        private assetService: AssetService
+        private assetService: AssetService,
+        private featureFlagService: FeatureFlagsService
     ) {
         super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
     }
@@ -119,25 +123,26 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
                     this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
+                    if (this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+                        this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
+                            (r) => {
+                                if (r && r.items && r.items.length > 0) {
+                                    this.dataProfile = r.items[0];
 
-                    this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
-                        (r) => {
-                            if (r && r.items && r.items.length > 0) {
-                                this.dataProfile = r.items[0];
+                                    forkJoin(
+                                        this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+                                        this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+                                    ).subscribe((res) => {
+                                        this.dataProfile['matches'] = {
+                                            structure: res[0],
+                                            data: res[1]
+                                        };
+                                    });
 
-                                forkJoin(
-                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                                    this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                                ).subscribe((res) => {
-                                    this.dataProfile['matches'] = {
-                                        structure: res[0],
-                                        data: res[1]
-                                    };
-                                });
-
-                                this.showDataProfile = true;
-                            }
-                        });
+                                    this.showDataProfile = true;
+                                }
+                            });
+                    }
                 },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
@@ -159,6 +164,17 @@ export class ArtifactItemComponent extends AssetGridBaseComponent implements OnI
 
     secondaryPanelOpen(event: any) {
         this.secondarySidePanelOpen = true;
-        this.semanticType = event.semanticType;
-    }
+        if (event) {
+            if (event.resourceUid) {
+                this.secondarySidePanel = "user";
+                this.resourceUid = event.resourceUid;
+            }
+            if (event.semanticType) {
+                this.secondarySidePanel = "detail";
+                this.semanticType = event.semanticType;
+            }
+        } else {
+            this.secondarySidePanel = "status";
+        }
+    }  
 }

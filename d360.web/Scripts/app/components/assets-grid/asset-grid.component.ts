@@ -42,6 +42,7 @@ import { CompanySettingsService } from "../../services/settings.service";
 import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.component";
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
+import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -140,7 +141,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private gridDefinitionService: GridDefinitionService,
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private featureFlagService: FeatureFlagsService
     ) {
         super(settingsService);
 
@@ -175,7 +177,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage as number;
+            if (typeof rowsPerPage === 'number') {
+                this.rowsPerPage = rowsPerPage;
+            }
         });
     }
 
@@ -284,8 +288,10 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
                 this.scoreAllocations = result.ScoreAllocations;
-                this.hasProfiling = result.HasProfiling;
-                this.hasProfilingChange.emit(this.hasProfiling);
+                if (this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+                    this.hasProfiling = result.HasProfiling;
+                    this.hasProfilingChange.emit(this.hasProfiling);
+                }
 
                 statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
 

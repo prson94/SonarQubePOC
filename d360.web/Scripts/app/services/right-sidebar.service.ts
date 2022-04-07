@@ -221,6 +221,10 @@ export class SecondaryNavService {
         return artifactTypeId;
     }
 
+    setArtifactTypeId(params: Params): void {
+        this.artifactTypeId = this.getArtifactTypeIdFromRouteParams(params);
+    }
+
     resetSecondaryNavActiveItem(): void {
         this.resetSecondaryNavActiveTab();
         this.resetSecondaryNavActiveArtifact();

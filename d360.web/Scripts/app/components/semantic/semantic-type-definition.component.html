@@ -6,9 +6,48 @@
                 <div class="tile tile-detail main-panel">
                     <div *ngIf="!isLoading" style="padding: 16px 11px 6px 11px">
                         <semantic-detail [qualifier]="semanticType.qualifier"
-                                         [semanticType]="semanticType"></semantic-detail>
+                                         [semanticType]="semanticType"
+                                         (linkClicked)="handleLinkClick($event)"></semantic-detail>
                     </div>
-                </div>                
+                </div>  
+                <div class="tile tile-detail side-panel" *ngIf="!isLoading">
+                    <side-panel (expandedChange)="sidePanelOpen=$event"
+                                (selectedPanelChange)="sidePanelTab=$event"
+                                [expanded]="sidePanelOpen"
+                                [panelApplies]="'true'"
+                                [storageKey]="sidePanelStorageKey"
+                                [selectedPanel]="'detail'"
+                                hasDetail="true">
+                        <ng-container *ngIf="sidePanelOpen && sidePanelLoading">
+                            <d3s-loading [isLoading]="true"></d3s-loading>
+                        </ng-container>
+                        <ng-container *ngIf="sidePanelOpen">
+                            <div class="empty-overlay" *ngIf="!resourceUid && sidePanelTab === 'detail'">
+                                <div class="content">
+                                    <div class="icon-holder">
+                                        <i class="fa fa-info-circle"></i>
+                                    </div>
+                                    <span>Click a link or a tag to display the properties of a referenced item</span>
+                                </div>
+                            </div>
+                            <ng-container *ngIf="resourceUid && sidePanelTab === 'detail'">
+                                <ig-asset-detail [objectUID]="resourceUid"
+                                                 [objectType]="'Resource'"
+                                                 [useAccordion]="true"
+                                                 [shouldBePadded]="true"
+                                                 [showHeader]="true"
+                                                 [showHeaderLine]="false"
+                                                 [spacerHeight]="'16px'"
+                                                 [tooltipAlign]="'left'"
+                                                 [isSidePanel]="true"
+                                                 [interceptLinkClick]="true"></ig-asset-detail>
+                            </ng-container>
+                            <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'status'">
+                                <semantic-status-detail></semantic-status-detail>
+                            </ng-container>
+                        </ng-container>                        
+                    </side-panel>
+                </div>
             </div>    
         </div>
     </div>    

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace d360.model.workflow
@@ -13,12 +9,14 @@ namespace d360.model.workflow
 
         internal static WorkflowFormFormModel ParseXml(XElement form)
         {
-            var model = new WorkflowFormFormModel();
-            model.Fields = new List<WorkflowFormFieldModel>();
+            WorkflowFormFormModel model = new WorkflowFormFormModel
+            {
+                Fields = new List<WorkflowFormFieldModel>()
+            };
 
-            var fields = form.Elements("field");
-            
-            foreach (var field in fields)
+            IEnumerable<XElement> fields = form.Elements("field");
+
+            foreach (XElement field in fields)
             {
                 model.Fields.Add(
                         new WorkflowFormFieldModel

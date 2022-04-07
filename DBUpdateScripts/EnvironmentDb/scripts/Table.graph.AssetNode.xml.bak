@@ -1,0 +1,118 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.graph.AssetNode-v7">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'graph' AND TABLE_NAME = 'AssetNode')
+BEGIN
+	CREATE TABLE [graph].[AssetNode](
+		[ID] [bigint] NOT NULL,
+		[Uid] [uniqueidentifier] NOT NULL,
+		[AssetTypeID] [int] NOT NULL,
+		[AssetTypeUid] [uniqueidentifier] NOT NULL,
+		[Properties] [xml] NULL,
+		[Path] [nvarchar](2500) NULL,
+		[Segments] [xml] NULL,
+		[State] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[Class] [int] NULL,
+		[DisplayPath]  AS ([graph].[GetPath]([Segments],' > ',' / ')) PERSISTED,
+		[KeyPath]  AS ([graph].[GetKeyPath]([Segments])) PERSISTED,
+		CONSTRAINT [PK_GraphAssetNode] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+	AS NODE
+END
+
+IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'ReformattedSegments')
+BEGIN
+	alter table graph.AssetNode drop column ReformattedSegments
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'DisplayPath')
+BEGIN
+	alter table graph.AssetNode add [DisplayPath] AS ([graph].[GetPath]([Segments],' > ',' / ')) PERSISTED
+END
+
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'KeyPath')
+BEGIN
+	alter table graph.AssetNode add [KeyPath] AS ([graph].[GetKeyPath]([Segments])) PERSISTED
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.graph.AssetNode-Indexes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode] ON [graph].[AssetNode] ( [UpdatedOn] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_AssetTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_AssetTypeID] ON [graph].[AssetNode] ( [AssetTypeID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_Class')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_Class] ON [graph].[AssetNode] ( [Class] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_Id')
+BEGIN
+	CREATE UNIQUE NONCLUSTERED INDEX [IX_GraphAssetNode_Id] ON [graph].[AssetNode] ( $node_id )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_Uid] ON [graph].[AssetNode] ( [Uid] ASC )
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_Segments_Primary')
+BEGIN
+	CREATE PRIMARY XML INDEX [IX_XML_GraphAssetNode_Segments_Primary] ON [graph].[AssetNode] ( [Segments] )
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_Segments_Path')
+BEGIN
+	CREATE XML INDEX [IX_XML_GraphAssetNode_Segments_Path] ON [graph].[AssetNode] ( [Segments] ) USING XML INDEX [IX_XML_GraphAssetNode_Segments_Primary] FOR PATH WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_DisplayPath')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_DisplayPath] ON [graph].[AssetNode] ( [DisplayPath] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNode_KeyPath')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetNode_KeyPath] ON [graph].[AssetNode] ( [KeyPath] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+
+
+</databaseChangeLog>

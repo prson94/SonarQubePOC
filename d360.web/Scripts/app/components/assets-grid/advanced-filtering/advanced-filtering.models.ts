@@ -33,7 +33,7 @@ export class FieldTypeAPIModelFieldAdvancedCondition extends FieldTypeAPIModelFi
 
     IsOwnerField?: boolean = false;
 
-    constructor(data: WithOptional<FieldTypeAPIModelFieldAdvancedCondition, "AssetTypeUid" | "ValueLoader" | "IsOwnerField" | "IsSystemField" | "IsRelationship">) {
+    constructor(data: WithOptional<FieldTypeAPIModelFieldAdvancedCondition, "AssetTypeUid" | "ValueLoader" | "IsOwnerField" | "IsSystemField" | "IsRelationship" | "RelationshipTypeUid">) {
         super();
         Object.assign(this, data);
     }
@@ -334,7 +334,7 @@ export class AdvancedFilterFieldCondition {
                     let arr = value
                         .map((v: SelectItem) =>
                             _.escape(v.title.split(chevronHtml).join(placeholder)).split(placeholder).join(chevronHtml)
-                    );
+                        );
 
                     if (arr.length === 1) {
                         return arr[0];
@@ -499,6 +499,7 @@ export class AdvancedFilterFieldConditionCollection {
         this.allocations = allocations;
         var f = new Filters();
         f.filter = this.getQueryStringValue();
+        f.data = _.cloneDeep(this.filters);
         return f;
     }
 
@@ -506,6 +507,7 @@ export class AdvancedFilterFieldConditionCollection {
         if (this.filters.length === 0) {
             return "";
         }
+        const lenghtOfTheGuid = 36;
         let queries: string[] = [];
         let valuesArr: any[];
         this.filters.filter((x) => x.field && x.operator && x.markForDeletion !== true).forEach((cond) => {
@@ -524,8 +526,12 @@ export class AdvancedFilterFieldConditionCollection {
 
                 valuesArr.filter((v) => v.value !== "").forEach((r) => {
                     if (cond.field === SystemFields.OwnedByFieldCode) {
-                        if ((r.value as string).length === 36) {
+                        if ((r.value as string).length === lenghtOfTheGuid) {
                             subConditions.push(cond.getCopyWithNewValue(r.value));
+                        } else if ((r.value as string).length > lenghtOfTheGuid) {
+                            let ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value)
+                            ownerAndResponsibilitySubCondition.field = "$OwnedByAndResponsibility";
+                            subConditions.push(ownerAndResponsibilitySubCondition);
                         }
                     }
                     else {
@@ -654,6 +660,7 @@ export class AdvancedFilterFieldConditionCollection {
 
 export class Filters {
     filter: string = "";
+    data: any;
 
     public applyFilters(params: any) {
         delete params["_filter"];

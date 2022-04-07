@@ -1,20 +1,19 @@
-﻿using d360.core.enums;
-using d360.model;
-using d360.web.caching;
-using Microsoft.Owin;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
+using d360.core.enums;
+
+using Microsoft.Owin;
+
 namespace d360.web
 {
     public class CorsMiddleware : BaseMiddleware
     {
-        Func<IDictionary<string, object>, Task> _next;
-        const string OriginKey = "AllowedOrigins";
+        private readonly Func<IDictionary<string, object>, Task> _next;
+
         public CorsMiddleware(Func<IDictionary<string, object>, Task> next)
         {
             _next = next;
@@ -69,12 +68,6 @@ namespace d360.web
             }
 
             await _next.Invoke(environment);
-        }
-
-        private class CompanyOrigin
-        {
-            public int CompanyID { get; set; }
-            public string Origins { get; set; }
         }
     }
 }

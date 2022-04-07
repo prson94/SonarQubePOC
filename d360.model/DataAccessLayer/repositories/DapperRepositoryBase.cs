@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using d360.core;
 using d360.core.entities;
 using d360.model.helpers;
 using d360.model.helpers.filters;
+
 using Dapper;
 
 namespace d360.model.DataAccessLayer.repositories
@@ -25,10 +27,26 @@ namespace d360.model.DataAccessLayer.repositories
             var offset = "";
             if (pageSize > 0 || pageNumber > 0)
             {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNumber < 1) pageNumber = 1;
-                if (pageSize > pageSizeLimit) pageSize = pageSizeLimit;
-                if (pageNumber > 10000) pageNumber = 10000;
+                if (pageSize < 1)
+                {
+                    pageSize = 1;
+                }
+
+                if (pageNumber < 1)
+                {
+                    pageNumber = 1;
+                }
+
+                if (pageSize > pageSizeLimit)
+                {
+                    pageSize = pageSizeLimit;
+                }
+
+                if (pageNumber > 10000)
+                {
+                    pageNumber = 10000;
+                }
+
                 offset = $"OFFSET {pageSize * (pageNumber - 1)} ROWS FETCH NEXT {pageSize} ROWS ONLY";
             }
 
@@ -44,11 +62,6 @@ namespace d360.model.DataAccessLayer.repositories
         {
             var dir = orderBy.Direction == OrderByDirectionEnum.Ascending ? "ASC" : "DESC";
             return $"{orderBy.ColumnName} {dir}";
-        }
-
-        protected string CreateOrderBySql(OrderByModel orderBy)
-        {
-            return $"ORDER BY {ConvertOrderByModel(orderBy)}";
         }
 
         protected string ValidateOrderByColumnName(string columnName, IEnumerable<DefaultFilter> knownFilters)
@@ -67,7 +80,8 @@ namespace d360.model.DataAccessLayer.repositories
             IReadOnlyList<string> whereStatementList,
             IReadOnlyList<OrderByModel> orderByList,
             int pageNum,
-            int pageSize
+            int pageSize,
+            int? commandTimeout = 30
         )
         {
             Preconditions.NotNull(whereStatementList, nameof(whereStatementList));
@@ -81,7 +95,7 @@ namespace d360.model.DataAccessLayer.repositories
             var query = $"select count(1) from ({source}) A {whereSql};" +
                         $"select * from ({source}) A {whereSql} {orderBySql} {offsetSql};";
 
-            var reader = await QueryComposer.QueryMultipleAsync(query, dynamicParameters, 30);
+            var reader = await QueryComposer.QueryMultipleAsync(query, dynamicParameters, commandTimeout);
             result.total = await reader.ReadSingleAsync<int>();
             result.pageNum = pageNum;
             result.pageSize = pageSize;
@@ -94,7 +108,8 @@ namespace d360.model.DataAccessLayer.repositories
             string source,
             SqlMapper.IDynamicParameters dynamicParameters,
             IReadOnlyList<string> whereStatementList,
-            IReadOnlyList<OrderByModel> orderByList
+            IReadOnlyList<OrderByModel> orderByList,
+            int? commandTimeout = 30
         )
         {
             Preconditions.NotNull(whereStatementList, nameof(whereStatementList));
@@ -105,7 +120,7 @@ namespace d360.model.DataAccessLayer.repositories
 
             var query = $"select * from ({source}) A {whereSql} {orderBySql}";
 
-            var result = await QueryComposer.QueryListAsync<T>(query, dynamicParameters, 30);
+            var result = await QueryComposer.QueryListAsync<T>(query, dynamicParameters, commandTimeout);
 
             return result;
         }

@@ -20,7 +20,10 @@ declare var CurrentResourceID;
 @Component({
     selector: 'ig-asset-detail',
     templateUrl: './asset-detail.component.html',
-    providers: [ObjectDetailService, AssetService, ProcessService]
+    providers: [ObjectDetailService, AssetService, ProcessService],
+    host: {
+        "(document:click)": "clickedOutside($event)",
+    }, 
 })
 
 
@@ -43,12 +46,21 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     @Input() useAssetDetailColumnDefinition: boolean = false;
     @Input() synonymPermission: SynonymPermission;
     @Input() hasEditLink: boolean = false;
+    @Input() hasOpenLink: boolean = true;
     @Input() interceptLinkClick: boolean = false;
     @Input() assetDetail: any;
     @Input() hideLinks: boolean = false;
     @Input() hideClassName: boolean = false;
     @Input() groupMembersReadOnlyMode: boolean = true;
+    @Input() showOnlyFields: Set<string> = null;
+
+    //if relationshipUid is sent we need to show both relationship data and related asset data
+    @Input() relationshipUid: string = '';
+    //baseAssetUid is used to determine on which side is our relationship
+    @Input() baseAssetUid: string = '';
+
     @Output() onEditClick = new EventEmitter();
+    @Output() close = new EventEmitter();
 
     assetUID: string;
     assetTypeUID: string;
@@ -122,27 +134,14 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             }
 
             if (this.objectType && this.objectUID) {
-                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition, this.baseAssetUid);
             }
         }
 
-        if (this.objectType === 'Resource') {
-            this.tab = 'detail';
-            this.useAccordion = false;
-            if (this.loadGroupSub) {
-                this.loadGroupSub.unsubscribe();
-            }
-            this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
-                .subscribe((res) => {
-                    this.userGroups = res.items;
-                });
 
-            this.hideLinks = !this.isAdmin;
-        }
 
-        if (this.objectType === 'Group' && updateTab) {
-            this.tab = 'members';
-            this.hideLinks = !this.isAdmin;
+        if (this.relationshipUid) {
+            this.tab = 'relationship';
         }
 
         if (detailSub) {
@@ -150,9 +149,29 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             detailSub
                 .subscribe((data) => {
                     this.model = data;
-                    this.rows = data.rows;
+                    this.rows = this.getRowsWithOnlyFilteredFields(data.rows);
                     this.objectID = data.ObjectID;
                     this.objectType = data.Object;
+
+                    if (this.objectType === 'Resource') {
+                        this.tab = 'detail';
+                        this.useAccordion = false;
+                        if (this.loadGroupSub) {
+                            this.loadGroupSub.unsubscribe();
+                        }
+                        this.loadGroupSub = this.resourceService.getUserGroups(this.objectUID)
+                            .subscribe((res) => {
+                                this.userGroups = res.items;
+                            });
+
+                        this.hideLinks = !this.isAdmin;
+                    }
+
+                    if (this.objectType === 'Group' && updateTab) {
+                        this.tab = 'members';
+                        this.hideLinks = !this.isAdmin;
+                    }
+
                     this.categories = [];
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category == null || this.rows[i].Category === "" || this.rows[i].Category === this.noCategory) {
@@ -220,6 +239,31 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                     this.isLoading = false;
                     this.cdRef.markForCheck();
                 });
+        }
+    }
+
+    private getRowsWithOnlyFilteredFields(rows: DetailRow[]): DetailRow[] {
+        if (this.showOnlyFields == null) {
+            return rows;
+        }
+
+        return rows
+            .map((row) => ({
+                ...row,
+                FirstColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.FirstColumnFields),
+                SecondColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.SecondColumnFields)
+            }))
+            .filter((row) => 
+                ((row.FirstColumnFields?.length ?? 0) > 0)
+                || ((row.SecondColumnFields?.length ?? 0) > 0)
+            );
+
+        function getOnlyFilteredFields(allowedFields: Set<string>, fields: DetailField[] | null): DetailField[] {
+            if (fields == null) {
+                return null;
+            }
+
+            return fields.filter((f) => allowedFields.has(f.FieldName));
         }
     }
 
@@ -417,15 +461,15 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     get showOwnershipTab(): boolean {
-        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task';
+        return this.objectType !== 'Resource' && this.objectType !== 'Group' && this.objectType !== 'Task' && !this.relationshipUid;
     }
 
     get showGroupTab(): boolean {
-        return this.objectType === 'Resource';
+        return this.objectType === 'Resource' && !this.relationshipUid;
     }
 
     get showMemberTab(): boolean {
-        return this.objectType === 'Group';
+        return this.objectType === 'Group' && !this.relationshipUid;
     }
 
     memberClicked($event, data) {
@@ -439,6 +483,12 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
         if (this.interceptLinkClick) {
             this.linkClickInterceptor.sendEvent($event, data, "asset/" + data.Uid);
             return;
+        }
+    }
+
+    clickedOutside(event: any) {
+        if (!(event.path.filter((f) => f?.classList?.contains("secondary-side-panel")).length > 0)) {
+            this.close.emit();
         }
     }
 }

@@ -1,11 +1,12 @@
-﻿using d360.core.entities;
-using d360.core.enums;
-using d360.model.helpers.filters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using d360.core.entities;
+using d360.core.enums;
+using d360.model.helpers.filters;
 
 namespace d360.model.helpers
 {
@@ -14,12 +15,12 @@ namespace d360.model.helpers
         private readonly IFilterDataProvider dataProvider;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
-        private List<int> filteredFieldIDs = new List<int>();
-        private FilterExpressionParseType parseType;
-        private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
-        private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        private readonly List<int> filteredFieldIDs = new List<int>();
+        private readonly FilterExpressionParseType parseType;
+        private readonly List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
+        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
-        private bool registerTokensAsFields = false;
+        private readonly bool registerTokensAsFields;
 
         public FilterExpressionParser(
             IFilterDataProvider fdp,
@@ -29,12 +30,12 @@ namespace d360.model.helpers
             bool registerTokensAsFields = false
         )
         {
-            this.dataProvider = fdp;
-            this.parseType = type;
+            dataProvider = fdp;
+            parseType = type;
             this.registerTokensAsFields = registerTokensAsFields;
             allowedDefaultFields.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
-            allowedDefaultFields.Add(new DefaultFilter("[Path]", "KP.KeyPath", SqlFieldType.Text));
+            allowedDefaultFields.Add(new DefaultFilter("[Path]", "Node.KeyPath", SqlFieldType.Text));
             allowedDefaultFields.Add(new DefaultFilter("[Level]", "LVL.Level", SqlFieldType.Number));
             allowedDefaultFields.Add(new DefaultFilter("uid", "A.Uid", SqlFieldType.Text));
 
@@ -103,6 +104,8 @@ namespace d360.model.helpers
 
                 allowedDefaultFields.Add(new DefaultFilter("Object.[Path]", "ANDP_Object.DisplayPath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("Subject.[Path]", "ANDP_Subject.DisplayPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("relationshiptype", "T.Uid", SqlFieldType.Guid));
+                allowedDefaultFields.Add(new DefaultFilter("assetpath", "RelationshipSideData.AssetPath", SqlFieldType.Text));
             }
 
             if (parseType == FilterExpressionParseType.Semantics)
@@ -138,15 +141,15 @@ namespace d360.model.helpers
 
         public void LoadFieldTypes(List<FieldType> fields, List<string> columns)
         {
-            this.fieldTypes = fields;
-            this.fieldColumns = columns;
+            fieldTypes = fields;
+            fieldColumns = columns;
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
             try
             {
-                fieldIds = this.filteredFieldIDs;
+                fieldIds = filteredFieldIDs;
 
                 sqlParams = new Dictionary<string, object>();
                 if (string.IsNullOrEmpty(filterString))
@@ -160,9 +163,9 @@ namespace d360.model.helpers
 
                 List<IFilterToken> filterTokens = Tokenize(filterString);
 
-                this.LoadRelationshipDataForTokens(filterTokens);
+                LoadRelationshipDataForTokens(filterTokens);
 
-                foreach (var token in filterTokens)
+                foreach (IFilterToken token in filterTokens)
                 {
                     sb.Append($"{token.GetSqlExpression(sqlParams)}");
                 }
@@ -185,19 +188,18 @@ namespace d360.model.helpers
 
         private List<IFilterToken> Tokenize(string filterString)
         {
-            var ret = new List<IFilterToken>();
+            List<IFilterToken> ret = new List<IFilterToken>();
             Regex regex = new Regex(@"\'(.+?)\'");
-            var matchGroups = regex.Matches(filterString);
+            MatchCollection matchGroups = regex.Matches(filterString);
 
             List<Tuple<string, string>> valuesMap = new List<Tuple<string, string>>();
             for (int j = 0; j < matchGroups.Count; j++)
             {
-                var key = "#valueToken" + Guid.NewGuid();
-                var matchValue = matchGroups[j].Value;
+                string key = "#valueToken" + Guid.NewGuid();
+                string matchValue = matchGroups[j].Value;
                 filterString = filterString.Replace(matchValue, key.ToLower());
                 valuesMap.Add(new Tuple<string, string>(key, matchValue));
             }
-
 
             if (!ValidateString(filterString))
             {
@@ -210,7 +212,7 @@ namespace d360.model.helpers
             {
                 if (valuesMap.Any(x => x.Item1.ToLower() == tokens[j].ToLower()))
                 {
-                    var value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
+                    string value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
                     tokens[j] = value;
                 }
             }
@@ -222,14 +224,14 @@ namespace d360.model.helpers
             {
                 if (tokens[i] == "(")
                 {
-                    ret.Add(new OperatorToken(this.dataProvider, null, "(", null));
+                    ret.Add(new OperatorToken(dataProvider, null, "(", null));
                     i++;
                     continue;
                 }
 
                 if (tokens[i] == ")")
                 {
-                    ret.Add(new OperatorToken(this.dataProvider, null, ")", null));
+                    ret.Add(new OperatorToken(dataProvider, null, ")", null));
                     i++;
                     continue;
                 }
@@ -239,23 +241,25 @@ namespace d360.model.helpers
                     paramCount++;
                     if (parseType == FilterExpressionParseType.Relationships)
                     {
-                        ret.Add(new RelationshipFieldToken(this.dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+                        ret.Add(new RelationshipFieldToken(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
                     }
                     else
                     {
-                        ret.Add(this.GetFilterForTokens(this.dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+                        ret.Add(GetFilterForTokens(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
                     }
 
                     expectingCondition = true;
                     i += 3;
+
                     continue;
                 }
 
                 if (expectingCondition)
                 {
-                    ret.Add(new OperatorToken(this.dataProvider, null, tokens[i], null));
+                    ret.Add(new OperatorToken(dataProvider, null, tokens[i], null));
                     expectingCondition = false;
                     i++;
+
                     continue;
                 }
 
@@ -267,8 +271,8 @@ namespace d360.model.helpers
 
         private IFilterToken GetFilterForTokens(IFilterDataProvider fdp, string field, string op, object value, int? paramIdx = null)
         {
-            var fieldName = field.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-            var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == fieldName);
+            string fieldName = field.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+            FieldType fieldType = fieldTypes.FirstOrDefault(x => x.Name.ToLower() == fieldName);
 
             if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
             {
@@ -279,13 +283,18 @@ namespace d360.model.helpers
             {
                 if (allowedDefaultFields.Any(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant()))
                 {
-                    var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant());
+                    DefaultFilter val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant());
+                    
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
-                else if (this.registerTokensAsFields == true)
+                else if (registerTokensAsFields == true)
                 {
-                    var val = new DefaultFilter(fieldName, fieldName, SqlFieldType.Text);
+                    DefaultFilter val = new DefaultFilter(fieldName, fieldName, SqlFieldType.Text);
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
+                }
+                else if (fieldName.StartsWith("$ownedbyandresponsibility"))
+                {
+                    return new OwnerAndResponsibilityFieldToken(fdp, field, op, value, paramIdx);
                 }
                 else if (fieldName.StartsWith("$owned"))
                 {
@@ -302,22 +311,24 @@ namespace d360.model.helpers
             }
             else
             {
-                this.filteredFieldIDs.Add(fieldType.ID);
+                filteredFieldIDs.Add(fieldType.ID);
                 if (parseType == FilterExpressionParseType.ComplexLookupField)
                 {
                     if (fieldName.StartsWith("$related"))
                     {
-                        return new RelationshipComplexFieldToken(fdp, field, op, value, this.fieldTypes);
+                        return new RelationshipComplexFieldToken(fdp, field, op, value, fieldTypes);
                     }
 
-                    var token = new ComplexFieldToken(fdp, field, op, value, paramIdx);
+                    ComplexFieldToken token = new ComplexFieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, fieldColumns);
+                    
                     return token;
                 }
                 else
                 {
-                    var token = new FieldToken(fdp, field, op, value, paramIdx);
+                    FieldToken token = new FieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, fieldColumns);
+                    
                     return token;
                 }
             }
@@ -325,11 +336,11 @@ namespace d360.model.helpers
 
         private string[] GetTokens(ref string filterString)
         {
-            var replaceIndexes = GetAllIndexesOf('\'', filterString);
-            var length = filterString.Length;
+            int[] replaceIndexes = GetAllIndexesOf('\'', filterString);
+            int length = filterString.Length;
             for (int i = 0; i < replaceIndexes.Length; i += 2)
             {
-                var subString = filterString.Substring(replaceIndexes[i], replaceIndexes[i + 1] - replaceIndexes[i]);
+                string subString = filterString.Substring(replaceIndexes[i], replaceIndexes[i + 1] - replaceIndexes[i]);
                 filterString = filterString.Replace(subString, subString.Replace(" ", "&nbsp;"));
                 int diff = filterString.Length - length;
                 for (int j = i + 1; j < replaceIndexes.Length; j++)
@@ -352,9 +363,20 @@ namespace d360.model.helpers
 
             foreach (char c in str)
             {
-                if (c == '(') bracketCount++;
-                if (c == ')') bracketCount--;
-                if (c == '\'') apostropheCount++;
+                if (c == '(')
+                {
+                    bracketCount++;
+                }
+
+                if (c == ')')
+                {
+                    bracketCount--;
+                }
+
+                if (c == '\'')
+                {
+                    apostropheCount++;
+                }
             }
 
             return bracketCount == 0 && apostropheCount % 2 == 0;
@@ -365,7 +387,10 @@ namespace d360.model.helpers
             List<int> indx = new List<int>();
             for (int i = 0; i < s.Length; i++)
             {
-                if (s[i] == c) indx.Add(i);
+                if (s[i] == c)
+                {
+                    indx.Add(i);
+                }
             }
 
             return indx.ToArray();
@@ -373,7 +398,7 @@ namespace d360.model.helpers
 
         private void LoadRelationshipDataForTokens(List<IFilterToken> tokens)
         {
-            var relationshipTokens = tokens.Where(x => x is RelationshipFieldToken).ToList();
+            List<IFilterToken> relationshipTokens = tokens.Where(x => x is RelationshipFieldToken).ToList();
             if (relationshipTokens.Count == 0)
             {
                 return;
@@ -384,8 +409,8 @@ namespace d360.model.helpers
 
             foreach (RelationshipFieldToken token in relationshipTokens)
             {
-                var intersectUid = Guid.Empty;
-                var assetUid = Guid.Empty;
+                Guid intersectUid = Guid.Empty;
+                Guid assetUid = Guid.Empty;
 
                 if (!Guid.TryParse(token.Field, out intersectUid))
                 {
@@ -409,9 +434,9 @@ namespace d360.model.helpers
             List<Asset> filterAssets;
             List<AssetType> filterAssetTypes;
 
-            (intersectTypes, filterAssets, filterAssetTypes) = this.dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids);
+            (intersectTypes, filterAssets, filterAssetTypes) = dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids);
 
-            foreach (var itUid in IntersectUids)
+            foreach (Guid itUid in IntersectUids)
             {
                 if (!intersectTypes.Any(x => x.uid == itUid))
                 {
@@ -419,7 +444,7 @@ namespace d360.model.helpers
                 }
             }
 
-            foreach (var assetUid in AssetUids)
+            foreach (Guid assetUid in AssetUids)
             {
                 if (!filterAssets.Any(x => x.uid == assetUid) && !filterAssetTypes.Any(x => x.uid == assetUid))
                 {
@@ -430,8 +455,8 @@ namespace d360.model.helpers
             //Load data to tokens
             foreach (RelationshipFieldToken token in relationshipTokens)
             {
-                var intersectUid = Guid.Empty;
-                var assetUid = Guid.Empty;
+                Guid intersectUid = Guid.Empty;
+                Guid assetUid = Guid.Empty;
 
                 Guid.TryParse(token.Field, out intersectUid);
                 Guid.TryParse(token.ValueAsString, out assetUid);
@@ -477,12 +502,7 @@ namespace d360.model.helpers
     public class FilterExpressionParser2 : IFilterExpressionParser
     {
         private readonly IFilterDataProvider dataProvider;
-        //private List<FieldType> fieldTypes = new List<FieldType>();
-        //private List<string> fieldColumns = new List<string>();
-        //private List<int> filteredFieldIDs = new List<int>();
-
-        // private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
-        private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+        private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
         private IReadOnlyList<DefaultFilter> GetAllowedDefaultFields(FilterFilterExpressionParserSettings settings)
         {
@@ -491,13 +511,14 @@ namespace d360.model.helpers
                 return settings.DefaultFilters;
             }
 
-            var result = new List<DefaultFilter>();
-
-            result.Add(new DefaultFilter("Code", "A.Code", SqlFieldType.Text));
-            result.Add(new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text));
-            result.Add(new DefaultFilter("[Path]", "KP.KeyPath", SqlFieldType.Text));
-            result.Add(new DefaultFilter("[Level]", "LVL.Level", SqlFieldType.Number));
-            result.Add(new DefaultFilter("uid", "A.Uid", SqlFieldType.Text));
+            List<DefaultFilter> result = new List<DefaultFilter>
+            {
+                new DefaultFilter("Code", "A.Code", SqlFieldType.Text),
+                new DefaultFilter("Color", "JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name')", SqlFieldType.Text),
+                new DefaultFilter("[Path]", "KP.KeyPath", SqlFieldType.Text),
+                new DefaultFilter("[Level]", "LVL.Level", SqlFieldType.Number),
+                new DefaultFilter("uid", "A.Uid", SqlFieldType.Text)
+            };
 
             if (settings.IncludeParent)
             {
@@ -543,15 +564,12 @@ namespace d360.model.helpers
                     result.Add(new DefaultFilter("EvaluatedAssetTypePath", "P.Path", SqlFieldType.Text));
                     result.Add(new DefaultFilter("EvaluatedAssetPath", "E.Segments", SqlFieldType.Xml));
                     result.Add(new DefaultFilter("EvaluatedAssetDisplayPath", "E.Segments", SqlFieldType.Xml));
-
                     result.Add(new DefaultFilter("EffectiveDate", "R.EffectiveDate", SqlFieldType.Date));
                     result.Add(new DefaultFilter("RunDate", "R.RunDate", SqlFieldType.DateTime));
-
                     result.Add(new DefaultFilter("PassCount", "R.PassCount", SqlFieldType.Number));
                     result.Add(new DefaultFilter("FailCount", "R.FailCount", SqlFieldType.Number));
                     result.Add(new DefaultFilter("TotalCount", "R.TotalCount", SqlFieldType.Number));
                     result.Add(new DefaultFilter("PassFraction", "R.PassFraction", SqlFieldType.Decimal));
-
                     result.Add(new DefaultFilter("Outdated", "coalesce(E.IsDuplicate, R.IsDuplicate)", SqlFieldType.Boolean));
 
                     break;
@@ -570,11 +588,9 @@ namespace d360.model.helpers
             return result;
         }
 
-        public FilterExpressionParser2(
-            IFilterDataProvider fdp
-        )
+        public FilterExpressionParser2(IFilterDataProvider fdp)
         {
-            this.dataProvider = fdp;
+            dataProvider = fdp;
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams, out IList<int> fieldIds, FilterFilterExpressionParserSettings settings = default)
@@ -586,23 +602,21 @@ namespace d360.model.helpers
 
             try
             {
-                fieldIds = new List<int>(); // this.filteredFieldIDs;
-
+                fieldIds = new List<int>();
                 sqlParams = new Dictionary<string, object>();
+
                 if (string.IsNullOrEmpty(filterString))
                 {
                     return "";
                 }
 
                 filterString = filterString.Trim();
-
                 StringBuilder sb = new StringBuilder();
+                IList<IFilterToken> filterTokens = Tokenize(filterString, settings, fieldIds);
 
-                var filterTokens = Tokenize(filterString, settings, fieldIds);
+                LoadRelationshipDataForTokens(filterTokens);
 
-                this.LoadRelationshipDataForTokens(filterTokens);
-
-                foreach (var token in filterTokens)
+                foreach (IFilterToken token in filterTokens)
                 {
                     sb.Append($"{token.GetSqlExpression(sqlParams)}");
                 }
@@ -625,19 +639,18 @@ namespace d360.model.helpers
 
         private IList<IFilterToken> Tokenize(string filterString, FilterFilterExpressionParserSettings settings, IList<int> fieldIds)
         {
-            var ret = new List<IFilterToken>();
+            List<IFilterToken> ret = new List<IFilterToken>();
             Regex regex = new Regex(@"\'(.+?)\'");
-            var matchGroups = regex.Matches(filterString);
+            MatchCollection matchGroups = regex.Matches(filterString);
 
             List<Tuple<string, string>> valuesMap = new List<Tuple<string, string>>();
             for (int j = 0; j < matchGroups.Count; j++)
             {
-                var key = "#valueToken" + Guid.NewGuid();
-                var matchValue = matchGroups[j].Value;
+                string key = "#valueToken" + Guid.NewGuid();
+                string matchValue = matchGroups[j].Value;
                 filterString = filterString.Replace(matchValue, key.ToLower());
                 valuesMap.Add(new Tuple<string, string>(key, matchValue));
             }
-
 
             if (!ValidateString(filterString))
             {
@@ -650,7 +663,7 @@ namespace d360.model.helpers
             {
                 if (valuesMap.Any(x => x.Item1.ToLower() == tokens[j].ToLower()))
                 {
-                    var value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
+                    string value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLowerInvariant()).Item2;
                     tokens[j] = value;
                 }
             }
@@ -658,18 +671,19 @@ namespace d360.model.helpers
             bool expectingCondition = false;
             int paramCount = 0;
             int i = 0;
+
             while (i < tokens.Length)
             {
                 if (tokens[i] == "(")
                 {
-                    ret.Add(new OperatorToken(this.dataProvider, null, "(", null));
+                    ret.Add(new OperatorToken(dataProvider, null, "(", null));
                     i++;
                     continue;
                 }
 
                 if (tokens[i] == ")")
                 {
-                    ret.Add(new OperatorToken(this.dataProvider, null, ")", null));
+                    ret.Add(new OperatorToken(dataProvider, null, ")", null));
                     i++;
                     continue;
                 }
@@ -680,10 +694,10 @@ namespace d360.model.helpers
                     switch (settings.ParseType)
                     {
                         case FilterExpressionParseType.Relationships:
-                            ret.Add(new RelationshipFieldToken(this.dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+                            ret.Add(new RelationshipFieldToken(dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
                             break;
                         default:
-                            ret.Add(this.GetFilterForTokens(settings, fieldIds, this.dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
+                            ret.Add(GetFilterForTokens(settings, fieldIds, dataProvider, tokens[i], tokens[i + 1], tokens[i + 2], paramCount));
                             break;
                     }
 
@@ -694,7 +708,7 @@ namespace d360.model.helpers
 
                 if (expectingCondition)
                 {
-                    ret.Add(new OperatorToken(this.dataProvider, null, tokens[i], null));
+                    ret.Add(new OperatorToken(dataProvider, null, tokens[i], null));
                     expectingCondition = false;
                     i++;
                     continue;
@@ -707,9 +721,9 @@ namespace d360.model.helpers
         private IFilterToken GetFilterForTokens(FilterFilterExpressionParserSettings settings, IList<int> filedIds, IFilterDataProvider fdp, string field, string op, object value,
             int? paramIdx = null)
         {
-            var fieldName = field.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-            var fieldType = settings.FieldTypes.FirstOrDefault(x => x.Name.ToLower() == fieldName);
-            var allowedDefaultFields = GetAllowedDefaultFields(settings);
+            string fieldName = field.ToLower(System.Globalization.CultureInfo.InvariantCulture);
+            FieldType fieldType = settings.FieldTypes.FirstOrDefault(x => x.Name.ToLower() == fieldName);
+            IReadOnlyList<DefaultFilter> allowedDefaultFields = GetAllowedDefaultFields(settings);
 
             if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
             {
@@ -720,12 +734,14 @@ namespace d360.model.helpers
             {
                 if (allowedDefaultFields.Any(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant()))
                 {
-                    var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant());
+                    DefaultFilter val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant());
+                    
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
                 else if (settings.RegisterTokensAsFields == true)
                 {
-                    var val = new DefaultFilter(fieldName, fieldName, SqlFieldType.Text);
+                    DefaultFilter val = new DefaultFilter(fieldName, fieldName, SqlFieldType.Text);
+                    
                     return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
                 else if (fieldName.StartsWith("$owned"))
@@ -751,14 +767,16 @@ namespace d360.model.helpers
                         return new RelationshipComplexFieldToken(fdp, field, op, value, settings.FieldTypes);
                     }
 
-                    var token = new ComplexFieldToken(fdp, field, op, value, paramIdx);
+                    ComplexFieldToken token = new ComplexFieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, settings.FieldColumns);
+                    
                     return token;
                 }
                 else
                 {
-                    var token = new FieldToken(fdp, field, op, value, paramIdx);
+                    FieldToken token = new FieldToken(fdp, field, op, value, paramIdx);
                     token.LoadFieldType(fieldType, settings.FieldColumns);
+                    
                     return token;
                 }
             }
@@ -766,11 +784,11 @@ namespace d360.model.helpers
 
         private string[] GetTokens(ref string filterString)
         {
-            var replaceIndexes = GetAllIndexesOf('\'', filterString);
-            var length = filterString.Length;
+            int[] replaceIndexes = GetAllIndexesOf('\'', filterString);
+            int length = filterString.Length;
             for (int i = 0; i < replaceIndexes.Length; i += 2)
             {
-                var subString = filterString.Substring(replaceIndexes[i], replaceIndexes[i + 1] - replaceIndexes[i]);
+                string subString = filterString.Substring(replaceIndexes[i], replaceIndexes[i + 1] - replaceIndexes[i]);
                 filterString = filterString.Replace(subString, subString.Replace(" ", "&nbsp;"));
                 int diff = filterString.Length - length;
                 for (int j = i + 1; j < replaceIndexes.Length; j++)
@@ -793,9 +811,20 @@ namespace d360.model.helpers
 
             foreach (char c in str)
             {
-                if (c == '(') bracketCount++;
-                if (c == ')') bracketCount--;
-                if (c == '\'') apostropheCount++;
+                if (c == '(')
+                {
+                    bracketCount++;
+                }
+
+                if (c == ')')
+                {
+                    bracketCount--;
+                }
+
+                if (c == '\'')
+                {
+                    apostropheCount++;
+                }
             }
 
             return bracketCount == 0 && apostropheCount % 2 == 0;
@@ -806,7 +835,10 @@ namespace d360.model.helpers
             List<int> indx = new List<int>();
             for (int i = 0; i < s.Length; i++)
             {
-                if (s[i] == c) indx.Add(i);
+                if (s[i] == c)
+                {
+                    indx.Add(i);
+                }
             }
 
             return indx.ToArray();
@@ -814,7 +846,7 @@ namespace d360.model.helpers
 
         private void LoadRelationshipDataForTokens(IEnumerable<IFilterToken> tokens)
         {
-            var relationshipTokens = tokens.OfType<RelationshipFieldToken>().ToList();
+            List<RelationshipFieldToken> relationshipTokens = tokens.OfType<RelationshipFieldToken>().ToList();
             if (relationshipTokens.Count == 0)
             {
                 return;
@@ -825,8 +857,8 @@ namespace d360.model.helpers
 
             foreach (RelationshipFieldToken token in relationshipTokens)
             {
-                var intersectUid = Guid.Empty;
-                var assetUid = Guid.Empty;
+                Guid intersectUid = Guid.Empty;
+                Guid assetUid = Guid.Empty;
 
                 if (!Guid.TryParse(token.Field, out intersectUid))
                 {
@@ -850,9 +882,9 @@ namespace d360.model.helpers
             List<Asset> filterAssets;
             List<AssetType> filterAssetTypes;
 
-            (intersectTypes, filterAssets, filterAssetTypes) = this.dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids);
+            (intersectTypes, filterAssets, filterAssetTypes) = dataProvider.GetDataForRelationshipsParsing(IntersectUids, AssetUids);
 
-            foreach (var itUid in IntersectUids)
+            foreach (Guid itUid in IntersectUids)
             {
                 if (intersectTypes.All(x => x.uid != itUid))
                 {
@@ -860,7 +892,7 @@ namespace d360.model.helpers
                 }
             }
 
-            foreach (var assetUid in AssetUids)
+            foreach (Guid assetUid in AssetUids)
             {
                 if (filterAssets.All(x => x.uid != assetUid) && filterAssetTypes.All(x => x.uid != assetUid))
                 {
@@ -871,8 +903,8 @@ namespace d360.model.helpers
             //Load data to tokens
             foreach (RelationshipFieldToken token in relationshipTokens)
             {
-                var intersectUid = Guid.Empty;
-                var assetUid = Guid.Empty;
+                Guid intersectUid = Guid.Empty;
+                Guid assetUid = Guid.Empty;
 
                 Guid.TryParse(token.Field, out intersectUid);
                 Guid.TryParse(token.ValueAsString, out assetUid);

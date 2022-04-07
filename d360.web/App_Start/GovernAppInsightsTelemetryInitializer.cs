@@ -1,5 +1,5 @@
-﻿using System;
-using System.Web;
+﻿using System.Web;
+
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Owin;
@@ -19,7 +19,7 @@ namespace d360.web
             // If telemetry initializer is called as part of request execution and not from some async thread
             if (ctx != null && ctx.Request != null && (string.IsNullOrEmpty(telemetry.Context.User.Id) || string.IsNullOrEmpty(telemetry.Context.Session.Id)))
             {
-                IOwinContext oCtx = null;
+                IOwinContext oCtx;
                 int resourceId = 0;
 
                 try
@@ -46,8 +46,7 @@ namespace d360.web
                 {
                     telemetry.Context.User.UserAgent = ctx.Request.UserAgent;
                 }
-
-            }            
+            }
         }
     }
 }
