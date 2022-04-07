@@ -367,7 +367,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This setting contains a comma separated list of whitelisted domains. If present, only users with emails from the specified domains will be allowed to login to Govern..
+        ///   Looks up a localized string similar to This setting contains a comma separated list of allowed domains. If present, only users with emails from the specified domains will be allowed to login to Govern..
         /// </summary>
         internal static string EmailDomainWhitelist_Desc {
             get {
@@ -376,7 +376,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Email Domain Whitelist.
+        ///   Looks up a localized string similar to Allowed Email Domains.
         /// </summary>
         internal static string EmailDomainWhitelist_Name {
             get {

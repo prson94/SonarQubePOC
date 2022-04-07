@@ -220,10 +220,10 @@
     <value>Disable Take Action</value>
   </data>
   <data name="EmailDomainWhitelist_Desc" xml:space="preserve">
-    <value>This setting contains a comma separated list of whitelisted domains. If present, only users with emails from the specified domains will be allowed to login to Govern.</value>
+    <value>This setting contains a comma separated list of allowed domains. If present, only users with emails from the specified domains will be allowed to login to Govern.</value>
   </data>
   <data name="EmailDomainWhitelist_Name" xml:space="preserve">
-    <value>Email Domain Whitelist</value>
+    <value>Allowed Email Domains</value>
   </data>
   <data name="EnableJsonAttribute_Desc" xml:space="preserve">
     <value>Enable JSON Attribute field type support.  Enabling this stores all properties for all JSON fields in the govern environment as well as enabling this field type. Default false.  Changing this value requires reloading affected data to parse json properties.</value>
