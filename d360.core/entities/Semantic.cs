@@ -153,6 +153,18 @@ namespace d360.core.entities
 
         [JsonProperty("threshold")]
         public new int? Threshold { get; set; }
+
+        [JsonProperty("validLocales"), NotMapped]
+        public new List<string>? ValidLocalesStructured { get; set; }
+
+        [JsonProperty("validList"), NotMapped]
+        public new List<string>? ValidValuesStructured { get; set; }
+
+        [JsonProperty("invalidList"), NotMapped]
+        public new List<string>? InvalidValuesStructured { get; set; }
+
+        [JsonProperty("advanced"), NotMapped]
+        public new JObject? JsonPayloadStructured { get; set; }
     }
 
     public class PostSemantic : SemanticBase
@@ -368,6 +380,7 @@ namespace d360.core.entities
 
             var repoModel = new Semantic
             {
+                ID = existing.ID,
                 BaseType = model.BaseType ?? existing.BaseType,
                 CreatedBy = existing.CreatedBy,
                 CreatedOn = existing.CreatedOn,
@@ -376,7 +389,7 @@ namespace d360.core.entities
                 HeaderFilter = (model.HeaderFilter != null) ? model.HeaderFilter : existing.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence ?? existing.HeaderFilterConfidence,
                 InvalidValuesStructured = (model.InvalidValuesStructured != null) ? model.InvalidValuesStructured : existing.InvalidValuesStructured,
-                JsonPayloadStructured = model.JsonPayloadStructured ?? existing.JsonPayloadStructured,
+                JsonPayloadStructured = model.JsonPayloadStructured ?? existing.JsonPayloadStructured,               
                 MatchType = model.MatchType ?? existing.MatchType,
                 Maximum = model.Maximum ?? existing.Maximum,
                 Minimum = model.Minimum ?? existing.Minimum,
@@ -396,10 +409,10 @@ namespace d360.core.entities
                 ValidValuesStructured = (model.ValidValuesStructured != null) ? model.ValidValuesStructured : existing.ValidValuesStructured
             };
 
-            repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
-            repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
-            repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
-            repoModel.ValidValues = repoModel.serializeTextProperty(repoModel.ValidValuesStructured);
+            repoModel.InvalidValues = repoModel.InvalidValuesStructured != null ? repoModel.serializeTextProperty(repoModel.InvalidValuesStructured) : existing.InvalidValues;
+            repoModel.JsonPayload = repoModel.JsonPayloadStructured != null ? repoModel.serializeTextProperty(repoModel.JsonPayloadStructured) : existing.JsonPayload;            
+            repoModel.ValidLocales = repoModel.ValidLocalesStructured != null ? repoModel.serializeTextProperty(repoModel.ValidLocalesStructured) : existing.ValidLocales;
+            repoModel.ValidValues = repoModel.ValidValuesStructured != null ? repoModel.serializeTextProperty(repoModel.ValidValuesStructured) : existing.ValidValues;
 
             return repoModel;
         }
