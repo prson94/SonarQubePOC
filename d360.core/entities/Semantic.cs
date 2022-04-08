@@ -380,15 +380,14 @@ namespace d360.core.entities
 
             var repoModel = new Semantic
             {
-                ID = existing.ID,
                 BaseType = model.BaseType ?? existing.BaseType,
                 CreatedBy = existing.CreatedBy,
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description ?? existing.Description,
                 EffectiveDate = date,
-                HeaderFilter = (model.HeaderFilter != null) ? model.HeaderFilter : existing.HeaderFilter,
+                HeaderFilter = model.HeaderFilter ?? existing.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence ?? existing.HeaderFilterConfidence,
-                InvalidValuesStructured = (model.InvalidValuesStructured != null) ? model.InvalidValuesStructured : existing.InvalidValuesStructured,
+                InvalidValuesStructured = model.InvalidValuesStructured ?? existing.InvalidValuesStructured,
                 JsonPayloadStructured = model.JsonPayloadStructured ?? existing.JsonPayloadStructured,               
                 MatchType = model.MatchType ?? existing.MatchType,
                 Maximum = model.Maximum ?? existing.Maximum,
@@ -405,8 +404,8 @@ namespace d360.core.entities
                 Uid = existing.Uid,
                 UpdatedBy = resourceId,
                 UpdatedOn = date,
-                ValidLocalesStructured = (model.ValidLocalesStructured != null) ? model.ValidLocalesStructured : existing.ValidLocalesStructured,
-                ValidValuesStructured = (model.ValidValuesStructured != null) ? model.ValidValuesStructured : existing.ValidValuesStructured
+                ValidLocalesStructured = model.ValidLocalesStructured ?? existing.ValidLocalesStructured,
+                ValidValuesStructured = model.ValidValuesStructured ?? existing.ValidValuesStructured
             };
 
             repoModel.InvalidValues = repoModel.InvalidValuesStructured != null ? repoModel.serializeTextProperty(repoModel.InvalidValuesStructured) : existing.InvalidValues;
