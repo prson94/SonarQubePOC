@@ -592,12 +592,16 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
 				'Lookup' as type,
 				cast(1 as bit) as isLookup,
 				(
-				select	cast(ID as varchar) as [value],
-						Uid as assigneeUid,
+				select	cast(g.ID as varchar) as [value],
+						asset.Uid as assigneeUid,
 						Name as label 
-				from	[Group]
+				from	[Group] g
+				join dbo.Asset asset 
+				on 
+					asset.Object = 'Group'
+					and g.ID = asset.ObjectID
 				order by Name
-				for json auto
+				for json path
 				) as [values],
 				at.uid as assigneeTypeUid
 		from dbo.AssetType at
