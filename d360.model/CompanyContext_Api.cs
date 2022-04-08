@@ -3762,22 +3762,26 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             Connection.Execute(@"
 								drop table if exists #deleteAssets
 								create table #deleteAssets (id bigint)
-								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
 
 								insert into #deleteAssets
 								select top (@deleteCount) id from asset where assettypeid = @assettypeid
 
+								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
 												
 								-- Delete from graph tables.
-								delete E
-								from    graph.AssetEdge E
-										inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
-										where N.Id in (select id from #deleteAssets);
+						        delete E
+						        from    graph.AssetEdge E
+								        inner join graph.AssetNode N on E.$from_id = N.$node_id
+								        inner join #deleteAssets D on N.Id = D.id;
+
+						        delete E
+						        from    graph.AssetEdge E
+								        inner join graph.AssetNode N on E.$to_id = N.$node_id
+								        inner join #deleteAssets D on N.Id = D.id;
 
 								-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
 								drop table if exists #Uids
 								create table #Uids (Uid uniqueidentifier)
-								create clustered index CIX_TempUids on #Uids (Uid)
 
 								insert into #Uids
 									select	R.Uid
@@ -3787,21 +3791,25 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									where	MATCH(A-(E)->R)
 											and E.Class = 1
 											and A.AssetTypeID = @AssetTypeId
-											and A.Id in (select id from #deleteAssets);
+									        and exists (select 1 from #deleteAssets d where A.Id = d.Id);
 
+								create clustered index CIX_TempUids on #Uids (Uid)
 
 								delete	E
 								from    dbo.AssetResultEdge E
 										inner join graph.AssetNode N on E.$from_id = N.$node_id
-										where N.Id in (select id from #deleteAssets);
+								        inner join #deleteAssets D on N.Id = D.id;
 
-								delete	T
-								from	dbo.AssetResult T
-										inner join #Uids S on S.Uid = T.Uid;
+						        if exists (select 1 from #Uids)
+						        begin
+							        delete	T
+							        from	dbo.AssetResult T
+									        inner join #Uids S on S.Uid = T.Uid;
+						        end
 
 								delete	A
 								from	graph.AssetNode A
-										where A.Id in (select id from #deleteAssets);
+										inner join #deleteAssets D on A.Id = D.id;
 
 					", new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
