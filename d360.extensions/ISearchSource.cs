@@ -351,25 +351,30 @@ namespace d360.extensions
 
     #region Extensions Exceptions
 
-    public class TooManyTypesException : Exception
+    public class SearchException : Exception
     {
-        protected TooManyTypesException() : base("More than one type found in the list of items to index.  Please ensure that items contains only one type.")
+        public SearchException(Exception ex)
+            : base("An error occurred in search.", ex)
         {
         }
     }
 
-    public class AddToIndexException : Exception
+    public class SearchServerConnectionException : Exception
     {
-        public AddToIndexException(Exception ex)
-            : base("An error occured while trying to add item to index.", ex)
+        public string Server { get; set; }
+        public string Index { get; set; }
+        public SearchServerConnectionException(Exception ex, string server, string index)
+            : base("Cannot connect to Search Server.", ex)
         {
+            Server = server;
+            Index = index;
         }
     }
 
     public class SearchResultsException : Exception
     {
         public SearchResultsException(Exception ex)
-            : base("An error occured while trying to get search results.", ex)
+            : base("An error occurred while trying to get search results.", ex)
         {
         }
     }
@@ -429,7 +434,6 @@ namespace d360.extensions
         /// </summary>
         /// <param name="companyID">The current company ID</param>
         /// <param name="items">The current company ID</param>
-        /// <exception cref="TooManyTypesException">Method will throw an exception if more than one type is detected in the list of items.</exception>
         void ReIndex(int companyID, IEnumerable<IndexObjectModel> items);
 
         /// <summary>

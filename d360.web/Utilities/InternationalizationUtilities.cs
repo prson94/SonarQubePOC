@@ -1,12 +1,12 @@
 ﻿using System.Globalization;
-using System.Threading;
 using System.Linq;
+using System.Threading;
 
 namespace d360.web.Utilities
 {
     public static class InternationalizationUtilities
     {
-        const string DefaultLocale = "en";
+        private const string DefaultLocale = "en";
         private static readonly string[] AllowedUILocales = new[] { "en", "de", "fr", "en-gb" };
 
         /// <summary>
@@ -51,7 +51,9 @@ namespace d360.web.Utilities
                 {
                     Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentCulture.Clone() as CultureInfo;
                     if (setUiCulture)
+                    {
                         Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture.Clone() as CultureInfo;
+                    }
 
                     return;
                 }
@@ -71,16 +73,20 @@ namespace d360.web.Utilities
             if (!string.IsNullOrEmpty(culture) && !string.IsNullOrEmpty(allowedLocales))
             {
                 allowedLocales = "," + allowedLocales.ToLower() + ",";
+
                 if (!allowedLocales.Contains("," + culture + ","))
                 {
                     int i = culture.IndexOf('-');
+
                     if (i > 0)
                     {
                         culture = culture.Substring(0, i);
+
                         if (!allowedLocales.Contains("," + culture + ","))
                         {
                             // Always create writable CultureInfo
                             Thread.CurrentThread.CurrentCulture = Thread.CurrentThread.CurrentCulture.Clone() as CultureInfo;
+                            
                             if (setUiCulture)
                             {
                                 Thread.CurrentThread.CurrentUICulture = Thread.CurrentThread.CurrentUICulture.Clone() as CultureInfo;

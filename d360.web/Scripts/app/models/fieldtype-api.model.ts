@@ -138,6 +138,7 @@ export class FieldDisplayModel {
     IsRequired: boolean;
     ShowIfEmpty: boolean;
     SortOrder: number;
+    SortByAscending: boolean;
     ColumnOrder: number;
 }
 

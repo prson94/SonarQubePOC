@@ -1,575 +1,687 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using d360.core.exceptions;
-using d360.core.queue;
-using d360.model;
-using d360.web.Filters;
-using d360.web.Models;
-using d360.web.Models.Attributes;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
 
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+using d360.core.exceptions;
+using d360.web.Filters;
+using d360.web.Models;
+using d360.web.Models.Attributes;
+
+using Newtonsoft.Json;
+
+using Resources;
+
 namespace d360.web.Controllers
 {
-    public partial class FormController : BaseController
-    {
-
-        #region Predicate
-
-        #region Field Generation
-
-        [Route("Predicate_AddFields")]
-        public JsonResult Predicate_AddFields()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var list = new List<EditableField>();
-
-            var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
-                .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
-                .ToList();
-
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 100) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
-            list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Items = functionalTypes });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        /// <param name="id">PredicateID</param>
-        [Route("Predicate_EditFields"), NonNullableParameters]
-        public JsonResult Predicate_EditFields(int id)
-        {
-            var list = new List<EditableField>();
-            var a = Company.GetById<Predicate>(id);
-            var any = Company.Any<IntersectType>(i => i.PredicateID == id);
-
-            var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
-                .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
-                .ToList();
-
-            if (!Company.CurrentResourceIsAdmin)
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 100) });
-            list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Inverse", Name = "Inverse", FieldType = DataType.Text.ToString(), Value = a.Inverse, Validations = checkAndAddValidation("Text", "Inverse", true, "", 1, 250) });
-            list.Add(new EditableField { ReadOnly = any, Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = functionalTypes });
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #endregion
-
-        #region Relationship
-
-        #region Field Generation
-
-        private JsonResult Relationship_AddFields(IntersectType relationshipType)
-        {
-            var list = new List<EditableField>();
-
-            if (relationshipType == null)
-            {
-                return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
-            }
-
-            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2, loadLookupValues: true);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-
-        /// <param name="id">RelationshipID</param>
-        [Route("Relationship_EditFields"), NonNullableParameters]
-        public JsonResult Relationship_EditFields(int id)
-        {
-            var relationship = Company.IntersectDetails.FirstOrDefault(x => x.ID == id);
-            if (relationship == null)
-            {
-                return jsonException(FormControllerApiMessage.RelationshipNotFound, HttpStatusCode.NotFound);
-            }
-            if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.EditRelationships) &&
-                !Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.EditRelationships))
-            {
-                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-            }
-
-            var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "SubjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.SubjectUid.ToString() });
-            list.Add(new EditableField { FieldName = "ObjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.ObjectUid.ToString() });
-
-            list = loadDynamicFields(
-                SystemObjects.Intersect.ToString(),
-                id,
-                list,
-                Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(),
-                Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(),
-                1,
-                false,
-                useDefaultCategory: true,
-                loadOnlySelectedLookupValue: true);
-
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRelationship")]
-        public JsonResult AddRelationship(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.Relationship);
-                }
-                var source = parseTextField(form, "Source");
-                var sourceID = parseIntField(form, "SourceID");
-                int typeID = parseIntField(form, "IntersectTypeID");
-                var relationshipType = Company.GetById<IntersectType>(typeID, p => p.Predicate);
-                var sourceObject = Company.GetObjectDetail(source, sourceID);
-
-                if (!Company.HasAssetPermission(source, sourceID, Permission.AddRelationships))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (relationshipType == null)
-                {
-                    throw new NotFoundException(FormControllerApiMessage.Relationship);
-                }
-                var predicateTypeInfo = relationshipType.Predicate.Type.AsInfoModel();
-
-                if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-
-                var targetCardinality = Cardinality.Many;
-                if (relationshipType.Subject == sourceObject.Type && relationshipType.SubjectID == sourceObject.TypeID)
-                {
-                    targetCardinality = relationshipType.ObjectCardinality;
-                }
-                else
-                {
-                    targetCardinality = relationshipType.SubjectCardinality;
-                }
-
-
-                var rawItems = parseTextField(form, "Items");
-                if (string.IsNullOrEmpty(rawItems))
-                {
-                    return jsonException(FormControllerApiMessage.NoSelectedItems, HttpStatusCode.BadRequest);
-                }
-
-                var items = rawItems.Split(',').ToList();
-
-                if ((targetCardinality == Cardinality.One && items.Count > 1))
-                {
-                    return jsonException(FormControllerApiMessage.InvalidrelationshipCardinality, HttpStatusCode.BadRequest);
-                }
-                List<Asset> assetToAddIntersect = new List<Asset>();
-
-                items.ForEach(item =>
-                {
-                    Guid uid = Guid.Parse(item);
-                    var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
-                    assetToAddIntersect.Add(asset);
-                });
-
-                if (assetToAddIntersect.Any(x => x.Object == source && x.ObjectID == sourceID))
-                {
-                    return jsonException(FormControllerApiMessage.ItemCannotRelateItself, HttpStatusCode.BadRequest);
-                }
-
-                foreach (var asset in assetToAddIntersect)
-                {
-                    if (asset != null)
-                    {
-
-                        var intersect = Company.AddIntersect(typeID,
-                            source, sourceID,
-                            asset.Object, asset.ObjectID
-                        );
-
-                        var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
-                        Company.AddOrUpdateFields(fields);
-                    }
-                }
-                var name = Company.GetIntersectTypeName(relationshipType);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, name), "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditRelationship")]
-        public JsonResult EditRelationship(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.Relationship);
-                }
-                int id = parseIntField(form, "ID");
-                var intersect = Company.GetById<Intersect>(id);
-
-                if (intersect == null)
-                {
-                    throw new NotFoundException(FormControllerApiMessage.Relationship);
-                }
-                var intersectType = Company.GetById<IntersectType>(intersect.IntersectTypeID, p => p.Predicate);
-                var predicateTypeInfo = intersectType.Predicate.Type.AsInfoModel();
-
-                if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.EditRelationships) &&
-                    !Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.EditRelationships))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                Company.Update(intersect);
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
-                Company.AddOrUpdateFields(fields);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.Relationship), intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #region DataTable Select Source
-
-        [HttpGet, Route("Relationship_DataTable"), NonNullableParameters]
-        public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
-        {
-            var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
-            Predicate predicate = null;
-
-            if (relationshipType.PredicateID.HasValue)
-            {
-                predicate = Company.GetById<Predicate>((int)relationshipType.PredicateID);
-            }
-
-            int objectTypeID = -1;
-            string parentType = string.Empty;
-
-            #region Resolve Type
-
-            var obj = Company.GetObjectDetail(type.ToString(), objectId);
-            objectTypeID = obj.TypeID;
-            parentType = obj.Type;
-
-
-            if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
-            {
-                return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
-            }
-
-            if (type == SystemObjects.ReferenceItemType)
-            {
-                objectTypeID = 0;
-            }
-
-            var targetType = "";
-            var targetTypeID = 0;
-            var IntersectDirectionSql = "";
-            var IntersectCardinalitySql = "";
-            var IntersectTypeDirectionSql = "";
-            var SemanticRelationshipSql = "";
-
-            if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
-            {
-                targetType = relationshipType.Object;
-                targetTypeID = relationshipType.ObjectID;
-                IntersectDirectionSql = "and I.Subject = @source and I.SubjectID = @id and I.Object = A.[Object] and I.ObjectID = A.ObjectID ";
-                IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.SubjectCardinality = 1 and Object = A.[Object] and ObjectID = A.ObjectID) ";
-                IntersectTypeDirectionSql = " and IT.Object = T.Object and IT.ObjectID = T.ObjectID ";
-            }
-            else
-            {
-                targetType = relationshipType.Subject;
-                targetTypeID = relationshipType.SubjectID;
-                IntersectDirectionSql = "and I.Subject = A.[Object] and I.SubjectID = A.ObjectID and I.Object = @source and I.ObjectID = @id ";
-                IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.ObjectCardinality = 1 and Subject = A.[Object] and SubjectID = A.ObjectID) ";
-                IntersectTypeDirectionSql = " and IT.Subject = T.Object and IT.SubjectID = T.ObjectID ";
-            }
-
-            if (relationshipType.Subject == relationshipType.Object && relationshipType.SubjectID == relationshipType.ObjectID)
-            {
-                IntersectDirectionSql = @"and (  ( (I.Subject = @source and I.SubjectID = @id) AND(I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
-                                          ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
-            }
-
-            if (predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false)
-            {
-                SemanticRelationshipSql = @"outer apply (
-			     select IR.ID from [Intersect] IR
-			     inner join IntersectType ITR on ITR.ID = IR.IntersectTypeID and ITR.ID <> @it 
-			     inner join [Predicate] P on P.ID = ITR.PredicateID and P.[Type] = 14
-			     where 
-((IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID)
- or (IR.[Object] = @source and IR.ObjectID = @id and IR.[Subject] = a.Object and IR.SubjectID = a.ObjectID))
-			) SR";
-            }
-
-            var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
-            if (targetAssetType == null)
-            {
-                throw new NotFoundException(ApiMessages.TargetAssetType);
-            }
-
-            #endregion
-
-            #region sql
-
-            var sql = "";
-
-            var PermissionJoins = "";
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                PermissionJoins = $@" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
-            }
-
-            var subSql = $@"(
-select		A.ID,
-            A.[Object],
-            A.ObjectID,
-            A.Uid,
-            P.DisplayPath as [Path]
-from		Asset A
-            inner join AssetType T on A.AssetTypeID = T.ID
-            inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
-			left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
-            left join graph.AssetNodeDisplayPath P on P.ID = A.ID
-            {SemanticRelationshipSql}
-where		I.ID is null 
-            {(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
-            and A.[State] = 1 
-            and T.ObjectID = @targetTypeID 
-            and T.[Object] = @targetType 
-            and not (A.ObjectID = @id and A.Object = @source) {IntersectCardinalitySql} {PermissionJoins}
-) C";
-
-            switch (targetType)
-            {
-                case "Group":
-                case "GroupType":
-                    #region
-                    sql = $@"
-select	'Group' as [Object], 
-        D.ID as ObjectID, 
-		A.uid,
-        D.Name
-from	[Group] D with(nolock)
-inner join Asset A on A.Object = 'Group' and A.ObjectID= D.ID
-where	D.ID not in (
-					select	case 
-                                when SubjectType = 'Group' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group') ) OR
-							 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
+	public partial class FormController : BaseController
+	{
+		#region Predicate
+
+		#region Field Generation
+
+		[Route("Predicate_AddFields")]
+		public JsonResult Predicate_AddFields()
+		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+			}
+
+			var list = new List<EditableField>();
+
+			var functionalTypes = PredicateType.DataLineage.GetAsList()
+				.Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
+				.Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
+				.ToList();
+
+			list.Add(new EditableField 
+			{ 
+				Row = 1, 
+				Column = 1, 
+				Required = true, 
+				FieldName = "Name", 
+				Name = "Name", 
+				FieldType = DataType.Text.ToString(), 
+				Validations = checkAndAddValidation(fieldType: "Text",
+										friendlyName: "Name",
+										required: true,
+										pattern: "",
+										minLength: 1,
+										maxLength: 100) 
+			});
+			
+			list.Add(new EditableField 
+			{ 
+				Row = 1, 
+				Column = 2, 
+				Required = true, 
+				FieldName = "Inverse", 
+				Name = "Inverse",
+				FieldType = DataType.Text.ToString(), 
+				Validations = checkAndAddValidation(fieldType: "Text",
+										friendlyName: "Inverse",
+										required: true,
+										pattern: "",
+										minLength: 1,
+										maxLength: 250) 
+			});
+			
+			list.Add(new EditableField 
+			{ 
+				Row = 2, 
+				Column = 1,
+				Required = true,
+				FieldName = "Type",
+				Name = "Functional Type",
+				FieldType = DataType.Lookup.ToString(), 
+				Items = functionalTypes 
+			});
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
+		/// <param name="id">PredicateID</param>
+		[Route("Predicate_EditFields"), NonNullableParameters]
+		public JsonResult Predicate_EditFields(int id)
+		{
+			var list = new List<EditableField>();
+			var a = Company.GetById<Predicate>(id);
+			var any = Company.Any<IntersectType>(i => i.PredicateID == id);
+
+			var functionalTypes = PredicateType.DataLineage.GetAsList()
+				.Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment)
+				.Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
+				.ToList();
+
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			}
+
+			list.Add(new EditableField 
+			{
+				FieldName = "ID",
+				FieldType = DataType.Hidden.ToString(), 
+				Value = a.ID.ToString() 
+			});
+			
+			list.Add(new EditableField
+			{ 
+				Row = 1, 
+				Column = 1, 
+				Required = true,
+				FieldName = "Name",
+				Name = "Name", 
+				FieldType = DataType.Text.ToString(), 
+				Value = a.Name, 
+				Validations = checkAndAddValidation(fieldType: "Text",
+										friendlyName: "Name",
+										required: true,
+										pattern: "",
+										minLength: 1,
+										maxLength: 100) 
+			});
+			
+			list.Add(new EditableField 
+			{ 
+				Row = 1, 
+				Column = 2, 
+				Required = true, 
+				FieldName = "Inverse",
+				Name = "Inverse",
+				FieldType = DataType.Text.ToString(), 
+				Value = a.Inverse, 
+				Validations = checkAndAddValidation(fieldType: "Text",
+										friendlyName: "Inverse",
+										required: true,
+										pattern: "",
+										minLength: 1,
+										maxLength: 250) 
+			});
+			
+			list.Add(new EditableField 
+			{ 
+				ReadOnly = any, 
+				Row = 2,
+				Column = 1,
+				Required = true,
+				FieldName = "Type", 
+				Name = "Functional Type",
+				FieldType = DataType.Lookup.ToString(), 
+				Value = ((int)a.Type).ToString(),
+				Items = functionalTypes 
+			});
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Relationship
+
+		#region Field Generation
+
+		private JsonResult Relationship_AddFields(IntersectType relationshipType)
+		{
+			var list = new List<EditableField>();
+
+			if (relationshipType == null)
+			{
+				return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
+			}
+
+			list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationshipType.ID).ToList(), 2, loadLookupValues: true);
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
+		/// <param name="id">RelationshipID</param>
+		[Route("Relationship_EditFields"), NonNullableParameters]
+		public JsonResult Relationship_EditFields(int id)
+		{
+			var relationship = Company.IntersectDetails.FirstOrDefault(x => x.ID == id);
+
+			if (relationship == null)
+			{
+				return jsonException(FormControllerApiMessage.RelationshipNotFound, HttpStatusCode.NotFound);
+			}
+
+			if (!Company.HasAssetPermission(relationship.Subject, relationship.SubjectID, Permission.EditRelationships) &&
+				!Company.HasAssetPermission(relationship.Object, relationship.ObjectID, Permission.EditRelationships))
+			{
+				return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+			}
+
+			var list = new List<EditableField>
+			{
+				new EditableField { FieldName = "SubjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.SubjectUid.ToString() },
+				new EditableField { FieldName = "ObjectUid", FieldType = DataType.Hidden.ToString(), Value = relationship.ObjectUid.ToString() }
+			};
+
+			list = loadDynamicFields(
+				SystemObjects.Intersect.ToString(),
+				id,
+				list,
+				Company.GetFieldTypesByObject(SystemObjects.IntersectType, relationship.IntersectTypeID).ToList(),
+				Company.GetFieldRelationsByObject(SystemObjects.Intersect, relationship.ID).ToList(),
+				1,
+				false,
+				useDefaultCategory: true,
+				loadOnlySelectedLookupValue: true);
+
+			return Json(list, JsonRequestBehavior.AllowGet);
+		}
+
+		#endregion
+
+		#region Form Get/Post
+
+		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRelationship")]
+		public JsonResult AddRelationship(FormCollection form)
+		{
+			try
+			{
+				if (!form.HasKeys())
+				{
+					throw new NoFormDataException(FormControllerApiMessage.Relationship);
+				}
+
+				var source = parseTextField(form, "Source");
+				var sourceID = parseIntField(form, "SourceID");
+				int typeID = parseIntField(form, "IntersectTypeID");
+				var relationshipType = Company.GetById<IntersectType>(typeID, p => p.Predicate);
+				var sourceObject = Company.GetObjectDetail(source, sourceID);
+
+				if (!Company.HasAssetPermission(source, sourceID, Permission.AddRelationships))
+				{
+					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+				}
+
+				if (relationshipType == null)
+				{
+					throw new NotFoundException(FormControllerApiMessage.Relationship);
+				}
+
+				var predicateTypeInfo = relationshipType.Predicate.Type.AsInfoModel();
+
+				if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
+				{
+					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+				}
+
+				var targetCardinality = Cardinality.Many;
+
+				if (relationshipType.Subject == sourceObject.Type && relationshipType.SubjectID == sourceObject.TypeID)
+				{
+					targetCardinality = relationshipType.ObjectCardinality;
+				}
+				else
+				{
+					targetCardinality = relationshipType.SubjectCardinality;
+				}
+
+				var rawItems = parseTextField(form, "Items");
+
+				if (string.IsNullOrEmpty(rawItems))
+				{
+					return jsonException(FormControllerApiMessage.NoSelectedItems, HttpStatusCode.BadRequest);
+				}
+
+				var items = rawItems.Split(',').ToList();
+
+				if ((targetCardinality == Cardinality.One && items.Count > 1))
+				{
+					return jsonException(FormControllerApiMessage.InvalidrelationshipCardinality, HttpStatusCode.BadRequest);
+				}
+
+				List<Asset> assetToAddIntersect = new List<Asset>();
+
+				items.ForEach(item =>
+				{
+					Guid uid = Guid.Parse(item);
+					var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
+					assetToAddIntersect.Add(asset);
+				});
+
+				if (assetToAddIntersect.Any(x => x.Object == source && x.ObjectID == sourceID))
+				{
+					return jsonException(FormControllerApiMessage.ItemCannotRelateItself, HttpStatusCode.BadRequest);
+				}
+
+				foreach (var asset in assetToAddIntersect)
+				{
+					if (asset != null)
+					{
+
+						var intersect = Company.AddIntersect(typeID,
+							source, sourceID,
+							asset.Object, asset.ObjectID
+						);
+
+						var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
+						Company.AddOrUpdateFields(fields);
+					}
+				}
+
+				var name = Company.GetIntersectTypeName(relationshipType);
+
+				return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, name), "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
+			}
+			catch (BaseException ex)
+			{
+				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+			}
+			catch (Exception ex)
+			{
+				SendException(ex);
+
+				return jsonException(ex, HttpStatusCode.InternalServerError);
+			}
+		}
+
+		[HttpPut, ValidateInput(false), Route("EditRelationship")]
+		public JsonResult EditRelationship(FormCollection form)
+		{
+			try
+			{
+				if (!form.HasKeys())
+				{
+					throw new NoFormDataException(FormControllerApiMessage.Relationship);
+				}
+
+				int id = parseIntField(form, "ID");
+				var intersect = Company.GetById<Intersect>(id);
+
+				if (intersect == null)
+				{
+					throw new NotFoundException(FormControllerApiMessage.Relationship);
+				}
+
+				var intersectType = Company.GetById<IntersectType>(intersect.IntersectTypeID, p => p.Predicate);
+				var predicateTypeInfo = intersectType.Predicate.Type.AsInfoModel();
+
+				if (!predicateTypeInfo.AllowEditFromRelationshipEditor)
+				{
+					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+				}
+
+				if (!Company.HasAssetPermission(intersect.Subject, intersect.SubjectID, Permission.EditRelationships) &&
+					!Company.HasAssetPermission(intersect.Object, intersect.ObjectID, Permission.EditRelationships))
+				{
+					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+				}
+
+				Company.Update(intersect);
+				var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersect.IntersectTypeID).ToList(), form, Server, false);
+				Company.AddOrUpdateFields(fields);
+
+				return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.Relationship), intersect.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = intersect.ID });
+			}
+			catch (BaseException ex)
+			{
+				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+			}
+			catch (Exception ex)
+			{
+				SendException(ex);
+
+				return jsonException(ex, HttpStatusCode.InternalServerError);
+			}
+		}
+
+		#endregion
+
+		#region DataTable Select Source
+
+		[HttpGet, Route("Relationship_DataTable"), NonNullableParameters]
+		public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
+		{
+			var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
+			Predicate predicate = null;
+
+			if (relationshipType.PredicateID.HasValue)
+			{
+				predicate = Company.GetById<Predicate>((int)relationshipType.PredicateID);
+			}
+
+			int objectTypeID = -1;
+			string parentType = string.Empty;
+
+			#region Resolve Type
+
+			var obj = Company.GetObjectDetail(type.ToString(), objectId);
+			objectTypeID = obj.TypeID;
+			parentType = obj.Type;
+
+
+			if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
+			{
+				return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
+			}
+
+			if (type == SystemObjects.ReferenceItemType)
+			{
+				objectTypeID = 0;
+			}
+
+			var targetType = "";
+			var targetTypeID = 0;
+			var IntersectDirectionSql = "";
+			var IntersectCardinalitySql = "";
+			var IntersectTypeDirectionSql = "";
+			var SemanticRelationshipSql = "";
+
+			if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
+			{
+				targetType = relationshipType.Object;
+				targetTypeID = relationshipType.ObjectID;
+				IntersectDirectionSql = "and I.Subject = @source and I.SubjectID = @id and I.Object = A.[Object] and I.ObjectID = A.ObjectID ";
+				IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.SubjectCardinality = 1 and Object = A.[Object] and ObjectID = A.ObjectID) ";
+				IntersectTypeDirectionSql = " and IT.Object = T.Object and IT.ObjectID = T.ObjectID ";
+			}
+			else
+			{
+				targetType = relationshipType.Subject;
+				targetTypeID = relationshipType.SubjectID;
+				IntersectDirectionSql = "and I.Subject = A.[Object] and I.SubjectID = A.ObjectID and I.Object = @source and I.ObjectID = @id ";
+				IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.ObjectCardinality = 1 and Subject = A.[Object] and SubjectID = A.ObjectID) ";
+				IntersectTypeDirectionSql = " and IT.Subject = T.Object and IT.SubjectID = T.ObjectID ";
+			}
+
+			if (relationshipType.Subject == relationshipType.Object && relationshipType.SubjectID == relationshipType.ObjectID)
+			{
+				IntersectDirectionSql = @"and (  ( (I.Subject = @source and I.SubjectID = @id) AND(I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
+										  ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
+			}
+
+			if (predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false)
+			{
+				SemanticRelationshipSql = @"outer apply (
+				 select IR.ID from [Intersect] IR
+				 inner join IntersectType ITR on ITR.ID = IR.IntersectTypeID and ITR.ID <> @it 
+				 inner join [Predicate] P on P.ID = ITR.PredicateID and P.[Type] = 14
+				 where 
+					((IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID)
+					 or (IR.[Object] = @source and IR.ObjectID = @id and IR.[Subject] = a.Object and IR.SubjectID = a.ObjectID))
+								) SR";
+			}
+
+			var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
+			
+			if (targetAssetType == null)
+			{
+				throw new NotFoundException(ApiMessages.TargetAssetType);
+			}
+
+			#endregion
+
+			#region sql
+
+			var sql = "";
+
+			var PermissionJoins = "";
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				PermissionJoins = $@" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
+			}
+
+			var subSql = $@"(
+							select		A.ID,
+										A.[Object],
+										A.ObjectID,
+										A.Uid,
+										P.DisplayPath as [Path]
+							from		Asset A
+										inner join AssetType T on A.AssetTypeID = T.ID
+										inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
+										left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
+										left join graph.AssetNode P on P.ID = A.ID
+										{SemanticRelationshipSql}
+							where		I.ID is null 
+										{(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
+										and A.[State] = 1 
+										and T.ObjectID = @targetTypeID 
+										and T.[Object] = @targetType 
+										and not (A.ObjectID = @id and A.Object = @source) {IntersectCardinalitySql} {PermissionJoins}
+							) C";
+
+			switch (targetType)
+			{
+				case "Group":
+				case "GroupType":
+					#region
+					sql = $@"
+							select	'Group' as [Object], 
+									D.ID as ObjectID, 
+									A.uid,
+									D.Name
+							from	[Group] D with(nolock)
+							inner join Asset A on A.Object = 'Group' and A.ObjectID= D.ID
+							where	D.ID not in (
+												select	case 
+															when SubjectType = 'Group' then SubjectID
+															else ObjectID
+														end
+												from	[IntersectDetail]
+												where	IntersectTypeID = @it and (
+														 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group') ) OR
+														 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
+														)
+												)
+									and D.ID != @id 
+							order by D.Name";
+					break;
+				#endregion
+				case "Resource":
+				case "ResourceType":
+					#region
+					sql = $@"
+							SELECT
+							  'Resource' AS [Object],
+							D.ResourceID AS ObjectID,
+							  D.LastName + ', ' + D.FirstName AS Name,
+							  A.uid
+							FROM reporting.Global_Resource D WITH (NOLOCK)
+							INNER JOIN Asset A
+							  ON A.Object = 'Resource'
+							  AND A.ObjectID = D.ResourceID
+							WHERE D.ResourceID NOT IN (SELECT
+							  CASE
+								WHEN SubjectType = 'ResourceType' THEN SubjectID
+								ELSE ObjectID
+							  END
+							FROM [IntersectDetail]
+							WHERE IntersectTypeID = @it
+							AND ((Subject = @source
+							AND SubjectID = @id)
+							AND (ObjectType = 'Resource'))
+							union all
+							SELECT
+							  CASE
+								WHEN SubjectType = 'ResourceType' THEN SubjectID
+								ELSE ObjectID
+							  END
+							FROM [IntersectDetail]
+							WHERE IntersectTypeID = @it
+							and ((SubjectType = 'Resource')
+							AND (Object = @source
+							AND ObjectID = @id))
 							)
-					)
-        and D.ID != @id 
-order by D.Name";
-                    break;
-                #endregion
-                case "Resource":
-                case "ResourceType":
-                    #region
-                    sql = $@"
-                SELECT
-  'Resource' AS [Object],
-D.ResourceID AS ObjectID,
-  D.LastName + ', ' + D.FirstName AS Name,
-  A.uid
-FROM reporting.Global_Resource D WITH (NOLOCK)
-INNER JOIN Asset A
-  ON A.Object = 'Resource'
-  AND A.ObjectID = D.ResourceID
-WHERE D.ResourceID NOT IN (SELECT
-  CASE
-    WHEN SubjectType = 'ResourceType' THEN SubjectID
-    ELSE ObjectID
-  END
-FROM [IntersectDetail]
-WHERE IntersectTypeID = @it
-AND ((Subject = @source
-AND SubjectID = @id)
-AND (ObjectType = 'Resource'))
-union all
-SELECT
-  CASE
-    WHEN SubjectType = 'ResourceType' THEN SubjectID
-    ELSE ObjectID
-  END
-FROM [IntersectDetail]
-WHERE IntersectTypeID = @it
-and ((SubjectType = 'Resource')
-AND (Object = @source
-AND ObjectID = @id))
-)
-AND D.ResourceID != @id
-ORDER BY D.LastName, D.FirstName";
-                    break;
-                #endregion
-                case "ReferenceItemType":
-                    #region
-                    if (targetTypeID == 0)
-                    {
-                        sql = $@"
-select	'ReferenceItemType' as [Object], 
-        r.ObjectID as ObjectID, 
-        r.uid,
-        r.Name as Name
-from	AssetType r with(nolock)
-where   r.[objectId] not in (
-					select	case 
-                                when SubjectType = 'ReferenceItemType' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType') ) OR
-							 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
-							)
-					)
-        and r.[ObjectId] != @id
-        and r.[Object]='ReferenceItemType'
-order by r.Name";
-                    }
-                    else
-                    {
-                        sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
-                    }
-                    break;
-                #endregion
-                case "ArtifactType":
-                case "LookupType":
-                case "RuleType":
-                    sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
-                    break;
-                case "PolicyType":
-                case "TaxonomyType":
-                    sql = $@"select	c.uid, C.Path as Name, c.Object from {subSql} order by C.Path";
-                    break;
-            }
+							AND D.ResourceID != @id
+							ORDER BY D.LastName, D.FirstName";
+					break;
+				#endregion
+				case "ReferenceItemType":
+					#region
+					if (targetTypeID == 0)
+					{
+						sql = $@"
+								select	'ReferenceItemType' as [Object], 
+										r.ObjectID as ObjectID, 
+										r.uid,
+										r.Name as Name
+								from	AssetType r with(nolock)
+								where   r.[objectId] not in (
+													select	case 
+																when SubjectType = 'ReferenceItemType' then SubjectID
+																else ObjectID
+															end
+													from	[IntersectDetail]
+													where	IntersectTypeID = @it and (
+															 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType') ) OR
+															 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
+															)
+													)
+										and r.[ObjectId] != @id
+										and r.[Object]='ReferenceItemType'
+								order by r.Name";
+					}
+					else
+					{
+						sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
+					}
+					break;
+				#endregion
+				case "ArtifactType":
+				case "LookupType":
+				case "RuleType":
+					sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
+					break;
+				case "PolicyType":
+				case "TaxonomyType":
+					sql = $@"select	c.uid, C.Path as Name, c.Object from {subSql} order by C.Path";
+					break;
+			}
 
-            #endregion
+			#endregion
 
-            var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
+			var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
-            return Json(items, JsonRequestBehavior.AllowGet);
-        }
+			return Json(items, JsonRequestBehavior.AllowGet);
+		}
 
-        #endregion
+		#endregion
 
-        #endregion
+		#endregion
 
-        #region IntersectType
+		#region IntersectType
 
-        #region Json Feeds To Support Editing
+		#region Json Feeds To Support Editing
 
-        [HttpGet, Route("IntersectType_PredicateOptions")]
-        public JsonNetResult IntersectType_PredicateOptions(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
-        {
-            try
-            {
-                var models = Company.GetPredicateOptions(subjectUid, objectUid, predicateUid)
-                    .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.UID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
-                    .OrderBy(i => i.label);
+		[HttpGet, Route("IntersectType_PredicateOptions")]
+		public JsonNetResult IntersectType_PredicateOptions(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
+		{
+			try
+			{
+				var models = Company.GetPredicateOptions(subjectUid, objectUid, predicateUid)
+					.Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.UID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
+					.OrderBy(i => i.label);
 
-                return new JsonNetResult { Data = models, Formatting = Formatting.None };
-            }
-            catch (Exception ex)
-            {
-                return jsonNetException(ex);
-            }
-        }
+				return new JsonNetResult { Data = models, Formatting = Formatting.None };
+			}
+			catch (Exception ex)
+			{
+				return jsonNetException(ex);
+			}
+		}
 
-        [Route("IntersectType_CardinalityOptions")]
-        public JsonNetResult IntersectType_CardinalityOptions()
-        {
-            var models = Cardinality.One.GetList()
-                .Select(i => new { title = i.Name, value = i.Name });
+		[Route("IntersectType_CardinalityOptions")]
+		public JsonNetResult IntersectType_CardinalityOptions()
+		{
+			var models = Cardinality.One.GetList()
+				.Select(i => new { title = i.Name, value = i.Name });
 
-            return new JsonNetResult { Data = models, Formatting = Formatting.None };
-        }
+			return new JsonNetResult { Data = models, Formatting = Formatting.None };
+		}
 
-        [Route("IntersectType_SubjectOptions")]
-        public JsonNetResult IntersectType_SubjectOptions()
-        {
-            var models = Company.GetIntersectTypeOptions()
-                .Where(i => i.Type != "MetricAllocation" && i.Type != "Predicate")
-                .Select(i => new { title = i.Name, value = i.Uid });
+		[Route("IntersectType_SubjectOptions")]
+		public JsonNetResult IntersectType_SubjectOptions()
+		{
+			var models = Company.GetIntersectTypeOptions()
+				.Where(i => i.Type != "MetricAllocation" && i.Type != "Predicate")
+				.Select(i => new { title = i.Name, value = i.Uid });
 
-            return new JsonNetResult { Data = models, Formatting = Formatting.None };
-        }
+			return new JsonNetResult { Data = models, Formatting = Formatting.None };
+		}
 
-        [HttpGet, Route("IntersectType_ObjectOptions")]
-        public JsonNetResult IntersectType_ObjectOptions(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
-        {
-            try
-            {
-                List<AssetTypeClass> classLimits = null;
+		[HttpGet, Route("IntersectType_ObjectOptions")]
+		public JsonNetResult IntersectType_ObjectOptions(Guid subjectUid, Guid? objectUid = null, Guid? predicateUid = null)
+		{
+			try
+			{
+				List<AssetTypeClass> classLimits = null;
 
-                if (predicateUid.HasValue)
-                {
-                    var predicate = Company.Predicates.FirstOrDefault(p => p.UID == predicateUid);
-                    if (predicate != null)
-                    {
-                        classLimits = predicate.Type.AsInfoModel().ObjectAssetClassesSupported.ToList();
-                    }
-                }
+				if (predicateUid.HasValue)
+				{
+					var predicate = Company.Predicates.FirstOrDefault(p => p.UID == predicateUid);
+					
+					if (predicate != null)
+					{
+						classLimits = predicate.Type.AsInfoModel().ObjectAssetClassesSupported.ToList();
+					}
+				}
 
-                var models = Company.GetIntersectTypeOptions(subjectUid, objectUid, predicateUid, classLimits)
-                    .Where(i => i.Type != "IntersectType")
-                    .Select(i => new { title = i.Name, value = i.Uid.ToString() });
+				var models = Company.GetIntersectTypeOptions(subjectUid, objectUid, predicateUid, classLimits)
+					.Where(i => i.Type != "IntersectType")
+					.Select(i => new { title = i.Name, value = i.Uid.ToString() });
 
-                return new JsonNetResult { Data = models, Formatting = Formatting.None };
-            }
-            catch (Exception ex)
-            {
-                return jsonNetException(ex);
-            }
-        }
+				return new JsonNetResult { Data = models, Formatting = Formatting.None };
+			}
+			catch (Exception ex)
+			{
+				return jsonNetException(ex);
+			}
+		}
 
-        #endregion
+		#endregion
 
-        #endregion
-    }
+		#endregion
+	}
 }

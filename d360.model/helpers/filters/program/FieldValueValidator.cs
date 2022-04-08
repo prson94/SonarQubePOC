@@ -1,14 +1,17 @@
-﻿using d360.core.enums;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Linq;
+
+using d360.core.enums;
 
 namespace d360.model.helpers.filters.program
 {
     public class FieldValueValidatorResult
     {
         public bool Status { get; set; }
+        
         public string Message { get; set; }
+        
         public object UpdatedValue { get; set; }
     }
 
@@ -21,8 +24,11 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
+            var result = new FieldValueValidatorResult
+            {
+                Status = true
+            };
+
             if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out int number))
             {
                 //parsing of thousands seperator fails on - symbol
@@ -30,10 +36,13 @@ namespace d360.model.helpers.filters.program
                 {
                     result.Status = false;
                     result.Message = $"Invalid numeric value for field '{fieldName}'";
+                    
                     return result;
                 }
             }
+
             result.UpdatedValue = number;
+            
             return result;
         }
     }
@@ -42,15 +51,21 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
+            var result = new FieldValueValidatorResult
+            {
+                Status = true
+            };
+
             if (!decimal.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var updatedValue))
             {
                 result.Status = false;
                 result.Message = $"Invalid decimal value for field '{fieldName}'";
+                
                 return result;
             }
+
             result.UpdatedValue = updatedValue;
+            
             return result;
         }
     }
@@ -59,10 +74,11 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
+            var result = new FieldValueValidatorResult
+            {
+                Status = true
+            };
 
-            bool boolean = false;
             var stringValue = value.ToString().ToLower(CultureInfo.InvariantCulture).Trim();
             if (stringValue == "0")
             {
@@ -78,19 +94,22 @@ namespace d360.model.helpers.filters.program
             {
                 stringValue = "true";
             }
+
             if ("false".Contains(stringValue))
             {
                 stringValue = "false";
             }
 
-            if (!bool.TryParse(stringValue, out boolean))
+            if (!bool.TryParse(stringValue, out bool boolean))
             {
                 result.Status = false;
                 result.Message = $"Invalid boolean value for field '{fieldName}'";
+                
                 return result;
             }
 
             result.UpdatedValue = boolean;
+            
             return result;
         }
     }
@@ -99,22 +118,25 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
+            var result = new FieldValueValidatorResult
+            {
+                Status = true
+            };
 
-            DateTime date;
-            if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
+            if (!DateTime.TryParse(value.ToString().Trim('\''), out DateTime date))
             {
                 if (@operator == "ct" || @operator == "nct")
                 {
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     result.UpdatedValue = value;
+                    
                     return result;
                 }
                 else
                 {
                     result.Status = false;
                     result.Message = $"Invalid date value for field '{fieldName}'";
+                    
                     return result;
                 }
             }
@@ -130,9 +152,9 @@ namespace d360.model.helpers.filters.program
                 }
 
                 result.UpdatedValue = value;
+                
                 return result;
             }
-
         }
     }
 
@@ -140,21 +162,25 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
-            DateTime date;
-            if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
+            var result = new FieldValueValidatorResult
+            {
+                Status = true
+            };
+
+            if (!DateTime.TryParse(value.ToString().Trim('\''), out DateTime date))
             {
                 if (@operator == "ct" || @operator == "nct")
                 {
                     value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     result.UpdatedValue = value;
+                    
                     return result;
                 }
                 else
                 {
                     result.Status = false;
                     result.Message = $"Invalid date value for field '{fieldName}'";
+                    
                     return result;
                 }
             }
@@ -163,7 +189,6 @@ namespace d360.model.helpers.filters.program
                 value = date;
                 if (@operator == "ct" || @operator == "nct")
                 {
-
                     if (date == date.Date)
                     {
                         value = date.ToString("yyyy-MM-dd");
@@ -180,10 +205,11 @@ namespace d360.model.helpers.filters.program
                     date = date.AddMilliseconds(999);
                     value = date;
                 }
+
                 result.UpdatedValue = value;
+                
                 return result;
             }
-
         }
     }
 
@@ -191,8 +217,10 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
+            var result = new FieldValueValidatorResult
+            {
+                Status = true
+            };
 
             var classes = AssetTypeClass.BusinessAsset.GetAsList();
             var match = classes.FirstOrDefault(x => x.Name.ToLower(CultureInfo.InvariantCulture) == value.ToString().ToLower(CultureInfo.InvariantCulture).Trim('\'')
@@ -202,10 +230,12 @@ namespace d360.model.helpers.filters.program
             {
                 result.Status = false;
                 result.Message = $"Invalid AssetTypeClass value for field '{fieldName}'";
+                
                 return result;
             }
 
             result.UpdatedValue = (int)match.ID;
+            
             return result;
         }
     }
@@ -214,9 +244,12 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
-            var result = new FieldValueValidatorResult();
-            result.Status = true;
-            result.UpdatedValue = value.ToString().Trim('\'').Replace("&apos;", "'");
+            var result = new FieldValueValidatorResult
+            {
+                Status = true,
+                UpdatedValue = value.ToString().Trim('\'').Replace("&apos;", "'")
+            };
+
             return result;
         }
     }

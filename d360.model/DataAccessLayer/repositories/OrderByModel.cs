@@ -1,4 +1,5 @@
 ﻿using System;
+
 using d360.core;
 
 namespace d360.model.DataAccessLayer
@@ -19,15 +20,19 @@ namespace d360.model.DataAccessLayer
             Preconditions.NotEmpty(columnName, nameof(columnName));
             Preconditions.IsDefined(direction, nameof(direction));
 
-            var result = new OrderByModel();
-            result.ColumnName = columnName;
-            result.Direction = direction;
+            var result = new OrderByModel
+            {
+                ColumnName = columnName,
+                Direction = direction
+            };
+
             return result;
         }
 
         private class AllowedDirection
         {
             public string Text { get; set; }
+            
             public OrderByDirectionEnum Value { get; set; }
         }
 

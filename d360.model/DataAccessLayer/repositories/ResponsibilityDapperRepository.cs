@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+
 using d360.core.entities;
+
 using Dapper;
 
 namespace d360.model.DataAccessLayer.repositories

@@ -1,14 +1,13 @@
-﻿using d360.web.Models;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
-using System.Web.Http.ExceptionHandling;
-using Resources;
+
 using d360.core.exceptions;
+using d360.web.Models;
+
+using Resources;
 
 namespace d360.web.Handlers
 {
@@ -30,10 +29,10 @@ namespace d360.web.Handlers
         private HttpResponseMessage GenerateResponse(HttpRequestMessage request, HttpResponseMessage response)
         {
             string errorMessage = null;
+
             if (!IsResponseValid(response))
             {
-                object responseContent;
-                if (response.TryGetContentValue(out responseContent))
+                if (response.TryGetContentValue(out object responseContent))
                 {
                     try
                     {
@@ -57,6 +56,7 @@ namespace d360.web.Handlers
                                 title = OthersMessages.BadRequestSubmitted
                             };
                             var result = request.CreateResponse(response.StatusCode, responseMetadata);
+
                             return result;
                         }
                         else if (responseContent is GenericException)
@@ -67,6 +67,7 @@ namespace d360.web.Handlers
                                 message = genEx.StatusMessage,
                                 title = genEx.StatusDescription
                             };
+
                             return request.CreateResponse(genEx.StatusCode, responseMetadata);
                         }
                         else if (responseContent is Exception)
@@ -76,6 +77,7 @@ namespace d360.web.Handlers
                                 message = (responseContent as Exception).Message,
                                 title = OthersMessages.BadRequestSubmitted
                             };
+
                             return request.CreateResponse(response.StatusCode, responseMetadata);
                         }
                         else
@@ -88,7 +90,9 @@ namespace d360.web.Handlers
                                 responseContent = null;
 
                                 if (!string.IsNullOrEmpty(httpError.ExceptionMessage))
+                                {
                                     errorMessage += (" " + httpError.ExceptionMessage);
+                                }
                             }
 
                             var responseMetadata = new ErrorResponse
@@ -96,11 +100,13 @@ namespace d360.web.Handlers
                                 message = errorMessage,
                                 title = OthersMessages.BadRequestSubmitted
                             };
+
                             return request.CreateResponse(response.StatusCode, responseMetadata);
                         }
                     }
                     catch
                     {
+                        //swallow exception here.
                     } //continue on to return the normal response.
                 }
             }
@@ -111,8 +117,12 @@ namespace d360.web.Handlers
         private bool IsResponseValid(HttpResponseMessage response)
         {
             int statusCode = (int)response.StatusCode;
+
             if ((response != null) && (statusCode >= 200 && statusCode < 300))
+            {
                 return true;
+            }
+
             return false;
         }
     }

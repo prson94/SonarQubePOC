@@ -1,8 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { SearchFullResult, SearchQuery, SearchAggregationFilter, SearchFieldFilter, SearchState, SearchCheckTreeVal, SearchConnector } from '../../models/search-result.model';
-import { tap, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
-import { Observable, BehaviorSubject, pipe, Subscription } from 'rxjs';
+import { tap, debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject, Subscription, of } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
@@ -59,6 +59,10 @@ export class SearchStateService extends BaseObservableService {
     private _treeLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get treeLoading() {
         return new Observable((fn) => this._treeLoading.subscribe(fn));
+    }
+    private _connectionError: BehaviorSubject<boolean> = new BehaviorSubject(false);
+    get connectionError() {
+        return new Observable((fn) => this._connectionError.subscribe(fn));
     }
 
     public selectedFilters: CheckTreeNode[] = [];
@@ -177,6 +181,7 @@ export class SearchStateService extends BaseObservableService {
      * Performs search and updates observable values
      */
     private doSearch() {
+        this._connectionError.next(false);
         this.saveState();
 
         //Create the Aggregate filters from either the checkbox tree or the provided searchTypes
@@ -274,40 +279,48 @@ export class SearchStateService extends BaseObservableService {
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
             tap(val => { this._treeLoading.next(true) }),
-            switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery))
-        ).subscribe((res) => {
-            var filterTree = this.buildTree(res.Aggregations.category.map((val) => {
-                return {
-                    "key": val.Name,
-                    "label": this.getDisplayLookup(val.Name),
-                    "type": "category",
-                    "expanded": false,
-                    "data": val.Name,
-                    "count": val.ResultCount,
-                    "children": val.Items.map((cat) => {
-                        return {
-                            "key": val.Name + this.subCategoryKeySeparator + cat.Name,
-                            "label": cat.Name,
-                            "type": "subCategory",
-                            "data": cat.Name,
-                            "count": cat.ResultCount
-                        };
-                    })
-                }
-            }));
-            let selectedFilters = [];
-            if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
-                for (let ctk of this._checkTreeKeys) {
-                    let node = this.getNodeWithKey(ctk.key, filterTree);
-                    if (node) {
-                        selectedFilters.push(node);
+            switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery).pipe(
+                catchError((err) => {
+                    if (err === "ConnectionError") {
+                        this._connectionError.next(true);
                     }
+                    return of(this.searchService.getEmptyResult());
+                }))
+            )
+        ).subscribe(
+            (res) => {
+                var filterTree = this.buildTree(res.Aggregations.category.map((val) => {
+                    return {
+                        "key": val.Name,
+                        "label": this.getDisplayLookup(val.Name),
+                        "type": "category",
+                        "expanded": false,
+                        "data": val.Name,
+                        "count": val.ResultCount,
+                        "children": val.Items.map((cat) => {
+                            return {
+                                "key": val.Name + this.subCategoryKeySeparator + cat.Name,
+                                "label": cat.Name,
+                                "type": "subCategory",
+                                "data": cat.Name,
+                                "count": cat.ResultCount
+                            };
+                        })
+                    }
+                }));
+                let selectedFilters = [];
+                if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
+                    for (let ctk of this._checkTreeKeys) {
+                        let node = this.getNodeWithKey(ctk.key, filterTree);
+                        if (node) {
+                            selectedFilters.push(node);
+                        }
+                    }
+                    this.selectedFilters = selectedFilters;
                 }
-                this.selectedFilters = selectedFilters;
+                this._categories.next(filterTree);
+                this._treeLoading.next(false);
             }
-            this._categories.next(filterTree);
-            this._treeLoading.next(false);
-        }
         );
 
         let initialQuery = true;
@@ -317,18 +330,27 @@ export class SearchStateService extends BaseObservableService {
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
             tap(val => { this._loading.next(true); }),
-            switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery))
-        ).subscribe((res) => {
-            if (initialQuery && res.ElapsedMS.Query === 0) {
-                initialQuery = false;
-            } else {
-                const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
-                this._resultCount.next(res.Matches);
-                this._pageNumber.next(pageNumber);
-                this._results.next(res.Results);
-                this._loading.next(false);
+            switchMap((mainQuery) => this.searchService.getSearchResultsByQuery(mainQuery).pipe(
+                catchError((err) => {
+                    if (err === "ConnectionError") {
+                        this._connectionError.next(true);
+                    }
+                    return of(this.searchService.getEmptyResult());
+                })
+            ))
+        ).subscribe(
+            (res) => {
+                if (initialQuery && res.ElapsedMS.Query === 0) {
+                    initialQuery = false;
+                } else {
+                    const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
+                    this._resultCount.next(res.Matches);
+                    this._pageNumber.next(pageNumber);
+                    this._results.next(res.Results);
+                    this._loading.next(false);
+                }
             }
-        });
+        );
     }
 
     public getExcel(limit: number): Observable<any> {

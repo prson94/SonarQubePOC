@@ -101,6 +101,19 @@ stages:
         solutionToBuild: d360.web/d360.web.csproj
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
         buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
+    - template: build/steps/step-azure-key-vault.yml@templates
+      parameters:
+        secretsFilter: blackduckApi
+    - template: build/steps/step-blackduck-nuget.yml@templates
+      parameters:
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-UI'
+        blackDuckScanDirectory: $PWD
+    - template: build/steps/step-blackduck-npm.yml@templates
+      parameters:
+        blackduckApiToken: $(blackduckApi)
+        projectName: 'InfogixData360-Govern-UI'
+        blackDuckScanDirectory: $PWD/d360.web
     - template: build/steps/step-govern-attribution-report.yml@templates
     - task: ArchiveFiles@2
       displayName: 'Add License Attirubtion File to Distro'

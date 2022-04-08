@@ -2,20 +2,21 @@
 import { SearchResults, SearchQuery } from '../models/search-result.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { SettingsHelper, SearchType } from '../models/settings.model';
 import { IndexableType, IndexableStatus } from "../models/search-admin.model";
+import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class SearchService extends BaseObservableService  {
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, private featureFlagService: FeatureFlagsService) { super(messagesService); }
 
-    private getEmptyResult(): SearchResults {
+    public getEmptyResult(): SearchResults {
         let result = new SearchResults();
         result.Results = [];
         result.Aggregations = { category: []};
@@ -37,6 +38,9 @@ export class SearchService extends BaseObservableService  {
                 catchError((err) => {
                     let errorMessage = null;
                     if (Object.keys(err).indexOf("error") > -1) {
+                        if (err.error.title === "Cannot connect to the search server") {
+                            return throwError("ConnectionError");
+                        }
                         errorMessage = err.error.message;
                     }
                     if (errorMessage === null || errorMessage === "") {
@@ -61,7 +65,11 @@ export class SearchService extends BaseObservableService  {
             exclude.push('User');
         }
         let categories: SearchType[] = SettingsHelper.getSearchTypesList().filter((t) => exclude.indexOf(t.value) === -1);
-
+        
+        if (!this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
+            categories = categories.filter((s) => s.value !== "SemanticType");
+        }
+        
         return this.getVisibleCategories().pipe(
             map((res) => categories.map((c) => {
                 c.visible = res.indexOf(c.value) >= 0;

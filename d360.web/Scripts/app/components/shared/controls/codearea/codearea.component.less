@@ -118,3 +118,54 @@
     }
   }
 }
+
+.cm-s-custom-css-theme {
+  .cm-tag {
+    color: @ig-pink;
+  }
+
+  .cm-number {
+    color: @ig-red;
+  }
+
+  .cm-atom {
+    color: @ig-orange-s2;
+  }
+
+  .cm-qualifier {
+    color: @ig-purple;
+  }
+
+  .cm-comment {
+    color: @ig-slate;
+  }
+
+  .cm-string {
+    color: @ig-green;
+  }
+
+  .cm-variable.cm-callee {
+    color: @ig-grey;
+  }
+
+  .cm-keyword {
+    color: @ig-coral-s2;
+  }
+
+  .cm-error {
+    position: relative;
+
+    &::before {
+      content: "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+      font-size: 0.6em;
+      font-weight: 700;
+      font-family: Times New Roman, Serif;
+      color: red;
+      width: 100%;
+      position: absolute;
+      top: 12px;
+      left: -1px;
+      overflow: hidden;
+    }
+  }
+}

@@ -1,9 +1,10 @@
-﻿using d360.core;
-using d360.core.enums;
-using d360.model.DataAccessLayer.repositories;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using d360.core;
+using d360.core.enums;
+using d360.model.DataAccessLayer.repositories;
 
 namespace d360.model.DataAccessLayer
 {

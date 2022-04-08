@@ -256,47 +256,6 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    getRelationshipCounts(objectType: string, objectId: number): Observable<ObjectRelationshipCount[]> {
-        return this.http.get(`/api/${objectType}/${objectId}/relationships/counts`)
-            .pipe(
-                map(response => <ObjectRelationshipCount[]>response),
-                catchError(err => this.handleError(err))
-            );
-
-    }
-
-    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, includeInverse: boolean = true, sourceIsObject: boolean = false): Observable<any> {
-        return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}?includeInverse=${includeInverse}&sourceIsObject=${sourceIsObject}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    public getRelations(
-        object: string,
-        objectId: number
-    ): Observable<RelationItem[]> {
-        return this
-            .http
-            .get(`api/${object}/${objectId}/relations`)
-            .pipe(
-                map((response) => <RelationItem[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    deleteRelationshipItem(id: number): Observable<any> {
-        let url = `/api/relationships/${id}`;
-
-        return this.http
-            .delete(url)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     IsTransformPredicateExists(id: number): Observable<boolean> {
         return this.http.get(`api/v2/relationships/IsTransformPredicateExists/${id}`)
             .pipe(

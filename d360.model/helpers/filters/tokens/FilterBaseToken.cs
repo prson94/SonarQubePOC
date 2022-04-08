@@ -1,29 +1,39 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.model.helpers.filters.program;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+
+using d360.core;
+using d360.core.entities;
+using d360.model.helpers.filters.program;
 
 namespace d360.model.helpers.filters
 {
     public abstract class FilterBaseToken
     {
         protected IFilterDataProvider dataProvider;
+        
         protected bool isLookupField { get; set; }
 
         protected int parameterIdx { get; set; }
+        
         protected string field { get; set; }
+        
         public string @operator { get; set; }
+        
         protected object value { get; set; }
+        
         public bool IsNullValue { get; set; }
+        
         protected string fieldColumn { get; set; }
+        
         protected StringBuilder stringBuilder = new StringBuilder();
+        
         protected Dictionary<string, object> sqlParamsRef;
 
         protected FieldType fieldType { get; set; }
+        
         protected DefaultFilter defaultFilter { get; set; }
 
         public string CurrentFieldType
@@ -68,7 +78,7 @@ namespace d360.model.helpers.filters
 
         protected void AppendNullOperatorForNotOperators(string fieldName)
         {
-            if (this.@operator == "ne" || this.@operator == "nct")
+            if (@operator == "ne" || @operator == "nct")
             {
                 stringBuilder.Insert(0, "(");
                 stringBuilder.Append(" or ");
@@ -105,19 +115,21 @@ namespace d360.model.helpers.filters
                 {
                     throw new FilterExpressionParserException("Lookup field type is missing LookupObjectID value!");
                 }
-                this.isLookupField = true;
+
+                isLookupField = true;
+
                 if (skipLookupCheck)
                 {
                     if (@operator == "eq")
                     {
                         @operator = "ct";
-                        this.value = "%" + this.value + "%";
+                        value = "%" + value + "%";
                     }
 
                     if (@operator == "ne")
                     {
                         @operator = "nct";
-                        this.value = "%" + this.value + "%";
+                        value = "%" + value + "%";
                     }
                 }
                 else
@@ -126,7 +138,7 @@ namespace d360.model.helpers.filters
                 }
             }
 
-            if (!this.isLookupField && fieldType.Type != DataType.Color.ToString())
+            if (!isLookupField && fieldType.Type != DataType.Color.ToString())
             {
                 var fieldSql = GetColumnValueSyntax(fieldType.ID);
                 if (@operator == "ct" && complexField && fieldType.Type != "Text")
@@ -134,12 +146,12 @@ namespace d360.model.helpers.filters
                     fieldSql = $"CONVERT(NVARCHAR(max),{fieldSql})";
                 }
 
-                if (this.ConvertToNvarChar)
+                if (ConvertToNvarChar)
                 {
                     fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
                 }
 
-                if (this.fieldType.Type == "Score")
+                if (fieldType.Type == "Score")
                 {
                     fieldSql = $"CONVERT(DECIMAL(7,2),REPLACE({fieldSql},'%',''))";
                 }
@@ -148,7 +160,7 @@ namespace d360.model.helpers.filters
                 stringBuilder.Append(FilterHelpers.GetSQLOperator(@operator));
                 stringBuilder.Append($"@filter_{parameterIdx}");
 
-                this.AppendNullOperatorForNotOperators(fieldSql);
+                AppendNullOperatorForNotOperators(fieldSql);
             }
 
             if (fieldType.Type == DataType.Color.ToString())
@@ -165,7 +177,7 @@ namespace d360.model.helpers.filters
                     value = "%\"Name\":\"" + value.ToString().Trim() + "\"%";
                 }
 
-                this.field = "ISNULL(ACJ.ColorJson,'')";
+                field = "ISNULL(ACJ.ColorJson,'')";
 
                 if (complexField)
                 {
@@ -184,7 +196,7 @@ namespace d360.model.helpers.filters
 
         protected void LoadLookupSql()
         {
-            bool isFieldFromRel = this.dataProvider.IsFieldFromRelationship(fieldType.ID);
+            bool isFieldFromRel = dataProvider.IsFieldFromRelationship(fieldType.ID);
 
             string type = fieldType.Type;
             int fieldTypeId = fieldType.ID;
@@ -198,7 +210,7 @@ namespace d360.model.helpers.filters
             //handle field from relationship list values
             if (isFieldFromRel)
             {
-                var lookupFieldType = this.dataProvider.GetFieldTypeById(fieldType.LookupObjectFieldTypeID);
+                var lookupFieldType = dataProvider.GetFieldTypeById(fieldType.LookupObjectFieldTypeID);
                 fieldTypeIdForLookupValue = lookupFieldType.ID;
                 lookupObjectType = lookupFieldType.LookupObjectType;
                 lookupObjectId = lookupFieldType.LookupObjectID.HasValue ? lookupFieldType.LookupObjectID.Value : 0;
@@ -216,7 +228,8 @@ namespace d360.model.helpers.filters
                 else
                 {
 
-                    int lookupValue = this.dataProvider.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
+                    int lookupValue = dataProvider.GetFieldLookupValue(lookupObjectType, lookupObjectId, fieldTypeIdForLookupValue, value.ToString());
+                    
                     if (lookupValue <= 0)
                     {
                         throw new FilterExpressionParserException($"Invalid lookup value '{value}' for field '{field}'");
@@ -229,12 +242,14 @@ namespace d360.model.helpers.filters
 
 
                     string condition = "in";
+                    
                     if (@operator == "ne")
                     {
                         condition = "not in";
                     }
-                    var basicSqlExpression = string.Empty;
 
+                    string basicSqlExpression;
+                    
                     if (!string.IsNullOrEmpty(defaultValue))
                     {
                         basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldTypeId}.{valueQueryPart},@defLookupValue{parameterIdx}),','))";
@@ -249,8 +264,8 @@ namespace d360.model.helpers.filters
                     {
                         basicSqlExpression = $"(F{fieldTypeId}.{valueQueryPart} = '0' or {basicSqlExpression})";
                     }
-                    stringBuilder.Append(basicSqlExpression);
 
+                    stringBuilder.Append(basicSqlExpression);
                 }
             }
 
@@ -287,6 +302,7 @@ namespace d360.model.helpers.filters
                 {
                     return $"F{fieldTypeId}.FormattedValue";
                 }
+
                 return fieldColumn.Substring(0, fieldColumn.ToLowerInvariant().LastIndexOf(" as ", StringComparison.InvariantCulture));
             }
         }
@@ -305,10 +321,12 @@ namespace d360.model.helpers.filters
                     return new BooleanFieldValidator();
                 case "date":
                 case "datetime":
+                    
                     if (defaultFilter != null && (defaultFilter.ApiName == "CreatedOn" || defaultFilter.ApiName == "UpdatedOn"))
                     {
                         return new SystemDateFieldValidator();
                     }
+
                     return new DateFieldValidator();
                 case "assettypeclass":
                     return new AssetTypeClassFieldValidator();
@@ -331,20 +349,30 @@ namespace d360.model.helpers.filters
 
     public enum SqlFieldType
     {
-        Text, Boolean, Number, Decimal, Date, DateTime, Guid, AssetTypeClass, Xml
+        Text, 
+        Boolean, 
+        Number, 
+        Decimal, 
+        Date, 
+        DateTime, 
+        Guid, 
+        AssetTypeClass, 
+        Xml
     }
 
     public class DefaultFilter
     {
         public string ApiName { get; set; }
+        
         public string SqlExpression { get; set; }
+        
         public SqlFieldType SqlFieldType { get; set; }
 
         public DefaultFilter(string apiName, string sqlExpression, SqlFieldType sqlFieldType)
         {
-            this.ApiName = apiName;
-            this.SqlExpression = sqlExpression;
-            this.SqlFieldType = sqlFieldType;
+            ApiName = apiName;
+            SqlExpression = sqlExpression;
+            SqlFieldType = sqlFieldType;
         }
     }
 }

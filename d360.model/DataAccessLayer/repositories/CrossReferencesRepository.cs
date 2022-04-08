@@ -1,38 +1,38 @@
-﻿using d360.core.entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using d360.core;
+using d360.core.entities;
 using d360.core.queue;
 using d360.extensions;
-using d360.core;
-using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 using d360.model.DataAccessLayer.repositories;
+
+using Dapper;
+
+using Newtonsoft.Json;
 
 namespace d360.model.DataAccessLayer
 {
     public class CrossReferencesRepository : BaseRepository, ICrossReferencesRepository
     {
-        ICompanyContext CompanyContext;
+        private readonly ICompanyContext CompanyContext;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
 
         public CrossReferencesRepository(ICompanyContext compCtx, IQueueSource queueSource, IStorageProvider storageProvider) : base(compCtx)
         {
-            this.CompanyContext = compCtx;
-            this.QueueSource = queueSource;
-            this.StorageProvider = storageProvider;
+            CompanyContext = compCtx;
+            QueueSource = queueSource;
+            StorageProvider = storageProvider;
         }
+
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferences(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var dbArgs = new DynamicParameters();
             var sql = "select uid, DataSource, Type, ExternalID, FieldHash from [dbo].[AssetCrossReference]";
             List<string> queryFilters = new List<string>();
-
 
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "_assetuid"))
             {
@@ -71,7 +71,9 @@ namespace d360.model.DataAccessLayer
             {
                 sql += " where " + string.Join(" and ", queryFilters);
             }
+
             var assetCrossReferences = await CompanyContext.QueryAsync<AssetCrossReference>(sql, dbArgs, ApiTimeout);
+            
             return assetCrossReferences;
         }
 
@@ -85,10 +87,9 @@ namespace d360.model.DataAccessLayer
             return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type and [ExternalID] = @externalId", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true }, externalId }, ApiTimeout);
         }
 
-
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByType(string type)
         {
-            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true } }, ApiTimeout); 
+            return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [type] = @type", new { type = new DbString { Value = type, IsFixedLength = true, Length = 50, IsAnsi = true } }, ApiTimeout);
         }
 
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByDataSource(string dataSource)
@@ -96,17 +97,16 @@ namespace d360.model.DataAccessLayer
             return await CompanyContext.QueryAsync<AssetCrossReference>("select uid, DataSource,Type,ExternalID,FieldHash from AssetCrossReference where [datasource] = @dataSource", new { dataSource = new DbString { Value = dataSource, IsFixedLength = true, Length = 250, IsAnsi = true } }, ApiTimeout);
         }
 
-
         public async Task<int> CreateNewCrossReference(AssetCrossReference model)
         {
             return await CompanyContext.Database.Connection.ExecuteAsync("insert into assetcrossreference (uid,DataSource,Type,ExternalID,FieldHash) values(@u,@d,@t,@e,@f)", new { u = model.uid, d = model.DataSource, t = model.Type, f = model.FieldHash, e = model.ExternalID });
         }
 
-
-        public IEnumerable<AssetCrossReferenceResult> PostBulkCrossReference(List<AssetCrossReference> models,ApiExecution execution)
+        public IEnumerable<AssetCrossReferenceResult> PostBulkCrossReference(List<AssetCrossReference> models, ApiExecution execution)
         {
             CompanyContext.Add(execution);
             List<AssetCrossReferenceResult> results = null;
+            
             try
             {
                 results = CompanyContext.ImportCrossReferences(execution, models);
@@ -124,6 +124,7 @@ namespace d360.model.DataAccessLayer
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
             }
+
             return results;
         }
 
@@ -136,7 +137,6 @@ namespace d360.model.DataAccessLayer
         {
             return await CompanyContext.Database.Connection.ExecuteAsync("update assetcrossreference set FieldHash = @fh where uid = @uid and DataSource = @ds and [Type] = @t", new { fh = model.FieldHash, uid = uid, ds = model.DataSource, t = model.Type });
         }
-
 
         public async Task<int> DeleteCrossReferenceByUid(Guid uid)
         {
@@ -155,10 +155,8 @@ namespace d360.model.DataAccessLayer
 
         public async Task<int> DeleteCrossReferenceByType(string type, int timeout = 90)
         {
-            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where [type] = @t", new { t = type },commandTimeout:timeout);
+            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where [type] = @t", new { t = type }, commandTimeout: timeout);
         }
-
-
 
         public async Task<bool> XrefExists(AssetCrossReference model)
         {
@@ -187,7 +185,7 @@ namespace d360.model.DataAccessLayer
 
             // Save to storage container.
             await StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
-                        
+
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
 
@@ -204,7 +202,8 @@ namespace d360.model.DataAccessLayer
 
         public BulkAssetCrossReferenceResult GetExecutionStatus(ApiExecution execution)
         {
-            BulkAssetCrossReferenceResult bulkResult = new BulkAssetCrossReferenceResult() {
+            BulkAssetCrossReferenceResult bulkResult = new BulkAssetCrossReferenceResult
+            {
                 Total = execution.Total,
                 Processed = execution.Processed,
                 Error = execution.Error,
@@ -216,7 +215,7 @@ namespace d360.model.DataAccessLayer
             {
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
-                ExecutionID =execution.ExecutionID,
+                ExecutionID = execution.ExecutionID,
                 ResourceID = CompanyContext.CurrentResourceID,
                 Action = ApiExecutionAction.PostCrossReferences
 
@@ -229,9 +228,8 @@ namespace d360.model.DataAccessLayer
             }
             catch
             {
-               
+
             }
-           
 
             return bulkResult;
         }

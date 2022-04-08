@@ -25,7 +25,7 @@
              (onLazyLoad)="loadAssetsLazy($event)"
              [paginator]="true"
              [pageLinks]="3"
-             [totalRecords]="lazyLoadTotalCount"
+             [totalRecords]="totalRecords"
              [loading]="isLoading"
              [selection]="selectedItems"
              [selectionMode]="multiple ? 'multiple' : 'single'"
@@ -55,7 +55,7 @@
                             <bdi>{{item.Text}}</bdi>
                         </div>
                         <div class="flex-grow"></div>
-                        <button *ngIf="!isReferenceListType(targetAssetTypeUid)" (click)="onInfoClick.emit(item);higlightedItem = item" class="{{(higlightedItem === item ? 'highlighted' : '')}}" igButton icon="fa-info-circle" pTooltip="View Information" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                        <button *ngIf="!isReferenceListType(targetAssetTypeUid)" (click)="toggleSelectedItem(item)" class="{{(higlightedItem === item ? 'highlighted' : '')}}" igButton icon="fa-info-circle" pTooltip="View Information" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
 
                     </div>
 

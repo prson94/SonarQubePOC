@@ -157,8 +157,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         trElement.querySelector('span.p-checkbox-icon').classList.remove('pi-check');
         trElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
         trElement.querySelector('div.p-checkbox-box').classList.remove('p-state-active');
-
+        trElement.querySelector('div.p-checkbox-box').classList.remove('p-highlight');
     }
+
     private selectElement(element: HTMLElement) {
         var trElement = this.getTrElement(element);
 

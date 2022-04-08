@@ -10,7 +10,7 @@
         <i *ngIf="rootIconName && rootIconName.indexOf('/Content') == -1" [class]="'fa ' + rootIconName"></i>
         <img *ngIf="imageUrl" [src]="imageUrl" />
         <div [ngClass]="{'caption':true, 'min':!expanded}">
-            <div [ngClass]="{'no-overflow':expanded, 'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
+            <div [ngClass]="{'icon-active':expanded, 'icon':!expanded}"> {{title}} </div>
             <i [ngClass]="{'pull-right menu-category fa fa-caret-right':(menu && menu.NavigationItems && menu.NavigationItems.length > 0),'icon-active':expanded, 'icon':!expanded}"></i>
         </div>
     </div>

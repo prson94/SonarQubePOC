@@ -171,6 +171,29 @@ END
 	</rollback>
   </changeSet>
 
+<changeSet author="Puneet Gupta" id="Index.dbo.Theme-Drop-v1">
+    <comment>GOV-17688</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_Theme_Name' and object_id = object_id(N'dbo.Theme'))
+BEGIN
+	DROP INDEX [IX_Theme_Name] ON [dbo].[Theme]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_Theme_Name' and object_id = object_id(N'dbo.Theme'))
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Theme_Name] ON [dbo].[Theme] ( [Name] ASC )
+END
+		]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="Pappas" id="Table.dbo.Theme-Data-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

@@ -34,12 +34,16 @@ namespace d360.web
                 CompanyPrefix = "",
                 IsAdministrator = false
             };
+
             var community = new CommunityContext(Cache, null, sec);
+            
             var mail = new MandrillMailProvider
             {
                 ApiKey = Config.GetValue<string>(constants.MAIL_API_KEY)
             };
+
             var queue = new AzureQueueSource();
+
             return new CompanyContext(community, Cache, queue, mail, sec, null, false);
         }
     }

@@ -47,8 +47,8 @@ namespace d360.core.entities
         [JsonProperty("description"), Column(TypeName = "nvarchar")]
         public string Description { get; set; }
 
-        [JsonProperty("headerRegExps"), NotMapped]
-        public SemanticHeaderFilter HeaderFilterStructured { get; set; }
+        [JsonProperty("headerRegExps"), Column(TypeName = "nvarchar")]
+        public string HeaderFilter { get; set; }
 
         [JsonProperty("headerRegExpConfidence")]
         public int? HeaderFilterConfidence { get; set; }
@@ -132,6 +132,9 @@ namespace d360.core.entities
 
         [JsonProperty("updatedOn")]
         public DateTime UpdatedOn { get; set; }
+
+        [JsonProperty("hasQualifiedAssets")]
+        public bool HasQualifiedAssets { get; set; }
     }
 
     public class PatchSemantic : SemanticBase
@@ -233,7 +236,7 @@ namespace d360.core.entities
             return incomingValue;
         }
 
-        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy)
+        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, bool hasQualifiedAssets = false)
         {
             return new GetSemantic
             {
@@ -246,7 +249,7 @@ namespace d360.core.entities
                 CreatedOn = model.CreatedOn,
                 Description = model.Description,
                 EffectiveDate = model.EffectiveDate,
-                HeaderFilterStructured = model.deserializeTextProperty<SemanticHeaderFilter>(model.HeaderFilter),
+                HeaderFilter = model.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence,
                 InvalidValuesStructured = model.deserializeTextProperty<List<string>>(model.InvalidValues),
                 JsonPayloadStructured = (string.IsNullOrEmpty(model.JsonPayload)) ? null : JObject.Parse(model.JsonPayload),
@@ -270,7 +273,8 @@ namespace d360.core.entities
                 },
                 UpdatedOn = model.UpdatedOn,
                 ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
-                ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues)
+                ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues),
+                HasQualifiedAssets = hasQualifiedAssets
             };
         }
 
@@ -285,7 +289,7 @@ namespace d360.core.entities
                 CreatedOn = date,
                 Description = model.Description,
                 EffectiveDate = date,
-                HeaderFilterStructured = model.HeaderFilterStructured,
+                HeaderFilter = model.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence,
                 InvalidValuesStructured = model.InvalidValuesStructured,
                 JsonPayloadStructured = model.JsonPayloadStructured,
@@ -308,7 +312,6 @@ namespace d360.core.entities
                 ValidValuesStructured = model.ValidValuesStructured
             };
 
-            repoModel.HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilterStructured);
             repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
             repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
             repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
@@ -328,7 +331,7 @@ namespace d360.core.entities
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description,
                 EffectiveDate = date,
-                HeaderFilterStructured = model.HeaderFilterStructured,
+                HeaderFilter = model.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence,
                 InvalidValuesStructured = model.InvalidValuesStructured,
                 JsonPayloadStructured = model.JsonPayloadStructured,
@@ -351,7 +354,6 @@ namespace d360.core.entities
                 ValidValuesStructured = model.ValidValuesStructured
             };
 
-            repoModel.HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilterStructured);
             repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
             repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
             repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
@@ -371,7 +373,7 @@ namespace d360.core.entities
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description ?? existing.Description,
                 EffectiveDate = date,
-                HeaderFilterStructured = (model.HeaderFilterStructured != null) ? model.HeaderFilterStructured : existing.HeaderFilterStructured,
+                HeaderFilter = (model.HeaderFilter != null) ? model.HeaderFilter : existing.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence ?? existing.HeaderFilterConfidence,
                 InvalidValuesStructured = (model.InvalidValuesStructured != null) ? model.InvalidValuesStructured : existing.InvalidValuesStructured,
                 JsonPayloadStructured = model.JsonPayloadStructured ?? existing.JsonPayloadStructured,
@@ -394,7 +396,6 @@ namespace d360.core.entities
                 ValidValuesStructured = (model.ValidValuesStructured != null) ? model.ValidValuesStructured : existing.ValidValuesStructured
             };
 
-            repoModel.HeaderFilter = repoModel.serializeTextProperty(repoModel.HeaderFilterStructured);
             repoModel.InvalidValues = repoModel.serializeTextProperty(repoModel.InvalidValuesStructured);
             repoModel.JsonPayload = repoModel.serializeTextProperty(repoModel.JsonPayloadStructured);
             repoModel.ValidLocales = repoModel.serializeTextProperty(repoModel.ValidLocalesStructured);
@@ -409,24 +410,7 @@ namespace d360.core.entities
 
             #region Common validation funcs
 
-            Func<bool> headerFilterPopulated = () =>
-            {
-                if (model.HeaderFilterStructured != null)
-                {
-                    if (model.HeaderFilterStructured.values != null)
-                    {
-                        return (model.HeaderFilterStructured.values.Count > 0) || !string.IsNullOrEmpty(model.HeaderFilterStructured.match);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            };
+            bool headerFilterPopulated = model?.HeaderFilter?.Length > 0;
 
             Func<bool> jsonPayloadPopulated = () =>
             {
@@ -435,7 +419,7 @@ namespace d360.core.entities
 
             #endregion
 
-            if (headerFilterPopulated())
+            if (headerFilterPopulated)
             {
                 if (!model.HeaderFilterConfidence.HasValue)
                 {
@@ -538,7 +522,7 @@ namespace d360.core.entities
             switch (model.MatchType)
             {
                 case SemanticMatchType.Advanced:
-                    if (headerFilterPopulated())
+                    if (headerFilterPopulated)
                     {
                         errors.Add("Since MatchType is Advanced, HeaderFilter must be empty.");
                     }
@@ -580,7 +564,7 @@ namespace d360.core.entities
                     }
                     break;
                 case SemanticMatchType.Number:
-                    if (!headerFilterPopulated())
+                    if (!headerFilterPopulated)
                     {
                         errors.Add("Since MatchType is Number, HeaderFilter must not be empty.");
                     }

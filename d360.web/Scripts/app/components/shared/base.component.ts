@@ -421,7 +421,6 @@ export class BaseComponent {
                     'Comments', 'Comments', ['fa-comments'],
                     `/sidebar/comments/${this.uid}`, null, 33
                 );
-
                 this.secondaryNavService.showItem(this.commentsSidebar);
             }
 

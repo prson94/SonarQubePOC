@@ -1,23 +1,30 @@
-﻿using d360.core;
-using d360.core.entities;
-using d360.core.enums;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 using System.Web.Mvc;
 
+using d360.core;
+using d360.core.entities;
+using d360.core.enums;
+
 namespace d360.web.Models
 {
     public class CountModel
     {
         public string Name { get; set; }
+
         public int? New { get; set; }
+
         public int? Version { get; set; }
+
         public string Step { get; set; }
+
         public int StepId { get; set; }
+
         public int? Total { get; set; }
+
         public int? Id { get; set; }
     }
 
@@ -29,31 +36,52 @@ namespace d360.web.Models
         }
 
         public int ObjectID { get; set; }
+
         public string Object { get; set; }
+
         public int ObjectTypeID { get; set; }
+
         public string ObjectType { get; set; }
+
         public string AssetName { get; set; }
+
         public string AssetTypeName { get; set; }
+
         public Guid AssetUid { get; set; }
+
         public long AssetID { get; set; }
+
         public bool HasResponsibilityReadAccess { get; set; }
+
         public bool CanEdit { get; set; }
+
         public List<dynamic> Scores { get; set; }
+
         public int columns { get; set; }
+
         public List<DetailReadOnlyRowModel> rows { get; set; }
+
         public string ResourceFirstName { get; set; }
+
         public string ResourceEmail { get; set; }
     }
 
     public class LookupDataReadOnlyModel
     {
         public int FieldTypeId { get; set; }
+
         public long Value { get; set; }
+
         public long AssetId { get; set; }
+
         public string Url { get; set; }
+
         public string ColorJson { get; set; }
+
         public string DisplayText { get; set; }
+
         public Guid? uid { get; set; }
+
         public Guid? assetTypeUid { get; set; }
     }
 
@@ -67,7 +95,9 @@ namespace d360.web.Models
         }
 
         public int columns { get; set; }
+
         public List<ReadOnlyField> FirstColumnFields { get; set; }
+
         public List<ReadOnlyField> SecondColumnFields { get; set; }
 
         public string Category { get; set; }
@@ -91,10 +121,16 @@ namespace d360.web.Models
                         {
                             case "Boolean":
                                 value = form[ft.Name];
+
                                 if (string.IsNullOrEmpty(value))
+                                {
                                     value = null;
+                                }
                                 else
+                                {
                                     value = (value == "on" || (value ?? "").ToUpper() == "TRUE").ToString();
+                                }
+
                                 break;
                             case "Html":
                                 value = Server != null ? Server.HtmlDecode(form[ft.Name]) : HttpUtility.HtmlDecode(form[ft.Name]);
@@ -112,20 +148,24 @@ namespace d360.web.Models
                             case "Date":
                                 var stringDate = form[ft.Name];
                                 DateTime dateVal = DateTime.MinValue;
+
                                 //throw out any time piece sent in
                                 if (DateTime.TryParse(stringDate, out dateVal))
                                 {
                                     value = dateVal.ToShortDateString();
                                 }
+
                                 break;
                             case "DateTime":
                                 var stringDateTime = form[ft.Name];
                                 DateTime dateTimeVal = DateTime.MinValue;
+
                                 //throw out any time piece sent in
                                 if (DateTime.TryParse(stringDateTime, out dateTimeVal))
                                 {
                                     value = dateTimeVal.ToString("s"); //already in utc
                                 }
+
                                 break;
                             case "Relationship":
                                 //this will be handled differently.
@@ -138,7 +178,9 @@ namespace d360.web.Models
                         if (ignoreFieldIfNull)
                         {
                             if (!string.IsNullOrEmpty(value))
+                            {
                                 fields.Add(new Field { FieldTypeID = ft.ID, ObjectID = id, ObjectType = type.ToString(), Value = value });
+                            }
                         }
                         else
                         {
@@ -157,10 +199,13 @@ namespace d360.web.Models
     {
         [DataMember]
         public string Name { get; set; }
+
         [DataMember]
         public string Type { get; set; }
+
         [DataMember]
         public int ID { get; set; }
+
         [DataMember]
         public Guid Uid { get; set; }
     }
@@ -168,6 +213,7 @@ namespace d360.web.Models
     public class ListUidItem
     {
         public string title { get; set; }
+
         public Guid? value { get; set; }
     }
 
@@ -176,6 +222,7 @@ namespace d360.web.Models
     {
         [DataMember]
         public string Value { get; set; }
+
         [DataMember]
         public string TooltipType { get; set; }
 
@@ -184,6 +231,7 @@ namespace d360.web.Models
 
         [DataMember]
         public long? TooltipID { get; set; }
+
         [DataMember]
         public long? CreatedBy { get; set; }
 
@@ -192,30 +240,37 @@ namespace d360.web.Models
 
         [DataMember]
         public Guid uid { get; set; }
+
         [DataMember]
         public Guid assetTypeUid { get; set; }
+
         [DataMember]
         public bool? HideTooltip { get; set; }
     }
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>
     {
-
         public bool Equals(ReadOnlyFieldValue x, ReadOnlyFieldValue y)
         {
-            if (Object.ReferenceEquals(x, y)) return true;
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
 
-            if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
+            if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
+            {
                 return false;
+            }
 
             return x.Value == y.Value;
         }
 
-
-
         public int GetHashCode(ReadOnlyFieldValue obj)
         {
-            if (Object.ReferenceEquals(obj, null)) return 0;
+            if (ReferenceEquals(obj, null))
+            {
+                return 0;
+            }
 
             int value = obj.Value == null ? 0 : obj.Value.GetHashCode();
 
@@ -320,22 +375,31 @@ namespace d360.web.Models
 
         [DataMember]
         public int ResponsibilityTypeID { get; set; }
+
         [DataMember]
         public string ResponsibilityTypeName { get; set; }
+
         [DataMember]
         public string AssetTypeName { get; set; }
+
         [DataMember]
         public int AssetTypeID { get; set; }
+
         [DataMember]
         public AssetTypeClass Class { get; set; }
+
         [DataMember]
-        public string ClassName { get { return Class.GetDisplayName(); } }
+        public string ClassName => Class.GetDisplayName();
+
         [DataMember]
         public string ObjectType { get; set; }
+
         [DataMember]
         public int ObjectID { get; set; }
+
         [DataMember]
         public int PermissionsBitMask { get; set; }
+
         [DataMember]
         public List<PermissionInfo> Permissions { get; set; } = new List<PermissionInfo>();
     }
@@ -345,6 +409,7 @@ namespace d360.web.Models
     {
         [DataMember]
         public int ID { get; set; }
+
         [DataMember]
         public string Name { get; set; }
     }
@@ -353,8 +418,10 @@ namespace d360.web.Models
     {
         [DataMember]
         public int ID { get; set; }
+
         [DataMember]
         public string Name { get; set; }
+
         [DataMember]
         public string Value { get; set; }
     }
@@ -369,7 +436,6 @@ namespace d360.web.Models
         public int Id { get; set; }
 
         public string Name { get; set; }
-
 
         public string Comments { get; set; }
 
@@ -413,6 +479,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string Displayobject { get; set; }
+
         [DataMember]
         public Guid AssetUid { get; set; }
     }
