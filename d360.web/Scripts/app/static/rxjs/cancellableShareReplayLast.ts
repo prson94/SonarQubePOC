@@ -86,5 +86,5 @@ import { MonoTypeOperatorFunction, Observable, Subscriber, Subscription } from "
                 }
             };
         });
-    }
+    };
 }
