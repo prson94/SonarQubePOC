@@ -1,11 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http.Filters;
-
 using d360.core.exceptions;
 using d360.web.Models;
 using d360.web.Services;
-
 using Resources;
 
 namespace d360.web.Filters
@@ -21,6 +20,8 @@ namespace d360.web.Filters
 
         public override void OnException(HttpActionExecutedContext context)
         {
+            var message = context.Exception.Message;
+
             switch (context.Exception)
             {
                 case GenericException genericException:
@@ -59,10 +60,11 @@ namespace d360.web.Filters
                         new ErrorResponse { title = ApiMessages.NotFound, message = exception.Message }
                     );
                     break;
-                case InvalidRequestException invalidRequestException:
+                case InvalidRequestException _:
+                case ArgumentException _:
                     context.Response = context.Request.CreateResponse(
                         HttpStatusCode.BadRequest,
-                        new ErrorResponse { title = ApiMessages.InvalidRequest, message = invalidRequestException.Message }
+                        new ErrorResponse { title = ApiMessages.InvalidRequest, message = message }
                     );
                     break;
                 default:

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -8,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
+using System.Web.Http.Results;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
@@ -17,8 +16,6 @@ using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
-using d360.web.Utilities;
-
 using MediatR;
 
 using Microsoft.Web.Http;
@@ -1733,6 +1730,39 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Deletes responsibility overrides from asset for a given group or resource uid.
+        /// </summary>
+        /// <param name="uid">Uid of Group or Resource.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("api/v2/responsibilities/overrides/{uid:guid}"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the request.", typeof(OkResult)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteResponsibilitiesOverrideByTypeAsync(
+            [FromUri] Guid uid
+        )
+        {
+            ValidateParameters();
+
+            string[] allowedObjects = { "Group", "Resource" };
+            var asset = AssetRepository.GetAssetByUID(uid);
+            
+            if (asset == null || allowedObjects.Contains(asset.Object) == false)
+            {
+                throw new ArgumentException("Invalid resource or group uid.");
+            }
+
+            await ResponsibilityRepository.DeleteResponsibilityOverridesByGroupOrResourceAsync(uid);
+
+            return Ok();
         }
     }
 }
