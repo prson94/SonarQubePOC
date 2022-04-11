@@ -3520,6 +3520,12 @@ namespace d360.web.Controllers.V2
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 
+        /// <summary>
+        /// Gets ancestry list of asset types for a given asset type. 
+        /// </summary>
+        /// <param name="assetTypeUid">Asset Type UID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
 		[SwaggerProduces("application/json")]
 		[SwaggerResponse(HttpStatusCode.OK, "Ancestry for a given asset type.", typeof(ICollection<AssetTypeAncestryModel>))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]
