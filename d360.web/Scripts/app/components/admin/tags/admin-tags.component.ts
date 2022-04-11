@@ -30,7 +30,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     showEditor: boolean = false;
     showConsolidate: boolean = false
-    filters: any = { globalSearch: '', Value: '', UseCount: '' };
+    filters: any = { globalSearch: '', Value: '', UseCount: '', DateCreated: '', CreatedBy: '' };
     sort: any;
 
     deletePopupTitle: string = 'Delete Tag';
@@ -140,10 +140,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.tagsService.getTagsList().subscribe((tags: TagType[]) => {
             if (tags && tags.length > 0) {
-                tags.forEach((tag) => {
-                    tag.CreatedBy = ['Lu Er', 'Zhao Liu', 'Sun Qi', 'Wang Wu'][Math.floor(Math.random() * 4)];
-                    (tag as any).DateCreated = String(this.randomDate(new Date(2012, 0, 1), new Date())).split("GMT")[0];
-                })
                 this.tags = tags.sort((a, b) => a.Value.localeCompare(b.Value));
             }
             this.isLoading = false;
