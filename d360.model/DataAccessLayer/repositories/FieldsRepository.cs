@@ -512,6 +512,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Path' then FT.IsDisplayable else null end as 'Type.Path.IsDisplayable',
 										case when FT.Type = 'Path' then FT.IsListable else null end as 'Type.Path.IsListable',
 										case when FT.Type = 'Path' then FT.DisplayInColumn else null end as 'Type.Path.DisplayInColumn', 
+                                        case when FT.Type = 'Path' then JSON_VALUE(FT.Definition,'$.AssetTypeUid') else null end as 'Type.Path.Definition.AssetTypeUid',
 
 										case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 										case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
@@ -800,7 +801,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.ColumnWidth = f.Type.ComputedOwnershipLookup.ColumnWidth;
 					newFieldType.DisplayInColumn = f.Type.ComputedOwnershipLookup.DisplayInColumn;
 
-					if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
+                    if (f.Type.ComputedOwnershipLookup.Definition.ResponsibilityTypeUid != null)
 					{
 						int relationshipsTypeId = Company.Query<int>(@"SELECT id FROM [dbo].[ResponsibilityType] WHERE uid = @uid", new
 						{
@@ -1610,8 +1611,15 @@ namespace d360.model.DataAccessLayer
 					newFieldType.Type = DataType.Path.ToString();
 					newFieldType.ColumnOrder = f.Type.Path.ColumnOrder.HasValue ? f.Type.Path.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Path.ColumnWidth;
-					
-					if (f.Type.Path.Description != null)
+
+                    if (f.Type.Path.Definition != null)
+                    {
+                        var definition = new FieldTypeDataTypePathApiViewModel_Definition();
+                        definition.AssetTypeUid = f.Type.Path.Definition.AssetTypeUid;
+                        newFieldType.Definition = JsonConvert.SerializeObject(definition);
+                    }
+
+                    if (f.Type.Path.Description != null)
 					{
 						newFieldType.DisplayDescription = f.Type.Path.Description.Display;
 					}
