@@ -1,11 +1,9 @@
 ﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { TreeNode } from 'primeng/api';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
 import { StateService } from '../../../services/state.service';
-import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -63,12 +61,12 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         this.sub = this.route.params.subscribe(params => {
             this.assetTypeClass = AssetTypeClass.DiagramAsset;
 
-            let className: string = "Diagram Asset";
-            this.addClassName = "Add " + className;
+            let className: string = $localize`Diagram Asset`;
+            this.addClassName = $localize`Add` + className;
             let singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
-            this.formTitle = `Edit ${singularLabel}`;
+            this.formTitle = $localize`Edit` +` ${singularLabel}`;
             this.load();
         });
 
@@ -161,8 +159,8 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         var data = this.getAssetTypeById(id);
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe((result) => {
-                result.title = 'Success!';
-                this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
+                result.title = $localize`Success!`;
+                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed.`);
                 this.isDeleting = false;
                 this.selectedRow = { data: { ID: 0 } };
                 this.load();

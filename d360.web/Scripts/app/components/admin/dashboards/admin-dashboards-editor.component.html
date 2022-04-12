@@ -1,0 +1,86 @@
+﻿<header>
+    {{action}} <ng-container i18n>Report</ng-container>
+</header>
+<d3s-loading [isLoading]="isLoading()"></d3s-loading>
+<div class="row" *ngIf="!isLoading()">
+    <div class="form-instructions"><ng-container i18n>Add a report to the list of reports, which can then be exposed in other areas of this system.</ng-container></div>
+    <form (ngSubmit)="onSubmit()" #reportForm="ngForm">
+        <div class="col s12">
+            <div class="FieldName">
+                <ng-container i18n>Report Type</ng-container>
+            </div>
+            <div>
+                <select required [(ngModel)]="editedReport.ReportType" name="reportType" #reportType="ngModel" (ngModelChange)="reportTypeChange()" style="width:100%;">
+                    <option *ngFor="let p of reportTypes" [value]="p.value">{{p.title}}</option>
+                </select>
+            </div>
+            <div [hidden]="reportType.valid || reportType.pristine">
+                <ng-container i18n>A report type is required</ng-container>
+            </div>
+        </div>
+        <div class="col s12">
+            <div class="FieldName">
+                <ng-container i18n>Name</ng-container>
+            </div>
+            <div><input required style="width: 100%;" name="name" type="text" [(ngModel)]="editedReport.Name" #name="ngModel" maxlength="250"></div>
+            <div [hidden]="name.valid || name.pristine">
+                <ng-container i18n>A name is required</ng-container>
+            </div>
+        </div>
+        <div class="col s12">
+            <div class="FieldName">
+                <ng-container i18n>Target Type</ng-container>
+            </div>
+            <div>
+                <select required [ngModel]="editedReport.ObjectType" (ngModelChange)="editedReport.ObjectType=$event;objectTypeChanged($event);" name="targetType" #targetType="ngModel" style="width:100%;">
+                    <option *ngFor="let p of targetTypes" [value]="p.value">{{p.title}}</option>
+                </select>
+            </div>
+            <div [hidden]="targetType.valid || targetType.pristine">
+                <ng-container i18n>A target type is required</ng-container>
+            </div>
+        </div>
+        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity'">
+            <div class="FieldName">Url</div>
+            <div>
+                <input required style="width: 100%;" name="url" type="text" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
+            </div>
+        </div>
+        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity' || editedReport.ReportType == 'powerbi'">
+            <div class="FieldName">
+                <ng-container i18n>Show on Home Page?</ng-container>
+            </div>
+            <div>
+                <input name="showOnHomePage" type="checkbox" [(ngModel)]="editedReport.ShowOnHomePage" #name="ngModel" />
+            </div>
+        </div>
+        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi'">
+            <div class="FieldName">
+                <ng-container i18n>File</ng-container>
+            </div>
+            <div><input type="file" (change)="changeFile($event);" accept=".pbix" style="width: 99%" name="File" formenctype="multipart/form-data" /></div>
+            <div class="errorMessage" [hidden]="isValid()">
+                <ng-container i18n>File is required</ng-container>
+            </div>
+        </div>
+        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && !editedReport.ShowOnHomePage && editedReport.ObjectType">
+            <div class="FieldName">
+                <ng-container i18n>Restrict Visibility To</ng-container>
+            </div>
+            <div><p-multiSelect [options]="responsibilities" placeholder="Choose" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities" selectedItemsLabel="{0} items selected"></p-multiSelect></div>
+        </div>
+        <div class="col s12">
+            <div class="FieldName">
+                <ng-container i18n>
+                    Description
+                </ng-container>
+            </div>
+            <p-editor name="description" [style]="{'height':'150px'}" [(ngModel)]="editedReport.Description"></p-editor>
+        </div>
+        <div class="col s12">&nbsp;</div>
+        <div class="col s12">
+            <button pButton type="submit" [disabled]="!reportForm.form.valid || !isValid()" style="width: 150px;" label="{{labelSave}}"></button>
+            <button pButton type="button" (click)="closeClick.emit();" label="{{labelClose}}" style="width: 150px;"></button>
+        </div>
+    </form>
+</div>
