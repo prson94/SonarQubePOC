@@ -27,7 +27,7 @@ export class ThirdPartyLicenses implements OnInit {
     constructor(public ref: ChangeDetectorRef, private http: HttpClient) { }
 
     ngOnInit() {
-        const headers = new HttpHeaders({ "Content-Type": "application/json" })
+        const headers = new HttpHeaders({ "Content-Type": "application/json" });
         this.http.get<LicenseInformationModel>(this.src, { headers }).subscribe(
             (res) => {
                 this.licensemodel = res;
