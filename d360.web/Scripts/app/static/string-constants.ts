@@ -4,7 +4,7 @@ export class StringConstants {
     //object types
     static ObjectArtifact = "Artifact";
     static ObjectArtifactType = "ArtifactType";
-    static ObjectRelationship = "Relationship";    
+    static ObjectRelationship = "Relationship";
     static ObjectGovernance = "Governance";
     static ObjectRoot = "Root";
     static ObjectTaxonomy = "Taxonomy";
@@ -36,6 +36,7 @@ export class StringConstants {
     static Section_ExportTemplates = $localize`Export Templates`;
     static Section_Groups = $localize`Groups`;
     static Section_Bulk = $localize`Bulk Loader`;
+    static Section_Artifacts = $localize`Artifacts`;
     static Section_Models = $localize`Models`;
     static Section_Organizations = $localize`Organizations`;
     static Section_Policies = $localize`Policies`;
@@ -57,5 +58,4 @@ export class StringConstants {
 
     static simpleSearchTooltipHTML: string = $localize`<p>Type to provide a search term. Matches will be found where the value of any field starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
 *term* : Match on values which contain 'term'</p><p>All matches are case insensitive.</p>`;
-
 }

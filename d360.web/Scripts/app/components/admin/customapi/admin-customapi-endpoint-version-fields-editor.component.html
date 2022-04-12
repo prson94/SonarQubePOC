@@ -1,17 +1,21 @@
-<header>{{ isAdding ? "Add" : "Edit" }} Version Field</header>
+<header>{{headerTitle}}</header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
     <div class="row"
          style="padding-top: 10px">
         <div class="col s6">
-            <div class="FieldName">Field</div>
+            <div class="FieldName">
+                <ng-container i18n>Field</ng-container>
+            </div>
             <div>
                 <select [ngModel]="model.FieldTypeID"
                         (ngModelChange)="changeFieldType($event)"
                         style="width: 95%">
                     <option></option>
                     <option *ngFor="let f of fieldTypes"
-                            [value]="f.ID">{{f.FriendlyName}}</option>
+                            [value]="f.ID">
+                        {{f.FriendlyName}}
+                    </option>
                 </select>
             </div>
         </div>
@@ -19,19 +23,23 @@
     <div class="row"
          style="padding-top: 10px">
         <div class="col s6">
-            <div class="FieldName">Xml Field Override Name</div>
+            <div class="FieldName">
+                <ng-container i18n>Xml Field Override Name</ng-container>
+            </div>
             <div>
                 <input [(ngModel)]="model.XmlFieldNameOverride"
                        type="text"
-                       style="width: 95%"/>
+                       style="width: 95%" />
             </div>
         </div>
         <div class="col s6">
-            <div class="FieldName">Json Field Override Name</div>
+            <div class="FieldName">
+                <ng-container i18n>Json Field Override Name</ng-container>
+            </div>
             <div>
                 <input [(ngModel)]="model.JsonFieldNameOverride"
                        type="text"
-                       style="width: 95%"/>
+                       style="width: 95%" />
             </div>
         </div>
     </div>
@@ -39,31 +47,31 @@
          style="padding-top: 10px">
         <div class="col s4">
             <input [(ngModel)]="model.AllowSelect"
-                   type="checkbox"/> Allow Select
+                   type="checkbox" /> <ng-container i18n>Allow Select</ng-container>
         </div>
         <div class="col s4">
             <input [(ngModel)]="model.AllowFilter"
-                   type="checkbox"/> Allow Filter
+                   type="checkbox" /> <ng-container i18n>Allow Filter</ng-container>
         </div>
         <div class="col s4">
             <input [(ngModel)]="model.AllowSort"
-                   type="checkbox"/> Allow Sort
+                   type="checkbox" /> <ng-container i18n>Allow Sort</ng-container>
         </div>
     </div>
     <div *ngIf="showMultiselectOptions"
          class="row"
          style="padding-top: 10px">
         <div class="col s6">
-            <div class="FieldName">Item Name Override</div>
+            <div class="FieldName"><ng-container i18n>Item Name Override</ng-container></div>
             <div>
                 <input [(ngModel)]="model.ItemNameOverride"
                        type="text"
-                       style="width:95%"/>
+                       style="width:95%" />
             </div>
         </div>
         <div *ngIf="multiSelectFieldTypes != null && multiSelectFieldTypes.length > 0"
              class="col s6">
-            <div class="FieldName">Multiselect Fields</div>
+            <div class="FieldName"><ng-container i18n>Multiselect Fields</ng-container></div>
             <div>
                 <p-multiSelect [options]="multiSelectFieldTypes"
                                [(ngModel)]="selectedFields"
@@ -78,12 +86,12 @@
          style="padding-top: 10px">
         <div class="col s12">
             <button pButton
-                    label="Save"
+                    label="{{labelSave}}"
                     type="button"
                     (click)="save()"
                     [disabled]="!valid()"></button>
             <button pButton
-                    label="Close"
+                    label="{{labelClose}}"
                     type="button"
                     (click)="close()"></button>
         </div>

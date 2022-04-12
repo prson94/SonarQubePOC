@@ -1,6 +1,6 @@
 <div class="tile tile-detail">
     <header *ngIf="!showEditor && !showDelete && !showDelete">
-        Fields for v{{version?.MajorVersion}}.{{version?.MinorVersion}}
+        <ng-container i18n>Fields for </ng-container>v{{version?.MajorVersion}}.{{version?.MinorVersion}}
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                           [(filterMode)]="showSimpleFilter"
                           [hasAdd]="true"
@@ -12,9 +12,9 @@
                [hidden]="!showSimpleFilter"
                class="grid-simple-filter"
                pInputText
-               placeholder="Search..."
+               placeholder="{{searchText}}"
                size="100"
-               type="text"/>
+               type="text" />
         <p-table #dt
                  [(selection)]="selected"
                  [globalFilterFields]="['Name','Type','AllowFilter','AllowSelect','AllowSort']"
@@ -26,39 +26,49 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Name'">
-                        Name
+                        <ng-container i18n>Name</ng-container>
                         <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Type'">
-                        DataType
+                        <ng-container i18n>Data Type</ng-container>
                         <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'AllowFilter'">
-                        Filter?
+                        <ng-container i18n>Filter</ng-container>?
                         <d3s-sortIcon [field]="'AllowFilter'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'AllowSelect'">
-                        Select?
+                        <ng-container i18n>Select</ng-container>?
                         <d3s-sortIcon [field]="'AllowSelect'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'AllowSort'">
-                        Sort?
+                        <ng-container i18n>Sort</ng-container>?
                         <d3s-sortIcon [field]="'AllowSort'"></d3s-sortIcon>
                     </th>
                     <th style="width: 35px"></th>
                     <th style="width: 35px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'Name'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'Type'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'AllowFilter'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'AllowSelect'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'AllowSort'"></d3s-column-filter></th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Name'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Type'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'AllowFilter'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'AllowSelect'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'AllowSort'"></d3s-column-filter>
+                    </th>
                     <th></th>
                     <th></th>
                 </tr>
@@ -125,7 +135,6 @@
                      *ngIf="showDelete"
                      [callback]="theDeleteCallback"
                      [itemId]="selected?.ID"
-                     [prompt]="'Are you sure you want to delete the  field [' + [selected?.Name] + ']?'"
-                     method="callback"
-    ></d3s-delete-form>
+                     [prompt]="deleteModalTitle"
+                     method="callback"></d3s-delete-form>
 </div>

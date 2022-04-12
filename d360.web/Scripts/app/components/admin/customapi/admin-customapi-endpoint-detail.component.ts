@@ -54,8 +54,8 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
                     this.service = res;
 
                     this.clearSidebar();
-                    this.adminHeading = 'Integration';
-                    this.areaName = 'Custom API';
+                    this.adminHeading = $localize`Integration`;
+                    this.areaName = $localize`Custom API`;
                     this.areaLink = '/admin/customapi';
                     this.setCommonItems();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`, `/admin/customapi/${this.service.ID}/details`));

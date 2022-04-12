@@ -1,16 +1,16 @@
-﻿import {Component, OnDestroy, OnInit} from '@angular/core';
-import {Title} from '@angular/platform-browser';
-import {ActivatedRoute, Router} from '@angular/router';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import {Breadcrumb} from '../../../models/breadcrumb.model';
-import {ApiService} from '../../../models/custom-api.model';
-import {SecondaryNavItem} from '../../../models/secondaryNav.model';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { ApiService } from '../../../models/custom-api.model';
+import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {CustomAPIService} from '../../../services/custom-api.service';
-import {SecondaryNavService} from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CustomAPIService } from '../../../services/custom-api.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
-import {AdminBaseComponent} from '../admin-base.component';
+import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -54,10 +54,10 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
                     res => {
                         this.isLoading = false;
                         this.service = res;
-                        this.adminHeading = 'Integration';
-                        this.areaName ='Custom API';
+                        this.adminHeading = $localize`Integration`;
+                        this.areaName = $localize`Custom API`;
                         this.areaLink = '/admin/customapi';
-                        this.tabTitle = 'Service';
+                        this.tabTitle = $localize`Service`;
                         this.setCommonSecondaryNavTabs({ hasAudit: false });
                         this.setCommonItems();
                         this.secondaryNavService.setCurrentArea(this.service.Name, 'fa-cog', this.tabTitle);
@@ -65,7 +65,7 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
 
                         this.secondaryNavService.showItem(
                             new SecondaryNavItem(
-                                'Namespaces',
+                                $localize`Namespaces`,
                                 'namespaces',
                                 ['fa-address-card'],
                                 `/admin/customapi/${this.serviceId}/namespaces`
@@ -81,6 +81,6 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
         if (this.sub) {
             this.sub.unsubscribe();
         }
-        
+
     }
 }

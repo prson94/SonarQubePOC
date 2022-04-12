@@ -71,12 +71,12 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
-            let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? 'Business Asset' : 'Technical Asset';
+            let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? $localize`Business Asset` : $localize`Technical Asset`;
             this.addClassName = "Add " + className;
             let singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
-            this.formTitle = `Edit ${singularLabel}`;
+            this.formTitle = $localize`Edit ${singularLabel}`;
             this.load();
         });
     }
@@ -205,8 +205,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
                 this.isLoading = false;
-                result.title = 'Success!';
-                this.showMessageForResult(this.messagesService, result, 'Item successfully removed.');
+                result.title = $localize`Success!`;
+                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed.`);
                 this.isDeleting = false;
                 this.selectedRow = { data: { ID: 0 } };
                 this.load();
