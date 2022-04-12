@@ -40,6 +40,7 @@ export class HeaderHelpComponent implements OnInit {
     environment= environment;
   
     isModalVisible: boolean = false;
+    isThirdpartyVisible: boolean = false;
     @ViewChild("popupBox", { static: false }) popupBox: ElementRef;
 
     licenceData: any;
@@ -100,12 +101,21 @@ export class HeaderHelpComponent implements OnInit {
         return x.toLocaleString();
     }
     showAbout() {
+        this.isThirdpartyVisible = false;
         this.isModalVisible = true;
         this.loadLicensingDetails();
     }
 
+    showThirdparty() {
+        this.isModalVisible = false;
+        this.isThirdpartyVisible = true;
+    }
+
     closeAbout() {
         this.isModalVisible = false;
+    }
+    closeThirdparty() {
+        this.isThirdpartyVisible = false;
     }
 
     @HostListener('wheel', ['$event'])
