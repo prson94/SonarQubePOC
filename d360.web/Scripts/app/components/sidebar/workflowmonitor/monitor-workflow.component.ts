@@ -6,7 +6,6 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
-import { TabTitle } from '../../../models/enums.model';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -44,7 +43,7 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, TabTitle.WORKFLOW);
+            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Workflow`);
 
             let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
             let assetUid = params['assetUid'];
@@ -55,16 +54,15 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
                 if (reloadNav)
                     this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
             }
-            else
-            {
+            else {
                 this.assetService.GetObjectUIDetailsForAssetUID(assetUid)
-                .subscribe(res => {
-                    this.objectID = +res.ObjectId;
-                    this.objectType = res.Object;
-                    this.showMonitor = true;
-                    if (reloadNav)
-                        this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
-                });
+                    .subscribe(res => {
+                        this.objectID = +res.ObjectId;
+                        this.objectType = res.Object;
+                        this.showMonitor = true;
+                        if (reloadNav)
+                            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+                    });
             }
         });
     }

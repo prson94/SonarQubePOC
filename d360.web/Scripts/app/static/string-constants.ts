@@ -25,38 +25,37 @@ export class StringConstants {
     static AssetTypeClass_Business = "Business Asset";
     static AssetTypeClass_Technical = "Technical Asset";
 
-    static Area_Administration = "Administration";
-    static Area_Configuration = "Configuration";
-    static SubArea_Security = "Security";
-    static Section_Actions = "Workflow Actions";
-    static Section_Artifacts = "Artifacts";
-    static Section_Branding = "Branding";
-    static Section_BusinessAssets = "Business Assets";
-    static Section_CustomApi = "Custom API";
-    static Section_Dashboards = "Dashboards";
-    static Section_ExportTemplates = "Export Templates";
-    static Section_Groups = "Groups";
-    static Section_Bulk = "Bulk Loader";
-    static Section_Models = "Models";
-    static Section_Organizations = "Organizations";
-    static Section_Policies = "Policies";
-    static Section_Predicates = "Predicates";
-    static Section_Relationships = "Relationships";
-    static Section_Responsibilities = "Responsibilities";
-    static Section_Rules = "Rules";
-    static Section_Scoring = "Scoring Definitions";
-    static Section_Search = "Search Index";
-    static Section_Settings = "Settings";
-    static Section_Surveys = "Surveys";
-    static Section_Tags = "Tags";
-    static Section_TechnicalAssets = "Technical Assets";
-    static Section_Users = "Users";
-    static Section_Workflows = "Workflows";
-    static Section_SemanticTypes = "Semantic Types";
+    static Area_Administration = $localize`Administration`;
+    static Area_Configuration = $localize`Configuration`;
+    static SubArea_Security = $localize`Security`;
+    static Section_Actions = $localize`Workflow Actions`;
+    static Section_Branding = $localize`Branding`;
+    static Section_BusinessAssets = $localize`Business Assets`;
+    static Section_CustomApi = $localize`Custom API`;
+    static Section_Dashboards = $localize`Dashboards`;
+    static Section_ExportTemplates = $localize`Export Templates`;
+    static Section_Groups = $localize`Groups`;
+    static Section_Bulk = $localize`Bulk Loader`;
+    static Section_Models = $localize`Models`;
+    static Section_Organizations = $localize`Organizations`;
+    static Section_Policies = $localize`Policies`;
+    static Section_Predicates = $localize`Predicates`;
+    static Section_Relationships = $localize`Relationships`;
+    static Section_Responsibilities = $localize`Responsibilities`;
+    static Section_Rules = $localize`Rules`;
+    static Section_Scoring = $localize`Scoring Definitions`;
+    static Section_Search = $localize`Search Index`;
+    static Section_Settings = $localize`Settings`;
+    static Section_Surveys = $localize`Surveys`;
+    static Section_Tags = $localize`Tags`;
+    static Section_TechnicalAssets = $localize`Technical Assets`;
+    static Section_Users = $localize`Users`;
+    static Section_Workflows = $localize`Workflows`;
+    static Section_SemanticTypes = $localize`Semantic Types`;
 
     static MenuId_Favorites = "*Favorites";
 
-    static simpleSearchTooltipHTML: string = `<p>Type to provide a search term. Matches will be found where the value of any field starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
+    static simpleSearchTooltipHTML: string = $localize`<p>Type to provide a search term. Matches will be found where the value of any field starts with the term or terms provided.</p><p>You can also use wildcards for more control over how the term is matched.
 *term* : Match on values which contain 'term'</p><p>All matches are case insensitive.</p>`;
 
 }

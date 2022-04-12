@@ -7,15 +7,15 @@ export class TechnicalNameToDisplayValuePipe implements PipeTransform {
 
         switch (objectType.toUpperCase()) {
             case "ARTIFACTTYPE":
-                return "Business Term";
+                return $localize`Business Term`;
             case "POLICYTYPE":
-                return "Policy";
+                return $localize`Policy`;
             case "TAXONOMYTYPE":
-                return "Model";
+                return $localize`Model`;
             case "RULETYPE":
-                return "Rule";
+                return $localize`Rule`;
             case "REFERENCEITEMTYPE":
-                return "Reference List";
+                return $localize`Reference List`;
         }
 
         return objectType;
