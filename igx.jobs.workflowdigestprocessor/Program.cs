@@ -1,4 +1,5 @@
-﻿using d360.model;
+﻿using d360.extensions.info;
+using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -50,7 +51,14 @@ namespace igx.jobs.workflowdigestprocessor
                     try
                     {
                         // Create EF connection
-                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
+                        var company = JobDbContextCreator.CreateCompanyContext(
+                            new UriSecurityContextProvider
+                            {
+                                CompanyID = c.CompanyID,
+                                CompanyPrefix = c.UrlPrefix,
+                                ResourceID = 0,
+                                IsAdministrator = true
+                            });
 
                         await company.SendDigestEmails(c.EnvironmentLevel);
                     }

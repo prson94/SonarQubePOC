@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
@@ -9,19 +10,13 @@ namespace d360.model
 {
     public static class JobDbContextCreator
     {
-        public static CompanyContext CreateCompanyContext(int companyId, int resourceId, string urlPrefix, bool isAdmin,
+        public static CompanyContext CreateCompanyContext(
+            ISecurityContextProvider securityContextProvider,
             AzureQueueSource queue = null,
             string connectionString = null,
             string mandrillApiKey = null,
             string mandrillSubAccount = null)
         {
-            UriSecurityContextProvider sec = new UriSecurityContextProvider
-            {
-                CompanyID = companyId,
-                ResourceID = resourceId,
-                CompanyPrefix = urlPrefix,
-                IsAdministrator = isAdmin
-            };
             DummyCachingProvider cache = new DummyCachingProvider();
             MandrillMailProvider mail = new MandrillMailProvider
             {
@@ -34,27 +29,20 @@ namespace d360.model
                 queue = new AzureQueueSource();
             }
 
-            CommunityContext community = InitializeCommunityContext(connectionString, sec, cache, queue);
+            CommunityContext community = InitializeCommunityContext(connectionString, securityContextProvider, cache, queue);
 
-            return new CompanyContext(community, cache, queue, mail, sec, true);
+            return new CompanyContext(community, cache, queue, mail, securityContextProvider, true);
         }
 
-        public static CommunityContext CreateCommunityContext(int companyId, int resourceId, string urlPrefix, bool isAdmin, string connectionString = null)
+        public static CommunityContext CreateCommunityContext(ISecurityContextProvider securityContextProvider, string connectionString = null)
         {
-            UriSecurityContextProvider sec = new UriSecurityContextProvider
-            {
-                CompanyID = companyId,
-                ResourceID = resourceId,
-                CompanyPrefix = urlPrefix,
-                IsAdministrator = isAdmin
-            };
             DummyCachingProvider cache = new DummyCachingProvider();
             AzureQueueSource queue = new AzureQueueSource();
             
-            return InitializeCommunityContext(connectionString, sec, cache, queue);
+            return InitializeCommunityContext(connectionString, securityContextProvider, cache, queue);
         }
 
-        private static CommunityContext InitializeCommunityContext(string connectionString, UriSecurityContextProvider sec, DummyCachingProvider cache, AzureQueueSource queue)
+        private static CommunityContext InitializeCommunityContext(string connectionString, ISecurityContextProvider sec, DummyCachingProvider cache, AzureQueueSource queue)
         {
             if (string.IsNullOrEmpty(connectionString))
             {

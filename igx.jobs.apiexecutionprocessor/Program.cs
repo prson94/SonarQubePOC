@@ -22,6 +22,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Hosting;
 using d360.model.DataAccessLayer;
 using d360.core.entities.Membership;
+using d360.extensions;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -100,15 +101,24 @@ namespace igx.jobs.apiexecutionprocessor
 
             queue = new AzureQueueSource();
             storage = new AzureStorageProvider();
+
             company = JobDbContextCreator.CreateCompanyContext(
-                Info.CompanyID,
-                Info.ResourceID ?? 0,
-                Info.CompanyDomainPrefix,
-                false, queue);
+                new UriSecurityContextProvider
+                {
+                    CompanyID = Info.CompanyID,
+                    ResourceID = Info.ResourceID ?? 0,
+                    CompanyPrefix = Info.CompanyDomainPrefix,
+                    IsAdministrator = false
+                }, 
+                queue);
             CommunityContext community = JobDbContextCreator.CreateCommunityContext(
-                Info.CompanyID,
-                Info.ResourceID ?? 0,
-                Info.CompanyDomainPrefix, true);
+                new UriSecurityContextProvider
+                {
+                    CompanyID = Info.CompanyID,
+                    ResourceID = Info.ResourceID ?? 0,
+                    CompanyPrefix = Info.CompanyDomainPrefix,
+                    IsAdministrator = false
+                });
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;

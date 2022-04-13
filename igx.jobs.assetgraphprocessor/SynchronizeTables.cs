@@ -8,6 +8,7 @@ using Dapper;
 using d360.model;
 using d360.core.enums;
 using System.Collections.Generic;
+using d360.extensions.info;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -38,7 +39,14 @@ namespace igx.jobs.assetgraphprocessor
                     CoreFunction.AITrackEvent(functionName, "Graph Rebuild", new Dictionary<string, string>() { { "PopulatePaths", populatePaths.ToString() } }, company.CompanyID);
                     CoreFunction.AIFlush();
 
-                    var companyContext = JobDbContextCreator.CreateCompanyContext(company.CompanyID, 0, company.UrlPrefix, true);
+                    var companyContext = JobDbContextCreator.CreateCompanyContext(
+                        new UriSecurityContextProvider
+                        {
+                            CompanyID = company.CompanyID,
+                            CompanyPrefix = company.UrlPrefix,
+                            ResourceID = 0,
+                            IsAdministrator = true
+                        });
 
                     var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)

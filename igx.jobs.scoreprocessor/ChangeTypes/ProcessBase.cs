@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.extensions.info;
 using d360.model;
 using d360.utils.company;
 using Dapper;
@@ -34,7 +35,14 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         internal ICompanyContext GetCompanyContext()
         {
             // Create EF connection
-            return JobDbContextCreator.CreateCompanyContext(this.Info.CompanyID, 0, "", true);
+            return JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = Info.CompanyID,
+                    CompanyPrefix = "",
+                    ResourceID = 0,
+                    IsAdministrator = true
+                });
         }
 
         internal MetConditionsModel CheckMeasureConditions(

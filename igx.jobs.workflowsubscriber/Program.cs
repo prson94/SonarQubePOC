@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
+using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
@@ -73,7 +74,14 @@ namespace igx.jobs.workflowsubscriber
 
             // Create EF connection
             companyId = info.CompanyID;
-            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
+            company = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = companyId,
+                    CompanyPrefix = info.DomainPrefix,
+                    ResourceID = info.ResourceID,
+                    IsAdministrator = true
+                });
 
             try
             {

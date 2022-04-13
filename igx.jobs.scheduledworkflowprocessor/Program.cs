@@ -1,5 +1,6 @@
 ﻿using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
@@ -59,7 +60,14 @@ namespace igx.jobs.scheduledworkflowprocessor
                     try
                     {
                         // Create EF connection
-                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
+                        var company = JobDbContextCreator.CreateCompanyContext(
+                            new UriSecurityContextProvider
+                            {
+                                CompanyID = c.CompanyID,
+                                CompanyPrefix = c.UrlPrefix,
+                                ResourceID = 0,
+                                IsAdministrator = true
+                            });
 
                         // Load all workflows of type schedule.
                         var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();

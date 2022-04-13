@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using d360.extensions.info;
 using d360.model;
 using d360.utils.company;
 using Dapper;
@@ -45,8 +46,15 @@ namespace igx.functions.consumption
                 {
                     try
                     {
-                        var companyContext = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true,
-                        connectionString: CoreFunction.GetConnectionString("CommunityContext"));
+                        var companyContext = JobDbContextCreator.CreateCompanyContext(
+                            securityContextProvider: new UriSecurityContextProvider
+                                                        {
+                                                            CompanyID = c.CompanyID,
+                                                            CompanyPrefix = c.UrlPrefix,
+                                                            ResourceID = 0,
+                                                            IsAdministrator = true,
+                                                        },
+                            connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
                         var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)

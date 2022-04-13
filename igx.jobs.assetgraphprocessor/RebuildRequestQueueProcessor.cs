@@ -38,7 +38,14 @@ namespace igx.jobs.assetgraphprocessor
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == queueInfo.CompanyID);
 
-            var companyContext = JobDbContextCreator.CreateCompanyContext(_c.CompanyID, 0, _c.UrlPrefix, true);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = _c.CompanyID,
+                    CompanyPrefix = _c.UrlPrefix,
+                    ResourceID = 0,
+                    IsAdministrator = true
+                });
             
             #endregion
 

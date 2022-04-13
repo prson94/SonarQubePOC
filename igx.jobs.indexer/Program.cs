@@ -224,7 +224,14 @@ namespace igx.jobs.indexer
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == companyID);
 
-            var companyContext = JobDbContextCreator.CreateCompanyContext(companyID, 0, _c.UrlPrefix, true);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = companyID,
+                    CompanyPrefix = _c.UrlPrefix,
+                    ResourceID = 0,
+                    IsAdministrator = true
+                });
 
             CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
 

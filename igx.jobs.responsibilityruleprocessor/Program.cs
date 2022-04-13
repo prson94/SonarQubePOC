@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.extensions.info;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
@@ -51,7 +52,14 @@ namespace igx.jobs.responsibilityruleprocessor
                 {
                     try
                     {
-                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, "", true);
+                        var company = JobDbContextCreator.CreateCompanyContext(
+                            new UriSecurityContextProvider
+                            {
+                                CompanyID = c.CompanyID,
+                                CompanyPrefix = "",
+                                ResourceID = 0,
+                                IsAdministrator = true
+                            });
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 
