@@ -77,6 +77,7 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
+        [DataMember]
         public Guid? UID { get; set; }
 
         [ForeignKey("ResponsibilityTypeID")]

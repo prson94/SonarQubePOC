@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -13,7 +14,7 @@ using d360.core.exceptions;
 using d360.model;
 using d360.web.Filters;
 using d360.web.Models.Attributes;
-
+using d360.web.Services;
 using Newtonsoft.Json.Linq;
 
 using Resources;
@@ -500,42 +501,16 @@ namespace d360.web.Controllers
 
 		#region JSON Feeds
 
-		[HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_WhenTest"), NonNullableParameters]
-		public async Task<JsonNetResult> ResponsibilityTypeRelationRule_WhenTest(ResponsibilityTypeRelationRule rule)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
-			}
-
-			var results = (await Company.GetWhenResults(rule)).OrderBy(i => i.Name);
-			
-			return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
-		}
-
-		[HttpPost, AjaxValidateAntiForgeryToken, Route("ResponsibilityTypeRelationRule_ThenTest"), NonNullableParameters]
-		public JsonNetResult ResponsibilityTypeRelationRule_ThenTest(ResponsibilityTypeRelationRule rule)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return new JsonNetResult { Data = new { Message = "Permission Denied" }, Formatting = Newtonsoft.Json.Formatting.None };
-			}
-
-			var results = Company.GetThenResults(rule, HideData3SixtyUsers());
-			
-			return new JsonNetResult { Data = results, Formatting = Newtonsoft.Json.Formatting.None };
-		}
-
-		[HttpGet, ActionName("RelationsByResponsibilityType"), Route("RelationsByResponsibilityType"), NonNullableParameters]
-		public JsonNetResult GetRelationsByResponsibilityType(int id)
-		{
-			var list = Company.Query<dynamic>($@"
-			select	{QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name]) as label,
-					T.Object + '|' + cast(T.ObjectID as varchar) as value
-			from	ResponsibilityTypeRelation R
-					inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = @id
-					cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-			order by {QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name])", new { id });
+        [HttpGet, ActionName("RelationsByResponsibilityType"), Route("RelationsByResponsibilityType"), NonNullableParameters]
+        public JsonNetResult GetRelationsByResponsibilityType(int id)
+        {
+            var list = Company.Query<dynamic>($@"
+            select	{QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name]) as label,
+		            T.Object + '|' + cast(T.ObjectID as varchar) + '|' + cast(T.uid as varchar(max)) as value
+            from	ResponsibilityTypeRelation R
+		            inner join AssetType T on T.Object = R.ObjectType and T.ObjectID = R.ObjectID and R.ResponsibilityTypeID = @id
+                    cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+            order by {QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name])", new { id });
 
 			return new JsonNetResult
 			{
@@ -552,70 +527,88 @@ namespace d360.web.Controllers
 			tempFieldDataTypes.Add($"'{DataType.Relationship.ToString()}'");
 			var ftTypeRemoveString = string.Join(",", tempFieldDataTypes);
 
-			var fieldTypes = Company.Query<string>($@"
-													select	ID as value,
-															FriendlyName as label,
-															FT.Type as [type],
-															case FT.Type
-																when 'Lookup' then cast(1 as bit)
-																else cast(0 as bit) 
-															end as isLookup,
-															(
-															select	cast(value as varchar) as [value],
-																	Text as label 
-															from	FieldLookupValue
-															where	FieldTypeID = FT.ID
-															for json auto
-															) as [values]
-													from	FieldType FT
-													where	[Object] = @type
-															and ObjectID = @id
-															and Type not in ({ftTypeRemoveString})
-													for json auto, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
+            var fieldTypes = Company.Query<string>($@"
+select	FT.ID as value,
+		FriendlyName as label,
+        FT.Name as fieldTypeName,
+		FT.Type as [type],
+		case FT.Type
+			when 'Lookup' then cast(1 as bit)
+			else cast(0 as bit) 
+		end as isLookup,
+		(
+		select	cast(value as varchar) as [value],
+				Text as label 
+		from	FieldLookupValue
+		where	FieldTypeID = FT.ID
+		for json auto
+		) as [values],
+		assetType.uid as assigneeTypeUid
+from	FieldType FT
+join dbo.AssetType assetType
+	on assetType.Object = FT.Object
+	and assetType.ObjectID = FT.ObjectID
+where	FT.[Object] = @type
+		and FT.ObjectID = @id
+		and FT.Type not in ({ftTypeRemoveString})
+for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString(), id }).ToList();
 
-			if (type == SystemObjects.OrganizationType)
-			{
-				fieldTypes = Company.Query<string>($@"
-													select	FT.ID as value,
-															T.[Name] + ' :: ' + FriendlyName as label,
-															FT.Type as [type],
-															case FT.Type
-																when 'Lookup' then cast(1 as bit)
-																else cast(0 as bit) 
-															end as isLookup,
-															(
-															select	cast(value as varchar) as [value],
-																	Text as label 
-															from	FieldLookupValue
-															where	FieldTypeID = FT.ID
-															for json auto
-															) as [values]
-													from	FieldType FT
-													inner join OrganizationType T on T.ID = FT.ObjectID and T.[State] = 1
-													where	[Object] = @type
-															and Type not in ({ftTypeRemoveString})
-													order by T.[Name] + ' :: ' + FriendlyName
-													for json auto, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
-			}
+            if (type == SystemObjects.OrganizationType)
+            {
+                fieldTypes = Company.Query<string>($@"
+select	FT.ID as value,
+		T.[Name] + ' :: ' + FriendlyName as label,
+        FT.Name as fieldTypeName,
+		FT.Type as [type],
+		case FT.Type
+			when 'Lookup' then cast(1 as bit)
+			else cast(0 as bit) 
+		end as isLookup,
+		(
+		select	cast(value as varchar) as [value],
+				Text as label 
+		from	FieldLookupValue
+		where	FieldTypeID = FT.ID
+		for json auto
+		) as [values],
+		assetType.uid as assigneeTypeUid
+from	FieldType FT
+inner join OrganizationType T on T.ID = FT.ObjectID and T.[State] = 1
+inner join dbo.AssetType assetType 
+	on assetType.Object = FT.Object 
+	and assetType.ObjectID = T.ID
+where	FT.[Object] = @type
+		and Type not in ({ftTypeRemoveString})
+order by T.[Name] + ' :: ' + FriendlyName
+for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
+            }
 
-			var groupFieldTypes = new List<string>();
-
-			if (type == SystemObjects.GroupType)
-			{
-				groupFieldTypes = Company.Query<string>($@"
-														select	0 as value,
-																'Name' as label,
-																'Lookup' as type,
-																cast(1 as bit) as isLookup,
-																(
-																select	cast(ID as varchar) as [value],
-																		Name as label 
-																from	[Group]
-																order by Name
-																for json auto
-																) as [values]
-														for json path, WITHOUT_ARRAY_WRAPPER").ToList();
-			}
+            var groupFieldTypes = new List<string>();
+            if (type == SystemObjects.GroupType)
+            {
+                groupFieldTypes = Company.Query<string>($@"
+		select	0 as value,
+				'Name' as label,
+				'Lookup' as type,
+				cast(1 as bit) as isLookup,
+				(
+				select	cast(g.ID as varchar) as [value],
+						asset.Uid as assigneeUid,
+						Name as label 
+				from	[Group] g
+				join dbo.Asset asset 
+				on 
+					asset.Object = 'Group'
+					and g.ID = asset.ObjectID
+				order by Name
+				for json path
+				) as [values],
+				at.uid as assigneeTypeUid
+		from dbo.AssetType at
+		where Object = 'GroupType'
+        for json path, WITHOUT_ARRAY_WRAPPER
+").ToList();
+            }
 
 			var resourceFieldTypes = new List<string>();
 			var hideUsersSql = "";
@@ -625,22 +618,31 @@ namespace d360.web.Controllers
 				hideUsersSql = " and (Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com')";
 			}
 
-			if (type == SystemObjects.ResourceType)
-			{
-				resourceFieldTypes = Company.Query<string>($@"
-															select	0 as value,
-																	'Name' as label,
-																	'Lookup' as type,
-																	cast(1 as bit) as isLookup,
-																	(
-																	select	cast(ResourceID as varchar) as [value],
-																			LastName + ', ' + FirstName as label 
-																	from	reporting.Global_Resource 
-																	where	[State] = {(int)CompanyResourceState.Active} " + hideUsersSql +
-																	@"order by LastName + ', ' + FirstName
-																	for json auto
-																	) as [values]
-													for json path, WITHOUT_ARRAY_WRAPPER").ToList();
+            if (type == SystemObjects.ResourceType)
+            {
+                resourceFieldTypes = Company.Query<string>($@"
+		select	0 as value,
+				'Name' as label,
+				'Lookup' as type,
+				cast(1 as bit) as isLookup,
+				(
+				select	cast(ResourceID as varchar) as [value],
+						LastName + ', ' + FirstName as label,
+						uid as assigneeUid 
+				from	reporting.Global_Resource 
+				where	[State] = {(int)CompanyResourceState.Active} " + hideUsersSql +
+				@"order by LastName + ', ' + FirstName
+				for json auto
+				) as [values],
+				(
+					select
+							assetType.uid as assigneeTypeUid
+					from dbo.AssetType assetType
+					where	assetType.[Object] = @type
+							and assetType.ObjectID = @id
+				) as assigneeTypeUid
+for json path, WITHOUT_ARRAY_WRAPPER
+", new { type = type.ToString(), id }).ToList();
 
 			}
 
@@ -671,19 +673,20 @@ namespace d360.web.Controllers
 
 			var fieldTypeArray = JArray.Parse(fieldTypeString);
 
-			var intersectTypes = Company.Query<dynamic>($@"
-														select	ID as [value],
-																case
-																	when (Subject = @type and SubjectID = @id) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
-																	else SubjectName + ' (' + coalesce(PredicateInverse, 'inverse') + ')'
-																end as label
-														from	IntersectTypeDetail 
-														where	(Subject = @type and SubjectID = @id) 
-																or (Object = @type and ObjectID = @id)
-														order by	case
-																		when (Subject = @type and SubjectID = {id}) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
-																		else SubjectName + ' (' + coalesce(PredicateInverse, 'inverse') + ')'
-																	end", new { type = type.ToString(), id });
+            var intersectTypes = Company.Query<dynamic>($@"
+select	ID as [value],
+        uid,
+		case
+			when (Subject = @type and SubjectID = @id) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
+			else SubjectName + ' (' + coalesce(PredicateInverse, 'inverse') + ')'
+		end as label
+from	IntersectTypeDetail 
+where	(Subject = @type and SubjectID = @id) 
+		or (Object = @type and ObjectID = @id)
+order by	case
+				when (Subject = @type and SubjectID = {id}) then ObjectName + ' (' + coalesce(PredicateName, '') + ')'
+				else SubjectName + ' (' + coalesce(PredicateInverse, 'inverse') + ')'
+			end", new { type = type.ToString(), id });
 
 			return new JsonNetResult
 			{
@@ -715,56 +718,60 @@ namespace d360.web.Controllers
 				joinColumn = "Object";
 			}
 
-			if (objType == SystemObjects.TaxonomyType.ToString() || objType == SystemObjects.PolicyType.ToString())
-			{
-				return new JsonNetResult
-				{
-					Data = Company.Query<dynamic>($@"
-						select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
-							atp.textpath as label 
-						from	Asset D
-							inner join AssetType DT on DT.ID = D.AssetTypeID
-							inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
-							cross apply getassettextpathbyid(D.id, '/') atp
-							order by atp.textpath"),
-					Formatting = Newtonsoft.Json.Formatting.None
-				};
-			}
-			else if ((objType == SystemObjects.ArtifactType.ToString()) || (objType == SystemObjects.RuleType.ToString()))
-			{
-				return new JsonNetResult
-				{
-					Data = Company.Query<dynamic>($@"
-						drop table if exists #tempdata;
-						select D.Object + '|' + cast(D.ObjectID as varchar(30)) as value,
-							   D.ID AssetID
-						into #tempdata
-					   from Asset D
-							inner join AssetType DT on DT.ID = D.AssetTypeID
-							inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+            if (objType == SystemObjects.TaxonomyType.ToString() || objType == SystemObjects.PolicyType.ToString())
+            {
+                return new JsonNetResult
+                {
+                    Data = Company.Query<dynamic>($@"
+                        select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
+                            D.uid as assetUid,
+		                    atp.textpath as label 
+                        from	Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+                            inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                            cross apply getassettextpathbyid(D.id, '/') atp
+                            order by atp.textpath"),
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
+            else if ((objType == SystemObjects.ArtifactType.ToString()) || (objType == SystemObjects.RuleType.ToString()))
+            {
+                return new JsonNetResult
+                {
+                    Data = Company.Query<dynamic>($@"
+                        drop table if exists #tempdata;
+                        select D.Object + '|' + cast(D.ObjectID as varchar(30)) as value,
+                               D.uid as assetUid,
+                               D.ID AssetID
+                        into #tempdata
+                       from Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+                            inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
 
-					select D.[value],
-							DN.DisplayValue as label
-						from #tempdata D
-							inner join AssetDisplayValue DN on DN.AssetID = D.AssetID
-							order by DN.DisplayValuePrefix"),
-					Formatting = Newtonsoft.Json.Formatting.None
-				};
-			}
+                    select D.[value],
+                            D.assetUid,
+		                    DN.DisplayValue as label
+                        from #tempdata D
+                            inner join AssetDisplayValue DN on DN.AssetID = D.AssetID
+                            order by DN.DisplayValuePrefix"),
+                    Formatting = Newtonsoft.Json.Formatting.None
+                };
+            }
 
-			return new JsonNetResult
-			{
-				Data = Company.Query<dynamic>($@"
-						select	D.Object + '|' + cast(D.ObjectID as varchar) as value,
-							DN.DisplayValue as label 
-						from	Asset D
-							inner join AssetType DT on DT.ID = D.AssetTypeID
-							inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
-							cross apply dbo.GetAssetDisplayValueById(D.ID) DN
-							order by DN.DisplayValue"),
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = Company.Query<dynamic>($@"
+                        select	D.Object + '|' + cast(D.ObjectID as varchar) as value,                            
+                            D.uid as assetUid,
+		                    DN.DisplayValue as label 
+                        from	Asset D
+                            inner join AssetType DT on DT.ID = D.AssetTypeID
+                            inner join IntersectType I on I.{joinColumn} = DT.Object and I.{joinColumn}ID = DT.ObjectID and I.ID = {intersectTypeID}
+                            cross apply dbo.GetAssetDisplayValueById(D.ID) DN
+                            order by DN.DisplayValue"),
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
 		#endregion
 
@@ -804,28 +811,19 @@ namespace d360.web.Controllers
 			}
 		}
 
-		[HttpGet, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), NonNullableParameters]
-		public JsonNetResult GetResponsibilityTypeRelationRule(int id)
-		{
+        [HttpGet, ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule"), NonNullableParameters]
+        public async Task<JsonNetResult> GetResponsibilityTypeRelationRule(int id, CancellationToken cancellationToken)
+        {
+            var response = await this.getResponsibilityTypeRelationRule.Handle(
+                new GetResponsibilityTypeRelationRule.Argument { Id = id }, 
+                cancellationToken);
 
-			ResponsibilityTypeRelationRule model;
-
-			if (id < 1)
-			{
-				model = new ResponsibilityTypeRelationRule();
-			}
-			else
-			{
-				model = Company.GetById<ResponsibilityTypeRelationRule>(id);
-				model.SetDefinitionFromRaw();
-			}
-
-			return new JsonNetResult
-			{
-				Data = model,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = response,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
 		[HttpPut, ValidateInput(false), ActionName("ResponsibilityTypeRelationRule"), Route("ResponsibilityTypeRelationRule")]
 		public async Task<JsonResult> PutResponsibilityTypeRelationRule(ResponsibilityTypeRelationRule model)
