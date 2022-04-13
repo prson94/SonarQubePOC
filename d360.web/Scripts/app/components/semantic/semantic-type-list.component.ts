@@ -303,7 +303,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                 this.showDelete = true;
                 break;
             case 'edit':
-                this.isAdd = true;
+                this.isAdd = false;
                 this.showEditor = true;
                 break;
         }

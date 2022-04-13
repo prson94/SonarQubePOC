@@ -225,7 +225,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             if (control.value === null) {
                 return {};
             }
-            if ((control.value as string).trim() === '' && (control.value as string) != '') {
+            if ((control.value as string).trim() === '' && (control.value as string) !== '') {
                 return {
                     empty: { value: control.value }
                 };
