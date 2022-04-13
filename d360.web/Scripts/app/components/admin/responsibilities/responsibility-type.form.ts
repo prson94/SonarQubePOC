@@ -20,6 +20,9 @@ export class ResponsibilityTypeForm implements OnInit {
 
     private selectedAllocations: string[] = [];
 
+    saveLabel = $localize`Save`;
+    cancelLabel = $localize`Cancel`;
+
     constructor(private responsibilityTypeService: ResponsibilityTypeService) {
 
     }
@@ -104,7 +107,7 @@ export class ResponsibilityTypeForm implements OnInit {
 
     private isValid() {
         let valid = true;
-        if (!this.item.Name || this.item.Name.length<=0 || this.item.Name.length > 250) {
+        if (!this.item.Name || this.item.Name.length <= 0 || this.item.Name.length > 250) {
             valid = false;
         }
         if (this.item.Description && this.item.Description.length > 4000) {
@@ -113,7 +116,7 @@ export class ResponsibilityTypeForm implements OnInit {
         if (this.selectedAllocations.length < 1) {
             valid = false;
         }
-            
+
         return valid
     }
 }

@@ -1,7 +1,7 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit } from "@angular/core";
 import { SelectItem } from "primeng/api";
 import { ResponsibilityTypeService } from "../../../services/responsibility-type.service";
-import {    
+import {
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
     ResponsibilityTypeRelationRuleDefinitionWhenItem,
@@ -58,17 +58,35 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     disableTestWhen: boolean = false;
     disableTestThen: boolean = false;
 
-    actionName: string = "Add";
+    actionName: string = $localize`Add`;
+
+    visibleTooltip = $localize`Marking the rule as visible applies a visibility setting to all applied responsibilities for this rule. Users will be able to see users and groups assigned via this rule. 
+                    Setting the rule to not be visible simply hides the users that are assigned via the rule. Permissions are still applied.`;
+
+    applyToTooltip = $localize`Marking the rule as applying to a type grants the applied responsibilities to act upon the type itself, including all instances under the type. 
+                    For example, if you wanted to grant a user or group with the ability to create a specific business term you would need to check this box.`;
+
+    addCheckTitle = $localize`Add check`;
+    testWhenLabel = $localize`Test Filters`;
+    addConditionLabel = $localize`Add condition`;
+
+    matchAllLabel = $localize`Match all`;
+    matchAnyLabel = $localize`Match any`;
+
+    saveLabel = $localize`Save`;
+    cancelLabel = $localize`Cancel`;
+
+    chooseLabel = $localize`Choose...`;
 
     private objectTypes: SelectItem[] = [];
     whenCheckTypes: SelectItem<string>[] = [
-        { label: "Field", value: "F" },
-        { label: "Relationship", value: "R" }
+        { label: $localize`Field`, value: "F" },
+        { label: $localize`Relationship`, value: "R" }
     ];
     private whenBoolTypes: SelectItem[] = [
-        { label: "Choose...", value: null },
-        { label: "True", value: "true" },
-        { label: "False", value: "false" },
+        { label: this.chooseLabel, value: null },
+        { label: $localize`True`, value: "true" },
+        { label: $localize`False`, value: "false" },
     ];
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
     private whenIntersectTypes: SelectItem<number>[] = [];
@@ -76,10 +94,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     ThenTestRows: ResponsibilityTypeRelationRuleDefinitionThenTestRow[] = [];
 
     thenObjectTypes: SelectItem<string>[] = [
-        { label: "Choose...", value: null },
-        { label: "Group", value: "GroupType" },
-        { label: "Organization", value: "OrganizationType" },
-        { label: "User", value: "ResourceType" }
+        { label: this.chooseLabel, value: null },
+        { label: $localize`Group`, value: "GroupType" },
+        { label: $localize`Organization`, value: "OrganizationType" },
+        { label: $localize`User`, value: "ResourceType" }
     ];
     private thenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
 
@@ -97,15 +115,15 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     ngOnInit() {
         this.load();
     }
-        
+
     private load(): void {
         if (this.id > 0) {
-            this.actionName = "Edit";
+            this.actionName = $localize`Edit`;
             this.isLoading = true;
             this.responsibilityTypeService.getRelationOptionsByResponsibilityType(this.ruleId)
                 .subscribe((d) => {
                     this.objectTypes = d;
-                    this.objectTypes.unshift({ label: "Choose...", value: null });
+                    this.objectTypes.unshift({ label: this.chooseLabel, value: null });
                 });
             let r: ResponsibilityTypeRelationRule;
             this.responsibilityTypeService.getResponsibilityTypeRelationRule(this.id)
@@ -116,7 +134,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                     this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
                         .subscribe((d) => {
                             this.thenFieldTypes = d.FieldTypes;
-                            this.thenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
+                            this.thenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
                             this.responsibilityTypeService.getRelationRuleFormData(this.model.Object, this.model.ObjectID)
                                 .subscribe((d) => {
                                     this.whenFieldTypes = d.FieldTypes;
@@ -126,8 +144,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                         this.model.StructuredDefinition.When.forEach((wft) => this.loadWhenValuesForFieldType(wft));
                                     }
 
-                                    this.whenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
-                                    this.whenIntersectTypes.unshift({ label: "Choose...", value: null });
+                                    this.whenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
+                                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null });
                                 });
                             this.model = r;
                             this.model.ObjectString = r.Object + "|" + r.ObjectID;
@@ -145,7 +163,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                         })
                 })
         } else {
-            this.actionName = "Add";
+            this.actionName = $localize`Add`;
             this.isLoading = true;
 
             // Instantiate the object and its properties.
@@ -161,7 +179,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             this.responsibilityTypeService.getRelationOptionsByResponsibilityType(this.ruleId)
                 .subscribe((d) => {
                     this.objectTypes = d;
-                    this.objectTypes.unshift({ label: "Choose...", value: null });
+                    this.objectTypes.unshift({ label: this.chooseLabel, value: null });
                     this.isLoading = false;
                 });
         }
@@ -185,13 +203,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             .subscribe((d) => {
                 this.whenFieldTypes = d.FieldTypes;
                 this.whenIntersectTypes = d.IntersectTypes;
-                let excluded = this.whenFieldTypes.findIndex((a) => a.label === "Choose...");
+                let excluded = this.whenFieldTypes.findIndex((a) => a.label === this.chooseLabel);
                 if (excluded < 0) {
-                    this.whenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
+                    this.whenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
                 }
-                excluded = this.whenIntersectTypes.findIndex((a) => a.label === "Choose...");
+                excluded = this.whenIntersectTypes.findIndex((a) => a.label === this.chooseLabel);
                 if (excluded < 0) {
-                    this.whenIntersectTypes.unshift({ label: "Choose...", value: null });
+                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null });
                 }
             });
 
@@ -224,9 +242,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
                 item.FieldTypeName = selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
-                    let excluded = selectedFieldType.values.findIndex(a => a.label == "Choose...");
+                    let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
                     if (excluded < 0) {
-                        selectedFieldType.values.unshift({ label: "Choose...", value: null });
+                        selectedFieldType.values.unshift({ label: this.chooseLabel, value: null });
                     }
 
                     item.ValueOptions = selectedFieldType.values;
@@ -257,7 +275,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsLookup = false;
             }
         }
-        
+
         if (event) {
             item.Value = null;
         }
@@ -321,7 +339,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
             .subscribe((d) => {
                 this.thenFieldTypes = d.FieldTypes;
-                this.thenFieldTypes.unshift({ label: "Choose...", value: null, type: null, isLookup: false, values: [] });
+                this.thenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
                 if (this.model && this.model.StructuredDefinition
                     && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null
                     && this.model.StructuredDefinition.Then.Conditions.length > 0) {
@@ -371,9 +389,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             item.IsBool = false;
             item.FieldTypeName = selectedFieldType.label;
             if (selectedFieldType.isLookup) {
-                let excluded = selectedFieldType.values.findIndex(a => a.label == "Choose...");
+                let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
                 if (excluded < 0) {
-                    selectedFieldType.values.unshift({ label: "Choose...", value: null });
+                    selectedFieldType.values.unshift({ label: this.chooseLabel, value: null });
                 }
                 item.ValueOptions = selectedFieldType.values;
                 item.IsLookup = selectedFieldType.isLookup;
@@ -402,9 +420,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsloadValuesForIntersectType = false;
                 item.IsBool = false;
                 item.ValueOptions = d;
-                let excluded = item.ValueOptions.findIndex((a) => a.label === "Choose...");
+                let excluded = item.ValueOptions.findIndex((a) => a.label === this.chooseLabel);
                 if (excluded < 0) {
-                    item.ValueOptions.unshift({ label: "Choose...", value: null });
+                    item.ValueOptions.unshift({ label: this.chooseLabel, value: null });
                 }
             });
         return null;

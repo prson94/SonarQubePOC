@@ -26,6 +26,9 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     theDeleteCallback: Function;
 
+    searchText = $localize`Search...`;
+    deletePromptText = $localize`Are you sure you want to delete this responsibility type?`;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         private responsibilityTypeService: ResponsibilityTypeService,
@@ -71,7 +74,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.selectedRow = this.responsibilityTypeItems.find((i) => i.uid === uid);
         this.selectedItemChange();
     }
-     
+
     delete(uid: string): void {
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.uid === uid);
