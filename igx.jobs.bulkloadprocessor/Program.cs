@@ -67,7 +67,7 @@ namespace igx.jobs.bulkloadprocessor
                 var storage = new AzureStorageProvider();
                 var community = new CommunityContext(cache, queue, sec);
 
-                var company = new CompanyContext(community, cache, queue, mail, sec, storage, true);
+                var company = new CompanyContext(community, cache, queue, mail, sec, true);
                 var assetRepository = new AssetRepository(company, queue, storage, community);
                 var relationshipRepository = new RelationshipRepository(community, company, queue, storage);
 

@@ -104,7 +104,7 @@ namespace igx.jobs.apiexecutionprocessor
                 Info.CompanyID,
                 Info.ResourceID ?? 0,
                 Info.CompanyDomainPrefix,
-                false, queue, storage);
+                false, queue);
             CommunityContext community = JobDbContextCreator.CreateCommunityContext(
                 Info.CompanyID,
                 Info.ResourceID ?? 0,
