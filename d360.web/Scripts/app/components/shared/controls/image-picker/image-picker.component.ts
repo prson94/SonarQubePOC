@@ -63,7 +63,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
             case 'ICO':
                 this.previewHeight = 40;
                 this.previewWidth = 40;
-                this.allowedExtensions = "image/ico,image/x-icon";
+                this.allowedExtensions = "image/ico,image/x-icon,image/vnd.microsoft.icon";
                 this.invalidFormatMessage = 'File type not supported. Please choose a ICO image.';
                 break;
             case 'LOGO':
@@ -144,7 +144,6 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         {
             type: 'invalid-format',
             validator: () => {
-                console.log(this.file.type);
                 if (this.allowedExtensions.indexOf(this.file.type) === -1) {
                     return this.invalidFormatMessage;
                 }
