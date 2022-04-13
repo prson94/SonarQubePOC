@@ -36,7 +36,11 @@
 
             <div class="themes" *ngIf="!isLoading">
                 <div class="theme-wrapper {{(selectedRow === theme ? 'selected' : '')}}" *ngFor="let theme of themes" (click)="selectedRow = theme">
-                    <div class="svg-holder" [innerHTML]="sanitizer.bypassSecurityTrustHtml(theme.svg)"></div>
+                    <div class="svg-holder">
+                        <svg width="158" height="80">
+                            <image [attr.xlink:href]="theme.svg" width="158" height="80" />
+                        </svg>
+                    </div>
                     <div class="theme-name">{{theme.name}}</div>
                     <div class="flex-grow"></div>
                     <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>

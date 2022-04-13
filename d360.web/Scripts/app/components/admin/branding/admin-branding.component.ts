@@ -71,7 +71,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             this.themes = res;
             this.selectedRow = null;
             this.themes.forEach((t) => {
-                t.svg = this.svgMarkup(t);
+                t.svg = this.svgUrl(t);
                 var menuItems = [];
 
                 t.hasDownloadOption ? menuItems.push(this.menuItemsDefaultOptions[0]) : null;
@@ -97,10 +97,8 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         });
     }
 
-    svgMarkup(theme: Theme) {
-        return `<svg width="158" height="80">
-                   <image xlink:href="/api/v2/environment/themes/${theme.uid}.svg?width=158&cache=${theme.updatedOn}" width="158" height="80" />
-                </svg>`;
+    svgUrl(theme: Theme) {
+        return `/api/v2/environment/themes/${theme.uid}.svg?width=158&cache=${theme.updatedOn}`;
     }
 
     onSave() {
