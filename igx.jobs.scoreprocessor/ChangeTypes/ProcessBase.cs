@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
 using d360.extensions.queue;
@@ -51,7 +52,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                     ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 },
-                new AzureQueueSource());
+                new AzureQueueSource(),
+                new DummyCachingProvider());
         }
 
         internal MetConditionsModel CheckMeasureConditions(

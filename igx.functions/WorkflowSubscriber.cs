@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
+using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
 using d360.extensions.queue;
@@ -72,6 +73,7 @@ namespace igx.functions.consumption
                     SubAccount = config.GetValue<string>("MandrillSubAccount")
                 },
                 new AzureQueueSource(config),
+                new DummyCachingProvider(),
                 config.GetConnectionString("CommunityContext")
             );
 

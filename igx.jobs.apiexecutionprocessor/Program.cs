@@ -88,6 +88,7 @@ namespace igx.jobs.apiexecutionprocessor
         const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
         const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
         AzureQueueSource queue;
+        DummyCachingProvider dummyCachingProvider;
         private CompanyContext company;
         AzureStorageProvider storage;
         ApiExecutionInfo Info;
@@ -105,6 +106,7 @@ namespace igx.jobs.apiexecutionprocessor
             //We don't need to have more than one of these.
             queue = new AzureQueueSource(); 
             storage = new AzureStorageProvider();
+            dummyCachingProvider = new DummyCachingProvider();
 
             company = JobDbContextCreator.CreateCompanyContext(
                 new UriSecurityContextProvider
@@ -119,7 +121,8 @@ namespace igx.jobs.apiexecutionprocessor
                     ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 },
-                queue);
+                queue,
+                dummyCachingProvider);
             CommunityContext community = JobDbContextCreator.CreateCommunityContext(
                 new UriSecurityContextProvider
                 {
@@ -128,7 +131,8 @@ namespace igx.jobs.apiexecutionprocessor
                     CompanyPrefix = Info.CompanyDomainPrefix,
                     IsAdministrator = false
                 },
-                queue);
+                queue,
+                dummyCachingProvider);
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;

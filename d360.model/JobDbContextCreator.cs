@@ -14,29 +14,17 @@ namespace d360.model
             ISecurityContextProvider securityContextProvider,
             IMailProvider mailProvider,
             IQueueSource queueSource,
+            ICachingProvider cachingProvider,
             string connectionString = null)
         {
-            DummyCachingProvider cache = new DummyCachingProvider();
-            CommunityContext community = InitializeCommunityContext(connectionString, securityContextProvider, cache, queueSource);
+            CommunityContext community = CreateCommunityContext(securityContextProvider, queueSource, cachingProvider, connectionString);
 
-            return new CompanyContext(community, cache, queueSource, mailProvider, securityContextProvider, true);
+            return new CompanyContext(community, cachingProvider, queueSource, mailProvider, securityContextProvider, true);
         }
 
-        public static CommunityContext CreateCommunityContext(ISecurityContextProvider securityContextProvider, IQueueSource queueSource, string connectionString = null)
+        public static CommunityContext CreateCommunityContext(ISecurityContextProvider securityContextProvider, IQueueSource queueSource, ICachingProvider cachingProvider, string connectionString = null)
         {
-            DummyCachingProvider cache = new DummyCachingProvider();
-            
-            return InitializeCommunityContext(connectionString, securityContextProvider, cache, queueSource);
-        }
-
-        private static CommunityContext InitializeCommunityContext(string connectionString, ISecurityContextProvider sec, DummyCachingProvider cache, IQueueSource queueSource)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                return new CommunityContext(cache, queueSource, sec);
-            }
-
-            return new CommunityContext(connectionString, cache, queueSource, sec);
+            return new CommunityContext(connectionString, cachingProvider, queueSource, securityContextProvider);
         }
     }
 }

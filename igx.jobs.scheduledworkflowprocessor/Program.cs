@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.mail;
 using d360.extensions.queue;
@@ -77,7 +78,8 @@ namespace igx.jobs.scheduledworkflowprocessor
                                 ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                                 SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                             },
-                            new AzureQueueSource());
+                            new AzureQueueSource(),
+                            new DummyCachingProvider());
 
                         // Load all workflows of type schedule.
                         var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();
