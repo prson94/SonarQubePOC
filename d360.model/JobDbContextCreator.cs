@@ -26,13 +26,8 @@ namespace d360.model
             DummyCachingProvider cache = new DummyCachingProvider();
             MandrillMailProvider mail = new MandrillMailProvider
             {
-                ApiKey = string.IsNullOrEmpty(mandrillApiKey)
-                            ? Config.GetValue<string>(constants.MAIL_API_KEY)
-                            : mandrillApiKey,
-
-                SubAccount = string.IsNullOrEmpty(mandrillSubAccount)
-                                ? Config.GetValue<string>(constants.MAIL_SUB_ACCOUNT)
-                                : mandrillSubAccount,
+                ApiKey = mandrillApiKey,
+                SubAccount = mandrillSubAccount,
             };
 
             if (queue == null)
