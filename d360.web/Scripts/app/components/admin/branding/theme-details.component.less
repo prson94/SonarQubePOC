@@ -1,0 +1,52 @@
+﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.theme-detail {
+  .asset-name {
+    line-height: 22px !important;
+  }
+
+  .theme-value-wrapper {
+    margin-top: 12px;
+    margin-bottom: 8px;
+
+    label {
+      width: 100%;
+    }
+
+    .theme-color-value {
+      display: flex;
+      padding-top: 10px;
+      align-items: center;
+
+      .color-box {
+        width: 42px;
+        height: 28px;
+        box-shadow: 0 3px 6px #00000029;
+        border-radius: 2px;
+        opacity: 1;
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .image-preview {
+    margin-top: 8px;
+    background: #d7d8dc;
+    width: fit-content;
+
+    img {
+      max-width: 168px;
+      max-height: 96px;
+    }
+
+    &.preview-logo {
+      max-width: 168px;
+      max-height: 40px;
+    }
+
+    &.preview-ico {
+      max-width: 40px;
+      max-height: 40px;
+    }
+  }
+}

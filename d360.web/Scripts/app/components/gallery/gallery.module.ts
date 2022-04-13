@@ -78,6 +78,8 @@ import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.
 import { GalleryRegexpInputComponent } from './gallery.regexp-input.component';
 import { GalleryComponentPropertiesComponent } from './shared/gallery.component-properties.component';
 import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
+import { ColorSelectorModule } from '../shared/controls/color-selector/color-selector.component';
+import { GalleryColorSelectorComponent } from './gallery.color-selector.component';
 
 @NgModule({
     imports: [
@@ -121,6 +123,7 @@ import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.compon
         CodeAreaModule,
         CodemirrorModule,
         ImagePickerModule,
+        ColorSelectorModule,
         RegexpInputModule
     ],
     declarations: [
@@ -163,6 +166,7 @@ import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.compon
         GalleryLocaleComponent,
         GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
+        GalleryColorSelectorComponent
     ],
     providers: [
         GalleryGuard,
