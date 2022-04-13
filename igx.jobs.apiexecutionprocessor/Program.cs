@@ -125,17 +125,17 @@ namespace igx.jobs.apiexecutionprocessor
                 dummyCachingProvider,
                 constants.COMMUNITY_DATABASE_CONNECTION);
 
-            CommunityContext community = JobDbContextCreator.CreateCommunityContext(
+            CommunityContext community = new CommunityContext(
+                constants.COMMUNITY_DATABASE_CONNECTION,
+                dummyCachingProvider,
+                queue,
                 new UriSecurityContextProvider
                 {
                     CompanyID = Info.CompanyID,
                     ResourceID = Info.ResourceID ?? 0,
                     CompanyPrefix = Info.CompanyDomainPrefix,
                     IsAdministrator = false
-                },
-                queue,
-                dummyCachingProvider,
-                constants.COMMUNITY_DATABASE_CONNECTION);
+                });
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
