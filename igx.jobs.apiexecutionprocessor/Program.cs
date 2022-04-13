@@ -122,7 +122,9 @@ namespace igx.jobs.apiexecutionprocessor
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 },
                 queue,
-                dummyCachingProvider);
+                dummyCachingProvider,
+                constants.COMMUNITY_DATABASE_CONNECTION);
+
             CommunityContext community = JobDbContextCreator.CreateCommunityContext(
                 new UriSecurityContextProvider
                 {
@@ -132,7 +134,8 @@ namespace igx.jobs.apiexecutionprocessor
                     IsAdministrator = false
                 },
                 queue,
-                dummyCachingProvider);
+                dummyCachingProvider,
+                constants.COMMUNITY_DATABASE_CONNECTION);
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;

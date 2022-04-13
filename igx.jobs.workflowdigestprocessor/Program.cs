@@ -70,7 +70,8 @@ namespace igx.jobs.workflowdigestprocessor
                                 SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                             },
                             new AzureQueueSource(),
-                            new DummyCachingProvider());
+                            new DummyCachingProvider(),
+                            constants.COMMUNITY_DATABASE_CONNECTION);
 
                         await company.SendDigestEmails(c.EnvironmentLevel);
                     }

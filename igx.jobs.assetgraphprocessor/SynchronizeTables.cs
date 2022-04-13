@@ -58,7 +58,8 @@ namespace igx.jobs.assetgraphprocessor
                             SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                         },
                         new AzureQueueSource(),
-                        new DummyCachingProvider());
+                        new DummyCachingProvider(),
+                        constants.COMMUNITY_DATABASE_CONNECTION);
 
                     var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)

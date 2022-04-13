@@ -240,7 +240,8 @@ namespace igx.jobs.indexer
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 },
                 new AzureQueueSource(),
-                new DummyCachingProvider());
+                new DummyCachingProvider(),
+                constants.COMMUNITY_DATABASE_CONNECTION);
 
             CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
 

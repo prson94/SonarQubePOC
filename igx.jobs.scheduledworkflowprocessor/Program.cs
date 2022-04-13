@@ -79,7 +79,8 @@ namespace igx.jobs.scheduledworkflowprocessor
                                 SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                             },
                             new AzureQueueSource(),
-                            new DummyCachingProvider());
+                            new DummyCachingProvider(),
+                            constants.COMMUNITY_DATABASE_CONNECTION);
 
                         // Load all workflows of type schedule.
                         var scheduledWorkflows = company.WorkflowEventRegistrations.Where(x => x.ChangeType == ChangeType.Schedule && x.Type.State == State.Active && x.Type.PublishedVersionID != null).Include(x => x.Type).ToList();

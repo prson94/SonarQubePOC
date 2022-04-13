@@ -70,7 +70,8 @@ namespace igx.jobs.responsibilityruleprocessor
                                 SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                             },
                             new AzureQueueSource(),
-                            new DummyCachingProvider());
+                            new DummyCachingProvider(),
+                            constants.COMMUNITY_DATABASE_CONNECTION);
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 

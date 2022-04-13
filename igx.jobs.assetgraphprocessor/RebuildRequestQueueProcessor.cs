@@ -55,7 +55,8 @@ namespace igx.jobs.assetgraphprocessor
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 },
                 new AzureQueueSource(),
-                new DummyCachingProvider());
+                new DummyCachingProvider(),
+                constants.COMMUNITY_DATABASE_CONNECTION);
             
             #endregion
 
