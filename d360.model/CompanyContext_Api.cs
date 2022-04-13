@@ -42,6 +42,11 @@ namespace d360.model
         public List<DatabaseBulkAssetResult> Results { get; set; }
     }
 
+    public class DataProfilesPartiallyProcessedEventArgs : EventArgs
+    {
+        public List<DataProfileUpsertResponse> Results { get; set; }
+    }
+
     internal class CurrentExecutionLocationModel
     {
         public Guid ExecutionID { get; set; }
@@ -113,6 +118,13 @@ namespace d360.model
         protected virtual void OnRelationshipsUpdatePartiallyProcessed(RelationshipsUpdatePartiallyProcessedEventArgs e)
         {
             RelationshipsUpdatePartiallyProcessed?.Invoke(this, e);
+        }
+
+        public event EventHandler<DataProfilesPartiallyProcessedEventArgs> DataProfilesPartiallyProcessed;
+
+        protected virtual void OnDataProfilesPartiallyProcessed(DataProfilesPartiallyProcessedEventArgs e)
+        {
+            DataProfilesPartiallyProcessed?.Invoke(this, e);
         }
 
         #endregion
@@ -12191,6 +12203,14 @@ EG.GroupUid
 
                     #endregion
 
+                    if (results.Count > 0) // There are errors already processed.
+                    {
+                        OnDataProfilesPartiallyProcessed(new DataProfilesPartiallyProcessedEventArgs
+                        {
+                            Results = results
+                        });
+                    }
+
                     #region Bulk Copy
 
                     if (Database.Connection.State != ConnectionState.Open)
@@ -12630,6 +12650,11 @@ EG.GroupUid
                         );
                         AddMeasurement(metrics, $"results.AddRange >> DataProfileUpsertResponse>> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
+
+                        OnDataProfilesPartiallyProcessed(new DataProfilesPartiallyProcessedEventArgs
+                        {
+                            Results = results
+                        });
 
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
