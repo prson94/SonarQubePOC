@@ -504,7 +504,7 @@ namespace d360.core.entities
                 }
             }
 
-            if ((!model.Minimum.HasValue || !model.Maximum.HasValue) && model.MinMaxPresent.HasValue)
+            if ((!model.Minimum.HasValue || !model.Maximum.HasValue) && (model.MinMaxPresent.HasValue && model.MinMaxPresent.Value))
             {
                 errors.Add("Both Minimum AND Maximum must contain values for MinMaxPresent to be used. Otherwise it must be removed.");
             }

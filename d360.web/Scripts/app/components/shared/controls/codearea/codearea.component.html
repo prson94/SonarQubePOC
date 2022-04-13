@@ -1,5 +1,6 @@
 ﻿<div class="ig-codearea {{sizeClass}} {{(disabled ? 'disabled' : '')}}">
     <ngx-codemirror [(ngModel)]="value"
+                    (ngModelChange)="writeValue(value)"
                     name="codeExample"
                     [options]="editorConfig"     
                     [required]="required ? 'true' : null"                         

@@ -51,16 +51,17 @@ export class SemanticType {
     maximum: number;
     minimum: number;
     minSamples: number;
-    minMaxPresent: number;
+    minMaxPresent: boolean;
     name: string;
     priority: number;
     qualifier: string;
-    regExReturned: string;
+    regExpReturned: string;
     status: SemanticStatus;
     threshold: number;
     validLocales: string[];
     validList: string[];
     hasQualifiedAssets: boolean = false;
+    headerRegExps: string;
 
     public static getBaseTypeText(baseType: string): string {
         switch (baseType.toString().toLocaleLowerCase()) {
@@ -70,9 +71,24 @@ export class SemanticType {
             case "boolean":
                 return "True/False (Boolean)";
             default:
-                return baseType.toString();
+                if (Object.values(SemanticBaseType).includes(baseType)) {
+                    return baseType.toString();
+                }
+                return "---";
         }
     }
+
+    //public equals(semanticType: SemanticType) {
+    //    if (this.uid === semanticType.uid
+    //        && this.name === semanticType.description
+    //        && this.uid === semanticType.uid
+    //        && this.effectiveDate === semanticType.effectiveDate
+    //        && this.source === semanticType.source
+    //        && this.baseType === semanticType.baseType
+    //        && this.matchType === semanticType.matchType) {
+
+    //    }
+    //}
 }
 
 export class SemanticTypeAsset {
