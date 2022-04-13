@@ -161,7 +161,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                     else {
                         this.savingInProgress = false;
                         this.savingInProgressWithAddNew = false;
-                        if (res.status == 409) {
+                        if (res.status === 409) {
                             this.isDuplicateQualifier = true;
                         }                                        
                     }
@@ -183,7 +183,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                 else {
                     this.savingInProgress = false;
                     this.savingInProgressWithAddNew = false;
-                    if (res.status == 409) {
+                    if (res.status === 409) {
                         this.isDuplicateQualifier = true;
                     }
                 }
@@ -222,10 +222,10 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         type NewType = AbstractControl;
 
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null) {
+            if (control.value === null) {
                 return {};
             }
-            if ((control.value as string).trim() == '' && (control.value as string) != '') {
+            if ((control.value as string).trim() === '' && (control.value as string) != '') {
                 return {
                     empty: { value: control.value }
                 };
@@ -237,10 +237,9 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     isValidPercentage(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined)
-                if (control.value == null) {
-                    return {};
-                }
+            if (control.value === null || control.value === undefined) {
+                return {};
+            }                
             if ((control.value as number) < 1 || (control.value as number) > 100) {
                 return {
                     outOfRange: { value: control.value }
@@ -253,7 +252,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     isValidNumber(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined) {
+            if (control.value === null || control.value === undefined) {
                 return {};
             }
             if ((control.value as number) < 1) {
@@ -284,7 +283,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         if (this.elRef.nativeElement) {
             var els = this.elRef.nativeElement.getElementsByClassName('form-wrapper');
             if (els[0]) {
-                var rect = els[0].getBoundingClientRect()
+                var rect = els[0].getBoundingClientRect();
                 topPos = rect.top + 120;
             }
         }
