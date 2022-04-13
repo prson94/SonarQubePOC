@@ -29,6 +29,13 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     theDeleteCallback: Function;
     private isDimensionsVisible: boolean = false;
 
+    get assetTypeEditorTitle(): string {
+        if (this.selected === null) {
+            return $localize`New Rule Type'`;
+        }
+        return $localize`Edit Rule Type'`;
+    }
+
     constructor(
         private stateService: StateService,
         protected secondaryNavService: SecondaryNavService,
@@ -36,10 +43,9 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         protected settingsService: CompanySettingsService,
         private assetTypeService: AssetTypeService,
         private assetsService: AssetService,
-        headerBreadcrumbService: HeaderBreadcrumbService,        
-        titleService: Title)
-    {
-        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);        
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title) {
+        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Rules;
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
@@ -47,7 +53,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
     ngOnInit() {
         this.assetTypeClass = AssetTypeClass.Rule;
-        this.getRuleTypes();        
+        this.getRuleTypes();
     }
 
     ngOnDestroy() {
@@ -71,8 +77,8 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.assetTypeService.deleteSingleAssetType(uid).subscribe((result) => {
             this.showDelete = false;
             if (result.type != "error") {
-                result.title = "Success!";
-                this.showMessageForResult(this.messagesService, result, "Item successfully removed.");
+                result.title = $localize`Success!`;
+                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed.`);
                 this.ruleTypes = this.ruleTypes.filter((x) => x.uid !== uid);
                 this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
             }
@@ -107,7 +113,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         }
     }
 
-    selectedItemChange(objectId: number) {  
+    selectedItemChange(objectId: number) {
         this.loadDataAndExecuteAction();
         this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
     }

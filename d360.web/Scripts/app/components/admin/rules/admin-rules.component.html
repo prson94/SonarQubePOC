@@ -2,7 +2,7 @@
     <div class="col l4 s12">
         <div class="tile tile-detail">
             <header *ngIf="!showDelete">
-                Rule Types
+                <ng-container i18n>Rule Types</ng-container>
                 <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="add()"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -12,7 +12,7 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'">
-                                Name
+                                <ng-container i18n>Name</ng-container>
                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                             </th>
                             <th style="width: 40px"></th>
@@ -89,7 +89,7 @@
             <div class="col s12">
                 <div class="tile tile-detail">
                     <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID"
-                                           [title]="(selected == null ? 'New' : 'Edit') + ' Rule Type'"
+                                           [title]="assetTypeEditorTitle"
                                            (onCancel)="closeEditor()"
                                            (onComplete)="saveRuleType($event)"></d3s-asset-type-editor>
                 </div>

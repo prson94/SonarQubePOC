@@ -35,18 +35,18 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     //#region Tooltip data
 
-    measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
-        + 'Only those assets matching the conditions will be scored using these measures. '
-        + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
+    measurestooltip: string = $localize`Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures.
+           Only those assets matching the conditions will be scored using these measures.
+           Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures`;
 
-    weightTootlip: string = 'Weight determines the contributions of this measure to the overall score calculated for an asset.'
-        + 'For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.'
-        + 'The sum of all measures used to calculate the score should sum to 100% (at the top-level and within each group of measures).'
-        + 'Where they do not, they will be adjusted when used to calculate the score.';
+    weightTootlip: string = $localize`Weight determines the contributions of this measure to the overall score calculated for an asset.
+           For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
+           The sum of all measures used to calculate the score should sum to 100% (at the top-level and within each group of measures).
+           Where they do not, they will be adjusted when used to calculate the score.`;
 
-    groupingTooltip: string = 'Grouping measures can be used to organize your measures, collecting together a group of a'
-        + 'similar nature(E.g.responsibility assignments, required field checks).'
-        + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
+    groupingTooltip: string = $localize`Grouping measures can be used to organize your measures, collecting together a group of a
+          similar nature(E.g.responsibility assignments, required field checks).
+          Grouping measures do not have asset conditions, as they are not applied directly to the assets.`;
 
     assetConditionsAndWeightingTooltip: string = "";
     conditionWeightTootlip: string = "";
@@ -54,7 +54,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     //#endregion
 
     child = "";
-    closeLabel: string = "Cancel";
+    closeLabel: string = $localize`Cancel`;
     conditionFormMode = FormMode.Default;
     conditionGroups: MetricAssetVersionConditionViewModel[] = [];
     matchConditionsOnly: string = "true";
@@ -73,23 +73,23 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     originalConditions: MetricAssetVersionConditionViewModel[];
     originalEffectiveDate: Date;
     originalModel: MetricAssetViewModel;
-    saveLabel: string = "Create";
+    saveLabel: string = $localize`Create`;
     showMatchPicker: boolean = false;
     verb = "Add";
     canAddGroup: boolean = false;
     private baseMenuItems = [
-        { "title": "Duplicate" },
-        { "title": "Delete" }
+        { "title": $localize`Duplicate` },
+        { "title": $localize`Delete` }
     ];
 
     private upMenuItems: any[] = [
-        { title: "Move to Top" },
-        { title: "Move Up" }
+        { title: $localize`Move to Top` },
+        { title: $localize`Move Up` }
     ];
 
     private downMenuItems: any[] = [
-        { title: "Move Down" },
-        { title: "Move to Bottom" }
+        { title: $localize`Move Down` },
+        { title: $localize`Move to Bottom` }
     ];
 
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
@@ -216,14 +216,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             return 0;
         }
     }
-   
+
     canAddNewGroup(event: boolean) {
         if (this.conditionGroups.length > 0 && this.conditionGroups.every(x => x.conditionItemFields.filter(x => x.field).length > 0)) {
             this.canAddGroup = event;
         } else {
             this.canAddGroup = false;
         }
-    } 
+    }
 
     orderConditionGroups() {
         this.conditionGroups.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
@@ -276,7 +276,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 newGroup.Uid = x.Uid;
                 newGroup.MatchType = x.MatchType;
                 newGroup.DisplayOrder = x.Position ?? this.getMaxPositionForGroups();
-                newGroup.Position = newGroup.DisplayOrder; 
+                newGroup.Position = newGroup.DisplayOrder;
                 newGroup.Threshold = x.Threshold;
                 newGroup.Weight = x.Weight;
                 if (newGroup.Weight) {
@@ -316,7 +316,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
     }
 
-    showConditionMatch(cg): boolean{
+    showConditionMatch(cg): boolean {
         return cg.conditionItemFields.filter(x => x.field).length > 1;
     }
 
@@ -454,7 +454,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     saveMeasure() {
-        
+
         this.model.ConditionGroups = this.conditionGroups;
         this.isSaving = true;
         let prevDate: string | Date = null;
@@ -471,9 +471,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate;
         }
-        
+
         this.matchType = (this.matchType == 'Any') ? 'Any' : 'All';
-        
+
         if (this.allocation.isExternallyCalculated) {
             this.model.ConditionGroups = [];
         }
@@ -670,7 +670,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     if (x.MatchType !== originalMatch.MatchType
                         || x.Position !== originalMatch.Position
                         || x.Threshold !== originalMatch.Threshold
-                        || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0) 
+                        || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0)
                         || +(x.DisplayWeight ?? 0) !== +(originalMatch.DisplayWeight ?? 0)
                         || +(x.DisplayThreshold ?? 0) !== +(originalMatch.DisplayThreshold ?? 0)
                         || x.DisplayOrder !== originalMatch.DisplayOrder
