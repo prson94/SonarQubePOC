@@ -1,13 +1,13 @@
-﻿import {Component, Input, OnChanges, SimpleChange, Output, EventEmitter} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
+﻿import { Component, Input, OnChanges, SimpleChange, Output, EventEmitter } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 
-import {Organization, OrganizationType} from '../../../models/organization.model';
+import { Organization, OrganizationType } from '../../../models/organization.model';
 
-import {OrganizationsService} from '../../../services/organizations.service';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     template: `
         <div class="tile tile-detail">
             <header *ngIf="!showEditor && !showDelete && !showHistory">
-                Organizations
+                <ng-container i18n>Organizations</ng-container>
                 <d3s-tile-actions [hasAdd]="true"
                                   [hasFilterMode]="true"
                                   [(filterMode)]="showSimpleFilter"
@@ -30,7 +30,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                        pInputText
                        size="100"
                        (input)="dt.filterGlobal($event.target.value, 'contains')"
-                       placeholder="Search..."
+                       placeholder="{{searchText}}"
                        class="grid-simple-filter">
                 <p-table #dt
                          [value]="organizations"
@@ -48,12 +48,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'">
-                                Name
+                                <ng-container i18n>Name</ng-container>
                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                             </th>
-                            <th>Administrator Email</th>
-                            <th>Accepted On</th>
-                            <th>Accepted By</th>
+                            <th i18n>Administrator Email</th>
+                            <th i18n>Accepted On</th>
+                            <th i18n>Accepted By</th>
                             <th style="width: 40px"></th>
                             <th style="width: 40px"></th>
                             <th style="width: 40px"></th>
@@ -114,7 +114,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <d3s-dynamic-editor *ngIf="showEditor"
                                 [objectID]="organizationType?.ID"
                                 [objectType]="'Organization'"
-                                [title]="'Organization'"
+                                [title]="editorTitle"
                                 [selection]="organization"
                                 (saveClick)="save($event)"
                                 (closeClick)="closeEditor()"></d3s-dynamic-editor>
@@ -122,7 +122,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                              [callback]="theDeleteCallback"
                              [itemId]="organization?.ID"
                              [method]="'callback'"
-                             [prompt]="'Are you sure you want to delete the organization [' + [organization?.Name] + ']?'"
+                             [prompt]="deletePromptText"
                              (onCancel)="showDelete=false;"
             ></d3s-delete-form>
             <div *ngIf="showHistory">
@@ -145,6 +145,13 @@ export class AdminOrganizationListComponent extends BaseComponent implements OnC
     showDelete = false;
     showHistory = false;
     theDeleteCallback: Function;
+
+    searchText = $localize`Search...`;
+    editorTitle = $localize`Organization`;
+
+    get deletePromptText(): string {
+        return `Are you sure you want to delete the organization [${this.organization?.Name}]?`;
+    }
 
     constructor(
         private route: ActivatedRoute,
