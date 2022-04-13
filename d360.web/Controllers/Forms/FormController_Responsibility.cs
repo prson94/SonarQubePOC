@@ -637,12 +637,9 @@ for json path, WITHOUT_ARRAY_WRAPPER", new { type = type.ToString() }).ToList();
 				(
 					select
 							assetType.uid as assigneeTypeUid
-					from	FieldType FT
-					join dbo.AssetType assetType
-						on assetType.Object = FT.Object
-						and assetType.ObjectID = FT.ObjectID
-					where	FT.[Object] = @type
-							and FT.ObjectID = @id
+					from dbo.AssetType assetType
+					where	assetType.[Object] = @type
+							and assetType.ObjectID = @id
 				) as assigneeTypeUid
 for json path, WITHOUT_ARRAY_WRAPPER
 ", new { type = type.ToString(), id }).ToList();
