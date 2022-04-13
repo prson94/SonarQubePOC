@@ -137,7 +137,16 @@ namespace d360.web.Controllers.V2
             {
                 var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-                var sql = @"exec graph.AssetBrowser_Lineage 
+				if (hopModel.assets == null)
+				{
+					hopModel.assets = new List<AssetBrowserApiHopAssetRequestModel>();
+				}
+				if (hopModel.preloadedIntersects == null)
+				{
+					hopModel.preloadedIntersects = new List<long>();
+				}
+
+				var sql = @"exec graph.AssetBrowser_Lineage 
 @ancestry, @descendancy, @direction, 
 @assets, @resourceId, @currentHop, @hopCount, @intersects,
 @includeOwnershipBadges, @includeRelationBadges, @hierarchyKey, @isAdmin";
@@ -240,7 +249,14 @@ namespace d360.web.Controllers.V2
             try
             {
                 var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
-
+				if (hopModel.assets == null)
+				{
+					hopModel.assets = new List<AssetBrowserApiHopAssetRequestModel>();
+				}
+				if (hopModel.intersects == null) 
+				{
+					hopModel.intersects = new List<long>();
+				}
                 var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
