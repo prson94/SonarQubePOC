@@ -17,7 +17,7 @@ import { SortOrder } from '../../../models/enums.model';
 
 export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     @Input() id: number;
-    @Input() title: string = "Load Details";
+    @Input() title: string = $localize`Load Details`;
 
     @Output() refreshClick = new EventEmitter();
 

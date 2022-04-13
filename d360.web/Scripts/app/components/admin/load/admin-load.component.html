@@ -2,23 +2,25 @@
     <div class="col s12 m6 l4">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading" class="tile tile-detail">
-            <header>History<d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;" [hasRefresh]="true" (refreshClick)="refreshGrid()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
-
+            <header>
+                <ng-container i18n>History</ng-container>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="formMode=FormMode.Adding;" [hasRefresh]="true" (refreshClick)="refreshGrid()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+            </header>
 
             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
             <p-table #dt [value]="loads" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Action','ObjectName','DateCompleted']" [paginator]="true" [rows]="25" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selectedRow">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Action'" style="width:   30% ">
-                            Action
+                            <ng-container i18n>Action</ng-container>
                             <d3s-sortIcon [field]="'Action'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'ObjectName'" style="width:   40% ">
-                            Target
+                            <ng-container i18n>Target</ng-container>
                             <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'DateCompleted'" style="width:   30% ">
-                            Date Completed
+                            <ng-container i18n>Date Completed</ng-container>
                             <d3s-sortIcon [field]="'DateCompleted'"></d3s-sortIcon>
                         </th>
                     </tr>
