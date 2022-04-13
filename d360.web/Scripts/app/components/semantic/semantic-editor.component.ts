@@ -8,11 +8,7 @@ import {
     OnChanges,
     OnInit,
     Output,
-    SimpleChange,
-
-    ViewChild,
     ElementRef,
-
     ViewEncapsulation,
     ViewChildren,
     QueryList,
@@ -21,14 +17,12 @@ import {
     SimpleChanges
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { SemanticBaseType, SemanticMatchType, SemanticSource, SemanticType } from '../../models/semantic-type.model';
+import { SemanticMatchType, SemanticSource, SemanticType } from '../../models/semantic-type.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { CompanySettingsService } from '../../services/settings.service';
 import { BaseComponent } from '../shared/base.component';
-import { SelectItem } from 'primeng/api';
 import { LocaleService } from '../../services/locale.service';
-import { ApiResult, ErrorResponse } from '../../models/apiresult.model';
 import { PropertyGroupComponent } from '../shared/controls/property-group/property-group.component';
 
 @Component({
@@ -162,7 +156,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                         this.showMessageForResult(this.messagesService, res, msg);                        
                         this.savingInProgress = false;
                         this.savingInProgressWithAddNew = false;     
-                        this.saveClick.emit({ item: this.model, action: 'Edit', addAnother: addAnother });
+                        this.saveClick.emit({ item: this.model, action: 'Edit', addAnother });
                     }
                     else {
                         this.savingInProgress = false;
@@ -184,7 +178,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                         this.model = new SemanticType();
                         this.semanticForm.reset();
                     }
-                    this.saveClick.emit({ item: res[0], action: "new", addAnother: addAnother });
+                    this.saveClick.emit({ item: res[0], action: "new", addAnother });
                 }
                 else {
                     this.savingInProgress = false;
@@ -202,17 +196,17 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         if (!this.matchTypes) {
             this.isLoading = true;
             this.dataProfileService.getSemanticLookupList("matchtypes").subscribe((matchRes) => {
-                this.matchTypes = matchRes.map(matchType => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description } });
+                this.matchTypes = matchRes.map((matchType) => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description }; });
                 this.dataProfileService.getSemanticLookupList("basetypes").subscribe((baseRes) => {
-                    this.baseTypes = baseRes.map(baseType => { return { label: baseType.Name, value: baseType.Value } });
+                    this.baseTypes = baseRes.map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
                     this.dataProfileService.getSemanticLookupList("statuses").subscribe((statusRes) => {
-                        this.statuses = statusRes.map(status => { return { label: status.Name, value: status.Value } });
-                        this.localService.getLocales().subscribe(locales => {
+                        this.statuses = statusRes.map((status) => { return { label: status.Name, value: status.Value }; });
+                        this.localService.getLocales().subscribe((locales) => {
 
                             this.locales = locales;
 
-                            this.locales.forEach(i => {
-                                i.label = `${i.locale} (${i.Name})`;
+                            this.locales.forEach((i) => {
+                                i.label = i.locale;
                                 i.value = i.locale;
                             });
                             this.isLoading = false;
@@ -228,12 +222,14 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         type NewType = AbstractControl;
 
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null)
+            if (control.value == null) {
                 return {};
-            if ((control.value as string).trim() == '' && (control.value as string) != '')
+            }
+            if ((control.value as string).trim() == '' && (control.value as string) != '') {
                 return {
                     empty: { value: control.value }
                 };
+            }                
             return null;
         };
     }
@@ -242,11 +238,14 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null || control.value == undefined)
-                return {};
-            if ((control.value as number) < 1 || (control.value as number) > 100)
+                if (control.value == null) {
+                    return {};
+                }
+            if ((control.value as number) < 1 || (control.value as number) > 100) {
                 return {
                     outOfRange: { value: control.value }
                 };
+            }                
             return null;
         };
     }
@@ -254,12 +253,14 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     isValidNumber(): ValidatorFn {
         type NewType = AbstractControl;
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value == null || control.value == undefined)
+            if (control.value == null || control.value == undefined) {
                 return {};
-            if ((control.value as number) < 1)
+            }
+            if ((control.value as number) < 1) {
                 return {
                     outOfRange: { value: control.value }
                 };
+            }                
             return null;
         };
     }

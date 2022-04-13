@@ -343,7 +343,7 @@ export class DataProfileService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -369,7 +369,7 @@ export class DataProfileService extends BaseObservableService {
                 map((res: any) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 }

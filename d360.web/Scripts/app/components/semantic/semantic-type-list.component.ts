@@ -420,7 +420,9 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             this.router.navigateByUrl(newUrl);
         }
         else {
-            if ($event.item.uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited      
+            if ($event.item.uid) {
+                this.headerActionsService.emitFavoritesChange();
+            }
             this.getData();
             this.isLoading = false;            
             this.showEditor = false;
