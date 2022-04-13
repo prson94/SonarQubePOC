@@ -1,10 +1,13 @@
-﻿using d360.core.enums;
+﻿using d360.core;
+using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.extensions.info;
+using d360.extensions.mail;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Configuration;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -67,6 +70,11 @@ namespace igx.jobs.scheduledworkflowprocessor
                                 CompanyPrefix = c.UrlPrefix,
                                 ResourceID = 0,
                                 IsAdministrator = true
+                            },
+                            new MandrillMailProvider
+                            {
+                                ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                                SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                             });
 
                         // Load all workflows of type schedule.

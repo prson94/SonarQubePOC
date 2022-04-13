@@ -19,6 +19,8 @@ using d360.extensions.caching;
 using d360.model;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
+using d360.extensions.mail;
+using System.Configuration;
 
 namespace igx.jobs.indexer
 {
@@ -231,6 +233,11 @@ namespace igx.jobs.indexer
                     CompanyPrefix = _c.UrlPrefix,
                     ResourceID = 0,
                     IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 });
 
             CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);

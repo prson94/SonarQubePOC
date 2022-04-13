@@ -2,6 +2,7 @@
 using d360.core.entities.Workflow;
 using d360.core.queue;
 using d360.extensions.info;
+using d360.extensions.mail;
 using d360.extensions.queue;
 using d360.model;
 using Microsoft.Azure.ServiceBus;
@@ -57,7 +58,6 @@ namespace igx.functions.consumption
                 return;
             }
 
-            var queueSource = new AzureQueueSource(config);
             company = JobDbContextCreator.CreateCompanyContext(
                 new UriSecurityContextProvider
                 {
@@ -65,10 +65,15 @@ namespace igx.functions.consumption
                     ResourceID = info.ResourceID,
                     CompanyPrefix = info.DomainPrefix,
                     IsAdministrator = true
-                }, 
-                queueSource, 
-                CoreFunction.GetConnectionString("CommunityContext"), 
-                CoreFunction.GetConfigValueByKey<string>(constants.MAIL_API_KEY), CoreFunction.GetConfigValueByKey<string>(constants.MAIL_SUB_ACCOUNT));
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = config.GetValue<string>("MandrillApiKey"),
+                    SubAccount = config.GetValue<string>("MandrillSubAccount")
+                },
+                new AzureQueueSource(config),
+                config.GetConnectionString("CommunityContext")
+            );
 
             try
             {

@@ -23,6 +23,8 @@ using Microsoft.Extensions.Hosting;
 using d360.model.DataAccessLayer;
 using d360.core.entities.Membership;
 using d360.extensions;
+using System.Configuration;
+using d360.extensions.mail;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -109,7 +111,12 @@ namespace igx.jobs.apiexecutionprocessor
                     ResourceID = Info.ResourceID ?? 0,
                     CompanyPrefix = Info.CompanyDomainPrefix,
                     IsAdministrator = false
-                }, 
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                },
                 queue);
             CommunityContext community = JobDbContextCreator.CreateCommunityContext(
                 new UriSecurityContextProvider

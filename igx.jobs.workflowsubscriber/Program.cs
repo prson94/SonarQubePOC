@@ -2,6 +2,7 @@
 using d360.core.entities.Workflow;
 using d360.core.queue;
 using d360.extensions.info;
+using d360.extensions.mail;
 using d360.model;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
@@ -10,6 +11,7 @@ using Microsoft.ServiceBus.Messaging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -81,6 +83,11 @@ namespace igx.jobs.workflowsubscriber
                     CompanyPrefix = info.DomainPrefix,
                     ResourceID = info.ResourceID,
                     IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 });
 
             try

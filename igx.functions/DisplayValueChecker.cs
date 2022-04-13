@@ -1,5 +1,6 @@
 ﻿using d360.core.enums;
 using d360.extensions.info;
+using d360.extensions.mail;
 using d360.model;
 using d360.utils.company;
 using Dapper;
@@ -54,6 +55,11 @@ namespace igx.functions.consumption
                                                             ResourceID = 0,
                                                             IsAdministrator = true,
                                                         },
+                            mailProvider: new MandrillMailProvider
+                                            {
+                                                ApiKey = config.GetValue<string>("MandrillApiKey"),
+                                                SubAccount = config.GetValue<string>("MandrillSubAccount")
+                                            },
                             connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
                         var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);

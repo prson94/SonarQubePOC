@@ -12,6 +12,9 @@ using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
 using Newtonsoft.Json;
+using d360.extensions.mail;
+using d360.core;
+using System.Configuration;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -45,6 +48,11 @@ namespace igx.jobs.assetgraphprocessor
                     CompanyPrefix = _c.UrlPrefix,
                     ResourceID = 0,
                     IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                 });
             
             #endregion

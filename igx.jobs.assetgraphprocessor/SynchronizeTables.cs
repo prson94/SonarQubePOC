@@ -9,6 +9,9 @@ using d360.model;
 using d360.core.enums;
 using System.Collections.Generic;
 using d360.extensions.info;
+using d360.extensions.mail;
+using System.Configuration;
+using d360.core;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -46,6 +49,11 @@ namespace igx.jobs.assetgraphprocessor
                             CompanyPrefix = company.UrlPrefix,
                             ResourceID = 0,
                             IsAdministrator = true
+                        },
+                        new MandrillMailProvider
+                        {
+                            ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                            SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
                         });
 
                     var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);

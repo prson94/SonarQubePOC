@@ -12,17 +12,11 @@ namespace d360.model
     {
         public static CompanyContext CreateCompanyContext(
             ISecurityContextProvider securityContextProvider,
+            IMailProvider mailProvider,
             AzureQueueSource queue = null,
-            string connectionString = null,
-            string mandrillApiKey = null,
-            string mandrillSubAccount = null)
+            string connectionString = null)
         {
             DummyCachingProvider cache = new DummyCachingProvider();
-            MandrillMailProvider mail = new MandrillMailProvider
-            {
-                ApiKey = mandrillApiKey,
-                SubAccount = mandrillSubAccount,
-            };
 
             if (queue == null)
             {
@@ -31,7 +25,7 @@ namespace d360.model
 
             CommunityContext community = InitializeCommunityContext(connectionString, securityContextProvider, cache, queue);
 
-            return new CompanyContext(community, cache, queue, mail, securityContextProvider, true);
+            return new CompanyContext(community, cache, queue, mailProvider, securityContextProvider, true);
         }
 
         public static CommunityContext CreateCommunityContext(ISecurityContextProvider securityContextProvider, string connectionString = null)
