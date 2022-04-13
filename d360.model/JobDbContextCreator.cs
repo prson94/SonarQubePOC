@@ -13,37 +13,30 @@ namespace d360.model
         public static CompanyContext CreateCompanyContext(
             ISecurityContextProvider securityContextProvider,
             IMailProvider mailProvider,
-            AzureQueueSource queue = null,
+            IQueueSource queueSource,
             string connectionString = null)
         {
             DummyCachingProvider cache = new DummyCachingProvider();
+            CommunityContext community = InitializeCommunityContext(connectionString, securityContextProvider, cache, queueSource);
 
-            if (queue == null)
-            {
-                queue = new AzureQueueSource();
-            }
-
-            CommunityContext community = InitializeCommunityContext(connectionString, securityContextProvider, cache, queue);
-
-            return new CompanyContext(community, cache, queue, mailProvider, securityContextProvider, true);
+            return new CompanyContext(community, cache, queueSource, mailProvider, securityContextProvider, true);
         }
 
-        public static CommunityContext CreateCommunityContext(ISecurityContextProvider securityContextProvider, string connectionString = null)
+        public static CommunityContext CreateCommunityContext(ISecurityContextProvider securityContextProvider, IQueueSource queueSource, string connectionString = null)
         {
             DummyCachingProvider cache = new DummyCachingProvider();
-            AzureQueueSource queue = new AzureQueueSource();
             
-            return InitializeCommunityContext(connectionString, securityContextProvider, cache, queue);
+            return InitializeCommunityContext(connectionString, securityContextProvider, cache, queueSource);
         }
 
-        private static CommunityContext InitializeCommunityContext(string connectionString, ISecurityContextProvider sec, DummyCachingProvider cache, AzureQueueSource queue)
+        private static CommunityContext InitializeCommunityContext(string connectionString, ISecurityContextProvider sec, DummyCachingProvider cache, IQueueSource queueSource)
         {
             if (string.IsNullOrEmpty(connectionString))
             {
-                return new CommunityContext(cache, queue, sec);
+                return new CommunityContext(cache, queueSource, sec);
             }
 
-            return new CommunityContext(connectionString, cache, queue, sec);
+            return new CommunityContext(connectionString, cache, queueSource, sec);
         }
     }
 }

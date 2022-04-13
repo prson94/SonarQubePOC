@@ -238,7 +238,8 @@ namespace igx.jobs.indexer
                 {
                     ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-                });
+                },
+                new AzureQueueSource());
 
             CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
 

@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.extensions.info;
 using d360.extensions.mail;
+using d360.extensions.queue;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
@@ -66,7 +67,8 @@ namespace igx.jobs.responsibilityruleprocessor
                             {
                                 ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                                 SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-                            });
+                            },
+                            new AzureQueueSource());
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 

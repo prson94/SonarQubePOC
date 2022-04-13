@@ -101,7 +101,9 @@ namespace igx.jobs.apiexecutionprocessor
 
             #region Create EF connection
 
-            queue = new AzureQueueSource();
+            //An instance of this class is a thread safe because it's a wrapper for ServiceBusClient which is thread safe.
+            //We don't need to have more than one of these.
+            queue = new AzureQueueSource(); 
             storage = new AzureStorageProvider();
 
             company = JobDbContextCreator.CreateCompanyContext(
@@ -125,7 +127,8 @@ namespace igx.jobs.apiexecutionprocessor
                     ResourceID = Info.ResourceID ?? 0,
                     CompanyPrefix = Info.CompanyDomainPrefix,
                     IsAdministrator = false
-                });
+                },
+                queue);
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;

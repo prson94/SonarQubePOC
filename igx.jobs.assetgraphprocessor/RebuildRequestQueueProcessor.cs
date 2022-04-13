@@ -53,7 +53,8 @@ namespace igx.jobs.assetgraphprocessor
                 {
                     ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-                });
+                },
+                new AzureQueueSource());
             
             #endregion
 

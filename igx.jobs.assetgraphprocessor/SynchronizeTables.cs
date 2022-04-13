@@ -12,6 +12,7 @@ using d360.extensions.info;
 using d360.extensions.mail;
 using System.Configuration;
 using d360.core;
+using d360.extensions.queue;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -54,7 +55,8 @@ namespace igx.jobs.assetgraphprocessor
                         {
                             ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                             SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-                        });
+                        },
+                        new AzureQueueSource());
 
                     var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)

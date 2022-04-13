@@ -6,6 +6,7 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.extensions.info;
 using d360.extensions.mail;
+using d360.extensions.queue;
 using d360.model;
 using d360.utils.company;
 using Dapper;
@@ -49,7 +50,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
                 {
                     ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
                     SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
-                });
+                },
+                new AzureQueueSource());
         }
 
         internal MetConditionsModel CheckMeasureConditions(
