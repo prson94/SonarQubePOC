@@ -64,6 +64,14 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     private isRecalculateModalVisible: boolean = false;
     private isCallingRecalculate: boolean = false;
 
+    labelCancel = $localize`Cancel`;
+    labelRecalculate = $localize`Recalculate`;
+
+    titleCreateMeasure = $localize`Create Measure`;
+    titleEditMeasure = $localize`Edit Measure`;
+    titleVersionHistory = $localize`Version History`;
+    titleRecalculateMeasure = $localize`Recalculate Measure`;
+
     todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
         if (item) {
             let today = new Date();
@@ -128,7 +136,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         private allocationService: AllocationService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        private scoreService: ScoreService    ) {
+        private scoreService: ScoreService) {
         super(settingsService);
 
         let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
@@ -349,7 +357,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     showRulePathsError() {
-        return this.isDataQualityScoreType() && ((this.screenReferences.paths && this.screenReferences.paths.length == 0) || !this.screenReferences.paths); 
+        return this.isDataQualityScoreType() && ((this.screenReferences.paths && this.screenReferences.paths.length == 0) || !this.screenReferences.paths);
     }
 
     getSelectedRuleResultPath() {

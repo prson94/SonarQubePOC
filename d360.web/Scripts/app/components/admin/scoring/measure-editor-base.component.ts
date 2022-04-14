@@ -92,6 +92,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         { title: $localize`Move to Bottom` }
     ];
 
+    matchAllLabel = $localize`Match all conditions`;
+    matchAnyLabel = $localize`Match any conditions`;
+    addButtonLabel = $localize`Add condition group`;
+
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
 
     constructor(
@@ -131,17 +135,17 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     menuClicked(event, displyOrder, pos) {
         switch (event.value) {
-            case 'Duplicate': this.duplicate(pos);
+            case $localize`Duplicate`: this.duplicate(pos);
                 break;
-            case 'Delete': this.delete(pos);
+            case $localize`Delete`: this.delete(pos);
                 break;
-            case 'Move to Top': this.moveTotop(displyOrder);
+            case $localize`Move to Top`: this.moveTotop(displyOrder);
                 break;
-            case 'Move Up': this.moveUp(displyOrder);
+            case $localize`Move Up`: this.moveUp(displyOrder);
                 break;
-            case 'Move Down': this.moveDown(displyOrder);
+            case $localize`Move Down`: this.moveDown(displyOrder);
                 break;
-            case 'Move to Bottom': this.moveToBottom(displyOrder);
+            case $localize`Move to Bottom`: this.moveToBottom(displyOrder);
                 break;
             default: console.log("unknown action");
                 break;
@@ -388,8 +392,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         if (this.isEditBasedOnUid()) {
             this.verb = "Edit"
-            this.saveLabel = "Save Changes";
-            this.closeLabel = "Close";
+            this.saveLabel = $localize`Save Changes`;
+            this.closeLabel = $localize`Close`;
             if (this.model.EffectiveDate !== null) {
                 var date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);

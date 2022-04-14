@@ -5,16 +5,16 @@
             <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
                 <div inputs>
                     <div class="row">
-                        <label for="name" class="ig-label">Name</label>
+                        <label for="name" class="ig-label" i18n>Name</label>
                         <input igInput igAutoFocus tabindex="1" igSize="medium" [ngClass]="{'invalid': metricForm.get('name')?.errors?.empty}" type="text" [(ngModel)]="model.Name" formControlName="name" maxlength="250" required />
                         <div *ngIf="metricForm.get('name').invalid && (metricForm.get('name').dirty || metricForm.get('name').touched)">
-                            <div *ngIf="metricForm.get('name').errors.empty" class="ig-text-required">
+                            <div *ngIf="metricForm.get('name').errors.empty" class="ig-text-required" i18n>
                                 Please enter a valid name
                             </div>
                         </div>
                     </div>
                     <div class="row">
-                        <label for="description" class="ig-label">Description</label>
+                        <label for="description" class="ig-label" i18n>Description</label>
                         <textarea igTextArea
                                   [(ngModel)]="model.Description"
                                   tabindex="2"
@@ -26,7 +26,7 @@
                     <div class="flex-row">
                         <div class="flex-col">
                             <div class="row">
-                                <label for="effectiveDate" class="ig-label">Effective Date</label>
+                                <label for="effectiveDate" class="ig-label" i18n>Effective Date</label>
                                 <ig-date [tabindex]="3"
                                          [(ngModel)]="displayEffectiveDate"
                                          [required]="true"
@@ -38,7 +38,7 @@
                             </div>
                             <div class="row" *ngIf="!isExternallyCalculated">
                                 <label for="weight" class="ig-label">
-                                    Weight(%) <ng-container *ngTemplateOutlet="weightTooltip"></ng-container>
+                                    <ng-container i18n>Weight</ng-container>(%) <ng-container *ngTemplateOutlet="weightTooltip"></ng-container>
                                 </label>
                                 <ig-number-input [tabindex]="4"
                                                  [required]="true"
@@ -49,7 +49,7 @@
                                                  [(ngModel)]="displayWeight"></ig-number-input>
 
                                 <div *ngIf="metricForm.get('weight').invalid && (metricForm.get('weight').dirty || metricForm.get('weight').touched)">
-                                    <div *ngIf="metricForm.get('weight').errors?.outOfRange" class="ig-text-required">
+                                    <div *ngIf="metricForm.get('weight').errors?.outOfRange" class="ig-text-required" i18n>
                                         Please enter a value between 1 and 100
                                     </div>
                                 </div>
@@ -59,11 +59,11 @@
                             <label></label>
                             <div *ngIf="verb == 'Edit'">
                                 <ig-message-box>
-                                    <span *ngIf="model.HasResults">
+                                    <span *ngIf="model.HasResults" i18n>
                                         As scoring data has been collected against this measure (effective from {{currentEffectiveDate | utcDate | date:'shortDate' }}),
                                         any changes you make to this measure will result in a  new version being created, with a new effective date.
                                     </span>
-                                    <span *ngIf="!model.HasResults">
+                                    <span *ngIf="!model.HasResults" i18n>
                                         Keep an effective date of {{currentEffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
                                         Choose a later date to create a new version of the measure, which will be used in future calculations
                                     </span>
@@ -73,7 +73,9 @@
                     </div>
                     <div class="row" *ngIf="!isExternallyCalculated">
                         <ng-container *ngIf="!parentUid && !model.ParentUid">
-                            <label for="isGroup" class="ig-label">Grouping Measure  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container></label>
+                            <label for="isGroup" class="ig-label">
+                                <ng-container i18n>Grouping Measure</ng-container>  <ng-container *ngTemplateOutlet="groupTooltip"></ng-container>
+                            </label>
                             <ig-switch tabindex="5"
                                        formControlName="isGroup"
                                        [(ngModel)]="model.IsGroup"
@@ -86,7 +88,7 @@
             <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && model.Definition && model.Definition.Governance">
                 <div inputs>
                     <div class="row">
-                        <label for="check" class="ig-label">Test Type</label>
+                        <label for="check" class="ig-label" i18n>Test Type</label>
                         <p-dropdown igDropdown
                                     igSize="small"
                                     [disabled]="disabled"
@@ -97,7 +99,7 @@
                                     [required]="true"
                                     [showClear]="false"
                                     formControlName="check"
-                                    placeholder="Value required"
+                                    placeholder="{{labelRequired}}"
                                     tabindex="6"
                                     name="check">
                             <ng-template let-item pTemplate="selectedItem">
@@ -109,7 +111,7 @@
                         <div class="row" *ngSwitchCase="0">
                             <!--keep updateFrequency disabled until we are ready-->
                             <div *ngIf="false" class="row">
-                                <label for="updateFrequency" class="ig-label">Update Frequency</label>
+                                <label for="updateFrequency" class="ig-label" i18n>Update Frequency</label>
                                 <p-dropdown igDropdown
                                             igSize="small"
                                             [disabled]="disabled"
@@ -119,7 +121,7 @@
                                             [required]="true"
                                             [showClear]="false"
                                             formControlName="updateFrequency"
-                                            placeholder="Value required"
+                                            placeholder="{{labelRequired}}"
                                             tabindex="6"
                                             name="UpdateFrequency">
                                     <ng-template let-item pTemplate="selectedItem">
@@ -128,17 +130,17 @@
                                 </p-dropdown>
                             </div>
                             <div class="row">
-                                <label for="instructionString" class="ig-label">Instruction String</label>
+                                <label for="instructionString" class="ig-label" i18n>Instruction String</label>
                                 <input igInput tabindex="7" igSize="full" type="text" [(ngModel)]="model.Definition.Governance.External.Instructions" formControlName="instructionString" maxlength="250" />
                             </div>
                         </div>
                         <div class="row field-row" *ngSwitchCase="1">
-                            <label class="ig-label">Test Condition</label>
+                            <label class="ig-label" i18n>Test Condition</label>
                             <field-condition-grid *ngIf="!isLoadingFields" [formGroup]="metricForm" [required]="true" [singleSelectMode]="true" [conditionPrefix]="'fc_'" [conditions]="testFieldConditions" (onChange)="updateFormValidity($event)" [fields]="fields"></field-condition-grid>
                         </div>
                         <div class="row" *ngSwitchCase="2">
                             <div class="row row-label">
-                                <label class="ig-label">Test Condition</label>
+                                <label class="ig-label" i18n>Test Condition</label>
                             </div>
                             <div class="row conditions-row">
                                 <div class="condition-med">
@@ -151,7 +153,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="ResponsibilityTypeUid"
-                                                placeholder="Choose a responsibility type"
+                                                placeholder="{{labelResType}}"
                                                 tabindex="7"
                                                 [attr.name]="ResponsibilityTypeUid">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -171,7 +173,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="ResponsibilityTypeOperator"
-                                                placeholder="Value required"
+                                                placeholder="{{labelRequired}}"
                                                 tabindex="7"
                                                 [attr.name]="ResponsibilityTypeOperator">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -183,7 +185,7 @@
                         </div>
                         <div class="row" *ngSwitchCase="3">
                             <div class="row row-label">
-                                <label class="ig-label">Test Condition</label>
+                                <label class="ig-label" i18n>Test Condition</label>
                             </div>
                             <div class="row conditions-row">
                                 <div class="condition-med">
@@ -196,7 +198,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="PredicateTypeUid"
-                                                placeholder="Choose a predicate"
+                                                placeholder="{{labelPredicate}}"
                                                 tabindex="7"
                                                 [attr.name]="PredicateTypeUid">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -215,7 +217,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="PredicateTypeOperator"
-                                                placeholder="Value required"
+                                                placeholder="{{labelRequired}}"
                                                 tabindex="7"
                                                 [attr.name]="PredicateTypeOperator">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -227,7 +229,7 @@
                         </div>
                         <div class="row" *ngSwitchCase="4">
                             <div class="row row-label">
-                                <label class="ig-label">Test Condition</label>
+                                <label class="ig-label" i18n>Test Condition</label>
                             </div>
                             <div class="row conditions-row">
                                 <div class="condition-med">
@@ -240,7 +242,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="IntersectTypeUid"
-                                                placeholder="Choose a relationship type"
+                                                placeholder="{{labelRelType}}"
                                                 tabindex="7"
                                                 [attr.name]="IntersectTypeUid">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -259,7 +261,7 @@
                                                 [required]="true"
                                                 [showClear]="false"
                                                 formControlName="RelationshipTypeOperator"
-                                                placeholder="Value required"
+                                                placeholder="{{labelRequired}}"
                                                 tabindex="7"
                                                 [attr.name]="RelationshipTypeOperator">
                                         <ng-template let-item pTemplate="selectedItem">
@@ -272,7 +274,7 @@
                         <ng-template ngSwitchDefault>
                             <div class="row">
                                 <ig-message-box>
-                                    <span>
+                                    <span i18n>
                                         Choose the type of test to perfom on assets (eg. a field, relationship or ownership test),
                                         to be prompted for more information on how to test for a pass or fail.
                                     </span>
@@ -296,13 +298,13 @@
                     <div class="condition-group" *ngFor="let cg of sortByDisplayOrder();let i=index">
                         <div class="row cg-header-row">
                             <div class="condition-group-header">
-                                Condition Group {{cg.DisplayOrder}}
+                                <ng-container i18n>Condition Group</ng-container> {{cg.DisplayOrder}}
                             </div>
                             <div class="input-actions" *ngIf="!isLoadingFields">
                                 <div class="weight-container">
                                     <div class="weight-row">
                                         <label for="weight" class="ig-label right">
-                                            Weight(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
+                                            <ng-container i18n>Weight</ng-container>(%) <ng-container *ngTemplateOutlet="conditionWeightTooltip"></ng-container>
                                         </label>
                                         <ig-number-input
                                                          [tabindex]="4"
@@ -315,7 +317,7 @@
                                                          [(ngModel)]="cg.DisplayWeight"></ig-number-input>
                                     </div>
                                     <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').invalid && (metricForm.get('cg_'+ cg.Position + '_weight').dirty || metricForm.get('cg_'+ cg.Position + '_weight').touched)">
-                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required">
+                                        <div *ngIf="metricForm.get('cg_'+ cg.Position + '_weight').errors?.outOfRange" class="ig-text-required" i18n>
                                             Please enter a value between 1 and 100
                                         </div>
                                     </div>
@@ -333,12 +335,12 @@
                                                   (onChange)="updateFormValidity($event)"></field-condition-grid>
                         </div>
                         <div class="row match-type" *ngIf="showConditionMatch(cg)">
-                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="All" label="Match all conditions"></p-radioButton>&nbsp;
-                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="Any" label="Match any condition"></p-radioButton>
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="All" label="{{labelMatchAll}}"></p-radioButton>&nbsp;
+                            <p-radioButton igRadioButton formControlName="cg_{{cg.Position}}_matchType" [(ngModel)]="cg.MatchType" value="Any" label="{{labelMatchAny}}"></p-radioButton>
                         </div>
                     </div>
                     <div class="row top-margin">
-                        <button *ngIf="canAddGroup" type="button" icon="fa-plus-circle" igButton class="ig-button-midblue" label="Add condition group" (click)="addNewGroup()"></button>
+                        <button *ngIf="canAddGroup" type="button" icon="fa-plus-circle" igButton class="ig-button-midblue" label="{{addButtonLabel}}" (click)="addNewGroup()"></button>
                     </div>
                 </div>
             </ig-property-group>

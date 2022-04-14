@@ -23,6 +23,16 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
         this.load();
     }, 200);
 
+    labelRequired = $localize`Value required`;
+    labelResType = $localize`Choose a responsibility type`;
+    labelRelType = $localize`Choose a relationship type`;
+    labelPredicate = $localize`Choose a predicate`;
+
+    labelMatchAll = $localize`Match all conditions`;
+    labelMatchAny = $localize`Match any condition`;
+
+    addButtonLabel = $localize`Add condition group`;
+
     constructor(protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
@@ -126,9 +136,9 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
 
         if (this.verb == "Edit") {
             if (this.hasModelChanged) {
-                this.closeLabel = "Discard Changes"
+                this.closeLabel = $localize`Discard Changes`;
             } else {
-                this.closeLabel = "Close"
+                this.closeLabel = $localize`Close`;
             }
         }
         this.cdRef.markForCheck();

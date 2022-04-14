@@ -27,18 +27,18 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
     helpUri: string = "";
 
-    ruleResultsTooltip: string = 'In order to collect scoring results from rules, you need '
-        + 'to define at least one relationship type to associate the asset type you are scoring '
-        + 'with rule types, either directly or via relationships to other asset types.';// </br><a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Results.</a>';
+    ruleResultsTooltip: string = $localize`In order to collect scoring results from rules, you need 
+           to define at least one relationship type to associate the asset type you are scoring 
+           with rule types, either directly or via relationships to other asset types.`;
 
-    ruleResultFiltersTooltip: string = 'Rule Result Filters allow you to target the scoring results you '
-        + 'wish to collect more specifically, by filtering on the fields '
-        + 'supplied by rules and any intermediate asset types used to relate rules to your scoring asset type.';// </br> <a href="' + this.helpUri + '" target="help"><i class="fa fa-external-link"></i> Read more about Rule Result Filters.</a>';
+    ruleResultFiltersTooltip: string = $localize`Rule Result Filters allow you to target the scoring results you 
+           wish to collect more specifically, by filtering on the fields 
+           supplied by rules and any intermediate asset types used to relate rules to your scoring asset type.`;
 
-    thresholdTooltipText: string = "You can use a pass threshold to change the measure result to a pass or fail, rather than a calculated "
-        + "percentage of the maximum possible contribution of the measure.For example, consider a measure with a weight of 50 % and the rule "
-        + "results score of 88 %.Without a pass threshold the measure will score 88 % of 50 %, or 44%. With a pass threshold of 80%, the  "
-        + "measure will pass and score 50 % - the full possible score.With a pass threshold of 90 %, the measure will fail and score 0 %.";
+    thresholdTooltipText: string = $localize`You can use a pass threshold to change the measure result to a pass or fail, rather than a calculated 
+           percentage of the maximum possible contribution of the measure.For example, consider a measure with a weight of 50 % and the rule 
+           results score of 88 %.Without a pass threshold the measure will score 88 % of 50 %, or 44%. With a pass threshold of 80%, the  
+           measure will pass and score 50 % - the full possible score.With a pass threshold of 90 %, the measure will fail and score 0 %.`;
 
     thresholdOverrideTooltipText: string = "";
 
@@ -47,9 +47,9 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     //#region Local reference lists
 
     ruleResultOperations: SelectItem[] = [
-        { label: 'Average', value: "Average" },
-        { label: 'Maximum', value: "Maximum" },
-        { label: 'Minimum', value: "Minimum" }
+        { label: $localize`Average`, value: "Average" },
+        { label: $localize`Maximum`, value: "Maximum" },
+        { label: $localize`Minimum`, value: "Minimum" }
     ];
 
     //#endregion
@@ -79,7 +79,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
         let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.helpUri = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm?TocPath=Administration%257C_____4";
         let conditionHelpLink: string = helpBaseUri + "/Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
-        this.thresholdOverrideTooltipText = "You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.<br/><a target='help' href='" + conditionHelpLink + "'><i class='fa fa-external-link'></i>&#160;Read more about Asset Conditions and Weighting.</a>";
+        this.thresholdOverrideTooltipText = $localize`You can override the <b>Pass Threshold</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.<br/><a target='help' href='" + conditionHelpLink + "'><i class='fa fa-external-link'></i>&#160;Read more about Asset Conditions and Weighting.</a>`;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -381,9 +381,9 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
         if (this.verb == "Edit") {
             if (this.hasModelChanged) {
-                this.closeLabel = "Discard Changes"
+                this.closeLabel = $localize`Discard Changes`;
             } else {
-                this.closeLabel = "Close"
+                this.closeLabel = $localize`Close`;
             }
         }
 
