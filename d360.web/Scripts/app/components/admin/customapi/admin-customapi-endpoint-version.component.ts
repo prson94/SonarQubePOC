@@ -85,6 +85,6 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
     }
 
     get deleteModalTitle(): string {
-        return $localize`'Are you sure you want to delete the version [${this.selected?.UriPrefix}]?'`;
+        return $localize`Are you sure you want to delete the version [${this.selected?.UriPrefix}]?`;
     }
 }

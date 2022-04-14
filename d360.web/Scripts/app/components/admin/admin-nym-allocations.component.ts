@@ -18,8 +18,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                 <tr>
                     <th class="permission-header"></th>
                     <th style="width: 15%;"
-                        class="permission-header" i18n>Enabled
-                    </th>
+                        class="permission-header" i18n>Enabled</th>
                 </tr>
                 </thead>
                 <tbody>

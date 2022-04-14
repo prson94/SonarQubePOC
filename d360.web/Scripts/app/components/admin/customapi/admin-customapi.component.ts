@@ -87,6 +87,6 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
     }
 
     get deleteModalTitle(): string {
-        return $localize`Are you sure you want to delete the api service [${this.selected?.Name}']?`;
+        return $localize`Are you sure you want to delete the api service [${this.selected?.Name}]?`;
     }
 }
