@@ -64,7 +64,7 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
                     this.model = group;
                     this.headerBreadcrumbService.clearBreadcrumbs();
 
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Groups`, SiteUrlHelpers.SITE_URL_GROUP_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.group.Name));
 
                     this.setBrowserTitle(this.titleService, this.model.group.Name);

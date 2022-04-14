@@ -44,7 +44,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private resourceUid = "";
     private items: any[] = [];
     private resource: any;
-    isSavingProcess : boolean =  false;
+    isSavingProcess: boolean = false;
     private isMe = false;
     showAllUsersAPIKey = false;
     private totNumber = 0;
@@ -107,7 +107,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.resourceUid = this.resource.uid;
                     let showApi = this.settingsService.getSettingById(CompanySettingEnum.ShowAllUsersAPIKey).BooleanSetting.Value;
                     this.showAllUsersAPIKey = (this.resource.IsAdministrator || showApi);
-                    
+
                     if (this.resourceId.toString() === CurrentResourceID.toString()) {
                         this.isMe = true;
                     } else {
@@ -205,9 +205,9 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.isLoading = false;
                     this.isSavingProcess = false;
                     if (result.Message == "" && result.Success) {
-                        result.Message = 'Info successfully updated.';
+                        result.Message = $localize`Info successfully updated.`;
                     }
-                    this.showMessageForApiResult(this.messagesService, result, 'Info successfully updated.');
+                    this.showMessageForApiResult(this.messagesService, result, $localize`Info successfully updated.`);
                     this.pageMode = PageMode.Default;
                 }
             )

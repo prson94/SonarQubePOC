@@ -59,9 +59,11 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         this.showEditor = true;
     }
 
+    exportMessage: string = '';
     private title: string = 'Items';
 
     ngOnInit() {
+        this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
         this.setRowsPerPage();
         this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
     }

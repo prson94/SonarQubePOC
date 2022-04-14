@@ -211,9 +211,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         if (this.authenticationService.isAdmin && this.fieldNav) {
 
             this.fieldNav.icons = ['fa-drivers-license-o'];
-            this.fieldNav.tag = 'fields'
-            this.fieldNav.title = 'Field Definitions'
-            this.fieldNav.url = '/sidebar/fields'
+            this.fieldNav.tag = 'fields';
+            this.fieldNav.title = $localize`Field Definitions`;
+            this.fieldNav.url = '/sidebar/fields';
             this.fieldNav.orderPriority = 1;
             this.fieldNav.url = `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`;
 
@@ -222,9 +222,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         if (this.authenticationService.isAdmin && this.ownershipSidebar) {
 
             this.ownershipSidebar.icons = ['fa-bars'];
-            this.ownershipSidebar.tag = 'responsibilities'
-            this.ownershipSidebar.title = 'Responsibilities'
-            this.ownershipSidebar.url = '/sidebar/responsibilities'
+            this.ownershipSidebar.tag = 'responsibilities';
+            this.ownershipSidebar.title = $localize`Responsibilities`;
+            this.ownershipSidebar.url = '/sidebar/responsibilities';
             this.ownershipSidebar.orderPriority = 4;
             this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceListUid}`;
         }

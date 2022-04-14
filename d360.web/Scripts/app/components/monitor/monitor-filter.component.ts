@@ -9,7 +9,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     selector: 'd3s-monitor-filter',
     template: ` 
         <div class="row">
-            <div class="col s3 FieldName">Workflow Types</div>
+            <div class="col s3 FieldName" i18n>Workflow Types</div>
             <div class="col s9">
                 <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
                 <div *ngIf="!isLoading">
@@ -59,16 +59,16 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
                 this.items = r;
 
                 this.items.forEach(i => {
-                    i.label = i.State == State.InActive ? i.Name + " ( Inactive )" : i.Name;
+                    i.label = i.State == State.InActive ? i.Name + " ( " + $localize`Inactive` + " )" : i.Name;
                     i.value = i.ID.toString();
                 });
-          
-                
+
+
                 if (this.selectAll) {
                     this.selection = [];
                     this.items.forEach(i => this.selection.push(i.value));
                 }
-                    
+
                 this.selectionChange.emit(this.selection);
                 this.isLoading = false;
             });

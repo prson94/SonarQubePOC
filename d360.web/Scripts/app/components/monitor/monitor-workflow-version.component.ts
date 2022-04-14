@@ -44,7 +44,7 @@ export class MonitorWorkflowVersionComponent extends BaseComponent {
     @Input() showHeader: boolean = true;
 
     @Input() selectedWorkflowTypes: any[];
-    title: string = 'Workflow Versions'
+    title: string = $localize`Workflow Versions`;
     selectedWorkflowType: any = null;
     showSimpleFilter: boolean = true;
 
