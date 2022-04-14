@@ -47,7 +47,7 @@ namespace d360.model.DataAccessLayer
 			"headerRegExps",
 			"invalidList",
 			"advanced",
-			"regExReturned",
+			"regExpReturned",
 			"validLocales",
 			"validList"
 		};
@@ -631,8 +631,10 @@ namespace d360.model.DataAccessLayer
 			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "C");
 
+
+			var createdSemantics = CompanyContext.Filter<Semantic>(s => qualifiers.Contains(s.Qualifier)).ToList();
 			var getModels = (
-						  from s in repoModels
+						  from s in createdSemantics
 						  join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
 						  join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
 						  select s.ToGetModel(c, u)
