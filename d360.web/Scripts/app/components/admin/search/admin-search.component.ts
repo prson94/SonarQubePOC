@@ -28,6 +28,8 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
     readonly JobStatus: string[] = ["None", "Pending", "Processing", "Processing By Asset Type", "Error", "Completed"];
     readonly emptyguid: string = "00000000-0000-0000-0000-000000000000";
 
+    refreshViewLabel = $localize`Refresh View`;
+
     constructor(
         protected searchService: SearchService,
         private messagesService: MessagesObservableService,
