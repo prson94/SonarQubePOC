@@ -9,7 +9,7 @@
     </div>
     <advanced-filtering [loadIdentifier]="'SemanticTypeAssets'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     <div class="grid-action-buttons">
-        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+        <div pTooltip="{{exportTooltip}}"
              tooltipPosition="left"
              tooltipStyleClass="ig-tooltip">
             <button igButton
@@ -44,11 +44,11 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Path'">
-                        Asset Path
+                        <ng-container i18n>Asset Path</ng-container>
                         <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                     </th>
                     <th *ngIf="!isSidePanel" [pSortableColumn]="'AssetTypePath'">
-                        Asset Type Path
+                        <ng-container i18n>Asset Type Path</ng-container>
                         <d3s-sortIcon [field]="'AssetTypePath'"></d3s-sortIcon>
                     </th>
                     <th *ngIf="!isSidePanel" style="width: 5%" alignFrozen="right" pFrozenColumn></th>
@@ -73,7 +73,7 @@
                     </td>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="emptymessage">
+            <ng-template pTemplate="emptymessage" i18n>
                 No assets found
             </ng-template>
             <ng-template pTemplate="summary">

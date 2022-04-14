@@ -7,18 +7,19 @@
                    [hideTransitionOptions]="'0ms ease-in'"
                    [scrollHeight]="'400px'"
                    [baseZIndex]="2"
-                   [placeholder]="'Search All Categories'"
+                   i18n-placeholder
+                   placeholder="Search All Categories"
                    [maxSelectedLabels]="1"
                    (ngModelChange)="searchTypes=$event;"
                    (onChange)="setEventTypeLabel()"
                    [dropdownIcon]="'fa fa-chevron-down nm'">
     </p-multiSelect>
     <div class="field mr10">
-        <d3s-header-typeahead-search 
-                  [additionalCssClasses]="'gov-search'" 
-                  [showBigButton]="true"
-                  [autocompletePlaceholder]="'What are you looking for?'"
-                  [searchOptions]="searchTypes">
+        <d3s-header-typeahead-search [additionalCssClasses]="'gov-search'"
+                                     [showBigButton]="true"
+                                     i18n-autocompletePlaceholder
+                                     autocompletePlaceholder="What are you looking for?"
+                                     [searchOptions]="searchTypes">
         </d3s-header-typeahead-search>
     </div>
 </div>  

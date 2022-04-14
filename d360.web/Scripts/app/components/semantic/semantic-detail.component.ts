@@ -20,12 +20,12 @@ import { SemanticBaseComponent } from './semantics-base.component';
     providers: [DataProfileService],
     host: {
         "(document:click)": "clickedOutside($event)",
-    }, 
+    },
 })
 
 
 export class SemanticDetailComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() qualifier: string="";
+    @Input() qualifier: string = "";
     @Input() isSidePanel: boolean = false;
     @Input() showHeader: boolean = false;
     @Input() semanticType: SemanticType;
@@ -41,17 +41,17 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     assetCount: number;
     canViewUsers: boolean = true;
     sourceMap = new Map([
-        ["BuiltIn", "Built-In"],
-        ["UserDefined", "User-Defined"]]);
+        ["BuiltIn", $localize`Built-In`],
+        ["UserDefined", $localize`User-Defined`]]);
 
     matchTypeMap = new Map([
-        ["Advanced", "Advanced (JSON)"],
-        ["List", "List of Values"],
-        ["Numbers", "Numbers"],
-        ["Pattern", "Pattern in Data"],
+        ["Advanced", $localize`Advanced (JSON)`],
+        ["List", $localize`List of Values`],
+        ["Numbers", $localize`Numbers`],
+        ["Pattern", $localize`Pattern in Data`],
     ])
 
-    constructor(        
+    constructor(
         protected router: Router,
         private dataProfileService: DataProfileService,
         private changeDetectorRef: ChangeDetectorRef,
@@ -61,19 +61,19 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         private headerbreadcrumbservice: HeaderBreadcrumbService,
         private featureFlagService: FeatureFlagsService,
     ) {
-        super(settingsService);   
+        super(settingsService);
 
         if (!featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
             this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-        } 
+        }
     }
 
     ngOnInit() {
-        this.canViewUsers  = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
+        this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        this.canViewUsers  = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
+        this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
         this.getData();
     }
 
@@ -84,7 +84,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         } else {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.qualifier}'`).subscribe((s) => {
                 this.setSemanticDetails(s.items[0]);
-                this.semanticDetails = s.items[0];                
+                this.semanticDetails = s.items[0];
             });
         }
     }
@@ -130,7 +130,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
                         this.semanticDetails.updatedBy.id = this.creator.ResourceID;
                     }
                 });
-        }        
+        }
     }
 
     navigateToUser(resourceID: number, newTab: boolean = false) {

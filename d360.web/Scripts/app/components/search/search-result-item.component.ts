@@ -28,7 +28,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     showStatus: boolean = false;
     showPath: boolean = false;
 
-    menuitems: any[] = [{ title: "Open" }, { title: "Open in New Tab" }];
+    menuitems: any[] = [{ title: $localize`Open` }, { title: $localize`Open in New Tab` }];
 
     showScrollButtons: boolean = false;
     disableScrollLeft: boolean = false;
@@ -50,7 +50,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     ngOnInit() {
         let showCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
         if (showCart) {
-            this.menuitems.push({ title: "Add to Cart" });
+            this.menuitems.push({ title: $localize`Add to Cart` });
         }
 
         this.loadDetails();
@@ -88,11 +88,11 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     clickMenuItem(event: any) {
         const key = event.value.toLowerCase();
 
-        if (key === "open") {
+        if (key === $localize`Open`.toLowerCase()) {
             this.navigateLink();
-        } else if (key === "open in new tab") {
+        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
             this.navigateLink(true);
-        } else if (key === "add to cart") {
+        } else if (key === $localize`Add to Cart`.toLowerCase()) {
             this.add();
         }
     }

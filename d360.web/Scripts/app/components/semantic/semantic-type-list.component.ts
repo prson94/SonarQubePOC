@@ -31,12 +31,12 @@ declare var CurrentResourceID;
 
 export class SemanticTypeListComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
 
-    @Output() selectedTypeChanged = new EventEmitter();    
+    @Output() selectedTypeChanged = new EventEmitter();
     sub: any;
 
 
     selectedType: any = null;
-    semanticTypes: SemanticType[];   
+    semanticTypes: SemanticType[];
     simpleFilter: string = "";
     advancedFilter: string = "";
     semanticsTotal: number = 0;
@@ -57,6 +57,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     readonly menuKey = '~menu';
 
+    exportTooltip: string = "";
+
     filterFieldList: AdvancedFilterFieldType[] = [
         {
             Name: 'Name',
@@ -73,7 +75,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         {
             Name: 'Status',
             FriendlyName: 'Status',
-            Type: new FieldType("Lookup"),            
+            Type: new FieldType("Lookup"),
             Category: "",
             ValueLoader: this.getFilterValues.bind(this, "status"),
             RemovePopulatedOperator: true
@@ -148,7 +150,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         ["True%2FFalse%20\\(Boolean\\)", "Boolean"],
         ["Number%20\\(Double\\)", "Double"],
         ["Number%20\\(Long\\)", "Long"],
-    ]);    
+    ]);
     secondarySidePanel: string;
     resourceUid: any;
     secondarySidePanelOpen: boolean;
@@ -167,6 +169,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         private authenticationService: AuthenticationService) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.theDeleteCallback = this.deleteSemanticType.bind(this);
+
+        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`
     }
 
     ngOnInit() {
@@ -175,7 +179,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
-        this.filterFieldsSubject.complete();           
+        this.filterFieldsSubject.complete();
 
         this.displayBreadCrumbs();
     }
@@ -187,21 +191,21 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             this.semanticsTotal = p.total;
             if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
                 this.selectRow(this.semanticTypes[selectedIndex]);
-            }            
-           
+            }
+
             this.semanticTypes.forEach((i) => {
 
                 i[this.menuKey] = [
-                    { title: "Open" },
-                    { title: "Open in New Tab" },
+                    { title: $localize`Open` },
+                    { title: $localize`Open in New Tab` },
                 ];
 
                 if (this.authenticationService.isAdmin && SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {
                     if (!i.hasQualifiedAssets) {
-                        i[this.menuKey].push({ title: "Delete" });
+                        i[this.menuKey].push({ title: $localize`Delete` });
                     } else {
-                        i[this.menuKey].push({ title: "Delete", disabled: true, tooltip: "This semantic type cannot be removed as it has already been used for classifying assets." });
-                    }                    
+                        i[this.menuKey].push({ title: $localize`Delete`, disabled: true, tooltip: $localize`This semantic type cannot be removed as it has already been used for classifying assets.` });
+                    }
                 }
             });
 
@@ -257,15 +261,14 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     selectRow(row: any) {
         this.secondarySidePanelOpen = false;
-        this.selectedType = row;        
+        this.selectedType = row;
         if (this.selectedType) {
             this.buildSecondaryNavigation(this.selectedType.uid, 0, 'SemanticType', null, null, this.displayBreadCrumbs.bind(this), null);
-        }        
+        }
         this.selectedTypeChanged.emit(row);
     }
 
-    selectSemanticType(semanticType: SemanticType, newTab: boolean = false)
-    {
+    selectSemanticType(semanticType: SemanticType, newTab: boolean = false) {
         let url = `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${semanticType.uid}`;
         if (url) {
             if (newTab) {
@@ -280,17 +283,17 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         let key = event.value.toLowerCase();
 
         switch (key) {
-            case 'open':
+            case $localize`Open`.toLowerCase():
                 this.selectSemanticType(item);
                 break;
-            case 'open in new tab':
+            case $localize`Open in New Tab`.toLowerCase():
                 this.selectSemanticType(item, true);
                 break;
-            case 'delete':
+            case $localize`Delete`.toLowerCase():
                 this.showDelete = true;
                 break;
         }
-    }        
+    }
 
     displayBreadCrumbs() {
         this.sub = this.route.params.subscribe((params) => {
@@ -301,9 +304,9 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT));
 
-                this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {                    
-                    this.secondaryNavService.setCurrentArea(res, icon, StringConstants.Section_SemanticTypes);                    
-                });                
+                this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
+                    this.secondaryNavService.setCurrentArea(res, icon, StringConstants.Section_SemanticTypes);
+                });
             });
 
         });
@@ -323,7 +326,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                 count: values.length
             });
         }
-        
+
         if (params === "status") {
             const values = this.statusValues.filter((s) => s.toLowerCase().indexOf(params.filter?.toLowerCase() ?? "") !== -1);
             return of({
@@ -376,7 +379,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         this.dataProfileService.deleteSemanticType(item.qualifier)
             .subscribe(
                 (result) => {
-                    this.showMessageForResult(this.messagesService, result, 'Semantic Type successfully deleted');
+                    this.showMessageForResult(this.messagesService, result, $localize`Semantic Type successfully deleted`);
                     this.showDelete = false;
                     if (result.type !== 'error') {
                         let currentIndex = this.semanticTypes.findIndex((s) => s.uid === this.selectedType.uid);

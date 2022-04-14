@@ -20,7 +20,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 export class ShoppingCartComponent extends BaseComponent implements OnInit {
     private cartIsEmpty = true;
-    private title = 'Your Shopping Cart';
+    private title = $localize`Your Shopping Cart`;
     private cart: ShoppingCart;
     private items: ShoppingCartListItem[] = [];
     private mode: CartMode = CartMode.Default;
@@ -34,8 +34,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
-        private router: Router)
-    {
+        private router: Router) {
         super(settingsService);
         this.secondaryNavService = secondaryNavService;
     }
@@ -46,7 +45,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, this.title);
         this.clearSidebar();
         this.secondaryNavService.clearCurrentObject();
-        this.secondaryNavService.setCurrentArea('Shopping Cart', 'fa-shopping-cart', null);
+        this.secondaryNavService.setCurrentArea($localize`Shopping Cart`, 'fa-shopping-cart', null);
         this.secondaryNavService.showHeader(true);
         this.load();
     }
@@ -57,7 +56,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
             .subscribe(r => {
                 this.cart = r.Cart;
                 this.items = r.Items;
-                
+
                 this.cartIsEmpty = (this.items == null || this.items.length == 0);
                 this.isLoading = false;
             });
@@ -96,7 +95,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
     }
 
     navigate(item: ShoppingCartListItem) {
-        this.router.navigateByUrl(item.Url); 
+        this.router.navigateByUrl(item.Url);
     }
 }
 

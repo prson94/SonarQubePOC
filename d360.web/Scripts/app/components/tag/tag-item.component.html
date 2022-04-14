@@ -8,7 +8,7 @@
                                   [(filterMode)]="showSimpleFilter"
                                   [hasExport]="true"
                                   (exportClick)="export()">
-                    <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
+                    <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
                 </d3s-tile-actions>
                 <div class="clearfix"></div>
             </header>
@@ -28,16 +28,16 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'DisplayPath'" style="width: 20%">
-                            Asset
+                            <ng-container i18n>Asset</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'DisplayPath'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AssetType'" style="width: 20%">
-                            Asset Type
+                            <ng-container i18n>Asset Type</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetType'"></d3s-sortIcon>
 
                         </th>
                         <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
-                            Tags
+                            <ng-container i18n>Tags</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'TagsAsString'"></d3s-sortIcon>
 
                         </th>
@@ -55,7 +55,7 @@
                         <td>{{item.DisplayPath}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
-                            <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" ></d3s-tag-view>
+                            <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid"></d3s-tag-view>
                         </td>
                         <td>
                         </td>
@@ -113,9 +113,9 @@
                 <ng-container *ngIf="secondarySidePanelOpen && semanticType">
                     <div #semanticTile class="secondary-side-panel">
                         <div class="panel-header">
-                            <span class="header-label">Information</span>
+                            <span class="header-label" i18n>Information</span>
                             <div class="button-container">
-                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="'Close'" class="close-button"></button>
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" i18n-tooltip tooltip="Close" class="close-button"></button>
                             </div>
                         </div>
                         <div class="details-container">
