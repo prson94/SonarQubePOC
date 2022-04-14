@@ -111,6 +111,10 @@ namespace d360.core.entities
         [DataMember]
         public string DecimalSeparator { get; set; }
 
+        [DataMember]
+        public long? UniqueCount { get; set; }
+
+
         [ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
     }
@@ -147,6 +151,9 @@ namespace d360.core.entities
         [DataMember]
         [StringLength(200, ErrorMessage = "{0} cannot be more than {1} characters.")]
         public string profileIdentifier { get; set; }
+
+        [DataMember]
+        public long? uniqueCount { get; set; }
 
         [DataMember]
         public long? sampleCount { get; set; }
@@ -252,6 +259,30 @@ namespace d360.core.entities
         [ValidateSample(200)]
         public List<DataProfileSampleDetail> shapesDetail { get; set; }
 
+        [DataMember]
+        [ValidateSample(200)]
+        public List<DataProfileSampleDetail> scriptDistributionStatistics { get; set; }
+
+        [DataMember]
+        [ValidateSample(200)]
+        public List<DataProfileSampleDetail> characterCasingStatistics { get; set; }
+
+        [DataMember]
+        [ValidateSample(200)]
+        public List<DataProfileSampleDetail> characterDataTypeStatistics { get; set; }
+
+        [DataMember]
+        [ValidateSample(200)]
+        public List<DataProfileSampleDetail> characterSpacingStatistics { get; set; }
+
+        [DataMember]
+        [ValidateSample(200)]
+        public List<DataProfileSampleDetail> specialCharacterStatistics { get; set; }
+
+        [DataMember]
+        [ValidateSample(200)]
+        public List<DataProfileSampleDetail> percentileStatistics { get; set; }
+
         [DataMember(Name = "totalCount")]
         public long? TotalCount { get; set; }
 
@@ -312,28 +343,32 @@ namespace d360.core.entities
             trailingWhiteSpace = profile.TrailingWhiteSpace;
             type = profile.Type;
             typeQualifier = profile.TypeQualifier;
+            uniqueCount = profile.UniqueCount;
 
-            //samples
-            shapesDetail = samples.Where((s) => s.SampleType.Equals("shapesdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            outlierDetail = samples.Where((s) => s.SampleType.Equals("outlierdetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
-            cardinalityDetail = samples.Where((s) => s.SampleType.Equals("cardinalitydetail", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) }).ToList();
+
+            //populate sample details
+            Func<string, List<DataProfileSampleDetail>> getSamplesByType = (key) =>
+            {
+                var results = samples
+                    .Where((s) => s.SampleType.Equals(key, StringComparison.InvariantCultureIgnoreCase))
+                    .Select((sd) => new DataProfileSampleDetail { key = sd.Key, count = int.Parse(sd.Value) })
+                    .ToList();
+
+                return results.Any() ? results : null;
+            };
+            
+            shapesDetail = getSamplesByType("shapesdetail");
+            cardinalityDetail = getSamplesByType("cardinalityDetail");
+            outlierDetail = getSamplesByType("outlierDetail");
+            scriptDistributionStatistics = getSamplesByType("scriptDistributionStatistics");
+            characterCasingStatistics = getSamplesByType("characterCasingStatistics");
+            characterDataTypeStatistics = getSamplesByType("characterDataTypeStatistics");
+            characterSpacingStatistics = getSamplesByType("characterSpacingStatistics");
+            specialCharacterStatistics = getSamplesByType("specialCharacterStatistics");
+            percentileStatistics = getSamplesByType("percentileStatistics");
+
             topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
             bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
-            
-            if (shapesDetail.Count == 0)
-            {
-                shapesDetail = null;
-            }
-
-            if (outlierDetail.Count == 0)
-            {
-                outlierDetail = null;
-            }
-
-            if (cardinalityDetail.Count == 0)
-            {
-                cardinalityDetail = null;
-            }
 
             if (topK.Count == 0)
             {

@@ -12156,6 +12156,115 @@ EG.GroupUid
                             }
                         }
 
+                        if (item.characterCasingStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.characterCasingStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "characterCasingStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.characterDataTypeStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.characterDataTypeStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "characterDataTypeStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.characterSpacingStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.characterSpacingStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "characterSpacingStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.scriptDistributionStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.scriptDistributionStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "scriptDistributionStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.specialCharacterStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.specialCharacterStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "specialCharacterStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.percentileStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.percentileStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "percentileStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+
                         if (item.topK != null)
                         {
                             foreach (string topK in item?.topK)
