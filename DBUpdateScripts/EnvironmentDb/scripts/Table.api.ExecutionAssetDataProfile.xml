@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-<changeSet author="MDonato" id="Table.api.ExecutionAssetDataProfile-v7">
+<changeSet author="MDonato" id="Table.api.ExecutionAssetDataProfile-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -51,7 +51,8 @@ BEGIN
 		[KeyConfidence] DECIMAL(5,4) NULL,
 		[DetectionLocale] NVARCHAR(64) NULL,
 		[FtaVersion] NVARCHAR(32) NULL,
-		[DecimalSeparator] NCHAR(1) NULL,		
+		[DecimalSeparator] NCHAR(1) NULL,
+		[UniqueCount] BIGINT NULL,
 	 CONSTRAINT [PK_ExecutionAssetDataProfile] PRIMARY KEY CLUSTERED 
 	(
 		[ExecutionID] ASC,
@@ -139,6 +140,17 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileIdentifier] NVARCHAR(200) NULL
 END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'UniqueCount'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [UniqueCount] BIGINT NULL
+END
+
 
 ALTER table api.ExecutionAssetDataProfile
 ALTER COLUMN [RegExp] NVARCHAR(MAX);

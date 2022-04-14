@@ -952,9 +952,16 @@ namespace d360.model.DataAccessLayer
 								{(includeSamples ? ",JSON_QUERY(cardinalityDetail.[value]) as cardinalityDetail" : "")}
 								,ADP.[ShapeCardinality] as shapesCardinality
 								{(includeSamples ? ",JSON_QUERY(shapesDetail.[value]) as shapesDetail" : "")}
+								{(includeSamples ? ",JSON_QUERY(scriptDistributionStatistics.[value]) as scriptDistributionStatistics" : "")}
+								{(includeSamples ? ",JSON_QUERY(characterCasingStatistics.[value]) as characterCasingStatistics" : "")}
+								{(includeSamples ? ",JSON_QUERY(characterDataTypeStatistics.[value]) as characterDataTypeStatistics" : "")}
+								{(includeSamples ? ",JSON_QUERY(characterSpacingStatistics.[value]) as characterSpacingStatistics" : "")}
+								{(includeSamples ? ",JSON_QUERY(specialCharacterStatistics.[value]) as specialCharacterStatistics" : "")}
+								{(includeSamples ? ",JSON_QUERY(percentileStatistics.[value]) as percentileStatistics" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
 								,ADP.TotalCount
+								,ADP.UniqueCount
 								,ADP.OutlierCount
 								,ADP.DetectionLocale
 								,ADP.FtaVersion
@@ -997,6 +1004,72 @@ namespace d360.model.DataAccessLayer
 															for json path
 															) as [value]
 													) shapesDetail
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'scriptdistributionstatistics'
+															for json path
+															) as [value]
+													) scriptDistributionStatistics
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'charactercasingstatistics'
+															for json path
+															) as [value]
+													) characterCasingStatistics
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'characterdatatypestatistics'
+															for json path
+															) as [value]
+													) characterDataTypeStatistics
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'characterspacingstatistics'
+															for json path
+															) as [value]
+													) characterSpacingStatistics
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'specialcharacterstatistics'
+															for json path
+															) as [value]
+													) specialCharacterStatistics
+									outer apply (
+													select  (
+															select [key], [value] as Count
+															from AssetDataProfileSample
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'percentilestatistics'
+															for json path
+															) as [value]
+													) percentileStatistics
 									outer apply (
 													select  (
 															select [value]
