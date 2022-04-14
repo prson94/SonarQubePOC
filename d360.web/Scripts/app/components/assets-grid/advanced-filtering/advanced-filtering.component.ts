@@ -51,7 +51,7 @@ export class AdvancedFilteringComponent implements OnChanges {
 
     filterMenu = [
         {
-            title: "Clear Filters",
+            title: $localize`Clear Filters`,
             callback: () => {
                 this.conditions.filters = [];
                 this.conditions.connector = " and ";
@@ -84,7 +84,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             isSeparator: true
         },
         {
-            title: "Match All",
+            title: $localize`Match All`,
             hasCheckbox: true,
             isChecked: true,
             callback: () => {
@@ -95,7 +95,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             }
         },
         {
-            title: "Match Any",
+            title: $localize`Match Any`,
             hasCheckbox: true,
             callback: () => {
                 this.filterMenu[2].isChecked = false;
@@ -285,8 +285,8 @@ export class AdvancedFilteringComponent implements OnChanges {
 
                     if (FieldTypeHelper.getFieldType(f.Type) === "Boolean") {
                         f.Values = [];
-                        f.Values.push({ value: "true", label: "True" });
-                        f.Values.push({ value: "false", label: "False" });
+                        f.Values.push({ value: "true", label: $localize`True` });
+                        f.Values.push({ value: "false", label: $localize`False` });
                     }
                     if (FieldTypeHelper.getFieldType(f.Type) === "Date"
                         && f.Category === "System Fields") {

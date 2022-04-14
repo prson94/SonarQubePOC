@@ -60,6 +60,7 @@
                             <p-checkbox igCheckbox [(ngModel)]="condition.exact" binary="true" label="Match exact phrase"></p-checkbox>
                             <div class="exact-tooltip"
                                  pTooltip="This is used for matching exact phrased. E.g. a &quot;bank account&quot; search with this method will only return results like &quot;bank account&quot;, &quot;basic bank account&quot;. It won't return results like &quot;bank savings account&quot; or &quot;account, bank&quot;."
+                                 i18n-pTooltip
                                  [escape]="false"
                                  tooltipPosition="top"
                                  tooltipStyleClass="ig-tooltip">
@@ -71,36 +72,36 @@
                     <ng-container *ngIf="currentInputType === 'number'">
                         <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" #condval="ngModel"></ig-number-input>
                         <div *ngIf="condval.invalid && (condval.dirty || condval.touched)">
-                            <div *ngIf="condval.errors.underMin" class="ig-text-required">Please enter a value of {{condval.errors.underMin.min}} or higher</div>
-                            <div *ngIf="condval.errors.overMax" class="ig-text-required">Please enter a value of {{condval.errors.overMax.max}} or lower</div>
+                            <div *ngIf="condval.errors.underMin" class="ig-text-required" i18n>Please enter a value of {{condval.errors.underMin.min}} or higher</div>
+                            <div *ngIf="condval.errors.overMax" class="ig-text-required" i18n>Please enter a value of {{condval.errors.overMax.max}} or lower</div>
                         </div>
                     </ng-container>
 
                     <ng-container *ngIf="currentInputType === 'multi-number'">
                         <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" #condval="ngModel"></ig-number-input>
                         <div *ngIf="condval.invalid && (condval.dirty || condval.touched)">
-                            <div *ngIf="condval.errors.underMin" class="ig-text-required">Please enter a value of {{condval.errors.underMin.min}} or higher</div>
-                            <div *ngIf="condval.errors.overMax" class="ig-text-required">Please enter a value of {{condval.errors.overMax.max}} or lower</div>
+                            <div *ngIf="condval.errors.underMin" class="ig-text-required" i18n>Please enter a value of {{condval.errors.underMin.min}} or higher</div>
+                            <div *ngIf="condval.errors.overMax" class="ig-text-required" i18n>Please enter a value of {{condval.errors.overMax.max}} or lower</div>
                         </div>
-                        <div class="value-separator">and</div>
+                        <div class="value-separator" i18n>and</div>
                         <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax" #condvaltwo="ngModel"></ig-number-input>
                         <div *ngIf="condvaltwo.invalid && (condvaltwo.dirty || condvaltwo.touched)">
-                            <div *ngIf="condvaltwo.errors.underMin" class="ig-text-required">Please enter a value of {{condvaltwo.errors.underMin.min}} or higher</div>
-                            <div *ngIf="condvaltwo.errors.overMax" class="ig-text-required">Please enter a value of {{condvaltwo.errors.overMax.max}} or lower</div>
+                            <div *ngIf="condvaltwo.errors.underMin" class="ig-text-required" i18n>Please enter a value of {{condvaltwo.errors.underMin.min}} or higher</div>
+                            <div *ngIf="condvaltwo.errors.overMax" class="ig-text-required" i18n>Please enter a value of {{condvaltwo.errors.overMax.max}} or lower</div>
                         </div>
                     </ng-container>
 
                     <ig-date *ngIf="currentInputType === 'date'" [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date'">
                         <ig-date [(ngModel)]="condition.value" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
-                        <div class="value-separator">and</div>
+                        <div class="value-separator" i18n>and</div>
                         <ig-date [(ngModel)]="condition.value2" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     </ng-container>
 
                     <ig-date *ngIf="currentInputType === 'date-time'" [(ngModel)]="condition.value" [showTime]="true" [appendTo]="'body'" [required]="true" [minDate]="minSQLDate"></ig-date>
                     <ng-container *ngIf="currentInputType === 'multi-date-time'">
                         <ig-date [(ngModel)]="condition.value" [required]="true" [appendTo]="'body'" [showTime]="true" [minDate]="minSQLDate"></ig-date>
-                        <div class="value-separator">and</div>
+                        <div class="value-separator" i18n>and</div>
                         <ig-date [(ngModel)]="condition.value2" [required]="true" [appendTo]="'body'" [showTime]="true" [minDate]="minSQLDate"></ig-date>
                     </ng-container>
 
@@ -165,8 +166,8 @@
                         </div>
 
                         <div class="any-all-picker">
-                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
-                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
+                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" i18n-label label="Match all"></p-radioButton>
+                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" i18n-label label="Match any"></p-radioButton>
                         </div>
                     </ng-container>
 
@@ -193,12 +194,12 @@
                         <ig-multi-input-field #multiInput
                                               (changed)="updateAllAnyData($event)"
                                               [(ngModel)]='condition.value'
-                                              [infoTooltip]="'Type and hit Enter to create multiple phrases, to be compared against asset path segments for matches'"
+                                              [infoTooltip]="multiInputTooltip"
                                               [required]="true">
                         </ig-multi-input-field>
                         <div class="any-all-picker" *ngIf="!uiIsAllDisabled && !uiIsAnyDisabled">
-                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" label="Match all"></p-radioButton>
-                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" label="Match any"></p-radioButton>
+                            <p-radioButton [disabled]="uiIsAllDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="and" i18n-label label="Match all"></p-radioButton>
+                            <p-radioButton [disabled]="uiIsAnyDisabled" igRadioButton name="allAny" [(ngModel)]="condition.connectingOperator" value="or" i18n-label label="Match any"></p-radioButton>
                         </div>
                     </ng-container>
 
@@ -214,7 +215,7 @@
                             <span *ngIf="counterPrefix" class="ig-input-addon">{{counterPrefix}}</span>
                             <ig-number-input igSize="full" [(ngModel)]="condition.value" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
                         </div>
-                        <div class="value-separator">and</div>
+                        <div class="value-separator" i18n>and</div>
                         <div class="ig-inputgroup">
                             <span *ngIf="counterPrefix" class="ig-input-addon">{{counterPrefix}}</span>
                             <ig-number-input igSize="full" [(ngModel)]="condition.value2" [required]="true" [min]="numberMin" [max]="numberMax" [enforceMaxMin]="true"></ig-number-input>
@@ -246,6 +247,7 @@
                 <button igButton
                         icon="fa-times"
                         pTooltip="Cancel"
+                        i18n-pTooltip
                         tooltipPosition="top"
                         tooltipStyleClass="ig-tooltip"
                         (click)="cancel()">
@@ -254,6 +256,7 @@
                         [disabled]="isSaveDisabled()"
                         class="ig-button-primary"
                         icon="fa-check"
+                        i18n-pTooltip
                         pTooltip="Update filter"
                         tooltipPosition="top"
                         tooltipStyleClass="ig-tooltip"

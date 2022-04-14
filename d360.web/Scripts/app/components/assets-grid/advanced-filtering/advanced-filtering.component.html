@@ -2,7 +2,7 @@
     <div class="filters-list {{(visible ? '' : 'loading')}}">
         <div class="filters-loader" *ngIf="!visible">
             <span class="spinner"></span>
-            <span class="loader-text">Loading filters...</span>
+            <span class="loader-text" i18n>Loading filters...</span>
         </div>
         <ng-container *ngIf="visible">
             <div class="filter-item" *ngFor="let item of conditions.filters">
@@ -17,7 +17,7 @@
                 </filter-item>
             </div>
             <div class="filters-list-menu">
-                <button igButton class="menu" icon="fa-ellipsis-v" tooltip="More..." (click)="menu.toggle($event)"></button>
+                <button igButton class="menu" icon="fa-ellipsis-v" i18n-tooltip tooltip="More..." (click)="menu.toggle($event)"></button>
                 <ig-popup-menu [items]="filterMenu" #menu [tabIndex]="20" [allowAllUnchecked]="false"></ig-popup-menu>
             </div>
         </ng-container>
