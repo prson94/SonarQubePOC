@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -1746,7 +1747,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilitiesOverrideByTypeAsync(
+        public async Task<IHttpActionResult> DeleteResponsibilitiesOverrideByGroupOrResourceAsync(
             [FromUri] Guid uid
         )
         {
@@ -1761,6 +1762,35 @@ namespace d360.web.Controllers.V2
             }
 
             await ResponsibilityRepository.DeleteResponsibilityOverridesByGroupOrResourceAsync(uid);
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Deletes responsibility overrides from asset for a given Resource Type Uid.
+        /// </summary>
+        /// <param name="responsibilityTypeUid">Uid of an Asset Type.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("overrides/byType/{responsibilityTypeUid:guid}"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the request.", typeof(OkResult)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteResponsibilitiesOverrideByTypeAsync([FromUri] Guid responsibilityTypeUid)
+        {
+            ValidateParameters();
+
+            var type = await this.ResponsibilityRepository.GetResponsibilityType(responsibilityTypeUid);
+            if (type == null)
+            {
+                throw new ArgumentException("Invalid ResponsibilityType uid.");
+            }
+
+            await ResponsibilityRepository.DeleteResponsibilityOverridesByTypeAsync(responsibilityTypeUid);
 
             return Ok();
         }

@@ -1295,5 +1295,16 @@ namespace d360.model.DataAccessLayer
                  WHERE a.uid = @uid
             ", new { uid });
         }
+
+        /// <inheritdoc />
+        public Task DeleteResponsibilityOverridesByTypeAsync(Guid typeUid)
+        {
+            return Company.Connection.ExecuteAsync(@"
+                DELETE source
+                  FROM [dbo].[ResponsibilityTypeRelationOverrideItem] source
+                  JOIN [dbo].[ResponsibilityType] type ON type.ID = source.ResponsibilityTypeID
+                 WHERE type.uid = @typeUid
+            ", new { typeUid });
+        }
 	}
 }

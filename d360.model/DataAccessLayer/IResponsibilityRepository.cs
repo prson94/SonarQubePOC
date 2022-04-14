@@ -64,8 +64,15 @@ namespace d360.model.DataAccessLayer
         /// <summary>
         /// Remove <see cref="ResponsibilityTypeRelationOverrideItem"/> by <see cref="Asset.uid"/> where <see cref="Asset.Object"/> is 'Group' or 'Resource'
         /// </summary>
-        /// <param name="uid"></param>
+        /// <param name="uid">/param>
         /// <returns></returns>
         Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid);
+
+        /// <summary>
+        /// Delete <see cref="ResponsibilityTypeRelationOverrideItem"/> by <see cref="ResponsibilityType.UID"/>
+        /// </summary>
+        /// <param name="typeUid"></param>
+        /// <returns></returns>
+        Task DeleteResponsibilityOverridesByTypeAsync(Guid typeUid);
     }
 }
