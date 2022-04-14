@@ -76,19 +76,7 @@ export class SemanticType {
                 }
                 return "---";
         }
-    }
-
-    //public equals(semanticType: SemanticType) {
-    //    if (this.uid === semanticType.uid
-    //        && this.name === semanticType.description
-    //        && this.uid === semanticType.uid
-    //        && this.effectiveDate === semanticType.effectiveDate
-    //        && this.source === semanticType.source
-    //        && this.baseType === semanticType.baseType
-    //        && this.matchType === semanticType.matchType) {
-
-    //    }
-    //}
+    }    
 }
 
 export class SemanticTypeAsset {
