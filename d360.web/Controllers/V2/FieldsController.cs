@@ -42,23 +42,32 @@ namespace d360.web.Controllers.V2
 	]
 	public class FieldsController : BaseV2ApiController
 	{
-		#region DI
 
-		private readonly IQueueSource QueueSource;
-		private readonly IStorageProvider Storage;
-		private readonly IFieldsRepository FieldsRepository;
-		private readonly IAssetRepository AssetRepository;
+        #region DI
 
-		public FieldsController(ICoreComponentSet set, IStorageProvider storage, IQueueSource queueSource, IFieldsRepository fieldsRepository, IAssetRepository assetRepository)
-			: base(set)
-		{
-			QueueSource = queueSource;
-			Storage = storage;
-			FieldsRepository = fieldsRepository;
-			AssetRepository = assetRepository;
-		}
+        private readonly IQueueSource QueueSource;
+        private readonly IStorageProvider Storage;
+        private readonly IFieldsRepository FieldsRepository;
+        private readonly IAssetRepository AssetRepository;
+        private readonly IAssetTypeRepository AssetTypeRepository;
 
-		#endregion
+        public FieldsController(
+            ICoreComponentSet set,
+            IStorageProvider storage,
+            IQueueSource queueSource,
+            IFieldsRepository fieldsRepository,
+            IAssetRepository assetRepository,
+            IAssetTypeRepository assetTypeRepository
+        ) : base(set)
+        {
+            AssetTypeRepository = assetTypeRepository;
+            QueueSource = queueSource;
+            Storage = storage;
+            FieldsRepository = fieldsRepository;
+            AssetRepository = assetRepository;
+        }
+
+        #endregion
 
 		/// <summary>
 		/// Retrieves field types contained within your environment.
@@ -314,7 +323,24 @@ namespace d360.web.Controllers.V2
 					});
 				}
 
-				if (model.Fields.Any(x => x.Type.Lookup != null))
+                if (model.AssetTypeUid != null)
+                {
+                    foreach (var ft in model.Fields.Where(x => x.Type?.Path?.Definition != null))
+                    {
+                        if (ft.Type.Path.Definition.AssetTypeUid != null)
+                        {
+                            var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
+                            var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
+                            if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
+                            {
+                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
+                                    $"{ApiMessages.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
+                            }
+                        }
+                    }
+                }
+
+                if (model.Fields.Any(x => x.Type.Lookup != null))
 				{
 					foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
 					{

@@ -193,6 +193,12 @@ namespace d360.core.entities
         public string Display { get; set; }
     }
 
+    public class FieldTypeDataTypePathApiViewModel_Definition
+    {
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+    }
+
     public class FieldTypeDescriptionApiViewModel_DisplayForm : FieldTypeDescriptionApiViewModel_Display
     {
         [DataMember]
@@ -722,7 +728,10 @@ namespace d360.core.entities
 
         [DataMember]
         public bool? DisplayInColumn { get; set; }
-    }
+
+        [DataMember]
+        public FieldTypeDataTypePathApiViewModel_Definition Definition { get; set; }
+}
 
     public class FieldTypeDataTypeRelationshipApiViewModel
     {
