@@ -1,0 +1,131 @@
+﻿<div class="row admin-branding">
+
+    <div class="col s12 overflow-container" style="display: flex">
+        <div class="tile tile-detail grid-tile">
+            <div class="actions-header">
+                <h2>Themes</h2>
+                <div class="flex-grow"></div>
+                <div class="grid-action-buttons">
+                    <button igButton
+                            pTooltip="Add new Theme"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            (click)="selectedRow = null;isEditorVisible=true"
+                            icon="fa-plus">
+                    </button>
+                    <button *ngIf="selectedRow && selectedRow.hasDownloadOption"
+                            igButton
+                            pTooltip="Download"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            icon="fa-download"
+                            (click)="download()">
+                    </button>
+                    <input #uploadInput type="file" class="file-input" accept=".json" (change)="onFileSelected($event)" hidden>
+                    <button igButton
+                            [loading]="isThemeUploading"
+                            pTooltip="Import"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            icon="fa-upload"
+                            (click)="uploadInput.click()">
+                    </button>
+                </div>
+            </div>
+            <span class="loader" *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i></span>
+
+            <div class="themes" *ngIf="!isLoading">
+                <div class="theme-wrapper {{(selectedRow === theme ? 'selected' : '')}}" *ngFor="let theme of themes" (click)="selectedRow = theme">
+                    <div class="svg-holder">
+                        <svg width="158" height="80">
+                            <image [attr.xlink:href]="theme.svg" width="158" height="80" />
+                        </svg>
+                    </div>
+                    <div class="theme-name">{{theme.name}}</div>
+                    <div class="flex-grow"></div>
+                    <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
+
+                    <button igButton type="button" icon="fa-ellipsis-v" (click)="linkMenu.toggle($event);"></button>
+                    <ig-popup-menu (onSelect)="clickMenuItem($event, theme)"
+                                   [items]="theme.menuItems"
+                                   #linkMenu
+                                   [tabIndex]="1"></ig-popup-menu>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="tile tile-detail side-panel">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [selectedItem]="selectedRow"
+                        [panelApplies]="true"
+                        [hasProfiling]="false"
+                        hasDetail="true"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="sidePanelTab">
+                <ng-container *ngIf="sidePanelOpen && selectedRow != null">
+                    <theme-detail [theme]="selectedRow" (linkClicked)="linkClicked($event)"></theme-detail>
+                </ng-container>
+            </side-panel>
+        </div>
+    </div>
+</div>
+
+<theme-editor [uid]="selectedRow?.uid"
+              [theme]="selectedRow"
+              [isVisible]="isEditorVisible"
+              (onSave)="onSave()"
+              (onCancel)="onCancel()"></theme-editor>
+
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="showDelete=false"
+           [title]="'Delete Theme'"
+           [isVisible]="showDelete">
+    <div class="content">
+        Please confirm that you wish to delete the theme <strong>{{selectedRow.name}}</strong>. Please note that this operation cannot be undone.
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+    </div>
+</d3s-modal>
+
+<d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="isSetCurrentThemeVisible=false"
+           [title]="'Set as Current Theme'"
+           [isVisible]="isSetCurrentThemeVisible">
+    <div class="content">
+        Setting this as the current theme will apply all colors and images defined in the theme.
+        The next time users log in they will see the appearance of the new theme. Any users currently logged in will see the change when they refresh their screens.
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="isSetCurrentThemeVisible = false" [disabled]="settingCurrentThemeInProgress"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Set as Current Theme" (click)="setAsCurrentTheme();" [loading]="settingCurrentThemeInProgress" [disabled]="settingCurrentThemeInProgress"></button>
+    </div>
+</d3s-modal>
+
+<d3s-modal additionalClasses="modal-dyn-editor asset-editor"
+           (onClose)="shouldRename=false"
+           title="{{(canReplace ? 'Replace or Rename the Theme' : 'Rename the Theme')}}"
+           [isVisible]="shouldRename">
+    <div class="content" *ngIf="!canReplace">
+        The theme you are trying to upload has the same name as the theme you are currently using. Rename the theme to complete the upload process.
+       </div>
+    <div class="content" *ngIf="canReplace">
+        There is already a theme called <strong>{{existingThemeName}}</strong>. You can either replace an existing theme or rename it.
+    </div>
+    <div class="content-input" *ngIf="themeToLoad">
+        <label>Theme Name</label>
+        <input igInput type="text" igSize="full" [(ngModel)]="themeToLoad.name" />
+
+    </div>
+    <div class="action-bar">
+        <button igButton igAutoFocus label="Cancel" (click)="resetUpload()" [disabled]="isThemeUploading"></button>
+        <span class="grow"></span>
+        <button igButton class="ig-button-primary" label="Rename Theme" (click)="triggerRename();" [loading]="isThemeUploading" [disabled]="isThemeUploading || themeToLoad?.name === existingThemeName"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button *ngIf="canReplace" igButton class="ig-button-primary" label="Replace Theme" (click)="uploadTheme(true);" [loading]="isThemeUploading" [disabled]="isThemeUploading"></button>
+    </div>
+</d3s-modal>

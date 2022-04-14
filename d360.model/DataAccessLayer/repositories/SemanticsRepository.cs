@@ -545,7 +545,7 @@ namespace d360.model.DataAccessLayer
 					if (patchModel != null)
 					{
 						if (patchModel.BaseType.HasValue
-							|| patchModel.HeaderFilterStructured != null
+							|| patchModel.HeaderFilter != null
 							|| patchModel.HeaderFilterConfidence.HasValue
 							|| patchModel.InvalidValuesStructured != null
 							|| patchModel.JsonPayloadStructured != null

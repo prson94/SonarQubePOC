@@ -96,16 +96,34 @@
                                    style="width: 98%; display: block;" />
                         </div>
                         <div>
-                            <div>
-                                <div class="FieldNameRequired">Sort Order</div>
+                            <div class="FieldNameRequired">Sort Order</div>
+                            <div class="sort-container">
                                 <input name="sortorder"
-                                       pInputText
-                                       type="number"
-                                       [(ngModel)]="model.FieldType.Type[currentType].SortOrder"
-                                       [disabled]="!model.FieldType.Type[currentType].IsListable"
-                                       [ngStyle]="{'background':(!model.FieldType.Type[currentType].IsListable ? '#EFEFEF': '')}"
-                                       [igDataCy]="'FieldType_Field_Order'"
-                                       style="width: 25%; display: block;" />
+                                    pInputText
+                                    type="number"
+                                    [(ngModel)]="model.FieldType.Type[currentType].SortOrder"
+                                    [disabled]="!model.FieldType.Type[currentType].IsListable"
+                                    [ngStyle]="{'background':(!model.FieldType.Type[currentType].IsListable ? '#EFEFEF': '')}"
+                                    [igDataCy]="'FieldType_Field_Order'"
+                                    style="width: 25%; display: block;" />
+
+                                <p-radioButton 
+                                    igRadioButton 
+                                    name="sortByAscending" 
+                                    [(ngModel)]="model.FieldType.Type[currentType].SortByAscending" 
+                                    [disabled]="!model.FieldType.Type[currentType].IsListable"
+                                    [value]="true" 
+                                    label="Ascending">
+                                </p-radioButton>
+                                
+                                <p-radioButton 
+                                    igRadioButton 
+                                    name="sortByAscending"
+                                    [(ngModel)]="model.FieldType.Type[currentType].SortByAscending" 
+                                    [disabled]="!model.FieldType.Type[currentType].IsListable"
+                                    [value]="false" 
+                                    label="Descending">
+                                </p-radioButton>
                             </div>
                         </div>
                     </div>

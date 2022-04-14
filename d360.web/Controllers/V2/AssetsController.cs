@@ -197,52 +197,54 @@ namespace d360.web.Controllers.V2
 		/// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
 		/// 
 		/// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-		/// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal), ct (contains) and nct (not contains) which allows usage of (*) symbol as wildcard
 		///     
 		///     Example :
 		///     
-		///     Comparison Operators
-		///     * Equals operator -{fieldname} eq 'Data'
-		///     * Not equals operator -{fieldname} ne 'Data'
-		///     * Contains operator -{fieldname} ct 'Data'  
-		///     * Greater than operator -{fieldname} gt 99
-		///     * Greater than or equal operator -{fieldname} ge 99
-		///     * Less than operator -{fieldname} lt 99
-		///     * Less than or equal operator -{fieldname} le 99
-		///     * Not populated operator -{fieldname} eq null
-		///     * populated operator -{fieldname} ne null
-		///     If Scoring Bands Define : Poor (0%-50%) Average (50%-90%) Good (90%-100%)
-		///     * Score is in band Poor -({fieldname} le '50')
-		///     * Score is in band Average -({fieldname} gt '50' and {fieldname} le '90')
-		///     * Score is in band Good -({fieldname} gt '90')
-		///     * Date Is {DateFieldName} eq 'YYYY-MM-DD'
-		///     * Date Is not {DateFieldName} ne 'YYYY-MM-DD'
-		///     * Date Is Before {DateFieldName} lt 'YYYY-MM-DD'
-		///     * Date Is After {DateFieldName} gt 'YYYY-MM-DD'
-		///     * Date Is on or Before {DateFieldName} le 'YYYY-MM-DD'
-		///     * Date Is on or After {DateFieldName} ge 'YYYY-MM-DD'
-		///     * Date Is Between ({DateFieldName} ge 'YYYY-MM-DD' and {DateFieldName} le 'YYYY-MM-DD')
-		///     * DateTime Is Before {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
-		///     * DateTime Is After {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
-		///     * DateTime Is Between ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
-		///     * Tag Contains Match Any (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
-		///     * Tag Contains Match All (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
-		///     * Tag Does not Contain Match Any (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
-		///     * Tag Does not Contain Match All (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
-		///     * AssetPath Contains (Match All)Operator (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
-		///     * AssetPath Contains (Match Any)Operator (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
-		///     * AssetPath Contains  Operator ({AssetPathFieldName} ct 'APValue1')
-		///     * AssetPath Does not contain Operator ({AssetPathFieldName} nct 'APValue1')
-		///     * AssetPath is Operator ({AssetPathFieldName} eq 'APValue1')
-		///     * AssetPath is not Operator ({AssetPathFieldName} ne 'APValue1')
-		///     * AssetPath Start with Operator {AssetPathFieldName} ct 'APValue1*'
-		///     * AssetPath End with Operator {AssetPathFieldName} ct '*APValue1'
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///         - Score bands are dependent on how define scoring bands while creating scoring definition in environment. 
+		///           For Example : Scoring bands define like : Poor (0%-50%) Average (50%-90%) Good (90%-100%)
+		///           - Score is in band Poor(When Poor (0%-50%) define in environment) - {fieldname} le '50'
+		///           - Score is in band Average(When Average (50%-90%) define in environment) - ({fieldname} gt '50' and {fieldname} le '90')
+		///           - Score is in band Good(When Good (90%-100%) define in environment) - {fieldname} gt '90'
+		///         - Date Is Operator - {DateFieldName} eq 'YYYY-MM-DD'
+		///         - Date Is not Operator - {DateFieldName} ne 'YYYY-MM-DD'
+		///         - Date Is Before Operator - {DateFieldName} lt 'YYYY-MM-DD'
+		///         - Date Is After Operator - {DateFieldName} gt 'YYYY-MM-DD'
+		///         - Date Is on or Before Operator - {DateFieldName} le 'YYYY-MM-DD'
+		///         - Date Is on or After Operator - {DateFieldName} ge 'YYYY-MM-DD'
+		///         - Date Is Between Operator - ({DateFieldName} ge 'YYYY-MM-DD' and {DateFieldName} le 'YYYY-MM-DD')
+		///         - DateTime Is Before Operator - {DateTimeFieldName} lt 'YYYY-MM-DDTHH24:MI'
+		///         - DateTime Is After Operator - {DateTimeFieldName} gt 'YYYY-MM-DDTHH24:MI'
+		///         - DateTime Is Between Operator - ({DateTimeFieldName} ge 'YYYY-MM-DDTHH24:MI' and {DateTimeFieldName} le 'YYYY-MM-DDTHH24:MI')
+		///         - Tag Contains - {TagFieldName} ct 'Data'
+		///         - Tag Does not Contain - {TagFieldName} nct 'Data'
+		///         - AssetPath Contains - {AssetPathFieldName} ct 'APValue1'
+		///         - AssetPath Does not contain - {AssetPathFieldName} nct 'APValue1'
+		///         - AssetPath Is Operator - {AssetPathFieldName} eq 'APValue1'
+		///         - AssetPath Is not Operator - {AssetPathFieldName} ne 'APValue1'
+		///         - AssetPath Start with Operator - {AssetPathFieldName} ct 'APValue1*'
+		///         - AssetPath End with Operator - {AssetPathFieldName} ct '*APValue1'
 		///     
-		///     Logical Operators
-		///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-		///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
-		/// 
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///         - Tag Contains Match Any (or) - (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
+		///         - Tag Contains Match All(and) - (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
+		///         - Tag Does not Contain Match Any(or) - (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
+		///         - Tag Does not Contain Match All(and) - (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
+		///         - AssetPath Contains (Match All(and)) - (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
+		///         - AssetPath Contains (Match Any(or)) - (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
+		///
 		/// Relationship filtering is done using _relationFilter parameter and filter expressions are specified using relationship type UID, operator and Asset UID. IE. {Relationship Type UID} eq {Asset UID}.
 		/// *  For comparison operators you can use eq (equal), ne (not equal)
 		/// *  Chaining of relationship filter expressions is done using 'and' or 'or' logical operator.
@@ -711,6 +713,7 @@ namespace d360.web.Controllers.V2
 							MaximumLength = 500,
 							MinimumLength = 1,
 							SortOrder = 1,
+							SortByAscending = true,
 							Type = DataType.Text.ToString(),
 							IsDisplayable = true,
 							IsPartOfKey = isNamePartOfKey,
@@ -746,7 +749,8 @@ namespace d360.web.Controllers.V2
 							UpdatedBy = Company.CurrentResourceID,
 							ShowIfEmpty = true,
 							LookupDisplayFormat = "{Code}",
-							LookupEditFormat = "{Code}"
+							LookupEditFormat = "{Code}",
+							SortByAscending = true
 						});
 
 						Company.Add(new FieldType
@@ -763,7 +767,8 @@ namespace d360.web.Controllers.V2
 							IsDisplayable = true,
 							IsPartOfKey = false,
 							UpdatedBy = Company.CurrentResourceID,
-							ShowIfEmpty = true
+							ShowIfEmpty = true,
+							SortByAscending = true
 						});
 					}
 				}
@@ -3515,6 +3520,12 @@ namespace d360.web.Controllers.V2
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 
+        /// <summary>
+        /// Gets ancestry list of asset types for a given asset type. 
+        /// </summary>
+        /// <param name="assetTypeUid">Asset Type UID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
 		[SwaggerProduces("application/json")]
 		[SwaggerResponse(HttpStatusCode.OK, "Ancestry for a given asset type.", typeof(ICollection<AssetTypeAncestryModel>))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]

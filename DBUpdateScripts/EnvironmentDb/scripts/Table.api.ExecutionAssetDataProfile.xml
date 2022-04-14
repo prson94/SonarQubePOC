@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-<changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v6">
+<changeSet author="MDonato" id="Table.api.ExecutionAssetDataProfile-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,6 +21,7 @@ BEGIN
 		[ExecutionItemUid] [uniqueidentifier] NULL,
 		[AssetUid] [uniqueidentifier] NOT NULL,
 		[ProfileSetDate] DATE NOT NULL,
+		[ProfileIdentifier] NVARCHAR(200) NULL,
 		[SampleCount] BIGINT NULL,
 		[NullCount] BIGINT NULL,
 		[BlankCount] BIGINT NULL,
@@ -127,6 +128,16 @@ IF NOT EXISTS (
 )
 BEGIN
     ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [DecimalSeparator] NCHAR(1) NULL
+END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+         AND name = 'ProfileIdentifier'
+)
+BEGIN
+    ALTER TABLE [api].[ExecutionAssetDataProfile] ADD [ProfileIdentifier] NVARCHAR(200) NULL
 END
 
 ALTER table api.ExecutionAssetDataProfile

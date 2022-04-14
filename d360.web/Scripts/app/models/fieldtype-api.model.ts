@@ -138,6 +138,7 @@ export class FieldDisplayModel {
     IsRequired: boolean;
     ShowIfEmpty: boolean;
     SortOrder: number;
+    SortByAscending: boolean;
     ColumnOrder: number;
 }
 
@@ -145,6 +146,7 @@ export interface ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number;
     SortOrder: number;
+    SortByAscending: boolean;
     IsDisplayable: boolean;
     IsEditable: boolean;
     IsListable: boolean;
@@ -159,6 +161,7 @@ export class Empty implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -176,6 +179,7 @@ export class Boolean implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -212,6 +216,7 @@ export class ComputedOwnershipLookup implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsEditable: boolean = false;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
@@ -243,6 +248,7 @@ export class ComputedRelationshipField implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     Description: DisplayOnlyDescription = new DisplayOnlyDescription();
     IntersectTypeUid?: string;
     FieldTypeName?: string;
@@ -264,6 +270,7 @@ export class ComputedRelationshipLookup implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsEditable: boolean = false;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
@@ -283,6 +290,7 @@ export class Counter implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsEditable: boolean = false;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
@@ -327,6 +335,7 @@ export class Relation {
 export class ComputedRelationshipReferenceList implements ICommonOptions {
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsEditable: boolean = false;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
@@ -352,6 +361,7 @@ export class DateClass implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -370,6 +380,7 @@ export class Decimal implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -394,6 +405,7 @@ export class HTML implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -417,6 +429,7 @@ export class Link implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -446,6 +459,7 @@ export class Lookup implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -476,6 +490,7 @@ export class List {
 export class Path implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = false;
     IsPartOfKey: boolean = false;
@@ -492,6 +507,7 @@ export class Path implements ICommonOptions {
 export class Tag implements ICommonOptions {
     Validation: BooleanValidation = new BooleanValidation();
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = false;
     IsPartOfKey: boolean = false;
@@ -511,6 +527,7 @@ export class Text implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = true;
     IsListable: boolean = false;
@@ -538,6 +555,7 @@ export class Score implements ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number = null;
     SortOrder: number = 0;
+    SortByAscending: boolean = true;
     IsDisplayable: boolean = true;
     IsEditable: boolean = false;
     IsListable: boolean = false;

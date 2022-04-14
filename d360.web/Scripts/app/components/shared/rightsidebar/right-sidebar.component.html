@@ -53,8 +53,8 @@
                                  [modalTitle]="assetAction.delete.modalTitle"
                                  [isModalVisible]="assetAction.delete.isModalVisible"
                                  (onCancel)="assetAction.delete.isModalVisible=false;">
-                    <div prompt>
-                        Please confirm that you wish to delete the tag '{{assetAction.delete.item.Value}}'(<d3s-tag-usage [uid]="assetAction.delete.item.uid">{{assetAction.delete.item.UseCount}} assets</d3s-tag-usage> tagged)
+                    <div prompt class="d-inline">
+                        Please confirm that you wish to delete the tag '{{assetAction.delete.item.Value}}' (<d3s-tag-usage [uid]="assetAction.delete.item.uid">{{assetAction.delete.item.UseCount}} assets</d3s-tag-usage> tagged)
                     </div>
 
                 </d3s-delete-form>

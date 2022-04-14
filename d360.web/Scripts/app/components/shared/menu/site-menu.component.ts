@@ -398,8 +398,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.adminMenu.NavigationItems.push({ Name: 'Dashboards', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, count: null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, count: null });
-
+        if (this.featureFlagService.flags[FeatureFlags.BrandingThemeUiTemp]) {
+            this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BRANDING}`, IsLink: false, count: null });
+        }
+        else {
+            this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, count: null });
+        }
         this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, count: null });
 
     }

@@ -93,16 +93,7 @@ namespace igx.UnitTests.ValidatorTests
         public static void HeaderFilterConfidence_Required()
         {
             var model = createCommonPostSemantic();
-            model.HeaderFilterStructured = new SemanticHeaderFilter
-            {
-                match = "any",
-                values = new List<SemanticHeaderFilterValue> {
-                    new SemanticHeaderFilterValue {
-                        @operator = "eq",
-                        value = "test"
-                    }
-                }
-            };
+            model.HeaderFilter = "/test/";            
 
             var repo = model.ToRepositoryModel(0);
 
@@ -118,16 +109,7 @@ namespace igx.UnitTests.ValidatorTests
         public static void HeaderFilterConfidence_Invalid()
         {
             var model = createCommonPostSemantic();
-            model.HeaderFilterStructured = new SemanticHeaderFilter
-            {
-                match = "any",
-                values = new List<SemanticHeaderFilterValue> {
-                    new SemanticHeaderFilterValue {
-                        @operator = "eq",
-                        value = "test"
-                    }
-                }
-            };
+            model.HeaderFilter = "/test/";            
             model.HeaderFilterConfidence = 0;
 
             var repo = model.ToRepositoryModel(0);
@@ -162,16 +144,7 @@ namespace igx.UnitTests.ValidatorTests
             var model = createCommonPostSemantic();
             model.MatchType = d360.core.enums.SemanticMatchType.Advanced;
             model.JsonPayloadStructured = JObject.Parse("{ test: true }");
-            model.HeaderFilterStructured = new SemanticHeaderFilter
-            {
-                match = "any",
-                values = new List<SemanticHeaderFilterValue> {
-                    new SemanticHeaderFilterValue {
-                        @operator = "eq",
-                        value = "test"
-                    }
-                }
-            };
+            model.HeaderFilter = "/test/";
 
             var repo = model.ToRepositoryModel(0);
 

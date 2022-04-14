@@ -2520,6 +2520,7 @@ th.p-state-default, .p-treetable th.p-state-default {
   tr {
     &.p-highlight {
       background-color: @ig-purple-t4;
+      cursor: default !important;
     }
 
     &:hover:not(.p-highlight) {
@@ -2753,4 +2754,8 @@ a.Action {
   [type="radio"]:checked {
     color: #006fc0
   }
+}
+
+.p-colorpicker-panel {
+  z-index: 20000 !important;
 }
