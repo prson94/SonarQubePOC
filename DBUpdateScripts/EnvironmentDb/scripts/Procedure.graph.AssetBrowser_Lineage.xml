@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.1">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.3">
     <comment>GOV-14849</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -368,7 +368,7 @@ begin
 	update	I
 	set		I.[from] =	S.RootPrefix + '|' + cast(S.Hop as varchar) + '|' + cast(S.RootID as varchar(50)),
 			I.[to] =	O.RootPrefix + '|' + cast(O.Hop as varchar) + '|' + cast(O.RootID as varchar(50)),
-			I.[text] = lower(I.[text])
+			I.[text] = I.[text]
 	from	#hopIntersect I
 			inner join #hopAsset S on S.Hop = I.SubjectHop and S.ID = I.SubjectID
 			inner join #hopAsset O on O.Hop = I.ObjectHop and O.ID = I.ObjectID;
@@ -401,7 +401,7 @@ begin
 		from	(
 				select	I.[from],
 						I.[to],
-						lower(I.[text]) as [text]
+						I.[text]
 				from	#hopIntersect I	
 				group by I.[from], I.[to], I.[text]
 				) I

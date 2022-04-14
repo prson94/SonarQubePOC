@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1.1">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1.3">
     <comment>GOV-14849</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -88,7 +88,7 @@ begin
 						I.IntersectID,
 						I.PredicateID,
 						I.PredicateUid,
-						lower(I.PredicateName),
+						I.PredicateName,
 						I.PredicateType,
 						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
 						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
@@ -114,7 +114,7 @@ begin
 						I.IntersectID,
 						I.PredicateID,
 						I.PredicateUid,
-						lower(I.PredicateInverse),
+						I.PredicateInverse,
 						I.PredicateType,
 						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
 						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
