@@ -28,8 +28,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     filters: any = { globalSearch: '', Value: '', UseCount: '' };
     sort: any;
 
-    deletePopupTitle: string = 'Delete Connector Label';
-    editPopupTitle: string = 'Edit Connector Label';
+    deletePopupTitle: string = $localize`Delete Connector Label`;
+    editPopupTitle: string = $localize`Edit Connector Label`;
     isUsageLoading: boolean = false;
     deleteConfirmationText: string = '';
     labelUsage: any;
@@ -57,9 +57,9 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         private cdRef: ChangeDetectorRef
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-        this.areaName = "Diagram Assets";
+        this.areaName = $localize`Diagram Assets`;
         this.setCommonItems();
-        this.tabTitle = 'Diagram Assets';
+        this.tabTitle = $localize`Diagram Assets`;
         this.secondaryNavService.setCurrentArea(this.areaName, 'fa-sliders', this.tabTitle);
 
         this.buildSecondaryNavigationForObject(0, "ConnectorLabel");
@@ -110,13 +110,13 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     openEditor(label: ConnectorLabel) {
         this.selected = [label];
         this.showEditor = true;
-        this.editPopupTitle = 'Edit Connector Label';
+        this.editPopupTitle = $localize`Edit Connector Label`;
         this.cdRef.markForCheck();
     }
 
     add() {
         this.selected = [];
-        this.editPopupTitle = 'Add Connector Label';
+        this.editPopupTitle = $localize`Add Connector Label`;
         this.showEditor = true;
         this.cdRef.markForCheck();
     }
@@ -149,10 +149,10 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
             .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `Connector label succesfully created`;
+                    msg = $localize`Connector label succesfully created`;
                 }
                 else {
-                    msg = `Connector label succesfully updated`;
+                    msg = $localize`Connector label succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 this.getLabels();
@@ -168,7 +168,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
                 if (result) {
 
-                    this.messagesService.showInfoMessage("Success", "Connector label consolidation succesfull");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
 
                     this.getLabels();
                 }
@@ -221,8 +221,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
         this.lastLoadedUid = label.uid;
         setTimeout(() => {
-            this.deletePopupTitle = this.selected ? 'Delete Connector Label' : 'Delete Connector Labels';
-            this.deleteConfirmationText = `Delete the Connector Label '${this.selected[0].Value}'`;
+            this.deletePopupTitle = this.selected ? $localize`Delete Connector Label` : $localize`Delete Connector Labels`;
+            this.deleteConfirmationText = $localize`Delete the Connector Label '${this.selected[0].Value}'`;
             this.isUsageLoading = false;
             this.showDelete = true;
             this.cdRef.markForCheck();
@@ -253,7 +253,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     exportUsage() {
         this.selected.forEach(item => {
-            this.connectorLabelService.exportLabelUsage(item.uid, `Where Used report for Connector Label "${item.Value}"`)
+            this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label "${item.Value}"`)
         })
     }
 
@@ -384,23 +384,23 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
     }
 
     actionSelected($event) {
-        if ($event.value === 'Delete') {
+        if ($event.value === $localize`Delete`) {
             this.showDelete = true;
-            this.deletePopupTitle = 'Delete Connector Labels';
-            this.deleteConfirmationText = `Delete all Connector Labels listed above`;
+            this.deletePopupTitle = $localize`Delete Connector Labels`;
+            this.deleteConfirmationText = $localize`Delete all Connector Labels listed above`;
         }
 
-        if ($event.value === 'Consolidate') {
+        if ($event.value === $localize`Consolidate`) {
             this.showConsolidationPopup = true;
         }
     }
 
     multiselectMenu = [
         {
-            title: 'Delete'
+            title: $localize`Delete`
         },
         {
-            title: 'Consolidate'
+            title: $localize`Consolidate`
         }
     ]
 }

@@ -1,10 +1,10 @@
-﻿import {Component, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../../shared/base.component';
-import {FollowerService} from '../../../services/follower.service';
-import {FollowDetail} from '../../../models/follower.model';
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
-import {ObjectDetailService} from '../../../services/object-detail.service';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../../shared/base.component';
+import { FollowerService } from '../../../services/follower.service';
+import { FollowDetail } from '../../../models/follower.model';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -24,6 +24,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                        pInputText
                                        size="100"
                                        (input)="dt.filterGlobal($event.target.value, 'contains')"
+                                        i18n-placeholder
                                        placeholder="Search..."
                                        class="grid-simple-filter">
                                 <p-table #dt
@@ -100,7 +101,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
-            
+
             this.load();
             this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
         });

@@ -14,7 +14,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <header>Children of {{objectName}}</header>
+                    <header i18n>Children of {{objectName}}</header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div *ngIf="!isLoading"
                          class="row">

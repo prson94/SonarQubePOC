@@ -44,6 +44,8 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     lookupColumns: string[] = ["resourceName", "action", "actionObject"];
     isExportInProgress: boolean = false;
 
+    exportTooltip: string = "";
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -58,17 +60,20 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         this.breadcrumbsService = breadcrumbService;
 
         this.columns = [];
-        this.columns.push({ text: "User", datafield: "resourceName", columnWidth: 150, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Date", datafield: "date", columnWidth: 200, fieldType: "DateTime", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Action", datafield: "action", columnWidth: 100, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Field", datafield: "field", columnWidth: 200, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "New Value", datafield: "newValue", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Previous Value", datafield: "previousValue", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Object", datafield: "actionObject", columnWidth: 130, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Type", datafield: "actionObjectTypeName", columnWidth: 130, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Item", datafield: "actionObjectName", columnWidth: 100, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Audit Description", datafield: "actionDescription", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
-        this.columns.push({ text: "Revision", datafield: "version", columnWidth: 100, fieldType: "Number", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`User`, datafield: "resourceName", columnWidth: 150, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Date`, datafield: "date", columnWidth: 200, fieldType: "DateTime", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Action`, datafield: "action", columnWidth: 100, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Field`, datafield: "field", columnWidth: 200, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`New Value`, datafield: "newValue", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Previous Value`, datafield: "previousValue", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Object`, datafield: "actionObject", columnWidth: 130, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Type`, datafield: "actionObjectTypeName", columnWidth: 130, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Item`, datafield: "actionObjectName", columnWidth: 100, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Audit Description`, datafield: "actionDescription", columnWidth: 250, fieldType: "Text", type: "", cellsformat: "", description: "" });
+        this.columns.push({ text: $localize`Revision`, datafield: "version", columnWidth: 100, fieldType: "Number", type: "", cellsformat: "", description: "" });
+
+        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
+
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
     }
@@ -225,7 +230,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         );
     }
 
-    public setAdvancedFilters():void {
+    public setAdvancedFilters(): void {
         let fields: AdvancedFilterFieldType[] = [];
 
         this.columns.forEach((c) => {

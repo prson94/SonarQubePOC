@@ -9,7 +9,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { forkJoin } from 'rxjs';
-import { CompanySettingEnum, SettingsPutModel, StringSetting, GuidSetting} from '../../../models/settings.model';
+import { CompanySettingEnum, SettingsPutModel, StringSetting, GuidSetting } from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
@@ -56,7 +56,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
         this.refListSub = this.assetsService.getAssetTypesByClass(AssetTypeClass.Reference)
             .subscribe(res => {
                 this.refListDDL = [];
-                this.refListDDL.push({ value: '', label: 'Select Reference List...' });
+                this.refListDDL.push({ value: '', label: $localize`Select Reference List...` });
                 res.forEach(x => {
                     this.refListDDL.push({ value: x.uid, label: x.Name });
                 })
@@ -104,10 +104,10 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                 (res) => {
                     this.isSaving = false;
                     this.originalModel = this.model;
-                    this.messagesService.showInfoMessage('Success', 'Governance Role successfully updated');
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Governance Role successfully updated`);
                 },
                 (err) => {
-                    this.messagesService.showError('Error saving governance role', err.error.message);
+                    this.messagesService.showError($localize`Error saving governance role`, err.error.message);
                 }
             );
     }

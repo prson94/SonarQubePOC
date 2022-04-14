@@ -1,11 +1,11 @@
-﻿import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+﻿import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
-import {ObjectDetailService} from '../../../services/object-detail.service';
+import { ObjectDetailService } from '../../../services/object-detail.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <div class="col s12">
                 <div class="tile tile-detail">
                     <d3s-people-responsibilities-tile [assetID]="assetID" [assetUid]="uid"
-                                                      [title]="'Responsibilities of ' + [objectName]"></d3s-people-responsibilities-tile>
+                                                      [title]="title"></d3s-people-responsibilities-tile>
                 </div>
             </div>
         </div>
@@ -43,9 +43,13 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
         this.breadcrumbsService = breadcrumbService;
     }
 
+    get title(): string {
+        return $localize`Responsibilities of [${this.objectName}]`;
+    }
+
     ngOnInit() {
         this.route.params.subscribe(
-            params => {    
+            params => {
                 this.assetID = +params['assetID'];
                 this.objectDetailService.getAsset(this.assetID).subscribe(
                     res => {
