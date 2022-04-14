@@ -10,8 +10,14 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldType } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldType, ConnectingOperator, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
+import { Observable, of } from 'rxjs';
+import { FilterService } from 'primeng/api';
+import { Table } from 'primeng/table';
+import { Operator, OperatorString } from '../../../models/operator.model';
+import { remove } from 'lodash';
+import { tap } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -22,6 +28,7 @@ import { FieldType } from '../../../models/fieldtype-api.model';
 
 export class AdminTagsComponent extends AdminBaseComponent {
     tags: ReadonlyArray<TagType> = []; // This is readonly array, because PrimeNGTable expects immutable data
+    readOnlyFullListOfTags: ReadonlyArray<TagType> = [];
     selected: TagType[] = [];
 
     error: any;
@@ -40,56 +47,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
 
-    @ViewChild('dt', { static: false }) tableEl: any;
+    @ViewChild('dt', { static: false }) tableEl: Table;
     private lastSelectedElement: TagType;
 
-    filterFieldList: AdvancedFilterFieldType[] = [
+    filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
-            Name: 'Name',
+            Name: 'Value',
             FriendlyName: 'Name',
             Type: new FieldType("Text"),
             Category: ""
         },
+        // {
+        //     Name: 'UseCount',
+        //     FriendlyName: 'Use Count',
+        //     Type: new FieldType("Number"),
+        //     Category: ""
+        // },
         {
-            Name: 'Qualifier',
-            FriendlyName: 'Qualifier',
+            Name: 'CreatedBy',
+            FriendlyName: 'Created By',
             Type: new FieldType("Text"),
             Category: ""
         },
-        {
-            Name: 'Status',
-            FriendlyName: 'Status',
-            Type: new FieldType("Lookup"),            
-            Category: "",
-            // ValueLoader: this.getFilterValues.bind(this, "status"),
-            RemovePopulatedOperator: true
-        },
-        {
-            Name: 'Priority',
-            FriendlyName: 'Priority',
-            Type: new FieldType("Number"),
-            Category: ""
-        },
-        {
-            Name: 'BaseType',
-            FriendlyName: 'Base Type',
-            Type: new FieldType("Lookup"),
-            // ValueLoader: this.getFilterValues.bind(this, "baseType"),
-            Category: ""
-        },
-        {
-            Name: 'CreatedOn',
-            FriendlyName: 'Date Created',
-            Type: new FieldType("DateTime"),
-            Category: ""
-        },
-        {
-            Name: 'UpdatedOn',
-            FriendlyName: 'Date Last Modified',
-            Type: new FieldType("DateTime"),
-            Category: ""
-        }
-    ]
+    ]);
 
     constructor(
         private router: Router,
@@ -132,19 +112,179 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.filters[event.prop] = event.value;
     }
 
+    advancedFiltersChanged(event: Filters) {
+        this.removeNotValidFilterOption(event);
+        const connectingOperator = this.findOutTheConnectingOperator(event);
+
+        if (connectingOperator === ConnectingOperator.Or) {
+            this.filterByOrLogic(event);
+        } else {
+            this.filterByAndLogic(event);
+        }
+    }
+
+    removeNotValidFilterOption(event: Filters): void {
+        remove(event.data, (filterOption: AdvancedFilterFieldCondition) => {
+            return filterOption.markForDeletion || !filterOption.field;
+        });
+    }
+    
+    // should return advanced filter connectin operator 'or', 'and' or null
+    findOutTheConnectingOperator(event: Filters): string {
+        const regexp = /\'\)\s(\w*)/; // match: ') word
+        const match = event.filter.match(regexp);
+        if (match) {
+            return match[1];
+        } 
+        return null;
+    }
+
+    filterByAndLogic(event: Filters): void {
+        let tagsForFiltering = [...this.readOnlyFullListOfTags];
+        event.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
+            if(filterOption.operator === OperatorString.Contains) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.NotContains) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return !this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.Equals) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.NotEquals) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.StartsWith) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isDataValueStartsWithSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.EndsWith) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isDataValueEndsWithSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.Populated) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isDataValuePopulated(tag[filterOption.field]);
+                });
+            } else if(filterOption.operator === OperatorString.NotPopulated) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return !this.isDataValuePopulated(tag[filterOption.field]);
+                });
+            } else {
+                console.warn(`Unknown filter operator: '${filterOption.operator}' in and logic`);
+            }
+        });
+        this.tags = tagsForFiltering;
+    }
+
+    filterByOrLogic(event: Filters): void {
+        let filterResult = [];
+        let fullListOfTags = [...this.readOnlyFullListOfTags];
+
+        event.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
+            if(filterOption.operator === OperatorString.Contains) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.NotContains) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return !this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.Equals) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.NotEquals) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.StartsWith) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isDataValueStartsWithSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.EndsWith) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isDataValueEndsWithSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.Populated) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isDataValuePopulated(tag[filterOption.field]);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.NotPopulated) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return !this.isDataValuePopulated(tag[filterOption.field]);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else {
+                console.warn(`Unknown filter operator: '${filterOption.operator}' in or logic`);
+            }
+        });
+        this.tags = filterResult;
+    }
+
+    isTagFieldContainsValue(tag: TagType, field: string, value: string): boolean {
+        return tag[field].match(new RegExp(value, 'i'));
+    }
+
+    isDataValueEqualToSearchValue(dataValue: string, searchValue: string): boolean {
+        return dataValue.toLowerCase() === searchValue.toLowerCase();
+    }
+
+    isDataValueStartsWithSearchValue(dataValue: string, searchValue: string): boolean {
+        return dataValue.toLowerCase().startsWith(searchValue.toLowerCase());
+    }
+
+    isDataValueEndsWithSearchValue(dataValue: string, searchValue: string): boolean {
+        return dataValue.toLowerCase().endsWith(searchValue.toLowerCase());
+    }
+
+    isDataValuePopulated(dataValue: string): boolean {
+        return dataValue.length > 0;
+    }
+
     randomDate(start, end) {
         return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     }
 
     getTags() {
         this.isLoading = true;
-        this.tagsService.getTagsList().subscribe((tags: TagType[]) => {
+        this.tagsService.getTagsList().pipe(
+            tap((tags: TagType[]) => {
+                this.sortTags(tags);
+            }),
+            tap((tags: TagType[]) => {
+                this.addCreatedByFieldToTags(tags);
+            })
+        ).subscribe((tags: TagType[]) => {
             if (tags && tags.length > 0) {
-                this.tags = tags.sort((a, b) => a.Value.localeCompare(b.Value));
+                this.tags = tags;
+                this.readOnlyFullListOfTags = [...this.tags];
             }
             this.isLoading = false;
         }, err => this.error = err);
     }
+
+    sortTags(tags: TagType[]): void {
+        tags.sort((a, b) => a.Value.localeCompare(b.Value));
+    }
+
+    addCreatedByFieldToTags(tags: TagType[]): void {
+        tags.forEach((tag: TagType): void => {
+            tag['CreatedBy'] = tag.CreatedByFirstName + tag.CreatedByLastName;
+        });
+    }
+    
 
     private deselectElement(element: HTMLElement) {
         var trElement = this.getTrElement(element);

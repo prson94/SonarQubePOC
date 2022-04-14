@@ -5,8 +5,13 @@ import { Observable } from "rxjs/internal/Observable";
 import { FieldTypeAPIModelFieldCondition } from "../../../models/field-condition-grid.models";
 import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
-import { Operator } from "../../../models/operator.model";
+import { Operator, OperatorString } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
+
+export enum ConnectingOperator {
+    And = 'and',
+    Or = 'or',
+}
 
 export interface LookupValuesAPIParameters {
     skip?: number;
@@ -41,7 +46,7 @@ export class FieldTypeAPIModelFieldAdvancedCondition extends FieldTypeAPIModelFi
 
 export class AdvancedFilterFieldCondition {
     field: string;
-    operator: Operator;
+    operator: Operator | OperatorString;
     value: any;
     value2: any;
     exact: boolean = false;

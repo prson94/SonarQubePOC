@@ -20,6 +20,8 @@ export class TagType {
     UpdatedOn: Date;
     UpdatedBy: string;
     TooltipID: number;
+    CreatedByFirstName?: string;
+    CreatedByLastName?: string;
 }
 
 export class TagApiModel {

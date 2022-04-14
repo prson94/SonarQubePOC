@@ -19,7 +19,7 @@
                                placeholder="Search..."
                                class="grid-simple-filter">
                     </div>
-                    <!-- <advanced-filtering  [loadIdentifier]="'AdminTags'"></advanced-filtering> -->
+                    <advanced-filtering  [loadIdentifier]="'AdminTags'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 </div>
                 
                 <p-table #dt
