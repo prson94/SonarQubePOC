@@ -2,7 +2,7 @@
     <header>Home Page Customization</header>
     <div class="row">
         <div class="col s6">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Tile Options
             </div>
             <div>
@@ -10,6 +10,7 @@
                             [(ngModel)]="companySettings.ShowHomeAssignmentTile"
                             (ngModelChange)="companySettings.ShowHomeAssignmentTile = $event; companySettingsChange.emit(companySettings)"
                             label="Show assignment tile"
+                            i18n-label
                             binary="true">
                 </p-checkbox>
             </div>
@@ -18,6 +19,7 @@
                             [(ngModel)]="companySettings.ShowHomeBoardTile"
                             (ngModelChange)="companySettings.ShowHomeBoardTile = $event; companySettingsChange.emit(companySettings)"
                             label="Show board tile"
+                            i18n-label
                             binary="true">
                 </p-checkbox>
             </div>
@@ -26,6 +28,7 @@
                             [(ngModel)]="companySettings.ShowHomeActivityTile"
                             (ngModelChange)="companySettings.ShowHomeActivityTile = $event; companySettingsChange.emit(companySettings)"
                             label="Show activity tile"
+                            i18n-label
                             binary="true">
                 </p-checkbox>
             </div>
@@ -37,12 +40,13 @@
                                 [(ngModel)]="companySettings.ShowHomePageTitle"
                                 (ngModelChange)="companySettings.ShowHomePageTitle = $event; companySettingsChange.emit(companySettings)"
                                 label="Show site title on homepage"
+                                i18n-label
                                 binary="true">
                     </p-checkbox>
                 </div>
             </div>
             <div class="row">
-                <div class="FieldName">&nbsp;&nbsp;Title color</div>
+                <div class="FieldName" i18n>Title color</div>
                 <div class="row">
                     <div class="col s12">
                         <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)" [disabled]="!companySettings.ShowHomePageTitle"></p-colorPicker>
@@ -52,7 +56,7 @@
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="FieldName">Title</div>
+                    <div class="FieldName" i18n>Title</div>
                     <div>
                         <input type="text" [(ngModel)]="companySettings.BrowserTitlePrefix" name="titletext" style="width:93%" />
                     </div>
@@ -62,8 +66,8 @@
     </div>
     <div class="row" style="padding-top: 12px;">
         <div class="col s12">
-            <div class="FieldName">Home Page Background Image</div>
-            <div class="directions">The chosen image will be placed at the top of the home page and stretched horizontally to fit. The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.</div>
+            <div class="FieldName" i18n>Home Page Background Image</div>
+            <div class="directions" i18n>The chosen image will be placed at the top of the home page and stretched horizontally to fit. The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.</div>
             <div class="row">
                 <div class="col s4">
                     <input #imageUpload type="file" (change)="onFileChange($event)" accept="image/gif,image/jpeg,image/png" />
@@ -71,11 +75,11 @@
                 <div class="col s8">
                     <div *ngIf="homePageImage.dataUrl == null && companySettings.HomePageBackgroundImage != '' && !companySettings.ClearHomePageBackgroundImage">
                         <img [src]="companySettings.HomePageBackgroundImage" style="max-width:500px; max-height: 200px;" />
-                        <button pButton type="button" label="Clear" (click)="onFileChange(null); imageUpload.value = null; companySettings.ClearHomePageBackgroundImage = true; companySettingsChange.emit(companySettings);" [disabled]="homePageImage.isLoading" style="vertical-align: top; display: inline-block;"></button>
+                        <button pButton type="button" i18n-label label="Clear" (click)="onFileChange(null); imageUpload.value = null; companySettings.ClearHomePageBackgroundImage = true; companySettingsChange.emit(companySettings);" [disabled]="homePageImage.isLoading" style="vertical-align: top; display: inline-block;"></button>
                     </div>
                     <div *ngIf="homePageImage != null && homePageImage.dataUrl != null && homePageImage.dataUrl != ''">
                         <img [src]="homePageImage.dataUrl" style="max-width:500px; max-height: 200px;" />
-                        <button pButton type="button" label="Clear" (click)="onFileChange(null); imageUpload.value = null" [disabled]="homePageImage.isLoading" style="vertical-align: top; display: inline-block;"></button>
+                        <button pButton type="button" i18n-label label="Clear" (click)="onFileChange(null); imageUpload.value = null" [disabled]="homePageImage.isLoading" style="vertical-align: top; display: inline-block;"></button>
                     </div>
                 </div>
             </div>

@@ -18,7 +18,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                 <tr>
                     <th class="permission-header"></th>
                     <th style="width: 15%;"
-                        class="permission-header">Enabled
+                        class="permission-header" i18n>Enabled
                     </th>
                 </tr>
                 </thead>
@@ -35,6 +35,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                  class="pull-right"
                  style="padding:5px">
                 <button pButton
+                        i18n-label
                         label="Save Changes"
                         (click)="save()"></button>
             </div>

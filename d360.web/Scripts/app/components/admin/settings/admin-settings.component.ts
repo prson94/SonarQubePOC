@@ -151,7 +151,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.groups = x.map(x => {
                     return { label: x.label, value: +x.value }
                 });
-                this.groups.unshift({ label: '[Administrators]', value: 0 });
+                this.groups.unshift({ label: $localize`[Administrators]`, value: 0 });
                 this.isLoading = false;
             });
         this.resetSaveButton();
@@ -164,7 +164,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     resetSaveButton() {
         this.secondaryNavService.clearButtons();
-        this.SaveButton = new DynamicButton("Save Changes");
+        this.SaveButton = new DynamicButton($localize`Save Changes`);
         this.secondaryNavService.showButton(this.SaveButton);
         this.SaveButton.dynamicCallback = () => {
             this.SaveButton.disabled = true;
@@ -403,7 +403,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             this.disableExcel = false;
         }
         this.secondaryNavService.clearButtons();
-        this.SaveButton = new DynamicButton("Save Changes");
+        this.SaveButton = new DynamicButton($localize`Save Changes`);
         this.secondaryNavService.showButton(this.SaveButton);
         this.SaveButton.disabled = this.disableExcel;
         this.SaveButton.dynamicCallback = () => {
@@ -422,7 +422,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         let r = new RegExp('^(?:[a-z]+:)?//', 'i');
 
         if (r.test(this.companySettings.DefaultRoute))
-            this.routeValidationMessage = "The value entered must be a relative url (ex: /artifact/1)";
+            this.routeValidationMessage = $localize`The value entered must be a relative url (ex: /artifact/1)`;
     }
 
     rebuild(model: CompanyRebuildJobStatusApiModel) {
@@ -430,7 +430,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.settingsService.postRebuildRequest(model.jobToken)
             .subscribe(data => {
                 if (data.type && data.type === "error") {
-                    this.messagesService.showError("Problem with Rebuild", data.message);
+                    this.messagesService.showError($localize`Problem with Rebuild`, data.message);
                     model.state = CompanyRebuildJobStatusState.Inactive;
                 } else {
                     model.validationMessage = data.message;

@@ -36,7 +36,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     ngOnInit() {
         this.areaName = StringConstants.Section_Workflows;
         this.clearSidebar();
-        this.titleService.setTitle('Workflows');
+        this.titleService.setTitle($localize`Workflows`);
         this.setCommonItems();
     }
 

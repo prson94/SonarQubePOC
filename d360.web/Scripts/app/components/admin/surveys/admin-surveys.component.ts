@@ -17,21 +17,21 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <div class="row">
                     <div class="col l4 s12">                    
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Surveys
+                            <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Surveys</ng-container>
                             <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
                                 <p-table #dt [value]="surveys" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ValidForDays']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'" style="width: 25%">
-                                                Name
+                                                <ng-container i18n>Name</ng-container>
                                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                             </th>
                                             <th [pSortableColumn]="'ValidForDays'" style="width: 10%">
-                                                Valid Days
+                                                <ng-container i18n>Valid Days</ng-container>
                                                 <d3s-sortIcon [field]="'ValidForDays'"></d3s-sortIcon>
                                             </th>
                                             <th style="width: 60px"></th>
@@ -64,7 +64,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
                                 [method]="'callback'"
-                                [prompt]="'Are you sure you want to delete the survey [' + [selected?.Name] + ']?'"                                         
+                                [prompt]="deletePromptText"                                         
                                 (onCancel)="showDelete=false;"
                             ></d3s-delete-form>   
                     </div>
@@ -99,6 +99,9 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     showEditor: boolean = false;
 
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the survey [${this.selected?.Name}]?`;
+    }
 
     public theDeleteCallback: Function;
 

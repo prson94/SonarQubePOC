@@ -30,8 +30,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     filters: any = { globalSearch: '', Value: '', UseCount: '' };
     sort: any;
 
-    deletePopupTitle: string = 'Delete Tag';
-    editPopupTitle: string = 'Edit Tag';
+    deletePopupTitle: string = $localize`Delete Tag`;
+    editPopupTitle: string = $localize`Edit Tag`;
 
 
     public theDeleteCallback: Function;
@@ -130,8 +130,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
-        this.editPopupTitle = 'Edit Tag';
-
+        this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
@@ -217,7 +216,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     add() {
         this.selected = [];
-        this.editPopupTitle = 'Add Tag';
+        this.editPopupTitle = $localize`Add Tag`;
         this.showEditor = true;
 
     }
@@ -234,10 +233,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
+                    msg = $localize`${result.Value} succesfully created`;
                 }
                 else {
-                    msg = `${result.Value} succesfully updated`;
+                    msg = $localize`${result.Value} succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
@@ -275,7 +274,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     openDeleteModal() {
         window.setTimeout(() => {
-            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
+            this.deletePopupTitle = this.selected.length == 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
         }, 100)
 
@@ -291,7 +290,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 if (result) {
 
-                    this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
 
                     result.forEach(t => {
                         if (t.UseCount != 0)

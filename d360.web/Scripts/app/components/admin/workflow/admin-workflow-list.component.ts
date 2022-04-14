@@ -3,7 +3,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { WorkflowListItem, ChangeTypeInfo, WorkflowChangeType } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
-import { map} from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { State } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -17,11 +17,11 @@ import { CompanySettingsService } from '../../../services/settings.service';
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
     <header>
-        Workflow Types
+        <ng-container i18n>Workflow Types</ng-container>
         <d3s-tile-actions hasAdd="true" (addClick)="onAddClick.emit()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
     </header>
 
-    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
     <p-table #dt [value]="items" selectionMode="single" [rows]="20" [paginator]="true" [pageLinks]="3" [(selection)]="selection" 
         [globalFilterFields]="globalFilterFields">
         <ng-template pTemplate="header">
@@ -80,14 +80,14 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     private changeTypes: ChangeTypeInfo[] = [];
 
     private columns: any[] = [
-        { datafield: 'Name', text: 'Name', type: 'text' },
-        { datafield: 'TypeName', text: 'Type Name', type: 'text' },
-        { datafield: 'Type', text: 'Type', type: 'text' },
-        { datafield: 'ChangeTypeName', text: 'Change Type', type: 'text' },
-        { datafield: 'State', text: 'Active', type: 'State' },
-        { datafield: 'UpdatedOn', text: 'Updated On', type: 'date' },
-        { datafield: 'UpdatedBy', text: 'Updated By', type: 'text' },
-        { datafield: 'Published', text: 'Status', type: 'text' },
+        { datafield: 'Name', text: $localize`Name`, type: 'text' },
+        { datafield: 'TypeName', text: $localize`Type Name`, type: 'text' },
+        { datafield: 'Type', text: $localize`Type`, type: 'text' },
+        { datafield: 'ChangeTypeName', text: $localize`Change Type`, type: 'text' },
+        { datafield: 'State', text: $localize`Active`, type: 'State' },
+        { datafield: 'UpdatedOn', text: $localize`Updated On`, type: 'date' },
+        { datafield: 'UpdatedBy', text: $localize`Updated By`, type: 'text' },
+        { datafield: 'Published', text: $localize`Status`, type: 'text' },
     ];
 
     get globalFilterFields(): string[] {
@@ -117,9 +117,9 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
     }
 
-  
 
-    
+
+
 
     onNavigate(uid: string) {
         this.isLoading = true;
@@ -138,9 +138,9 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                     this.workflowService.getAdminTypes()
                         .subscribe((r) => {
                             let workflowItems: WorkflowListItem[] = [];
-                           
-                           
-                            r.filter((x) => x.State == 'Active' || x.State== 'InActive').forEach((x) => {
+
+
+                            r.filter((x) => x.State == 'Active' || x.State == 'InActive').forEach((x) => {
                                 let workflowItem: WorkflowListItem = new WorkflowListItem();
 
                                 workflowItem.Name = x.Name;
@@ -164,15 +164,14 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                                 if (ChangeTypeDescription) {
                                     i.ChangeTypeName = ChangeTypeDescription.Description;
                                 }
-                                else
-                                {
+                                else {
                                     i.ChangeTypeName = "";
                                 }
                             });
                         })),
                 map(() => this.isLoading = false))
             .subscribe();
-            
+
     }
 
     navigate(id: number) {
