@@ -75,7 +75,7 @@ export class ReuseInterceptor implements HttpInterceptor {
     }
 
     getCacheKey(req: HttpRequest<any>) {
-        return req.urlWithParams;
+        return req.urlWithParams + "-" + JSON.stringify(req.body);
     }
 }
 
