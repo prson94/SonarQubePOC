@@ -114,6 +114,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.DisableCommunityPosting = this.getBooleanSetting(CompanySettingEnum.DisableCommunityPosting);
         this.companySettings.DisableIssueManagement = this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement);
         this.companySettings.FramingDomains = this.getStringSetting(CompanySettingEnum.FramingDomains);
+        this.companySettings.EmailDomainWhitelist = this.getStringSetting(CompanySettingEnum.EmailDomainWhitelist);
         this.companySettings.EnableOrganizations = this.getBooleanSetting(CompanySettingEnum.EnableOrganizations);
         this.companySettings.HideData3SixtyUsers = this.getBooleanSetting(CompanySettingEnum.HideData3SixtyUsers);
         this.companySettings.HideHeaderBarControls = this.getBooleanSetting(CompanySettingEnum.HideHeaderBarControls);
@@ -272,6 +273,11 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         settings.push({
             SettingID: CompanySettingEnum.FramingDomains,
             StringSetting: { Value: this.companySettings.FramingDomains },
+            BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
+        });
+        settings.push({
+            SettingID: CompanySettingEnum.EmailDomainWhitelist,
+            StringSetting: { Value: this.companySettings.EmailDomainWhitelist },
             BooleanSetting: null, GuidSetting: null, IpAddressSetting: null, NumberSetting: null
         });
         settings.push({

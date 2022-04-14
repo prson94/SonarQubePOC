@@ -367,6 +367,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This setting contains a comma separated list of allowed domains. If present, only users with emails from the specified domains will be allowed to login to Govern..
+        /// </summary>
+        internal static string EmailDomainWhitelist_Desc {
+            get {
+                return ResourceManager.GetString("EmailDomainWhitelist_Desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allowed Email Domains.
+        /// </summary>
+        internal static string EmailDomainWhitelist_Name {
+            get {
+                return ResourceManager.GetString("EmailDomainWhitelist_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enable JSON Attribute field type support.  Enabling this stores all properties for all JSON fields in the govern environment as well as enabling this field type. Default false.  Changing this value requires reloading affected data to parse json properties..
         /// </summary>
         internal static string EnableJsonAttribute_Desc {

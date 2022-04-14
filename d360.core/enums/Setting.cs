@@ -541,7 +541,15 @@ namespace d360.core.enums
             Name("DiagramMaxAvoidNodesLinkCount_Name", typeof(Settings)),
             Type(SettingType.Number)
         ]
-        DiagramMaxAvoidNodesLinkCount = 84
+        DiagramMaxAvoidNodesLinkCount = 84,
+        [
+            DefaultValue(""),
+            Description("EmailDomainWhitelist_Desc", typeof(Settings)),
+            Locked(false),
+            Name("EmailDomainWhitelist_Name", typeof(Settings)),
+            Type(SettingType.Text)
+        ]
+        EmailDomainWhitelist = 85
     }
 
     public class SettingInfo

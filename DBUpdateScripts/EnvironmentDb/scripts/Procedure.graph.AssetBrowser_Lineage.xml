@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1">
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.1">
     <comment>GOV-14849</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -70,7 +70,7 @@ begin
 		[to] varchar(100),
 		back varchar(7),
 		[text] nvarchar(250),
-		linksJson varchar(1000)
+		linksJson varchar(max)
 		);
 
 	drop table if exists #nodes;
@@ -532,6 +532,42 @@ begin
 				inner join #TempUserPremission P on P.AssetTypeID = H.AssetTypeID  AND P.AssetID = 0;
 	END
 
+	-- Get ownership badge data, IF we are supposed to include.
+	drop table if exists #GroupedOwners;
+	create table #GroupedOwners (hierarchyKey varchar(500), id int, [text] nvarchar(250), ResourceID int)
+	create nonclustered index IX_TempGroupedOwners_hierarchyKey on #GroupedOwners (hierarchyKey asc);
+	
+	if @includeOwnershipBadges = 1 
+	begin
+		insert into #GroupedOwners
+			select		IH.hierarchyKey,
+						R.ResponsibilityTypeID as id,
+						R.ResponsibilityTypeName as [text],
+						R.ResourceID
+			from		#nodes IH
+						inner join Asset A on A.ID = IH.assetId
+						inner join ResponsibilityDetail R on (R.ApplyToType = 0 and R.AssetID = IH.assetId) 
+			group by	IH.hierarchyKey,
+						R.ResponsibilityTypeID,
+						R.ResponsibilityTypeName,
+						R.ResourceID
+	
+		insert into #GroupedOwners
+			select		IH.hierarchyKey,
+						R.ResponsibilityTypeID as id,
+						R.ResponsibilityTypeName as [text],
+						R.ResourceID
+			from		#nodes IH
+						inner join Asset A on A.ID = IH.assetId
+						inner join ResponsibilityDetail R on (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID)
+						left join #GroupedOwners G on G.hierarchyKey = IH.hierarchyKey and G.id = R.ResponsibilityTypeID and G.ResourceID = R.ResourceID
+			where		G.id is null
+			group by	IH.hierarchyKey,
+						R.ResponsibilityTypeID,
+						R.ResponsibilityTypeName,
+						R.ResourceID
+	end;
+
 	-- Return data to client.
 	select * from #nodes order by hop, hierarchyKey, [group];	-- 1. Asset nodes
 	select * from #edges;										-- 2. Edges
@@ -540,28 +576,13 @@ begin
 	select	H.hierarchyKey,
 			H.hierarchyKey as predictableId,
 			(
-			select	case @includeOwnershipBadges
-						when 1 then (
-									select		R.id,
-												R.[text],
-												count(1) as [count]
-									from		(
-												select		R.ResponsibilityTypeID as id,
-															R.ResponsibilityTypeName as [text],
-															R.ResourceID
-												from		#nodes IH
-															inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-															inner join ResponsibilityDetail R on (R.ApplyToType = 0 and R.AssetID = IH.assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID)
-												group by	R.ResponsibilityTypeID,
-															R.ResponsibilityTypeName,
-															R.ResourceID									
-												) R
-									group by	R.id,
-												R.[text]
-									for json path 
-									)
-						else null
-					end
+			select	id, 
+					[text], 
+					count(1) as [count] 
+			from	#GroupedOwners 
+			where	hierarchyKey = H.hierarchyKey 
+			group by id, [text] 
+			for json path
 			) as ownersJson,
 			(
 			select	case @includeRelationBadges

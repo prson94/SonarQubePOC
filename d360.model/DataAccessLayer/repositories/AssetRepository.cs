@@ -1238,7 +1238,7 @@ namespace d360.model.DataAccessLayer
 				fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
 			}
 
-			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.displaypath");
+			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.KeyPath");
 
 			if (queryParams.Any(x => x.Key.ToLowerInvariant() == "_pagewithasset"))
 			{
@@ -1306,7 +1306,8 @@ namespace d360.model.DataAccessLayer
 					{(includeColor ? "ACJ.ColorJson as Color," : "")}
 					{(includeProfilingCheck ? profilingCheckFields : "")}
 					{(includeSegments ? "Node.Segments," : "")}
-					Node.DisplayPath as [Path]
+					Node.KeyPath as [Path],
+					Node.DisplayPath as [DisplayPath]
 					{fieldsSql}
 					{(includePermissionDetails ? includePermissionFields : "")} 
 					{hierarchyParentUidCol}
@@ -2325,6 +2326,7 @@ namespace d360.model.DataAccessLayer
 				i.IsRequired,
 				i.ColumnOrder,
 				i.SortOrder,
+				i.SortByAscending,
 				ObjectType = i.Object,
 				i.ObjectID,
 				i.Type,
@@ -2842,6 +2844,13 @@ namespace d360.model.DataAccessLayer
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
+				if (execution.Error > 0) {
+					var error = string.Join(",", results.Where(x => !string.IsNullOrEmpty(x.Message)).Select(x => x.Message).ToArray());
+					if (error.Length > constants.ERROR_MESSAGE_CHARACTER_LIMIT) { 
+						error = error.Substring(0, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
+					}
+					execution.ErrorMessage = error;
+				}
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 

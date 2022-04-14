@@ -121,20 +121,134 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Retrieves Data Profile results for a identifier.
+        /// </summary>
+        /// <param name="profileIdentifier">The profile identifier.</param>
+        /// <returns>A list of Data Profile results</returns>
+        [
+            HttpGet,
+            Route("identifier/{profileIdentifier}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetDataProfilesApiViewModel)),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that your request to retrieve this asset is forbidden due to lack of permissions to view it.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+            SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250. Maximum page size is 10,000", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "Allows filtering results based on an asset uid", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeSamples", "If true returns the outlierDetail, topK, bottomK, cardinalityDetail, shapesDetail collections on the data profile results. The default is true meaning the collections will be included.", DataType = "boolean", ParameterType = "query", Required = false),
+        ]
+        public async Task<IHttpActionResult> GetDataProfiles(string profileIdentifier)
+        {
+            var prefix = "DataProfiles.GetDataProfilesByIdentifier => ";
+            try
+            {
+                // FeatureFlag Check
+                if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+                }
+
+                var queryParams = Request.GetQueryNameValuePairs();
+                var validationResult = ValidateDataProfileGetParameters(profileIdentifier, queryParams);
+
+                if (validationResult.StatusCode != HttpStatusCode.OK)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResult.Message)).ConfigureAwait(false);
+                }
+
+                var results = await DataProfiles.GetDataProfiles(profileIdentifier, queryParams);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (GenericException ex)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string> {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+            }
+        }
+
+        private WorkHttpStatus ValidateDataProfileGetParameters(string profileIdentifier, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            if (string.IsNullOrWhiteSpace(profileIdentifier))
+            {
+               return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidProfileIdentifier);
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_assetuid"))
+            {
+                if (!Guid.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_assetuid").Value, out Guid assetUid))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+                }
+                else
+                {
+                    var asset = AssetRepository.GetAssetByUID(assetUid);
+                    if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+                    }
+                }
+            }
+
+            return ValidateDataProfileBaseParameters(queryParams);
+        }
+
         private WorkHttpStatus ValidateDataProfileGetParameters(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
+            {
+                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out _))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidStartDate);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
+            {
+
+                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out _))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidEndDate);
+                }
+            }
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_includechildassets"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out _))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
+                }
+            }
+
+            return ValidateDataProfileBaseParameters(queryParams);
+        }
+
+        private WorkHttpStatus ValidateDataProfileBaseParameters(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid);
-            }
-
-            var asset = AssetRepository.GetAssetByUID(assetUid);
-
-            if (asset == null || (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset))
-            {
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()));
             }
 
             if (isValid.Length > 0)
@@ -144,40 +258,15 @@ namespace d360.web.Controllers.V2
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includetotal"))
             {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out bool includeTotal))
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out _))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidIncludeTotal);
                 }
             }
 
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
-            {
-                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_startdate").Value, out DateTime endDate))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidStartDate);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
-            {
-
-                if (!DateTime.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_enddate").Value, out DateTime endDate))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidEndDate);
-                }
-            }
-
-            if (queryParams.Any(qp => qp.Key.ToLower() == "_includechildassets"))
-            {
-                if (!bool.TryParse(queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_includechildassets").Value, out bool includeTotal))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.Invalid_includeChildAssetsProvided);
-                }
-            }
-
             if (queryParams.Any(qp => qp.Key.ToLower() == "_includesamples"))
             {
-                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out bool includeTotal))
+                if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, out _))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidParameterMessage, queryParams.FirstOrDefault(q => q.Key.ToLower() == "_includesamples").Value, "_includeSamples"));
                 }
@@ -185,6 +274,7 @@ namespace d360.web.Controllers.V2
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
+
 
         /// <summary>
         /// Provides support for adding Data Profile records.
@@ -590,37 +680,36 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal), ct (contains) and nct (not contains) which allows usage of (*) symbol as wildcard
         ///     
         ///     Example :
         ///     
-        ///     Comparison Operators
-        ///     * Equals operator -{fieldname} eq 'Data'
-        ///     * Not equals operator -{fieldname} ne 'Data'
-        ///     * Contains operator -{fieldname} ct 'Data'  
-        ///     * Greater than operator -{fieldname} gt 99
-        ///     * Greater than or equal operator -{fieldname} ge 99
-        ///     * Less than operator -{fieldname} lt 99
-        ///     * Less than or equal operator -{fieldname} le 99
-        ///     * Not populated operator -{fieldname} eq null
-        ///     * populated operator -{fieldname} ne null
-        ///     * Tag Contains Match Any (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
-        ///     * Tag Contains Match All (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
-        ///     * Tag Does not Contain Match Any (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
-        ///     * Tag Does not Contain Match All (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
-        ///     * AssetPath Contains (Match All)Operator (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
-        ///     * AssetPath Contains (Match Any)Operator (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
-        ///     * AssetPath Contains  Operator ({AssetPathFieldName} ct 'APValue1')
-        ///     * AssetPath Does not contain Operator ({AssetPathFieldName} nct 'APValue1')
-        ///     * AssetPath is Operator ({AssetPathFieldName} eq 'APValue1')
-        ///     * AssetPath is not Operator ({AssetPathFieldName} ne 'APValue1')
-        ///     * AssetPath Start with Operator {AssetPathFieldName} ct 'APValue1*'
-        ///     * AssetPath End with Operator {AssetPathFieldName} ct '*APValue1'
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///         - AssetPath Contains - {AssetPathFieldName} ct 'APValue1'
+		///         - AssetPath Does not contain - {AssetPathFieldName} nct 'APValue1'
+		///         - AssetPath Is Operator - {AssetPathFieldName} eq 'APValue1'
+		///         - AssetPath Is not Operator - {AssetPathFieldName} ne 'APValue1'
+		///         - AssetPath Start with Operator - {AssetPathFieldName} ct 'APValue1*'
+		///         - AssetPath End with Operator - {AssetPathFieldName} ct '*APValue1'
         ///     
-        ///     Logical Operators
-        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		///         - Tag Contains Match Any (or) - (({TagFieldName} ct 'Data') or ({TagFieldName} ct 'Data1') or (...))
+		///         - Tag Contains Match All(and) - (({TagFieldName} ct 'Data') and ({TagFieldName} ct 'Data1') and (...))
+		///         - Tag Does not Contain Match Any(or) - (({TagFieldName} nct 'Data') or ({TagFieldName} nct 'Data1') or (...))
+		///         - Tag Does not Contain Match All(and) - (({TagFieldName} nct 'Data') and ({TagFieldName} nct 'Data1') and (...))
+		///         - AssetPath Contains (Match All(and)) - (({AssetPathFieldName} ct 'APValue1') and ({AssetPathFieldName} ct 'APValue2') )
+		///         - AssetPath Contains (Match Any(or)) - (({AssetPathFieldName} ct 'APValue1') or ({AssetPathFieldName} ct 'APValue2'))
         /// </remarks>
         ///
         /// <param name="assetUid">The unique identifier of an asset.</param>
@@ -780,25 +869,24 @@ namespace d360.web.Controllers.V2
         /// </summary>
         ///<remarks>
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-        ///     
-        ///     Example :
-        ///     
-        ///     Comparison Operators
-        ///     * Equals operator -{fieldname} eq 'Data'
-        ///     * Not equals operator -{fieldname} ne 'Data'
-        ///     * Contains operator -{fieldname} ct 'Data'  
-        ///     * Greater than operator -{fieldname} gt 99
-        ///     * Greater than or equal operator -{fieldname} ge 99
-        ///     * Less than operator -{fieldname} lt 99
-        ///     * Less than or equal operator -{fieldname} le 99
-        ///     * Not populated operator -{fieldname} eq null
-        ///     * populated operator -{fieldname} ne null
-        ///     
-        ///     Logical Operators
-        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+		///     
+		///     Example :
+		///     
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///     
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// </remarks>
         ///
         /// <param name="typeQualifier">Semantic Type to retrive results for.</param>
@@ -1184,25 +1272,24 @@ namespace d360.web.Controllers.V2
         ///  - **effectiveDate**
         ///  
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
-        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
-        ///     
-        ///     Example :
-        ///     
-        ///     Comparison Operators
-        ///     * Equals operator -{fieldname} eq 'Data'
-        ///     * Not equals operator -{fieldname} ne 'Data'
-        ///     * Contains operator -{fieldname} ct 'Data'  
-        ///     * Greater than operator -{fieldname} gt 99
-        ///     * Greater than or equal operator -{fieldname} ge 99
-        ///     * Less than operator -{fieldname} lt 99
-        ///     * Less than or equal operator -{fieldname} le 99
-        ///     * Not populated operator -{fieldname} eq null
-        ///     * populated operator -{fieldname} ne null
-        ///     
-        ///     Logical Operators
-        ///     * Logical and - {fieldname} ge 00 and {fieldname} le 99
-        ///     * Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
+		/// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+		///     
+		///     Example :
+		///     
+		///     - **Comparison Operators**
+		///         - Equals operator - {fieldname} eq 'Data'
+		///         - Not equals operator - {fieldname} ne 'Data'
+		///         - Contains operator - {fieldname} ct 'Data'  
+		///         - Greater than operator - {fieldname} gt 99
+		///         - Greater than or equal operator - {fieldname} ge 99
+		///         - Less than operator - {fieldname} lt 99
+		///         - Less than or equal operator - {fieldname} le 99
+		///         - Not populated operator - {fieldname} eq null
+		///         - populated operator - {fieldname} ne null
+		///     
+		///     - **Logical Operators**
+		///         - Logical and - {fieldname} ge 00 and {fieldname} le 99
+		///         - Logical or - {fieldname} eq 'Data' or {fieldname} eq 'Data1'
         /// </remarks>
         /// <returns>A list of semantic types based on the provided filtering and sorting criteria.</returns>
         [
@@ -1678,7 +1765,7 @@ namespace d360.web.Controllers.V2
                         parseMatchTypeForExport(row.MatchType),
                         parseBaseTypeForExport(row.BaseType),
                         row.JsonPayloadStructured != null ? JsonConvert.SerializeObject(row.JsonPayloadStructured, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }) : "",
-                        row.HeaderFilterStructured != null ? string.Join(" | ", row.HeaderFilterStructured.values.Select((v) => v.@operator + " '" + v.value + "'")) : "",
+                        row.HeaderFilter,
                         row.HeaderFilterConfidence.HasValue ? row.HeaderFilterConfidence.ToString() + "%" : "",
                         row.RegularExpression,
                         row.ValidValuesStructured != null ? string.Join(" | ", row.ValidValuesStructured) : "",

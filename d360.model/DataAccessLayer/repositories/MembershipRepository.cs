@@ -581,6 +581,18 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
+				if (user.FirstName != null && user.FirstName.Length > 250)
+                {
+					success = false;
+					messages.Add(MemberShipErrors.FirstNameTooLong);
+				}
+
+				if (user.LastName != null && user.LastName.Length > 250)
+				{
+					success = false;
+					messages.Add(MemberShipErrors.LastNameTooLong);
+				}
+
 				if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
 				{
 					success = false;

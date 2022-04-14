@@ -85,7 +85,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
             this.invalidDimensionMessage = `File exceeds width limit. Please upload a file that has max file width of [${this.maxWidth}px].`;
         }
         if (this.maxHeight && this.maxWidth) {
-            this.invalidDimensionMessage = `File exceeds height or width limit. Please upload a file that has max file dimensions of [${this.maxWidth}px X ${this.maxHeight}px].`;
+            this.invalidDimensionMessage = `File exceeds height or width limit. Please upload a file that has max file dimensions of ${this.maxWidth}px X ${this.maxHeight}px.`;
         }
     }
 
@@ -144,6 +144,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         {
             type: 'invalid-format',
             validator: () => {
+                console.log(this.file.type);
                 if (this.allowedExtensions.indexOf(this.file.type) === -1) {
                     return this.invalidFormatMessage;
                 }

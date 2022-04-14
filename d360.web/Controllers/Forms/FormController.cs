@@ -1103,6 +1103,12 @@ order by Sort, title";
 						var fieldTypeNames = Company.GetLoadColumns(load.Action, load.Object, load.ObjectID, false);
 
 						var stats = xls.GetWorksheetStatistics();
+						if (stats != null && stats.NumberOfRows > constants.COMPANY_BULK_LOAD_MAX_ROWS)
+						{
+							return jsonException(
+								$"Please reduce the number of rows from {stats.NumberOfRows} to less than {constants.COMPANY_BULK_LOAD_MAX_ROWS}",
+								HttpStatusCode.BadRequest);
+						}
 						int columnCount = 0;
 
 						for (int i = 1; i <= stats.NumberOfColumns; i++)

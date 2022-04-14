@@ -298,7 +298,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
             }
             this.items = [...[]];
             (res.items as any[]).forEach((item) => {
-                var path = item["Path"] as string;
+                var path = item["DisplayPath"] as string;
                 path = (path as string).replace(/].\[/g, " > ").replace("[", "").replace("]", "");
 
                 this.items.push({

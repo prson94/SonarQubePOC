@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -190,9 +192,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception ex)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, SanitizeErrorMessage(ex))).ConfigureAwait(false);
 			}
 		}
 
@@ -255,9 +255,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception ex)
 			{
-				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, SanitizeErrorMessage(ex))).ConfigureAwait(false);
 			}
 		}
 
@@ -976,6 +974,20 @@ namespace d360.web.Controllers.V2
 			}
 
 			return limits;
+		}
+
+		private string SanitizeErrorMessage(Exception ex)
+        {
+			StringBuilder errorMessage = new StringBuilder();
+			errorMessage.Append(ex.Message);
+
+			if (ex.InnerException != null)
+			{
+				string innerMessage = Regex.Replace(ex.InnerException.Message, @"\/d3s\d+(\/_doc)?", "", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+				errorMessage.Append(" ");
+				errorMessage.Append(innerMessage);
+			}
+			return errorMessage.ToString();
 		}
 
 		private struct SearchAugment : IEquatable<SearchAugment>

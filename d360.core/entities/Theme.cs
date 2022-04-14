@@ -232,7 +232,7 @@ namespace d360.core.entities
                 UpdatedBy = resourceId,
                 UpdatedOn = date
             };
-            model.CustomCss = model.CustomCss.ParseBase64CustomCss();
+            repoModel.CustomCss = model.CustomCss.ParseBase64CustomCss();
 
             if (model.Icon != null)
             {

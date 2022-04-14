@@ -230,6 +230,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Boolean' then FT.ColumnOrder else null end as 'Type.Boolean.ColumnOrder',
 										case when FT.Type = 'Boolean' then FT.ColumnWidth else null end as 'Type.Boolean.ColumnWidth',
 										case when FT.Type = 'Boolean' then FT.SortOrder else null end as 'Type.Boolean.SortOrder',
+										case when FT.Type = 'Boolean' then FT.SortByAscending else null end as 'Type.Boolean.SortByAscending',
 										case when FT.Type = 'Boolean' then TRY_CAST(FT.DefaultValue as bit) else null end as 'Type.Boolean.DefaultValue',
 										case when FT.Type = 'Boolean' then FT.DisplayDescription else null end as 'Type.Boolean.Description.Display',
 										case when FT.Type = 'Boolean' then FT.FormDescription else null end as 'Type.Boolean.Description.Form',
@@ -261,11 +262,13 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'OwnershipLookup' then FT.IsListable else null end as 'Type.ComputedOwnershipLookup.IsListable',
 										case when FT.Type = 'OwnershipLookup' then FT.ColumnWidth else null end as 'Type.ComputedOwnershipLookup.ColumnWidth',
 										case when FT.Type = 'OwnershipLookup' then FT.SortOrder else null end as 'Type.ComputedOwnershipLookup.SortOrder',
+										case when FT.Type = 'OwnershipLookup' then FT.SortByAscending else null end as 'Type.ComputedOwnershipLookup.SortByAscending',
 										case when FT.Type = 'OwnershipLookup' then FT.DisplayInColumn else null end as 'Type.ComputedOwnershipLookup.DisplayInColumn', 
 
 										case when FT.Type = 'FieldFromRelationship' then FT.ColumnOrder else null end as 'Type.ComputedRelationshipField.ColumnOrder',
 										case when FT.Type = 'FieldFromRelationship' then FT.ColumnWidth else null end as 'Type.ComputedRelationshipField.ColumnWidth',
 										case when FT.Type = 'FieldFromRelationship' then FT.SortOrder else null end as 'Type.ComputedRelationshipField.SortOrder',
+										case when FT.Type = 'FieldFromRelationship' then FT.SortByAscending else null end as 'Type.ComputedRelationshipField.SortByAscending',
 										case when FT.Type = 'FieldFromRelationship' then FT.DisplayDescription else null end as 'Type.ComputedRelationshipField.Description.Display',
 										case when FT.Type = 'FieldFromRelationship' then IT.Uid else null end as 'Type.ComputedRelationshipField.IntersectTypeUid',
 										case when FT.Type = 'FieldFromRelationship' then LFT.Name else null end as 'Type.ComputedRelationshipField.FieldTypeName',
@@ -301,11 +304,12 @@ namespace d360.model.DataAccessLayer
 												DF.OverrideDisplayName,
 												DF.DisplayOrder,
 												DF.SortOrder,
+												DF.SortByAscending,
 												DF.Show,
 												DF.Width,
 												DF.RelationIndex
 										from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
-												outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, RelationIndex int) DF
+												outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, SortByAscending bit, Show bit, Width int, RelationIndex int) DF
 												left join AssetType AST on AST.Uid = DF.AssetTypeUid
 												left join FieldType AFT on AFT.ID = DF.FieldTypeID
 										order by DF.DisplayOrder
@@ -324,6 +328,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Date' then FT.ColumnOrder else null end as 'Type.Date.ColumnOrder',
 										case when FT.Type = 'Date' then FT.ColumnWidth else null end as 'Type.Date.ColumnWidth',
 										case when FT.Type = 'Date' then FT.SortOrder else null end as 'Type.Date.SortOrder',
+										case when FT.Type = 'Date' then FT.SortByAscending else null end as 'Type.Date.SortByAscending',
 										case when FT.Type = 'Date' then TRY_CAST(FT.DefaultValue as date) else null end as 'Type.Date.DefaultValue',
 										case when FT.Type = 'Date' then FT.DisplayDescription else null end as 'Type.Date.Description.Display',
 										case when FT.Type = 'Date' then FT.FormDescription else null end as 'Type.Date.Description.Form',
@@ -343,6 +348,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'DateTime' then FT.ColumnOrder else null end as 'Type.DateTime.ColumnOrder',
 										case when FT.Type = 'DateTime' then FT.ColumnWidth else null end as 'Type.DateTime.ColumnWidth',
 										case when FT.Type = 'DateTime' then FT.SortOrder else null end as 'Type.DateTime.SortOrder',
+										case when FT.Type = 'DateTime' then FT.SortByAscending else null end as 'Type.DateTime.SortByAscending',
 										case when FT.Type = 'DateTime' then TRY_CAST(FT.DefaultValue as datetime) else null end as 'Type.DateTime.DefaultValue',
 										case when FT.Type = 'DateTime' then FT.DisplayDescription else null end as 'Type.DateTime.Description.Display',
 										case when FT.Type = 'DateTime' then FT.FormDescription else null end as 'Type.DateTime.Description.Form',
@@ -362,6 +368,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Decimal' then FT.ColumnOrder else null end as 'Type.Decimal.ColumnOrder',
 										case when FT.Type = 'Decimal' then FT.ColumnWidth else null end as 'Type.Decimal.ColumnWidth',
 										case when FT.Type = 'Decimal' then FT.SortOrder else null end as 'Type.Decimal.SortOrder',
+										case when FT.Type = 'Decimal' then FT.SortByAscending else null end as 'Type.Decimal.SortByAscending',
 										case when FT.Type = 'Decimal' then TRY_CAST(FT.DefaultValue as float) else null end as 'Type.Decimal.DefaultValue',
 										case when FT.Type = 'Decimal' then FT.DisplayDescription else null end as 'Type.Decimal.Description.Display',
 										case when FT.Type = 'Decimal' then FT.FormDescription else null end as 'Type.Decimal.Description.Form',
@@ -385,6 +392,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Html' then FT.ColumnOrder else null end as 'Type.Html.ColumnOrder',
 										case when FT.Type = 'Html' then FT.ColumnWidth else null end as 'Type.Html.ColumnWidth',
 										case when FT.Type = 'Html' then FT.SortOrder else null end as 'Type.Html.SortOrder',
+										case when FT.Type = 'Html' then FT.SortByAscending else null end as 'Type.Html.SortByAscending',
 										case when FT.Type = 'Html' then FT.DefaultValue else null end as 'Type.Html.DefaultValue',
 										case when FT.Type = 'Html' then FT.DisplayDescription else null end as 'Type.Html.Description.Display',
 										case when FT.Type = 'Html' then FT.FormDescription else null end as 'Type.Html.Description.Form',
@@ -418,6 +426,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Link' then FT.ColumnOrder else null end as 'Type.Link.ColumnOrder',
 										case when FT.Type = 'Link' then FT.ColumnWidth else null end as 'Type.Link.ColumnWidth',
 										case when FT.Type = 'Link' then FT.SortOrder else null end as 'Type.Link.SortOrder',
+										case when FT.Type = 'Link' then FT.SortByAscending else null end as 'Type.Link.SortByAscending',
 										case when FT.Type = 'Link' then case when CHARINDEX('|', FT.DefaultValue, 1) > 1 then SUBSTRING(FT.DefaultValue, 1, CHARINDEX('|', FT.DefaultValue, 1)-1) else FT.DEfaultValue end else null end as 'Type.Link.DefaultValue.Text',
 										case when FT.Type = 'Link' then case when CHARINDEX('|', FT.DefaultValue, 1) > 1 then SUBSTRING(FT.DefaultValue, CHARINDEX('|', FT.DefaultValue, 1)+1, LEN(FT.DefaultValue)-CHARINDEX('|', FT.DefaultValue, 1)) else FT.DEfaultValue end else null end as 'Type.Link.DefaultValue.Url',
 										case when FT.Type = 'Link' then FT.DisplayDescription else null end as 'Type.Link.Description.Display',
@@ -438,6 +447,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
 										case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',
 										case when FT.Type = 'Lookup' then FT.SortOrder else null end as 'Type.Lookup.SortOrder',
+										case when FT.Type = 'Lookup' then FT.SortByAscending else null end as 'Type.Lookup.SortByAscending',
 										case when FT.Type = 'Lookup' then COALESCE(TRY_CONVERT(UNIQUEIDENTIFIER, FT.DefaultValue),DFA.[Uid]) else null end as 'Type.Lookup.DefaultValue',
 										case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 										case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
@@ -474,6 +484,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Number' then FT.ColumnOrder else null end as 'Type.Number.ColumnOrder',
 										case when FT.Type = 'Number' then FT.ColumnWidth else null end as 'Type.Number.ColumnWidth',
 										case when FT.Type = 'Number' then FT.SortOrder else null end as 'Type.Number.SortOrder',
+										case when FT.Type = 'Number' then FT.SortByAscending else null end as 'Type.Number.SortByAscending',
 										case when FT.Type = 'Number' then TRY_CAST(FT.DefaultValue as int) else null end as 'Type.Number.DefaultValue',
 										case when FT.Type = 'Number' then FT.DisplayDescription else null end as 'Type.Number.Description.Display',
 										case when FT.Type = 'Number' then FT.FormDescription else null end as 'Type.Number.Description.Form',
@@ -496,6 +507,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Path' then FT.ColumnOrder else null end as 'Type.Path.ColumnOrder',
 										case when FT.Type = 'Path' then FT.ColumnWidth else null end as 'Type.Path.ColumnWidth',
 										case when FT.Type = 'Path' then FT.SortOrder else null end as 'Type.Path.SortOrder',
+										case when FT.Type = 'Path' then FT.SortByAscending else null end as 'Type.Path.SortByAscending',
 										case when FT.Type = 'Path' then FT.DisplayDescription else null end as 'Type.Path.Description.Display',
 										case when FT.Type = 'Path' then FT.IsDisplayable else null end as 'Type.Path.IsDisplayable',
 										case when FT.Type = 'Path' then FT.IsListable else null end as 'Type.Path.IsListable',
@@ -504,6 +516,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 										case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
 										case when FT.Type = 'Relationship' then FT.SortOrder else null end as 'Type.Relationship.SortOrder',
+										case when FT.Type = 'Relationship' then FT.SortByAscending else null end as 'Type.Relationship.SortByAscending',
 										case when FT.Type = 'Relationship' then FT.DisplayDescription else null end as 'Type.Relationship.Description.Display',
 										case when FT.Type = 'Relationship' then FT.FormDescription else null end as 'Type.Relationship.Description.Form',
 										case when FT.Type = 'Relationship' then IT.Uid else null end as 'Type.Relationship.IntersectTypeUid',
@@ -522,6 +535,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Text' then FT.ColumnOrder else null end as 'Type.Text.ColumnOrder',
 										case when FT.Type = 'Text' then FT.ColumnWidth else null end as 'Type.Text.ColumnWidth',
 										case when FT.Type = 'Text' then FT.SortOrder else null end as 'Type.Text.SortOrder',
+										case when FT.Type = 'Text' then FT.SortByAscending else null end as 'Type.Text.SortByAscending',
 										case when FT.Type = 'Text' then FT.DefaultValue else null end as 'Type.Text.DefaultValue',
 										case when FT.Type = 'Text' then FT.DisplayDescription else null end as 'Type.Text.Description.Display',
 										case when FT.Type = 'Text' then FT.FormDescription else null end as 'Type.Text.Description.Form',
@@ -545,6 +559,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Tag' then FT.ColumnOrder else null end as 'Type.Tag.ColumnOrder',
 										case when FT.Type = 'Tag' then FT.ColumnWidth else null end as 'Type.Tag.ColumnWidth',
 										case when FT.Type = 'Tag' then FT.SortOrder else null end as 'Type.Tag.SortOrder',
+										case when FT.Type = 'Tag' then FT.SortByAscending else null end as 'Type.Tag.SortByAscending',
 										case when FT.Type = 'Tag' then FT.DisplayDescription else null end as 'Type.Tag.Description.Display',
 										case when FT.Type = 'Tag' then FT.FormDescription else null end as 'Type.Tag.Description.Form',
 										case when FT.Type = 'Tag' then FT.IsRequired else null end as 'Type.Tag.Validation.IsRequired',
@@ -559,6 +574,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Score' then FT.ColumnOrder else null end as 'Type.Score.ColumnOrder',
 										case when FT.Type = 'Score' then FT.ColumnWidth else null end as 'Type.Score.ColumnWidth',
 										case when FT.Type = 'Score' then FT.SortOrder else null end as 'Type.Score.SortOrder',
+										case when FT.Type = 'Score' then FT.SortByAscending else null end as 'Type.Score.SortByAscending',
 										case when FT.Type = 'Score' then FT.DisplayDescription else null end as 'Type.Score.Description.Display',
 										case when FT.Type = 'Score' then FT.IsDisplayable else null end as 'Type.Score.IsDisplayable',
 										case when FT.Type = 'Score' then FT.IsListable else null end as 'Type.Score.IsListable',
@@ -570,6 +586,7 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'Counter' then FT.ColumnOrder else null end as 'Type.Counter.ColumnOrder',
 										case when FT.Type = 'Counter' then FT.ColumnWidth else null end as 'Type.Counter.ColumnWidth',
 										case when FT.Type = 'Counter' then FT.SortOrder else null end as 'Type.Counter.SortOrder',
+										case when FT.Type = 'Counter' then FT.SortByAscending else null end as 'Type.Counter.SortByAscending',
 										case when FT.Type = 'Counter' then TRY_CAST(FT.DefaultValue as datetime) else null end as 'Type.Counter.DefaultValue',
 										case when FT.Type = 'Counter' then FT.DisplayDescription else null end as 'Type.Counter.Description.Display',
 										case when FT.Type = 'Counter' then FT.FormDescription else null end as 'Type.Counter.Description.Form',
@@ -698,6 +715,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Boolean.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Boolean.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Boolean.SortOrder;
+					newFieldType.SortByAscending = f.Type.Boolean.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.Boolean.DisplayInColumn;
 
 					if (f.Type.Boolean.Search != null)
@@ -1145,7 +1163,8 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Date.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Date.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Date.SortOrder;
-					
+					newFieldType.SortByAscending = f.Type.Date.SortByAscending;
+
 					if (f.Type.Date.Validation != null)
 					{
 						newFieldType.IsRequired = f.Type.Date.Validation.IsRequired;
@@ -1186,6 +1205,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.DateTime.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.DateTime.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.DateTime.SortOrder;
+					newFieldType.SortByAscending = f.Type.DateTime.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.DateTime.DisplayInColumn;
 
 					if (f.Type.DateTime.Validation != null)
@@ -1226,6 +1246,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Decimal.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Decimal.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Decimal.SortOrder;
+					newFieldType.SortByAscending = f.Type.Decimal.SortByAscending;
 					newFieldType.Increment = f.Type.Decimal.Increment;
 					newFieldType.DisplayInColumn = f.Type.Decimal.DisplayInColumn;
 
@@ -1267,6 +1288,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Html.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Html.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Html.SortOrder;
+					newFieldType.SortByAscending = f.Type.Html.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.Html.DisplayInColumn;
 
 					if (f.Type.Html.Validation != null)
@@ -1358,6 +1380,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Link.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Link.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Link.SortOrder;
+					newFieldType.SortByAscending = f.Type.Link.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.Link.DisplayInColumn;
 
 					if (f.Type.Link.Validation != null)
@@ -1523,6 +1546,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Lookup.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Lookup.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Lookup.SortOrder;
+					newFieldType.SortByAscending = f.Type.Lookup.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.Lookup.DisplayInColumn;
 
 					if (f.Type.Lookup.Validation != null)
@@ -1562,6 +1586,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Number.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Number.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Number.SortOrder;
+					newFieldType.SortByAscending = f.Type.Number.SortByAscending;
 					newFieldType.Increment = f.Type.Number.Increment;
 					newFieldType.DisplayInColumn = f.Type.Number.DisplayInColumn;
 
@@ -1658,6 +1683,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Text.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Text.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Text.SortOrder;
+					newFieldType.SortByAscending = f.Type.Text.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.Text.DisplayInColumn;
 
 					if (f.Type.Text.Validation != null)
@@ -1715,6 +1741,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Counter.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Counter.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Counter.SortOrder;
+					newFieldType.SortByAscending = f.Type.Counter.SortByAscending;
 					newFieldType.CounterPrefix = f.Type.Counter.CounterPrefix;
 					newFieldType.CounterInitialIndex = f.Type.Counter.CounterInitialIndex;
 					newFieldType.DisplayInColumn = f.Type.Counter.DisplayInColumn;
@@ -1810,6 +1837,7 @@ namespace d360.model.DataAccessLayer
 					currentFieldType.Precision = newFieldType.Precision;
 					currentFieldType.ShowIfEmpty = newFieldType.ShowIfEmpty;
 					currentFieldType.SortOrder = newFieldType.SortOrder;
+					currentFieldType.SortByAscending = newFieldType.SortByAscending;
 					currentFieldType.Type = newFieldType.Type;
 					currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
 					currentFieldType.Definition = newFieldType.Definition;
