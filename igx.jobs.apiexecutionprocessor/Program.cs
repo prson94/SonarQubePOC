@@ -22,6 +22,9 @@ using System.Net.Http;
 using Microsoft.Extensions.Hosting;
 using d360.model.DataAccessLayer;
 using d360.core.entities.Membership;
+using d360.extensions;
+using System.Configuration;
+using d360.extensions.mail;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -85,6 +88,7 @@ namespace igx.jobs.apiexecutionprocessor
         const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
         const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
         AzureQueueSource queue;
+        DummyCachingProvider dummyCachingProvider;
         private CompanyContext company;
         AzureStorageProvider storage;
         ApiExecutionInfo Info;
@@ -98,17 +102,40 @@ namespace igx.jobs.apiexecutionprocessor
 
             #region Create EF connection
 
-            queue = new AzureQueueSource();
+            //An instance of this class is a thread safe because it's a wrapper for ServiceBusClient which is thread safe.
+            //We don't need to have more than one of these.
+            queue = new AzureQueueSource(); 
             storage = new AzureStorageProvider();
+            dummyCachingProvider = new DummyCachingProvider();
+
             company = JobDbContextCreator.CreateCompanyContext(
-                Info.CompanyID,
-                Info.ResourceID ?? 0,
-                Info.CompanyDomainPrefix,
-                false, queue, storage);
-            CommunityContext community = JobDbContextCreator.CreateCommunityContext(
-                Info.CompanyID,
-                Info.ResourceID ?? 0,
-                Info.CompanyDomainPrefix, true);
+                new UriSecurityContextProvider
+                {
+                    CompanyID = Info.CompanyID,
+                    ResourceID = Info.ResourceID ?? 0,
+                    CompanyPrefix = Info.CompanyDomainPrefix,
+                    IsAdministrator = false
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                },
+                queue,
+                dummyCachingProvider,
+                constants.COMMUNITY_DATABASE_CONNECTION);
+
+            CommunityContext community = new CommunityContext(
+                constants.COMMUNITY_DATABASE_CONNECTION,
+                dummyCachingProvider,
+                queue,
+                new UriSecurityContextProvider
+                {
+                    CompanyID = Info.CompanyID,
+                    ResourceID = Info.ResourceID ?? 0,
+                    CompanyPrefix = Info.CompanyDomainPrefix,
+                    IsAdministrator = false
+                });
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;

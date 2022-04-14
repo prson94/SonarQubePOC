@@ -8,6 +8,12 @@ using Dapper;
 using d360.model;
 using d360.core.enums;
 using System.Collections.Generic;
+using d360.extensions.info;
+using d360.extensions.mail;
+using System.Configuration;
+using d360.core;
+using d360.extensions.queue;
+using d360.extensions.caching;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -38,7 +44,22 @@ namespace igx.jobs.assetgraphprocessor
                     CoreFunction.AITrackEvent(functionName, "Graph Rebuild", new Dictionary<string, string>() { { "PopulatePaths", populatePaths.ToString() } }, company.CompanyID);
                     CoreFunction.AIFlush();
 
-                    var companyContext = JobDbContextCreator.CreateCompanyContext(company.CompanyID, 0, company.UrlPrefix, true);
+                    var companyContext = JobDbContextCreator.CreateCompanyContext(
+                        new UriSecurityContextProvider
+                        {
+                            CompanyID = company.CompanyID,
+                            CompanyPrefix = company.UrlPrefix,
+                            ResourceID = 0,
+                            IsAdministrator = true
+                        },
+                        new MandrillMailProvider
+                        {
+                            ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                            SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                        },
+                        new AzureQueueSource(),
+                        new DummyCachingProvider(),
+                        constants.COMMUNITY_DATABASE_CONNECTION);
 
                     var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)

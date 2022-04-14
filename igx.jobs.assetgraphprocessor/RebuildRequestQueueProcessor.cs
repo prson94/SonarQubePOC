@@ -12,6 +12,9 @@ using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
 using Newtonsoft.Json;
+using d360.extensions.mail;
+using d360.core;
+using System.Configuration;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -38,7 +41,22 @@ namespace igx.jobs.assetgraphprocessor
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == queueInfo.CompanyID);
 
-            var companyContext = JobDbContextCreator.CreateCompanyContext(_c.CompanyID, 0, _c.UrlPrefix, true);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = _c.CompanyID,
+                    CompanyPrefix = _c.UrlPrefix,
+                    ResourceID = 0,
+                    IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                },
+                new AzureQueueSource(),
+                new DummyCachingProvider(),
+                constants.COMMUNITY_DATABASE_CONNECTION);
             
             #endregion
 

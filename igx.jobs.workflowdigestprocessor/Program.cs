@@ -1,7 +1,13 @@
-﻿using d360.model;
+﻿using d360.core;
+using d360.extensions.caching;
+using d360.extensions.info;
+using d360.extensions.mail;
+using d360.extensions.queue;
+using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -50,7 +56,22 @@ namespace igx.jobs.workflowdigestprocessor
                     try
                     {
                         // Create EF connection
-                        var company = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
+                        var company = JobDbContextCreator.CreateCompanyContext(
+                            new UriSecurityContextProvider
+                            {
+                                CompanyID = c.CompanyID,
+                                CompanyPrefix = c.UrlPrefix,
+                                ResourceID = 0,
+                                IsAdministrator = true
+                            },
+                            new MandrillMailProvider
+                            {
+                                ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                                SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                            },
+                            new AzureQueueSource(),
+                            new DummyCachingProvider(),
+                            constants.COMMUNITY_DATABASE_CONNECTION);
 
                         await company.SendDigestEmails(c.EnvironmentLevel);
                     }
