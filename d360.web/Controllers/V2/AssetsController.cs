@@ -713,6 +713,7 @@ namespace d360.web.Controllers.V2
 							MaximumLength = 500,
 							MinimumLength = 1,
 							SortOrder = 1,
+							SortByAscending = true,
 							Type = DataType.Text.ToString(),
 							IsDisplayable = true,
 							IsPartOfKey = isNamePartOfKey,
@@ -748,7 +749,8 @@ namespace d360.web.Controllers.V2
 							UpdatedBy = Company.CurrentResourceID,
 							ShowIfEmpty = true,
 							LookupDisplayFormat = "{Code}",
-							LookupEditFormat = "{Code}"
+							LookupEditFormat = "{Code}",
+							SortByAscending = true
 						});
 
 						Company.Add(new FieldType
@@ -765,7 +767,8 @@ namespace d360.web.Controllers.V2
 							IsDisplayable = true,
 							IsPartOfKey = false,
 							UpdatedBy = Company.CurrentResourceID,
-							ShowIfEmpty = true
+							ShowIfEmpty = true,
+							SortByAscending = true
 						});
 					}
 				}
@@ -3517,6 +3520,12 @@ namespace d360.web.Controllers.V2
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 
+        /// <summary>
+        /// Gets ancestry list of asset types for a given asset type. 
+        /// </summary>
+        /// <param name="assetTypeUid">Asset Type UID</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
 		[SwaggerProduces("application/json")]
 		[SwaggerResponse(HttpStatusCode.OK, "Ancestry for a given asset type.", typeof(ICollection<AssetTypeAncestryModel>))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]

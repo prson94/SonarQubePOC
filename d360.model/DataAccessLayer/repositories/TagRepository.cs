@@ -378,6 +378,8 @@ namespace d360.model.DataAccessLayer
 			result.UpdatedByUid = user.Uid;
 			result.CreatedOn = tag.CreatedOn.GetValueOrDefault();
 			result.CreatedByUid = user.Uid;
+			result.CreatedByFirstName = user.FirstName;
+			result.CreatedByLastName = user.LastName;
 
 			return result;
 		}

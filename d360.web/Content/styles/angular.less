@@ -2680,6 +2680,14 @@ div.home-image-title-text {
 .about-content {
   padding-top: 32px;
 
+  .about-thirdparty {
+    a {
+      display: inline;
+      font-size: 14px;
+      color: @ig-purple;
+    }
+  }
+
   .precisely-image {
     width: 300px;
     margin-bottom: 16px;
@@ -4123,6 +4131,7 @@ button.tab-scroller {
 .gov-detail-page {
   .tile-detail {
     padding: 5px 18px;
+
     &.side-panel {
       padding: 0;
     }
@@ -6907,5 +6916,20 @@ table {
       flex-grow: 1;
       align-items: end;
     }
+  }
+}
+
+.gov-info-message {
+  height: 72px;
+  background: #26c9e533 0% 0% no-repeat padding-box;
+  border-radius: 10px;
+  opacity: 1;
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+
+  i.fa {
+    margin: 0 16px 0 8px;
   }
 }

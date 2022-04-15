@@ -21,7 +21,7 @@ using d360.utils.excel;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-
+using d360.web.Services;
 using Dapper;
 
 using Newtonsoft.Json;
@@ -38,14 +38,17 @@ namespace d360.web.Controllers
 	{
 		#region DI
 
-		private readonly IStorageProvider Storage;
+        private readonly IStorageProvider Storage;
 		private readonly IResponsibilityRepository ResponsibilityRepository;
+        private readonly GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule;
 
-		public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository)
-			: base(set)
-		{
-			Storage = storage;
-			ResponsibilityRepository = responsibilityRepository;
+        public FormController(ICoreComponentSet set, ISecurityContextProvider secProvider, IStorageProvider storage, IResponsibilityRepository responsibilityRepository,
+            GetResponsibilityTypeRelationRule getResponsibilityTypeRelationRule)
+            : base(set)
+        {
+            Storage = storage;
+            ResponsibilityRepository = responsibilityRepository;
+            this.getResponsibilityTypeRelationRule = getResponsibilityTypeRelationRule;
 #if DEBUG
 			Company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif

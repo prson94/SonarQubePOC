@@ -22,7 +22,7 @@ namespace d360.model.DataAccessLayer
         
         Task<bool> MarkThemeAsCurrentAsync(Guid uid);
         
-        Task<GetTheme> PostThemeAsync(PostTheme theme);
+        Task<GetTheme> PostThemeAsync(PostTheme theme, bool validationOnly = false);
         
         Task<GetTheme> PutThemeAsync(Guid uid, PutTheme theme);
     }

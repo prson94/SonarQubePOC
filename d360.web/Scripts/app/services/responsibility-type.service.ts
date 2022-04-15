@@ -1,20 +1,18 @@
 ﻿import { Injectable } from '@angular/core';
 import {
     IResponsibilityTypeService,
-    ResponsibilityType,    
+    ResponsibilityType,
     ResponsibilityTypeRelation,
     ResponsibilityTypeCount,
     ResourceResponsibilityTypeCount,
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleSummary,
     ResponsibilityTypeRelationRuleFormData,
-    ResponsibilityTypeRelationRuleDefinitionWhenItem,
-    ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
-    ResponsibilityTypeRelationRuleDefinitionThenItem,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
     ResponsibilityTypeRelation_FormData,
     ResponsibilityTypeAllocation,
-    ResponsibilityTypeAllocationPost
+    ResponsibilityTypeAllocationPost,
+    ResponsibilityTypeRelationRuleV2,
+    ResponsibilityRuleTestResponseModel
 } from '../models/responsibility-type.model';
 import { SelectItem } from "primeng/api";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -109,8 +107,8 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
 
     deleteResponsibilityType(Uid: string, Cascade: boolean = true): Observable<any> {
         const httpHeaders = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: {Uid,Cascade}
-        };        
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: { Uid, Cascade }
+        };
         return this.http.delete(`api/v2/responsibilities/types`, httpHeaders)
             .pipe(
                 map((response) => response),
@@ -238,10 +236,10 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getRelationRuleFormDataRelationshipsForDropdown(type: string, id: number, intersectTypeId: number): Observable<SelectItem[]> {
+    getRelationRuleFormDataRelationshipsForDropdown(type: string, id: number, intersectTypeId: number): Observable<(SelectItem & { assetUid: string })[]> {
         return this.http.get(`form/ResponsibilityTypeRelationRuleRelationships_FormData?type=${type}&id=${id}&intersectTypeID=${intersectTypeId}`)
             .pipe(
-                map((response) => <SelectItem[]>response),
+                map((response) => <(SelectItem & { assetUid: string })[]>response),
                 catchError((err) => this.handleError(err))
             );
     }
@@ -278,18 +276,18 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    testWhen(rule: ResponsibilityTypeRelationRule): Observable<ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]> {
-        return this.http.post(`form/ResponsibilityTypeRelationRule_WhenTest`, rule)
+    testWhenV2(rule: ResponsibilityTypeRelationRuleV2): Observable<ResponsibilityRuleTestResponseModel> {
+        return this.http.post(`api/v2/responsibilities/test/when`, rule)
             .pipe(
-                map((response) => <ResponsibilityTypeRelationRuleDefinitionWhenTestRow[]>response),
+                map((response) => <ResponsibilityRuleTestResponseModel[]>response),
                 catchError((err) => this.handleError(err))
             );
     }
 
-    testThen(rule: ResponsibilityTypeRelationRule): Observable<ResponsibilityTypeRelationRuleDefinitionThenTestRow[]> {
-        return this.http.post(`form/ResponsibilityTypeRelationRule_ThenTest`, rule)
+    testThenV2(rule: ResponsibilityTypeRelationRuleV2): Observable<ResponsibilityRuleTestResponseModel> {
+        return this.http.post(`api/v2/responsibilities/test/then`, rule)
             .pipe(
-                map((response) => <ResponsibilityTypeRelationRuleDefinitionThenTestRow[]>response),
+                map((response) => <ResponsibilityRuleTestResponseModel[]>response),
                 catchError((err) => this.handleError(err))
             );
     }

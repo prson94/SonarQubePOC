@@ -1,0 +1,10 @@
+﻿<div class="color-selector">
+    <div class="flex-box">
+        <div class="selector">
+            <p-colorPicker [(ngModel)]="value" [appendTo]="appendTo" (onChange)="onChange($event)"></p-colorPicker>
+        </div>
+        <div class="input-el">
+            <input igInput type="text" [(ngModel)]="textBoxValue" maxlength="7" (focusout)="onEnter($event)" (keyup.enter)="onEnter($event)" />
+        </div>
+    </div>
+</div>

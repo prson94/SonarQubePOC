@@ -3762,22 +3762,26 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             Connection.Execute(@"
 								drop table if exists #deleteAssets
 								create table #deleteAssets (id bigint)
-								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
 
 								insert into #deleteAssets
 								select top (@deleteCount) id from asset where assettypeid = @assettypeid
 
+								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
 												
 								-- Delete from graph tables.
-								delete E
-								from    graph.AssetEdge E
-										inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
-										where N.Id in (select id from #deleteAssets);
+						        delete E
+						        from    graph.AssetEdge E
+								        inner join graph.AssetNode N on E.$from_id = N.$node_id
+								        inner join #deleteAssets D on N.Id = D.id;
+
+						        delete E
+						        from    graph.AssetEdge E
+								        inner join graph.AssetNode N on E.$to_id = N.$node_id
+								        inner join #deleteAssets D on N.Id = D.id;
 
 								-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
 								drop table if exists #Uids
 								create table #Uids (Uid uniqueidentifier)
-								create clustered index CIX_TempUids on #Uids (Uid)
 
 								insert into #Uids
 									select	R.Uid
@@ -3787,21 +3791,25 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									where	MATCH(A-(E)->R)
 											and E.Class = 1
 											and A.AssetTypeID = @AssetTypeId
-											and A.Id in (select id from #deleteAssets);
+									        and exists (select 1 from #deleteAssets d where A.Id = d.Id);
 
+								create clustered index CIX_TempUids on #Uids (Uid)
 
 								delete	E
 								from    dbo.AssetResultEdge E
 										inner join graph.AssetNode N on E.$from_id = N.$node_id
-										where N.Id in (select id from #deleteAssets);
+								        inner join #deleteAssets D on N.Id = D.id;
 
-								delete	T
-								from	dbo.AssetResult T
-										inner join #Uids S on S.Uid = T.Uid;
+						        if exists (select 1 from #Uids)
+						        begin
+							        delete	T
+							        from	dbo.AssetResult T
+									        inner join #Uids S on S.Uid = T.Uid;
+						        end
 
 								delete	A
 								from	graph.AssetNode A
-										where A.Id in (select id from #deleteAssets);
+										inner join #deleteAssets D on A.Id = D.id;
 
 					", new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
@@ -3810,110 +3818,108 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
         {
             Connection.Execute(@"
 								drop table if exists #deleteAssets
-								create table #deleteAssets (id bigint)
-								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
+                                create table #deleteAssets (id bigint,Uid uniqueidentifier,Object varchar(100),ObjectID bigint)
 
-								insert into #deleteAssets
-								select top (@deleteCount) id from asset where assettypeid = @assettypeid
+								insert into #deleteAssets(id, Uid, Object, ObjectID)
+								select top (@deleteCount) id, Uid, Object, ObjectID from asset where assettypeid = @assettypeid
 
-								delete	T
-								from	ResponsibilityTypeRelationOverrideItem T
-										inner join Asset A on A.ID = T.AssetID
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid
-								where   exists (select 1 from #deleteAssets d where d.id = A.ID);
+                                create index Idx_TempDeleteAssetsIds on #deleteAssets (id);
+                                create index Idx_TempDeleteAssetsUid on #deleteAssets (Uid);
+                                create index Idx_TempDeleteAssetsObjectObjectID on #deleteAssets (Object,ObjectID);
 
-								delete	T
-								from	AssetCrossReference T
-										inner join Asset A on A.Uid = T.Uid
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid
-										where A.ID in (select id from #deleteAssets);
+                                if exists (select 1 from api.ExecutionDeletedAssetType S where S.AssetTypeID = @assettypeid and S.ExecutionID = @executionUid)
+                                begin
+								    delete	T
+								    from	ResponsibilityTypeRelationOverrideItem T
+										    inner join #deleteAssets A on A.ID = T.AssetID;
 
-								delete	T
-								from	CommentRelation T
-										inner join Asset O on O.ID = T.AssetID 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
-										where O.ID in (select id from #deleteAssets);
-								delete	T
-								from	CommentVote T
-										inner join Comment C on C.ID = T.CommentID
-										inner join Asset O on O.ID = C.AssetID 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
-										where O.ID in (select id from #deleteAssets);
-								delete	T
-								from	Comment T
-										inner join Asset O on O.ID = T.AssetID
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
-										where O.ID in (select id from #deleteAssets);
-								delete	T
-								from	Favorite T
-										inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
-										where O.ID in (select id from #deleteAssets);
-								delete	T
-								from	Follow T
-										inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
-										where O.ID in (select id from #deleteAssets);
+								    delete	T
+								    from	AssetCrossReference T
+										    inner join #deleteAssets A on A.Uid = T.Uid;
+
+								    delete	T
+								    from	CommentRelation T
+										    inner join #deleteAssets O on O.ID = T.AssetID;
+
+								    delete	T
+								    from	CommentVote T
+										    inner join Comment C on C.ID = T.CommentID
+										    inner join #deleteAssets O on O.ID = C.AssetID;
+
+								    delete	T
+								    from	Comment T
+										    inner join #deleteAssets O on O.ID = T.AssetID;
+
+								    delete	T
+								    from	Favorite T
+										    inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID;
+
+								    delete	T
+								    from	Follow T
+										    inner join #deleteAssets O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID;
 												
+								    delete	T
+								    from	Nym T
+										    inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID ;
 
-								delete	T
-								from	Nym T
-										inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
-										inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid
-										where O.ID in (select id from #deleteAssets);
+                                end
 
 								delete	T
 								from	reporting.Global_Audit T
-										inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
-										where A.Id in (select id from #deleteAssets);
+										inner join #deleteAssets A on A.Object = T.Object and A.ObjectID = T.ObjectID;
 
 								delete	T
 								from	AssetDisplayValue T
-										where T.AssetId in (select id from #deleteAssets);
+                                        inner join #deleteAssets O on O.id = T.AssetId;
 
 								-- Delete where assets are on the subject side of relationship.
 								delete	T
 								from	[Intersect] T
-										inner join Asset A on A.Object = T.Subject and A.ObjectID = T.SubjectID
-										where A.Id in (select id from #deleteAssets);
+										inner join #deleteAssets A on A.Object = T.Subject and A.ObjectID = T.SubjectID;
 
 								-- Delete where assets are on the object side of relationship.
 								delete	T
 								from	[Intersect] T
-										inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
-										where A.Id in (select id from #deleteAssets);
+										inner join #deleteAssets A on A.Object = T.Object and A.ObjectID = T.ObjectID;
 
 								delete	T
 								from	Field T
-										inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
-										where O.Id in (select id from #deleteAssets);
+										inner join #deleteAssets O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID;
 												
 								delete	T
 								from	Field T
 										inner join Issue I on T.ObjectType = 'Issue' and I.ID = T.ObjectID
-										inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
-										where O.Id in (select id from #deleteAssets);
+										inner join #deleteAssets O on O.Object = I.Object and O.ObjectID = I.ObjectID;
 												
 								delete	T
 								from	Issue T
-										inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
-										where O.Id in (select id from #deleteAssets);
+										inner join #deleteAssets O on O.Object = T.Object and O.ObjectID = T.ObjectID;
 
-								delete	T
-								from	[metrics].[ScoreItem] T
-										inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
-										inner join metrics.Score S on S.Uid = L.ScoreUid
-										inner join Asset O on O.Uid = S.AssetUid
-										where O.Id in (select id from #deleteAssets);
+	                            drop table if exists #s;
+	                            create table #s (ScoreUid uniqueidentifier)
+	
+	                            insert into #s
+	                            select S.Uid ScoreUid
+	                            from metrics.Score S 
+	                            inner join #deleteAssets O on O.Uid = S.AssetUid;
+	
+	                            create index ix_s_scoreuid on #s(ScoreUid);
 
-								delete	T
-								from	[metrics].[Score] T
-										inner join Asset O on O.Uid = T.AssetUid
-										where O.Id in (select id from #deleteAssets);
+	                            if exists (select 1 from #s)
+	                            begin
+								    delete	T
+								    from	[metrics].[ScoreItem] T
+										    inner join metrics.ScoreItemLink L on L.ScoreItemUid = T.Uid
+										    inner join #s S on S.ScoreUid = L.ScoreUid;
+
+								    delete	T
+								    from	[metrics].[Score] T
+										    inner join #s O on O.ScoreUid = T.Uid;
+                                end
 
 								delete	T
 								from	Asset T
-										where T.Id in (select id from #deleteAssets);",
+										inner join #deleteAssets O on O.id = T.id;",
                         new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
 
@@ -12149,6 +12155,115 @@ EG.GroupUid
                                 DataProfileSampleTable.Rows.Add(sampleRow);
                             }
                         }
+
+                        if (item.characterCasingStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.characterCasingStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "characterCasingStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.characterDataTypeStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.characterDataTypeStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "characterDataTypeStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.characterSpacingStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.characterSpacingStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "characterSpacingStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.scriptDistributionStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.scriptDistributionStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "scriptDistributionStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.specialCharacterStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.specialCharacterStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "specialCharacterStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
+                        if (item.percentileStatistics != null)
+                        {
+                            foreach (DataProfileSampleDetail cardinality in item?.percentileStatistics)
+                            {
+                                DataRow sampleRow = DataProfileSampleTable.NewRow();
+                                sampleRow["ExecutionID"] = execution.ExecutionID;
+                                sampleRow["ItemNumber"] = itemNumber;
+                                if (item.ExecutionItemUid.HasValue)
+                                {
+                                    sampleRow["ExecutionItemUid"] = item.ExecutionItemUid;
+                                }
+                                sampleRow["SampleType"] = "percentileStatistics";
+                                sampleRow["Key"] = cardinality.key;
+                                sampleRow["Value"] = cardinality.count.ToString();
+                                DataProfileSampleTable.Rows.Add(sampleRow);
+                            }
+                        }
+
 
                         if (item.topK != null)
                         {

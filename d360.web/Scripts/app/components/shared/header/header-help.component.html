@@ -30,7 +30,7 @@
                         <li><b>Build Version:</b> {{environment.version}}</li>
                         <li><b>Build Date:</b> {{environment.timeStamp | date:'short'}}</li>
                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
-                        <li><a class="thirdPartyLicence" href="/Content/thirdpartylicenses.html" target="_blank">Third Party Licenses</a></li>
+                        <li><a class="thirdPartyLicence" (click)="showThirdparty()">Third Party Licenses</a></li>
                         <li><b>Usage information:</b> <br /></li>
                         <ul class="licence-info" *ngIf="licenceData">
                             <li><strong>Asset count:</strong> {{numberWithCommas(licenceData.assets.count)}}</li>
@@ -50,4 +50,23 @@
             <button igButton class="ig-button-primary" focus-me="focusInput" (click)="closeAbout()" label="Close"></button>
         </div>
     </d3s-modal>
+    <d3s-modal #thirdparty
+               [showTitle]="true"
+               title="Third Party Licenses"
+               additionalClasses="about medium-dialog"
+               [isVisible]="isThirdpartyVisible"
+               (onClose)="closeThirdparty()"
+               tabindex=-1>
+        <div class="content" style="height: 85vh; margin-bottom: 10px;">
+            <div class="flex row about-content" style="padding-top:0px;">
+                <div class="about-thirdparty">
+                    <ig-thirdpartylicenses src="/Content/version-license.json"></ig-thirdpartylicenses>
+                </div>
+            </div>
+        </div>
+        <div class="action-bar">
+            <span class="grow"></span>
+            <button igButton class="ig-button-primary" focus-me="focusInput" (click)="closeThirdparty()" label="Close"></button>
+        </div>
+</d3s-modal>
 </span>
