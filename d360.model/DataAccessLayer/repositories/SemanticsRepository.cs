@@ -262,6 +262,14 @@ namespace d360.model.DataAccessLayer
 			var qualifiers = new List<string> { qualifier };
 			List<Semantic> deletes = findLatestExistingSemantics(qualifiers, 1);
 
+			if (deletes.Any((s)=> s.Source == SemanticSource.BuiltIn))
+			{
+				throw new GenericException(
+					HttpStatusCode.Conflict,
+					"Built in Semantic.",
+					"Built-In semantic types cannot be deleted.");
+			}
+
 			var anyProfilesQuery = await CompanyContext
 											.QueryAsync<int>(@"
 															select  count(1)  
