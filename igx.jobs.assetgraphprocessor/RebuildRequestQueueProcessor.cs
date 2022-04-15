@@ -78,7 +78,7 @@ namespace igx.jobs.assetgraphprocessor
                 }
                 finally 
                 {
-                    await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                    await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
                 }
             }
 

@@ -243,10 +243,10 @@ namespace igx.jobs.indexer
                 new DummyCachingProvider(),
                 constants.COMMUNITY_DATABASE_CONNECTION);
 
-            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
+            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
             if(currentStatue != status)
-                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
+                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
         }
 
