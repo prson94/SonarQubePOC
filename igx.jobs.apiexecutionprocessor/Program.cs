@@ -139,6 +139,7 @@ namespace igx.jobs.apiexecutionprocessor
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
+            company.DataProfilesPartiallyProcessed += Company_DataProfilesPartiallyProcessed;
             var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == company.CurrentResourceID);
             if (resource != null)
             {
@@ -584,6 +585,11 @@ namespace igx.jobs.apiexecutionprocessor
         }
 
         private async void Company_RelationshipsPartiallyProcessed(object sender, RelationshipsPartiallyProcessedEventArgs e)
+        {
+            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
+        }
+
+        private async void Company_DataProfilesPartiallyProcessed(object sender, DataProfilesPartiallyProcessedEventArgs e)
         {
             await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, e.Results);
         }
