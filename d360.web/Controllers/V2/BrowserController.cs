@@ -48,7 +48,7 @@ namespace d360.web.Controllers.V2
 			GraphFilterRepository = graphFilterRepository;
 		}
 
-        private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal)
+        private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal, bool checkDataLimit = true)
         {
             var model = new AssetBrowserResponseModel
             {
@@ -56,7 +56,8 @@ namespace d360.web.Controllers.V2
                 links = reader.Read<AssetBrowserLink>().ToList(),
                 hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
                 reveals = readReveal ? reader.Read<AssetBrowserRevealNode>().ToList() : null,
-            };
+				dataLimitReached = checkDataLimit ? reader.Read<bool>().First() : false
+			};
 
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
@@ -212,7 +213,7 @@ namespace d360.web.Controllers.V2
                     timeout: 60
                 );
 
-                return buildAssetBrowserResponseModel(reader, false);
+                return buildAssetBrowserResponseModel(reader, false, false);
             }
             catch (Exception ex)
             {
@@ -276,7 +277,7 @@ namespace d360.web.Controllers.V2
                     timeout: 60
                 );
 
-                return buildAssetBrowserResponseModel(reader, false);
+                return buildAssetBrowserResponseModel(reader, false, false);
             }
             catch (Exception ex)
             {
