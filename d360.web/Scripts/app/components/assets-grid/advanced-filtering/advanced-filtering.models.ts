@@ -13,6 +13,13 @@ export enum ConnectingOperator {
     Or = 'or',
 }
 
+export interface FilterBetweenParams {
+    givenValue: string;
+    searchValue1: string; 
+    searchValue2: string; 
+    valueType: string;
+}
+
 export interface LookupValuesAPIParameters {
     skip?: number;
     take?: number;

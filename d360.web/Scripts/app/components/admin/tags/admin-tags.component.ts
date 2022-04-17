@@ -10,12 +10,11 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldType, ConnectingOperator, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldCondition, AdvancedFilterFieldType, ConnectingOperator, FilterBetweenParams, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
-import { FilterService } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { Operator, OperatorString } from '../../../models/operator.model';
+import { OperatorString } from '../../../models/operator.model';
 import { remove } from 'lodash';
 import { tap } from 'rxjs/operators';
 
@@ -23,7 +22,7 @@ import { tap } from 'rxjs/operators';
     selector: 'd3s-admin-tags',
     templateUrl: 'admin-tags.component.html',
     providers: [TagService],
-    styles: ['table, th, td { border: 1px solid black!important}']
+    // styles: ['table, th, td { border: 1px solid black!important}']
 })
 
 export class AdminTagsComponent extends AdminBaseComponent {
@@ -57,12 +56,18 @@ export class AdminTagsComponent extends AdminBaseComponent {
             Type: new FieldType("Text"),
             Category: ""
         },
-        // {
-        //     Name: 'UseCount',
-        //     FriendlyName: 'Use Count',
-        //     Type: new FieldType("Number"),
-        //     Category: ""
-        // },
+        {
+            Name: 'UseCount',
+            FriendlyName: 'Use Count',
+            Type: new FieldType("Number"),
+            Category: ""
+        },
+        {
+            Name: 'CreatedOn',
+            FriendlyName: 'Date Created',
+            Type: new FieldType("DateTime"),
+            Category: ""
+        },
         {
             Name: 'CreatedBy',
             FriendlyName: 'Created By',
@@ -113,6 +118,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     advancedFiltersChanged(event: Filters) {
+        console.log('event start');
+        console.log(event);
+        console.log('event end');
         this.removeNotValidFilterOption(event);
         const connectingOperator = this.findOutTheConnectingOperator(event);
 
@@ -131,11 +139,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
     
     // should return advanced filter connectin operator 'or', 'and' or null
     findOutTheConnectingOperator(event: Filters): string {
-        const regexp = /\'\)\s(\w*)/; // match: ') word
+        const regexp = /\)\s(\w*)/; // match: ) word
         const match = event.filter.match(regexp);
+        console.log('connector: ');
+        console.log(match?.length ? match[1] : null);
         if (match) {
             return match[1];
-        } 
+        }
         return null;
     }
 
@@ -144,19 +154,19 @@ export class AdminTagsComponent extends AdminBaseComponent {
         event.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
             if(filterOption.operator === OperatorString.Contains) {
                 tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                    return this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
                 });
             } else if(filterOption.operator === OperatorString.NotContains) {
                 tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return !this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                    return !this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
                 });
             } else if(filterOption.operator === OperatorString.Equals) {
                 tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
                 });
             } else if(filterOption.operator === OperatorString.NotEquals) {
                 tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
                 });
             } else if(filterOption.operator === OperatorString.StartsWith) {
                 tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
@@ -173,6 +183,40 @@ export class AdminTagsComponent extends AdminBaseComponent {
             } else if(filterOption.operator === OperatorString.NotPopulated) {
                 tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
                     return !this.isDataValuePopulated(tag[filterOption.field]);
+                });
+            } else if(filterOption.operator === OperatorString.LessThan) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isGivenValueLessThanSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.GreaterThan) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isGivenValueGreaterThanSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.LessThanOrEquals) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isGivenValueLessThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.GreaterThanOrEquals) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isGivenValueGreaterThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.Between) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    const params: FilterBetweenParams = {
+                        givenValue: tag[filterOption.field],
+                        searchValue1: filterOption.value,
+                        searchValue2: filterOption.value2,
+                        valueType: filterOption.fieldType
+                    };
+                    return this.isGivenValueBetweenSearchValues(params);
+                });
+            } else if(filterOption.operator === OperatorString.Before) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
+                });
+            } else if(filterOption.operator === OperatorString.After) {
+                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
+                    return !this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
                 });
             } else {
                 console.warn(`Unknown filter operator: '${filterOption.operator}' in and logic`);
@@ -188,22 +232,22 @@ export class AdminTagsComponent extends AdminBaseComponent {
         event.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
             if(filterOption.operator === OperatorString.Contains) {
                 const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                    return this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
                 });
                 filterResult = [...filterResult, ...filteredTags];
             } else if(filterOption.operator === OperatorString.NotContains) {
                 const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return !this.isTagFieldContainsValue(tag, filterOption.field, filterOption.value);
+                    return !this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
                 });
                 filterResult = [...filterResult, ...filteredTags];
             } else if(filterOption.operator === OperatorString.Equals) {
                 const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
                 });
                 filterResult = [...filterResult, ...filteredTags];
             } else if(filterOption.operator === OperatorString.NotEquals) {
                 const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
                 });
                 filterResult = [...filterResult, ...filteredTags];
             } else if(filterOption.operator === OperatorString.StartsWith) {
@@ -226,6 +270,47 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     return !this.isDataValuePopulated(tag[filterOption.field]);
                 });
                 filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.LessThan) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isGivenValueLessThanSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.GreaterThan) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isGivenValueGreaterThanSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.LessThanOrEquals) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isGivenValueLessThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.GreaterThanOrEquals) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isGivenValueGreaterThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.Between) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    const params: FilterBetweenParams = {
+                        givenValue: tag[filterOption.field],
+                        searchValue1: filterOption.value,
+                        searchValue2: filterOption.value2,
+                        valueType: filterOption.fieldType
+                    };
+                    return this.isGivenValueBetweenSearchValues(params);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.Before) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
+            } else if(filterOption.operator === OperatorString.After) {
+                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
+                    return !this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredTags];
             } else {
                 console.warn(`Unknown filter operator: '${filterOption.operator}' in or logic`);
             }
@@ -233,12 +318,20 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tags = filterResult;
     }
 
-    isTagFieldContainsValue(tag: TagType, field: string, value: string): boolean {
-        return tag[field].match(new RegExp(value, 'i'));
+    
+    isDataValueContainsSearchValue(dataValue: string, searchValue: string): boolean {
+        return Boolean(dataValue.match(new RegExp(searchValue, 'i')));
     }
 
-    isDataValueEqualToSearchValue(dataValue: string, searchValue: string): boolean {
-        return dataValue.toLowerCase() === searchValue.toLowerCase();
+    isDataValueEqualToSearchValue(dataValue: string, searchValue: string, valueType: string): boolean {
+        if (valueType === 'Text') {
+            return dataValue.toLowerCase() === searchValue.toLowerCase();
+        } else if (valueType === 'Number') {
+            return Number(dataValue) === Number(searchValue);
+        } else {
+            console.warn(`Not recognized FilterFieldType`);
+        }
+        
     }
 
     isDataValueStartsWithSearchValue(dataValue: string, searchValue: string): boolean {
@@ -249,12 +342,35 @@ export class AdminTagsComponent extends AdminBaseComponent {
         return dataValue.toLowerCase().endsWith(searchValue.toLowerCase());
     }
 
-    isDataValuePopulated(dataValue: string): boolean {
-        return dataValue.length > 0;
+    isDataValuePopulated(dataValue: string | number): boolean {
+        return dataValue !== undefined && dataValue !== null && dataValue !== '';
     }
 
-    randomDate(start, end) {
-        return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    isGivenValueLessThanSearchValue(givenValue: string, searchValue: string): boolean {
+        return givenValue < searchValue;
+    }
+
+    isGivenValueGreaterThanSearchValue(givenValue: string, searchValue: string): boolean {
+        return givenValue > searchValue;
+    }
+
+    isGivenValueLessThanOrEqualToSearchValue(givenValue: string, searchValue: string): boolean {
+        return givenValue <= searchValue;
+    }
+
+    isGivenValueGreaterThanOrEqualToSearchValue(givenValue: string, searchValue: string): boolean {
+        return givenValue >= searchValue;
+    }
+
+    isGivenValueBetweenSearchValues({givenValue, searchValue1, searchValue2, valueType}: FilterBetweenParams): boolean {
+        if (valueType === 'DateTime') {
+            return new Date(givenValue) > new Date(searchValue1) && new Date(givenValue) < new Date(searchValue2);
+        }
+        return givenValue > searchValue1 && givenValue < searchValue2;
+    }
+
+    isGivenDateBeforeSearchDate(givenDate: string, searchDate: string): boolean {
+        return new Date(givenDate) < new Date(searchDate);
     }
 
     getTags() {
