@@ -147,7 +147,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
-    public enableListSingleSegment: boolean = false;
+    public listSingleSegmentCheckbox: boolean = false;
     public assetTypeAncestries: AssetTypeAncestry[] = [];
 
     constructor(private fieldsService: FieldsObservableService,
@@ -176,8 +176,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             });
 
-        console.log('ngOnInit');
-        console.log(this.assetTypeUid);
         this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((assetTypeAncestries: AssetTypeAncestry[]) => {
             this.assetTypeAncestries = assetTypeAncestries;
         });
@@ -220,7 +218,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             responseGetFieldTypeEditor.Type[this.currentType] = { ...(intiialisedType[this.currentType]), ...responseGetFieldTypeEditor.Type[this.currentType] };
         }
 
-
         this.model.FieldType = responseGetFieldTypeEditor;
         this.model.cardinalRelationship = null;
         this.model.selectedLookup = null;
@@ -256,8 +253,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.isLoading = true;
 
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
-                .subscribe(ret => {
-                    this.getFieldTypeEditorHandler(ret);
+                .subscribe((fieldTypeEditor: FieldTypeAPIModelField) => {
+                    this.getFieldTypeEditorHandler(fieldTypeEditor);
+                    this.setListSingleSegmentCheckbox(fieldTypeEditor);
                     this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                         .subscribe(s => {
                             this.getLookupsHandler(s);
@@ -896,7 +894,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.currentType === "Path") {
-            if (this.enableListSingleSegment) {
+            if (this.listSingleSegmentCheckbox) {
                 return this.model.FieldType.Type[this.currentType]?.Definition?.AssetTypeUid !== null;
             }
         }
@@ -1537,7 +1535,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     onListSingleSegment(event: boolean) {
-        this.enableListSingleSegment = event;
+        this.listSingleSegmentCheckbox = event;
         if (!event) {
             this.model.FieldType.Type[this.currentType].Definition.AssetTypeUid = null;
         }
@@ -1559,7 +1557,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     public getListSingleSegmentPlaceholder() {
         //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
-        return this.enableListSingleSegment ? "Value Required" : " ";
+        return this.listSingleSegmentCheckbox ? "Value Required" : " ";
+    }
+
+    setListSingleSegmentCheckbox(fieldTypeEditor: FieldTypeAPIModelField) {
+        if(fieldTypeEditor.Type[this.currentType]?.Definition?.AssetTypeUid) {
+            this.listSingleSegmentCheckbox = true;
+        }
     }
 
     private isValidationPatternValid() {
