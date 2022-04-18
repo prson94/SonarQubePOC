@@ -318,6 +318,9 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         [DataMember]
+        public bool SortByAscending { get; set; }
+
+        [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
 
         [DataMember]
@@ -355,6 +358,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
@@ -457,6 +463,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
@@ -568,6 +577,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsDisplayable { get; set; }
@@ -718,6 +730,9 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         [DataMember]
+        public bool SortByAscending { get; set; }
+
+        [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
 
         [DataMember]
@@ -749,6 +764,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsDisplayable { get; set; }
@@ -802,6 +820,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsListable { get; set; }
