@@ -24,7 +24,7 @@
                 
                 <p-table #dt
                          [value]="tags"
-                         [globalFilterFields]="['Value','UseCount','CreatedOn','CreatedByFirstName']"
+                         [globalFilterFields]="['Value','UseCount','CreatedOn','CreatedBy']"
                          [rowsPerPageOptions]="defaultPagingOptions"
                          sortField="Value"
                          [sortOrder]="1"
@@ -49,9 +49,9 @@
                                 Date Created
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedOn'"></d3s-sortIcon>
                             </th>
-                            <th [pSortableColumn]="'CreatedByFirstName'" style="width: 20%">
+                            <th [pSortableColumn]="'CreatedBy'" style="width: 20%">
                                 Created By
-                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedByFirstName'"></d3s-sortIcon>
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedBy'"></d3s-sortIcon>
                             </th>
                             <th style="width: 110px"></th>
                         </tr>
@@ -60,7 +60,7 @@
                             <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
                             <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
                             <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'CreatedOn'" [datatype]="'date'"></d3s-column-filter></th>
-                            <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'CreatedByFirstName'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'CreatedBy'" [datatype]="'text'"></d3s-column-filter></th>
                             <th></th>
                         </tr>
                     </ng-template>
@@ -74,7 +74,7 @@
                             </td>
                             <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
                             <td (click)="selectSingleItem($event,item, el);">{{item.CreatedOn | date:'medium'}}</td>
-                            <td (click)="selectSingleItem($event,item, el);">{{item.CreatedByFirstName}} {{item.CreatedByLastName}}</td>
+                            <td (click)="selectSingleItem($event,item, el);">{{item.CreatedBy}}</td>
                             <td (click)="selectSingleItem($event,item, el);">
                                 <div class="RowTools">
                                     <d3s-preview-tooltip [objectType]="'Tag'"

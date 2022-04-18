@@ -21,8 +21,7 @@ import { tap } from 'rxjs/operators';
 @Component({
     selector: 'd3s-admin-tags',
     templateUrl: 'admin-tags.component.html',
-    providers: [TagService],
-    // styles: ['table, th, td { border: 1px solid black!important}']
+    providers: [TagService]
 })
 
 export class AdminTagsComponent extends AdminBaseComponent {
@@ -118,9 +117,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     advancedFiltersChanged(event: Filters) {
-        console.log('event start');
-        console.log(event);
-        console.log('event end');
         this.removeNotValidFilterOption(event);
         const connectingOperator = this.findOutTheConnectingOperator(event);
 
@@ -141,8 +137,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
     findOutTheConnectingOperator(event: Filters): string {
         const regexp = /\)\s(\w*)/; // match: ) word
         const match = event.filter.match(regexp);
-        console.log('connector: ');
-        console.log(match?.length ? match[1] : null);
         if (match) {
             return match[1];
         }
@@ -219,7 +213,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     return !this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
                 });
             } else {
-                console.warn(`Unknown filter operator: '${filterOption.operator}' in and logic`);
+                console.warn(`Unknown filter operator: '${filterOption.operator}'`);
             }
         });
         this.tags = tagsForFiltering;
@@ -312,7 +306,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 });
                 filterResult = [...filterResult, ...filteredTags];
             } else {
-                console.warn(`Unknown filter operator: '${filterOption.operator}' in or logic`);
+                console.warn(`Unknown filter operator: '${filterOption.operator}'`);
             }
         });
         this.tags = filterResult;
@@ -331,7 +325,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
         } else {
             console.warn(`Not recognized FilterFieldType`);
         }
-        
     }
 
     isDataValueStartsWithSearchValue(dataValue: string, searchValue: string): boolean {
@@ -397,7 +390,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     addCreatedByFieldToTags(tags: TagType[]): void {
         tags.forEach((tag: TagType): void => {
-            tag['CreatedBy'] = tag.CreatedByFirstName + tag.CreatedByLastName;
+            tag['CreatedBy'] = `${tag.CreatedByFirstName} ${tag.CreatedByLastName}`;
         });
     }
     
