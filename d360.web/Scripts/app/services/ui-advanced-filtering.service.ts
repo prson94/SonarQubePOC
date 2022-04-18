@@ -39,74 +39,90 @@ export class UiAdvancedFiltering {
     filterByAndLogic(dataToFilter: ReadonlyArray<any>, filters: Filters): FilteredData {
         let filtredData = [...dataToFilter];
         filters.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
-            if(filterOption.operator === OperatorString.Contains) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.NotContains) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.Equals) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-            } else if(filterOption.operator === OperatorString.NotEquals) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-            } else if(filterOption.operator === OperatorString.StartsWith) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValueStartsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.EndsWith) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValueEndsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.Populated) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValuePopulated(elementToFilter[filterOption.field]);
-                });
-            } else if(filterOption.operator === OperatorString.NotPopulated) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isDataValuePopulated(elementToFilter[filterOption.field]);
-                });
-            } else if(filterOption.operator === OperatorString.LessThan) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isGivenValueLessThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.GreaterThan) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isGivenValueGreaterThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.LessThanOrEquals) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isGivenValueLessThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.GreaterThanOrEquals) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isGivenValueGreaterThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.Between) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    const params: FilterBetweenParams = {
-                        givenValue: elementToFilter[filterOption.field],
-                        searchValue1: filterOption.value,
-                        searchValue2: filterOption.value2,
-                        valueType: filterOption.fieldType
-                    };
-                    return this.isGivenValueBetweenSearchValues(params);
-                });
-            } else if(filterOption.operator === OperatorString.Before) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.After) {
-                filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
-                });
-            } else {
-                console.warn(`Unknown filter operator: '${filterOption.operator}'`);
+            switch (filterOption.operator) {
+                case OperatorString.Contains:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.NotContains:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.Equals:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    });
+                    break;
+                case OperatorString.NotEquals:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return !this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    });
+                    break;
+                case OperatorString.StartsWith:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isDataValueStartsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.EndsWith:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isDataValueEndsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.Populated:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isDataValuePopulated(elementToFilter[filterOption.field]);
+                    });
+                    break;
+                case OperatorString.NotPopulated:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return !this.isDataValuePopulated(elementToFilter[filterOption.field]);
+                    });
+                    break;
+                case OperatorString.LessThan:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isGivenValueLessThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.GreaterThan:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isGivenValueGreaterThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.LessThanOrEquals:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isGivenValueLessThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.GreaterThanOrEquals:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isGivenValueGreaterThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.Between:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        const params: FilterBetweenParams = {
+                            givenValue: elementToFilter[filterOption.field],
+                            searchValue1: filterOption.value,
+                            searchValue2: filterOption.value2,
+                            valueType: filterOption.fieldType
+                        };
+                        return this.isGivenValueBetweenSearchValues(params);
+                    });
+                    break;
+                case OperatorString.Before:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                case OperatorString.After:
+                    filtredData = filtredData.filter((elementToFilter: object) => {
+                        return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    break;
+                default:
+                    console.warn(`Unknown filter operator: '${filterOption.operator}'`);
             }
         });
         return filtredData;
@@ -115,91 +131,108 @@ export class UiAdvancedFiltering {
     filterByOrLogic(dataToFilter: ReadonlyArray<any>, filters: Filters): FilteredData {
         let filterResult = [];
         let fullData = [...dataToFilter];
+        let filteredData = [];
 
         filters.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
-            if(filterOption.operator === OperatorString.Contains) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.NotContains) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.Equals) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.NotEquals) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.StartsWith) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValueStartsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.EndsWith) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValueEndsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.Populated) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValuePopulated(elementToFilter[filterOption.field]);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.NotPopulated) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isDataValuePopulated(elementToFilter[filterOption.field]);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.LessThan) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isGivenValueLessThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.GreaterThan) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isGivenValueGreaterThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.LessThanOrEquals) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isGivenValueLessThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.GreaterThanOrEquals) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isGivenValueGreaterThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.Between) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    const params: FilterBetweenParams = {
-                        givenValue: elementToFilter[filterOption.field],
-                        searchValue1: filterOption.value,
-                        searchValue2: filterOption.value2,
-                        valueType: filterOption.fieldType
-                    };
-                    return this.isGivenValueBetweenSearchValues(params);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.Before) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else if(filterOption.operator === OperatorString.After) {
-                const filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredData];
-            } else {
-                console.warn(`Unknown filter operator: '${filterOption.operator}'`);
+            switch (filterOption.operator) {
+                case OperatorString.Contains:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.NotContains:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.Equals:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.NotEquals:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return !this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.StartsWith:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isDataValueStartsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.EndsWith:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isDataValueEndsWithSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.Populated:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isDataValuePopulated(elementToFilter[filterOption.field]);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.NotPopulated:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return !this.isDataValuePopulated(elementToFilter[filterOption.field]);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.LessThan:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isGivenValueLessThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.GreaterThan:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isGivenValueGreaterThanSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.LessThanOrEquals:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isGivenValueLessThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.GreaterThanOrEquals:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isGivenValueGreaterThanOrEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.Between:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        const params: FilterBetweenParams = {
+                            givenValue: elementToFilter[filterOption.field],
+                            searchValue1: filterOption.value,
+                            searchValue2: filterOption.value2,
+                            valueType: filterOption.fieldType
+                        };
+                        return this.isGivenValueBetweenSearchValues(params);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.Before:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                case OperatorString.After:
+                    filteredData = remove(fullData, (elementToFilter: object) => {
+                        return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    });
+                    filterResult = [...filterResult, ...filteredData];
+                    break;
+                default:
+                    console.warn(`Unknown filter operator: '${filterOption.operator}'`);
             }
         });
         return filterResult;
