@@ -1,0 +1,21 @@
+<div class="tile tile-detail">
+    <header>{{header}}</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

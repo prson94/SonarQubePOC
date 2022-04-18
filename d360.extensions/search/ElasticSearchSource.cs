@@ -151,6 +151,7 @@ namespace d360.extensions.search
     {
         private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
         private const int BULK_BATCH_SIZE = 5000;
+        private const string INDEX_PREFIX = "d3s";
 
         private const string DYNAMIC_FIELD = "fields";
         public const string DYNAMIC_FIELD_PREFIX = DYNAMIC_FIELD + ".";
@@ -270,9 +271,9 @@ namespace d360.extensions.search
             return sb.ToString();
         }
 
-        private string GetCompanyIndexName(int companyID)
+        private static string GetCompanyIndexName(int companyID)
         {
-            return $"d3s{companyID}";
+            return $"{INDEX_PREFIX}{companyID}";
         }
 
         protected virtual IDbConnection GetDBConnection()
@@ -321,7 +322,16 @@ namespace d360.extensions.search
             var indexName = GetCompanyIndexName(companyID);
             var client = GetElasticClient(companyID);
 
-            if (!client.IndexExists(indexName).Exists)
+            var existsResponse = client.IndexExists(indexName);
+            if(!existsResponse.IsValid)
+            {
+                throw new SearchServerConnectionException(
+                    existsResponse.OriginalException,
+                    string.Join(", ", client.ConnectionSettings.ConnectionPool.Nodes.Select(n => n.Uri.OriginalString)),
+                    indexName
+                );
+            }
+            else if (!existsResponse.Exists)
             {
                 CreateIndexDescriptor indexDescriptor = new CreateIndexDescriptor(indexName)
                     .Settings(s => s
@@ -460,14 +470,33 @@ namespace d360.extensions.search
         }
 
         /// <summary>
-        /// Delete an index if it exists
+        /// Find all indices on the search server in question that have been/are used by govern,
+        /// in that the index name fits the govern index naming convention.
+        /// Used to find indices that no longer belong to an active environment.
         /// </summary>
-        /// <param name="companyID"></param>
-        private void DeleteIndexIfExists(int companyID)
+        /// <param name="serverUrl"></param>
+        /// <returns>List of company ids</returns>
+
+        public static IEnumerable<int> GetCompanyByIndices(string serverUrl)
+        {
+            var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
+            ICatResponse<CatIndicesRecord> response = client.CatIndices();
+            if(!response.IsValid)
+            {
+                throw new SearchServerConnectionException(response.OriginalException, serverUrl, "");
+            }
+            return response.Records.Select(r => r.Index).Where(i => i.StartsWith(INDEX_PREFIX)).Select(i => int.Parse(i.Substring(INDEX_PREFIX.Length)));
+        }
+
+        public static void DeleteIndexIfExists(string serverUrl, int companyID)
+        {
+            var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
+            DeleteIndexIfExists(client, companyID);
+        }
+
+        private static void DeleteIndexIfExists(IElasticClient client, int companyID)
         {
             var indexName = GetCompanyIndexName(companyID);
-            //NEST client
-            var client = GetElasticClient(companyID);
             if (client.IndexExists(indexName).Exists)
             {
                 var response = client.DeleteIndex(indexName);
@@ -476,6 +505,17 @@ namespace d360.extensions.search
                     throw new ArgumentException(response.OriginalException.Message);
                 }
             }
+        }
+
+        /// <summary>
+        /// Delete an index if it exists
+        /// </summary>
+        /// <param name="companyID"></param>
+        private void DeleteIndexIfExists(int companyID)
+        {
+            //NEST client
+            var client = GetElasticClient(companyID);
+            DeleteIndexIfExists(client, companyID);
         }
 
         private string EscapeValueForDoc(string input, bool removeTags = true)

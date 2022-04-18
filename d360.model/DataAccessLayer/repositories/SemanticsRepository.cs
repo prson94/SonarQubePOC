@@ -47,7 +47,7 @@ namespace d360.model.DataAccessLayer
 			"headerRegExps",
 			"invalidList",
 			"advanced",
-			"regExReturned",
+			"regExpReturned",
 			"validLocales",
 			"validList"
 		};
@@ -261,6 +261,14 @@ namespace d360.model.DataAccessLayer
 		{
 			var qualifiers = new List<string> { qualifier };
 			List<Semantic> deletes = findLatestExistingSemantics(qualifiers, 1);
+
+			if (deletes.Any((s)=> s.Source == SemanticSource.BuiltIn))
+			{
+				throw new GenericException(
+					HttpStatusCode.Conflict,
+					"Built in Semantic.",
+					"Built-In semantic types cannot be deleted.");
+			}
 
 			var anyProfilesQuery = await CompanyContext
 											.QueryAsync<int>(@"
@@ -545,7 +553,7 @@ namespace d360.model.DataAccessLayer
 					if (patchModel != null)
 					{
 						if (patchModel.BaseType.HasValue
-							|| patchModel.HeaderFilterStructured != null
+							|| patchModel.HeaderFilter != null
 							|| patchModel.HeaderFilterConfidence.HasValue
 							|| patchModel.InvalidValuesStructured != null
 							|| patchModel.JsonPayloadStructured != null
@@ -631,8 +639,10 @@ namespace d360.model.DataAccessLayer
 			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "C");
 
+
+			var createdSemantics = CompanyContext.Filter<Semantic>(s => qualifiers.Contains(s.Qualifier)).ToList();
 			var getModels = (
-						  from s in repoModels
+						  from s in createdSemantics
 						  join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
 						  join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
 						  select s.ToGetModel(c, u)

@@ -1,0 +1,49 @@
+﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
+
+.color-selector {
+  background: #fff 0% 0% no-repeat padding-box;
+  border: 1px solid #707070;
+  border-radius: 2px;
+  padding: 1px;
+  height: 32px;
+  width: 48px;
+  box-sizing: border-box;
+
+  input.p-colorpicker-preview {
+    height: 28px;
+    width: 44px;
+  }
+
+  .flex-box {
+    display: flex;
+    align-items: center;
+    position: relative;
+    top: -2px;
+
+    .p-colorpicker {
+      display: block;
+      width: 44px;
+      margin-right: 12px;
+    }
+
+    .input-el {
+      max-width: 80px;
+    }
+  }
+}
+
+.p-colorpicker-overlay-panel {
+  background: #fff 0% 0% no-repeat padding-box;
+  box-shadow: 0 3px 6px #00000029;
+  opacity: 1;
+
+  .p-colorpicker-hue-handle {
+    border: 2px solid white;
+    width: 17px;
+    left: 2px;
+  }
+
+  .p-colorpicker-color-handle {
+    border: 1px solid white;
+  }
+}

@@ -42,6 +42,7 @@ export class CompanySettings {
     WorkflowCatchAllGroup: number;
     WorkflowDigestEmailDays: number = 0;
     WriteActionDescription: boolean;
+    EmailDomainWhitelist: string;
 }
 
 export class CompanyImage {
@@ -151,7 +152,8 @@ export enum CompanySettingEnum {
     AssetDataProfileLifespan = 81,
     AssetDefinitionColumnWidth = 82,
     HideHeaderBarControls = 83,
-    DiagramMaxAvoidNodesLinkCount = 84
+    DiagramMaxAvoidNodesLinkCount = 84,
+    EmailDomainWhitelist = 85,
 }
 
 export class StringSetting {

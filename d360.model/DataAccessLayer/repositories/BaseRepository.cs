@@ -304,7 +304,7 @@ namespace d360.model.DataAccessLayer.repositories
 					 {
 						 fieldJoins.Add($@"outer apply (
 							select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-							from    graph.AssetNodeDisplayPath 
+							from    graph.AssetNode 
 							where   ID IN ({assetIdFinalQuery})
 							having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
 						) {tableAlias}");
@@ -710,7 +710,8 @@ namespace d360.model.DataAccessLayer.repositories
 						{
 							if (ft.Count() == 1)
 							{
-								sortStatements.Add(getFieldDataTypeWrapper(ft.FirstOrDefault()));
+								var sortDirection = ft.FirstOrDefault().SortByAscending ? "asc" : "desc";
+								sortStatements.Add(getFieldDataTypeWrapper(ft.FirstOrDefault()) + " " + sortDirection);
 							}
 							else
 							{
@@ -718,7 +719,8 @@ namespace d360.model.DataAccessLayer.repositories
 								var fts = ft.ToList().OrderBy(x => x.Name).ToList();
 								fts.ForEach(_ft =>
 								{
-									sortStatements.Add(getFieldDataTypeWrapper(_ft));
+									var sortDirection = _ft.SortByAscending ? "asc" : "desc";
+									sortStatements.Add(getFieldDataTypeWrapper(_ft) + " " + sortDirection);
 								});
 							}
 						});

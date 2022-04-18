@@ -94,7 +94,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 .subscribe(result => {
                     this.relationships = result ?? [];
                     this.isLoading = false;
-                    if (this.relationships) {
+                    if (this.relationships && !this.showEditor) {
                         if (this.relationships.length > 0) {
                             this.selected = this.relationships[0];
                             this.selectedChange.emit(this.selected)
@@ -108,7 +108,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                     this.relationships = result ?? [];
                     this.filterResults();
                     this.isLoading = false;
-                    if (this.relationships) {
+                    if (this.relationships && !this.showEditor) {
                         if (this.relationships.length > 0) {
                             this.selected = this.relationships[0];
                             this.selectedChange.emit(this.selected)

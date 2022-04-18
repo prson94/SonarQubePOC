@@ -114,6 +114,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                         displayField.IsListable = field.Type[type].IsListable;
                         displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
                         displayField.SortOrder = field.Type[type].SortOrder;
+                        displayField.SortByAscending = field.Type[type].SortByAscending;
                         displayField.ColumnOrder = field.Type[type].ColumnOrder;
                         displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty;
                         displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;

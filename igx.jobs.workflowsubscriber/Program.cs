@@ -1,6 +1,10 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
+using d360.extensions.caching;
+using d360.extensions.info;
+using d360.extensions.mail;
+using d360.extensions.queue;
 using d360.model;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
@@ -9,6 +13,7 @@ using Microsoft.ServiceBus.Messaging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -73,7 +78,22 @@ namespace igx.jobs.workflowsubscriber
 
             // Create EF connection
             companyId = info.CompanyID;
-            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
+            company = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = companyId,
+                    CompanyPrefix = info.DomainPrefix,
+                    ResourceID = info.ResourceID,
+                    IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                },
+                new AzureQueueSource(),
+                new DummyCachingProvider(),
+                constants.COMMUNITY_DATABASE_CONNECTION);
 
             try
             {

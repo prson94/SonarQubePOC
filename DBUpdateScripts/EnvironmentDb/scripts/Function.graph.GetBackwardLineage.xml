@@ -1,0 +1,67 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+
+  <changeSet author="Pappas" id="Function.graph.GetBackwardLineage-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<comment></comment>
+		<![CDATA[
+create or alter function graph.GetBackwardLineage
+(	
+	@currentHop int,
+	@endHop int,
+	@assetIds dbo.Ids readonly,
+	@intersectIds dbo.Ids readonly
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with b as (
+		select	I.IntersectID,
+				I.PredicateID,
+				I.PredicateUid,
+				I.PredicateName,
+				I.PredicateType,
+				@currentHop-1 as SubjectHop,
+				S.ID as SubjectID,
+				@currentHop as ObjectHop,
+				O.ID as ObjectID
+		from	@assetIds H
+				inner join Asset O on O.ID = H.ID
+				inner join PredicateIntersect I on I.Object = O.Object and I.ObjectID = O.ObjectID and I.PredicateType in (1, 12, 13) and I.IntersectID not in (select Id from @intersectIds)
+				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+		union all
+		select	I.IntersectID,
+				I.PredicateID,
+				I.PredicateUid,
+				I.PredicateName,
+				I.PredicateType,
+				b.SubjectHop-1 as SubjectHop,
+				S.ID as SubjectID,
+				b.SubjectHop as ObjectHop,
+				O.ID as ObjectID
+		from	b
+				inner join Asset O on O.ID = b.SubjectID and b.SubjectHop >= @endHop
+				inner join PredicateIntersect I on I.Object = O.Object and I.ObjectID = O.ObjectID and I.PredicateType in (1, 12, 13) and I.IntersectID <> b.IntersectID and I.IntersectID not in (select Id from @intersectIds)
+				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
+	)
+	select * from b
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

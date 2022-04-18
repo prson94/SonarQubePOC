@@ -1,6 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities.Workflow;
 using d360.core.queue;
+using d360.extensions.caching;
+using d360.extensions.info;
+using d360.extensions.mail;
 using d360.extensions.queue;
 using d360.model;
 using Microsoft.Azure.ServiceBus;
@@ -47,6 +50,7 @@ namespace igx.functions.consumption
             {
                 messageString = Encoding.UTF8.GetString(brokeredMessage.Body);
                 info = JsonConvert.DeserializeObject<EventInfo>(messageString);
+                companyId = info.CompanyID;
             }
             catch (Exception ex)
             {
@@ -55,11 +59,23 @@ namespace igx.functions.consumption
                 return;
             }
 
-            // Create EF connection
-            companyId = info.CompanyID;
-
-            var queueSource = new AzureQueueSource(config);
-            company = JobDbContextCreator.CreateCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true, queueSource, null, CoreFunction.GetConnectionString("CommunityContext"), CoreFunction.GetConfigValueByKey<string>(constants.MAIL_API_KEY), CoreFunction.GetConfigValueByKey<string>(constants.MAIL_SUB_ACCOUNT));
+            company = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = info.CompanyID,
+                    ResourceID = info.ResourceID,
+                    CompanyPrefix = info.DomainPrefix,
+                    IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = config.GetValue<string>("MandrillApiKey"),
+                    SubAccount = config.GetValue<string>("MandrillSubAccount")
+                },
+                new AzureQueueSource(config),
+                new DummyCachingProvider(),
+                config.GetConnectionString("CommunityContext")
+            );
 
             try
             {

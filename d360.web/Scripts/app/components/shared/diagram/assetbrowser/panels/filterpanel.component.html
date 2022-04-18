@@ -15,7 +15,7 @@
     <tr class="filter-row">
         <td class="filter-row-label">Display Descendant Assets</td>
         <td class="filter-row-control">
-            <p-checkbox (ngModelChange)="current.DisplayDescendantAssets = $event;ancestryChange()" [(ngModel)]="current.DisplayDescendantAssets" [binary]="true"></p-checkbox>
+            <p-dropdown [options]="options?.DescendancyOptions" [ngModel]="current.Descendancy" (ngModelChange)="current.Descendancy = $event; descendancyChange()" styleClass="filter-dropdown"></p-dropdown>
         </td>
     </tr>
     <tr class="filter-row">

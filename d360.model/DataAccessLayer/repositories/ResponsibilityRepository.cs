@@ -1281,5 +1281,30 @@ namespace d360.model.DataAccessLayer
 				items = items
 			};
 		}
+
+		/// <inheritdoc />
+        public Task DeleteResponsibilityOverridesByGroupOrResourceAsync(Guid uid)
+        {
+            return Company.Connection.ExecuteAsync(@"
+                DELETE FROM source
+                  FROM [dbo].[ResponsibilityTypeRelationOverrideItem] source  
+                  JOIN [dbo].[Asset] a
+                    ON ((a.Object = 'Resource' AND source.SecurityAsset = 'R') 
+                    OR (a.Object = 'Group' AND source.SecurityAsset = 'G'))
+                   AND source.SecurityAssetID = a.ObjectID
+                 WHERE a.uid = @uid
+            ", new { uid });
+        }
+
+        /// <inheritdoc />
+        public Task DeleteResponsibilityOverridesByTypeAsync(Guid typeUid)
+        {
+            return Company.Connection.ExecuteAsync(@"
+                DELETE source
+                  FROM [dbo].[ResponsibilityTypeRelationOverrideItem] source
+                  JOIN [dbo].[ResponsibilityType] type ON type.ID = source.ResponsibilityTypeID
+                 WHERE type.uid = @typeUid
+            ", new { typeUid });
+        }
 	}
 }

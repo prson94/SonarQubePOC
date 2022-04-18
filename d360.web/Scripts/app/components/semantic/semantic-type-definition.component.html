@@ -5,11 +5,15 @@
             <div class="col s12" style="display:flex;">
                 <div class="tile tile-detail main-panel">
                     <div *ngIf="!isLoading" style="padding: 16px 11px 6px 11px">
+                        <div style="height: 0">
+                            &nbsp;<button class="ig-button-primary" igButton *ngIf="isAdmin" icon="fa-pencil" label="Edit" (click)="showEditor=true" style="float:right;z-index:1000"></button>
+                        </div>
+
                         <semantic-detail [qualifier]="semanticType.qualifier"
                                          [semanticType]="semanticType"
                                          (linkClicked)="handleLinkClick($event)"></semantic-detail>
                     </div>
-                </div>  
+                </div>
                 <div class="tile tile-detail side-panel" *ngIf="!isLoading">
                     <side-panel (expandedChange)="sidePanelOpen=$event"
                                 (selectedPanelChange)="sidePanelTab=$event"
@@ -45,10 +49,18 @@
                             <ng-container *ngIf="sidePanelOpen && sidePanelTab === 'status'">
                                 <semantic-status-detail></semantic-status-detail>
                             </ng-container>
-                        </ng-container>                        
+                        </ng-container>
                     </side-panel>
                 </div>
-            </div>    
+            </div>
         </div>
-    </div>    
+    </div>
 </div>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <semantic-editor *ngIf="showEditor" [semanticType]="semanticType" (closeClick)="showEditor=false" (saveClick)="editSemantic($event)"></semantic-editor>
+</d3s-modal>
+

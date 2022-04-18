@@ -80,7 +80,7 @@
                                  let-item="rowData">
                         <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)">
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
-                                <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
+                                <p-treeTableToggler [rowNode]="rowNode" style="margin-right: 8px;" *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">
                                     <a (click)="showHierarchy(item)"
                                        [ngStyle]="setTreeNodeStyles(rowNode.node)">

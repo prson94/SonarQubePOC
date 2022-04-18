@@ -130,6 +130,17 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         protected settingsService: CompanySettingsService) {
         super(settingsService);
     }
+    
+    _isLoadingCounter = 0;
+
+    get isLoadingCounter() { 
+        return this._isLoadingCounter;
+    }
+
+    set isLoadingCounter(value) {
+        this._isLoadingCounter = value;
+        this.isLoading = this._isLoadingCounter > 0;
+    }
 
     //#region angular
 
@@ -141,7 +152,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.HideSqlProcedure = false;
         }
 
-        this.isLoading = true;
+        this.isLoadingCounter++;
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -330,7 +341,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (this.model != null) {
             if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
                 console.warn('Model passed to workflow diagram with no Event Registration data.');
-                this.isLoading = false;
+                this.isLoadingCounter--;
                 return of();
 
             }
@@ -339,18 +350,18 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 .pipe(
                     map(r => this.fieldTypes = r),
                     map(() => this.parseData(this.model)),
-                    map(() => this.isLoading = false),
+                    map(() => { this.isLoadingCounter--; }),
                     map(() => { this.resetContentPosition() })
                 );
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
         if (!this.id && this.uid == "00000000-0000-0000-0000-000000000000") {
-            this.isLoading = false;
+            this.isLoadingCounter--;
             return of();
         }
 
-        this.isLoading = true;
+        this.isLoadingCounter++;
 
         return this.workflowService.getWorkflowDiagram(this.id,this.uid, this.version, this.filteredObject, this.filteredObjectId)
             .pipe(
@@ -364,7 +375,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 map(() => this.parseData(this.model)),
                 map(() => this.setIssueObject()),
                 map(() => {
-                    this.isLoading = false;
+                    this.isLoadingCounter--;
                     this.hasType = true;
                     this.resetContentPosition();
                     })
@@ -504,7 +515,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         m.Nodes = nodes;
         m.Links = links;
 
-        this.isLoading = true;
+        this.isLoadingCounter++;
 
         this.workflowService.saveWorkflowDiagramModel(m)
             .subscribe(r => {

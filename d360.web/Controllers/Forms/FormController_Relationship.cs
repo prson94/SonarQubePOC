@@ -482,7 +482,7 @@ namespace d360.web.Controllers
 										inner join AssetType T on A.AssetTypeID = T.ID
 										inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
 										left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
-										left join graph.AssetNodeDisplayPath P on P.ID = A.ID
+										left join graph.AssetNode P on P.ID = A.ID
 										{SemanticRelationshipSql}
 							where		I.ID is null 
 										{(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}

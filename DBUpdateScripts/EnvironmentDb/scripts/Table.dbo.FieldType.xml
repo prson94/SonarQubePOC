@@ -346,4 +346,40 @@ END;
 	</rollback>
   </changeSet>
 
+  <changeSet author="vlova" id="Table.dbo.FieldType-v7">
+    <comment>GOV-14922</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[FieldType]', 'SortByAscending') IS NULL
+		BEGIN
+			alter table dbo.FieldType
+			add [SortByAscending] bit not null
+			default 1
+		END
+	  ]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+		-- dynamic drop of constraints is required, because "default 1" creates randomly-named constraint
+		-- which prevents deleting of column SortByAscending
+		declare @sql nvarchar(max)
+		
+		select 
+			@sql = 'alter table dbo.FieldType drop constraint ' + df.NAME 
+		from sys.default_constraints df
+			INNER JOIN sys.tables t ON df.parent_object_id = t.object_id
+			INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_column_id = c.column_id
+		where t.name = 'FieldType' and c.name = 'SortByAscending'
+		
+		exec sp_executeSql @sql
+		
+		-- drop column
+		alter table dbo.FieldType 
+		drop column if exists SortByAscending
+	  ]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

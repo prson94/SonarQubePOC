@@ -12,6 +12,17 @@
                 </div>
                 <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 <div class="grid-action-buttons">
+                    <button *ngIf="showAddButton"
+                            igButton
+                            [attr.data-cy]="'Semantics_Add'"
+                            pTooltip="Create new Semantic Type"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            [igDataCy]="'Semantics_Add'"
+                            (click)="addSemantic()">
+                    </button>
                     <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
                          tooltipPosition="left"
                          tooltipStyleClass="ig-tooltip">
@@ -179,3 +190,10 @@
 
 
 </d3s-delete-form>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"           
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <semantic-editor *ngIf="showEditor" [semanticType]="isAdd ? null : selectedType" (closeClick)="showEditor=false" (saveClick)="saveSemantic($event)"></semantic-editor>
+</d3s-modal>

@@ -1,4 +1,4 @@
-﻿import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+﻿import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -19,6 +19,7 @@ import { SemanticBaseComponent } from './semantics-base.component';
 import { FeatureFlagsService } from '../../services/featureflags.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
 
 declare var CurrentResourceID;
 
@@ -153,6 +154,9 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     resourceUid: any;
     secondarySidePanelOpen: boolean;
     showDelete: boolean = false;
+    showEditor: boolean = false;
+    showAddButton: boolean = false;
+    isAdd: boolean = false;
 
     constructor(private route: ActivatedRoute,
         protected router: Router,
@@ -164,7 +168,9 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         protected settingsService: CompanySettingsService,
         private featureFlagService: FeatureFlagsService,
         private messagesService: MessagesObservableService,
-        private authenticationService: AuthenticationService) {
+        private authenticationService: AuthenticationService,
+        private headerActionsService: HeaderActionsService,
+        private cdRef: ChangeDetectorRef) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.theDeleteCallback = this.deleteSemanticType.bind(this);
     }
@@ -180,13 +186,13 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         this.displayBreadCrumbs();
     }
 
-    getData(selectedIndex: number = 0) {
+    getData(selectedIndex: number = 0, autoSelect: boolean = true) {
         this.isLoading = true;
         this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((p) => {
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
             if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
-                this.selectRow(this.semanticTypes[selectedIndex]);
+                this.selectRow(autoSelect ? this.semanticTypes[selectedIndex] : null);
             }            
            
             this.semanticTypes.forEach((i) => {
@@ -196,12 +202,19 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                     { title: "Open in New Tab" },
                 ];
 
-                if (this.authenticationService.isAdmin && SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {
-                    if (!i.hasQualifiedAssets) {
-                        i[this.menuKey].push({ title: "Delete" });
-                    } else {
-                        i[this.menuKey].push({ title: "Delete", disabled: true, tooltip: "This semantic type cannot be removed as it has already been used for classifying assets." });
-                    }                    
+                if (this.authenticationService.isAdmin) {
+                    this.showAddButton = true;
+                    i[this.menuKey].push({ title: "Edit" });
+                    if (SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {
+                        if (!i.hasQualifiedAssets) {
+                            i[this.menuKey].push({ title: "Delete" });
+                        } else {
+                            i[this.menuKey].push({ title: "Delete", disabled: true, tooltip: "This semantic type cannot be removed as it has already been used for classifying assets." });
+                        }
+                    } else if (SemanticSource[i.source.toString()] === SemanticSource.BuiltIn) {
+                        i[this.menuKey].push({ title: "Delete", disabled: true, tooltip: "Built-In semantic types cannot be deleted." });
+                        
+                    }                          
                 }
             });
 
@@ -288,6 +301,10 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                 break;
             case 'delete':
                 this.showDelete = true;
+                break;
+            case 'edit':
+                this.isAdd = false;
+                this.showEditor = true;
                 break;
         }
     }        
@@ -385,5 +402,35 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                     }
                 }
             );
+    }
+
+    addSemantic() {
+        this.isAdd = true;
+        this.selectedType = null;
+        this.showEditor = true;
+    }
+
+    saveSemantic($event) {              
+        if ($event && $event.addAnother) {
+            this.addSemantic();
+            this.getData(0, false);
+        }
+        else if ($event && $event.action.toLowerCase() === "new") {
+            var newUrl = "/semantics/" + $event.item.uid;
+            this.router.navigateByUrl(newUrl);
+        }
+        else {
+            if ($event.item.uid) {
+                this.headerActionsService.emitFavoritesChange();
+            }
+            this.getData();
+            this.isLoading = false;            
+            this.showEditor = false;
+            if (this.semanticTypes.some((x) => (x.uid === $event.item.uid))) {
+                this.selectRow($event.item);   
+            }                     
+        }
+
+        this.cdRef.markForCheck();
     }
 }

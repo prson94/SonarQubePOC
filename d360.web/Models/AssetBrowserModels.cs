@@ -93,16 +93,11 @@ namespace d360.web.Models
         public string id { get; set; }
 
         public int? count { get; set; }
-
-        public int responsibilityTypeId { get; set; }
-
-        public string responsibilityType { get; set; }
+        public string text { get; set; }
     }
 
     public class AssetBrowserNodeRelationCount
     {
-        public string key { get; set; }
-
         public string predicate { get; set; }
 
         public int predicateId { get; set; }
@@ -151,7 +146,8 @@ namespace d360.web.Models
     public class AssetBrowserNode
     {
         public string hierarchyKey { get; set; }
-
+        public string template { get; set; }
+        public int childCount { get; set; }
         public bool focal { get; set; }
 
         public bool leaf { get; set; }
@@ -227,6 +223,13 @@ namespace d360.web.Models
         TypeOnly = 3 //For Impact
     }
 
+    public enum AssetBrowserDescendancy
+    {
+        None = 1,
+        Direct = 2,
+        All = 3
+    }
+
     public class AssetBrowserInitialModel
     {
         public AssetBrowserAncestry ancestry { get; set; }
@@ -236,8 +239,7 @@ namespace d360.web.Models
         public int hopCount { get; set; }
 
         public bool includeNonLeaf { get; set; } = true;
-
-        public bool includeDescendantAssets { get; set; } = true;
+        public AssetBrowserDescendancy descendancy { get; set; } = AssetBrowserDescendancy.None;
     }
 
     public class AssetBrowserImpactInitialModel
@@ -245,8 +247,15 @@ namespace d360.web.Models
         public Guid uid { get; set; }
 
         public int hopCount { get; set; }
+    }
 
-        public bool includeNonLeaf { get; set; } = true;
+    public class AssetBrowserImpactHopModel
+    {
+        public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
+        public AssetBrowserApiHopDirection direction { get; set; }
+        public string hierarchyKey { get; set; }
+        public List<long> intersects { get; set; }
+        public Guid predicateUid { get; set; }
     }
 
     public class AssetBrowserLineageInitialModel
@@ -258,6 +267,7 @@ namespace d360.web.Models
         public int hopCount { get; set; }
 
         public bool includeNonLeaf { get; set; } = true;
+        public AssetBrowserDescendancy descendancy { get; set; } = AssetBrowserDescendancy.None;
 
         public bool includeDescendantAssets { get; set; } = true;
     }
@@ -270,25 +280,19 @@ namespace d360.web.Models
     public abstract class AssetBrowserHopModelRelationBase : AssetBrowserHopModelBase
     {
         public AssetBrowserAncestry ancestry { get; set; }
-
+        public AssetBrowserDescendancy descendancy { get; set; } = AssetBrowserDescendancy.None;
         public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
-
+        public int currentHop { get; set; }
         public List<long> preloadedIntersects { get; set; }
 
         public AssetBrowserApiHopDirection direction { get; set; }
 
         public bool includeNonLeaf { get; set; } = true;
-
-        public bool includeDescendantAssets { get; set; } = true;
+        
     }
 
     public class AssetBrowserLineageHopModel : AssetBrowserHopModelRelationBase
     {
-    }
-
-    public class AssetBrowserImpactHopModel : AssetBrowserHopModelRelationBase
-    {
-        public Guid predicateUid { get; set; }
     }
 
     #endregion

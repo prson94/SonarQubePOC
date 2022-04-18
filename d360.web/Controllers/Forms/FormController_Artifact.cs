@@ -117,7 +117,7 @@ namespace d360.web.Controllers
                                     lower(convert(nvarchar(36), A.uid)) as Value, 
                                     AN.DisplayPath as Text 	
                                         from Asset A 
-                                        inner join graph.AssetNodeDisplayPath AN on AN.ID = A.ID 
+                                        inner join graph.AssetNode AN on AN.ID = A.ID 
                                         where A.AssetTypeID = {parentType.ID} and A.ID = {parent.ID}")
                         .OrderBy(i => i.Text)
                         .ToList();
