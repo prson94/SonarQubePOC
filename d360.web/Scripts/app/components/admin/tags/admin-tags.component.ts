@@ -10,13 +10,12 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldCondition, AdvancedFilterFieldType, ConnectingOperator, FilterBetweenParams, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
-import { OperatorString } from '../../../models/operator.model';
-import { remove } from 'lodash';
 import { tap } from 'rxjs/operators';
+import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -76,6 +75,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     ]);
 
     constructor(
+        private uiAdvancedFiltering: UiAdvancedFiltering,
         private router: Router,
         private tagsService: TagService,
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -116,254 +116,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.filters[event.prop] = event.value;
     }
 
-    advancedFiltersChanged(event: Filters) {
-        this.removeNotValidFilterOption(event);
-        const connectingOperator = this.findOutTheConnectingOperator(event);
-
-        if (connectingOperator === ConnectingOperator.Or) {
-            this.filterByOrLogic(event);
-        } else {
-            this.filterByAndLogic(event);
-        }
-    }
-
-    removeNotValidFilterOption(event: Filters): void {
-        remove(event.data, (filterOption: AdvancedFilterFieldCondition) => {
-            return filterOption.markForDeletion || !filterOption.field;
-        });
-    }
-    
-    // should return advanced filter connectin operator 'or', 'and' or null
-    findOutTheConnectingOperator(event: Filters): string {
-        const regexp = /\)\s(\w*)/; // match: ) word
-        const match = event.filter.match(regexp);
-        if (match) {
-            return match[1];
-        }
-        return null;
-    }
-
-    filterByAndLogic(event: Filters): void {
-        let tagsForFiltering = [...this.readOnlyFullListOfTags];
-        event.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
-            if(filterOption.operator === OperatorString.Contains) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.NotContains) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return !this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.Equals) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-            } else if(filterOption.operator === OperatorString.NotEquals) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-            } else if(filterOption.operator === OperatorString.StartsWith) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isDataValueStartsWithSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.EndsWith) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isDataValueEndsWithSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.Populated) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isDataValuePopulated(tag[filterOption.field]);
-                });
-            } else if(filterOption.operator === OperatorString.NotPopulated) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return !this.isDataValuePopulated(tag[filterOption.field]);
-                });
-            } else if(filterOption.operator === OperatorString.LessThan) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isGivenValueLessThanSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.GreaterThan) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isGivenValueGreaterThanSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.LessThanOrEquals) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isGivenValueLessThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.GreaterThanOrEquals) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isGivenValueGreaterThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.Between) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    const params: FilterBetweenParams = {
-                        givenValue: tag[filterOption.field],
-                        searchValue1: filterOption.value,
-                        searchValue2: filterOption.value2,
-                        valueType: filterOption.fieldType
-                    };
-                    return this.isGivenValueBetweenSearchValues(params);
-                });
-            } else if(filterOption.operator === OperatorString.Before) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
-                });
-            } else if(filterOption.operator === OperatorString.After) {
-                tagsForFiltering = tagsForFiltering.filter((tag: TagType) => {
-                    return !this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
-                });
-            } else {
-                console.warn(`Unknown filter operator: '${filterOption.operator}'`);
-            }
-        });
-        this.tags = tagsForFiltering;
-    }
-
-    filterByOrLogic(event: Filters): void {
-        let filterResult = [];
-        let fullListOfTags = [...this.readOnlyFullListOfTags];
-
-        event.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
-            if(filterOption.operator === OperatorString.Contains) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.NotContains) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return !this.isDataValueContainsSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.Equals) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.NotEquals) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return !this.isDataValueEqualToSearchValue(tag[filterOption.field], filterOption.value, filterOption.fieldType);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.StartsWith) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isDataValueStartsWithSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.EndsWith) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isDataValueEndsWithSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.Populated) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isDataValuePopulated(tag[filterOption.field]);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.NotPopulated) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return !this.isDataValuePopulated(tag[filterOption.field]);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.LessThan) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isGivenValueLessThanSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.GreaterThan) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isGivenValueGreaterThanSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.LessThanOrEquals) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isGivenValueLessThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.GreaterThanOrEquals) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isGivenValueGreaterThanOrEqualToSearchValue(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.Between) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    const params: FilterBetweenParams = {
-                        givenValue: tag[filterOption.field],
-                        searchValue1: filterOption.value,
-                        searchValue2: filterOption.value2,
-                        valueType: filterOption.fieldType
-                    };
-                    return this.isGivenValueBetweenSearchValues(params);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.Before) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else if(filterOption.operator === OperatorString.After) {
-                const filteredTags = remove(fullListOfTags, (tag: TagType) => {
-                    return !this.isGivenDateBeforeSearchDate(tag[filterOption.field], filterOption.value);
-                });
-                filterResult = [...filterResult, ...filteredTags];
-            } else {
-                console.warn(`Unknown filter operator: '${filterOption.operator}'`);
-            }
-        });
-        this.tags = filterResult;
-    }
-
-    
-    isDataValueContainsSearchValue(dataValue: string, searchValue: string): boolean {
-        return Boolean(dataValue.match(new RegExp(searchValue, 'i')));
-    }
-
-    isDataValueEqualToSearchValue(dataValue: string, searchValue: string, valueType: string): boolean {
-        if (valueType === 'Text') {
-            return dataValue.toLowerCase() === searchValue.toLowerCase();
-        } else if (valueType === 'Number') {
-            return Number(dataValue) === Number(searchValue);
-        } else {
-            console.warn(`Not recognized FilterFieldType`);
-        }
-    }
-
-    isDataValueStartsWithSearchValue(dataValue: string, searchValue: string): boolean {
-        return dataValue.toLowerCase().startsWith(searchValue.toLowerCase());
-    }
-
-    isDataValueEndsWithSearchValue(dataValue: string, searchValue: string): boolean {
-        return dataValue.toLowerCase().endsWith(searchValue.toLowerCase());
-    }
-
-    isDataValuePopulated(dataValue: string | number): boolean {
-        return dataValue !== undefined && dataValue !== null && dataValue !== '';
-    }
-
-    isGivenValueLessThanSearchValue(givenValue: string, searchValue: string): boolean {
-        return givenValue < searchValue;
-    }
-
-    isGivenValueGreaterThanSearchValue(givenValue: string, searchValue: string): boolean {
-        return givenValue > searchValue;
-    }
-
-    isGivenValueLessThanOrEqualToSearchValue(givenValue: string, searchValue: string): boolean {
-        return givenValue <= searchValue;
-    }
-
-    isGivenValueGreaterThanOrEqualToSearchValue(givenValue: string, searchValue: string): boolean {
-        return givenValue >= searchValue;
-    }
-
-    isGivenValueBetweenSearchValues({givenValue, searchValue1, searchValue2, valueType}: FilterBetweenParams): boolean {
-        if (valueType === 'DateTime') {
-            return new Date(givenValue) > new Date(searchValue1) && new Date(givenValue) < new Date(searchValue2);
-        }
-        return givenValue > searchValue1 && givenValue < searchValue2;
-    }
-
-    isGivenDateBeforeSearchDate(givenDate: string, searchDate: string): boolean {
-        return new Date(givenDate) < new Date(searchDate);
+    advancedFiltersChanged(event: Filters): void {
+        this.tags = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTags, event);
     }
 
     getTags() {
