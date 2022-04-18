@@ -191,7 +191,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    selectListSegment(event) {
+    selectListSegment(event: string) {
         _.set(this.model, 'FieldType.Type.Path.Definition.AssetTypeUid', event);
     }
 
