@@ -12,7 +12,7 @@ import { CompanySettingsService } from '../../services/settings.service';
             <ng-container *ngIf="includeSelectLinks">
                 <a style="color: #51a6dc; cursor: pointer;" (click)="onSelectAllClick.emit()">Select All</a> | <a style="color: #51a6dc; cursor: pointer;" (click)="onSelectNoneClick.emit()">Select None</a> &nbsp;&nbsp;&nbsp;
             </ng-container>
-            {{selectedItems}} of {{totalItems}} items selected
+            <ng-container i18n i18n>{{selectedItems}} of {{totalItems}} items selected</ng-container>
     </div>
 </div>
         `,
