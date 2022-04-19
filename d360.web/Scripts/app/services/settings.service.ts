@@ -3,12 +3,13 @@ import { CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySetting
 import { AuthenticationProperties } from "../models/authentication-properties.model";
 import { SelectItem } from "primeng/api";
 import { JsonResult } from "../models/jsonresult.model";
-import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { HttpClient, HttpContext, HttpHeaders } from "@angular/common/http";
 import { catchError, map, tap } from "rxjs/operators";
 import { Observable, of } from "rxjs";
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from "./messages-observable.service";
 import { OperatorModel } from "../models/operator.model";
+import { ROUTE_INDEPENDENT_QUERY } from "../http-interceptors";
 
 @Injectable({
     providedIn: 'root'
@@ -23,37 +24,45 @@ export class CompanySettingsService extends BaseObservableService {
     loadApplicationSettings() {
         //HelpBaseUri
         return new Promise((resolve, reject) => {
-            this.http.get('/api/v2/environment/appsettings').subscribe((r) => {
-                this.appSettings = <AppSettingModel[]>r;
-                resolve(true);
-            });
+            this.http
+                .get(
+                    '/api/v2/environment/appsettings',
+                    { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+                ).subscribe((r) => {
+                    this.appSettings = <AppSettingModel[]>r;
+                    resolve(true);
+                });
         });
     }
 
     loadSettings() {
         return new Promise((resolve, reject) => {
-            this.http.get('/api/v2/environment/settings').subscribe((r) => {
-                this.settings = <SettingsGetModel[]>r;
-                // now parse read-only value and load into each model
-                this.settings.forEach((s) => {
-                    if (s.BooleanSetting) {
-                        s.ScalarValue = s.BooleanSetting.Value;
-                    }
-                    else if (s.GuidSetting) {
-                        s.ScalarValue = s.GuidSetting.Value;
-                    }
-                    else if (s.NumberSetting) {
-                        s.ScalarValue = s.NumberSetting.Value;
-                    }
-                    else if (s.StringSetting) {
-                        s.ScalarValue = s.StringSetting.Value;
-                    }
-                    else {
-                        s.ScalarValue = null;
-                    }
+            this.http
+                .get(
+                    '/api/v2/environment/settings',
+                    { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+                ).subscribe((r) => {
+                    this.settings = <SettingsGetModel[]>r;
+                    // now parse read-only value and load into each model
+                    this.settings.forEach((s) => {
+                        if (s.BooleanSetting) {
+                            s.ScalarValue = s.BooleanSetting.Value;
+                        }
+                        else if (s.GuidSetting) {
+                            s.ScalarValue = s.GuidSetting.Value;
+                        }
+                        else if (s.NumberSetting) {
+                            s.ScalarValue = s.NumberSetting.Value;
+                        }
+                        else if (s.StringSetting) {
+                            s.ScalarValue = s.StringSetting.Value;
+                        }
+                        else {
+                            s.ScalarValue = null;
+                        }
+                    });
+                    resolve(true);
                 });
-                resolve(true);
-            });
         });
     }
 

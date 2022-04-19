@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { SearchResults, SearchQuery } from '../models/search-result.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { catchError, map, takeUntil, shareReplay, delay } from 'rxjs/operators';
 import { Observable, Subject, of, throwError } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
@@ -8,6 +8,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { SettingsHelper, SearchType } from '../models/settings.model';
 import { IndexableType, IndexableStatus } from "../models/search-admin.model";
 import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
+import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
 
 @Injectable({
     providedIn: 'root'
@@ -93,7 +94,11 @@ export class SearchService extends BaseObservableService  {
 
     //Private method that calls and pipes it into a shareReplay Observable
     private requestVisibleCategories(): Observable<string[]> {
-        return this.http.get('api/v2/search/categories').pipe(
+        return this.http
+            .get(
+                'api/v2/search/categories', 
+                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+            ).pipe(
             map((res) => <string[]>res),
             catchError((err) => this.handleError(err)),
             shareReplay(1)

@@ -419,6 +419,8 @@ namespace d360.model.DataAccessLayer
 										case when FT.Type = 'JsonElement' then FT.IsDisplayable else null end as 'Type.JsonElement.IsDisplayable',
 										case when FT.Type = 'JsonElement' then FT.ShowIfEmpty else null end as 'Type.JsonElement.ShowIfEmpty',
 										case when FT.Type = 'JsonElement' then FT.IsListable else null end as 'Type.JsonElement.IsListable',
+										case when FT.Type = 'JsonElement' then FT.SortOrder else null end as 'Type.JsonElement.SortOrder',
+										case when FT.Type = 'JsonElement' then FT.SortByAscending else null end as 'Type.JsonElement.SortByAscending',
 										case when FT.Type = 'JsonElement' then (select Name from FieldType where ID = JSON_VALUE(FT.Definition,'$.FieldTypeID')) else null end as 'Type.JsonElement.JsonAttribute.FieldName',
 										case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.Path') else null end as 'Type.JsonElement.JsonAttribute.Path',
 										case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.DataType') else null end as 'Type.JsonElement.JsonAttribute.DataType',
@@ -765,6 +767,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = f.Type.Score.IsPrimaryFilter;
 					newFieldType.ShowIfEmpty = f.Type.Score.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Score.SortOrder;
+					newFieldType.SortByAscending = f.Type.Score.SortByAscending;
 					newFieldType.ColumnWidth = f.Type.Score.ColumnWidth;
 					newFieldType.ColumnOrder = f.Type.Score.ColumnOrder.HasValue ? f.Type.Score.ColumnOrder.Value : ++maxColumnIndex;
 					newFieldType.ColumnWidth = f.Type.Score.ColumnWidth;
@@ -798,6 +801,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = false;
 					newFieldType.ShowIfEmpty = f.Type.ComputedOwnershipLookup.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.ComputedOwnershipLookup.SortOrder;
+					newFieldType.SortByAscending = f.Type.ComputedOwnershipLookup.SortByAscending;
 					newFieldType.ColumnWidth = f.Type.ComputedOwnershipLookup.ColumnWidth;
 					newFieldType.DisplayInColumn = f.Type.ComputedOwnershipLookup.DisplayInColumn;
 
@@ -868,6 +872,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPrimaryFilter = false;
 					newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
+					newFieldType.SortByAscending = f.Type.ComputedRelationshipField.SortByAscending;
 					newFieldType.DisplayInColumn = f.Type.ComputedRelationshipField.DisplayInColumn;
 
 					if (f.Type.ComputedRelationshipField.Search != null)
@@ -1340,7 +1345,9 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsDisplayable = f.Type.JsonElement.IsDisplayable;
 					newFieldType.ShowIfEmpty = f.Type.JsonElement.ShowIfEmpty;
 					newFieldType.IsListable = f.Type.JsonElement.IsListable;
-					
+					newFieldType.SortOrder = f.Type.JsonElement.SortOrder;
+					newFieldType.SortByAscending = f.Type.JsonElement.SortByAscending;
+
 					if (f.Type.JsonElement.JsonAttribute != null)
 					{
 						int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.Object == newFieldType.Object && ft.ObjectID == newFieldType.ObjectID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
@@ -1630,6 +1637,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPartOfKey = false;
 					newFieldType.ShowIfEmpty = true;
 					newFieldType.SortOrder = f.Type.Path.SortOrder;
+					newFieldType.SortByAscending = f.Type.Path.SortByAscending;
 					newFieldType.IsPrimaryFilter = false;
 					newFieldType.DisplayInColumn = f.Type.Path.DisplayInColumn;
 
@@ -1660,6 +1668,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsListable = f.Type.Relationship.IsListable;
 					newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
 					newFieldType.SortOrder = f.Type.Relationship.SortOrder;
+					newFieldType.SortByAscending = f.Type.Relationship.SortByAscending;
 					newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
 					newFieldType.DisplayInColumn = f.Type.Relationship.DisplayInColumn;
 					
@@ -1728,6 +1737,7 @@ namespace d360.model.DataAccessLayer
 					newFieldType.IsPartOfKey = false;
 					newFieldType.ShowIfEmpty = true;
 					newFieldType.SortOrder = f.Type.Tag.SortOrder;
+					newFieldType.SortByAscending = f.Type.Tag.SortByAscending;
 					newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
 				}
 				else if (f.Type.Counter != null)

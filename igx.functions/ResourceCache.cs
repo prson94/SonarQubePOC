@@ -191,15 +191,24 @@ namespace igx.functions.consumption
 								try
 								{
 									var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-									var toDeleteIds = currentResourceIDs.Intersect(updatedResourceIDs);
+									Stack<int> toDeleteIds = new Stack<int>(currentResourceIDs.Intersect(updatedResourceIDs));
+									LinkedList<int> idsToSend = new LinkedList<int>();
 
-									currentResourceIDs.ForEach(cr =>
+									//We need the following code because SQL Server allows us to send only 2100 parameters per query.
+									while (toDeleteIds.TryPop(out int id))
 									{
-										if (!updatedResourceIDs.Contains(cr))
+										idsToSend.AddLast(id);
+										
+										if (idsToSend.Count >= 2099)
 										{
-											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { toDeleteIds });
+											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
 										}
-									});
+									}
+
+									if (idsToSend.Count > 0)
+									{
+										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+									}
 
 									if (toDeleteIds.Any())
 									{

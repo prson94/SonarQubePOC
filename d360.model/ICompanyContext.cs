@@ -748,9 +748,9 @@ namespace d360.model
 
         #region Rebuild job status
 
-        Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses();
+        Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses(int timeOutInHours);
 
-        Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state);
+        Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state, int timeOutInHours);
 
         #endregion
     }

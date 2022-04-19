@@ -43,6 +43,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     statuses: any[];
     baseTypes: any[];
     matchTypes: any[];
+    baseTypeOptions: any[];
     savingInProgress: boolean = false;
     hasHeader: boolean = false;
     isInError: boolean = false;
@@ -58,7 +59,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     savingInProgressWithAddNew: boolean = false;
     isDuplicateQualifier: boolean = false;
 
-    @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
+    @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;    
 
     constructor(
         private cdRef: ChangeDetectorRef,
@@ -105,10 +106,10 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                     this.hasFormChanged = true;
                 } else {
                     this.hasFormChanged = false;
-                }
+                }        
             });
         }, 500);
-
+        
         this.populateTypeLists();  
     }
     ngOnChanges(changes: SimpleChanges): void {        
@@ -195,10 +196,11 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     populateTypeLists() {
         if (!this.matchTypes) {
             this.isLoading = true;
-            this.dataProfileService.getSemanticLookupList("matchtypes").subscribe((matchRes) => {
+            this.dataProfileService.getSemanticLookupList("matchtypes", false, null, "none").subscribe((matchRes) => {
                 this.matchTypes = matchRes.map((matchType) => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description }; });
                 this.dataProfileService.getSemanticLookupList("basetypes").subscribe((baseRes) => {
-                    this.baseTypes = baseRes.map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
+                    this.baseTypes = baseRes;
+                    this.getBaseTypeOptions();
                     this.dataProfileService.getSemanticLookupList("statuses").subscribe((statusRes) => {
                         this.statuses = statusRes.map((status) => { return { label: status.Name, value: status.Value }; });
                         this.localService.getLocales().subscribe((locales) => {
@@ -222,7 +224,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         type NewType = AbstractControl;
 
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value === null) {
+            if (control.value === null || control.value === undefined) {
                 return {};
             }
             if ((control.value as string).trim() === '' && (control.value as string) !== '') {
@@ -302,6 +304,26 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     expandChanged() {
         setTimeout(() => this.setFormHeight(), 10);
+    }
+
+    get cancelButtonText(): string {
+        if (!this.isEdit) {
+            return "Cancel";
+        }
+            
+        if (this.hasFormChanged && this.isEdit) {
+            return "Discard Changes";
+        }
+         
+        return "Close";
+    }
+
+    getBaseTypeOptions() {
+        if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.Number]) {
+            this.baseTypeOptions = this.baseTypes.filter((b) => b.Value === "Double" || b.Value === "Long").map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
+        } else {
+            this.baseTypeOptions = this.baseTypes.map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
+        }        
     }
 
 }

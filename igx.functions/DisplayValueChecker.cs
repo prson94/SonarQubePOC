@@ -66,7 +66,7 @@ namespace igx.functions.consumption
                             cachingProvider: new DummyCachingProvider(),
                             connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
-                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
+                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {
                             try
@@ -83,7 +83,7 @@ namespace igx.functions.consumption
                             }
                             finally
                             {
-                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                             }
                         }
                     }

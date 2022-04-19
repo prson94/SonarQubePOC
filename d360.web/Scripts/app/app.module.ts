@@ -99,7 +99,7 @@ export function localeInitializer(localeId: string) {
         AppRoutingModule,
         BrowserAnimationsModule,
 
-        // prime 
+        // prime
         ToastModule,
         DialogModule,
 

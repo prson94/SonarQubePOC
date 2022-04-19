@@ -61,7 +61,7 @@ namespace igx.jobs.assetgraphprocessor
                         new DummyCachingProvider(),
                         constants.COMMUNITY_DATABASE_CONNECTION);
 
-                    var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
+                    var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
@@ -81,7 +81,7 @@ namespace igx.jobs.assetgraphprocessor
                             }
                             finally
                             {
-                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
                             }
                         }
                     }
