@@ -123,7 +123,7 @@ export class UiAdvancedFiltering {
                     return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
                 });
             },
-        }
+        };
 
         filters.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
             if(filterOptions.hasOwnProperty(filterOption.operator)){
@@ -237,7 +237,7 @@ export class UiAdvancedFiltering {
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
-        }
+        };
 
         filters.data.forEach((filterOption: AdvancedFilterFieldCondition) => {
             if(filterOptions.hasOwnProperty(filterOption.operator)){
@@ -255,7 +255,7 @@ export class UiAdvancedFiltering {
 
     isDataValueContainsSearchValue(dataValue: string, searchValue: string): boolean {
         // RegExp need to be build dynamically
-        /* eslint-disable-next-line detect-non-literal-regexp */
+        // eslint-disable-next-line
         return Boolean(dataValue.match(new RegExp(searchValue, 'i')));
     }
 
