@@ -1081,13 +1081,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let preloadedIntersects: number[] = [];
         if (this.diagramData.links) {
             this.diagramData.links.forEach(i => {
-                if (i.predicateId == predicateId || !predicateId) {
+                //if (i.predicateIds.indexOf(predicateId) > -1 || !predicateId) {
                     if (i.links) {
                         i.links.forEach(c => {
                             preloadedIntersects.push(c.id)
                         });
                     }
-                }
+                //}
             });
         }
         return preloadedIntersects;
@@ -1640,7 +1640,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             });
 
-            let preloadedIntersects = this.helper_GetDiagramIntersectIds(null);
+            let intersects = this.helper_GetDiagramIntersectIds(null);
 
             let direction: AssetBrowserApiHopDirection = isBackward ? AssetBrowserApiHopDirection.Backward : AssetBrowserApiHopDirection.Forward;
 
@@ -1652,7 +1652,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 assets: assets,
                 currentHop: currentHop,
                 includeNonLeaf: this.displayConfiguration.IncludeNonLeaf,
-                preloadedIntersects: preloadedIntersects,
+                intersects: intersects,
                 hierarchyKey: hierarchyKey
             };
             this.browserService.getLineageHop(requestModel)

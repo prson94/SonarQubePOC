@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.4">
-    <comment>GOV-17904</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.5">
+    <comment>GOV-17917</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -612,7 +612,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.PredicateType not in (1,3,4,12,13,15)
+														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateName
@@ -624,7 +624,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType not in (1,3,4,12,13,15)
+														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateInverse
