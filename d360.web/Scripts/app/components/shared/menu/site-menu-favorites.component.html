@@ -1,36 +1,35 @@
-<d3s-site-menu-category 
-	*ngIf="menu"
-	[expanded]="expanded"
-	[title]="title"
-	[menu]="menu"
-	[isActive]="menu.isActiveItem"
-	[customPanelContent]="(state$|async)?.isManageFavoritesModeEnabled ? manageFavorites : showFavorites"
-	[emptyHint]="emptyHint"
-	(clearClick)="clearFavorites()"
-	(activeItemChanged)="handleActiveItem($event);"
-	rootIconName="fa-star">
-	<ng-template #showFavorites>
-		<d3s-site-menu-show-favorites-panel
-			[isActive]="menu.isActiveItem"
-			(activeItemChanged)="handleActiveItem($event);" >
-			<ng-container additionalButtons>
-				<button (click)="store.toggleManageFavoritesOnAction()"
-					igButton
-					icon="fa-edit"
-					pTooltip="Manage Favorites"
-					tooltipPosition="top"
-					tooltipStyleClass="ig-tooltip">
-				</button>
-			</ng-container>
-		</d3s-site-menu-show-favorites-panel>
-	</ng-template>
+<d3s-site-menu-category *ngIf="menu"
+                        [expanded]="expanded"
+                        [title]="title"
+                        [menu]="menu"
+                        [isActive]="menu.isActiveItem"
+                        [customPanelContent]="(state$|async)?.isManageFavoritesModeEnabled ? manageFavorites : showFavorites"
+                        [emptyHint]="emptyHint"
+                        (clearClick)="clearFavorites()"
+                        (activeItemChanged)="handleActiveItem($event);"
+                        rootIconName="fa-star">
+    <ng-template #showFavorites>
+        <d3s-site-menu-show-favorites-panel [isActive]="menu.isActiveItem"
+                                            (activeItemChanged)="handleActiveItem($event);">
+            <ng-container additionalButtons>
+                <button (click)="store.toggleManageFavoritesOnAction()"
+                        igButton
+                        icon="fa-edit"
+                        i18n-pTooltip
+                        pTooltip="Manage Favorites"
+                        tooltipPosition="top"
+                        tooltipStyleClass="ig-tooltip">
+                </button>
+            </ng-container>
+        </d3s-site-menu-show-favorites-panel>
+    </ng-template>
 
-	<ng-template #manageFavorites>
-		<d3s-site-menu-manage-favorites-panel></d3s-site-menu-manage-favorites-panel>
-	</ng-template>
+    <ng-template #manageFavorites>
+        <d3s-site-menu-manage-favorites-panel></d3s-site-menu-manage-favorites-panel>
+    </ng-template>
 
-	<ng-template #emptyHint>
-		No Favorites found. <br/>
-		<span [style.whiteSpace]="'nowrap'">Click the Add to Favorites<i class="fa fa-star" [style.width.px]="32"></i>button</span> to add a favorite.
-	</ng-template>
+    <ng-template #emptyHint>
+        <ng-container i18n>No Favorites found. </ng-container><br />
+        <span [style.whiteSpace]="'nowrap'" i18n>Click the Add to Favorites<i class="fa fa-star" [style.width.px]="32"></i>button</span> to add a favorite.
+    </ng-template>
 </d3s-site-menu-category>

@@ -41,7 +41,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     isScrollerVisable: boolean = false;
     scrollingUp: boolean = false;
-    scrollTitle: string = "Scroll down";
+    scrollTitle: string = $localize`Scroll down`;
 
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
     @ViewChildren(SiteMenuFavoritesComponent) favoritesMenuRefs: QueryList<SiteMenuFavoritesComponent>;
@@ -66,7 +66,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         private featureFlagService: FeatureFlagsService
     ) {
         super(settingsService);
-    }    
+    }
 
     ngAfterContentInit(): void {
         this.checkScroller();
@@ -79,7 +79,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
         });
-        
+
         this.subParams = this.route.queryParams.subscribe((params) => {
             let markForCheck = false;
 
@@ -108,7 +108,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         if (this.subSiteNav) {
             this.subSiteNav.unsubscribe();
         }
-        
+
         if (this.subParams) {
             this.subParams.unsubscribe();
         }
@@ -143,11 +143,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         }
         if (top >= (max) && top != 0) {
             this.scrollingUp = true;
-            this.scrollTitle = "Scroll up";
+            this.scrollTitle = $localize`Scroll up`;
             this.ref.markForCheck();
         } else if (top <= 0) {
             this.scrollingUp = false;
-            this.scrollTitle = "Scroll down";
+            this.scrollTitle = $localize`Scroll down`;
             this.ref.markForCheck();
         }
 
@@ -163,11 +163,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         const menu = this.menu.nativeElement as HTMLUListElement;
         const heightOfContent = menu.scrollHeight - paddingHeight;
-        
+
         this.isScrollerVisable = (menu.clientHeight < heightOfContent);
         this.ref.markForCheck();
     }
-    
+
     @HostListener('scroll', ['$event'])
     onElementScroll($event) {
         this.delayedCheckScrollerPos();
@@ -196,51 +196,51 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 for (let menu of result.MenuItems) {
                     menu.ShouldDisplay = true;
 
-                            switch (menu.MenuID) {
-                                case '#Business':
-                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
-                                    break;
-                                case '#Technical':
-                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
-                                    break;
-                                case '#Models':
-                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
-                                    break;
-                                case '#Policy':
-                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
-                                    break;
-                                case '#Data Quality':
-                                    break;
-                                case '#Monitor':
-                                    menu.NavigationItems = [];
-                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
-                                    menu.ShouldDisplay = (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement));
-                                    break;
-                                case '#Reference':
-                                    menu.NavigationItems = [];
-                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
-                                    break;
-                                case '#SemanticTypes':
-                                    menu.NavigationItems = [];
-                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT;
-                                    break;
-                                case '#Community':
-                                    menu.NavigationItems = [];
-                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
-                                    break;
-                                case '#Dashboards':
-                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
-                                    break;
-                                default:
-                                    //is it a custom menu?
-                                    if (menu.MenuID.startsWith('~')) {
-                                        if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
-                                    }
-                                    break;
+                    switch (menu.MenuID) {
+                        case '#Business':
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
+                            break;
+                        case '#Technical':
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
+                            break;
+                        case '#Models':
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
+                            break;
+                        case '#Policy':
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
+                            break;
+                        case '#Data Quality':
+                            break;
+                        case '#Monitor':
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
+                            menu.ShouldDisplay = (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement));
+                            break;
+                        case '#Reference':
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
+                            break;
+                        case '#SemanticTypes':
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT;
+                            break;
+                        case '#Community':
+                            menu.NavigationItems = [];
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
+                            break;
+                        case '#Dashboards':
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
+                            break;
+                        default:
+                            //is it a custom menu?
+                            if (menu.MenuID.startsWith('~')) {
+                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
                             }
-                            if (!menu.Icon && !menu.FullURL) {
-                                menu.Icon = 'fa-folder';
-                            }
+                            break;
+                    }
+                    if (!menu.Icon && !menu.FullURL) {
+                        menu.Icon = 'fa-folder';
+                    }
 
                 }
 
@@ -349,18 +349,18 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu.MenuID = '-Config';
         this.configMenu.NavigationItems = [];
 
-        this.configMenu.NavigationItems.push({ Name: 'Business Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Technical Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Diagram Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Relationships', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Workflows', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Workflow Actions', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Scoring Definitions', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Business Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Technical Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Diagram Assets`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Models`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Policies`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Rules`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Relationships`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Predicates`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Workflows`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Workflow Actions`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Scoring Definitions`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, count: null });
+        this.configMenu.NavigationItems.push({ Name: $localize`Surveys`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, count: null });
     }
 
     private buildAdminMenu() {
@@ -372,9 +372,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, count: null });
-        integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, count: null  });
+        integrationMenu.Items.push({ Name: $localize`Bulk Loader`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, count: null });
         if (this.getBooleanSetting(CompanySettingEnum.ShowCustomAPIAdmin)) {
-            integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, count: null });
+            integrationMenu.Items.push({ Name: $localize`Custom API`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, count: null });
         }
         this.adminMenu.NavigationItems.push(integrationMenu);
 
@@ -382,25 +382,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         securityMenu.Name = "Security";
         securityMenu.Items = [];
 
-        securityMenu.Items.push({ Name: 'Groups', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, count: null });
+        securityMenu.Items.push({ Name: $localize`Groups`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, count: null });
 
         if (this.getBooleanSetting(CompanySettingEnum.EnableOrganizations)) {
-            securityMenu.Items.push({ Name: 'Organizations', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, count: null });
+            securityMenu.Items.push({ Name: $localize`Organizations`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS}`, Items: null, IsLink: false, count: null });
         }
-        securityMenu.Items.push({ Name: 'Responsibilities', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, count: null });
-        securityMenu.Items.push({ Name: 'Users', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, count: null });
+        securityMenu.Items.push({ Name: $localize`Responsibilities`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`, Items: null, IsLink: false, count: null });
+        securityMenu.Items.push({ Name: $localize`Users`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES}`, Items: null, IsLink: false, count: null });
 
         this.adminMenu.NavigationItems.push(securityMenu);
 
-        this.adminMenu.NavigationItems.push({ Name: 'Settings', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, count: null });
+        this.adminMenu.NavigationItems.push({ Name: $localize`Settings`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS}`, IsLink: false, count: null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, count: null });
+        this.adminMenu.NavigationItems.push({ Name: $localize`Export Templates`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, count: null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Dashboards', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, count: null });
+        this.adminMenu.NavigationItems.push({ Name: $localize`Dashboards`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, count: null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Branding', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, count: null });
+        this.adminMenu.NavigationItems.push({ Name: $localize`Branding`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, count: null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, count: null });
+        this.adminMenu.NavigationItems.push({ Name: $localize`Tags`, Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, count: null });
 
     }
 

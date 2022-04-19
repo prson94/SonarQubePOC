@@ -23,7 +23,7 @@ export class SiteMenuCategoryPanelComponent extends BaseComponent implements Aft
             if (this.searchInput) {
                 this.searchInput.focus();
             }
-            
+
             this.clearInput();
         }
     }
@@ -33,6 +33,8 @@ export class SiteMenuCategoryPanelComponent extends BaseComponent implements Aft
     constructor(protected settingsService: CompanySettingsService) {
         super(settingsService);
     }
+
+    get tooltipText(): string { return this.hideEmptyItems ? $localize`Show empty collections` : $localize`Hide empty collections`; }
 
     @ViewChild('searchinput', { static: false }) searchInput: SearchFieldComponent;
 

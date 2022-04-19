@@ -17,6 +17,7 @@ import {
         `
             <button igButton
                     class="header-back-button"
+                    i18n-tooltip
                     tooltip="Click to go back"
                     tooltipPosition="bottom"
                     [disabled]="disabled"

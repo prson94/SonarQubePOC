@@ -90,7 +90,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.ID"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to delete the selected item?'"
+                         i18n-prompt
+                         prompt="Are you sure you want to delete the selected item?"
                          (onCancel)="showDelete=false;"
        ></d3s-delete-form>
         <d3s-asset-delete-editor *ngIf="showDelete && assetTypeUid"
@@ -110,7 +111,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() deleteUri: string;
     @Input() createUri: string;
     @Input() editUri: string;
-    @Input() title: string = "Items";
+    @Input() title: string = $localize`Items`;
     @Input() itemName: string = "";
     @Input() sortField: string;
     @Input() assetTypeUid: string;

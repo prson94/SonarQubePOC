@@ -27,9 +27,9 @@ export class ObjectDetailComponent implements OnChanges {
     private isLoading = false;
     DetailFieldType = DetailFieldType;
 
-    readonly systemProperties: string = "System Fields";
-    readonly noCategory: string = "None";
-    readonly defaultCategory: string = "General";
+    readonly systemProperties: string = $localize`System Fields`;
+    readonly noCategory: string = $localize`None`;
+    readonly defaultCategory: string = $localize`General`;
 
     private categories: Category[] = new Array<Category>();
     private systemPropertiesCategory: Category = new Category(this.systemProperties);

@@ -5,7 +5,7 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.model';
-import * as _ from 'lodash'; 
+import * as _ from 'lodash';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -31,14 +31,14 @@ declare var ResourceEmail;
                                     <div class="mini-menu-line">
                                         <div class="check-gutter">
                                         </div>
-                                        <div class="text">Shopping Cart</div>
+                                        <div class="text" i18n>Shopping Cart</div>
                                         <div class="expand-gutter right"></div>            
                                     </div>
                                 </li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [homePageItem]="homePageItem"></d3s-header-favorites></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
-                                <li class="header-item" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i>Notifications</a></li>
+                                <li class="header-item" *ngIf="headerActionsService.showNotifications"><a href="#" i18n-title title="Go to notification settings"><i class="fa fa-bell-o"></i><ng-container i18n>Notifications</ng-container></a></li>
                             </ul>                                                    
                         </div>
                     </div>
@@ -100,11 +100,11 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
-                this.hasRaiseIssueButton = 
-                        !e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue')
-                        && !this.isAdminUrl
-                        && !isResourceUrl
-                        && !this.settingsService.getSettingById(CompanySettingEnum.DisableIssueManagement).BooleanSetting.Value;
+                this.hasRaiseIssueButton =
+                    !e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue')
+                    && !this.isAdminUrl
+                    && !isResourceUrl
+                    && !this.settingsService.getSettingById(CompanySettingEnum.DisableIssueManagement).BooleanSetting.Value;
 
                 this.calculateControlWidth();
             }
@@ -149,9 +149,9 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
 
     public raiseIssue() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`);
-    } 
+    }
 
-    
+
 
     private calculateControlWidth() {
         this.controlWidth = 55 + 45; //user image and logout

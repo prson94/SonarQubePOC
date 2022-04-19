@@ -10,6 +10,7 @@
         </div>
         <div class="grid-action-buttons" *ngIf="!groupIsActiveDirectory && !readOnly">
             <button igButton
+                    i18n-pTooltip
                     pTooltip="Add New Members"
                     tooltipPosition="left"
                     tooltipStyleClass="ig-tooltip"
@@ -33,11 +34,11 @@
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'Name'">
-                    Name
+                    <ng-container i18n>Name</ng-container>
                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'Owner'">
-                    Owner
+                    <ng-container i18n>Owner</ng-container>
                     <d3s-sortIcon [field]="'Owner'"></d3s-sortIcon>
                 </th>
                 <th style="width: 35px;" *ngIf="!readOnly"></th>
@@ -62,6 +63,7 @@
                 <td *ngIf="!readOnly">
                     <div class="RowTools">
                         <a (click)="selectedRow = item;showDelete=true"
+                           i18n-pTooltip
                            pTooltip="Remove Member"
                            tooltipPosition="left"
                            tooltipStyleClass="ig-tooltip" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
@@ -71,7 +73,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage" let-columns>
             <tr>
-                <td [attr.colspan]="3">
+                <td [attr.colspan]="3" i18n>
                     No group members
                 </td>
             </tr>
@@ -84,22 +86,24 @@
 
 <d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
            (onClose)="showDelete=false"
-           [title]="'Remove Member'"
+           i18n-title
+           title="Remove Member"
            [isVisible]="showDelete">
-    <div class="content">
+    <div class="content" i18n>
         Are you sure you want to remove <strong>{{selectedRow.FirstName + ' ' + selectedRow.LastName}}</strong> from <strong>{{groupName}}</strong>?
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus i18n-label label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>
 </d3s-modal>
 
 <d3s-modal *ngIf="loadedGroup" additionalClasses="modal-dyn-editor large-dialog asset-editor"
            (onClose)="showAddMembers=false"
            [subtitle]="loadedGroup.Name"
-           [title]="'Add New Members'"
+           i18n-title
+           title="Add New Members"
            [isVisible]="showAddMembers">
     <div class="content">
         <div class="row">
@@ -107,8 +111,8 @@
         </div>
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" (click)="cancel();" [disabled]="savingInProgress"></button>
+        <button igButton label="Cancel" i18n-label (click)="cancel();" [disabled]="savingInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Add" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !field.Value || field.Value.length === 0"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Add" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !field.Value || field.Value.length === 0"></button>
     </div>
 </d3s-modal>
