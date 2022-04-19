@@ -39,6 +39,15 @@ resources:
     name: Infogix/govern-pipeline-templates
     ref: refs/heads/main
     endpoint: 'govern-build - Service Endpoint'
+  - repository: global-templates
+    type: github
+    name: Infogix/ado-pipeline-templates
+    ref: refs/heads/main
+    endpoint: 'govern-build - Service Endpoint'
+  - repository: devops
+    type: github
+    name: Infogix/devops
+    ref: refs/heads/main
 stages:
 - stage: BUILD_NAME
   displayName: 'Set build name'
@@ -86,6 +95,7 @@ stages:
       vmImage: windows-2019
     steps:
     - checkout: self
+    - checkout: devops
     - download: current
       artifact: dist
     - task: CopyFiles@2
@@ -114,9 +124,22 @@ stages:
         blackduckApiToken: $(blackduckApi)
         projectName: 'InfogixData360-Govern-UI'
         blackDuckScanDirectory: $PWD/d360.web
-    - template: build/steps/step-govern-attribution-report.yml@templates
+    - template: blackduck-third-party-license/steps/blackduck-thirdpartylicense.yml@global-templates
+      parameters:
+        blackDuckProjectVersion: "e2471ee7-ddf2-4905-9f1d-fcf02efdea3b"
+        blackDuckApiToken: $(blackduckApi)
+        blackDuckScriptLocation: "$(Pipeline.Workspace)/devops/scripts/common/blackduck/thirdpartylicense.py"
+    - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
+    - task: Bash@3
+      displayName: 'Move BlackDuck Third Party License File'
+      inputs:
+        targetType: inline
+        failOnStderr: true
+        workingDirectory: $(Build.SourcesDirectory)
+        script: |
+          mv thirdpartylicense.json $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
     - task: ArchiveFiles@2
-      displayName: 'Add License Attirubtion File to Distro'
+      displayName: 'Add License Attribution File to Distro'
       inputs:
         rootFolderOrFile: $(Build.Repository.LocalPath)\WEB\
         includeRootFolder: false
