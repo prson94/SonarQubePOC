@@ -1100,7 +1100,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (fieldname == '*' || fieldname == 'NameTaken') {
             this.setValidation('name_already_taken', 'API Name not allowed.', (() => {
                 if (this.model.FieldType.Name) {
-                    var dissallowedFields: string[] = ['id', 'uid', 'assetid', 'assetuid', 'assettypeid', 'assettypeuid', 'createdon', 'updatedon', 'parentdisplayname', 'parentassetuid', 'keypath'];
+                    var dissallowedFields: string[] = ['id', 'uid', 'assetid', 'assetuid', 'assettypeid',
+                        'assettypeuid', 'createdon', 'updatedon', 'parentdisplayname', 'parentassetuid',
+                        'keypath', 'displayvalue'];
                     if (this.objectType === 'IntersectType') {
                         dissallowedFields.push('source');
                     }
