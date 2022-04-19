@@ -2361,7 +2361,7 @@ namespace d360.web.Controllers.V2
 						if (!string.IsNullOrEmpty(filter))
 						{
 							filter = "%" + filter + "%";
-							whereQuery += " and node.displaypath like @filter ";
+							whereQuery += " and trim(node.displaypath) like @filter ";
 						}
 
 						sql = $@"declare @target nvarchar(255) 
