@@ -1437,7 +1437,15 @@ namespace d360.web.Controllers.V2
                 throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
             }
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticMatchType.Pattern.GetAsList()));
+            var queryParams = Request.GetQueryNameValuePairs();
+            var orderBy = "name";
+
+            if (queryParams.Any(qp => qp.Key.ToLower() == "_orderby"))
+            {
+                orderBy = queryParams.FirstOrDefault(qp => qp.Key.ToLower() == "_orderby").Value;
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, SemanticMatchType.Pattern.GetAsList(orderBy)));
         }
 
         /// <summary>

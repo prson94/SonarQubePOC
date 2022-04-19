@@ -256,9 +256,9 @@ export class DataProfileService extends BaseObservableService {
         } 
     }
 
-    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null): Observable<any> {
+    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null, order: string = "name"): Observable<any> {
         
-        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}/`;        
+        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}?_orderby=${order}`;        
 
         if (isExport) {
             this.
