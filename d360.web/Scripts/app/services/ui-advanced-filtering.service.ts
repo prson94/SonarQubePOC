@@ -254,6 +254,8 @@ export class UiAdvancedFiltering {
     }
 
     isDataValueContainsSearchValue(dataValue: string, searchValue: string): boolean {
+        // RegExp need to be build dynamically
+        /* eslint-disable-next-line detect-non-literal-regexp */
         return Boolean(dataValue.match(new RegExp(searchValue, 'i')));
     }
 
@@ -276,7 +278,7 @@ export class UiAdvancedFiltering {
     }
 
     isDataValuePopulated(dataValue: string | number): boolean {
-        return dataValue !== undefined && dataValue !== null && dataValue !== '';
+        return typeof dataValue !== 'undefined' && dataValue !== null && dataValue !== '';
     }
 
     isGivenValueLessThanSearchValue(givenValue: string, searchValue: string): boolean {
