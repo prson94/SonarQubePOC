@@ -33,6 +33,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     private endSearchAllOption: SearchResult;
     private endSearchAllTypeToken: string = '__SHOWALL__';
     private options: string[];
+    private clearTimer: ReturnType<typeof setTimeout> = null;
 
     private typeAheadQuery$ = new Subject<string>();
 
@@ -89,6 +90,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     ngOnDestroy(): void {
+        clearTimeout(this.clearTimer);
         if (this.searchSub) this.searchSub.unsubscribe();
     }
 
@@ -156,6 +158,18 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.navigateQuery(event.srcElement.value);
             this.removeFocus(ac);
         }
+    }
+
+    blurHandler() {
+        if (this.showBigButton) {
+            this.clearTimer = setTimeout(() => { this.clearValue() }, 20000);
+        } else {
+            this.clearValue();
+        }
+    }
+
+    focusHandler() {
+        clearTimeout(this.clearTimer);
     }
 
     clearValue() {
