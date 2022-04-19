@@ -1,11 +1,11 @@
 ﻿import { Injectable } from '@angular/core';
-import { JsonResult } from '../../../models/jsonresult.model';
 import { HelpMenu } from '../../../models/helpmenu.model';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from '../../../services/baseObservable.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { ROUTE_INDEPENDENT_QUERY } from '../../../http-interceptors';
 
 @Injectable({
     providedIn: 'root'
@@ -15,7 +15,11 @@ export class HelpMenuService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     public getHelpMenuItems(): Observable<HelpMenu[]> {
-        return this.http.get('api/v2/environment/help')
+        return this.http
+            .get(
+                'api/v2/environment/help',
+                { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
+            )
             .pipe(
                 map((response) => <HelpMenu[]>response),
                 catchError((err) => this.handleError(err))

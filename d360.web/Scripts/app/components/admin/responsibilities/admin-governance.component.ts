@@ -38,7 +38,6 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.adminHeading = StringConstants.SubArea_Security;
         this.tabTitle = "Responsibility Types";
         this.theDeleteCallback = this.doDelete.bind(this);
-        this.load();
     }
 
     selectedItemChange() {
@@ -46,6 +45,10 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
             this.selectedRow.ID = res.data.ID;
             this.buildSecondaryNavigationForObject(this.selectedRow.ID, "ResponsibilityType");
         });
+    }
+
+    ngOnInit() {
+        this.load();
     }
 
     ngOnDestroy() {

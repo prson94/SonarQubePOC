@@ -2,7 +2,9 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/c
 import { Injectable } from "@angular/core";
 import { cloneDeep } from "lodash";
 import { Observable } from "rxjs";
-import { map, shareReplay, tap } from "rxjs/operators";
+import { map, tap } from "rxjs/operators";
+import { cancellableShareReplayLast } from "../static/rxjs";
+import { isQueryRequest } from './isQuery';
 
 const CacheEntryLifeTimeInMinutes = 10;
 
@@ -15,7 +17,7 @@ export class ReuseInterceptor implements HttpInterceptor {
     }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        if (req.method === 'GET') {
+        if (isQueryRequest(req)) {
             return this.reuseRequest(req, next);
         }
 
@@ -43,7 +45,7 @@ export class ReuseInterceptor implements HttpInterceptor {
                     this.cache.delete(cacheKey);
                 }
             }),
-            shareReplay(1),
+            cancellableShareReplayLast(),
             map(x => cloneDeep(x))
         );
 
@@ -65,7 +67,7 @@ export class ReuseInterceptor implements HttpInterceptor {
             return false;
         }
 
-        if (req.method === 'GET') {
+        if (isQueryRequest(req)) {
             return false;
         }
 
@@ -73,7 +75,7 @@ export class ReuseInterceptor implements HttpInterceptor {
     }
 
     getCacheKey(req: HttpRequest<any>) {
-        return req.urlWithParams;
+        return req.urlWithParams + "-" + JSON.stringify(req.body);
     }
 }
 
