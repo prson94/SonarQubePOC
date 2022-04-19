@@ -12,15 +12,17 @@
     <div class="row" *ngIf="!isLoading">        
         <form [formGroup]="semanticForm">
             <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
-                <div *ngIf="!semanticType">
-                    <ig-message-box>
-                        You will not be able to modify the Qualifier once created.
-                    </ig-message-box>
-                </div>
-                <div *ngIf="isBuiltIn">
-                    <ig-message-box>
-                        Editing is limited to Name and Description for built-in semantic Types.
-                    </ig-message-box>
+                <div style="margin-bottom: 16px">
+                    <div class="row" *ngIf="!semanticType">
+                        <ig-message-box style="width:100%">
+                            You will not be able to modify the Qualifier once created.
+                        </ig-message-box>
+                    </div>
+                    <div class="row" *ngIf="isBuiltIn">
+                        <ig-message-box>
+                            Editing is limited to Name and Description for built-in semantic types.
+                        </ig-message-box>
+                    </div>
                 </div>
                 <ig-property-group [igformGroup]="semanticForm"
                                    [title]="'General'"
@@ -76,6 +78,11 @@
                                              formControlName="threshold"
                                              [disabled]="isBuiltIn"
                                              [(ngModel)]="model.threshold"></ig-number-input>
+                            <div *ngIf="semanticForm.get('threshold').invalid && (semanticForm.get('threshold').dirty || semanticForm.get('threshold').touched)">
+                                <div *ngIf="semanticForm.get('threshold').errors?.outOfRange" class="ig-text-required">
+                                    Please enter a value between 1 and 100
+                                </div>
+                            </div>
                         </div>
                         <div class="row">
                             <label for="priority" class="ig-label FieldName">
@@ -87,11 +94,15 @@
                             <ig-number-input [tabindex]="5"
                                              [required]="true"
                                              [min]="1"
-                                             [max]="1000"
                                              [step]="1"
                                              formControlName="priority"
                                              [disabled]="isBuiltIn"
-                                             [(ngModel)]="model.priority"></ig-number-input>
+                                             [(ngModel)]="model.priority"></ig-number-input>        
+                            <div *ngIf="semanticForm.get('priority').invalid && (semanticForm.get('priority').dirty || semanticForm.get('priority').touched)">
+                                <div *ngIf="semanticForm.get('priority').errors?.outOfRange" class="ig-text-required">
+                                    Please enter a value greater than 0
+                                </div>
+                            </div>                           
                         </div>
                         <div class="row">
                             <label for="statuses" class="ig-label FieldName">Status</label>
@@ -162,9 +173,9 @@
                 <button igButton
                         type="button"
                         [igDataCy]="'Asset_Modal_Button_Cancel'"
-                        label="{{hasFormChanged ? 'Discard Changes' : 'Cancel'}}"
-                        tooltip="{{hasFormChanged ? 'Discard Changes' : 'Cancel'}}"
-                        title="{{hasFormChanged ? 'Discard Changes' : 'Cancel'}}"
+                        label="{{cancelButtonText}}"
+                        tooltip="{{cancelButtonText}}"
+                        title="{{cancelButtonText}}"
                         (click)="closeClick.emit();">
                 </button>
                 <div class="flex-grow"></div>
@@ -200,6 +211,7 @@
                     igSize="medium"
                     [options]="matchTypes"
                     appendTo="body"
+                    (onChange)="getBaseTypeOptions()"
                     [(ngModel)]="model.matchType"
                     [showClear]="false"
                     formControlName="matchType"
@@ -220,9 +232,9 @@
             </ng-template>
         </p-dropdown>
     </div>
-    <div class="row" *ngIf="!model.matchType">
+    <div class="row" *ngIf="!model.matchType" style="margin-top:16px">
         <ig-message-box>
-            Choose the asset Match type (e.g. list of values or numbers), to be prompted for more information on how to find matching assets.
+            Choose the asset match type (e.g. list of values or numbers), to be prompted for more information on how to find matching assets.
         </ig-message-box>
     </div>
 </ng-template>
@@ -232,15 +244,15 @@
         <label for="baseType" class="ig-label FieldName">Base Type</label>
         <p-dropdown igDropdown
                     igSize="medium"
-                    [options]="baseTypes"
+                    [options]="baseTypeOptions"
                     appendTo="body"
-                    (onChange)="matchTypeChanged($event)"
                     [(ngModel)]="model.baseType"
                     [showClear]="true"
                     formControlName="baseType"
                     tabindex="7"
                     [disabled]="isBuiltIn"
-                    name="baseType">
+                    name="baseType"
+                    placeholder="Optional">
             <ng-template let-item pTemplate="item">
                 <span [innerHtml]="item.label"></span>
             </ng-template>
@@ -275,14 +287,14 @@
 <ng-template #invalidValuesTemplate>
     <div class="row"  [formGroup]="semanticForm">
         <label class="ig-label FieldName" style="margin-right:5px">
-            InvalidList Values
+            Invalid Values
         </label>
         <ig-multi-input-field formControlName="invalidValues" [(ngModel)]='model.invalidList' igSize='full' [disabled]="isBuiltIn"></ig-multi-input-field>
     </div>
 </ng-template>
 
 <ng-template #minSamplesTemplate>
-    <div class="row"  [formGroup]="semanticForm">
+    <div class="row" [formGroup]="semanticForm">
         <label class="ig-label FieldName" style="margin-right:5px">
             Minimum Samples
             <span class="tooltip-icon">
@@ -295,6 +307,9 @@
                          formControlName="minSamples"
                          [disabled]="isBuiltIn"
                          [(ngModel)]="model.minSamples"></ig-number-input>
+        <div *ngIf="(semanticForm.get('minSamples').dirty || semanticForm.get('minSamples').touched) && (model.minSamples && model.minSamples <=0)" class="ig-text-required">
+                Please enter a value greater than 0
+        </div>
     </div>
 </ng-template>
 
@@ -310,7 +325,7 @@
                        [(ngModel)]="model.validLocales"
                        [disabled]="isBuiltIn"
                        formControlName="validLocales"
-                       [style]="{'width':'100%'}"
+                       class="d3s-color-picker multi fullWidth"
                        selectedItemsLabel="{0} items selected">
         </p-multiSelect>
     </div>
@@ -344,6 +359,9 @@
                          formControlName="headerConfidence"
                          [disabled]="isBuiltIn"
                          [(ngModel)]="model.headerRegExpConfidence"></ig-number-input>
+        <div *ngIf="(semanticForm.get('headerConfidence').dirty || semanticForm.get('headerConfidence').touched) && model.headerRegExpConfidence && (model.headerRegExpConfidence <=0 || model.headerRegExpConfidence > 100)" class="ig-text-required">
+            Please enter a value between 1 and 100
+        </div>
     </div>
 </ng-template>
 
@@ -375,6 +393,9 @@
                          [required]="model.minMaxPresent"
                          [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
                          [(ngModel)]="model.minimum"></ig-number-input>
+        <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && (model.minimum && model.minimum <=0)" class="ig-text-required">
+                Please enter a value greater than 0
+        </div>
     </div>
 </ng-template>
 
@@ -394,6 +415,9 @@
                          [required]="model.minMaxPresent"
                          [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
                          [(ngModel)]="model.maximum"></ig-number-input>
+        <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && (model.maximum && model.maximum <=0)" class="ig-text-required">
+            Please enter a value greater than 0
+        </div>       
     </div>
 </ng-template>
 

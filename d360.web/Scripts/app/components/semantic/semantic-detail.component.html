@@ -57,7 +57,7 @@
                                         </span>
                                     </label>
                                     <div class="ig-value">
-                                        {{semanticDetails.threshold}}%
+                                        {{semanticDetails.threshold | percent : '1.0-2'}}%
                                     </div>
                                 </div>
                                 <div class="semantic-field">
@@ -331,7 +331,7 @@
             </span>
         </label>
         <div class="ig-value" *ngIf="!semanticDetails.headerRegExps">---</div>
-        <div class="ig-value" *ngIf="semanticDetails.headerRegExps">{{semanticDetails.headerRegExpConfidence}}</div>
+        <div class="ig-value" *ngIf="semanticDetails.headerRegExps">{{semanticDetails.headerRegExpConfidence | percent : '1.0-2'}}</div>
     </div>
 </ng-template>   
 
