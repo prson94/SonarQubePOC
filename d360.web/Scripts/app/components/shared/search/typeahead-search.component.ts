@@ -162,7 +162,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     blurHandler() {
         if (this.showBigButton) {
-            this.clearTimer = setTimeout(() => { this.clearValue() }, 20000);
+            this.clearTimer = setTimeout(() => { this.clearValue(); }, 20000);
         } else {
             this.clearValue();
         }
