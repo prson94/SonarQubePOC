@@ -48,6 +48,7 @@ resources:
     type: github
     name: Infogix/devops
     ref: refs/heads/main
+    endpoint: 'govern-build - Service Endpoint'
 stages:
 - stage: BUILD_NAME
   displayName: 'Set build name'
