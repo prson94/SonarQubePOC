@@ -33,7 +33,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() issueObject: string;
-    @Input() ChangeType: WorkflowChangeType; 
+    @Input() ChangeType: WorkflowChangeType;
     @Input() step: NodeModel;
     @Input() diagram: go.Diagram;
     @Output() stepChange = new EventEmitter();
@@ -50,10 +50,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         'Certified'
     ];
     private states = [
-        { value: '0', label: 'Pending Add' },
-        { value: '1', label: 'Active' },
-        { value: '2', label: 'Pending Delete' },
-        { value: '3', label: 'Deleted' },
+        { value: '0', label: $localize`Pending Add` },
+        { value: '1', label: $localize`Active` },
+        { value: '2', label: $localize`Pending Delete` },
+        { value: '3', label: $localize`Deleted` },
     ];
 
     WorkflowChangeType = WorkflowChangeType;
@@ -168,10 +168,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
         if (this.step.activityType == WorkflowActivityType.EmailNotification) {
             if (this.step.settings.SendToDefaultUsers == null) {
-                this.step.settings.SendToDefaultUsers = true;                   
+                this.step.settings.SendToDefaultUsers = true;
             } else {
                 this.step.settings.SendToDefaultUsers = this.step.settings.SendToDefaultUsers.toString().toLowerCase() === 'true' ? true : false;
-            } 
+            }
         } else if (this.step.activityType == WorkflowActivityType.Procedure) {
             this.workflowService.getWorkflowProcedures()
                 .subscribe(r => {
@@ -181,7 +181,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             if (this.step.settings.FieldUpdate == null) {
                 this.step.settings.FieldUpdate = new FieldUpdateSettings();
             }
-               
+
             if (this.step.settings.FieldUpdate.Field == null) {
                 this.step.settings.FieldUpdate.Field = [];
             }
@@ -243,7 +243,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             this.quill = this.ed.quill;
         else
             this.quill = null;
-                
+
         if (this.step.settings.WaitForAllTransitions == null)
             this.step.settings.WaitForAllTransitions = false;
         else
@@ -281,7 +281,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
             //manually set the html in the model
             this.step.settings.MessageBodyTemplate = this.quill.container.querySelector('.ql-editor').innerHTML;
-             
+
         } else {
             this.step.settings.MessageBodyTemplate =
                 ((this.step.settings.MessageBodyTemplate == null) ? '' :
@@ -289,7 +289,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 + e;
         }
         this.stepChange.emit(this.step);
-        
+
     }
 
     filterFormFields() {
@@ -307,7 +307,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             if (k != null && k.length > 0) {
                 f['@FormFieldId'] = f['@id'] + '|' + f['@stepId'];
                 f['@FormLabel'] = 'Form :: ' + f['@label'];
-                
+
                 this.formFields.push(f);
                 if (f['@type'] == 'relationshipType') {
                     this.formRelationshipFields.push(f);
@@ -359,15 +359,15 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         let links = <any[]>(<go.GraphLinksModel>this.diagram.model).linkDataArray;
 
         let step = steps.find(s => s.key == key);
-       let toLinks = links.filter(l => l.to == key);
+        let toLinks = links.filter(l => l.to == key);
 
         if (_.includes(upstreamSteps, key)) return;
         upstreamSteps.push(step.key);
-       
+
         if (toLinks == null || toLinks.length < 1) return;
 
         toLinks.forEach(l => this.traverseDiagram(l.from, upstreamSteps));
-        
+
     }
 
     changeRelationship(e: any) {

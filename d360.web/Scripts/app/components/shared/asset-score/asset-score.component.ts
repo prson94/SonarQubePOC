@@ -52,7 +52,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private scoreTypes: number[] = [];
     private allocationData: ScoreTypeAllocation[] = [];
     showEmptyMessage: boolean = false;
-    
+
     fields: MetricFieldTypeViewModel[];
 
     showExpandAndCollapse: boolean = true;
@@ -69,11 +69,11 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     private headerMenu = [
         {
-            "title": "Expand All",
+            "title": $localize`Expand All`,
             "callback": () => this.setCollapsed(false)
         },
         {
-            "title": "Collapse All",
+            "title": $localize`Collapse All`,
             "callback": () => this.setCollapsed(true)
         }
 
@@ -309,8 +309,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     private calculateBadgeStyle(alloc: ScoreTypeAllocation, actualRatio: number, isDecimal: boolean = true) {
         let style = 'positive';
 
-        let lowerThreshold: number = (isDecimal ? (alloc.lowerThreshold / 100) : alloc.lowerThreshold); 
-        let upperThreshold: number = (isDecimal ? (alloc.upperThreshold / 100) : alloc.upperThreshold); 
+        let lowerThreshold: number = (isDecimal ? (alloc.lowerThreshold / 100) : alloc.lowerThreshold);
+        let upperThreshold: number = (isDecimal ? (alloc.upperThreshold / 100) : alloc.upperThreshold);
 
         if (actualRatio > lowerThreshold && actualRatio <= upperThreshold) {
             style = 'warning';
@@ -338,7 +338,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
             this.scoreService.getScoreHistoryByAllocationAndAssetAndEffectiveDate(this.allocationUid, this.uid, this.scoreDate)
                 .subscribe(res => {
-                    this.totalScore = (res ? res.Score : 0 );
+                    this.totalScore = (res ? res.Score : 0);
 
                     if (this.totalScore >= 100) {
                         this.totalScore = 100;
@@ -545,7 +545,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
         //height - to top of the screen - to bottom of the screen - padding
         this.panelHeight = window.innerHeight - 180;
-        this.scorePointsMaxHeight = this.panelHeight - 100 - 18;        
+        this.scorePointsMaxHeight = this.panelHeight - 100 - 18;
         if (this.scorePointsMaxHeight < 100)
             this.scorePointsMaxHeight = 100;
 
@@ -557,7 +557,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
     }
 
     getAsExternalBadgeText(item: PointBreakdown) {
-        return item.Value ? 'Pass' : 'Fail';
+        return item.Value ? $localize`Pass` : $localize`Fail`;
     }
 
     getAsExternalBadgeStyle(item: PointBreakdown) {
@@ -595,15 +595,15 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
     getTooltipForScoreBadge(item: PointBreakdown) {
         if (item.IsGroup)
-            return "Measure Score = sum of sub-measures " + this.getAsPrecentage(item.DisplayWeight);;
+            return $localize`Measure Score = sum of sub-measures ${this.getAsPrecentage(item.DisplayWeight)}`;
 
-        return "Measure Score = " + this.getAsPrecentage(item.DisplayWeight);
+        return $localize`Measure Score = ${this.getAsPrecentage(item.DisplayWeight)}`;
     }
 
     getTooltipForWeightBadge(item: PointBreakdown) {
         if (item.IsGroup)
-            return "Maximum possible score = adjusted measure weight = " + this.getAsPrecentage(item.DisplayMaxWeight);
+            return $localize`Maximum possible score = adjusted measure weight = ${this.getAsPrecentage(item.DisplayMaxWeight)}`;
 
-        return "Maximum possible score for measure = measure weight = " + this.getAsPrecentage(item.DisplayMaxWeight);
+        return $localize`Maximum possible score for measure = measure weight = ${this.getAsPrecentage(item.DisplayMaxWeight)}`;
     }
 }

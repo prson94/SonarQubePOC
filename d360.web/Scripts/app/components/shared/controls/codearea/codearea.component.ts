@@ -32,7 +32,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
 
     value = "";
     sizeClass: string = "ig-field-width-full";
-    validationMessage: string = "JSON is not well formed. Please review and update.";
+    validationMessage: string = $localize`JSON is not well formed. Please review and update.`;
 
     editorConfig = {
         lineNumbers: true,
@@ -53,7 +53,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
         public el: ElementRef) { }
 
     ngOnInit() {
-        this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
+        this.placeholder = this.placeholder == null ? (this.required ? $localize`Value required` : $localize`Optional`) : this.placeholder;
         this.editorConfig.placeholder = this.placeholder;
 
         if (this.igSize && this.igSize === "large") {
@@ -65,7 +65,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
                 case "css":
                     this.editorConfig.mode = { name: "css", json: false };
                     this.editorConfig.theme = "custom-css-theme";
-                    this.validationMessage = "CSS is not well formed. Please review and update.";
+                    this.validationMessage = $localize`CSS is not well formed. Please review and update.`;
                     break;
                 default:
                     this.editorConfig.mode = { name: "javascript", json: true };
@@ -115,7 +115,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
         if (this.codeType.toLocaleLowerCase() === "css") {
             if (this.el.nativeElement.getElementsByClassName("cm-error").length > 0) {
                 valid = false;
-                this.validationMessage = "CSS is not well formed. Please review and update.";
+                this.validationMessage = $localize`CSS is not well formed. Please review and update.`;
             }
         }
         this.isValid.emit({ isvalid: valid });

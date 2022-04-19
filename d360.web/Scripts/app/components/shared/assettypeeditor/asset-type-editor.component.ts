@@ -12,7 +12,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AssetTypeEditorComponent extends BaseComponent implements OnChanges {
-    @Input() title: string = "Add Asset Type";
+    @Input() title: string = $localize`Add Asset Type`;
     @Input() id: number;
     @Input() assetTypeUid: string;
     @Input() useUid: boolean = false;
@@ -24,7 +24,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    action: string = "Edit";
+    action: string = $localize`Edit`;
     model: AssetTypeEditorModel;
     private isSaving = false;
     private originalParentUid: string = null;
@@ -45,9 +45,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         protected settingsService: CompanySettingsService
     ) {
         super(settingsService);
-        this.flowObjectDDL.push({ value: FlowObjectType.Event, label: 'Event' });
-        this.flowObjectDDL.push({ value: FlowObjectType.Activity, label: 'Activity' });
-        this.flowObjectDDL.push({ value: FlowObjectType.Gateway, label: 'Gateway' });
+        this.flowObjectDDL.push({ value: FlowObjectType.Event, label: $localize`Event` });
+        this.flowObjectDDL.push({ value: FlowObjectType.Activity, label: $localize`Activity` });
+        this.flowObjectDDL.push({ value: FlowObjectType.Gateway, label: $localize`Gateway` });
     }
 
     ngOnChanges(changes: SimpleChanges): void {

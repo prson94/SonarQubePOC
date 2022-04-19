@@ -1,6 +1,6 @@
 ﻿<div class="{{isSidePanel ? '' : 'tile tile-detail'}}">
     <header *ngIf="!isSidePanel">
-        Assignments
+        <ng-container i18n>Assignments</ng-container>
         <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -29,19 +29,19 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Name'">
-                        Name
+                        <ng-container i18n>Name</ng-container>
                         <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Version'" style="text-align:center">
-                        Version
+                        <ng-container i18n>Version</ng-container>
                         <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Step'" style="text-align:left">
-                        Step
+                        <ng-container i18n>Step</ng-container>
                         <d3s-sortIcon [field]="'Step'"></d3s-sortIcon>
                     </th>
                     <th *ngIf="!isSidePanel" [pSortableColumn]="'Total'" style="text-align:center">
-                        Count
+                        <ng-container i18n>Count</ng-container>
                         <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
                     </th>
                 </tr>
@@ -65,5 +65,5 @@
         </p-table>
     </ng-container>
 
-    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">You currently have no assignments</div>
+    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px" i18n>You currently have no assignments</div>
 </div>

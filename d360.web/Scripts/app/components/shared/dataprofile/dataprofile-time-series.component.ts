@@ -20,54 +20,54 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
     @Output() close = new EventEmitter();
 
     public displayChart: boolean = false;
-    public graphTitle: string = "Default Title";
+    public graphTitle: string = $localize`Default Title`;
     public selectedGraphRangeOption: any;
 
     public graphRangeOptions: SelectItem[] = [
         {
-            label: 'View 1 Month', value: 1
+            label: $localize`View 1 Month`, value: 1
         },
         {
-            label: 'View 3 Month', value: 3
+            label: $localize`View 3 Month`, value: 3
         },
         {
-            label: 'View 6 Month', value: 6
+            label: $localize`View 6 Month`, value: 6
         },
         {
-            label: 'View Year to Date', value: "YTD"
+            label: $localize`View Year to Date`, value: "YTD"
         },
         {
-            label: 'View All', value: "All"
+            label: $localize`View All`, value: "All"
         }
     ];
 
     private graphType = new Map(
         [
-            [ "totalCount", { title: "Total Row Count" } ],
-            [ "confidence", { title: "Type Confidence", decimals: 2, dataType: "percentage" } ],
-            [ "matchCount", { title: "Valid", color: "#2e9b61" } ],
-            [ "cardinality", { title: "Distinct", color: "#2e9b61" } ],
-            [ "outlierCount", { title: "Invalid/Outliers", color: "#d73961" } ],
-            [ "nullCount", { title: "Null Count", } ],
-            [ "blankCount", { title: "Blank Count" } ],
-            [ "mean", { title: "Mean" } ],
-            [ "standardDeviation", { title: "Standard Deviation" } ],
-            [ "leadingZeroCount", { title: "Leading Zero Count" } ],
-            [ "minLength", { title: "Minimum Length" } ],
-            [ "maxLength", { title: "Maximum Length" } ],
-            [ "min", { title: "Minimum Value", dataType: "string" } ],
-            [ "max", { title: "Maximum Value", dataType: "string" } ],
+            ["totalCount", { title: $localize`Total Row Count` }],
+            ["confidence", { title: $localize`Type Confidence`, decimals: 2, dataType: "percentage" }],
+            ["matchCount", { title: $localize`Valid`, color: "#2e9b61" }],
+            ["cardinality", { title: $localize`Distinct`, color: "#2e9b61" }],
+            ["outlierCount", { title: $localize`Invalid/Outliers`, color: "#d73961" }],
+            ["nullCount", { title: $localize`Null Count`, }],
+            ["blankCount", { title: $localize`Blank Count` }],
+            ["mean", { title: $localize`Mean` }],
+            ["standardDeviation", { title: $localize`Standard Deviation` }],
+            ["leadingZeroCount", { title: $localize`Leading Zero Count` }],
+            ["minLength", { title: $localize`Minimum Length` }],
+            ["maxLength", { title: $localize`Maximum Length` }],
+            ["min", { title: $localize`Minimum Value`, dataType: "string" }],
+            ["max", { title: $localize`Maximum Value`, dataType: "string" }],
 
-            [ "nullBlankCount", { title: "Null/Blank", color: "#b2c1cf", seriesType: "sum", fields: ["nullCount", "blankCount"] } ],
-            [ "allSampleQuality", { title: "Sample Quality", seriesType: "combined", series: ["matchCount", "outlierCount", "nullBlankCount"] } ],
+            ["nullBlankCount", { title: $localize`Null/Blank`, color: "#b2c1cf", seriesType: "sum", fields: ["nullCount", "blankCount"] }],
+            ["allSampleQuality", { title: $localize`Sample Quality`, seriesType: "combined", series: ["matchCount", "outlierCount", "nullBlankCount"] }],
         ]);
 
     matchAssetUid: string = "";
     private timeSeriesChart: Stockcharts.Chart;
 
     @HostListener('document:click', ['$event'])
-    documentClick(event: any) {        
-        if (!(event.path.filter((f) => f?.classList?.contains("time-series-tile") || f?.classList?.contains("trendIcon") || f?.classList?.contains("sampleBarChart")).length>0)) {
+    documentClick(event: any) {
+        if (!(event.path.filter((f) => f?.classList?.contains("time-series-tile") || f?.classList?.contains("trendIcon") || f?.classList?.contains("sampleBarChart")).length > 0)) {
             this.close.emit();
         }
     }
@@ -82,7 +82,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
         if (this.chartType) {
             this.disableChartOptions();
             this.renderTimeSeriesChart(this.chartType);
-        }        
+        }
     }
 
     ngOnChanges() {
@@ -90,7 +90,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
             this.selectedGraphRangeOption = null;
             this.disableChartOptions();
             this.renderTimeSeriesChart(this.chartType);
-        }        
+        }
     }
 
     private disableChartOptions() {
@@ -103,15 +103,15 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 if (g.value === "YTD" && d > currentDate) {
                     g.disabled = true;
                 }
-            } else {                
+            } else {
                 d.setMonth(d.getMonth() - g.value);
                 if (d > currentDate) {
                     g.disabled = true;
-                }                
+                }
             }
             if (!g.disabled && !this.selectedGraphRangeOption) {
                 this.selectedGraphRangeOption = g.value;
-            }            
+            }
         }
         );
     }
@@ -229,7 +229,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                             this.selectedGraphRangeOption = "C";
                         }
                     }
-                },                
+                },
             },
             yAxis: {
                 title: {
@@ -244,7 +244,7 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                 max: this.graphType.get(chartType)?.dataType === "percentage" ? 100 : null,
                 maxPadding: 0.5,
                 minPadding: 0.3,
-                endOnTick: false,                
+                endOnTick: false,
             }
         };
 
@@ -270,10 +270,10 @@ export class DataProfileTimeSeriesComponent extends BaseComponent implements OnI
                         value = Number(x[chartType]);
                     }
                     if (this.graphType.get(chartType)?.dataType === "percentage") {
-                        value = x[chartType] * 100; 
+                        value = x[chartType] * 100;
                     }
                 }
-                return [new Date(x.profileSetDate).getTime(), value];                
+                return [new Date(x.profileSetDate).getTime(), value];
             });
         }
 

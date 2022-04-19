@@ -101,7 +101,7 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
         if (value == null || value.trim() === '') {
             if (this.required !== false) {
                 return {
-                    required: "Value required"
+                    required: $localize`Value required`
                 };
             }
 
@@ -110,13 +110,13 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
 
         if (!this.isValidRegex(value)) {
             return {
-                regexp: "You have provided an invalid regular expression"
+                regexp: $localize`You have provided an invalid regular expression`
             };
         }
 
         if (!value.startsWith("^") || !value.endsWith("$")) {
             return {
-                regexp: "Regular expression should start with ^ anchor and end with $ anchor"
+                regexp: $localize`Regular expression should start with ^ anchor and end with $ anchor`
             };
         }
 

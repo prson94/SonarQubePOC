@@ -2,7 +2,7 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">HTTP Request</div>
+            <div class="FieldName" i18n>HTTP Request</div>
             <div>
                 <select [ngModel]="step.settings.HTTPResponse.InputStepId" (ngModelChange)="step.settings.HTTPResponse.InputStepId = $event; stepChange.emit(step)" style="width: 95%">
                     <option value=""></option>
@@ -13,19 +13,19 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Outputs
             </div>
             <div>
                 <header class="FieldName">
-                   &nbsp;
+                    &nbsp;
                     <d3s-tile-actions hideTooltip="true" hasAdd="true" (addClick)="showAdd()"></d3s-tile-actions>
                 </header>
                 <p-table #dt [value]="step.settings.HTTPResponse.Outputs" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th>Name</th>
-                            <th>Path</th>
+                            <th i18n>Name</th>
+                            <th i18n>Path</th>
                             <th style="width: 40px"></th>
                         </tr>
                     </ng-template>
@@ -54,13 +54,13 @@
     </div>
     <div class="row" *ngIf="isAdding || isEditing">
         <div class="col s12">
-            <div class="FieldName">Name</div>
+            <div class="FieldName" i18n>Name</div>
             <div>
                 <input type="text" style="width: 95%" [ngModel]="selectedRow.Name" (ngModelChange)="selectedRow.Name = $event;" />
             </div>
         </div>
         <div class="col s12">
-            <div class="FieldName">Json Path</div>
+            <div class="FieldName" i18n>Json Path</div>
             <div>
                 <input type="text" style="width: 95%" [ngModel]="selectedRow.Path" (ngModelChange)="selectedRow.Path = $event;" />
             </div>
@@ -72,11 +72,11 @@
         </div>
     </div>
     <div class="row" *ngIf="isDeleting">
-        <div class="col s12">
+        <div class="col s12" i18n>
             Are you sure you want to delete {{selectedRow.Name}}?
         </div>
         <div class="col s12">
-            <button pButton label="Delete" (click)="removeOutput()"></button>
-            <button pButton label="Cancel" (click)="cancel()"></button>
+            <button pButton i18-label label="Delete" (click)="removeOutput()"></button>
+            <button pButton i18-label label="Cancel" (click)="cancel()"></button>
         </div>
     </div>

@@ -171,13 +171,13 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
     private selectTab(val: string) {
         switch (val) {
             case 'info':
-                this.headerText = 'Info';
+                this.headerText = $localize`Info`;
                 break;
             case 'user':
-                this.headerText = 'Responsibilities';
+                this.headerText = $localize`Responsibilities`;
                 break;
             case 'relations':
-                this.headerText = 'Relationships';
+                this.headerText = $localize`Relationships`;
                 break;
             default:
                 this.headerText = '';
@@ -248,7 +248,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, "Model");
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                             this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
-                            let diagramTab = new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7)
+                            let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7)
                             this.secondaryNavService.showItem(diagramTab);
                             diagramTab.active = true;
 

@@ -96,7 +96,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
     }
 
     ngOnInit(): void {
-        this.placeholder = this.placeholder == null ? (this.required ? 'Value required' : 'Optional') : this.placeholder;
+        this.placeholder = this.placeholder == null ? (this.required ? $localize`Value required` : $localize`Optional`) : this.placeholder;
     }
 
     validate(control: AbstractControl): ValidationErrors {

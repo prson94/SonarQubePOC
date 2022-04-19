@@ -22,7 +22,7 @@
                                     <div class="score-name">
                                         <span *ngIf="!item.Description" class="name">{{item.Name}}</span>
                                         <span *ngIf="item.Description" pTooltip="{{item.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{item.Name}}</span>
-                                        <div class="score-date">
+                                        <div class="score-date" i18n>
                                             Effective
                                             {{item.EffectiveDate | utcDate | date:'shortDate'}} to
                                             <ng-container *ngIf="item.EndDate">
@@ -51,7 +51,7 @@
                                             <div class="score-name">
                                                 <span *ngIf="!subItem.Description" class="name">{{subItem.Name}}</span>
                                                 <span *ngIf="subItem.Description" pTooltip="{{subItem.Description}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip" class="name">{{subItem.Name}}</span>
-                                                <div class="score-date">
+                                                <div class="score-date" i18n>
                                                     Effective
                                                     {{subItem.EffectiveDate | utcDate | date:'shortDate'}} to
                                                     <ng-container *ngIf="subItem.EndDate">
@@ -83,7 +83,7 @@
 
                         <ng-template #emptyMessage>
                             <div class="scorecards-container">
-                                <div class="scorecard-item empty">
+                                <div class="scorecard-item empty" i18n>
                                     This score was calculated and sent in from an external source. No measures have been defined.
                                 </div>
                             </div>
@@ -96,37 +96,36 @@
     <div class="score-right-content">
         <div class="card-box" [style.height.px]="panelHeight">
             <div class="button-group show-multiple">
-                <button igButton label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
-                <button *ngIf="!isExternallyCalculated" igButton label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
-                <button igButton label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
+                <button igButton i18n-label label="History" class="ig-button {{(activeTab=='History' ? 'ig-state-active' : '')}}" (click)="activeTab='History'"></button>
+                <button *ngIf="!isExternallyCalculated" igButton i18n-label label="Calculation" class="ig-button {{(activeTab=='Calculation' ? 'ig-state-active' : '')}}" (click)="activeTab='Calculation'"></button>
+                <button igButton i18n-label label="Definition" class="ig-button {{(activeTab=='Definition' ? 'ig-state-active' : '')}}" (click)="activeTab='Definition'"></button>
             </div>
             <div [hidden]="!(activeTab=='History')" [style.height.px]="sidePanelHeight" class="panel-container">
                 <score-history #scoreHistory
-                                [selectedPoint]="selectedPoint"
-                                [assetUid]="uid"
-                                [scoreType]="selectedScoreType"
-                                [scoreDate]="scoreDate"
-                                [isExternallyCalculated]="isExternallyCalculated"
-                                (datePointChanged)="dateChanged($event)"
-                                (measurePointsChanged)="measurePoints=$event"></score-history>
+                               [selectedPoint]="selectedPoint"
+                               [assetUid]="uid"
+                               [scoreType]="selectedScoreType"
+                               [scoreDate]="scoreDate"
+                               [isExternallyCalculated]="isExternallyCalculated"
+                               (datePointChanged)="dateChanged($event)"
+                               (measurePointsChanged)="measurePoints=$event"></score-history>
             </div>
             <div [hidden]="!(activeTab=='Calculation')" [style.height.px]="sidePanelHeight" class="panel-container">
-                <score-calculation 
-                                   [scoreType]="selectedScoreType" 
-                                   [formattedCheck]="defTab.getPassCheckValue()" 
-                                   [selected]="selectedPoint" 
-                                   [measures]="pointBreakdown" 
+                <score-calculation [scoreType]="selectedScoreType"
+                                   [formattedCheck]="defTab.getPassCheckValue()"
+                                   [selected]="selectedPoint"
+                                   [measures]="pointBreakdown"
                                    [fields]="fields"
-                                   [assetTypeName]="assetTypeName" 
+                                   [assetTypeName]="assetTypeName"
                                    [assetName]="assetName"
                                    [definition]="selectedMetric?.Definition">
                 </score-calculation>
             </div>
             <div [hidden]="!(activeTab=='Definition')" [style.height.px]="sidePanelHeight" class="panel-container">
-                <score-definition #defTab 
-                                  [isExternallyCalculated]="isExternallyCalculated" 
-                                  [selectedMetric]="selectedMetric" 
-                                  [assetTypeUid]="assetTypeUid" 
+                <score-definition #defTab
+                                  [isExternallyCalculated]="isExternallyCalculated"
+                                  [selectedMetric]="selectedMetric"
+                                  [assetTypeUid]="assetTypeUid"
                                   [allocationUid]="allocationUid">
                 </score-definition>
             </div>
@@ -138,8 +137,8 @@
     <div class="score-header">
         <div class="button-group {{(hasAnyScoreType(ScoreType.Governance) && hasAnyScoreType(ScoreType.DataQuality) ? 'show-multiple':'')}}">
             <div class="width-300">
-                <button igButton *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'ig-state-active': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance);" label="Governance Score"></button>
-                <button igButton *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'ig-state-active': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality);" label="Data Quality Score"></button>
+                <button igButton *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'ig-state-active': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance);" i18n-label label="Governance Score"></button>
+                <button igButton *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'ig-state-active': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality);" i18n-label label="Data Quality Score"></button>
             </div>
         </div>
 
@@ -151,7 +150,7 @@
                         [(ngModel)]="scoresPointSelected"
                         [options]="scoresPointsDDL"
                         (onChange)="onScorePointChange($event)">
-                <ng-template let-score pTemplate="selectedItem">
+                <ng-template let-score pTemplate="selectedItem" i18n>
                     {{score.value.EffectiveDate | utcDate | date:'shortDate'}} to
                     <ng-container *ngIf="score.value.EndDate">
                         {{score.value.EndDate | utcDate | date:'shortDate'}}
@@ -189,9 +188,9 @@
                             <div *ngSwitchCase="-1">
                                 <i class="fa fa-caret-down arrow-down"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
-                            <div *ngSwitchCase="0"  pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
-                                     tooltipPosition="top"
-                                     tooltipStyleClass="ig-tooltip">
+                            <div *ngSwitchCase="0" i18n-pTooltip pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                 tooltipPosition="top"
+                                 tooltipStyleClass="ig-tooltip">
                                 <i class="fa fa-square square"></i><span class="value-text">{{score.value.Score}}%</span>
                             </div>
                             <span *ngSwitchDefault class="value-text">

@@ -2,18 +2,18 @@
     <div class="row filtered-asset-container">
         <div class="input-row">
             <div class="col s3" style="padding-left:0px;">
-                <span class="label">Type</span>
+                <span class="label" i18n>Type</span>
             </div>
             <div class="col s9">
-                <p-dropdown placeholder="Select an Asset Type" [class]="'dropdown'" [options]="options" optionLabel="Name" [(ngModel)]="assetType" (onChange)="updateAssetTypeEditor()"></p-dropdown>
+                <p-dropdown i18n-placeholder placeholder="Select an Asset Type" [class]="'dropdown'" [options]="options" optionLabel="Name" [(ngModel)]="assetType" (onChange)="updateAssetTypeEditor()"></p-dropdown>
             </div>
         </div>
         <div class="col s12 pad12" style="padding-left:0px;">
-            <span>Definition</span>
+            <span i18n>Definition</span>
             <div class="separator"></div>
         </div>
         <div *ngIf="!editorOpen" class="col s12 definition">
-            <span class="prompt">Please choose an asset type to display availeble properties.</span>
+            <span class="prompt" i18n>Please choose an asset type to display availeble properties.</span>
         </div>
         <div #definition class="col s12 definition">
             <d3s-dynamic-editor #dynamicEditor *ngIf="editorOpen && assetType"
@@ -31,16 +31,18 @@
                 type="button"
                 (click)="cancel()"
                 [attr.data-cy]="'AssetType_Button_Cancel'"
+                i18n-label
                 label="Close">
-            Close
+            <ng-container i18n>Close</ng-container>
         </button>
         <span class="grow"></span>
         <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
                 (click)="confirm()"
                 [attr.data-cy]="'AssetType_Button_Save'"
                 [disabled]="!isValid"
+                i18n-label
                 label="Confirm">
-            Confirm
+            <ng-container i18n>Confirm</ng-container>
             <span class="loader"><span class="spinner light"></span></span>
         </button>
     </div>

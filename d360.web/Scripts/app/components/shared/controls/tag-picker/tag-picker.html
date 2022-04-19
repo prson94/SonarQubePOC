@@ -1,11 +1,11 @@
-﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="getStyleClasses" >
+﻿<div #tagPicker [attr.id]="inputId" [attr.tabIndex]="-1" [ngStyle]="style" [class]="getStyleClasses">
     <div class="selected-tags">
         <div *ngIf="!disabled" class="tooltip-wrapper">
             <div class="tag-tooltip">
                 <i *ngIf="!isTooltipLoaded" class="fa fa-spinner fa-spin fa-2x"></i>
                 <ng-container *ngIf="isTooltipLoaded">
                     <span class="span-break">{{tagTooltip.Value}}</span>
-                    <span>Tag added by {{tagTooltip.CreatedBy}} on {{(tagTooltip.CreatedOn | date:'short')}}</span>
+                    <span i18n>Tag added by {{tagTooltip.CreatedBy}} on {{(tagTooltip.CreatedOn | date:'short')}}</span>
                 </ng-container>
             </div>
         </div>
@@ -14,7 +14,7 @@
                 <div class="tag-value" (mouseout)="leave()" (mouseenter)="enter(item,$event.target)">
                     {{item.title}}
                 </div>
-                <div *ngIf="!disabled && !readOnly && canDeleteTag(item.title)" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
+                <div *ngIf="!disabled && !readOnly && canDeleteTag(item.title)" i18n-pTooltip pTooltip="Remove Tag" tooltipPosition="top" (click)="removeItem(item)" [attr.target]="'_blank'" class="link-button">
                     <i style="padding-left:10px" class="fa fa-times-circle"></i>
                 </div>
             </div>

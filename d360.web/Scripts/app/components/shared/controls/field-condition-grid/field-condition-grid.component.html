@@ -7,6 +7,7 @@
                                 igSize="medium"
                                 [(ngModel)]="condition.field"
                                 (onChange)="onFieldChange($event, condition)"
+                                i18n-placeholder
                                 placeholder="Choose a field"
                                 [required]="required"
                                 formControlName="{{conditionPrefix}}option_{{condition.hash}}"
@@ -22,6 +23,7 @@
                                 formControlName="{{conditionPrefix}}condition_{{condition.hash}}"
                                 [(ngModel)]="condition.operator"
                                 (onChange)="onConditionChange($event, condition)"
+                                i18n-placeholder
                                 placeholder="Choose a field"
                                 [appendTo]="'body'"
                                 [options]="getOperators(condition)"></p-dropdown>
@@ -42,19 +44,19 @@
                                         [options]="getValues(condition)"></p-dropdown>
                         </ng-container>
                         <ng-container *ngSwitchCase="'Number'">
-                            <ig-number-input placeholder="{{condition.disabled ? '' : 'Value required'}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-number-input>
+                            <ig-number-input placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-number-input>
                         </ng-container>
                         <ng-container *ngSwitchCase="'Decimal'">
-                            <ig-number-input placeholder="{{condition.disabled ? '' : 'Value required'}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-number-input>
+                            <ig-number-input placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-number-input>
                         </ng-container>
                         <ng-container *ngSwitchCase="'Date'">
-                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-date>
+                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-date>
                         </ng-container>
                         <ng-container *ngSwitchCase="'DateTime'">
-                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-date>
+                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value"></ig-date>
                         </ng-container>
                         <ng-container *ngSwitchDefault>
-                            <input igInput placeholder="{{condition.disabled ? '' : 'Value required'}}" disabled="{{condition.disabled}}" required igSize="small" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value" maxlength="250" />
+                            <input igInput placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" disabled="{{condition.disabled}}" required igSize="small" formControlName="{{conditionPrefix}}value_1_{{condition.hash}}" name="{{conditionPrefix}}value_1_{{condition.hash}}" [(ngModel)]="condition.value" maxlength="250" />
                         </ng-container>
                     </ng-container>
                 </div>
@@ -71,16 +73,16 @@
                 <div class="condition-option" *ngIf="condition.operator">
                     <ng-container [ngSwitch]="getTypeForCondition(condition)">
                         <ng-container *ngSwitchCase="'Number'">
-                            <ig-number-input placeholder="{{condition.disabled ? '' : 'Value required'}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-number-input>
+                            <ig-number-input placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-number-input>
                         </ng-container>
                         <ng-container *ngSwitchCase="'Decimal'">
-                            <ig-number-input placeholder="{{condition.disabled ? '' : 'Value required'}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-number-input>
+                            <ig-number-input placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-number-input>
                         </ng-container>
                         <ng-container *ngSwitchCase="'Date'">
-                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-date>
+                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-date>
                         </ng-container>
                         <ng-container *ngSwitchCase="'DateTime'">
-                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : 'Value required'}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-date>
+                            <ig-date [appendTo]="'body'" placeholder="{{condition.disabled ? '' : valueRequiredLabel}}" required="true" [disabled]="condition.disabled" formControlName="{{conditionPrefix}}value_2_{{condition.hash}}" name="{{conditionPrefix}}value_2_{{condition.hash}}" [(ngModel)]="condition.value2"></ig-date>
                         </ng-container>
                     </ng-container>
 

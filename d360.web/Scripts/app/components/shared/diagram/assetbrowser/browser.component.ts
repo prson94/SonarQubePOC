@@ -118,8 +118,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     panel_InformationHasReadAccess = false;
     panel_TabIndex = 0;
     linkMenuItems: any[] = [
-        { title: "Open" },
-        { title: "Open in New Tab" },
+        { title: $localize`Open` },
+        { title: $localize`Open in New Tab` },
     ];
 
     panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
@@ -141,11 +141,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     popupMenuItems = [
         {
-            title: 'Export to excel',
+            title: $localize`Export to excel`,
             callback: () => this.processDiagramRef.doControlledAction('export')
         },
         {
-            title: 'Replace diagram',
+            title: $localize`Replace diagram`,
             callback: () => this.processDiagramRef.doControlledAction('open-diagram-replace')
         }
     ]
@@ -1459,20 +1459,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let isLineage: boolean = this.helper_LineageDiagramApplies();
 
             this.isLoading = true;
-            this.loadingText = `Retrieving ${isLineage ? 'lineage' : 'impacts'} from Govern..`;
+            this.loadingText = $localize`Retrieving ${isLineage ? 'lineage' : 'impacts'} from Govern..`;
 
             this.helper_ResetDiagramData();
 
             let subscriber = (data: AssetBrowserResponseModel) => {
                 if (data) {
                     this.diagramData = data;
-                    this.loadingText = "Determining links and meaning...";
+                    this.loadingText = $localize`Determining links and meaning...`;
                     if (this.diagramData && this.diagramData.links && this.diagramData.links.length > this.maxLinkCountToAvoidNodesTemplate) {
                         this.performanceLinkMode = true;
                     }
                     this.cdRef.detectChanges();
                     if (isLineage && this.diagramData.dataLimitReached === true) {
-                        this.errorText = `Sorry, we cannot display an asset with more than 500 descendants.`;
+                        this.errorText = $localize`Sorry, we cannot display an asset with more than 500 descendants.`;
                         this.isError = true;
                         this.isLoading = false;
                     }
@@ -1496,7 +1496,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 }
                 else {
-                    this.errorText = `Unable to retrieve ${(isLineage ? "lineage" : "impact")} content.`;
+                    this.errorText = $localize`Unable to retrieve ${(isLineage ? "lineage" : "impact")} content.`;
                     this.isError = true;
                     this.isLoading = false;
                 }
@@ -1615,11 +1615,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let currentHighlightedNode = this.highlightedPart;
             // Get relations to ignore.
             let assets: AssetBrowserApiHopAssetRequestModel[] = [];
-            
+
             let isBackward: boolean = (data.direction === "Backward");
 
             let hierarchyKey: string = "";
-            this.diagram.links.each(function(l: go.Link) {
+            this.diagram.links.each(function (l: go.Link) {
                 if (hierarchyKey === "") {
                     if (l.fromNode.data.key === data.key) {
                         hierarchyKey = l.toNode.data.hierarchyKey;
@@ -1644,7 +1644,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             let direction: AssetBrowserApiHopDirection = isBackward ? AssetBrowserApiHopDirection.Backward : AssetBrowserApiHopDirection.Forward;
 
-            let currentHop: number = +hierarchyKey.substring(hierarchyKey.indexOf("|")+1, hierarchyKey.lastIndexOf("|"));
+            let currentHop: number = +hierarchyKey.substring(hierarchyKey.indexOf("|") + 1, hierarchyKey.lastIndexOf("|"));
             let requestModel: AssetBrowserLineageRequest = {
                 ancestry: this.displayConfiguration.AncestryMode,
                 descendancy: this.displayConfiguration.Descendancy,
@@ -3401,7 +3401,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns The DiagramType.
     */
     viewchange_Apply(e: DiagramType) {
-        this.saveFilter();        
+        this.saveFilter();
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
     }
 

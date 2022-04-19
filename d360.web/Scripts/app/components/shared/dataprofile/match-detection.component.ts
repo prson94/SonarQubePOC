@@ -30,8 +30,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
     @Input() assetUid: string = '';
     @Input() matchType: string = '';
     @Input() isParentModal: boolean = false;
-    @Output() sidePanelLinkClicked  = new EventEmitter();    
-    @Output() onClose = new EventEmitter();    
+    @Output() sidePanelLinkClicked = new EventEmitter();
+    @Output() onClose = new EventEmitter();
 
     assetPathText: string = '';
 
@@ -92,28 +92,28 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
 
     menuItems = [
         {
-            title: 'Open'
+            title: $localize`Open`
         },
         {
-            title: 'Open in New Tab'
+            title: $localize`Open in New Tab`
         }
     ]
 
     menuItemsWithTags = [
         {
-            title: 'Open'
+            title: $localize`Open`
         },
         {
-            title: 'Open in New Tab'
+            title: $localize`Open in New Tab`
         },
         {
-            title: 'Edit Tags'
+            title: $localize`Edit Tags`
         }
     ]
 
-    multiselectMenuItems = [        
+    multiselectMenuItems = [
         {
-            title: 'Edit Tags'
+            title: $localize`Edit Tags`
         }
     ]
 
@@ -122,17 +122,17 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             Name: 'Tag',
             FriendlyName: 'Tag',
             Type: new FieldType("Tag"),
-            Category: "",           
+            Category: "",
             RemovePopulatedOperator: false
         },
         {
             Name: 'Path',
             FriendlyName: 'Asset Path',
             Type: new FieldType("Path"),
-            Category: "",            
+            Category: "",
             RemovePopulatedOperator: true
         }
-    ]            
+    ]
 
     constructor(
         private assetService: AssetService,
@@ -141,32 +141,32 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         private objectDetailService: ObjectDetailService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        private router: Router      
+        private router: Router
     ) {
-        super(settingsService);        
+        super(settingsService);
 
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
         this.filterFieldsSubject.complete();
     }
 
-    ngOnChanges(changes: SimpleChanges) {        
+    ngOnChanges(changes: SimpleChanges) {
         if (changes.assetUid && changes.assetUid.currentValue !== changes.assetUid.previousValue) {
-            this.selection = null;           
+            this.selection = null;
             this.dataProfile = null;
             this.loadData();
         }
         if ((changes.isVisible && changes.isVisible.currentValue === true) && (changes.matchType && changes.matchType.currentValue !== changes.matchType.previousValue)) {
             this.setSelectedMatch();
-        }        
-    }    
+        }
+    }
 
     private loadData() {
         this.assetService.getAsset(this.assetUid)
             .subscribe((res) => {
-                var path = res.Path as string;                
+                var path = res.Path as string;
                 this.name = res.Name;
-                this.assetPathText = "Showing matches for " + path.split("].[").join(`&nbsp;&nbsp;<i class='fa fa-angle-right'></i>&nbsp;&nbsp;`)
+                this.assetPathText = $localize`Showing matches for ` + path.split("].[").join(`&nbsp;&nbsp;<i class='fa fa-angle-right'></i>&nbsp;&nbsp;`)
                     .replace("[", "").replace("]", "");
             });
     }
@@ -176,8 +176,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.lazyLoadDuplicates(e);
         }
         else {
-            this.lazyLoadSimiliar(e);            
-        }        
+            this.lazyLoadSimiliar(e);
+        }
     }
 
     lazyLoadDuplicates(e: LazyLoadEvent) {
@@ -188,7 +188,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.duplicateSortOrder = e.sortOrder;
         localStorage.setItem("duplicate-rows", e.rows.toString());
         this.getData('data');
-        
+
     }
 
     lazyLoadSimiliar(e: LazyLoadEvent) {
@@ -202,7 +202,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.getData('similar');
     }
 
-    onMenuSelect(event, item, matchType, isMultiSelect=false) {
+    onMenuSelect(event, item, matchType, isMultiSelect = false) {
         if (!isMultiSelect && matchType === this.duplicateStr) {
             this.duplicatesSelection = [];
             this.duplicatesSelection.push(item);
@@ -210,15 +210,15 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.similarSelection = [];
             this.similarSelection.push(item);
         }
-        if (event.value === "Open") {
+        if (event.value === $localize`Open`) {
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${item.uid}`]);
         }
 
-        if (event.value === "Open in New Tab") {
+        if (event.value === $localize`Open in New Tab`) {
             window.open(`${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${item.uid}`, '_blank');
         }
 
-        if (event.value === "Edit Tags") {
+        if (event.value === $localize`Edit Tags`) {
             if (Array.isArray(item)) {
                 this.selectedTagItems = item;
             } else {
@@ -228,7 +228,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             if (this.selectedAssetsWithoutTagField.length > 0) {
                 this.getAssetTypePaths(this.selectedAssetsWithoutTagField.map((t) => t.uid));
             }
-            this.isTagDrawerVisible = true;            
+            this.isTagDrawerVisible = true;
         }
     }
 
@@ -250,41 +250,41 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         return "MatchDetection" + type + this.assetUid;
     }
 
-    getData(type: string) {        
+    getData(type: string) {
         if (type.toLowerCase() === "data") {
             this.duplicatesDataLoading = true;
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Data", this.duplicateCurrentPageNumber, this.duplicateRowsPerPage, this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.duplicateSortField, this.duplicateSortOrder)
                 .subscribe((res) => {
                     this.duplicatesDataTotalCount = +res.total;
-                    this.duplicatesData = res.items;                    
-                    this.duplicatesDataLoading = false;      
-                    this.setSelectedMatch();  
+                    this.duplicatesData = res.items;
+                    this.duplicatesDataLoading = false;
+                    this.setSelectedMatch();
                     this.cdRef.markForCheck();
-                });            
+                });
         } else if (type.toLowerCase() === this.similarStr) {
-            this.similarDataLoading = true;            
+            this.similarDataLoading = true;
             this.dataProfileService.getMatchesByMatchType(this.assetUid, "Structure", this.similarCurrentPageNumber, this.similarRowsPerPage, this.similarSimpleFilter, this.similarAdvancedFilter, this.similarSortField, this.similarSortOrder)
                 .subscribe((res) => {
                     this.similarData = res.items;
-                    this.similarDataTotalCount = +res.total;                    
-                    this.similarDataLoading = false;       
-                    this.setSelectedMatch();                    
+                    this.similarDataTotalCount = +res.total;
+                    this.similarDataLoading = false;
+                    this.setSelectedMatch();
                     this.cdRef.markForCheck();
                 });
-        }        
+        }
     }
 
     advancedFiltersChanged($event: Filters, type: string) {
-        if (type === 'data') {            
+        if (type === 'data') {
             this.duplicateAdvancedFilter = $event.filter;
             this.getData(type);
         } else if (type === 'similar') {
             this.similarAdvancedFilter = $event.filter;
             this.getData(type);
-        }                  
+        }
     }
     onFiltersLoaded(type: string) {
-        this.getData(type);        
+        this.getData(type);
     }
 
     canExportRecords(recordCount: number) {
@@ -298,16 +298,16 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.assetUid, "Structure", this.similarSimpleFilter, this.similarAdvancedFilter, this.name, this.similarSortField, this.similarSortOrder,
                 () => { this.isExportInProgress = false; }
             );
-        } else if (matchType === "data"){
+        } else if (matchType === "data") {
             this.dataProfileService.exportMatches(
                 this.assetUid, "Data", this.duplicatesSimpleFilter, this.duplicateAdvancedFilter, this.name, this.duplicateSortField, this.duplicateSortOrder,
                 () => { this.isExportInProgress = false; }
             );
-        }       
-    }   
+        }
+    }
 
     selectMatch(event: any, matchType: string) {
-        let selectedAssets = event;        
+        let selectedAssets = event;
         this.multipleItemsSelected = false;
         if (selectedAssets && selectedAssets.length == 1) {
             //only reload side panel if selection has changed. 
@@ -334,12 +334,12 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                             }
                             this.sidePanelLoading = false;
                         });
-                });                
-            }                                    
+                });
+            }
         } else {
             this.selection = null;
             if (selectedAssets && selectedAssets.length > 1) {
-                this.multipleItemsSelected = true;                                
+                this.multipleItemsSelected = true;
             }
             this.sidePanelLoading = false;
         }
@@ -362,21 +362,21 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         if (this.selection != null && this.sidePanelTab === 'dataprofile') {
             return true;
         }
-    }   
+    }
 
     private setSelectedMatch() {
         if (this.matchType === "data") {
-                this.duplicatesSelection = this.duplicatesData.slice(0, 1);
-                this.selectMatch(this.duplicatesSelection, this.duplicateStr);
-                this.similarSelection = [];
+            this.duplicatesSelection = this.duplicatesData.slice(0, 1);
+            this.selectMatch(this.duplicatesSelection, this.duplicateStr);
+            this.similarSelection = [];
         }
         if (this.matchType === this.similarStr) {
-                this.similarSelection = this.similarData.slice(0, 1);
-                this.selectMatch(this.similarSelection, this.similarStr);
-                this.duplicatesSelection = [];
-        }        
+            this.similarSelection = this.similarData.slice(0, 1);
+            this.selectMatch(this.similarSelection, this.similarStr);
+            this.duplicatesSelection = [];
+        }
     }
-   
+
     get selectedAssetUids(): string[] {
         return this.selectedTagItems.filter((t) => t.tags !== undefined).map((t) => t.uid);
     }
@@ -400,14 +400,14 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         this.onTagsChanged();
     }
 
-    private onTagsChanged() {        
+    private onTagsChanged() {
         if (this.isTagDrawerVisible === false && this.tagsChanged === true) {
             this.getData('data');
             this.getData('similar');
         }
     }
 
-    itemSelected(item: any, matchType: string, event: MouseEvent) {        
+    itemSelected(item: any, matchType: string, event: MouseEvent) {
         if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
             this.itemMultiSelect(item, matchType);
         } else {
@@ -415,7 +415,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         }
     }
 
-    itemMultiSelect(item: any, matchType: string) {       
+    itemMultiSelect(item: any, matchType: string) {
         if (matchType === this.duplicateStr) {
             if (this.duplicatesSelection?.find((x) => x === item)) {
                 this.duplicatesSelection = this.duplicatesSelection.filter((x) => x !== item);
@@ -427,8 +427,8 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.duplicatesSelection = this.duplicatesSelection.filter((x) => x === x);//required for rows to highlight correctly
             }
             this.selectMatch(this.duplicatesSelection, matchType);
-            
-        } else if (matchType === this.similarStr) {    
+
+        } else if (matchType === this.similarStr) {
             if (this.similarSelection?.find((x) => x === item)) {
                 this.similarSelection = this.similarSelection.filter((x) => x !== item);
             } else {
@@ -452,7 +452,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             this.similarSelection.push(item);
             this.selectMatch(this.similarSelection, matchType);
         }
-    }   
+    }
 
     private populateHeaderCheckBoxStyle(matchType: string) {
         if (matchType === this.duplicateStr) {
@@ -461,7 +461,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 checkBoxElement.classList.add('p-highlight');
                 this.duplicateCheckBox.checked = true;
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi');
-                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi-minus');                
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi-minus');
             } else if (this.duplicatesSelection && this.duplicatesSelection.length === this.duplicatesData.length) {
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
             }
@@ -469,7 +469,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 checkBoxElement.classList.remove('p-highlight');
                 this.duplicateCheckBox.checked = false;
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
-                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');                
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
             }
         } else if (matchType === this.similarStr) {
             let checkBoxElement = this.similarCheckBox.boxViewChild.nativeElement;
@@ -477,7 +477,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 checkBoxElement.classList.add('p-highlight');
                 this.similarCheckBox.checked = true;
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi');
-                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi-minus');                
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.add('pi-minus');
             } else if (this.similarSelection && this.similarSelection.length === this.similarData.length) {
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
             }
@@ -485,12 +485,12 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                 this.similarCheckBox.checked = true;
                 checkBoxElement.classList.remove('p-highlight');
                 checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
-                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');                
+                checkBoxElement.querySelector('span.p-checkbox-icon').classList.remove('pi-minus');
             }
         }
-        
 
-    } 
+
+    }
 
     private getAssetTypePaths(selectedUids: string[]) {
         let assetTypePaths: string[] = [];
@@ -511,6 +511,10 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
                         this.isDrawerLoading = !(assetTypePaths.length === selectedUids.length);
                     });
                 });
-            });
+        });
+    }
+
+    get exportTooltip(): string {
+        return this.canExportRecords(this.duplicatesDataTotalCount) ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
     }
 }

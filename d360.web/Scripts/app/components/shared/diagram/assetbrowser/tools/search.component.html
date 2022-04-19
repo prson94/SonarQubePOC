@@ -1,5 +1,5 @@
 ﻿<div class="asset-browser-search">
-    <input type="text" maxlength="100" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
+    <input type="text" maxlength="100" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText i18n-placeholder placeholder="Find in diagram...">
     <div class="input-actions">
         <span *ngIf="searchValue.length != 0" class="search-item-location">
             {{searchCurrentItem}}/{{numberOfResults}}
@@ -9,6 +9,6 @@
     </div>
 </div>
 <div class="asset-browser-button-group btn-small">
-    <button (click)="goToPrevious()" type="button" pTooltip="Previous" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Previous" class="{{numberOfResults == 0 || searchCurrentItem == 1 ? 'dark' : ''}} icon ml8"><i class="fa fa-lg fa-angle-up"></i></button>
-    <button (click)="goToNext()" type="button" pTooltip="Next" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Next" class="{{numberOfResults == 0 || searchCurrentItem == numberOfResults ? 'dark' : ''}} icon ml8"><i class="fa fa-lg fa-angle-down"></i></button>
+    <button (click)="goToPrevious()" type="button" i18n-pTooltip pTooltip="Previous" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Previous" class="{{numberOfResults == 0 || searchCurrentItem == 1 ? 'dark' : ''}} icon ml8"><i class="fa fa-lg fa-angle-up"></i></button>
+    <button (click)="goToNext()" type="button" i18n-pTooltip pTooltip="Next" tooltipPosition="top" tooltipStyleClass="ig-tooltip" aria-label="Next" class="{{numberOfResults == 0 || searchCurrentItem == numberOfResults ? 'dark' : ''}} icon ml8"><i class="fa fa-lg fa-angle-down"></i></button>
 </div>
