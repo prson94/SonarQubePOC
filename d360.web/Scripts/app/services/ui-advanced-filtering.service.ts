@@ -265,7 +265,7 @@ export class UiAdvancedFiltering {
         } else if (valueType === 'Number') {
             return Number(dataValue) === Number(searchValue);
         } else {
-            console.warn(`Not recognized FilterFieldType`);
+            this.messagesService.showInfoMessage(`Unknown FilterFieldType`, `Not recognized FilterFieldType`);
         }
     }
 
