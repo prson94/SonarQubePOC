@@ -86,7 +86,7 @@ namespace igx.functions.consumption
                         }
                         finally
                         {
-                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                         }
                     }
                 }

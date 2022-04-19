@@ -6,7 +6,7 @@ namespace d360.core
     {
         public const string NAMESPACE = "http://data3sixty.com/schemas";
         public static readonly string COMMUNITY_DATABASE_CONNECTION = ConfigurationManager.AppSettings["CommunityContext"];
-        public static readonly string V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS = ConfigurationManager.AppSettings["V2EnvironmentJobRebuildTimeoutInHours"];
+        public static readonly int V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS = int.Parse(ConfigurationManager.AppSettings["V2EnvironmentJobRebuildTimeoutInHours"]);
         private static readonly string AZURE_STORAGE_NAME = ConfigurationManager.AppSettings["AzureStorageName"];
         public static readonly string COMPANY_ICON_FOLDER = "company-icons";
         public static readonly string COMPANY_ICON_URL = $"https://{AZURE_STORAGE_NAME}.blob.core.windows.net/{COMPANY_ICON_FOLDER}/";
