@@ -96,7 +96,6 @@ stages:
       vmImage: windows-2019
     steps:
     - checkout: self
-    - checkout: devops
     - download: current
       artifact: dist
     - task: CopyFiles@2
@@ -125,11 +124,12 @@ stages:
         blackduckApiToken: $(blackduckApi)
         projectName: 'InfogixData360-Govern-UI'
         blackDuckScanDirectory: $PWD/d360.web
+    - checkout: devops
     - template: blackduck-third-party-license/steps/blackduck-thirdpartylicense.yml@global-templates
       parameters:
         blackDuckProjectVersion: "e2471ee7-ddf2-4905-9f1d-fcf02efdea3b"
         blackDuckApiToken: $(blackduckApi)
-        blackDuckScriptLocation: "$(Pipeline.Workspace)/devops/scripts/common/blackduck/thirdpartylicense.py"
+        blackDuckScriptLocation: "$(Pipeline.Workspace)/scripts/common/blackduck/thirdpartylicense.py"
     - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
     - task: Bash@3
       displayName: 'Move BlackDuck Third Party License File'
