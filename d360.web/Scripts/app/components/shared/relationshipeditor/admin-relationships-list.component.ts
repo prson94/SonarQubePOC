@@ -60,7 +60,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         }
     }
 
-    private export() {        
+    private export() {
         this.relationshipsService.exportRelationshipTypes(this.filterToName ?? "", this.id ?? null, this.subject ?? "", this.predicate ?? "", this.object ?? "");
     }
 
@@ -154,10 +154,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
     saveRelationship(event) {
         this.relationshipsService.saveRelationshipType(event.relationship)
             .subscribe((result) => {
-                
+
                 result = result[0];
                 this.showMessageForApiResult(this.messagesService, result);
-               
+
                 if (result.Success === true) {
                     this.getRelationships();
                     this.showEditor = false;
@@ -190,7 +190,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
         if ($event && $event.filteredValue) {
             this.selected = $event.filteredValue[0];
-            this.filterToName = $event.filters?.global?.value;            
+            this.filterToName = $event.filters?.global?.value;
 
             if (this.selected) {
                 this.selectedChange.emit(this.selected)
@@ -200,5 +200,9 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
 
     public downloadRel(relationship: RelationshipType) {
         this.relationshipsService.exportRelationshipTypeItems(relationship);
+    }
+
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the relationship[${this.selected?.Subject?.Name} / ${this.selected?.Object?.Name}]?`;
     }
 }

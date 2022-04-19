@@ -15,7 +15,7 @@
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.ID"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the responsibility relation between [' + [selectedRow?.AssetTypeName] + '] and [' + [selectedRow?.ResponsibilityTypeName] + ']? This will remove all assigned responsibilities between these two types and cannot be undone.'"
+                     [prompt]="deletePromptText"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isLoading && !isEditing && !isDeleting">
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
@@ -23,15 +23,15 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th *ngIf="queryType === 'R'" [pSortableColumn]="'ClassName'" style="width: 150px">
-                        Class
+                        <ng-container i18n>Class</ng-container>
                         <d3s-sortIcon [field]="'ClassName'"></d3s-sortIcon>
                     </th>
                     <th *ngIf="queryType === 'R'" [pSortableColumn]="'AssetTypePath'">
-                        Type
+                        <ng-container i18n>Type</ng-container>
                         <d3s-sortIcon [field]="'AssetTypePath'"></d3s-sortIcon>
                     </th>
                     <th *ngIf="queryType === 'A'" [pSortableColumn]="'ResponsibilityTypeName'">
-                        Type
+                        <ng-container i18n>Type</ng-container>
                         <d3s-sortIcon [field]="'ResponsibilityTypeName'"></d3s-sortIcon>
                     </th>
                     <th style="width: 50px"></th>

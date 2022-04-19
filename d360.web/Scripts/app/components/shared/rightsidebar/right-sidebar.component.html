@@ -14,9 +14,9 @@
                           [badgeValue]="status"
                           [badgeType]="'Status'">
         </d3s-simple-badge>
-        <button class="button" *ngIf="showCertify" (click)="requestCertification()"><span>Request Certification</span></button>
+        <button class="button" *ngIf="showCertify" (click)="requestCertification()"><span i18n>Request Certification</span></button>
         <span class="grow"></span>
-        <button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
+        <button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>
         <button *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}" class="primary button" [disabled]="button.disabled">
             <span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
@@ -24,13 +24,13 @@
         <div [style.width]="assetActionWidth > 0 ? assetActionWidth + 'px' : null" [style.display]="'flex'" *ngIf="assetAction && assetAction.isVisible">
             <span class="grow"></span>
             <button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button">
-                <i class="fa fa-arrow-left"></i>Back
+                <i class="fa fa-arrow-left"></i><ng-container i18n>Back</ng-container>
             </button>
             <button *ngIf="assetAction.showEdit" (click)="assetAction.editCallback()" class="button">
-                <i class="fa fa-pencil"></i>Edit
+                <i class="fa fa-pencil"></i><ng-container i18n>Edit</ng-container>
             </button>
             <button *ngIf="assetAction.showDelete" (click)="assetAction.deleteCallback()" class="button">
-                <i class="fa fa-trash"></i>Delete
+                <i class="fa fa-trash"></i><ng-container i18n>Delete</ng-container>
             </button>
 
             <ng-container *ngIf="assetAction.type === 'TAG' && assetAction.showEdit">
@@ -53,7 +53,7 @@
                                  [modalTitle]="assetAction.delete.modalTitle"
                                  [isModalVisible]="assetAction.delete.isModalVisible"
                                  (onCancel)="assetAction.delete.isModalVisible=false;">
-                    <div prompt class="d-inline">
+                    <div prompt class="d-inline" i18n>
                         Please confirm that you wish to delete the tag '{{assetAction.delete.item.Value}}' (<d3s-tag-usage [uid]="assetAction.delete.item.uid">{{assetAction.delete.item.UseCount}} assets</d3s-tag-usage> tagged)
                     </div>
 
@@ -88,7 +88,7 @@
                     <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
                     <span *ngIf="item.warningMessage" class="sidebar-warning">
                         <d3s-info-tooltip [style]="'warning'">
-                            <span *ngIf="item.warningMessage == 'GovRoleWarning'">
+                            <span *ngIf="item.warningMessage == 'GovRoleWarning'" i18n>
                                 You must define your <strong>Governance Role</strong> settings in order to display and set the <strong>Governance Role</strong> property in your diagrams.
                             </span>
                         </d3s-info-tooltip>
@@ -103,13 +103,13 @@
 </div>
 <d3s-modal [showTitle]="false" additionalClasses="request-cert small-dialog" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
     <div class="content">
-        <div>Click Confirm to request certification of this asset.</div>
+        <div i18n>Click Confirm to request certification of this asset.</div>
     </div>
     <div class="action-bar">
-        <button class="button" (click)="closeCertifyModal()">Cancel</button>
+        <button class="button" (click)="closeCertifyModal()" i18n>Cancel</button>
         <span class="grow"></span>
         <button class="button primary" (click)="certify()">
-            Confirm
+            <ng-container i18n>Confirm</ng-container>
             <span class="loader"><span class="spinner light"></span></span>
         </button>
     </div>

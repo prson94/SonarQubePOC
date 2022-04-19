@@ -18,8 +18,8 @@
                 <div>
                     <div *ngIf="result?.Type == endSearchAllTypeToken;else suggestion" class="search-typeahead-suggestion">
                         <div class="card-row search-all-row">
-                            <div class="search-all-res"><i class="folder-icon searchall fa fa-search"></i><span class="displayname">Show All Results</span></div>
-                            <span class="right-text">Hit <strong>Enter</strong> to see all matches</span>
+                            <div class="search-all-res"><i class="folder-icon searchall fa fa-search"></i><span class="displayname" i18n>Show All Results</span></div>
+                            <span class="right-text" i18n>Hit <strong>Enter</strong> to see all matches</span>
                         </div>
                     </div>
                     <ng-template #suggestion>

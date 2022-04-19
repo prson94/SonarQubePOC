@@ -6,7 +6,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { WorkflowHelpers } from '../../../static/workflow-helpers';
 import { map } from 'rxjs/operators';
 import * as _ from 'lodash';
-import { Observable,of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -31,10 +31,10 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     fields: any[] = [];
     helper = WorkflowHelpers;
     private states = [
-        { value: '0', label: 'Pending Add' },
-        { value: '1', label: 'Active' },
-        { value: '2', label: 'Pending Delete' },
-        { value: '3', label: 'Deleted' },
+        { value: '0', label: $localize`Pending Add` },
+        { value: '1', label: $localize`Active` },
+        { value: '2', label: $localize`Pending Delete` },
+        { value: '3', label: $localize`Deleted` },
     ];
     private showAllAnyCondition: boolean = false;
     private isSatisfyAll: boolean = true;
@@ -69,7 +69,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         }
     }
 
-    load(): Observable<any>{
+    load(): Observable<any> {
         this.step = null;
 
         if (this.itemStepId != null) {
@@ -124,17 +124,17 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         this.ref.markForCheck();
     }
 
-     operatorName(condition: any): string {
-         switch (condition['@Operator']) {
-             case 'C':
-                 return '[any value change]';
-             case 'P':
-                 return 'is populated';
-             case 'NP':
-                 return 'is not populated';
-             default:
-                 return condition['@Operator'];
-         }
+    operatorName(condition: any): string {
+        switch (condition['@Operator']) {
+            case 'C':
+                return '[' + $localize`any value change` + ']';
+            case 'P':
+                return $localize`is populated`;
+            case 'NP':
+                return $localize`is not populated`;
+            default:
+                return condition['@Operator'];
+        }
     }
 
     get filteredConditions(): any[] {
@@ -144,12 +144,12 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     get reassignmentFieldName(): string {
         if (this.reassignment) {
             if (this.reassignment.ReassignType === 'Object') {
-                return 'Action was reassigned to another object';
+                return $localize`Action was reassigned to another object`;
             } else if (this.reassignment.ReassignType === 'Resource') {
-                return 'Action is reassigned to Resource';
+                return $localize`Action is reassigned to Resource`;
             }
         }
 
-        return 'Action was reassigned';
+        return $localize`Action was reassigned`;
     }
 }

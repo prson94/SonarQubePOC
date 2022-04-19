@@ -4,7 +4,7 @@
         <header>{{socialMessage}}</header>
 
         <div class="row" *ngIf="!isAddingNew">
-            <input type="text" placeholder="Add a comment" class="fakeInput" (click)="isAddingNew = true">
+            <input type="text" placeholder="Add a comment" i18n-placeholder class="fakeInput" (click)="isAddingNew = true">
         </div>
         <d3s-comment-form [assetUid]="assetUid" [comment]="newComment" [isVisible]="isAddingNew" (onCancel)="closeEditor()" (onSave)="onSave($event)"></d3s-comment-form>
 
@@ -13,8 +13,8 @@
         </div>
 
         <div style="margin-top:10px;">
-            <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" label="Load more comments..."></button>
-            <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
+            <button pButton type="button" [disabled]="!hasMore" (click)="loadComments();" i18n-label label="Load more comments..."></button>
+            <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" i18n-label label="Close" style="width: 150px;"></button>
         </div>
     </div>
 </div>

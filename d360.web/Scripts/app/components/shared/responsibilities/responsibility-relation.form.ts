@@ -140,7 +140,7 @@ export class ResponsibilityRelationForm extends BaseComponent implements OnInit 
 
         if (!this.relation.AssetTypeUid) {
             valid = false;
-            this.errorMessage += "You must select a valid asset type.";
+            this.errorMessage += $localize`You must select a valid asset type.`;
         }
 
         return valid;

@@ -69,7 +69,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     public rowsPerPage: number;
-    public title: string = 'Add Relationships Lists'
+    public title: string = $localize`Add Relationships Lists`;
     private destroy = new Subject<void>();
 
     ngOnInit() {
@@ -270,7 +270,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             .subscribe((result) => {
                 var res = result[0];
                 if (res.Success) {
-                    let msg = 'Successfully updated';
+                    let msg = $localize`Successfully updated`;
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     this.savingInProgress = false;
                     this.previewAssetUid = this.previewAssetType = "";

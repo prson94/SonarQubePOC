@@ -1,5 +1,5 @@
 ﻿<div #tableHolder *ngIf="showAsTable && !isUsageLoading && usage.length > 0 && !showAsModal">
-    <p>
+    <p i18n>
         The {{getFriendlyObjectType()}} is used in the following diagrams. All occurences will be removed.
     </p>
     <p-table #usageTable
@@ -13,11 +13,11 @@
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'Diagram'" style="width: 60%">
-                    Diagram
+                    <ng-container i18n>Diagram</ng-container>
                     <d3s-sortIcon [field]="'Diagram'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'Occurrences'" style="width: 15%">
-                    Label Occurences
+                    <ng-container i18n>Label Occurences</ng-container>
                     <d3s-sortIcon [field]="'Occurrences'"></d3s-sortIcon>
                 </th>
             </tr>
@@ -40,7 +40,7 @@
     <span class="{{hasUsage ? 'open-usage-dialog-link' : ''}}" (click)="openUsage()">
         <ng-content></ng-content>
     </span>
-    <d3s-modal [appendToBody]="true" [title]="'Where Used Report'" [additionalClasses]="'large-dialog'" (onClose)="isModalVisible = false" [isVisible]="isModalVisible">
+    <d3s-modal [appendToBody]="true" i18n-title title="Where Used Report" [additionalClasses]="'large-dialog'" (onClose)="isModalVisible = false" [isVisible]="isModalVisible">
         <div class="content">
             <div class="row">
                 <p-table #usageTable
@@ -54,11 +54,11 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Diagram'" style="width: 60%">
-                                Diagram
+                                <ng-container i18n>Diagram</ng-container>
                                 <d3s-sortIcon [field]="'Diagram'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'Occurrences'" style="width: 15%">
-                                Label Occurences
+                                <ng-container i18n>Label Occurences</ng-container>
                                 <d3s-sortIcon [field]="'Occurrences'"></d3s-sortIcon>
                             </th>
                         </tr>
@@ -79,9 +79,9 @@
             </div>
         </div>
         <div class="action-bar">
-            <button igButton label="Download" (click)="export()"></button>
+            <button igButton i18n-label label="Download" (click)="export()"></button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" (click)="isModalVisible=false" label="Close"></button>
+            <button igButton class="ig-button-primary" (click)="isModalVisible=false" i18n-label label="Close"></button>
         </div>
 
     </d3s-modal>

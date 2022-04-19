@@ -63,7 +63,7 @@ export class WhereUsedComponent implements OnChanges, AfterViewChecked {
 
     export() {
         if (this.objectType == "ConnectorLabel") {
-            this.connectorLabelService.exportLabelUsage(this.uid, `Where Used report for Connector Label "${this.displayValue}"`)
+            this.connectorLabelService.exportLabelUsage(this.uid, $localize`Where Used report for Connector Label "${this.displayValue}"`)
         }
     }
 

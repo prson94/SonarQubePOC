@@ -10,7 +10,7 @@ import { BaseComponent } from "../../shared/base.component";
                     <div class="col s12">                
                         <div>
                             <span class="FieldName">
-                                Url:
+                               <ng-container i18n>Url</ng-container>:
                             </span>
                             <span>
                                 {{step?.Settings?.HTTPRequest?.Url}}
@@ -22,7 +22,7 @@ import { BaseComponent } from "../../shared/base.component";
                     <div class="col s6">                
                         <div>
                             <span class="FieldName">
-                                Method:
+                                <ng-container i18n>Method</ng-container>:
                             </span>
                             <span>
                                 {{step?.Settings?.HTTPRequest?.Method}}
@@ -32,7 +32,7 @@ import { BaseComponent } from "../../shared/base.component";
                     <div class="col s6">                
                         <div>
                             <span class="FieldName">
-                                Request Timeout:
+                                <ng-container i18n>Request Timeout</ng-container>:
                             </span>
                             <span>
                                 {{step?.Settings?.HTTPRequest?.Timeout}}
@@ -44,7 +44,7 @@ import { BaseComponent } from "../../shared/base.component";
                     <div class="col s12" *ngIf="step?.ItemFields?.HTTPResponse?.StatusCode">                
                         <div>
                             <span class="FieldName">
-                                Response Status Code:
+                                <ng-container i18n>Response Status Code</ng-container>:
                             </span>
                             <span>
                                 {{step?.ItemFields?.HTTPResponse?.StatusCode}}

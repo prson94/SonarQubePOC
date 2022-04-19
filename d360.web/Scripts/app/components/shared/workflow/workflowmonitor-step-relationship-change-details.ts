@@ -10,7 +10,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 <div class="row" >  
     <div class="col s8">  
             <span class="FieldName">
-                Relationship Type Name:
+                <ng-container i18n>Relationship Type Name</ng-container>:
             </span>
             <span>
                  {{relationshipChange.TypeName}}
@@ -18,17 +18,17 @@ import { CompanySettingsService } from "../../../services/settings.service";
         </div>
     <div class="col s4">  
             <span class="FieldName">
-                Status: 
+                <ng-container i18n>Status</ng-container>: 
             </span>
-            <span *ngIf="relationshipChange.ClearValue">&nbsp;Removed</span>
-            <span *ngIf="relationshipChange.AppendValue">&nbsp;Added</span>
-            <span *ngIf="!relationshipChange.ClearValue && !relationshipChange.AppendValue">&nbsp;Updated</span>
+            <span *ngIf="relationshipChange.ClearValue" i18n>Removed</span>
+            <span *ngIf="relationshipChange.AppendValue" i18n>Added</span>
+            <span *ngIf="!relationshipChange.ClearValue && !relationshipChange.AppendValue" i18n>Updated</span>
     </div>
 </div>
 <div class="row" >  
 <div class="col s6">  
             <span class="FieldName">
-                Relationship:
+                <ng-container i18n>Relationship</ng-container>:
             </span>
             <span>
                  {{relationshipChange.Relationship}}

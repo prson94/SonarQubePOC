@@ -11,10 +11,11 @@
 
             <ig-search-field [hidden]="!showSimpleFilter"
                              mode="Keypress"
-                             placeholder="Search..." 
+                             i18n-placeholder
+                             placeholder="Search..."
                              class="grid-simple-filter"
                              [debounce]="600"
-                             (onSearch)="dt.filterGlobal($event, 'contains')" >
+                             (onSearch)="dt.filterGlobal($event, 'contains')">
             </ig-search-field>
             <p-table #dt
                      [value]="responsibilities"
@@ -41,18 +42,18 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 200px" [pSortableColumn]="'Responsibility'">
-                            Responsibility
+                            <ng-container i18n>Responsibility</ng-container>
                             <d3s-sortIcon [field]="'Responsibility'"></d3s-sortIcon>
                         </th>
                         <th style="min-width: 200px" [pSortableColumn]="'Resource'">
-                            Resource
+                            <ng-container i18n>Resource</ng-container>
                             <d3s-sortIcon [field]="'Resource'"></d3s-sortIcon>
                         </th>
                         <th style="width: 200px" [pSortableColumn]="'Group'">
-                            Via
+                            <ng-container i18n>Via</ng-container>
                             <d3s-sortIcon [field]="'Group'"></d3s-sortIcon>
                         </th>
-                        <th style="min-width: 300px">Context</th>
+                        <th style="min-width: 300px" i18n>Context</th>
                         <th style="width: 40px"></th>
                         <th style="width: 40px"></th>
                     </tr>
@@ -92,7 +93,7 @@
                         </td>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="emptymessage">
+                <ng-template pTemplate="emptymessage" i18n>
                     No responsibilities found
                 </ng-template>
                 <ng-template pTemplate="summary">
@@ -102,7 +103,7 @@
         </div>
         <div *ngIf="isEditing">
             <d3s-responsibility-item-form [item]="selectedRow" [assetID]="assetID" [assetUid]="assetUid" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
-        </div> 
+        </div>
         <div *ngIf="isDeleting" style="padding:15px;">
             <d3s-delete-form [callback]="deleteCallback"
                              method="callback"

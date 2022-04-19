@@ -1,12 +1,13 @@
 ﻿<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor add-relationship-modal {{isFromModal ? 'relationship-modal-editor' : ''}}  {{previewAssetUid ? 'modal-extended' : ''}}"
            (onClose)="close();"
-           [title]="'Add Relationships'"
+           i18n-title
+           title="Add Relationships"
            [subtitle]="modalSubtitle"
            [appendToBody]="isFromModal"
            [isVisible]="isVisible">
     <div class="add-relationship-editor">
         <ng-container *ngIf="currentStep === 'SetRelationshipType'">
-            <h2>Select a Relationship Type to see a list of Available Assets for creating relationships.</h2>
+            <h2 i18n>Select a Relationship Type to see a list of Available Assets for creating relationships.</h2>
             <div class="simple-search">
                 <ig-search-field mode="Keypress"
                                  [debounce]="600"
@@ -28,7 +29,7 @@
                      [scrollHeight]="selectionScrollHeight">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>
+                        <th i18n>
                             Relationship Type
                         </th>
                     </tr>
@@ -60,9 +61,9 @@
             </p-table>
 
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
+                <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="ig-button-primary" label="Select Assets > " (click)="currentStep = 'SetAssets'" [disabled]="!selectedRelationshipType?.uid"></button>
+                <button igButton class="ig-button-primary" i18n-label label="Select Assets > " (click)="currentStep = 'SetAssets'" [disabled]="!selectedRelationshipType?.uid"></button>
             </div>
         </ng-container>
 
@@ -72,7 +73,7 @@
                     <div class="panel-header">
                         <span class="header-label">Information</span>
                         <div class="side-panel-button-container">
-                            <button igButton icon="fa-close" pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = '';higlightedItem=null;"></button>
+                            <button igButton icon="fa-close" i18n-pTooltip pTooltip="Close side panel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" (click)="previewAssetUid = '';higlightedItem=null;"></button>
                         </div>
                     </div>
                 </div>
@@ -83,7 +84,7 @@
                                [hasOpenLink]="false"></asset-preview>
             </div>
 
-            <h2 *ngIf="targetTypeCardinality === 1">
+            <h2 *ngIf="targetTypeCardinality === 1" i18n>
                 Only a single asset can be related for {{subjectTypeCardinality === 2 ? 'Many-To-One' : 'One-To-One'}} relationship types
             </h2>
 
@@ -101,12 +102,12 @@
             </div>
 
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
+                <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;resetSelectedAssets()"></button>
+                <button igButton class="back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;resetSelectedAssets()"></button>
 
-                <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
-                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
+                <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
+                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
             </div>
         </ng-container>
 
@@ -126,10 +127,10 @@
                               (modelChanged)="updateFields($event)"></asset-editor>
             </div>
             <div class="action-bar no-padding">
-                <button igButton igAutoFocus label="Cancel" (click)="close()"></button>
+                <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
-                <button igButton class="back-button" igAutoFocus label="Back" (click)="currentStep = 'SetAssets'"></button>
-                <button igButton class="ig-button-primary" label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress || !dynamicEditor.isFormValid()" [loading]="savingInProgress"></button>
+                <button igButton class="back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetAssets'"></button>
+                <button igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress || !dynamicEditor.isFormValid()" [loading]="savingInProgress"></button>
             </div>
         </ng-container>
     </div>
