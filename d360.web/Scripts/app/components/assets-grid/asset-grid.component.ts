@@ -127,7 +127,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     initialLoadInterval: any;
     destroy = new Subject<void>();
 
-    exportTooltip: string = ``;
+    get exportTooltip(): string {
+        return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
+    }
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -151,8 +153,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private featureFlagService: FeatureFlagsService
     ) {
         super(settingsService);
-
-        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
 
         var me = this;
         this.route.queryParams.subscribe((params) => {

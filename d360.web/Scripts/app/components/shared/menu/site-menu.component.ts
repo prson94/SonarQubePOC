@@ -369,7 +369,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems = [];
 
         let integrationMenu = new SiteMenuItem();
-        integrationMenu.Name = "Integration";
+        integrationMenu.Name = $localize`Integration`;
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, count: null });
         integrationMenu.Items.push({ Name: $localize`Bulk Loader`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, count: null });
@@ -379,7 +379,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push(integrationMenu);
 
         let securityMenu = new SiteMenuItem();
-        securityMenu.Name = "Security";
+        securityMenu.Name = $localize`Security`;
         securityMenu.Items = [];
 
         securityMenu.Items.push({ Name: $localize`Groups`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_GROUPS}`, Items: null, IsLink: false, count: null });

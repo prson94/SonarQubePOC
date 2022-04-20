@@ -62,42 +62,42 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'FriendlyName'" style="width: 20%">
-                        Field
+                        <ng-container i18n>Field</ng-container>
                         <d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'FieldType'" style="width: 15%">
-                        Type
+                        <ng-container i18n>Type</ng-container>
                     </th>
                     <th [pSortableColumn]="'Category'" style="width: 15%">
-                        Category
+                        <ng-container i18n>Category</ng-container>
                         <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'DisplayInColumn'" style="width: 12%" *ngIf="showDisplayInColumn">
-                        Display in Column?
+                        <ng-container i18n>Display in Column?</ng-container>
                         <d3s-sortIcon [field]="'DisplayInColumn'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsListable'" style="width: 12%" *ngIf="showIsListable">
-                        Listable?
+                        <ng-container i18n>Listable?</ng-container>
                         <d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsRequired'" style="width: 12%">
-                        Required?
+                        <ng-container i18n>Required?</ng-container>
                         <d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsPartOfKey'" style="width: 9%" *ngIf="showIsPartOfKey">
-                        Key?
+                        <ng-container i18n>Key?</ng-container>
                         <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'ShowIfEmpty'" style="width: 12%">
-                        Show if Empty?
+                        <ng-container i18n>Show if Empty?</ng-container>
                         <d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'SortOrder'" style="width: 12%">
-                        Sort
+                        <ng-container i18n>Sort</ng-container>
                         <d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'SortByAscending'" style="width: 21%">
-                        Sort by Ascending/&#8203;Descending
+                        <ng-container i18n>Sort by Ascending/&#8203;Descending</ng-container>
                         <d3s-sortIcon [field]="'SortByAscending'"></d3s-sortIcon>
                     </th>
                     <th style="width: 30px"></th>
