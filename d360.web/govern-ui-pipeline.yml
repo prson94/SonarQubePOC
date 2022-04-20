@@ -145,7 +145,7 @@ stages:
         script: |
           mv thirdpartylicense.json $(Build.Repository.LocalPath)\govern\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
     #temp
-    - script: echo "listing dir:" && ls $(Build.Repository.LocalPath)\govern\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\ 
+    - script: echo "listing dir:" && ls $(Build.Repository.LocalPath) && echo "second dir" 
     - script: ls $(Build.Repository.LocalPath)\govern\
     #temp ends
     - task: ArchiveFiles@2
