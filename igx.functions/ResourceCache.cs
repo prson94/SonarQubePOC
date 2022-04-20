@@ -202,6 +202,7 @@ namespace igx.functions.consumption
 										if (idsToSend.Count >= 2099)
 										{
 											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+											idsToSend.Clear();
 										}
 									}
 
