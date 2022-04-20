@@ -14,6 +14,8 @@ using System.Web.Http.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using d360.model.DataAccessLayer;
+using Moq;
 
 namespace igx.UnitTests
 {
@@ -21,9 +23,13 @@ namespace igx.UnitTests
     public class FieldsControllerTest : BaseTest
     {
         internal FieldsController fieldsController;
+        private Mock<IAssetTypeRepository> AssetTypeRepositoryMock { get; }
+
         public FieldsControllerTest()
         {
-            this.fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository())
+            AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
+
+            this.fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository(), AssetTypeRepositoryMock.Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

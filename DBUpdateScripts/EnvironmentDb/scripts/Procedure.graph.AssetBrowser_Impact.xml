@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1.1">
-    <comment>GOV-14849</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1.5">
+    <comment>GOV-17907</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -34,6 +34,7 @@ begin
 		[to] varchar(100),
 		back varchar(7) default('#cccccc'),
 		[text] nvarchar(250),
+		predicateIdsJson varchar(max),
 		linksJson varchar(max)
 		);
 
@@ -75,7 +76,10 @@ begin
 	insert into @a (Salt, Position, Initial, ID)
 		select @salt, 0, 1, ID from @assets O inner join Asset A on A.Uid = O.Uid;
 
-	declare @hopIntersectIds dbo.Ids -- keeps track of intersects to stop including with each loop.
+	declare @hopIntersectIds dbo.Ids; -- keeps track of intersects to stop including with each loop.
+
+	insert into @hopIntersectIds
+		select Id from @intersects
 
 	while @c <= @hopCount
 	begin
@@ -88,7 +92,7 @@ begin
 						I.IntersectID,
 						I.PredicateID,
 						I.PredicateUid,
-						lower(I.PredicateName),
+						I.PredicateName,
 						I.PredicateType,
 						'T|' + cast(@salt as varchar(3)) + '|' + cast(S.AssetTypeID as varchar(15)),
 						'A|' + cast(@salt as varchar(3)) + '|' + cast(S.ID as varchar(20)),
@@ -114,7 +118,7 @@ begin
 						I.IntersectID,
 						I.PredicateID,
 						I.PredicateUid,
-						lower(I.PredicateInverse),
+						I.PredicateInverse,
 						I.PredicateType,
 						'T|' + cast(@newSalt as varchar(3)) + '|' + cast(O.AssetTypeID as varchar(15)),
 						'A|' + cast(@newSalt as varchar(3)) + '|' + cast(O.ID as varchar(20)),
@@ -206,7 +210,7 @@ begin
 		order by O.Position
 
 	-- Add edges
-	insert into #edges ([from], [to], [text], linksJson)
+	insert into #edges ([from], [to], [text], predicateIdsJson, linksJson)
 		select	case 
 					when @hierarchyKey is not null and @direction = 'F' then @hierarchyKey
 					else [from]
@@ -216,6 +220,19 @@ begin
 					else [to]
 				end,
 				string_agg([text], ', ') as [text],
+				(
+				   SELECT CONCAT('[', 
+							(
+							select	STRING_AGG(predicateId, ', ')
+							from	(
+									select	distinct
+											predicateId
+									from	@i
+									where	SubjectHierarchyKey = g.[from]
+											and ObjectHierarchyKey = g.[to]
+									) p
+							), ']')
+				),
 				(
 				select	distinct
 						intersectId as id,  
@@ -359,7 +376,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
+														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateName
@@ -371,7 +388,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
+														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateInverse

@@ -1,4 +1,5 @@
-﻿@import '../../../../Content/styles/_Variables.less';
+﻿@import "../../../../Content/styles/infogix-ui/infogix-ui.less";
+@import '../../../../Content/styles/_Variables.less';
 
 .grid-actions-header {
   display: inline-flex;
@@ -120,5 +121,180 @@ p-table {
 .status-table {
   .p-datatable {
     padding-left: 16px;
+  }
+}
+
+.add-semantic-form {
+  padding: 24px;
+
+  .form-header {
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 16px;
+
+    .sub-header {
+      color: @igx-gray-color;
+      font-size: 14px;
+      font-weight: normal;
+    }
+  }
+
+  .error-message {
+    font-size: 14px;
+  }
+
+  .form-wrapper {
+    overflow: auto;
+    padding-right: 24px;
+
+    .dropdown-selected-value {
+      margin-top: -7px;
+    }
+
+    .col {
+      padding: 0;
+    }
+
+    .FieldName {
+      color: @ig-black;
+    }
+
+    .field-wrapper-type-Link {
+      .flex-grid-link {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 8px 0 0 0;
+
+        .link-input {
+          flex-grow: 1;
+        }
+
+        .label {
+          line-height: 32px;
+          padding-right: 16px;
+          width: 58px;
+        }
+      }
+
+      .error-message {
+        margin-left: 58px;
+      }
+    }
+
+    .required-field.empty-field {
+      .p-editor-content {
+        height: 150px;
+        background: @ig-lightblue-t4;
+        font-family: 'Precisely', sans-serif;
+
+        .ql-blank::before {
+          font-style: normal;
+          font-size: 14px;
+          font-family: 'Precisely', sans-serif;
+        }
+      }
+    }
+
+    .ig-message-box {
+      width: 100%;
+    }
+  }
+
+  .action-buttons {
+    padding: 24px 0 0 0;
+  }
+
+  .multi-select-lazy-load {
+    width: 100%;
+
+    .overlay-trigger {
+      width: 100%;
+    }
+
+    .p-multiselect-chip {
+      height: unset;
+    }
+
+    .p-dropdown-trigger,
+    .p-multiselect-trigger {
+      margin-top: 2px;
+      margin-right: 2px;
+    }
+
+    .ng-invalid {
+      .value-required {
+        background: @ig-lightblue-t4;
+      }
+    }
+
+    .p-multiselect-label {
+      max-width: unset;
+      position: relative;
+      padding: 2px;
+      height: unset !important;
+      line-height: 24px;
+      padding-bottom: 0;
+
+      &.p-placeholder {
+        padding-left: 8px;
+      }
+
+      .p-multiselect-token {
+        display: block;
+        background: @ig-grey-t5;
+        color: @ig-black;
+        border-radius: 4px;
+        margin: 0 2px 2px 0;
+        padding: 0 4px;
+        float: left;
+        height: 24px;
+
+        .p-multiselect-token-label {
+          position: relative;
+          top: -3px;
+        }
+
+        .p-multiselect-token-icon {
+          font-size: 16px;
+          padding: 4px;
+        }
+      }
+    }
+  }
+
+  &.saving-in-progress {
+    .input-wrapper {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+  }
+
+  .ig-property-group {
+    .pg-collapsable-content {
+      padding-bottom: 30px;
+
+      .inputs-wrapper {
+        .FieldName {
+          margin-top: 14px;
+          padding-bottom: 8px;
+        }
+      }
+    }
+  }
+}
+
+ul.valueList {
+  margin-block-start: 4px;
+  margin-block-end: 12px;
+
+  li {
+    list-style-type: disc;
+    list-style-position: inside;
+
+    &.showMore {
+      list-style-type: none;
+      color: #006fba;
+      cursor: pointer;
+    }
   }
 }

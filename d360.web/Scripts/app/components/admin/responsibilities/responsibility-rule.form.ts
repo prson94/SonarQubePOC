@@ -5,17 +5,18 @@ import {
     ResponsibilityTypeRelationRule,
     ResponsibilityTypeRelationRuleDefinition,
     ResponsibilityTypeRelationRuleDefinitionWhenItem,
-    ResponsibilityTypeRelationRuleDefinitionWhenTestRow,
     ResponsibilityTypeRelationRuleDefinitionThen,
     ResponsibilityTypeRelationRuleDefinitionThenItem,
-    ResponsibilityTypeRelationRuleDefinitionThenTestRow,
-    ResponsibilityTypeRelationRuleFormDataFieldType
+    ResponsibilityTypeRelationRuleFormDataFieldType,
+    RuleThenV2,
+    ResponsibilityRuleTestRow
 } from "../../../models/responsibility-type.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
 import { BaseComponent } from "../../shared/base.component";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
+import { groupBy } from "lodash";
 
 
 @Component({
@@ -89,9 +90,9 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         { label: $localize`False`, value: "false" },
     ];
     private whenFieldTypes: ResponsibilityTypeRelationRuleFormDataFieldType[] = [];
-    private whenIntersectTypes: SelectItem<number>[] = [];
-    WhenTestRows: ResponsibilityTypeRelationRuleDefinitionWhenTestRow[] = [];
-    ThenTestRows: ResponsibilityTypeRelationRuleDefinitionThenTestRow[] = [];
+    private whenIntersectTypes: (SelectItem<number> & { uid: string })[] = [];
+    WhenTestRows: ResponsibilityRuleTestRow[] = [];
+    ThenTestRows: ResponsibilityRuleTestRow[] = [];
 
     thenObjectTypes: SelectItem<string>[] = [
         { label: this.chooseLabel, value: null },
@@ -122,14 +123,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             this.isLoading = true;
             this.responsibilityTypeService.getRelationOptionsByResponsibilityType(this.ruleId)
                 .subscribe((d) => {
-                    this.objectTypes = d;
-                    this.objectTypes.unshift({ label: this.chooseLabel, value: null });
+                    this.objectTypes = this.mapObjectTypes(d);
                 });
             let r: ResponsibilityTypeRelationRule;
             this.responsibilityTypeService.getResponsibilityTypeRelationRule(this.id)
                 .subscribe((data) => {
                     this.model = data;
-                    this.model.ObjectString = this.model.Object + "|" + this.model.ObjectID;
+                    this.model.ObjectString = this.model.Object + "|" + this.model.ObjectID + "|" + this.model.AssetTypeUid.toLowerCase();
                     r = data;
                     this.responsibilityTypeService.getRelationRuleFormData(this.model.StructuredDefinition.Then.Object, this.model.StructuredDefinition.Then.ObjectID)
                         .subscribe((d) => {
@@ -148,7 +148,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                     this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null });
                                 });
                             this.model = r;
-                            this.model.ObjectString = r.Object + "|" + r.ObjectID;
+                            this.model.ObjectString = r.Object + "|" + r.ObjectID + "|" + r.AssetTypeUid.toLowerCase();
                             this.isLoading = false;
                             //load the then islookup and field values
                             if (this.model && this.model.StructuredDefinition && this.model.StructuredDefinition.Then && this.model.StructuredDefinition.Then.Conditions != null && this.model.StructuredDefinition.Then.Conditions.length > 0) {
@@ -178,11 +178,23 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
             this.responsibilityTypeService.getRelationOptionsByResponsibilityType(this.ruleId)
                 .subscribe((d) => {
-                    this.objectTypes = d;
-                    this.objectTypes.unshift({ label: this.chooseLabel, value: null });
+                    this.objectTypes = this.mapObjectTypes(d);
                     this.isLoading = false;
                 });
         }
+    }
+
+    mapObjectTypes(input: SelectItem<string>[]) {
+        let mapped = input.map((item) => {
+            const [object, objectID, assetTypeUid] = item.value.split("|");
+            const mappedValue = `${object}|${objectID}|${assetTypeUid.toLowerCase()}`;
+            return ({
+                ...item,
+                value: mappedValue
+            })
+        });
+        mapped.unshift({ label: "Choose...", value: null });
+        return mapped;
     }
 
     loadObjectType(value: string): Promise<void> {
@@ -195,6 +207,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
         this.model.Object = otData[0];
         this.model.ObjectID = +otData[1];
+        this.model.AssetTypeUid = otData[2];
 
         this.model.StructuredDefinition.When = [];
         this.model.StructuredDefinition.Then.Object = "";
@@ -240,7 +253,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
             if (selectedFieldType) {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
-                item.FieldTypeName = selectedFieldType.label;
+                item.FieldTypeName = selectedFieldType.fieldTypeName;
                 if (selectedFieldType.isLookup) {
                     let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
                     if (excluded < 0) {
@@ -311,14 +324,64 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             });
         }
 
-        this.responsibilityTypeService.testWhen(whenTest)
-            .subscribe((d) => {
-                this.WhenTestRows = d;
+        this.responsibilityTypeService
+            .testWhenV2({
+                AssetTypeUid: this.model.AssetTypeUid,
+                Definition: {
+                    When: whenTest.StructuredDefinition.When.map((when) => this.mapToWhenV2(when)),
+                    Then: []
+                }
+            })
+            .subscribe((response) => {
+                if (response) {
+                    this.WhenTestRows = response.items;
+                }
+
                 this.disableTestWhen = false;
                 this.isWhenTestLoading = false;
             });
 
         return Promise.all(promises).then(() => { });
+    }
+
+    mapToWhenV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
+        switch (when.CheckType) {
+            case "F":
+                return ({
+                    Field: {
+                        ApiName: when.FieldTypeName,
+                        Value: this.mapToWhenFieldValueForV2(when)
+                    }
+                });
+
+            case "R":
+                return ({
+                    Relation: {
+                        AssetUid: this.mapToWhenRelationAssetUidForV2(when),
+                        IntersectTypeUid: this.mapToWhenRelationIntersectTypeUidForV2(when)
+                    }
+                });
+        }
+    }
+
+    mapToWhenFieldValueForV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
+        if (!when.IsLookup) {
+            return when.Value;
+        }
+
+        const field = this.whenFieldTypes.find((field) => field.value === when.FieldTypeID);
+        const item = field.values.find((item) => item.value === when.Value);
+        return item.label;
+    }
+
+    mapToWhenRelationIntersectTypeUidForV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
+        const intersectType = this.whenIntersectTypes.find((i) => i.value === when.IntersectTypeID);
+        return intersectType.uid;
+    }
+
+    mapToWhenRelationAssetUidForV2(when: ResponsibilityTypeRelationRuleDefinitionWhenItem) {
+        const item = when.IntersectTypeValueOptions.find((i) => i.value === when.Value);
+        return item.assetUid;
     }
 
     addThenCondition(): void {
@@ -372,9 +435,27 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             });
         }
 
-        this.responsibilityTypeService.testThen(thenTest)
-            .subscribe((d) => {
-                this.ThenTestRows = d;
+        this.responsibilityTypeService
+            .testThenV2({
+                AssetTypeUid: this.model.AssetTypeUid,
+                Definition: {
+                    When: [],
+                    Then: Object.values(groupBy(
+                        thenTest.StructuredDefinition.Then.Conditions,
+                        (then) => this.getAssigneeTypeUid(then)
+                    )).map((conditions) => (
+                        {
+                            AssigneeTypeUid: this.getAssigneeTypeUid(conditions[0]),
+                            MatchType: thenTest.StructuredDefinition.Then.MatchType as ('and' | 'or'),
+                            Conditions: conditions.map((then) => this.mapToThenV2(then))
+                        }
+                    ))
+                }
+            })
+            .subscribe((response) => {
+                if (response) {
+                    this.ThenTestRows = response.items;
+                }
                 this.disableTestThen = false;
                 this.isThenTestLoading = false;
             });
@@ -382,12 +463,46 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         return Promise.all(promises).then(() => { });
     }
 
+    getAssigneeTypeUid(then: ResponsibilityTypeRelationRuleDefinitionThenItem) {
+        const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
+        return field.assigneeTypeUid;
+    }
+
+    mapToThenV2(then: ResponsibilityTypeRelationRuleDefinitionThenItem): RuleThenV2 {
+        const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
+        if (field.isLookup) {
+            const item = field.values.find((item) => item.value === then.Value);
+            if (item.assigneeUid) {
+                return {
+                    Assignee: {
+                        Uid: item.assigneeUid
+                    }
+                };
+            }
+            else {
+                return {
+                    Field: {
+                        ApiName: then.FieldTypeName,
+                        Value: item.value
+                    }
+                };
+            }
+        }
+
+        return {
+            Field: {
+                ApiName: then.FieldTypeName,
+                Value: then.Value
+            }
+        };
+    }
+
     private loadThenValuesForFieldType(item: any, clearValue?: boolean): Promise<void> {
         let selectedFieldType = this.thenFieldTypes.find((f) => f.value === item.FieldTypeID);
         if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
             item.IsBool = false;
-            item.FieldTypeName = selectedFieldType.label;
+            item.FieldTypeName = selectedFieldType.fieldTypeName;
             if (selectedFieldType.isLookup) {
                 let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
                 if (excluded < 0) {
@@ -420,9 +535,10 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsloadValuesForIntersectType = false;
                 item.IsBool = false;
                 item.ValueOptions = d;
-                let excluded = item.ValueOptions.findIndex((a) => a.label === this.chooseLabel);
+                item.IntersectTypeValueOptions = d;
+                let excluded = item.IntersectTypeValueOptions.findIndex((a) => a.label === "Choose...");
                 if (excluded < 0) {
-                    item.ValueOptions.unshift({ label: this.chooseLabel, value: null });
+                    item.IntersectTypeValueOptions.unshift({ label: this.chooseLabel, value: null, assetUid: null });
                 }
             });
         return null;

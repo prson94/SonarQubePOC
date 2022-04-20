@@ -9,6 +9,10 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using d360.model;
 using d360.core.enums;
+using d360.extensions.info;
+using d360.extensions.mail;
+using d360.extensions.queue;
+using d360.extensions.caching;
 
 namespace igx.functions.consumption
 {
@@ -33,7 +37,22 @@ namespace igx.functions.consumption
             try
             {
                 var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
-                var company = JobDbContextCreator.CreateCompanyContext(updateInfo.CompanyID, 0, _c.UrlPrefix, true, connectionString: CoreFunction.GetConnectionString("CommunityContext"));
+                var company = JobDbContextCreator.CreateCompanyContext(
+                    securityContextProvider: new UriSecurityContextProvider
+                                                {
+                                                    CompanyID = updateInfo.CompanyID,
+                                                    CompanyPrefix = _c.UrlPrefix,
+                                                    ResourceID = 0,
+                                                    IsAdministrator = true,
+                                                },
+                    mailProvider: new MandrillMailProvider
+                                    {
+                                        ApiKey = config.GetValue<string>("MandrillApiKey"),
+                                        SubAccount = config.GetValue<string>("MandrillSubAccount")
+                                    },
+                    queueSource: new AzureQueueSource(config),
+                    cachingProvider: new DummyCachingProvider(),
+                    connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
                 using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(updateInfo.CompanyID, CoreFunction.GetConnectionString("CommunityContext")))
                 {
@@ -67,7 +86,7 @@ namespace igx.functions.consumption
                         }
                         finally
                         {
-                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                            await company.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                         }
                     }
                 }

@@ -1,32 +1,31 @@
 <div class="regexp-tester">
-    <label class="ig-label">
-        <ng-container i18n>
-            Regular Expression Test String
-        </ng-container>
-        <span pTooltip="Enter text and select Validate to test a string against the pattern entered in the Regular Expression field"
-              i18n-pTooltip
-              tooltipPosition="top"
-              tooltipStyleClass="ig-tooltip">
-            <i class="fa fa-question-circle"></i>
-        </span>
-    </label>
+	<label class="ig-label">
+		Regular Expression Test String
+		<span pTooltip="Enter text and select Validate to test a string against the pattern entered in the Regular Expression field"
+			tooltipPosition="top"
+			tooltipStyleClass="ig-tooltip">
+			<i class="fa fa-question-circle"></i>
+		</span>
+	</label>
 
-    <form class="validate-container" (onSubmit)="validate()">
-        <input class="validate-input"
-               [disabled]="disabled"
-               [ngModel]="expressionTestString"
-               (ngModelChange)="writeExpressionTestString($event)"
-               [ngModelOptions]="{standalone: true}"
-               igInput
-               type="text"
-               igSize="medium">
-        <button class="validate-button"
-                [disabled]="disabled || !isValidRegexp || isEmptyRegexp || isEmptyTestString"
-                (click)="validate()"
-                igButton
-                i18n-label
-                label="Validate">
-        </button>
+	<form class="validate-container">
+		<input 
+			class="validate-input"
+			[disabled]="disabled"
+			[ngModel]="expressionTestString"
+			(ngModelChange)="writeExpressionTestString($event)"
+			[ngModelOptions]="{standalone: true}"
+			igInput
+			type="text"
+			igSize="medium">
+		<button
+			class="validate-button" 
+			[disabled]="disabled || !isValidRegexp || isEmptyRegexp || isEmptyTestString"
+			(click)="validate()"
+			igButton
+		    i18n-label
+			label="Validate">
+		</button>
 
         <div class="validate-status">
             <ng-container [ngSwitch]="isValid">

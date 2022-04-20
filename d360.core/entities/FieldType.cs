@@ -193,6 +193,12 @@ namespace d360.core.entities
         public string Display { get; set; }
     }
 
+    public class FieldTypeDataTypePathApiViewModel_Definition
+    {
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+    }
+
     public class FieldTypeDescriptionApiViewModel_DisplayForm : FieldTypeDescriptionApiViewModel_Display
     {
         [DataMember]
@@ -312,6 +318,9 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         [DataMember]
+        public bool SortByAscending { get; set; }
+
+        [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
 
         [DataMember]
@@ -349,6 +358,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
@@ -451,6 +463,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
@@ -562,6 +577,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsDisplayable { get; set; }
@@ -712,6 +730,9 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         [DataMember]
+        public bool SortByAscending { get; set; }
+
+        [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
 
         [DataMember]
@@ -722,7 +743,10 @@ namespace d360.core.entities
 
         [DataMember]
         public bool? DisplayInColumn { get; set; }
-    }
+
+        [DataMember]
+        public FieldTypeDataTypePathApiViewModel_Definition Definition { get; set; }
+}
 
     public class FieldTypeDataTypeRelationshipApiViewModel
     {
@@ -740,6 +764,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsDisplayable { get; set; }
@@ -793,6 +820,9 @@ namespace d360.core.entities
 
         [DataMember]
         public int SortOrder { get; set; }
+
+        [DataMember]
+        public bool SortByAscending { get; set; }
 
         [DataMember]
         public bool IsListable { get; set; }

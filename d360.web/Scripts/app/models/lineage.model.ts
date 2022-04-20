@@ -465,7 +465,7 @@ export class AssetBrowserLineageRequest {
     direction: AssetBrowserApiHopDirection;
     includeNonLeaf: boolean;
     assets: AssetBrowserApiHopAssetRequestModel[];
-    preloadedIntersects: number[];
+    intersects: number[];
     hierarchyKey: string;
 }
 

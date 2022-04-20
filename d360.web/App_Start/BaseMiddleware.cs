@@ -44,7 +44,7 @@ namespace d360.web
 
             var queue = new AzureQueueSource();
 
-            return new CompanyContext(community, Cache, queue, mail, sec, null, false);
+            return new CompanyContext(community, Cache, queue, mail, sec, false);
         }
     }
 }

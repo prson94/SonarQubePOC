@@ -10,7 +10,8 @@
                         [placeholder]="autocompletePlaceholder"
                         [minLength]="1"
                         maxlength="255"
-                        (onBlur)="clearValue()"
+                        (onBlur)="blurHandler()"
+                        (onFocus)="focusHandler()"
                         (onClear)="clearValue()"
                         (onSelect)="selectItem(ac)"
                         (onKeyUp)="syncSearchText($event)">

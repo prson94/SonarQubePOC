@@ -1,4 +1,8 @@
 ﻿using d360.core.enums;
+using d360.extensions.caching;
+using d360.extensions.info;
+using d360.extensions.mail;
+using d360.extensions.queue;
 using d360.model;
 using d360.utils.company;
 using Dapper;
@@ -45,10 +49,24 @@ namespace igx.functions.consumption
                 {
                     try
                     {
-                        var companyContext = JobDbContextCreator.CreateCompanyContext(c.CompanyID, 0, c.UrlPrefix, true,
-                        connectionString: CoreFunction.GetConnectionString("CommunityContext"));
+                        var companyContext = JobDbContextCreator.CreateCompanyContext(
+                            securityContextProvider: new UriSecurityContextProvider
+                                                        {
+                                                            CompanyID = c.CompanyID,
+                                                            CompanyPrefix = c.UrlPrefix,
+                                                            ResourceID = 0,
+                                                            IsAdministrator = true,
+                                                        },
+                            mailProvider: new MandrillMailProvider
+                                            {
+                                                ApiKey = config.GetValue<string>("MandrillApiKey"),
+                                                SubAccount = config.GetValue<string>("MandrillSubAccount")
+                                            },
+                            queueSource: new AzureQueueSource(config),
+                            cachingProvider: new DummyCachingProvider(),
+                            connectionString: CoreFunction.GetConnectionString("CommunityContext"));
 
-                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
+                        var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                         if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                         {
                             try
@@ -65,7 +83,7 @@ namespace igx.functions.consumption
                             }
                             finally
                             {
-                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive, config.GetValue("V2EnvironmentJobRebuildTimeoutInHours", 18));
                             }
                         }
                     }

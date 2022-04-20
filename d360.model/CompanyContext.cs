@@ -42,7 +42,6 @@ namespace d360.model
 	public partial class CompanyContext : BaseContext, ICompanyContext
 	{
 		internal IQueueSource QueueSource;
-		internal IStorageProvider Storage;
 		internal IMailProvider Mail;
 		private readonly CommunityContext Community;
 		private bool IsEventingEnabled;
@@ -56,7 +55,6 @@ namespace d360.model
 			ICachingProvider caching,
 			IQueueSource queueSource, IMailProvider mail,
 			ISecurityContextProvider context,
-			IStorageProvider storage,
 			bool skipCacheCheck = false)
 			: base(community.GetCompanyConnectionString(skipCacheCheck))
 		{
@@ -66,7 +64,6 @@ namespace d360.model
 			Caching = caching;
 			Mail = mail;
 			QueueSource = queueSource;
-			Storage = storage;
 
 			CurrentClientID = context.ClientID;
 			CurrentCompanyID = context.CompanyID;

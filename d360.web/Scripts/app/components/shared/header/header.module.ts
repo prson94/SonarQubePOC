@@ -32,6 +32,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { CoreModule } from "../../shared/core.module";
 import { ResourceApiKeyModule } from '../../resource/api-key/resource-api.module';
 import { HeaderBackButtonComponent } from './header-back-button.component';
+import { ThirdPartyLicensesModule } from '../controls/third-party-licenses/third-party-licenses.component';
 
 
 @NgModule({
@@ -45,6 +46,7 @@ import { HeaderBackButtonComponent } from './header-back-button.component';
         CoreModule,
         PipesModule,
         TypeaheadSearchModule,
+        ThirdPartyLicensesModule,
 
         //primeng        
         AutoCompleteModule,        

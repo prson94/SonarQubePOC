@@ -932,22 +932,7 @@ namespace d360.model
 			Connection.Execute("delete [dbo].[ResponsibilityRuleResultSecurityAsset] where RuleID <> 0 and RuleID not in (select ID from ResponsibilityTypeRelationRule)", commandTimeout: 7200);
 		}
 
-		public async Task<IEnumerable<ObjectResult>> GetWhenResults(ResponsibilityTypeRelationRule rule, SqlTransaction trans = null)
-		{
-			string sql = await GetWhenResultsSql(rule, trans).ConfigureAwait(false);
-			
-			return await Connection.QueryAsync<ObjectResult>(sql, transaction: trans, commandTimeout: 7200);
-		}
-
-        public IEnumerable<SecurityResult> GetThenResults(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction trans = null)
-        {
-            string sql = GetThenResultsSql(rule, IsHideData3SixtyUsers, trans, includeUid: false);
-            return (string.IsNullOrEmpty(sql)) ?
-                new List<SecurityResult>().AsEnumerable() :
-                Connection.Query<SecurityResult>(sql.Replace(" {0} ", ""), transaction: trans, commandTimeout: 7200);
-        }
-
-		#endregion
+        #endregion
 
 	}
 }

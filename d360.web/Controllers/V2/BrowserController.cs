@@ -48,7 +48,7 @@ namespace d360.web.Controllers.V2
 			GraphFilterRepository = graphFilterRepository;
 		}
 
-        private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal)
+        private HttpResponseMessage buildAssetBrowserResponseModel(GridReader reader, bool readReveal, bool checkDataLimit = true)
         {
             var model = new AssetBrowserResponseModel
             {
@@ -56,7 +56,8 @@ namespace d360.web.Controllers.V2
                 links = reader.Read<AssetBrowserLink>().ToList(),
                 hierarchy = reader.Read<AssetBrowserHeirarchy>().ToList(),
                 reveals = readReveal ? reader.Read<AssetBrowserRevealNode>().ToList() : null,
-            };
+				dataLimitReached = checkDataLimit ? reader.Read<bool>().First() : false
+			};
 
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
@@ -137,7 +138,16 @@ namespace d360.web.Controllers.V2
             {
                 var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-                var sql = @"exec graph.AssetBrowser_Lineage 
+				if (hopModel.assets == null)
+				{
+					hopModel.assets = new List<AssetBrowserApiHopAssetRequestModel>();
+				}
+				if (hopModel.preloadedIntersects == null)
+				{
+					hopModel.preloadedIntersects = new List<long>();
+				}
+
+				var sql = @"exec graph.AssetBrowser_Lineage 
 @ancestry, @descendancy, @direction, 
 @assets, @resourceId, @currentHop, @hopCount, @intersects,
 @includeOwnershipBadges, @includeRelationBadges, @hierarchyKey, @isAdmin";
@@ -203,7 +213,7 @@ namespace d360.web.Controllers.V2
                     timeout: 60
                 );
 
-                return buildAssetBrowserResponseModel(reader, false);
+                return buildAssetBrowserResponseModel(reader, false, false);
             }
             catch (Exception ex)
             {
@@ -240,7 +250,14 @@ namespace d360.web.Controllers.V2
             try
             {
                 var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
-
+				if (hopModel.assets == null)
+				{
+					hopModel.assets = new List<AssetBrowserApiHopAssetRequestModel>();
+				}
+				if (hopModel.intersects == null) 
+				{
+					hopModel.intersects = new List<long>();
+				}
                 var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
@@ -260,7 +277,7 @@ namespace d360.web.Controllers.V2
                     timeout: 60
                 );
 
-                return buildAssetBrowserResponseModel(reader, false);
+                return buildAssetBrowserResponseModel(reader, false, false);
             }
             catch (Exception ex)
             {

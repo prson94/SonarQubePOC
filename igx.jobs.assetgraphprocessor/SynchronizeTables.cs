@@ -8,6 +8,12 @@ using Dapper;
 using d360.model;
 using d360.core.enums;
 using System.Collections.Generic;
+using d360.extensions.info;
+using d360.extensions.mail;
+using System.Configuration;
+using d360.core;
+using d360.extensions.queue;
+using d360.extensions.caching;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -38,9 +44,24 @@ namespace igx.jobs.assetgraphprocessor
                     CoreFunction.AITrackEvent(functionName, "Graph Rebuild", new Dictionary<string, string>() { { "PopulatePaths", populatePaths.ToString() } }, company.CompanyID);
                     CoreFunction.AIFlush();
 
-                    var companyContext = JobDbContextCreator.CreateCompanyContext(company.CompanyID, 0, company.UrlPrefix, true);
+                    var companyContext = JobDbContextCreator.CreateCompanyContext(
+                        new UriSecurityContextProvider
+                        {
+                            CompanyID = company.CompanyID,
+                            CompanyPrefix = company.UrlPrefix,
+                            ResourceID = 0,
+                            IsAdministrator = true
+                        },
+                        new MandrillMailProvider
+                        {
+                            ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                            SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                        },
+                        new AzureQueueSource(),
+                        new DummyCachingProvider(),
+                        constants.COMMUNITY_DATABASE_CONNECTION);
 
-                    var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active);
+                    var rs = await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
                     if (rs.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
@@ -60,7 +81,7 @@ namespace igx.jobs.assetgraphprocessor
                             }
                             finally
                             {
-                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
+                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
                             }
                         }
                     }

@@ -13,6 +13,8 @@ import { Subscription } from 'rxjs';
 import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SemanticBaseComponent } from './semantics-base.component';
 import { FeatureFlagsService } from '../../services/featureflags.service';
+import { AuthenticationService } from '../../services/authentication.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
 
 
 declare var CurrentResourceID;
@@ -40,6 +42,8 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
     sidePanelOpen: boolean = true;
     sidePanelLoading: boolean = false;
     sidePanelStorageKey: string;
+    isAdmin: boolean = false;
+    showEditor: boolean = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -50,9 +54,12 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        private featureFlagService: FeatureFlagsService
+        private featureFlagService: FeatureFlagsService,
+        private authenticationService: AuthenticationService,
+        private headerActionsService: HeaderActionsService,
     ) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
+        this.isAdmin = this.authenticationService.isAdmin;
     }
 
 
@@ -121,5 +128,11 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             this.sidePanelTab = 'status';
         }
 
+    }
+
+    editSemantic($event) {
+        this.headerActionsService.emitFavoritesChange();    
+        this.getData(this.semanticType.uid);
+        this.showEditor = false;
     }
 }

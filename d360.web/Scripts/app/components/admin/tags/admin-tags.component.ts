@@ -71,7 +71,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.clearSidebar();
     }
 
-    updateSort(event) {
+    updateSort(event) { 
         this.sort = event;
     }
     onFilterChange(event) {
@@ -90,43 +90,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }, err => this.error = err);
     }
 
-    private deselectElement(element: HTMLElement) {
-        var trElement = this.getTrElement(element);
-
-        trElement.classList.remove('p-highlight');
-        trElement.querySelector('span.p-checkbox-icon').classList.remove('pi-check');
-        trElement.querySelector('span.p-checkbox-icon').classList.remove('pi');
-        trElement.querySelector('div.p-checkbox-box').classList.remove('p-state-active');
-        trElement.querySelector('div.p-checkbox-box').classList.remove('p-highlight');
-    }
-
-    private selectElement(element: HTMLElement) {
-        var trElement = this.getTrElement(element);
-
-        trElement.classList.add('p-highlight');
-        trElement.querySelector('span.p-checkbox-icon').classList.add('pi-check');
-        trElement.querySelector('span.p-checkbox-icon').classList.add('pi');
-        trElement.querySelector('div.p-checkbox-box').classList.add('p-state-active');
-
-    }
-
-    private getTrElement(element: HTMLElement) {
-        if (element.tagName === "TR")
-            return element;
-
-        else
-            return this.getTrElement(element.parentElement);
-    }
-
-    private clearAllSelectedItems(element: any) {
-        var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.p-highlight");
-        Array.from(nodeList)
-            .forEach(x => {
-                this.deselectElement(x as HTMLElement);
-            });
-        if (nodeList.length == 0)
-            this.selectElement(element);
-
+    private triggerRerenderOfSelection() {
+        // primeNg library expects us to pass new array whenever we want to change contents of array
+        this.selected = this.selected.slice();
     }
 
     selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
@@ -137,15 +103,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
                 if (this.selected.filter(x => x.uid == item.uid).length > 0) {
                     this.selected = this.selected.filter(x => x.uid != item.uid);
-                    var el = (<any>(event.target)).parentNode;
-                    el = (el.nodeName === "TD") ? el.parentNode : el;
-                    this.deselectElement(el);
+                    this.triggerRerenderOfSelection();
                 }
                 else {
                     this.selected.push(item);
-                    var el = (<any>(event.target)).parentNode;
-                    el = (el.nodeName === "TD") ? el.parentNode : el;
-                    this.selectElement(el);
+                    this.triggerRerenderOfSelection();
                 }
 
                 this.lastSelectedElement = item;
@@ -168,7 +130,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 for (var i = lastIndex; i <= currentIndex; i++) {
                     if (!tableRows[i].classList.contains('p-highlight')) {
                         this.selected.push(this.tags[i]);
-                        this.selectElement(tableRows[i]);
+                        this.triggerRerenderOfSelection();
                     }
                 }
 
@@ -179,27 +141,18 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
         let target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
-            var el = (<any>(event.target));
-            if (el.nodeName === "I")
-                el = el.parentNode.parentNode.parentNode; //gets <a>-><div>-><td>
-            if (el.nodeName === "A")
-                el = el.parentNode.parentNode; //gets <div>-><td>
-            el = (el.nodeName === "TD") ? el.parentNode : el;
-            this.clearAllSelectedItems(el);
             this.selected = [];
             this.selected.push(item);
+            this.triggerRerenderOfSelection();
             this.lastSelectedElement = item;
         } else {
             if (this.selected.filter(x => x.uid == item.uid).length > 0) {
                 this.selected = this.selected.filter(x => x.uid != item.uid);
-                var el = (<any>(event.target)).parentNode;
-                el = (el.nodeName === "TD") ? el.parentNode : el;
-                this.deselectElement(el);
+                this.triggerRerenderOfSelection();
             }
             else {
                 this.selected.push(item);
-                var el = (<any>(event.target)).parentNode;
-                this.selectElement(el);
+                this.triggerRerenderOfSelection();
             }
             this.lastSelectedElement = item;
         }

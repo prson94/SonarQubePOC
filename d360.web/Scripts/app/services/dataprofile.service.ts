@@ -9,7 +9,7 @@ import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 
-import { SemanticTypeGetAssetsResponse, SemanticTypeGetResponse } from '../models/semantic-type.model';
+import { SemanticSource, SemanticType, SemanticTypeGetAssetsResponse, SemanticTypeGetResponse } from '../models/semantic-type.model';
 
 import * as _ from 'lodash';
 import { SortOrder } from '../models/enums.model';
@@ -256,9 +256,9 @@ export class DataProfileService extends BaseObservableService {
         } 
     }
 
-    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null): Observable<any> {
+    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null, order: string = "name"): Observable<any> {
         
-        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}/`;        
+        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}?_orderby=${order}`;        
 
         if (isExport) {
             this.
@@ -295,6 +295,80 @@ export class DataProfileService extends BaseObservableService {
             .delete(`api/v2/dataprofiles/semantictypes/${qualifier}`, httpOptions)
             .pipe(
                 map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    public postSemanticType(        
+        semanticType: SemanticType
+    ): Observable<any> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        let semanticArray: SemanticType[] = [];
+        semanticArray.push(semanticType);
+
+        return this
+            .http
+            .post(`api/v2/dataprofiles/semantictypes/`, semanticArray, httpOptions)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError((err) => {
+                    if (err?.status === 409) {
+                        return of(err);
+                    } else {
+                        this.handleError(err, true);
+                    }
+                })
+            );        
+    }
+
+    public putSemanticType(
+        semanticType: SemanticType
+    ): Observable<any> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        let semanticArray: SemanticType[] = [];
+        semanticArray.push(semanticType);
+
+        return this
+            .http
+            .put(`api/v2/dataprofiles/semantictypes/`, semanticArray, httpOptions)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    public patchSemanticType(
+        semanticType: SemanticType
+    ): Observable<any> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        let semanticArray: any[] = [];
+        
+        if (semanticType.source.toString() === SemanticSource[SemanticSource.BuiltIn]) {
+            semanticArray.push({ qualifier: semanticType.qualifier, description: semanticType.description, name: semanticType.name });
+        } else {
+            semanticArray.push(semanticType);
+        }
+        
+        return this
+            .http
+            .patch(`api/v2/dataprofiles/semantictypes/`, semanticArray, httpOptions)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
                 catchError((err) => this.handleError(err))
             );
     }

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.dbo.AssetDataProfile-v12">
+  <changeSet author="MDonato" id="Table.dbo.AssetDataProfile-v13">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -48,6 +48,7 @@
 			[DetectionLocale] NVARCHAR(64) NULL,
 			[FtaVersion] NVARCHAR(32) NULL,
 			[DecimalSeparator] NCHAR(1) NULL,
+			[UniqueCount] BIGINT NULL,
 			[CreatedBy] INT NOT NULL,
 			[CreatedOn] DATETIME NOT NULL,
 			[UpdatedBy] INT NOT NULL,
@@ -148,6 +149,16 @@
 	)
 	BEGIN
 		ALTER TABLE [dbo].[AssetDataProfile] ADD [ProfileIdentifier] NVARCHAR(200) NULL
+	END
+	
+	IF NOT EXISTS (
+	  SELECT * 
+	  FROM   sys.columns 
+	  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+			 AND name = 'UniqueCount'
+	)
+	BEGIN
+		ALTER TABLE [dbo].[AssetDataProfile] ADD [UniqueCount] BIGINT NULL
 	END
 	
 	ALTER table dbo.AssetDataProfile

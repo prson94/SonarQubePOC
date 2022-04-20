@@ -1,0 +1,49 @@
+﻿<div class="asset-detail theme-detail">
+    <div class="asset-detail-header">
+        <div class="flex-grid">
+            <div class="asset-name">{{theme.name}}</div>
+            <div class="flex-grow"></div>
+            <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
+        </div>
+        <div *ngIf="theme.isDefaultTheme" class="class-name">Default theme</div>
+        <br />
+        <div>
+            <a (click)="linkClicked.emit('Edit')" *ngIf="theme.hasEditOption">Edit</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption">Duplicate</a> <span *ngIf="theme.hasDuplicateOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Set as Current Theme')" *ngIf="theme.hasSetAsCurrentThemeOption">Set as Current Theme</a>
+        </div>
+    </div>
+    <div class="windowtabs">
+        <button class="tab-selected">Details</button>
+    </div>
+    <div class="asset-detail-tabs">
+        <div *ngFor="let category of categories; let first=first">
+            <ig-property-group *ngIf="category.loaded && category.hasData"
+                               [expanded]="category.active"
+                               (expandedChange)="category.active = $event;"
+                               [title]="category.name"
+                               [showHeaderLine]="false"
+                               [shouldBePadded]="false">
+                <div readonly>
+                    <div *ngFor="let row of category.rows" class="theme-value-wrapper">
+                        <label class="ig-label">{{row.title}}</label>
+                        <ng-container *ngIf="row.type === 'color'">
+                            <div class="theme-color-value">
+                                <div class="color-box" [style.background-color]="row.value"></div>
+                                <div class="hex-value">{{row.value}}</div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="row.type === 'img'">
+                            <div class="image-preview preview-{{row.style}}">
+                                <img src="{{row.value}}" />
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="row.type === 'code'">
+                            <codearea [(ngModel)]="row.value" [readonly]="true" [codeType]="'css'"></codearea>
+                        </ng-container>
+                    </div>
+                </div>
+            </ig-property-group>
+        </div>
+    </div>
+</div>

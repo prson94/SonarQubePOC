@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, EventEmitter, Output, ViewChild, OnInit } from "@angular/core";
+﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, OnInit, OnChanges, SimpleChanges } from "@angular/core";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
@@ -23,6 +23,7 @@ export const IMAGE_PICKER_ACCESSOR: any = {
 export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     @Input() message = '';
     @Input() imageType = '';
+    @Input() defaultImage = '';
     @Input() allowedExtensions = 'image/png,image/gif,image/jpg,image/jpeg';
     @Input() maxHeight: number;
     @Input() maxWidth: number;
@@ -51,7 +52,8 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
 
     constructor(public ref: ChangeDetectorRef,
         public domSanitizer: DomSanitizer,
-        public el: ElementRef) { }
+        public el: ElementRef) {
+    }
 
     ngOnInit() {
         this.setPreviewDimensions();
@@ -63,7 +65,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
             case 'ICO':
                 this.previewHeight = 40;
                 this.previewWidth = 40;
-                this.allowedExtensions = "image/ico,image/x-icon";
+                this.allowedExtensions = "image/ico,image/x-icon,image/vnd.microsoft.icon";
                 this.invalidFormatMessage = $localize`File type not supported. Please choose a ICO image.`;
                 break;
             case 'LOGO':
@@ -85,7 +87,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
             this.invalidDimensionMessage = $localize`File exceeds width limit. Please upload a file that has max file width of [${this.maxWidth}px].`;
         }
         if (this.maxHeight && this.maxWidth) {
-            this.invalidDimensionMessage = $localize`File exceeds height or width limit. Please upload a file that has max file dimensions of [${this.maxWidth}px X ${this.maxHeight}px].`;
+            this.invalidDimensionMessage = $localize`File exceeds height or width limit. Please upload a file that has max file dimensions of ${this.maxWidth}px X ${this.maxHeight}px.`;
         }
     }
 
@@ -111,7 +113,12 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         this.value = "";
         this.file = {};
         this.image = {};
-        this.validate();
+        if (this.defaultImage) {
+            this.value = this.defaultImage;
+        }
+        else {
+            this.validate();
+        }
         this.onModelChange(this.value);
         this.ref.markForCheck();
     }

@@ -114,3 +114,7 @@
 /DBUpdateScripts/EnvironmentDb/liquibase.properties
 /d360.web/.vscode/**
 /d360.web/Content/primeng/v12.0.2
+/d360.web/Content/version-license.json
+/d360.web/Content/primeicons/primeicons.min.css
+/d360.web/Content/codemirror/eclipse.min.css
+/d360.web/Content/codemirror/codemirror.min.css

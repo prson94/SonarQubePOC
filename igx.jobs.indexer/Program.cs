@@ -19,6 +19,8 @@ using d360.extensions.caching;
 using d360.model;
 using Microsoft.Extensions.Hosting;
 using System.Collections.Concurrent;
+using d360.extensions.mail;
+using System.Configuration;
 
 namespace igx.jobs.indexer
 {
@@ -224,12 +226,27 @@ namespace igx.jobs.indexer
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == companyID);
 
-            var companyContext = JobDbContextCreator.CreateCompanyContext(companyID, 0, _c.UrlPrefix, true);
+            var companyContext = JobDbContextCreator.CreateCompanyContext(
+                new UriSecurityContextProvider
+                {
+                    CompanyID = companyID,
+                    CompanyPrefix = _c.UrlPrefix,
+                    ResourceID = 0,
+                    IsAdministrator = true
+                },
+                new MandrillMailProvider
+                {
+                    ApiKey = ConfigurationManager.AppSettings[constants.MAIL_API_KEY],
+                    SubAccount = ConfigurationManager.AppSettings[constants.MAIL_SUB_ACCOUNT]
+                },
+                new AzureQueueSource(),
+                new DummyCachingProvider(),
+                constants.COMMUNITY_DATABASE_CONNECTION);
 
-            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex);
+            CompanyRebuildJobStatusState currentStatue = await companyContext.GetRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
             if(currentStatue != status)
-                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status);
+                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, status, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
 
         }
 

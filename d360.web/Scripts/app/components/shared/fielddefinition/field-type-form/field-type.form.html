@@ -1035,6 +1035,33 @@
             </div>
         </simple-accordion>
 
+        <!-- asset path -->
+        <simple-accordion *ngIf="currentType == 'Path'"
+                          header="Asset Path"
+                          active="false">
+            <div class="row">
+                <div class="col s12" style="margin: 10px 0 0 0; display: flex;">
+                    <p-checkbox binary="true"
+                                name="listSingleSegmentCheckbox"
+                                [ngModel]="listSingleSegmentCheckbox"
+                                (ngModelChange)="onListSingleSegment($event);"
+                                label="List Single Segment"></p-checkbox>
+                    <p-dropdown name="selectListSegment"
+                                [required]="listSingleSegmentCheckbox"
+                                [disabled]="!listSingleSegmentCheckbox"
+                                [ngModelOptions]="{standalone: true}"
+                                [options]="assetTypeAncestries"
+                                [ngModel]="model.FieldType.Type[currentType]?.Definition?.AssetTypeUid"
+                                (ngModelChange)="selectListSegment($event)"
+                                [placeholder]="getListSingleSegmentPlaceholder()"
+                                [ngStyle]="{'width': '60%', 'padding-left': '10px'}"
+                                optionLabel="Name"
+                                optionValue="Uid"
+                                ngDefaultControl></p-dropdown>
+                </div>
+            </div>
+        </simple-accordion>
+
         <simple-accordion header="Descriptions"
                           active="false">
             <div class="row">

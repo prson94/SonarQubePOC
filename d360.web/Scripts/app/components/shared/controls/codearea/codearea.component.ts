@@ -118,6 +118,7 @@ export class CodeArea implements ControlValueAccessor, OnInit {
                 this.validationMessage = $localize`CSS is not well formed. Please review and update.`;
             }
         }
+        this.writeValue(this.value);
         this.isValid.emit({ isvalid: valid });
         return valid;
     }

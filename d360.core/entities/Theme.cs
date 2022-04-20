@@ -54,6 +54,8 @@ namespace d360.core.entities
 
         [JsonProperty("customCssUri")]
         public string CustomCssUri { get; set; }
+        [JsonProperty("customCss")]
+        public string CustomCss { get; set; }
 
         [JsonProperty("headerLogoUri")]
         public string HeaderLogoUri { get; set; }
@@ -100,6 +102,21 @@ namespace d360.core.entities
     public class PutTheme : ThemeBaseEdit
     {
 
+    }
+
+    public class ThemeBase64Data
+    {
+        [JsonProperty("customCss")]
+        public string CustomCss { get; set; }
+
+        [JsonProperty("headerLogo")]
+        public string HeaderLogo { get; set; }
+
+        [JsonProperty("homeBackground")]
+        public string HomeBackground { get; set; }
+
+        [JsonProperty("icon")]
+        public string Icon { get; set; }
     }
 
     public class Theme : ThemeBase
@@ -165,7 +182,7 @@ namespace d360.core.entities
             {
                 css = null;
             }
-            
+
             return css;
         }
 
@@ -183,6 +200,7 @@ namespace d360.core.entities
                 CustomCssUri = string.IsNullOrEmpty(model.CustomCss) ?
                     null :
                     $"/api/v2/environment/themes/{model.Uid}/custom.css",
+                CustomCss = model.CustomCss,
                 BackColor = model.BackColor,
                 BreadcrumbLinkColor = model.BreadcrumbLinkColor,
                 ButtonBackColor = model.ButtonBackColor,
@@ -193,7 +211,7 @@ namespace d360.core.entities
                 IsCurrent = model.IsCurrent,
                 NavBarBackColor = model.NavBarBackColor,
                 NavBarBackSelectedColor = model.NavBarBackSelectedColor,
-                PrimaryButtonBackColor= model.PrimaryButtonBackColor,
+                PrimaryButtonBackColor = model.PrimaryButtonBackColor,
                 TableHeaderBackColor = model.TableHeaderBackColor,
                 TableRowBackSelectedColor = model.TableRowBackSelectedColor,
                 TabLinkColor = model.TabLinkColor,
@@ -232,7 +250,7 @@ namespace d360.core.entities
                 UpdatedBy = resourceId,
                 UpdatedOn = date
             };
-            model.CustomCss = model.CustomCss.ParseBase64CustomCss();
+            repoModel.CustomCss = model.CustomCss.ParseBase64CustomCss();
 
             if (model.Icon != null)
             {
@@ -240,7 +258,7 @@ namespace d360.core.entities
                 repoModel.BrowserIconExtension = browserIcon.Item1;
                 repoModel.BrowserIcon = browserIcon.Item2.ToArray();
             }
-            
+
             if (model.HeaderLogo != null)
             {
                 var headerLogo = model.HeaderLogo.GetFileFromDataUrl();
@@ -266,6 +284,9 @@ namespace d360.core.entities
             existing.CustomCss = model.CustomCss.ParseBase64CustomCss();
             existing.Name = model.Name;
             existing.IsCurrent = model.IsCurrent;
+            existing.HeaderBackColor = model.HeaderBackColor;
+            existing.BreadcrumbLinkColor = model.BreadcrumbLinkColor;
+            existing.ButtonBackColor = model.ButtonBackColor;
             existing.NavBarBackColor = model.NavBarBackColor;
             existing.NavBarBackSelectedColor = model.NavBarBackSelectedColor;
             existing.PrimaryButtonBackColor = model.PrimaryButtonBackColor;
@@ -275,7 +296,7 @@ namespace d360.core.entities
             existing.UpdatedBy = resourceId;
             existing.UpdatedOn = date;
 
-            if (model.Icon != null) 
+            if (model.Icon != null)
             {
                 var browserIcon = model.Icon.GetFileFromDataUrl();
                 existing.BrowserIconExtension = browserIcon.Item1;
@@ -309,7 +330,7 @@ namespace d360.core.entities
                 errors.Add(ThemeErrors.NameNotEmpty);
             }
 
-            if (model.BrowserIcon != null && model.BrowserIcon.Length > 512*1000)
+            if (model.BrowserIcon != null && model.BrowserIcon.Length > 512 * 1000)
             {
                 errors.Add(ThemeErrors.IconSize);
             }
@@ -335,7 +356,7 @@ namespace d360.core.entities
                 errors.Add(ThemeErrors.BackgroundSize);
             }
 
-            if (model.HomePageBackgroundExtension != null && 
+            if (model.HomePageBackgroundExtension != null &&
                 model.HomePageBackgroundExtension != ".gif" && model.HomePageBackgroundExtension != ".jpg" && model.HomePageBackgroundExtension != ".png")
             {
                 errors.Add(ThemeErrors.BackgroundType);

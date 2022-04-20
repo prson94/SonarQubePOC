@@ -66,6 +66,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ASSET_BUSINESS = `BusinessAsset`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
+    static SITE_URL_ADMIN_BRANDING = 'branding';
     static SITE_URL_ADMIN_CUSTOM_API = 'customapi';
     static SITE_URL_ADMIN_MODELS = 'taxonomies';
     static SITE_URL_ADMIN_POLICIES = 'policies';
@@ -165,13 +166,13 @@ export class SiteUrlHelpers {
             case 'RESOURCE':
                 return `${SiteUrlHelpers.SITE_URL_RESOURCE_ROOT}/${objectId}`;
             case 'TAXONOMY':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parentId};hierarchyId=${objectId}`;
+                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parentId}/id/${objectId}`;
             case 'TAXONOMYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;
             case 'POLICYTYPE':
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;
             case 'POLICY':
-                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId};hierarchyId=${objectId}`;
+                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId}/id/${objectId}`;
             case 'RULE':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
             case 'DASHBOARD':

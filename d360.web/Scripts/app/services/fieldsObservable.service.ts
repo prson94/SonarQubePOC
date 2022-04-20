@@ -501,6 +501,12 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     }
 
+    getAssetTypeAncestry(assetTypeUid: string) {
+        return this.http.get(`api/v2/assets/types/${assetTypeUid}/ancestry`).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err))
+        );
+    }
 
     getLookupValues(assetTypeUid: string, fieldName: string, params: any): Observable<LookupValuesAPIModel> {
         var qString = '';

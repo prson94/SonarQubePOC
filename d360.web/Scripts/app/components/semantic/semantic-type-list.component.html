@@ -12,7 +12,18 @@
                 </div>
                 <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 <div class="grid-action-buttons">
-                    <div pTooltip="{{exportTooltip}}"
+                    <button *ngIf="showAddButton"
+                            igButton
+                            [attr.data-cy]="'Semantics_Add'"
+                            pTooltip="Create new Semantic Type"
+                            tooltipPosition="top"
+                            tooltipStyleClass="ig-tooltip"
+                            class="ig-button-primary"
+                            icon="fa-plus"
+                            [igDataCy]="'Semantics_Add'"
+                            (click)="addSemantic()">
+                    </button>
+                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
                          tooltipPosition="left"
                          tooltipStyleClass="ig-tooltip">
                         <button igButton
@@ -49,23 +60,23 @@
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    <ng-container i18n>Name</ng-container>
+                                    Name
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Qualifier'">
-                                    <ng-container i18n>Qualifier</ng-container>
+                                    Qualifier
                                     <d3s-sortIcon [field]="'Qualifier'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Status'">
-                                    <ng-container i18n>Status</ng-container>
+                                    Status
                                     <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Priority'">
-                                    <ng-container i18n>Priority</ng-container>
+                                    Priority
                                     <d3s-sortIcon [field]="'Priority'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'BaseType'">
-                                    <ng-container i18n>Base Type</ng-container>
+                                    Base Type
                                     <d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
@@ -105,7 +116,7 @@
                                                   [rows]="dt.rows"
                                                   [totalRecords]="semanticsTotal"></d3s-grid-paging-info>
                         </ng-template>
-                        <ng-template pTemplate="emptymessage" i18n>
+                        <ng-template pTemplate="emptymessage">
                             No semantic types found
                         </ng-template>
                     </p-table>
@@ -127,7 +138,7 @@
                                          [semanticType]="selectedType"
                                          (linkClicked)="handleSecondarySidePanelLinkClicked($event)"></semantic-detail>
                     </ng-container>
-                </ng-container>
+                </ng-container>   
                 <ng-container *ngIf="secondarySidePanelOpen">
                     <div #semanticTile class="secondary-side-panel">
                         <div class="panel-header">
@@ -165,14 +176,13 @@
 <d3s-delete-form [callback]="theDeleteCallback"
                  [items]="selectedType"
                  [showAsModal]="true"
-                 i18n-modalTitle
-                 modalTitle="Delete Semantic Type"
+                 [modalTitle]="'Delete Semantic Type'"
                  [modalCssClasses]="'medium-dialog'"
                  [isModalVisible]="showDelete"
                  [method]="'callback'"
                  (onCancel)="showDelete=false;">
     <div prompt>
-        <p i18n>
+        <p>
             Are you sure you want to delete this semantic type?<br />
             Please note that this operation cannot be undone.
         </p>
@@ -180,3 +190,10 @@
 
 
 </d3s-delete-form>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"           
+           [showTitle]="false"
+           [isVisible]="showEditor">
+    <semantic-editor *ngIf="showEditor" [semanticType]="isAdd ? null : selectedType" (closeClick)="showEditor=false" (saveClick)="saveSemantic($event)"></semantic-editor>
+</d3s-modal>
