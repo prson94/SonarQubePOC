@@ -108,7 +108,7 @@ stages:
     - template: build/steps/step-t4-transform.yml@templates
     - template: build/steps/step-dotnet-build.yml@templates
       parameters:
-        solutionToRestore: D360.sln
+        solutionToRestore: govern/D360.sln
         solutionToBuild: $(Build.Repository.LocalPath)/govern/d360.web/d360.web.csproj
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
         buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
@@ -125,6 +125,11 @@ stages:
         blackduckApiToken: $(blackduckApi)
         projectName: 'InfogixData360-Govern-UI'
         blackDuckScanDirectory: $PWD/govern/d360.web
+    - task: CmdLine@2
+      displayName: 'Install Python dependencies'
+      inputs:
+        script: 'pip install requests'
+        workingDirectory: $(Build.Repository.LocalPath)/devops/scripts/common/blackduck
     - template: blackduck-third-party-license/steps/blackduck-thirdpartylicense.yml@global-templates
       parameters:
         blackDuckProjectVersion: "e2471ee7-ddf2-4905-9f1d-fcf02efdea3b"
