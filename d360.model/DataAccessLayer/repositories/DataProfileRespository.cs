@@ -584,6 +584,7 @@ namespace d360.model.DataAccessLayer
 								NDP.DisplayPath as [path],
 								P.[path] as assetTypePath,
 								ADP.Confidence,
+								ADP.ProfileSetDate as effectiveDate,
 								NDP.assettypeUid
 								{(isExport ? ", s.Uid as semanticTypeUid" : "")}
 							FROM                                     
