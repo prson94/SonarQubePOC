@@ -96,6 +96,10 @@ stages:
       vmImage: windows-2019
     steps:
     - checkout: self
+    - checkout: devops
+    # TEMP TASK
+    - script: dir $(Build.Repository.LocalPath)
+    # TEMP TASK
     - download: current
       artifact: dist
     - task: CopyFiles@2
@@ -108,7 +112,7 @@ stages:
     - template: build/steps/step-dotnet-build.yml@templates
       parameters:
         solutionToRestore: D360.sln
-        solutionToBuild: d360.web/d360.web.csproj
+        solutionToBuild: $(Build.Repository.LocalPath)/d360.web/d360.web.csproj
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
         buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
     - template: build/steps/step-azure-key-vault.yml@templates
@@ -124,12 +128,11 @@ stages:
         blackduckApiToken: $(blackduckApi)
         projectName: 'InfogixData360-Govern-UI'
         blackDuckScanDirectory: $PWD/d360.web
-    - checkout: devops
     - template: blackduck-third-party-license/steps/blackduck-thirdpartylicense.yml@global-templates
       parameters:
         blackDuckProjectVersion: "e2471ee7-ddf2-4905-9f1d-fcf02efdea3b"
         blackDuckApiToken: $(blackduckApi)
-        blackDuckScriptLocation: "$(Pipeline.Workspace)/scripts/common/blackduck/thirdpartylicense.py"
+        blackDuckScriptLocation: "$(Build.Repository.LocalPath)/devops/scripts/common/blackduck/thirdpartylicense.py"
     - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
     - task: Bash@3
       displayName: 'Move BlackDuck Third Party License File'
