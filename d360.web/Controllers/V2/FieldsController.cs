@@ -2653,6 +2653,8 @@ namespace d360.web.Controllers.V2
 			public string text { get; set; }
 
 			public string value { get; set; }
+			
+			public string color { get; set; }
 		}
 
 		/// <summary>
