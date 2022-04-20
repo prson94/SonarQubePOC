@@ -201,13 +201,13 @@ namespace igx.functions.consumption
 										
 										if (idsToSend.Count >= 2099)
 										{
-											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
 										}
 									}
 
 									if (idsToSend.Count > 0)
 									{
-										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
 									}
 
 									if (toDeleteIds.Any())
