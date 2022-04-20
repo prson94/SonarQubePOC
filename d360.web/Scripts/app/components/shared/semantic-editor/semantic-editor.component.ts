@@ -393,8 +393,8 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         }
 
         //clear invalid fields to prevent request 
-        Object.keys(this.model).forEach(key => {
-            if (!allowedFields.find(x => x === key)) {
+        Object.keys(this.model).forEach((key) => {
+            if (!allowedFields.find((x) => x === key)) {
                 this.model[key] = null;
             }                        
         });

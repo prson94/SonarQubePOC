@@ -784,7 +784,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     onCreateSemantic($event: any) {
-        this.semanticType = $event.item
+        this.semanticType = $event.item;
                         
         if (!this.dataProfile?.typeQualifier) {
             this.dataProfile.typeQualifier = this.semanticType.qualifier;
