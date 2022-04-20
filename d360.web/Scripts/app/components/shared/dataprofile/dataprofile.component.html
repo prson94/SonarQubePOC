@@ -54,14 +54,26 @@
                                     <span class="ig-value">{{baseType}}</span>
                                 </div>
                                 <div *ngIf="hasValidCounts" class="summaryRow">
-                                    <label class="ig-label" style="margin-right:5px">Semantic Type: </label>
+                                    <label class="ig-label" style="margin-right:5px">Semantic Type:</label>                                    
                                     <div *ngIf="!dataProfile.typeQualifier">
-                                        ---
+                                        <div *ngIf="isAdmin">
+                                            <a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> Create New</a>
+                                        </div>
+                                        <div *ngIf="!isAdmin">
+                                            ---
+                                        </div>
                                     </div>
                                     <div *ngIf="dataProfile.typeQualifier" class="ig-value">
-                                        <span *ngIf="!hasDefinedType">{{dataProfile.typeQualifier}}</span>
-                                        <span *ngIf="hasDefinedType"><a (click)='openSemanticTab()'>{{semanticType.name}}</a></span>
-                                        <ng-container *ngTemplateOutlet="semanticTooltip"></ng-container>
+                                        <div *ngIf="!hasDefinedType">
+                                            <span>{{dataProfile.typeQualifier}}</span> 
+                                            <div *ngIf="semanticTypeChecked && isAdmin">
+                                                <span style="padding-left:5px"><i class="fa fa-exclamation-triangle"></i> | <a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> Create New</a></span>
+                                            </div>
+                                        </div>
+                                        <div *ngIf="hasDefinedType">
+                                            <span><a (click)='openSemanticTab()'>{{semanticType.name}}</a></span>
+                                            <ng-container *ngTemplateOutlet="semanticTooltip"></ng-container>
+                                        </div>                                                                                
                                     </div>
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
@@ -561,3 +573,10 @@
 <ng-container *ngIf="timeSeriesProfileList.length>1 && displayChart">
         <data-profile-time-series [dataProfileList]="timeSeriesProfileList" [chartType]="chartType" (close)="displayChart=false"></data-profile-time-series>
 </ng-container>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false" 
+           [isVisible]="showEditor">
+    <semantic-editor *ngIf="showEditor" [semanticType]="null" [dataProfile]="dataProfile" (closeClick)="showEditor=false" (saveClick)="onCreateSemantic($event)"></semantic-editor>
+</d3s-modal>
