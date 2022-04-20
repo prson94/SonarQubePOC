@@ -72,6 +72,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             this.selectedRow = null;
             this.themes.forEach((t) => {
                 t.svg = this.svgUrl(t);
+                this.brandingService.updateThemeCSS(t);
                 var menuItems = [];
 
                 t.hasDownloadOption ? menuItems.push(this.menuItemsDefaultOptions[0]) : null;
@@ -122,6 +123,9 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                 break;
             case 'Duplicate':
                 this.duplicateSelectedTheme();
+                break;
+            case 'Download':
+                this.download();
                 break;
             case 'Set as Current Theme':
                 this.isSetCurrentThemeVisible = true;

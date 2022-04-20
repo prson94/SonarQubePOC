@@ -46,6 +46,8 @@ export class Theme {
     homeBackgroundUri: string;
     iconUri: string;
 
+    customCssUri: string;
+
     svg: string;
     menuItems: any[] = [];
 
@@ -67,6 +69,7 @@ export class Theme {
             this.tabLinkColor = "#002d4b";
             this.tableHeaderBackColor = "#f1f2f3";
             this.tableRowBackColor = "#e4cfff";
+            this.customCss = "";
         }
     }
 
@@ -258,6 +261,24 @@ export class BrandingService extends BaseObservableService {
                     catchError((err) => this.handleError(err))
                 );
         }
+    }
+
+    public updateThemeCSS(theme: Theme): void {
+        if (!theme.customCssUri) {
+            return;
+        }
+        const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
+
+        this.http
+            .get(theme.customCssUri, { headers, responseType: 'text' })
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError((err) => this.handleError(err))
+            ).subscribe((res) => {
+                theme.customCss = res;
+            });
     }
 
     public deleteTheme(uid: string): Observable<any> {
