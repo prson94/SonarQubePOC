@@ -40,6 +40,7 @@ export enum TagTypeState {
 } 
 
 export class TagDetail {
+    AddedBy?: string;
     DisplayValue: string;
     AssetId: number;
     AssetUid: string;
@@ -50,9 +51,21 @@ export class TagDetail {
     Tags: TagItem[];
     HasProfiling?: any;
 }
+
+export interface TagDetailResponse {
+    items: TagDetail[];
+    pageNum: number;
+    pageSize: number;
+}
+
 export class TagItem {
     Uid: number;
+    CreatedByFirstName: string;
+    CreatedByLastName: string;
+    CreatedByUid: string;
+    CreatedOn: string;
     Value: string;
+    uid: string;
 }
 
 export class TagPermissionItem {

@@ -6,6 +6,11 @@ import { MessagesObservableService } from './messages-observable.service';
 
 export type FilteredData = any[];
 
+export interface LookupOption {
+    title: string;
+    value: string
+} 
+
 @Injectable({
     providedIn: 'root'
 })
@@ -31,8 +36,9 @@ export class UiAdvancedFiltering {
 
     // should return advanced filter connectin operator 'or', 'and' or null
     findOutTheConnectingOperator(filters: Filters): string {
-        const regexp = /\)\s(\w*)/; // match: ) word
-        const match = filters.filter.match(regexp);
+        const regexpNestedGroup = /\)\)\s(\w*)/; // match: )) word
+        const regexpOneGroup = /\)\)\s(\w*)/; // match: ) word
+        const match = filters.filter.match(regexpNestedGroup) || filters.filter.match(regexpOneGroup);
         if (match) {
             return match[1];
         }
@@ -44,22 +50,22 @@ export class UiAdvancedFiltering {
         let filterOptions = {
             [OperatorString.Contains]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
             },
             [OperatorString.NotContains]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
             },
             [OperatorString.Equals]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    return this.isGivenValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
             },
             [OperatorString.NotEquals]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    return !this.isGivenValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
             },
             [OperatorString.StartsWith]: (filterOption: AdvancedFilterFieldCondition) => {
@@ -143,25 +149,25 @@ export class UiAdvancedFiltering {
         let filterOptions = {
             [OperatorString.Contains]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    return this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
             [OperatorString.NotContains]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value);
+                    return !this.isDataValueContainsSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
             [OperatorString.Equals]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    return this.isGivenValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
             [OperatorString.NotEquals]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isDataValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption.fieldType);
+                    return !this.isGivenValueEqualToSearchValue(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
@@ -253,27 +259,81 @@ export class UiAdvancedFiltering {
         this.messagesService.showInfoMessage(`Unknown filter`, `Unknown Advanced Filter '${filterOption.operator}'`);
     }
 
-    isDataValueContainsSearchValue(dataValue: string, searchValue: string): boolean {
+    isDataValueContainsSearchValue(dataValue: string, searchValue: string | string[],  options: AdvancedFilterFieldCondition): boolean {
+        if(options.fieldType === 'Path') {
+            if(options.operator === OperatorString.Contains) {
+                if (options.connectingOperator === ConnectingOperator.And) {
+                    return this.isDataValueContainsWithinEverySearchValues(dataValue, searchValue as string[]);
+                } else if (options.connectingOperator === ConnectingOperator.Or) {
+                    return this.isDataValueContainsWithinSomeSearchValues(dataValue, searchValue as string[]);
+                }
+            } else {
+                return this.isDataValueContainsWithinSomeSearchValues(dataValue, searchValue as string[]);
+            }
+        }
         // RegExp need to be build dynamically
         // eslint-disable-next-line
-        return Boolean(dataValue.match(new RegExp(searchValue, 'i')));
+        return Boolean(dataValue.match(new RegExp(searchValue as string, 'i')));
     }
 
-    isDataValueEqualToSearchValue(dataValue: string, searchValue: string, valueType: string): boolean {
-        if (valueType === 'Text') {
-            return dataValue.toLowerCase() === searchValue.toLowerCase();
-        } else if (valueType === 'Number') {
-            return Number(dataValue) === Number(searchValue);
+    isDataValueContainsWithinSomeSearchValues(dataValue: string, searchValues: string[]): boolean {
+        const result =  searchValues.some((searchValue: string) => {
+            return Boolean(dataValue.match(new RegExp(searchValue, 'i'))); // eslint-disable-line
+        });
+        return result;
+    }
+
+    isDataValueContainsWithinEverySearchValues(dataValue: string, searchValues: string[]): boolean {
+        const result = searchValues.every((searchValueItem: string) => {
+            return Boolean(dataValue.match(new RegExp(searchValueItem, 'i'))); // eslint-disable-line
+        });
+        return result;
+    }
+
+    isGivenValueEqualToSearchValue(givenValue: string, searchValue: string | string[] | LookupOption[], options: AdvancedFilterFieldCondition): boolean {
+        if (options.fieldType === 'Path') {
+            const givenPath: string[] = givenValue.split(' : ');
+            return this.isGivenPathEqualToSearchPath(givenPath, searchValue as string[]);
+        } else if (options.fieldType === 'Lookup') {
+            return this.lookupGivenValueWithinSearchValue(givenValue, searchValue as LookupOption[]);
+        } else if (options.fieldType === 'Text') {
+            return givenValue.toLowerCase() === (searchValue as string).toLowerCase();
+        } else if (options.fieldType === 'Number') {
+            return Number(givenValue) === Number(searchValue);
         } else {
             this.messagesService.showInfoMessage(`Unknown FilterFieldType`, `Not recognized FilterFieldType`);
         }
     }
+    
+    isGivenPathEqualToSearchPath(givenPath: string[], searchPath: string[]): boolean {
+        if (givenPath.length !== searchPath.length) {
+            return false;
+        } else {
+            const result = givenPath.every((givenPathElement: string, index: number): boolean => {
+                return givenPathElement ===  searchPath[index];
+            });
+            return result;
+        }
+    }
 
-    isDataValueStartsWithSearchValue(dataValue: string, searchValue: string): boolean {
+    lookupGivenValueWithinSearchValue(givenValue: string, searchValue: LookupOption[]): boolean {
+        const result = searchValue.some((searchValue: LookupOption): boolean => {
+            return searchValue.value === givenValue;
+        });
+        return result;
+    }
+
+    isDataValueStartsWithSearchValue(dataValue: string, searchValue: string | string[]): boolean {
+        if(Array.isArray(searchValue)) {
+            return dataValue.toLowerCase().startsWith(searchValue[0].toLowerCase());
+        }
         return dataValue.toLowerCase().startsWith(searchValue.toLowerCase());
     }
 
-    isDataValueEndsWithSearchValue(dataValue: string, searchValue: string): boolean {
+    isDataValueEndsWithSearchValue(dataValue: string, searchValue: string | string[]): boolean {
+        if(Array.isArray(searchValue)) {
+            return dataValue.toLowerCase().endsWith(searchValue[0].toLowerCase());
+        }
         return dataValue.toLowerCase().endsWith(searchValue.toLowerCase());
     }
 
