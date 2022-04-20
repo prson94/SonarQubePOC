@@ -15,6 +15,7 @@
                     <button *ngIf="showAddButton"
                             igButton
                             [attr.data-cy]="'Semantics_Add'"
+                            i18n-pTooltip
                             pTooltip="Create new Semantic Type"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
@@ -60,23 +61,23 @@
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Qualifier'">
-                                    Qualifier
+                                    <ng-container i18n>Qualifier</ng-container>
                                     <d3s-sortIcon [field]="'Qualifier'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Status'">
-                                    Status
+                                    <ng-container i18n>Status</ng-container>
                                     <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Priority'">
-                                    Priority
+                                    <ng-container i18n>Priority</ng-container>
                                     <d3s-sortIcon [field]="'Priority'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'BaseType'">
-                                    Base Type
+                                    <ng-container i18n>Base Type</ng-container>
                                     <d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
@@ -116,7 +117,7 @@
                                                   [rows]="dt.rows"
                                                   [totalRecords]="semanticsTotal"></d3s-grid-paging-info>
                         </ng-template>
-                        <ng-template pTemplate="emptymessage">
+                        <ng-template pTemplate="emptymessage" i18n>
                             No semantic types found
                         </ng-template>
                     </p-table>
@@ -176,13 +177,14 @@
 <d3s-delete-form [callback]="theDeleteCallback"
                  [items]="selectedType"
                  [showAsModal]="true"
-                 [modalTitle]="'Delete Semantic Type'"
+                 i18n-modalTitle
+                 modalTitle="Delete Semantic Type"
                  [modalCssClasses]="'medium-dialog'"
                  [isModalVisible]="showDelete"
                  [method]="'callback'"
                  (onCancel)="showDelete=false;">
     <div prompt>
-        <p>
+        <p i18n>
             Are you sure you want to delete this semantic type?<br />
             Please note that this operation cannot be undone.
         </p>

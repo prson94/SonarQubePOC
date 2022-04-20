@@ -145,7 +145,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                                     }
 
                                     this.whenFieldTypes.unshift({ label: this.chooseLabel, value: null, type: null, isLookup: false, values: [] });
-                                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null });
+                                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null, uid: null });
                                 });
                             this.model = r;
                             this.model.ObjectString = r.Object + "|" + r.ObjectID + "|" + r.AssetTypeUid.toLowerCase();
@@ -222,7 +222,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 }
                 excluded = this.whenIntersectTypes.findIndex((a) => a.label === this.chooseLabel);
                 if (excluded < 0) {
-                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null });
+                    this.whenIntersectTypes.unshift({ label: this.chooseLabel, value: null, uid: null });
                 }
             });
 
