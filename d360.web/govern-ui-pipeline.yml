@@ -114,7 +114,7 @@ stages:
         buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
     - template: build/steps/step-azure-key-vault.yml@templates
       parameters:
-        secretsFilter: blackduckApi
+        secretsFilter: blackduckApi, blackduckThirdParty
     - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
         blackduckApiToken: $(blackduckApi)
@@ -133,7 +133,7 @@ stages:
     - template: blackduck-third-party-license/steps/blackduck-thirdpartylicense.yml@global-templates
       parameters:
         blackDuckProjectVersion: "e2471ee7-ddf2-4905-9f1d-fcf02efdea3b"
-        blackDuckApiToken: $(blackduckApi)
+        blackDuckApiToken: $(blackduckThirdParty)
         blackDuckScriptLocation: "$(Build.Repository.LocalPath)/devops/scripts/common/blackduck/thirdpartylicense.py"
     - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
     - task: Bash@3
