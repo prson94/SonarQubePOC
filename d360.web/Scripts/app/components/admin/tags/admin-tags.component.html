@@ -93,8 +93,8 @@
                         <ng-container i18n>
                             Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'
                         </ng-container>
-                        <ng-container *ngIf="this.selected[0].UseCount > 0" i18n>
-                            (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
+                        <ng-container *ngIf="this.selected[0].UseCount > 0">
+                            (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} <ng-container i18n>assets</ng-container> </d3s-tag-usage> <ng-container i18n>tagged</ng-container>)
                         </ng-container>
                     </div>
                     <div *ngIf="selected.length > 1">

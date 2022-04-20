@@ -2,7 +2,7 @@
     <div class="col s12">
         <div class="tile tile-detail">
             <header>
-                <ng-container i18n>Endpoint:</ng-container> {{endpoint?.Name}}
+                <ng-container i18n>Endpoint</ng-container>: {{endpoint?.Name}}
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!isLoading"

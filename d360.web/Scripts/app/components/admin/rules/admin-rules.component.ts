@@ -31,9 +31,9 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
     get assetTypeEditorTitle(): string {
         if (this.selected === null) {
-            return $localize`New Rule Type'`;
+            return $localize`New Rule Type`;
         }
-        return $localize`Edit Rule Type'`;
+        return $localize`Edit Rule Type`;
     }
 
     constructor(
@@ -77,8 +77,8 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.assetTypeService.deleteSingleAssetType(uid).subscribe((result) => {
             this.showDelete = false;
             if (result.type != "error") {
-                result.title = $localize`Success!`;
-                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed.`);
+                result.title = $localize`Success` + "!";
+                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed` + ".");
                 this.ruleTypes = this.ruleTypes.filter((x) => x.uid !== uid);
                 this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
             }

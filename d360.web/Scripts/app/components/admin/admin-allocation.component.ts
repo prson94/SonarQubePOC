@@ -15,7 +15,7 @@ import { BaseComponent } from '../shared/base.component';
                                     <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
-                            </tr>
+                            </tr> 
                             <tr [hidden]="showSimpleFilter">
                                 <th></th>
                                 <th></th>

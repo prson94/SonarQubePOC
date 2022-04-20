@@ -43,8 +43,9 @@
             <div class="row row-margin" *ngSwitchCase="'Field'">
                 <div class="condition-content">
                     <div class="condition-items">
-                        <div *ngIf="dateShowType == null" i18n>Field: {{formattedCheck}}</div>
-                        <div *ngIf="dateShowType == 'Date'" i18n>Field: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> and {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
+                        <div *ngIf="dateShowType == null"><ng-container i18n>Field</ng-container>: {{formattedCheck}}
+                        </div>
+                        <div *ngIf="dateShowType == 'Date'"><ng-container i18n>Field</ng-container>: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> <ng-container i18n>and</ng-container> {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
                     </div>
                 </div>
             </div>

@@ -159,8 +159,8 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         var data = this.getAssetTypeById(id);
         if (data) {
             this.assetTypeService.deleteSingleAssetType(data.uid).subscribe((result) => {
-                result.title = $localize`Success!`;
-                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed.`);
+                result.title = $localize`Success` + "!";
+                this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed` + ".");
                 this.isDeleting = false;
                 this.selectedRow = { data: { ID: 0 } };
                 this.load();
