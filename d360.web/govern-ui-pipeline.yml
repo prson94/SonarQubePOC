@@ -97,9 +97,6 @@ stages:
     steps:
     - checkout: self
     - checkout: devops
-    # TEMP TASK
-    - script: dir $(Build.Repository.LocalPath)
-    # TEMP TASK
     - download: current
       artifact: dist
     - task: CopyFiles@2
@@ -107,14 +104,14 @@ stages:
       inputs:
         sourceFolder: $(Pipeline.Workspace)
         contents: 'dist/**'
-        targetFolder: $(Build.Repository.LocalPath)/d360.web/Scripts/
+        targetFolder: $(Build.Repository.LocalPath)/govern/d360.web/Scripts/
     - template: build/steps/step-t4-transform.yml@templates
     - template: build/steps/step-dotnet-build.yml@templates
       parameters:
         solutionToRestore: D360.sln
-        solutionToBuild: $(Build.Repository.LocalPath)/d360.web/d360.web.csproj
+        solutionToBuild: $(Build.Repository.LocalPath)/govern/d360.web/d360.web.csproj
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
-        buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
+        buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package  /p:PackageAsSingleFile=true  /p:PackageLocation="$(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip" /p:PrecompileBeforePublish=true '
     - template: build/steps/step-azure-key-vault.yml@templates
       parameters:
         secretsFilter: blackduckApi
@@ -122,12 +119,12 @@ stages:
       parameters:
         blackduckApiToken: $(blackduckApi)
         projectName: 'InfogixData360-Govern-UI'
-        blackDuckScanDirectory: $PWD
+        blackDuckScanDirectory: $PWD/govern
     - template: build/steps/step-blackduck-npm.yml@templates
       parameters:
         blackduckApiToken: $(blackduckApi)
         projectName: 'InfogixData360-Govern-UI'
-        blackDuckScanDirectory: $PWD/d360.web
+        blackDuckScanDirectory: $PWD/govern/d360.web
     - template: blackduck-third-party-license/steps/blackduck-thirdpartylicense.yml@global-templates
       parameters:
         blackDuckProjectVersion: "e2471ee7-ddf2-4905-9f1d-fcf02efdea3b"
@@ -141,19 +138,19 @@ stages:
         failOnStderr: true
         workingDirectory: $(Build.SourcesDirectory)
         script: |
-          mv thirdpartylicense.json $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
+          mv thirdpartylicense.json $(Build.Repository.LocalPath)\govern\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
     - task: ArchiveFiles@2
       displayName: 'Add License Attribution File to Distro'
       inputs:
-        rootFolderOrFile: $(Build.Repository.LocalPath)\WEB\
+        rootFolderOrFile: $(Build.Repository.LocalPath)\govern\WEB\
         includeRootFolder: false
         sevenZipCompression: 5
-        archiveFile: $(Build.Repository.LocalPath)\d360.web\bin\Release\web.zip
+        archiveFile: $(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip
         replaceExistingArchive: false
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Web Distro to Build'
       inputs:
-        PathtoPublish: $(Build.Repository.LocalPath)\d360.web\bin\Release\web.zip
+        PathtoPublish: $(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip
         ArtifactName: Govern-UI
 - stage: UPDATE_VG_DB_DEPLOYMENTS
   displayName: 'Update Variable Groups for DB deployments'
