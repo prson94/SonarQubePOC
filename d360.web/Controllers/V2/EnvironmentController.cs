@@ -1894,12 +1894,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> ConvertCssToBase64(string css)
+        public async Task<IHttpActionResult> ConvertCssToBase64()
         {
             const string ERROR_HEADING = "Error converting css";
 
             try
             {
+                string css = await Request.Content.ReadAsStringAsync();
+
                 if (!Company.CurrentResourceIsAdmin)
                 {
                     return errorMessageResponse(HttpStatusCode.Forbidden, ERROR_HEADING, ApiMessages.EndpointNotAuthorizedMessage);
