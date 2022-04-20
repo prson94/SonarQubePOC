@@ -144,6 +144,10 @@ stages:
         workingDirectory: $(Build.SourcesDirectory)
         script: |
           mv thirdpartylicense.json $(Build.Repository.LocalPath)\govern\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
+    #temp
+    - script: echo "listing dir:" && ls $(Build.Repository.LocalPath)\govern\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\ 
+    - script: ls $(Build.Repository.LocalPath)\govern\
+    #temp ends
     - task: ArchiveFiles@2
       displayName: 'Add License Attribution File to Distro'
       inputs:
