@@ -1,10 +1,13 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
+import { forkJoin } from 'rxjs';
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -48,6 +51,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     constructor(
         private brandingService: BrandingService,
+        private messagesService: MessagesObservableService,
         protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
@@ -123,6 +127,9 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             case 'Duplicate':
                 this.duplicateSelectedTheme();
                 break;
+            case 'Download':
+                this.download();
+                break;
             case 'Set as Current Theme':
                 this.isSetCurrentThemeVisible = true;
                 break;
@@ -171,16 +178,24 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.cdRef.markForCheck();
         this.preselectThemeName = theme.name;
 
-        this.brandingService.getBase64Data(uid).subscribe((res) => {
-            theme.headerLogo = res.headerLogo;
-            theme.homeBackground = res.homeBackground;
-            theme.icon = res.icon;
-            this.brandingService.saveTheme(theme)
-                .subscribe((res) => {
-                    this.ngOnInit();
-                    this.cdRef.markForCheck();
-                });
-        });
+        forkJoin(
+            this.brandingService.getThemeCustomCSS(theme),
+            this.brandingService.getBase64Data(uid))
+            .subscribe((data) => {
+                var res = data[1];
+                theme.headerLogo = res.headerLogo;
+                theme.homeBackground = res.homeBackground;
+                theme.icon = res.icon;
+                if (data[0]) {
+                    theme.customCss = window.btoa(data[0]);
+                }
+
+                this.brandingService.saveTheme(theme)
+                    .subscribe((res) => {
+                        this.ngOnInit();
+                        this.cdRef.markForCheck();
+                    });
+            });
     }
 
     getUniqueName(name: string, idx: number) {
@@ -195,14 +210,49 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     }
 
     download() {
-        var sJson = JSON.stringify(this.selectedRow._orig);
-        var element = document.createElement('a');
-        element.setAttribute('href', "data:text/json;charset=UTF-8," + encodeURIComponent(sJson));
-        element.setAttribute('download', this.getExportName(this.selectedRow));
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click(); // simulate click
-        document.body.removeChild(element);
+        var toExport = _.cloneDeep(this.selectedRow);
+
+        //delete properties we do not wish to export
+        delete toExport["defaultThemeUid"];
+        delete toExport["menuItems"];
+        delete toExport["_orig"];
+        delete toExport["svg"];
+        delete toExport["headerLogo"];
+        delete toExport["homeBackground"];
+        delete toExport["icon"];
+        delete toExport["headerLogoUri"];
+        delete toExport["homeBackgroundUri"];
+        delete toExport["iconUri"];
+        delete toExport["customCssUri"];
+
+        //load base64 data of properties and export
+        this.brandingService.getBase64Data(toExport.uid)
+            .subscribe((res) => {
+                if (res["headerLogo"]) {
+                    toExport.headerLogo = res["headerLogo"];
+                }
+
+                if (res["homeBackground"]) {
+                    toExport.homeBackground = res["homeBackground"];
+                }
+
+                if (res["icon"]) {
+                    toExport.icon = res["icon"];
+                }
+
+                if (toExport.customCss) {
+                    toExport.customCss = btoa(toExport.customCss);
+                }
+
+                var sJson = JSON.stringify(toExport, null, 4);
+                var element = document.createElement('a');
+                element.setAttribute('href', "data:text/json;charset=UTF-8," + encodeURIComponent(sJson));
+                element.setAttribute('download', this.getExportName(toExport));
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click(); // simulate click
+                document.body.removeChild(element);
+            });
     }
 
     getExportName(theme: Theme): string {
@@ -212,13 +262,16 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     getEnvironment(): string {
         var url = window.location.href.toLowerCase();
-        if (url.indexOf(".dev.")) {
+        if (url.indexOf(".dev.") !== -1) {
             return "DEV";
         }
-        if (url.indexOf(".uat.")) {
+        if (url.indexOf(".eng.") !== -1) {
+            return "QA";
+        }
+        if (url.indexOf(".uat.") !== -1) {
             return "UAT";
         }
-        if (url.indexOf(".preview.")) {
+        if (url.indexOf(".preview.") !== -1) {
             return "PREVIEW";
         }
         return "PROD";
@@ -240,10 +293,16 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.file = event.target.files[0];
         let fileReader = new FileReader();
         fileReader.onload = (e) => {
-            this.themeToLoad = JSON.parse(fileReader.result as string);
-            this.themeToLoad.uid = null;
-            this.themeToLoad.isCurrent = null;
-            this.checkUploadTheme();
+            try {
+                this.themeToLoad = JSON.parse(fileReader.result as string);
+                this.themeToLoad.uid = null;
+                this.themeToLoad.isCurrent = null;
+                this.checkUploadTheme();
+            }
+            catch {
+                var error = { error: `Cannot upload file because this is not a valid D360 Govern branding JSON definition` };
+                this.showHttpErrorMessage(this.messagesService, error as HttpErrorResponse);
+            }
         };
 
         fileReader.readAsText(this.file);
@@ -281,7 +340,13 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                     }
                     this.cdRef.markForCheck();
                 }
-            });
+            }, (error) => {
+                this.resetUpload();
+
+                error.Message = error.error.message;
+                this.showMessageForApiResponse(this.messagesService, error);
+            }
+            );
 
 
         this.cdRef.markForCheck();

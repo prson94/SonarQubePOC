@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Net;
 
 namespace d360.core.entities
 {
@@ -54,8 +55,6 @@ namespace d360.core.entities
 
         [JsonProperty("customCssUri")]
         public string CustomCssUri { get; set; }
-        [JsonProperty("customCss")]
-        public string CustomCss { get; set; }
 
         [JsonProperty("headerLogoUri")]
         public string HeaderLogoUri { get; set; }
@@ -200,7 +199,6 @@ namespace d360.core.entities
                 CustomCssUri = string.IsNullOrEmpty(model.CustomCss) ?
                     null :
                     $"/api/v2/environment/themes/{model.Uid}/custom.css",
-                CustomCss = model.CustomCss,
                 BackColor = model.BackColor,
                 BreadcrumbLinkColor = model.BreadcrumbLinkColor,
                 ButtonBackColor = model.ButtonBackColor,
@@ -250,27 +248,56 @@ namespace d360.core.entities
                 UpdatedBy = resourceId,
                 UpdatedOn = date
             };
-            repoModel.CustomCss = model.CustomCss.ParseBase64CustomCss();
+
+            try
+            {
+                repoModel.CustomCss = model.CustomCss.ParseBase64CustomCss();
+            }
+            catch (Exception)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "CustomCss"));
+            }
 
             if (model.Icon != null)
             {
-                var browserIcon = model.Icon.GetFileFromDataUrl();
-                repoModel.BrowserIconExtension = browserIcon.Item1;
-                repoModel.BrowserIcon = browserIcon.Item2.ToArray();
+                try
+                {
+                    var browserIcon = model.Icon.GetFileFromDataUrl();
+                    repoModel.BrowserIconExtension = browserIcon.Item1;
+                    repoModel.BrowserIcon = browserIcon.Item2.ToArray();
+                }
+                catch (Exception)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "Icon"));
+                }
             }
 
             if (model.HeaderLogo != null)
             {
-                var headerLogo = model.HeaderLogo.GetFileFromDataUrl();
-                repoModel.HeaderLogoExtension = headerLogo.Item1;
-                repoModel.HeaderLogo = headerLogo.Item2.ToArray();
+                try
+                {
+                    var headerLogo = model.HeaderLogo.GetFileFromDataUrl();
+                    repoModel.HeaderLogoExtension = headerLogo.Item1;
+                    repoModel.HeaderLogo = headerLogo.Item2.ToArray();
+                }
+                catch (Exception)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "HeaderLogo"));
+                }
             }
 
             if (model.HomeBackground != null)
             {
-                var homePageBackground = model.HomeBackground.GetFileFromDataUrl();
-                repoModel.HomePageBackgroundExtension = homePageBackground.Item1;
-                repoModel.HomePageBackground = homePageBackground.Item2.ToArray();
+                try
+                {
+                    var homePageBackground = model.HomeBackground.GetFileFromDataUrl();
+                    repoModel.HomePageBackgroundExtension = homePageBackground.Item1;
+                    repoModel.HomePageBackground = homePageBackground.Item2.ToArray();
+                }
+                catch (Exception)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "HomeBackground"));
+                }
             }
 
             return repoModel;
