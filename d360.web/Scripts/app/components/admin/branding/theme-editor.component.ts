@@ -117,6 +117,7 @@ export class ThemeEditorComponent implements OnChanges {
         properties.forEach((p) => {
             _theme[`${p}`] = this.formGroup.get(`${p}`).value;
         });
+        _theme.customCss = _theme.customCss ? window.btoa(_theme.customCss) : null;
 
         this.brandingService.saveTheme(_theme).subscribe((res) => {
             if (res) {

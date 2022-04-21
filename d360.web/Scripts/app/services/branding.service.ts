@@ -235,9 +235,6 @@ export class BrandingService extends BaseObservableService {
             theme.homeBackground = "";
         }
 
-        theme.customCss = theme.customCss ? window.btoa(theme.customCss) : null;
-
-
         if (theme.uid) {
             url += "/" + theme.uid;
             return this
