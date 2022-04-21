@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Net;
 
 namespace d360.core.entities
 {
@@ -247,27 +248,56 @@ namespace d360.core.entities
                 UpdatedBy = resourceId,
                 UpdatedOn = date
             };
-            repoModel.CustomCss = model.CustomCss.ParseBase64CustomCss();
+
+            try
+            {
+                repoModel.CustomCss = model.CustomCss.ParseBase64CustomCss();
+            }
+            catch (Exception)
+            {
+                throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "CustomCss"));
+            }
 
             if (model.Icon != null)
             {
-                var browserIcon = model.Icon.GetFileFromDataUrl();
-                repoModel.BrowserIconExtension = browserIcon.Item1;
-                repoModel.BrowserIcon = browserIcon.Item2.ToArray();
+                try
+                {
+                    var browserIcon = model.Icon.GetFileFromDataUrl();
+                    repoModel.BrowserIconExtension = browserIcon.Item1;
+                    repoModel.BrowserIcon = browserIcon.Item2.ToArray();
+                }
+                catch (Exception)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "Icon"));
+                }
             }
 
             if (model.HeaderLogo != null)
             {
-                var headerLogo = model.HeaderLogo.GetFileFromDataUrl();
-                repoModel.HeaderLogoExtension = headerLogo.Item1;
-                repoModel.HeaderLogo = headerLogo.Item2.ToArray();
+                try
+                {
+                    var headerLogo = model.HeaderLogo.GetFileFromDataUrl();
+                    repoModel.HeaderLogoExtension = headerLogo.Item1;
+                    repoModel.HeaderLogo = headerLogo.Item2.ToArray();
+                }
+                catch (Exception)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "HeaderLogo"));
+                }
             }
 
             if (model.HomeBackground != null)
             {
-                var homePageBackground = model.HomeBackground.GetFileFromDataUrl();
-                repoModel.HomePageBackgroundExtension = homePageBackground.Item1;
-                repoModel.HomePageBackground = homePageBackground.Item2.ToArray();
+                try
+                {
+                    var homePageBackground = model.HomeBackground.GetFileFromDataUrl();
+                    repoModel.HomePageBackgroundExtension = homePageBackground.Item1;
+                    repoModel.HomePageBackground = homePageBackground.Item2.ToArray();
+                }
+                catch (Exception)
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, ThemeErrors.ErrorOnCreate, String.Format(ThemeErrors.NotValidBase64Value, "HomeBackground"));
+                }
             }
 
             return repoModel;

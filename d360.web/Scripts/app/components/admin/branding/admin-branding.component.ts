@@ -340,7 +340,13 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                     }
                     this.cdRef.markForCheck();
                 }
-            });
+            }, (error) => {
+                this.resetUpload();
+
+                error.Message = error.error.message;
+                this.showMessageForApiResponse(this.messagesService, error);
+            }
+            );
 
 
         this.cdRef.markForCheck();

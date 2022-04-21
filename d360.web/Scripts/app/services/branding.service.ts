@@ -199,9 +199,7 @@ export class BrandingService extends BaseObservableService {
             .pipe(
                 map((res: any) => {
                     return res;
-                }),
-                catchError((err) => this.handleError(err))
-            );
+                }));
     }
 
     public saveTheme(theme: Theme): Observable<any> {

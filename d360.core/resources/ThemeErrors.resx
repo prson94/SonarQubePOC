@@ -186,6 +186,9 @@
   <data name="NoCurrentThemes" xml:space="preserve">
     <value>No themes exist or are marked as Current.</value>
   </data>
+  <data name="NotValidBase64Value" xml:space="preserve">
+    <value>Property {0} does not have valid Base64 value.</value>
+  </data>
   <data name="PrimaryButtonColorFormat" xml:space="preserve">
     <value>primaryButtonBackColor is not a valid RGB color.</value>
   </data>
