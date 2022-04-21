@@ -537,7 +537,7 @@ select	FT.ID as value,
 			else cast(0 as bit) 
 		end as isLookup,
 		(
-		select	cast(value as varchar) as [value],
+		select	cast(Text as varchar) as [value],
 				Text as label 
 		from	FieldLookupValue
 		where	FieldTypeID = FT.ID
@@ -565,7 +565,7 @@ select	FT.ID as value,
 			else cast(0 as bit) 
 		end as isLookup,
 		(
-		select	cast(value as varchar) as [value],
+		select	cast(Text as varchar) as [value],
 				Text as label 
 		from	FieldLookupValue
 		where	FieldTypeID = FT.ID
