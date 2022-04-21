@@ -145,7 +145,7 @@ stages:
         failOnStderr: true
         workingDirectory: $(Build.SourcesDirectory)
         script: |
-          mv thirdpartylicense.json $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
+          mv "thirdpartylicense.json" "$(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json"
     #temp
     - script: echo "listing dir:" && ls $(Build.Repository.LocalPath) && echo "second dir" 
     - script: ls $(Build.Repository.LocalPath)\govern\
