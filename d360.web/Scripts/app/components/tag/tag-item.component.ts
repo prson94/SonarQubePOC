@@ -242,7 +242,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         tap((tagDetailResponse: TagDetailResponse) => {
                             this.restoreNecessaryFieldsFromTagToAsset(tagDetailResponse.items);
                         })
-                    ).subscribe(data => {
+                    ).subscribe((data: TagDetailResponse): void => {
                         this.tagUsage = data.items;
                         if (this.tagUsage.length > 0) {
                             this.selection = this.tagUsage[0];
@@ -290,11 +290,11 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             const addedByFirstName = selectedTag?.CreatedByFirstName;
             const addedByLastName = selectedTag?.CreatedByFirstName;
             if (addedByFirstName || addedByLastName) {
-                tagDetail['AddedBy'] = `${addedByFirstName} ${addedByLastName}`
+                tagDetail['AddedBy'] = `${addedByFirstName} ${addedByLastName}`;
             } else {
-                tagDetail['AddedBy'] = ``
+                tagDetail['AddedBy'] = ``;
             }
-            tagDetail['CreatedOn'] = `${selectedTag?.CreatedOn}`
+            tagDetail['CreatedOn'] = `${selectedTag?.CreatedOn}`;
         });
     }
 
@@ -426,7 +426,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 this.tagUsage.forEach(detail => {
                     detail.Tags.forEach(t => {
-                        if (Number(t["uid"]) == this.tagUid) {
+                        if (Number(t["uid"]) === Number(this.tagUid)) {
                             t.Value = event.item.Value;
                         }
                     });

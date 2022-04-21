@@ -310,7 +310,7 @@ export class UiAdvancedFiltering {
             return false;
         } else {
             const result = givenPath.every((givenPathElement: string, index: number): boolean => {
-                return givenPathElement ===  searchPath[index];
+                return givenPathElement ===  searchPath[index]; // eslint-disable-line
             });
             return result;
         }
