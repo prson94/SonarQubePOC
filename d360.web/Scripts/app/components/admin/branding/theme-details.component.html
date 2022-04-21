@@ -9,7 +9,7 @@
         <br />
         <div>
             <a (click)="linkClicked.emit('Edit')" *ngIf="theme.hasEditOption">Edit</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
-            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption">Duplicate</a> <span *ngIf="theme.hasDuplicateOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption">Duplicate</a> <span *ngIf="theme.hasDuplicateOption && theme.hasSetAsCurrentThemeOption" class="grey-delimiter">|</span>
             <a (click)="linkClicked.emit('Set as Current Theme')" *ngIf="theme.hasSetAsCurrentThemeOption">Set as Current Theme</a>
         </div>
     </div>

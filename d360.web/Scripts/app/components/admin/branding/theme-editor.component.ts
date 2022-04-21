@@ -110,6 +110,7 @@ export class ThemeEditorComponent implements OnChanges {
         var _theme = new Theme();
         if (this.theme?.uid) {
             _theme.uid = this.theme.uid;
+            _theme.isCurrent = this.theme.isCurrent;
         }
         var properties = Object.keys(this.formGroup.controls);
 

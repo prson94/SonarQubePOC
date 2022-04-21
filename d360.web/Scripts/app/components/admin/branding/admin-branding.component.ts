@@ -1,10 +1,12 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { DomSanitizer, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -48,6 +50,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     constructor(
         private brandingService: BrandingService,
+        private messagesService: MessagesObservableService,
         protected router: Router,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title,
@@ -243,10 +246,16 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.file = event.target.files[0];
         let fileReader = new FileReader();
         fileReader.onload = (e) => {
-            this.themeToLoad = JSON.parse(fileReader.result as string);
-            this.themeToLoad.uid = null;
-            this.themeToLoad.isCurrent = null;
-            this.checkUploadTheme();
+            try {
+                this.themeToLoad = JSON.parse(fileReader.result as string);
+                this.themeToLoad.uid = null;
+                this.themeToLoad.isCurrent = null;
+                this.checkUploadTheme();
+            }
+            catch {
+                var error = { error: `Cannot upload file because this is not a valid D360 Govern branding JSON definition` };
+                this.showHttpErrorMessage(this.messagesService, error as HttpErrorResponse);
+            }
         };
 
         fileReader.readAsText(this.file);
