@@ -370,7 +370,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     }
 
     clearInvalidFields() {
-        let allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType"];
+        let allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType", "source"];
         if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.List]) {
             allowedFields = [
                 ...allowedFields,
