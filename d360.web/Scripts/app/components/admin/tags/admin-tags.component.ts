@@ -53,25 +53,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
             Name: 'Value',
             FriendlyName: 'Name',
             Type: new FieldType("Text"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'UseCount',
             FriendlyName: 'Use Count',
             Type: new FieldType("Number"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
             FriendlyName: 'Date Created',
             Type: new FieldType("DateTime"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedBy',
             FriendlyName: 'Created By',
             Type: new FieldType("Text"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
     ]);
 

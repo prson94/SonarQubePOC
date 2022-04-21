@@ -89,12 +89,14 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             Type: new FieldType("Lookup"),
             Category: "",
             ValueLoader: this.getFilterValues.bind(this),
+            RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
             FriendlyName: 'Date Added',
             Type: new FieldType("DateTime"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
     ]);
 
