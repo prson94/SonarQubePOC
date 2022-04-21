@@ -138,9 +138,9 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         this.timer = window.setTimeout(() => {
             let headerHeight = 0;
             let sidebarHeight = 0;
-            if (this.sidebar.nativeElement && this.sidebar.nativeElement.children[0]) 
+            if (this.sidebar?.nativeElement && this.sidebar.nativeElement.children[0]) 
                 sidebarHeight = this.sidebar.nativeElement.children[0].getBoundingClientRect().height;
-            if (this.header.nativeElement && this.header.nativeElement.children[0].children[0]) 
+            if (this.header?.nativeElement && this.header.nativeElement.children[0].children[0]) 
                 headerHeight = this.header.nativeElement.getBoundingClientRect().height;
 
             this.maxContentPaneHeight = (window.innerHeight > 100) ? ((window.innerHeight - (headerHeight + sidebarHeight))) : 100;

@@ -1008,9 +1008,9 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add(simpleFilterTagSql);
 						}
 						else if (ft.Type == DataType.Path.ToString())
-						{
-							simpleFilters.Add($"Node.DisplayPath like @simpleFilter");
-							includeAssetPathInCount = true; // asset path field and simple filter must include asset path in join for count
+                        {
+                            simpleFilters.Add($"{GetPathColumnSql(ft)} like @simpleFilter");
+                            includeAssetPathInCount = true; // asset path field and simple filter must include asset path in join for count
 						}
 						else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
 						{
@@ -1505,7 +1505,7 @@ namespace d360.model.DataAccessLayer
 
 			model.items = results;
 
-			return model;
+            return model;
 		}
 
 		public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)

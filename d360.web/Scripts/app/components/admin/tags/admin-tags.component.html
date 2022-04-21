@@ -2,16 +2,29 @@
 
 <div class="row">
     <div class="col l12 m12 s12">
-        <div class="tile tile-detail theme-new">
+        <div class="admin-tags-tile tile tile-detail theme-new">
             <header>
-                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <span *ngIf="!isLoading">
-                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <ng-container *ngIf="!isLoading">
+                <div class="grid-actions-header">
+                    <div class="simple-search">
+                        <input [(ngModel)]="filters.globalSearch"
+                               type="text"
+                               [hidden]="!showSimpleFilter"
+                               pInputText
+                               size="100"
+                               (input)="dt.filterGlobal($event.target.value, 'contains')"
+                               placeholder="Search..."
+                               class="grid-simple-filter">
+                    </div>
+                    <advanced-filtering  [loadIdentifier]="'AdminTags'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+                </div>
+                
                 <p-table #dt
                          [value]="tags"
-                         [globalFilterFields]="['Value','UseCount']"
+                         [globalFilterFields]="['Value','UseCount','CreatedOn','CreatedBy']"
                          [rowsPerPageOptions]="defaultPagingOptions"
                          sortField="Value"
                          [sortOrder]="1"
@@ -21,16 +34,24 @@
                          [(selection)]="selected">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th style="width: 20px;">
+                            <th style="width: 36px;">
                                 <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                             </th>
-                            <th [pSortableColumn]="'Value'" style="width: 60%">
+                            <th [pSortableColumn]="'Value'" style="width: 30%">
                                 <ng-container i18n>Name</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
                             </th>
-                            <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                            <th [pSortableColumn]="'UseCount'" style="width: 13%">
                                 <ng-container i18n>Use count</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'CreatedOn'" style="width: 20%">
+                                Date Created
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedOn'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'CreatedBy'" style="width: 20%">
+                                Created By
+                                <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedBy'"></d3s-sortIcon>
                             </th>
                             <th style="width: 110px"></th>
                         </tr>
@@ -38,6 +59,8 @@
                             <th></th>
                             <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
                             <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+                            <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'CreatedOn'" [datatype]="'date'"></d3s-column-filter></th>
+                            <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'CreatedBy'" [datatype]="'text'"></d3s-column-filter></th>
                             <th></th>
                         </tr>
                     </ng-template>
@@ -47,11 +70,11 @@
                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                             </td>
                             <td (click)="selectSingleItem($event,item, el);">
-                                <a (click)="openTagDetails(item);">
-                                    {{item.Value}}
-                                </a>
+                                <a (click)="openTagDetails(item);">{{item.Value}}</a>
                             </td>
                             <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
+                            <td (click)="selectSingleItem($event,item, el);">{{item.CreatedOn | date:'medium'}}</td>
+                            <td (click)="selectSingleItem($event,item, el);">{{item.CreatedBy}}</td>
                             <td (click)="selectSingleItem($event,item, el);">
                                 <div class="RowTools">
                                     <d3s-preview-tooltip [objectType]="'Tag'"
@@ -67,7 +90,7 @@
                         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                     </ng-template>
                 </p-table>
-            </span>
+            </ng-container>
 
             <d3s-dynamic-editor [objectID]="selected[0]?.uid"
                                 [objectType]="'Tag'"

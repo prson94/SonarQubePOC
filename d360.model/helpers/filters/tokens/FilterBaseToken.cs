@@ -6,6 +6,7 @@ using System.Text;
 
 using d360.core;
 using d360.core.entities;
+using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters.program;
 
 namespace d360.model.helpers.filters
@@ -290,7 +291,7 @@ namespace d360.model.helpers.filters
         {
             if (fieldType.Type == "Path")
             {
-                return $"Node.DisplayPath";
+                return BaseRepository.GetPathColumnSql(fieldType);
             }
             else if (fieldType.Type == "Counter")
             {

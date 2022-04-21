@@ -170,7 +170,9 @@ export class ThemeEditorComponent implements OnChanges {
 
     get headerBackColorHtmlTemplate(): string {
         var color = this.formGroup.get('headerBackColor').value;
-        return `<div class='headerBackColor-template'>
+        var contrastClass = "contrast-" + this.lightOrDark(color);
+
+        return `<div class='headerBackColor-template ${contrastClass}'>
 <i class="fa fa-shopping-cart" style="background-color:${color};"></i>
 <i class="fa fa-star" style="background-color:${color};"></i>
 <i class="fa fa-home selected" style="background-color:${color};"></i>
@@ -181,16 +183,18 @@ export class ThemeEditorComponent implements OnChanges {
     get breadcrumbLinkColorHtmlTemplate(): string {
         var headerColor = this.formGroup.get('headerBackColor').value;
         var color = this.formGroup.get('breadcrumbLinkColor').value;
+        var contrastClass = "contrast-" + this.lightOrDark(headerColor);
 
-        return `<div class="breadcrumbLinkColor-template" style="background-color:${headerColor}">
+        return `<div class="breadcrumbLinkColor-template ${contrastClass}" style="background-color:${headerColor}">
         <div style="color:${color};">Administration</div> <i class="fa fa-angle-right"></i> <div class="selected">Branding</div>
     </div>`;
     }
 
     get buttonBackColorHtmlTemplate(): string {
         var color = this.formGroup.get('buttonBackColor').value;
+        var contrastClass = "contrast-" + this.lightOrDark(color);
 
-        return `<div style="background-color:${color};" class="buttonBackColor-template">Take Action</div>`;
+        return `<div style="background-color:${color};" class="buttonBackColor-template ${contrastClass}">Take Action</div>`;
     }
 
     get tabLinkColorHtmlTemplate(): string {
@@ -212,16 +216,19 @@ export class ThemeEditorComponent implements OnChanges {
 
     get primaryButtonBackColorHtmlTemplate(): string {
         var color = this.formGroup.get('primaryButtonBackColor').value;
+        var contrastClass = "contrast-" + this.lightOrDark(color);
 
-        return `<div style="background-color:${color};" class="buttonBackColor-template">Save Changes</div>`;
+        return `<div style="background-color:${color};" class="buttonBackColor-template ${contrastClass}">Save Changes</div>`;
     }
 
     get tableHeaderBackColorHtmlTemplate(): string {
         var tableHeaderColor = this.formGroup.get('tableHeaderBackColor').value;
         var selectedRowColor = this.formGroup.get('tableRowBackColor').value;
+        var contrastClassHeader = "contrast-" + this.lightOrDark(tableHeaderColor);
+        var contrastClassSelectedRow = "contrast-" + this.lightOrDark(selectedRowColor);
 
         return `<div class="table-template">
-            <div class="header-template" style="background-color:${tableHeaderColor};">
+            <div class="header-template ${contrastClassHeader}" style="background-color:${tableHeaderColor};">
                 <div class="col">Name <i class="fa fa-fw fa-sort"></i></div>
                 <div class="col">Status <i class="fa fa-fw fa-sort"></i></div>
             </div>
@@ -229,7 +236,7 @@ export class ThemeEditorComponent implements OnChanges {
                 <div class="col">Asset 1</div>
                 <div class="col"><div class="status green"></div> Certified</div>
             </div>
-            <div class="row-template" style="background-color:${selectedRowColor};">
+            <div class="row-template ${contrastClassSelectedRow}" style="background-color:${selectedRowColor};">
                 <div class="col">Asset 1</div>
                 <div class="col"><div class="status grey"></div> Draft</div>
             </div>
@@ -240,7 +247,10 @@ export class ThemeEditorComponent implements OnChanges {
         var bgColor = this.formGroup.get('navbarBackColor').value;
         var selectedBgColor = this.formGroup.get('navbarBackColorSelected').value;
 
-        return `<div class="navbarBackColor-template" style="background-color:${bgColor};">
+        var contrastClass = "contrast-" + this.lightOrDark(bgColor);
+        var contrastClassSelected = "contrast-" + this.lightOrDark(selectedBgColor);
+
+        return `<div class="navbarBackColor-template ${contrastClass}" style="background-color:${bgColor};">
         <div class="menu-item-template">
             <i class="fa fa-home"></i>
             <div class="text flex-grow">Home</div>
@@ -250,7 +260,7 @@ export class ThemeEditorComponent implements OnChanges {
             <div class="text flex-grow">Favorites</div>
             <i class="fa fa-angle-right"></i>
         </div>
-        <div class="menu-item-template" style="background-color:${selectedBgColor}">
+        <div class="menu-item-template ${contrastClassSelected}" style="background-color:${selectedBgColor}">
             <i class="fa fa-star"></i>
             <div class="text flex-grow">Favorites</div>
             <i class="fa fa-angle-right"></i>
@@ -261,5 +271,49 @@ export class ThemeEditorComponent implements OnChanges {
             <i class="fa fa-angle-right"></i>
         </div>
     </div>`;
+    }
+
+    private lightOrDark(color) {
+
+        // Variables for red, green, blue values
+        var r, g, b, hsp;
+
+        // Check the format of the color, HEX or RGB?
+        if (color.match(/^rgb/)) {
+
+            // If RGB --> store the red, green, blue values in separate variables
+            color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+
+            r = color[1];
+            g = color[2];
+            b = color[3];
+        }
+        else {
+
+            // If hex --> Convert it to RGB: http://gist.github.com/983661
+            color = +("0x" + color.slice(1).replace(
+                color.length < 5 && /./g, '$&$&'));
+
+            r = color >> 16;
+            g = color >> 8 & 255;
+            b = color & 255;
+        }
+
+        // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
+        hsp = Math.sqrt(
+            0.299 * (r * r) +
+            0.587 * (g * g) +
+            0.114 * (b * b)
+        );
+
+        // Using the HSP value, determine whether the color is light or dark
+        if (hsp > 127.5) {
+
+            return 'light';
+        }
+        else {
+
+            return 'dark';
+        }
     }
 }

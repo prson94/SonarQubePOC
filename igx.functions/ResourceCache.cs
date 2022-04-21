@@ -199,15 +199,16 @@ namespace igx.functions.consumption
 									{
 										idsToSend.AddLast(id);
 										
-										if (idsToSend.Count >= 2099)
+										if (idsToSend.Count >= 1000)
 										{
-											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+											idsToSend.Clear();
 										}
 									}
 
 									if (idsToSend.Count > 0)
 									{
-										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
 									}
 
 									if (toDeleteIds.Any())

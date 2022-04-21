@@ -1,0 +1,40 @@
+.grid-actions-header {
+  display: inline-flex;
+  padding: 8px 10px;
+  width: 100%;
+
+  .grid-action-buttons {
+    min-width: 80px;
+
+    div {
+      display: inline-block;
+    }
+
+    button {
+      margin-left: 8px;
+    }
+  }
+
+  &.hidden {
+    display: none;
+  }
+
+  .simple-search {
+    width: 200px;
+  }
+}
+
+/* || Ovveride grid-actions-header styles for "Admin Tags" page */
+.admin-tags-tile {
+  .grid-actions-header {
+    padding: 0;
+  }
+
+  .simple-search {
+    input {
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      height: 32px;
+    }
+  }
+}

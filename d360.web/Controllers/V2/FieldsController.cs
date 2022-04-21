@@ -75,18 +75,18 @@ namespace d360.web.Controllers.V2
 		/// <remarks>
 		/// If using Uid parameters, you may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
 		/// </remarks>
-		/// <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
-		/// <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
-		/// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
-		/// <param name="Name">The API Name to search for.</param>
-		/// <param name="FriendlyName">The Friendly Name to search for.</param>
-		/// <param name="Type">The data type to search for.</param>
-		/// <param name="_pageSize">The number of results to return per page. The default value is 250.</param>
-		/// <param name="_pageNum">The page number to return results for.</param>
 		/// <returns>A list of field types corresponding to the given criteria, if any.</returns>
 		[
 			HttpGet,
 			Route(""),
+			SwaggerParameter(name: "AssetTypeUid", description: "The asset type Uid to retrieve field types for.", DataType = "string", ParameterType = "query"),
+			SwaggerParameter(name: "RelationshipTypeUid", description: "The relationship type Uid to retrieve field types for.", DataType = "string", ParameterType = "query"),
+			SwaggerParameter(name: "ActionTypeUid", description: "The action type Uid to retrieve field types for.", DataType = "string", ParameterType = "query"),
+			SwaggerParameter(name: "Name", description: "The API Name to search for.", DataType = "string", ParameterType = "query"),
+			SwaggerParameter(name: "FriendlyName", description: "The Friendly Name to search for.", DataType = "string", ParameterType = "query"),
+			SwaggerParameter(name: "Type", description: "The Friendly Name to search for.", Enum = typeof(DataType), DataType = "string", ParameterType = "query"),
+			SwaggerParameter(name: "_pageSize", description: "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query"),
+			SwaggerParameter(name: "_pageNum", description: "The page number to return results for.", DataType = "integer", ParameterType = "query"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
@@ -2653,6 +2653,8 @@ namespace d360.web.Controllers.V2
 			public string text { get; set; }
 
 			public string value { get; set; }
+			
+			public string color { get; set; }
 		}
 
 		/// <summary>
