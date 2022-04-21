@@ -42,6 +42,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     tagUsage: TagDetail[];
     readOnlyFullListOfTagUsage: ReadonlyArray<TagDetail> = [];
     selection: TagDetail;
+    advancedFilter: string = '';
     
     // sidepanel properties
     sidePanelOpen: boolean = false;
@@ -151,6 +152,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     advancedFiltersChanged(event: Filters): void {
+        this.advancedFilter = event.filter;
         this.tagUsage = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTagUsage, event);
     }
 
@@ -318,7 +320,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     export() {
-        this.tagsService.exportTagsByUid(this.tag.uid, this.sort, this.filters);
+        this.tagsService.exportTagsByUid(this.tag.uid, this.sort, this.filters, this.advancedFilter);
     }
 
     setActions() {
