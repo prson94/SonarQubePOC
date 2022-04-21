@@ -328,6 +328,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     }
 
     onMatchTypeChanged() {
+        this.getBaseTypeOptions()
         if (this.dataProfile) {
             switch (this.model.matchType.toString().toLocaleLowerCase()) {
                 case "advanced":
