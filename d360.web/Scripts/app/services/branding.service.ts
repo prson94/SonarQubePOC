@@ -263,22 +263,20 @@ export class BrandingService extends BaseObservableService {
         }
     }
 
-    public updateThemeCSS(theme: Theme): void {
+    public getThemeCustomCSS(theme: Theme): Observable<string> {
         if (!theme.customCssUri) {
-            return;
+            return of(null);
         }
         const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
 
-        this.http
+        return this.http
             .get(theme.customCssUri, { headers, responseType: 'text' })
             .pipe(
                 map((res: any) => {
                     return res;
                 }),
                 catchError((err) => this.handleError(err))
-            ).subscribe((res) => {
-                theme.customCss = res;
-            });
+            );
     }
 
     public deleteTheme(uid: string): Observable<any> {

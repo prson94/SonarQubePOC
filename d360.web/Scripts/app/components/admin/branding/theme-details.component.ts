@@ -83,13 +83,22 @@ export class ThemeDetailComponent implements OnChanges {
         this.categories.push(home);
         this.categories.push(general);
 
+        let cssCat: Category;
         if (this.hasCustomCss) {
-            var css = new Category('CSS Customization');
-            css.rows.push(
+            cssCat = new Category('CSS Customization');
+            cssCat.rows.push(
                 { title: '', value: this.theme.customCss, type: "code" });
 
-            this.categories.push(css);
+            this.categories.push(cssCat);
         }
+
+        this.brandingService.getThemeCustomCSS(this.theme)
+            .subscribe((res) => {
+                if (res) {
+                    this.theme.customCss = res;
+                    cssCat.rows[0].value = this.theme.customCss;
+                }
+            });
 
         this.categories.forEach((cat) => {
             cat.loaded = true;

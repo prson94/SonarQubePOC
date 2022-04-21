@@ -76,6 +76,7 @@ export class ThemeEditorComponent implements OnChanges {
             this.theme.headerLogo = this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault;
             this.theme.homeBackground = this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault;
             this.theme.icon = this.theme.iconUri ?? this.brandingService.iconDefault;
+
             _th = this.theme;
         }
         else {
@@ -83,14 +84,25 @@ export class ThemeEditorComponent implements OnChanges {
         }
 
         this.isCurrentTheme = this.theme ? this.theme.isCurrent : false;
-        var properties = Object.keys(this.formGroup.controls);
-        this.formGroup.reset();
-        properties.forEach((p) => {
-            var valObj = {};
-            valObj[`${p}`] = _th[`${p}`];
-            this.formGroup.patchValue(valObj);
-        });
-        this.changesMade = false;
+
+        this.brandingService.getThemeCustomCSS(_th)
+            .subscribe((res) => {
+                if (res) {
+                    _th.customCss = res;
+                }
+                else {
+                    _th.customCss = "";
+                }
+
+                var properties = Object.keys(this.formGroup.controls);
+                this.formGroup.reset();
+                properties.forEach((p) => {
+                    var valObj = {};
+                    valObj[`${p}`] = _th[`${p}`];
+                    this.formGroup.patchValue(valObj);
+                });
+                this.changesMade = false;
+            });
     }
 
     save() {
