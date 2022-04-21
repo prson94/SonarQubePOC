@@ -252,7 +252,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                 document.body.appendChild(element);
                 element.click(); // simulate click
                 document.body.removeChild(element);
-            })
+            });
     }
 
     getExportName(theme: Theme): string {
