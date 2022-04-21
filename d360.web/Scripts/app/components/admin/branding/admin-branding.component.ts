@@ -218,13 +218,16 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
 
     getEnvironment(): string {
         var url = window.location.href.toLowerCase();
-        if (url.indexOf(".dev.")) {
+        if (url.indexOf(".dev.") !== -1) {
             return "DEV";
         }
-        if (url.indexOf(".uat.")) {
+        if (url.indexOf(".eng.") !== -1) {
+            return "QA";
+        }
+        if (url.indexOf(".uat.") !== -1) {
             return "UAT";
         }
-        if (url.indexOf(".preview.")) {
+        if (url.indexOf(".preview.") !== -1) {
             return "PREVIEW";
         }
         return "PROD";
