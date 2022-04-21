@@ -136,6 +136,8 @@ stages:
         blackDuckApiToken: $(blackduckThirdParty)
         blackDuckScriptLocation: "$(Build.Repository.LocalPath)/devops/scripts/common/blackduck/thirdpartylicense.py"
     - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
+    - powershell: |
+        New-Item $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content -ItemType Directory
     - task: Bash@3
       displayName: 'Move BlackDuck Third Party License File'
       inputs:
@@ -143,7 +145,7 @@ stages:
         failOnStderr: true
         workingDirectory: $(Build.SourcesDirectory)
         script: |
-          mkdir -p $(Build.Repository.LocalPath)/govern/WEB/Content/D_C/a/1/s/d360.web/obj/Release/Package/PackageTmp/Content; mv thirdpartylicense.json $_
+          mv thirdpartylicense.json $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
     #temp
     - script: echo "listing dir:" && ls $(Build.Repository.LocalPath) && echo "second dir" 
     - script: ls $(Build.Repository.LocalPath)\govern\
