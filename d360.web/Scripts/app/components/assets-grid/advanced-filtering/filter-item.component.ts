@@ -93,12 +93,23 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.updateTopPosition();
             this.setSelectionVirtualScrollHeight();
         }, 25);
+    }
 
+    ngOnChanges() {
+        if (this.condition) {
+            this.uiFilterLabel = this.condition.getFilterLabel();
+        }
+
+        if (this.condition.field && !this.currentField) {
+            this.onFieldSelected(null);
+        }
+    }
+
+    ngOnInit() {
         this.assetService.getAllColors().subscribe((x) => {
             this.defaultColorOptions = x;
             this.cdRef.markForCheck();
         });
-
 
         this.advFilterService.onFilterUpdate().subscribe((data) => {
             if (data.source !== this.constructor.name) {
@@ -118,18 +129,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 }
             }
         });
-    }
 
-    ngOnChanges() {
-        if (this.condition) {
-            this.uiFilterLabel = this.condition.getFilterLabel();
-        }
-
-        if (this.condition.field && !this.currentField) {
-            this.onFieldSelected(null);
-        }
-    }
-    ngOnInit() {
         this.allFieldsDropdown = [];
 
         if (this.fields && this.fields.length > 0) {
