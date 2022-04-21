@@ -10,6 +10,12 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { FieldType } from '../../../models/fieldtype-api.model';
+import { Observable, of } from 'rxjs';
+import { Table } from 'primeng/table';
+import { tap } from 'rxjs/operators';
+import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -19,6 +25,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class AdminTagsComponent extends AdminBaseComponent {
     tags: ReadonlyArray<TagType> = []; // This is readonly array, because PrimeNGTable expects immutable data
+    readOnlyFullListOfTags: ReadonlyArray<TagType> = [];
     selected: TagType[] = [];
 
     error: any;
@@ -27,7 +34,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     showEditor: boolean = false;
     showConsolidate: boolean = false
-    filters: any = { globalSearch: '', Value: '', UseCount: '' };
+    filters: any = { globalSearch: '', Value: '', UseCount: '', DateCreated: '', CreatedBy: '' };
     sort: any;
 
     deletePopupTitle: string = 'Delete Tag';
@@ -37,10 +44,38 @@ export class AdminTagsComponent extends AdminBaseComponent {
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
 
-    @ViewChild('dt', { static: false }) tableEl: any;
+    @ViewChild('dt', { static: false }) tableEl: Table;
     private lastSelectedElement: TagType;
 
+    filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
+        {
+            Name: 'Value',
+            FriendlyName: 'Name',
+            Type: new FieldType("Text"),
+            Category: ""
+        },
+        {
+            Name: 'UseCount',
+            FriendlyName: 'Use Count',
+            Type: new FieldType("Number"),
+            Category: ""
+        },
+        {
+            Name: 'CreatedOn',
+            FriendlyName: 'Date Created',
+            Type: new FieldType("DateTime"),
+            Category: ""
+        },
+        {
+            Name: 'CreatedBy',
+            FriendlyName: 'Created By',
+            Type: new FieldType("Text"),
+            Category: ""
+        },
+    ]);
+
     constructor(
+        private uiAdvancedFiltering: UiAdvancedFiltering,
         private router: Router,
         private tagsService: TagService,
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -80,14 +115,37 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
         this.filters[event.prop] = event.value;
     }
+
+    advancedFiltersChanged(event: Filters): void {
+        this.tags = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTags, event);
+    }
+
     getTags() {
         this.isLoading = true;
-        this.tagsService.getTagsList().subscribe(res => {
-            if (res && res.length > 0) {
-                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
+        this.tagsService.getTagsList().pipe(
+            tap((tags: TagType[]) => {
+                this.sortTags(tags);
+            }),
+            tap((tags: TagType[]) => {
+                this.addCreatedByFieldToTags(tags);
+            })
+        ).subscribe((tags: TagType[]) => {
+            if (tags && tags.length > 0) {
+                this.tags = tags;
+                this.readOnlyFullListOfTags = [...this.tags];
             }
             this.isLoading = false;
         }, err => this.error = err);
+    }
+
+    sortTags(tags: TagType[]): void {
+        tags.sort((a, b) => a.Value.localeCompare(b.Value));
+    }
+
+    addCreatedByFieldToTags(tags: TagType[]): void {
+        tags.forEach((tag: TagType): void => {
+            tag['CreatedBy'] = `${tag.CreatedByFirstName} ${tag.CreatedByLastName}`;
+        });
     }
 
     private triggerRerenderOfSelection() {

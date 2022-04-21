@@ -22,6 +22,32 @@
     OnOrAfter = 21,
     IsInBand = 22
 }
+
+export enum OperatorString {
+    Equals = 'Equals',
+    NotEquals = 'NotEquals',
+    Contains = "Contains",
+    NotContains = 'NotContains',
+    StartsWith = 'StartsWith',
+    EndsWith = 'EndsWith',
+    Before = 'Before',
+    After = 'After',
+    Between = 'Between',
+    Populated = 'Populated',
+    NotPopulated = 'NotPopulated',
+    GreaterThan = 'GreaterThan',
+    LessThanOrEquals = 'LessThanOrEquals',
+    LessThan = 'LessThan',
+    GreaterThanOrEquals = 'GreaterThanOrEquals',
+    In = 'In',
+    NotIn = 'NotIn',
+    IsTrue = 'IsTrue',
+    IsFalse = 'IsFalse',
+    OnOrBefore = 'OnOrBefore',
+    OnOrAfter = 'OnOrAfter',
+    IsInBand = 'IsInBand'
+}
+
 export class OperatorDataTypeModel {
     ID: number;
     Name: string;

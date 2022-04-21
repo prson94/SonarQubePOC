@@ -25,6 +25,7 @@ import { TableModule } from 'primeng/table';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TagUsageInfoModule } from './tags-usage-info.module';
 import { AdminTagsActionModule } from './admin-tags-action.module';
+import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 
 @NgModule({
     imports: [
@@ -49,6 +50,7 @@ import { AdminTagsActionModule } from './admin-tags-action.module';
         TilesModule,
         SiteModalModule,
         TagUsageInfoModule,
+        AdvancedFiltersModule,
         AdminTagsActionModule
     ],
     declarations: [
