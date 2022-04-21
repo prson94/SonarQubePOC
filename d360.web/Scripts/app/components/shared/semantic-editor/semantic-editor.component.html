@@ -211,7 +211,7 @@
                     igSize="medium"
                     [options]="matchTypes"
                     appendTo="body"
-                    (onChange)="baseTypeOptions"
+                    (onChange)="onMatchTypeChanged()"
                     [(ngModel)]="model.matchType"
                     [showClear]="false"
                     formControlName="matchType"

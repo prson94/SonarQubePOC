@@ -333,7 +333,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                 case "advanced":
                     break;
                 case "list":
-                    this.model.invalidList.push(this.dataProfile?.outlierDetail.map(({ key }) => key));
+                    this.model.invalidList = this.dataProfile?.outlierDetail.map(({ key }) => key);
                     break;
                 case "number":
                     this.model.regExpReturned = this.dataProfile?.regExp;
@@ -341,7 +341,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                     this.model.maximum = this.dataProfile?.max;
                     break;
                 case "pattern":
-                    this.model.invalidList.push(this.dataProfile?.outlierDetail.map(({ key }) => key));
+                    this.model.invalidList = this.dataProfile?.outlierDetail.map(({ key }) => key);
                     this.model.regExpReturned = this.dataProfile?.regExp;                   
                     break;
             }
