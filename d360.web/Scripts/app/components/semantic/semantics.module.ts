@@ -1,7 +1,7 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule }       from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
+import { FormsModule }    from '@angular/forms';
 
 import { SemanticsComponent } from './semantics.component';
 import { SemanticDetailComponent } from "./semantic-detail.component";
@@ -26,16 +26,8 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SemanticStatusDetailComponent } from './semantic-status-detail.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 
-import { SemanticEditorComponent } from './semantic-editor.component';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
-import { DropdownModule } from 'primeng/dropdown';
-import { IgNumberFieldModule } from '../shared/controls/number-picker/number-input.component';
-import { InputTextModule } from "primeng/inputtext";
-import { IgMessageBoxModule } from '../shared/controls/message-box/message-box.module';
-import { MultiInputFieldModule } from "../shared/controls/multi-input-field/multi-input-field.component";
-import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
-import { SwitchModule } from '../shared/controls/switch/switch';
-import { MultiSelectModule } from 'primeng/multiselect';
+import { SemanticEditorModule } from '../shared/semantic-editor/semantic-editor.module';
 
 @NgModule({
     imports: [
@@ -58,15 +50,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SiteModalModule,
-        DropdownModule,
-        IgNumberFieldModule,
-        ReactiveFormsModule,
-        InputTextModule,
-        IgMessageBoxModule,
-        MultiInputFieldModule,
-        RegexpInputModule,
-        SwitchModule,
-        MultiSelectModule,
+        SemanticEditorModule
     ],
     declarations: [
         SemanticsComponent,
@@ -75,8 +59,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
         SemanticDefinitionComponent,
         SemanticAssetListGridComponent,
         SemanticTypeAssetListComponent,
-        SemanticStatusDetailComponent,
-        SemanticEditorComponent
+        SemanticStatusDetailComponent
     ],
     exports: [
         SemanticDetailComponent,

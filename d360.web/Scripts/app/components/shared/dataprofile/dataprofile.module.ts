@@ -23,6 +23,7 @@ import { ModalDrawerModule } from '../modal-drawer/gov-modal-drawer.module';
 import { TagPickerModule } from '../controls/tag-picker/tag-picker';
 import { DropdownModule } from 'primeng/dropdown';
 import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.component";
+import { SemanticEditorModule } from "../semantic-editor/semantic-editor.module";
 
 @NgModule({
     imports: [        
@@ -45,7 +46,8 @@ import { DataProfileTimeSeriesComponent } from "./dataprofile-time-series.compon
         AssetDetailModule,
         ModalDrawerModule,
         TagPickerModule,
-        DropdownModule
+        DropdownModule,
+        SemanticEditorModule
     ],
     declarations: [
         DataProfileComponent,

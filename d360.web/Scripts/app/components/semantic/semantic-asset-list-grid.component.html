@@ -51,21 +51,32 @@
                         Asset Type Path
                         <d3s-sortIcon [field]="'AssetTypePath'"></d3s-sortIcon>
                     </th>
-                    <th *ngIf="!isSidePanel" style="width: 5%" alignFrozen="right" pFrozenColumn></th>
+                    <th alignFrozen="right" pFrozenColumn></th>
+                    <th alignFrozen="right" pFrozenColumn></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="selectSemanticTypeAsset(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
                     <td>
                         <a (click)="selectSemanticTypeAsset(item)"
-                            class="link">
+                           class="link">
                             {{item.path}}
                         </a>
                     </td>
                     <td *ngIf="!isSidePanel">
-                        {{item.assetTypePath}}
+                        {{item.assetTypePath}}| item effective: {{item.effectiveDate}} | semantic type: {{semanticType.effectiveDate}}
                     </td>
-                    <td *ngIf="!isSidePanel" class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
+                    <td class="asset-grid-tools" alignFrozen="right" pFrozenColumn style=" width: 32px; vertical-align: middle;text-align: center;">
+                        <div style="display:inline-block" *ngIf="semanticType.effectiveDate>item.effectiveDate">
+                            <i class="fa fa-exclamation-triangle"
+                               pTooltip="<b>Out of date classification</b> - This asset was identified as a semantic type of Date, but the definition of this semantic type has since changed."
+                               [escape]="false"
+                               [hideDelay]="1000"
+                               tooltipPosition="top"
+                               tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                        </div>
+                    </td>
+                    <td *ngIf="!isSidePanel" class="asset-grid-tools" alignFrozen="right" pFrozenColumn style="width: 32px;">                        
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="menuItems" #menu [tabIndex]="1"></ig-popup-menu>
@@ -83,4 +94,4 @@
             </ng-template>
         </p-table>
     </div>
-</div> 
+</div>
