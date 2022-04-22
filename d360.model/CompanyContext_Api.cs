@@ -11023,11 +11023,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 				where pd.fieldtypeid is not null and ft.type = 'Boolean'
 
 				update #parsedData
-				set Value = flv.Value
+				set Value = (select flv.Value
+					from fieldtype ft
+					left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID and TRIM(pd.value) = FLV.Text
+					where ft.type = 'Lookup' and pd.fieldtypeid = ft.id
+				)
 				from #parsedData pd
-				inner join fieldtype ft on pd.fieldtypeid = ft.id
-				left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
-				where pd.fieldtypeid is not null and ft.type = 'Lookup'
+				where pd.fieldtypeid is not null
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Field name.'
@@ -12009,6 +12011,7 @@ EG.GroupUid
 					DataProfileTable.Columns.Add("ProfileSetDate", typeof(DateTime));
 					DataProfileTable.Columns.Add("ProfileIdentifier", typeof(string));
 
+                    DataProfileTable.Columns.Add("UniqueCount", typeof(long));
                     DataProfileTable.Columns.Add("SampleCount", typeof(long));
                     DataProfileTable.Columns.Add("NullCount", typeof(long));
                     DataProfileTable.Columns.Add("BlankCount", typeof(long));
@@ -12073,6 +12076,7 @@ EG.GroupUid
 						row["ProfileSetDate"] = item.profileSetDate.Date;
 						row["ProfileIdentifier"] = item.profileIdentifier ?? (object)DBNull.Value;
 
+                        row["UniqueCount"] = item.uniqueCount ?? (object)DBNull.Value;
                         row["SampleCount"] = item.sampleCount ?? (object)DBNull.Value;
                         row["NullCount"] = item.nullCount ?? (object)DBNull.Value;
                         row["BlankCount"] = item.blankCount ?? (object)DBNull.Value;
@@ -12352,6 +12356,7 @@ EG.GroupUid
 								bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
 								bulkCopy.ColumnMappings.Add("ProfileSetDate", "ProfileSetDate");
 								bulkCopy.ColumnMappings.Add("ProfileIdentifier", "ProfileIdentifier");
+								bulkCopy.ColumnMappings.Add("UniqueCount", "UniqueCount");
 								bulkCopy.ColumnMappings.Add("SampleCount", "SampleCount");
 								bulkCopy.ColumnMappings.Add("NullCount", "NullCount");
 								bulkCopy.ColumnMappings.Add("BlankCount", "BlankCount");
@@ -12546,6 +12551,7 @@ EG.GroupUid
 										INSERT ([AssetID]
 													,[ProfileSetDate]
 													,[ProfileIdentifier]
+                                                    ,[UniqueCount]
 													,[SampleCount]
 													,[NullCount]
 													,[BlankCount]
@@ -12584,6 +12590,7 @@ EG.GroupUid
 													(EDP.AssetID
 													,EDP.ProfileSetDate
 													,EDP.ProfileIdentifier
+                                                    ,EDP.UniqueCount
 													,EDP.SampleCount
 													,EDP.NullCount
 													,EDP.BlankCount
@@ -12636,7 +12643,9 @@ EG.GroupUid
 										ON (EDP.AssetId = ADP.AssetID AND EDP.profileSetDate = ADP.profileSetDate)
 										WHEN MATCHED THEN
 										UPDATE SET
-											ADP.[SampleCount] = EDP.[SampleCount]
+                                            ADP.[ProfileIdentifier] = EDP.[ProfileIdentifier]
+                                            ,ADP.[UniqueCount] = EDP.[UniqueCount]
+											,ADP.[SampleCount] = EDP.[SampleCount]
 											,ADP.[NullCount] = EDP.[NullCount]
 											,ADP.[BlankCount] = EDP.[BlankCount]
 											,ADP.[MeanValue] = EDP.[MeanValue]

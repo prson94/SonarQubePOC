@@ -430,9 +430,9 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.Value.ToString());
                 document.SetCellValue(rowNumber, index++, row.UseCount.ToString());
                 document.SetCellValue(rowNumber, index++, row.CreatedOn.ToString());
-                document.SetCellValue(rowNumber, index++, row.CreatedBy.ToString());
+                document.SetCellValue(rowNumber, index++, row.CreatedBy is null ? "" : row.CreatedBy.ToString());
                 document.SetCellValue(rowNumber, index++, row.UpdatedOn.ToString());
-                document.SetCellValue(rowNumber, index++, row.UpdatedBy.ToString());
+                document.SetCellValue(rowNumber, index++, row.UpdatedBy is null ? "" : row.UpdatedBy.ToString());
             }
 
             #endregion

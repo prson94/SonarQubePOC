@@ -17,13 +17,13 @@ import {
     SimpleChanges
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { SemanticMatchType, SemanticSource, SemanticType } from '../../models/semantic-type.model';
-import { DataProfileService } from '../../services/dataprofile.service';
-import { MessagesObservableService } from '../../services/messages-observable.service';
-import { CompanySettingsService } from '../../services/settings.service';
-import { BaseComponent } from '../shared/base.component';
-import { LocaleService } from '../../services/locale.service';
-import { PropertyGroupComponent } from '../shared/controls/property-group/property-group.component';
+import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
+import { DataProfileService } from '../../../services/dataprofile.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { BaseComponent } from '../base.component';
+import { LocaleService } from '../../../services/locale.service';
+import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
 
 @Component({
     selector: 'semantic-editor',
@@ -31,17 +31,19 @@ import { PropertyGroupComponent } from '../shared/controls/property-group/proper
     providers: [DataProfileService],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    styleUrls: ['semanticTypes.less']
+    styleUrls: ['semantic-editor.less']
 })
 
 export class SemanticEditorComponent extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
     @Input() semanticType: SemanticType;
+    @Input() dataProfile: any = null;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
     isBuiltIn: boolean = false;
     statuses: any[];
-    baseTypes: any[];
+    baseTypes: any;
+    baseTypeOptions: any[];
     matchTypes: any[];
     savingInProgress: boolean = false;
     hasHeader: boolean = false;
@@ -57,6 +59,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     isEdit: boolean = false;
     savingInProgressWithAddNew: boolean = false;
     isDuplicateQualifier: boolean = false;
+    isJsonValid: boolean = true;
 
     @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
@@ -107,7 +110,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                     this.hasFormChanged = false;
                 }
             });
-        }, 500);
+        }, 500);        
 
         this.populateTypeLists();  
     }
@@ -124,10 +127,18 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         } else {
             this.isEdit = false;
             this.model = new SemanticType();
+            if (this.dataProfile) {
+                this.populateModelFromDataProfile();
+            }
         }
         this.cdRef.markForCheck();
 
         this.populateTypeLists();        
+    }
+    populateModelFromDataProfile() {
+        this.model.qualifier = this.dataProfile?.typeQualifier;
+        this.model.threshold = Math.floor(this.dataProfile?.confidence * 100);
+        this.model.baseType = this.dataProfile?.type;
     }
 
     public isFormValid(): boolean {
@@ -147,58 +158,63 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.Advanced]) {
             this.model.advanced = JSON.parse(this.advancedJson);
         }
+
+        this.clearInvalidFields();
         
         if (this.isEdit) {
-            this.dataProfileService.patchSemanticType(this.model)
-                .subscribe((res) => {
-                    if (!(res?.status)) {
-                        let msg = 'Successfully updated';
-                        this.showMessageForResult(this.messagesService, res, msg);                        
-                        this.savingInProgress = false;
-                        this.savingInProgressWithAddNew = false;     
-                        this.saveClick.emit({ item: this.model, action: 'Edit', addAnother });
-                    }
-                    else {
-                        this.savingInProgress = false;
-                        this.savingInProgressWithAddNew = false;
-                        if (res.status === 409) {
-                            this.isDuplicateQualifier = true;
-                        }                                        
-                    }
-                    this.cdRef.markForCheck();
-                });
+            if (this.isBuiltIn) {
+                this.dataProfileService.patchSemanticType(this.model)
+                    .subscribe((res) => {
+                        this.handleSaveComplete(res, addAnother);
+                    });
+            } else {
+                this.dataProfileService.putSemanticType(this.model)
+                    .subscribe((res) => {
+                        this.handleSaveComplete(res, addAnother);
+                    },
+                        (err) => {
+                            this.savingInProgress = false;
+                            this.savingInProgressWithAddNew = false;
+                        }
+                    );
+            }                     
         } else {            
             this.dataProfileService.postSemanticType(this.model).subscribe((res) => {
-                if (!(res?.status)) {
-                    let msg = 'Successfully created';
-                    this.showMessageForResult(this.messagesService, res, msg);
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
-                    if (addAnother) {
-                        this.model = new SemanticType();
-                        this.semanticForm.reset();
-                    }
-                    this.saveClick.emit({ item: res[0], action: "new", addAnother });
-                }
-                else {
-                    this.savingInProgress = false;
-                    this.savingInProgressWithAddNew = false;
-                    if (res.status === 409) {
-                        this.isDuplicateQualifier = true;
-                    }
-                }
-                this.cdRef.markForCheck();                
+                this.handleSaveComplete(res, addAnother);                
             });            
         }        
     }
 
+    handleSaveComplete(res: any, addAnother: boolean = false) {
+        if (!(res?.status)) {
+            let msg = `Successfully ${this.isEdit ? 'updated' :'created'}`;
+            this.showMessageForResult(this.messagesService, res, msg);
+            this.savingInProgress = false;
+            this.savingInProgressWithAddNew = false;
+            if (addAnother) {
+                this.model = new SemanticType();
+                this.semanticForm.reset();
+            }
+            this.saveClick.emit({ item: res[0], action: `${this.isEdit ? 'edit' :'new'}`, addAnother });
+        }
+        else {
+            this.savingInProgress = false;
+            this.savingInProgressWithAddNew = false;
+            if (res?.status === 409) {
+                this.isDuplicateQualifier = true;
+            }
+        }
+        this.cdRef.markForCheck();
+    }
+
     populateTypeLists() {
-        if (!this.matchTypes) {
-            this.isLoading = true;
-            this.dataProfileService.getSemanticLookupList("matchtypes").subscribe((matchRes) => {
+        if (!this.matchTypes || !this.baseTypes || !this.statuses || !this.locales) {
+            this.isLoading = true;            
+            this.dataProfileService.getSemanticLookupList("matchtypes", false, null, "none").subscribe((matchRes) => {
                 this.matchTypes = matchRes.map((matchType) => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description }; });
                 this.dataProfileService.getSemanticLookupList("basetypes").subscribe((baseRes) => {
-                    this.baseTypes = baseRes.map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
+                    this.baseTypes = baseRes;
+                    this.getBaseTypeOptions();
                     this.dataProfileService.getSemanticLookupList("statuses").subscribe((statusRes) => {
                         this.statuses = statusRes.map((status) => { return { label: status.Name, value: status.Value }; });
                         this.localService.getLocales().subscribe((locales) => {
@@ -222,7 +238,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         type NewType = AbstractControl;
 
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value === null) {
+            if (control.value === null || control.value === undefined) {
                 return {};
             }
             if ((control.value as string).trim() === '' && (control.value as string) !== '') {
@@ -262,6 +278,13 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             }                
             return null;
         };
+    }
+
+    isValidJson(): boolean {
+        if (this.model?.matchType?.toString() === SemanticMatchType[SemanticMatchType.Advanced]) {
+            return this.isJsonValid;
+        }
+        return true;
     }
 
     getMatchTypeDescription(matchType: any) {
@@ -304,4 +327,78 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         setTimeout(() => this.setFormHeight(), 10);
     }
 
+    onMatchTypeChanged() {
+        this.getBaseTypeOptions();
+        if (this.dataProfile) {
+            switch (this.model.matchType.toString().toLocaleLowerCase()) {
+                case "advanced":
+                    break;
+                case "list":
+                    this.model.invalidList = this.dataProfile?.outlierDetail.map(({ key }) => key);
+                    break;
+                case "number":
+                    this.model.regExpReturned = this.dataProfile?.regExp;
+                    this.model.minimum = this.dataProfile?.min;
+                    this.model.maximum = this.dataProfile?.max;
+                    break;
+                case "pattern":
+                    this.model.invalidList = this.dataProfile?.outlierDetail.map(({ key }) => key);
+                    this.model.regExpReturned = this.dataProfile?.regExp;                   
+                    break;
+            }
+        }
+    }
+
+    get cancelButtonText(): string {
+        if (!this.isEdit) {
+            return "Cancel";
+        }
+
+        if (this.hasFormChanged && this.isEdit) {
+            return "Discard Changes";
+        }
+
+        return "Close";
+    }
+
+    getBaseTypeOptions() {
+        if (this.model?.matchType?.toString() === SemanticMatchType[SemanticMatchType.Number]) {
+            this.baseTypeOptions = this.baseTypes.filter((b) => b.Value === "Double" || b.Value === "Long").map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
+        } else {
+            this.baseTypeOptions = this.baseTypes.map((baseType) => { return { label: baseType.Name, value: baseType.Value }; });
+        }
+    }
+
+    clearInvalidFields() {
+        let allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType", "source"];
+        if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.List]) {
+            allowedFields = [
+                ...allowedFields,
+                ...["validList", "invalidList", "minSamples", "validLocales", "headerRegExps", "headerRegExpConfidence"]
+            ];
+        }
+        if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.Number]) {
+            allowedFields = [
+                ...allowedFields,
+                ...["minimum", "maximum", "minSamples", "minMaxPresent", "regExpReturned", "headerRegExps", "headerRegExpConfidence"]
+            ];                
+        }
+        if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.Pattern]) {
+            allowedFields = [
+                ...allowedFields,
+                ...["regExpReturned", "invalidList", "minSamples", "validLocales", "headerRegExps", "headerRegExpConfidence"]
+            ];
+        }
+        if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.Advanced]) {
+            allowedFields.push("advanced");
+        }
+
+        //clear invalid fields to prevent request 
+        Object.keys(this.model).forEach((key) => {
+            if (!allowedFields.find((x) => x === key)) {
+                this.model[key] = null;
+            }                        
+        });
+        
+    }
 }

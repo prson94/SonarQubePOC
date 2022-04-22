@@ -1,15 +1,17 @@
 ﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
 .theme-editor {
-  padding: 24px;
+  padding: 16px;
 
   .theme-form {
     overflow: auto;
+    padding: 0 8px;
   }
 
   .form-header {
     font-size: 18px;
     font-weight: bold;
+    padding: 8px;
     padding-bottom: 12px;
 
     .sub-header {
@@ -30,6 +32,7 @@
 
     label {
       min-width: 180px;
+      color: @ig-grey-s3;
     }
 
     .color-picker-wrapper {
@@ -266,5 +269,29 @@
     font-weight: bold;
     display: flex;
     padding-left: 4px;
+  }
+}
+
+.contrast-light {
+  color: black;
+
+  .fa {
+    color: black;
+  }
+
+  .col {
+    color: black;
+  }
+}
+
+.contrast-dark {
+  color: white;
+
+  .fa {
+    color: white;
+  }
+
+  .col {
+    color: white;
   }
 }

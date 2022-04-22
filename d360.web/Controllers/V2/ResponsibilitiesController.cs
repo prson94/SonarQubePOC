@@ -1741,10 +1741,12 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             MapToApiVersion("2.0"),
-            Route("api/v2/responsibilities/overrides/{uid:guid}"),
+            RequireAdminPermissions,
+            Route("overrides/{uid:guid}"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the request.", typeof(OkResult)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden user is not an administrator.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteResponsibilitiesOverrideByGroupOrResourceAsync(
@@ -1774,10 +1776,12 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             MapToApiVersion("2.0"),
+            RequireAdminPermissions,
             Route("overrides/byType/{responsibilityTypeUid:guid}"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the request.", typeof(OkResult)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Forbidden user is not an administrator.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteResponsibilitiesOverrideByTypeAsync([FromUri] Guid responsibilityTypeUid)

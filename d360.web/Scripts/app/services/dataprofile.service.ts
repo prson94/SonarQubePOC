@@ -209,7 +209,7 @@ export class DataProfileService extends BaseObservableService {
         if (minConfidence <= 0) {
             minConfidence = 1;
         }
-
+        
         let url = `api/v2/dataprofiles/type/${typeQualifier}/${minConfidence/100}?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
         if (simpleFilter) {
@@ -256,9 +256,9 @@ export class DataProfileService extends BaseObservableService {
         } 
     }
 
-    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null): Observable<any> {
+    getSemanticLookupList(lookup: string, isExport: boolean = false, callback: Function = null, order: string = "name"): Observable<any> {
         
-        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}/`;        
+        let url = `api/v2/dataprofiles/semantictypes/lookups/${lookup}?_orderby=${order}`;        
 
         if (isExport) {
             this.
@@ -365,6 +365,27 @@ export class DataProfileService extends BaseObservableService {
         return this
             .http
             .patch(`api/v2/dataprofiles/semantictypes/`, semanticArray, httpOptions)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError((err) => this.handleError(err))
+            );
+    }
+
+    public putDataProfile(
+        dataprofile: any
+    ): Observable<any> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        let dataprofileArray: any[] = [];
+        dataprofileArray.push(dataprofile);
+
+        return this
+            .http
+            .put(`api/v2/dataprofiles/`, dataprofileArray, httpOptions)
             .pipe(
                 map((res: any) => {
                     return res;

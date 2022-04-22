@@ -38,6 +38,7 @@
     height: calc(100%);
 
     &.CodeMirror-focused {
+      border-left: 2px solid @ig-midblue-t3;
       box-shadow: 0 0 0 2px @ig-midblue-t3;
     }
 
@@ -52,6 +53,11 @@
     .CodeMirror-gutters {
       background: @ig-grey-t5;
       border-right: 1px solid rgba(0, 0, 0, 0.2);
+      left: 0px !important;
+    }
+
+    .CodeMirror-gutter-wrapper {
+      left: -24px !important;
     }
 
     .CodeMirror-lines {
@@ -59,6 +65,7 @@
 
       .CodeMirror-linenumber {
         color: @ig-grey;
+        padding-left: 0px !important;        
       }
 
       pre.CodeMirror-placeholder {

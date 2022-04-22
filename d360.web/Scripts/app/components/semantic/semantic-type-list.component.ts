@@ -136,7 +136,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     sourceValues: string[] = ["Built-In", "User-Defined"];
     statusValues: string[] = ["Certified", "Draft", "Under Review"];
-    matchTypeValues: string[] = ["Advanced (JSON)", "List of Values", "Number", "Pattern in Data"];
+    matchTypeValues: string[] = ["List of Values", "Pattern in Data", "Numbers", "Advanced (JSON)"];
     baseTypeValues: string[] = ["True/False (Boolean)", "Number (Double)", "Number (Long)", "String", "LocalDate", "LocalTime", "LocalDateTime", "OffsetDateTime", "ZonedDateTime",];
 
     advancedFilterMap = new Map([

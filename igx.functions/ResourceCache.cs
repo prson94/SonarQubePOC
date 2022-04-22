@@ -24,7 +24,7 @@ namespace igx.functions.consumption
 #if DEBUG
 		private const string timerSettings = "*/2 * * * * *";
 #else
-		const string timerSettings = "0 */2 * * * *";
+		private const string timerSettings = "0 */2 * * * *";
 #endif
 
 		[FunctionName(functionName)]
@@ -73,7 +73,7 @@ namespace igx.functions.consumption
 										from [Resource] R 
 										inner join CompanyResource C on C.ResourceID = R.ID and C.CompanyID = @CompanyID",
 								param: new { c.CompanyID });
-								var updatedResourceIDs = new HashSet<int>(resources.RecordsAffected > 0 ? resources.RecordsAffected : 0);
+								var updatedResourceIDs = new HashSet<int>();
 
 								#endregion
 
@@ -141,7 +141,7 @@ namespace igx.functions.consumption
 										}
 									}
 
-									int rowsAffected = await companyConnection.ExecuteAsync(
+									int rowsAffected = await companyConnection.ExecuteScalarAsync<int>(
 										sql: @"declare @mergeResults table ([action] varchar(50));
 											merge	reporting.Global_Resource as T
 											using	(
@@ -179,7 +179,7 @@ namespace igx.functions.consumption
 									commandTimeout: 300
 									);
 
-									log.WriteLine($"Found {resources.RecordsAffected} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
+									log.WriteLine($"Found {updatedResourceIDs.Count} users for company {c.CompanyID}. Upsert affected {rowsAffected} rows.");
 
 									transaction.Commit();
 								}
@@ -191,7 +191,7 @@ namespace igx.functions.consumption
 								try
 								{
 									var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-									Stack<int> toDeleteIds = new Stack<int>(currentResourceIDs.Intersect(updatedResourceIDs));
+									Stack<int> toDeleteIds = new Stack<int>(updatedResourceIDs.Except(currentResourceIDs));
 									LinkedList<int> idsToSend = new LinkedList<int>();
 
 									//We need the following code because SQL Server allows us to send only 2100 parameters per query.
@@ -199,15 +199,16 @@ namespace igx.functions.consumption
 									{
 										idsToSend.AddLast(id);
 										
-										if (idsToSend.Count >= 2099)
+										if (idsToSend.Count >= 1000)
 										{
-											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+											companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
+											idsToSend.Clear();
 										}
 									}
 
 									if (idsToSend.Count > 0)
 									{
-										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @toDeleteIds", new { idsToSend });
+										companyConnection.Execute("delete reporting.Global_Resource where ResourceID in @idsToSend", new { idsToSend });
 									}
 
 									if (toDeleteIds.Any())

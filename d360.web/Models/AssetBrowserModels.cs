@@ -202,13 +202,12 @@ namespace d360.web.Models
 
         public string back { get; set; }
 
-        public int predicateId { get; set; }
+        [JsonIgnore]
+        public string predicateIdsJson { get; set; }
 
-        public Guid predicateUid { get; set; }
+        public List<int> predicateIds => JsonConvert.DeserializeObject<List<int>>(predicateIdsJson ?? "[]");
 
         public string text { get; set; }
-
-        public int predicateType { get; set; }
 
         [JsonIgnore]
         public string linksJson { get; set; }

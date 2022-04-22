@@ -228,6 +228,8 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
 
             if (this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] != null && this.step.settings.RelationshipUpdate.Relationship['@FormStepId'] != null) {
                 this.formRelationship = this.step.settings.RelationshipUpdate.Relationship['@FormFieldId'] + '|' + this.step.settings.RelationshipUpdate.Relationship['@FormStepId'];
+            } else {
+                this.formRelationship = null;
             }
 
             if (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] != null) {

@@ -89,11 +89,50 @@ namespace d360.model.DataAccessLayer.repositories
 
 		}
 		#endregion
+
+
+		public static string GetPathColumnSql(FieldType fieldType)
+		{
+			var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(fieldType.Definition);
+			if (pathDefinition?.AssetTypeUid == null)
+			{
+				return $"Node.DisplayPath";
+			}
+			else
+			{
+				return $@"
+					(SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
+					         FROM (
+					         SELECT *
+					           FROM (
+					           SELECT X.p.value('./@level', 'int') as L,
+					                  X.p.value('./@position', 'int') as P,
+					                  X.p.value('./@assetTypeId', 'int') as AssetTypeId,
+					                  (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+					             FROM Node.Segments.nodes('/path/segment') X(p)
+					           ) s
+					           JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = '{pathDefinition.AssetTypeUid}'
+					         ) segmentPath
+					      )
+				";
+			}
+		}
+
+		protected string AddColumnAlias(string columnSql, string alias, bool strict = true)
+		{
+			if (strict)
+			{
+				alias = $"[{alias.Trim('[', ']')}]";
+			}
+
+			return $"{columnSql} AS {alias}";
+		}
+
 		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false)
 		{
 			fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
 			 {
-				 var defaultVal = f.DefaultFormattedValue;
+                 var defaultVal = f.DefaultFormattedValue;
 				 var joinPrefix = "left";
 				 var tableAlias = $"F{f.ID}";
 				 var columnName = f.Name;
@@ -163,8 +202,8 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else if (f.Type == "Path")
 					 {
-						 fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
-					 }
+						 fieldColumns.Add(AddColumnAlias(GetPathColumnSql(f), columnName));
+                     }
 					 else if (f.Type == "Score")
 					 {
 						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -204,7 +243,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Path")
 						 {
-							 fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                             fieldColumns.Add(AddColumnAlias(GetPathColumnSql(f), columnName));
 						 }
 						 else if (f.Type == "Score")
 						 {
@@ -250,9 +289,9 @@ namespace d360.model.DataAccessLayer.repositories
 
 							 dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
 						 }
-						 else if (f.Type == "Path")
-						 {
-							 fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                         else if (f.Type == "Path")
+                         {
+                             fieldColumns.Add(AddColumnAlias(GetPathColumnSql(f), columnName));
 						 }
 						 else if (f.Type == "Score")
 						 {

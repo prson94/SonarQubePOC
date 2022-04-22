@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.3">
-    <comment>GOV-14849</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.5">
+    <comment>GOV-17917</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,8 +32,10 @@ begin
 	declare @maxLineageDescendants int = 500;
 	declare @dataLimitReached bit = 0;
 
-	declare @assetsEditable dbo.UidTable 
-	insert into @assetsEditable
+	drop table if exists #assetsEditable;
+	create table #assetsEditable (Uid uniqueidentifier);
+	create nonclustered index IX_TempAssetsEditable on #assetsEditable (Uid asc);
+	insert into #assetsEditable
 		select Uid from @assets;
 
 	-- These values indicate how many times to cycle when getting lineage relationships.
@@ -108,16 +110,16 @@ begin
 	declare @focalId bigint;
 	select	top 1 
 			@focalId = ID 
-	from	Asset A inner join @assetsEditable O on O.Uid = A.Uid;
+	from	Asset A inner join #assetsEditable O on O.Uid = A.Uid;
 
 	if @currentHop <> 1
 	begin
 		-- Keep only the assets that are leaves in the incoming data set, where it does NOT acts a parent to anything else in the incoming dataset.
 		delete	T
-		from	@assetsEditable T
+		from	#assetsEditable T
 				inner join (
 							select	P.Uid
-							from	@assetsEditable P
+							from	#assetsEditable P
 									inner join Asset PP on PP.Uid = P.Uid
 									outer apply (
 										select	count(1) as [Count]
@@ -125,7 +127,7 @@ begin
 												inner join Asset CC on	I.PredicateType in (3,4) 
 																		and I.Subject = PP.Object and I.SubjectID = PP.ObjectID 
 																		and CC.Object = I.Object and CC.ObjectID = I.ObjectID 
-																		and CC.uid in (select Uid from @assetsEditable)
+																		and CC.uid in (select Uid from #assetsEditable)
 									) O
 							where	O.[Count] = 1
 							) L on L.Uid = T.Uid
@@ -138,7 +140,7 @@ begin
 				1 as [Level],
 				cast(1 as bit) as IncludeInResult
 		from	Asset 
-		where	Uid in (select Uid from @assetsEditable)
+		where	Uid in (select Uid from #assetsEditable)
 		union all
 		select	C.ID,
 				d.ID as ParentID,
@@ -161,7 +163,7 @@ begin
 	with a as (
 		select	C.ID,
 				P.ID as ParentID
-		from	@assetsEditable H--#hopAsset H
+		from	#assetsEditable H--#hopAsset H
 				inner join Asset C on C.Uid = H.Uid--C.ID = H.ID and H.ID = @focalId
 				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
 				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
@@ -191,6 +193,20 @@ begin
 
 	-- END: Get focal point heirarchy (ascendancy/descendancy)
 
+	-- Check our node limit, to make sure we are not over 500.
+	declare @descendantCount int = 0;
+	select @descendantCount = count(1) from #hopAsset where IncludeInResult = 1
+	if @descendantCount > @maxLineageDescendants and @direction = 'A'
+	begin
+		set @dataLimitReached = 1;
+
+		select null;
+		select null;
+		select null;
+		select null;
+		select @dataLimitReached as dataLimitReached;
+		return;
+	end
 
 	-- BEGIN: Get lineage for the number of hops (backwards/forwards)
 
@@ -596,7 +612,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.PredicateType not in (1,3,4,12,13,15)
+														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateName
@@ -608,7 +624,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType not in (1,3,4,12,13,15)
+														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateInverse
@@ -622,7 +638,8 @@ begin
 	where	H.[group] is null
 
 	-- 4. Reveals
-	select	N.hierarchyKey + '_Reveal' as hierarchyKey,
+	select	distinct
+			N.hierarchyKey + '_Reveal' as hierarchyKey,
 			iif(R.Direction = 1, N.hierarchyKey, N.hierarchyKey + '_Reveal') as [from],
 			iif(R.Direction <> 1, N.hierarchyKey, N.hierarchyKey + '_Reveal') as [to],
 			R.direction
