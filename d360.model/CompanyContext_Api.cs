@@ -11023,13 +11023,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 				where pd.fieldtypeid is not null and ft.type = 'Boolean'
 
 				update #parsedData
-				set Value = (select flv.Value
-					from fieldtype ft
-					left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID and TRIM(pd.value) = FLV.Text
-					where ft.type = 'Lookup' and pd.fieldtypeid = ft.id
-				)
+				set Value = flv.Value
 				from #parsedData pd
-				where pd.fieldtypeid is not null
+				inner join fieldtype ft on pd.fieldtypeid = ft.id
+				left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
+				where pd.fieldtypeid is not null and ft.type = 'Lookup'
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Field name.'
