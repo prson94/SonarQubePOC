@@ -147,7 +147,7 @@ stages:
     - task: ArchiveFiles@2
       displayName: 'Add License Attribution File to Distro'
       inputs:
-        rootFolderOrFile: $(Build.Repository.LocalPath)\govern\WEB\
+        rootFolderOrFile: $(Build.Repository.LocalPath)\WEB\
         includeRootFolder: false
         sevenZipCompression: 5
         archiveFile: $(Build.Repository.LocalPath)\govern\d360.web\bin\Release\web.zip
