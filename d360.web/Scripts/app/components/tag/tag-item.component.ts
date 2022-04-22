@@ -292,7 +292,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 return String(tag.uid) === String(this.tagUid);
             });
             const addedByFirstName = selectedTag?.CreatedByFirstName;
-            const addedByLastName = selectedTag?.CreatedByFirstName;
+            const addedByLastName = selectedTag?.CreatedByLastName;
             if (addedByFirstName || addedByLastName) {
                 tagDetail['AddedBy'] = `${addedByFirstName} ${addedByLastName}`;
             } else {
