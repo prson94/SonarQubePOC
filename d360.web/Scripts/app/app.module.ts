@@ -2,6 +2,7 @@
 import { CommonModule, registerLocaleData } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule, Title } from '@angular/platform-browser';
+import { RouteReuseStrategy } from '@angular/router';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app.routes';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -41,6 +42,7 @@ import { CompanySettingsService } from './services/settings.service';
 import { FeatureFlagsService } from './services/featureflags.service';
 import { governHttpInterceptorProviders } from './http-interceptors';
 import { SelectAssetService } from './services/select-asset.service';
+import { ForceNoReuseStrategy } from './services/forceNoReuseStrategy';
 
 export function localeIdFactory() {
     return navigator.language;
@@ -87,6 +89,7 @@ export function localeInitializer(localeId: string) {
         }
     };        
 }
+
 
 @NgModule({
     declarations: [
@@ -151,7 +154,8 @@ export function localeInitializer(localeId: string) {
             deps: [CompanySettingsService]
         },
         ApplicationInsightsService,
-        SearchService
+        SearchService,
+        { provide: RouteReuseStrategy, useClass: ForceNoReuseStrategy },
     ],
     entryComponents: [D3SModal],
 
