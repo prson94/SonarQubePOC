@@ -132,7 +132,7 @@ namespace d360.web.Controllers
 				});
 				
 				list = loadDynamicFields(
-						 SystemObjects.Taxonomy.ToString(),
+						 hierarchy.ToString(),
 						 id,
 						 list,
 						 Company.GetFieldTypesByObject(hierarchy == SystemObjects.Taxonomy ? SystemObjects.TaxonomyType : SystemObjects.PolicyType, (int)model.HierarchyTypeID).ToList(),
