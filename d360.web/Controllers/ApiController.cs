@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using System.Xml;
 using System.Xml.Linq;
 
 using d360.core;
@@ -62,6 +63,40 @@ namespace d360.web.Controllers
 		#endregion
 
 		#region Field Data
+
+		private async Task<string> GetPathColumnValueAsync(FieldType fieldType, long assetId)
+		{
+			var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(fieldType.Definition);
+			if (pathDefinition?.AssetTypeUid == null)
+			{
+				var sql = "select graph.GetPathByAssetId(@id, ' <i class=\"fa fa-angle-right\"></i> ', ' / ')";
+				var result = await Company.Connection.QuerySingleOrDefaultAsync<string>(sql, new { id = assetId }).ConfigureAwait(false);
+				result = result ?? string.Empty;
+				return result;
+			}
+			else
+			{
+				var sql = $@"
+					SELECT TOP 1 
+					       string_agg(Val, ' / ') within group(order by P)
+					  FROM (
+					    SELECT P, Val
+					      FROM (                   
+					        SELECT X.p.value('./@level', 'int') as L,
+						           X.p.value('./@position', 'int') as P,
+						           X.p.value('./@assetTypeId', 'int') as AssetTypeId,
+						           (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
+					          FROM graph.AssetNode
+					         CROSS APPLY Segments.nodes('/path/segment') X(p)
+					         WHERE AssetNode.ID = @assetId
+					      ) s
+  						  JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = @fieldTypeUid
+					) segmentPath
+				";
+				var result = await Company.Connection.QuerySingleAsync<string>(sql, new { assetId, fieldTypeUid = pathDefinition.AssetTypeUid }).ConfigureAwait(false);
+				return result;
+			}
+		}
 
 		private async Task<List<DetailReadOnlyRowModel>> loadDynamicDisplayField(FieldType ft, List<FieldWithRelation> fields, ObjectDetail details, SystemObjects type, int id, List<LookupDataReadOnlyModel> lookupFieldData, ComplexRelationFieldHasAnyModel complexRelationFieldHasAnyModel)
 		{
@@ -208,7 +243,8 @@ namespace d360.web.Controllers
 			}
 			else if (ft.Type == DataType.Path.ToString())
 			{
-				var assetPath = (await Company.QueryAsync<string>("select graph.GetPathByAssetId(@id, ' <i class=\"fa fa-angle-right\"></i> ', ' / ')", new { id = details.AssetID }).ConfigureAwait(false)).SingleOrDefault() + "";
+				var assetPath = await GetPathColumnValueAsync(ft, details.AssetID.GetValueOrDefault(-1)).ConfigureAwait(false);
+
 				var ro = new ReadOnlyField
 				{
 					Name = ft.FriendlyName,
