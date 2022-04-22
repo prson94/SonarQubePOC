@@ -138,14 +138,8 @@ stages:
     - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
     - powershell: |
         New-Item $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content -ItemType Directory
-    - task: Bash@3
-      displayName: 'Move BlackDuck Third Party License File'
-      inputs:
-        targetType: inline
-        failOnStderr: true
-        workingDirectory: $(Build.SourcesDirectory)
-        script: |
-          mv "thirdpartylicense.json" "$(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json"
+    - powershell: |
+        Move-Item -Path $(Build.SourcesDirectory)\thirdpartylicense.json -Destination $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
     #temp
     - script: echo "listing dir:" && ls $(Build.Repository.LocalPath) && echo "second dir" 
     - script: ls $(Build.Repository.LocalPath)\govern\
