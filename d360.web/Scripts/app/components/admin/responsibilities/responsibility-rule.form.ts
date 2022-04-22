@@ -270,7 +270,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsLookup = false;
             }
         }
-        
+
         if (event) {
             item.Value = null;
         }
@@ -422,16 +422,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 AssetTypeUid: this.model.AssetTypeUid,
                 Definition: {
                     When: [],
-                    Then: Object.values(groupBy(
-                        thenTest.StructuredDefinition.Then.Conditions,
-                        (then) => this.getAssigneeTypeUid(then)
-                    )).map((conditions) => (
+                    Then: [
                         {
-                            AssigneeTypeUid: this.getAssigneeTypeUid(conditions[0]),
+                            AssigneeTypeUid: this.getAssigneeTypeUid(thenTest.StructuredDefinition.Then.Conditions[0]),
                             MatchType: thenTest.StructuredDefinition.Then.MatchType as ('and' | 'or'),
-                            Conditions: conditions.map((then) => this.mapToThenV2(then))
+                            Conditions: thenTest.StructuredDefinition.Then.Conditions.map((then) => this.mapToThenV2(then))
                         }
-                    ))
+                    ]
                 }
             })
             .subscribe((response) => {
@@ -446,6 +443,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     getAssigneeTypeUid(then: ResponsibilityTypeRelationRuleDefinitionThenItem) {
+        if (then == null) {
+            return this.thenFieldTypes
+                .map((field) => field.assigneeTypeUid)
+                .filter((x) => x != null)[0];
+        }
+        
         const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
         return field.assigneeTypeUid;
     }
