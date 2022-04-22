@@ -9,6 +9,8 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
+using d360.model.helpers.filters;
 
 using Dapper;
 
@@ -270,7 +272,6 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
-
 			var dbArgs = new DynamicParameters();
 			List<string> whereClauses = new List<string>();
 			string sortField = "";
@@ -282,6 +283,22 @@ namespace d360.model.DataAccessLayer
 			{
 				switch (qitem.Key.ToLower())
 				{
+					case "_filter":
+						{
+							var value = qitem.Value;
+							if (!string.IsNullOrEmpty(value))
+							{
+								var filterDataProvider = new FilterDataProvider(companyContext);
+								var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.Tags);
+								var sqlParams = new Dictionary<string, object>();
+								whereClauses.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out _) + ")");
+								foreach (var item in sqlParams)
+								{
+									dbArgs.Add(item.Key, item.Value);
+								}
+							}
+						}
+						break;
 					case "globalsearch":
 						dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
 						whereClauses.Add("LOWER(t.Value) like @value");

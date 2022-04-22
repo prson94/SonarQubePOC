@@ -131,6 +131,15 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("createdBy", "CreatedBy", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("updatedBy", "UpdatedBy", SqlFieldType.Text));
             }
+
+            if (parseType == FilterExpressionParseType.Tags)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("value", "t.Value", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("useCount", "Tags.count", SqlFieldType.Number));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "t.CreatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdBy", "grc.FirstName + ' ' +grc.LastName", SqlFieldType.Text));
+            }
         }
 
         public void OverrideAllowedDefaultFields(List<DefaultFilter> defaultFilters)
