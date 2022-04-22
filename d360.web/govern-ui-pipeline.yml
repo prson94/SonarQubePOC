@@ -138,12 +138,10 @@ stages:
     - template: blackduck-third-party-license/steps/blackduck-extractzip.yml@global-templates
     - powershell: |
         New-Item $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content -ItemType Directory
+      displayName: Create Directory Structure
     - powershell: |
         Move-Item -Path $(Build.SourcesDirectory)\thirdpartylicense.json -Destination $(Build.Repository.LocalPath)\WEB\Content\D_C\a\1\s\d360.web\obj\Release\Package\PackageTmp\Content\version-license.json
-    #temp
-    - script: echo "listing dir:" && ls $(Build.Repository.LocalPath) && echo "second dir" 
-    - script: ls $(Build.Repository.LocalPath)\govern\
-    #temp ends
+      displayName: Move Third Party License File
     - task: ArchiveFiles@2
       displayName: 'Add License Attribution File to Distro'
       inputs:
