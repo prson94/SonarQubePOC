@@ -12,10 +12,10 @@ import { LinkClickInterceptor } from '../../../../services/href-click-service';
                     <span *ngFor="let item of colorsObject;">
                         <span [class]="'ig-colorfield-item ' + styleClass" style="display: inline-flex !important;">
                             <span class="ig-colorfield-swatch" [ngClass]="{'empty': (item.color == 'transparent' || item.color == null)}" [ngStyle]="{'background-color': item.color}"></span>
-                            <span *ngIf="!url" class="ig-colorfield-item-label">
+                            <span *ngIf="!url" class="ig-colorfield-item-label" [style.white-space]="whiteSpace">
                                 {{item.name}}
                             </span>
-                            <a context-link *ngIf="url" class="ig-colorfield-item-label" (click)="navigate(url, $event)">
+                            <a context-link *ngIf="url" class="ig-colorfield-item-label" [style.white-space]="whiteSpace" (click)="navigate(url, $event)">
                                 {{item.name}}
                             </a>
                         </span>
@@ -35,6 +35,7 @@ export class ColorDisplayComponent implements OnInit {
     @Input() valueIndex: number = 0;
 
     public colorsObject: any;
+    public whiteSpace: string = '';
 
     constructor(private router: Router,
         private linkClickInterceptor: LinkClickInterceptor) {
@@ -52,6 +53,9 @@ export class ColorDisplayComponent implements OnInit {
             else {
                 this.colorsObject = this.colorsJSON;
             }
+        }
+        if (this.field.FieldName === 'GovernanceRole') {
+            this.whiteSpace = 'normal';
         }
     }
     private isStringJson(str) {
