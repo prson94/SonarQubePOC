@@ -145,11 +145,16 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)))
     }
 
-    exportTags(filters: any, sort) {
-        this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
+    exportTags(filter: any, sort, advancedFilter: string) {
+        const baseUrl: string = `api/v2/tags/export?`;
+        const globalSearchParams = `globalSearch=${filter.globalSearch}`;
+        const filterParams = `&value=${filter.Value}&useCount=${filter.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`;
+        const advancedFilterParams = `&_filter=${advancedFilter}`;
+        const exportTagsUrl = baseUrl + globalSearchParams + filterParams + advancedFilterParams;
+        this.http.get(exportTagsUrl, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'Tags'));
     }
 
-    exportTagsByUid(uid: string, sort: any, filters: any) {
+    exportTagsByUid(uid: string, sort: any, filters: any, advancedFilter: string) {
         var params = "globalSearch=" + filters.globalSearch;
 
         if (filters.AssetType) {
@@ -173,6 +178,10 @@ export class TagService extends BaseObservableService {
         }
 
         params += "&_pagesize=1000000";
+
+        if (advancedFilter) {
+            params += "&_filter=" + advancedFilter;
+        }
 
         this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
     }

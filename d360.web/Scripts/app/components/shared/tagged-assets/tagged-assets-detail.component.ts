@@ -89,7 +89,7 @@ export class TaggedAssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     export() {
-        this.tagService.exportTagsByUid(this.tag.uid, "", this.filters);
+        this.tagService.exportTagsByUid(this.tag.uid, '', this.filters, '');
     }
 
     open(isNewTab: boolean = false) {

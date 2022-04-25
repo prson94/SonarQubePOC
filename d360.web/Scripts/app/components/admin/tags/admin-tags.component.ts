@@ -35,6 +35,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     showEditor: boolean = false;
     showConsolidate: boolean = false
     filters: any = { globalSearch: '', Value: '', UseCount: '', DateCreated: '', CreatedBy: '' };
+    advancedFilter: string = '';
     sort: any;
 
     deletePopupTitle: string = 'Delete Tag';
@@ -52,25 +53,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
             Name: 'Value',
             FriendlyName: 'Name',
             Type: new FieldType("Text"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'UseCount',
             FriendlyName: 'Use Count',
             Type: new FieldType("Number"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
             FriendlyName: 'Date Created',
             Type: new FieldType("DateTime"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedBy',
             FriendlyName: 'Created By',
             Type: new FieldType("Text"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
     ]);
 
@@ -117,6 +122,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     advancedFiltersChanged(event: Filters): void {
+        this.advancedFilter = event.filter;
         this.tags = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTags, event);
     }
 
@@ -336,7 +342,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     export() {
-        this.tagsService.exportTags(this.filters, this.sort);
+        this.tagsService.exportTags(this.filters, this.sort, this.advancedFilter);
     }
 
     private mutateTags(mutator: (tags: TagType[]) => void) {
