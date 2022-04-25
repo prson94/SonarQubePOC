@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1.5">
-    <comment>GOV-17907</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v1.6">
+    <comment>GOV-18075</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -17,6 +17,7 @@ create or alter procedure [graph].[AssetBrowser_Impact]
 	,@resourceId int
 	,@hopCount int
 	,@intersects dbo.Ids readonly
+	,@includeHierarchyBadges bit = 1
 	,@includeOwnershipBadges bit = 1
 	,@includeRelationBadges bit = 1
 	,@direction char(1) = 'A' -- (A)all, (B)ackward, (F)orward 	,@assets dbo.Ids readonly
@@ -26,6 +27,13 @@ create or alter procedure [graph].[AssetBrowser_Impact]
 as
 begin
 	set nocount on;
+
+	declare @restrictedTypes table ([Type] int)
+	insert into @restrictedTypes values (15)
+	if @includeHierarchyBadges = 0
+	begin
+		insert into @restrictedTypes values (3), (4)
+	end
 
 	-- Tables that will contain the data to return. This is the final data that should be loaded into these tables.
 	drop table if exists #edges;
@@ -376,7 +384,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
+														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (select [Type] from @restrictedTypes) and I.IntersectID not in (select Id from @hopIntersectIds)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateName
@@ -388,7 +396,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (15) and I.IntersectID not in (select Id from @hopIntersectIds)
+														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (select [Type] from @restrictedTypes) and I.IntersectID not in (select Id from @hopIntersectIds)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateInverse
