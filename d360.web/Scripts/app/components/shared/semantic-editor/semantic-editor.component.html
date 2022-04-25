@@ -411,16 +411,12 @@
                          [disabled]="isBuiltIn"
                          [required]="model.minMaxPresent"
                          [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
-                         [allowDecimal]="false"
                          [(ngModel)]="model.minimum"></ig-number-input>
         <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && semanticForm.get('minimum').errors?.underMin" class="ig-text-required">
             Please enter a value greater than 0
         </div>
         <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && !validateMinMax()" class="ig-text-required">
             Minimum value must be less than maximum
-        </div>
-        <div *ngIf="semanticForm.get('minimum').errors?.hasDecimal" class="ig-text-required">
-            Minimum cannot contain any decimal places.
         </div>
     </div>
 </ng-template>
@@ -440,16 +436,12 @@
                          [disabled]="isBuiltIn"
                          [required]="model.minMaxPresent"
                          [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
-                         [allowDecimal]="false"
                          [(ngModel)]="model.maximum"></ig-number-input>
         <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && semanticForm.get('maximum').errors?.underMin" class="ig-text-required">
             Please enter a value greater than 0
         </div>
         <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && !validateMinMax()" class="ig-text-required">
             Maximum value must be greater than minimum
-        </div>
-        <div *ngIf="semanticForm.get('maximum').errors?.hasDecimal" class="ig-text-required">
-            Maximum cannot contain any decimal places.
         </div>
     </div>
 </ng-template>
