@@ -51,12 +51,12 @@
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.type" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px">Base Type: </label>
-                                    <span class="ig-value">{{baseType}}</span>
+                                    <span class="ig-value">{{baseType}} | {{semanticTypeChecked}} | {{hasDefinedType}} | {{isAdmin}} | {{dataProfile.typeQualifier}}</span>
                                 </div>
                                 <div *ngIf="hasValidCounts" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px">Semantic Type:</label>                                    
                                     <div *ngIf="!dataProfile.typeQualifier">
-                                        <div *ngIf="isAdmin" margin-bottom: 8px; and margin-top: 2px;>
+                                        <div *ngIf="isAdmin" style="margin-bottom: 8px;margin-top: 2px;">
                                             <a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> Create New</a>
                                         </div>
                                         <div *ngIf="!isAdmin" style="margin-bottom: 10px;">
