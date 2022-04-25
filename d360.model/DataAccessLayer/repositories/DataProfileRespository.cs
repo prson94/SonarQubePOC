@@ -1095,5 +1095,10 @@ namespace d360.model.DataAccessLayer
 													) topK "
 					: "")}";
 		}
+
+		public async Task<bool> DoesTypeQualifierExist(string typeQualifier)
+		{
+			return (await CompanyContext.QueryAsync<int>("select count(1) from Semantic where Qualifier = @typeQualifier", new { typeQualifier })).FirstOrDefault() > 0;
+		}
 	}
 }
