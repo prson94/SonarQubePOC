@@ -81,8 +81,8 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             name: ['', [Validators.required, this.isEmptyString()]],
             description: null,
             effectiveDate: null,
-            threshold: ['', [Validators.required, this.isValidPercentage()]],
-            priority: ['', [Validators.required, this.isValidNumber()]],          
+            threshold: ['', [Validators.required]],
+            priority: ['', [Validators.required]],          
             matchType: null,
             baseType: null,
             qualifier: null,
@@ -248,41 +248,15 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             }                
             return null;
         };
-    }
+    }    
 
-    isValidPercentage(): ValidatorFn {
-        type NewType = AbstractControl;
-        return (control: NewType): { [key: string]: any } | null => {
-            if (control.value === null || control.value === undefined) {
-                return {};
-            }                
-            if ((control.value as number) < 1 || (control.value as number) > 100) {
-                return {
-                    outOfRange: { value: control.value }
-                };
-            }                
-            return null;
-        };
-    }
-
-    isValidNumber(): ValidatorFn {
-        type NewType = AbstractControl;
-        return (control: NewType): { [key: string]: any } | null => {
-            if (control.value === null || control.value === undefined) {
-                return {};
-            }
-            if ((control.value as number) < 1) {
-                return {
-                    outOfRange: { value: control.value }
-                };
-            }                
-            return null;
-        };
-    }
-
-    isValidJson(): boolean {
+    isValid(): boolean {
+        
         if (this.model?.matchType?.toString() === SemanticMatchType[SemanticMatchType.Advanced]) {
             return this.isJsonValid;
+        }
+        if (this.model?.matchType?.toString() === SemanticMatchType[SemanticMatchType.Number]) {
+            return this.validateMinMax();
         }
         return true;
     }
@@ -400,5 +374,12 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             }                        
         });
         
+    }
+
+    validateMinMax() {
+        if (this.model?.minimum && this.model?.maximum && this.model.minimum > this.model.maximum) {
+            return false;
+        }
+        return true;
     }
 }
