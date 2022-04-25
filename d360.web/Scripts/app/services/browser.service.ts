@@ -224,13 +224,14 @@ export class BrowserService extends BaseObservableService {
         );
     }
 
-    public getImpactHop(hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], intersects: number[]): Observable<AssetBrowserResponseModel> {
+    public getImpactHop(hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, includeHierarchyBadges: boolean, assets: AssetBrowserApiHopAssetRequestModel[], intersects: number[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/hop`;
 
         return this.http.post(url, {
             assets: assets,
             direction: direction,
             hierarchyKey: hierarchyKey,
+            includeHierarchyBadges,
             intersects,
             predicateUid
         }).pipe(
