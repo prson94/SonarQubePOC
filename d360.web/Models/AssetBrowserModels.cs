@@ -253,6 +253,7 @@ namespace d360.web.Models
         public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
         public AssetBrowserApiHopDirection direction { get; set; }
         public string hierarchyKey { get; set; }
+        public bool includeHierarchyBadges { get; set; }
         public List<long> intersects { get; set; }
         public Guid predicateUid { get; set; }
     }

@@ -195,7 +195,7 @@ namespace d360.web.Controllers.V2
             {
                 var showResources = SettingsRepository.GetSettingValue<bool>(Setting.ShowResources);
 
-                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, null, null, @isAdmin";
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeHierarchyBadges, @includeOwnershipBadges, @includeRelationshipBadges, @direction, null, null, @isAdmin";
                 var assets = new List<AssetBrowserApiHopAssetRequestModel> { new AssetBrowserApiHopAssetRequestModel { Uid = request.uid } };
                 var reader = await Company.QueryMultipleAsync(
                     sql,
@@ -205,7 +205,8 @@ namespace d360.web.Controllers.V2
                         resourceId = Company.CurrentResourceID,
                         hopCount = request.hopCount,
                         intersects = new List<long>().AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
-                        includeOwnershipBadges = showResources,
+						includeHierarchyBadges = true,
+						includeOwnershipBadges = showResources,
                         includeRelationshipBadges = true,
                         direction = "A",
                         isAdmin = Company.CurrentResourceIsAdmin
@@ -258,7 +259,7 @@ namespace d360.web.Controllers.V2
 				{
 					hopModel.intersects = new List<long>();
 				}
-                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeHierarchyBadges, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -267,6 +268,7 @@ namespace d360.web.Controllers.V2
                         resourceId = Company.CurrentResourceID,
                         hopCount = 1,
                         intersects = hopModel.intersects.AsTableValuedParameter("dbo.Ids", new List<string> { "Id" }),
+						includeHierarchyBadges = hopModel.includeHierarchyBadges,
                         includeOwnershipBadges = showResources,
                         includeRelationshipBadges = true,
                         direction = hopModel.direction == AssetBrowserApiHopDirection.Backward ? "B" : "F",
