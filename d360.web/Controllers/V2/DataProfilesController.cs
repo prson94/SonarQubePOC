@@ -183,7 +183,7 @@ namespace d360.web.Controllers.V2
         {
             if (string.IsNullOrWhiteSpace(profileIdentifier))
             {
-               return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidProfileIdentifier);
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.InvalidProfileIdentifier);
             }
 
             if (queryParams.Any(qp => qp.Key.ToLower() == "_assetuid"))
@@ -955,6 +955,11 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.TypeQualifierInvalid)).ConfigureAwait(false);
                 }
 
+                if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, String.Format(DataProfileAPIMessages.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
+                }
+
                 if (minConfidence <= 0 || minConfidence > 1)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.MinConfidenceInvalid)).ConfigureAwait(false);
@@ -1016,11 +1021,11 @@ namespace d360.web.Controllers.V2
             }
 
             var dupRecords = models.GroupBy(i => new { i.assetUid, i.profileSetDate }).Where(i => i.Count() > 1).Select(i => new { keyFields = i.Key, Count = i.Count() }).ToList();
-            
+
             if (dupRecords.Any())
             {
                 var ErrorMessage = string.Format(DataProfileAPIMessages.DuplicateRecordBatchProfile, string.Join(", ", dupRecords.Select(i => $"(AssetUid: {i.keyFields.assetUid}, ProfileSetDate: {i.keyFields.profileSetDate.Date: yyyy-MM-dd})")));
-                
+
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ErrorMessage);
             }
 
@@ -1042,7 +1047,7 @@ namespace d360.web.Controllers.V2
 
                 var profileSetDate = model.profileSetDate.Date;
                 var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && DbFunctions.TruncateTime(x.ProfileSetDate) == profileSetDate);
-               
+
                 //check insert
                 if (recordExists && IsInsert)
                 {
@@ -1066,7 +1071,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-                
+
                 if (!isValid)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, validationResults.First().ErrorMessage);
@@ -1142,7 +1147,7 @@ namespace d360.web.Controllers.V2
             }
 
             AssetDataProfile dataprofile = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).OrderByDescending(x => x.ProfileSetDate).FirstOrDefault();
-           
+
             if (dataprofile == null || similarType.ToLowerInvariant() == "structure" && dataprofile.StructureSignature == null || similarType.ToLowerInvariant() == "data" && dataprofile.DataSignature == null)
             {
                 return new WorkHttpStatus(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(DataProfileAPIMessages.NoSimilarTypeForAssetUid, similarType, assetUid));
@@ -1387,7 +1392,7 @@ namespace d360.web.Controllers.V2
 
                 var queryParams = Request.GetQueryNameValuePairs();
                 var responseModels = await SemanticsRepository.GetSemanticVersionsByQualifierAsync(qualifier, queryParams, cancellationToken);
-                
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModels));
             }
             catch (GenericException ex)

@@ -332,7 +332,7 @@
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="SemanticTypeAssetExportFilename" xml:space="preserve">
-    <value>Filtered Asset list for {0} {1}</value>
+    <value>Filtered Asset list for {0} {1}.xlsx</value>
     <comment>Used for semantic type asset list export</comment>
   </data>
   <data name="Similar" xml:space="preserve">
@@ -387,5 +387,8 @@
   <data name="ErrorOnRequest" xml:space="preserve">
     <value>Error on request.</value>
     <comment>Used for LD Flags</comment>
+  </data>
+  <data name="TypeQualifierNotFound" xml:space="preserve">
+    <value>Type Qualifier '{0}' does not exist</value>
   </data>
 </root>
