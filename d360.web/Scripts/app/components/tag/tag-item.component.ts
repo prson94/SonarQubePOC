@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -26,6 +26,8 @@ import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../asset
 import { FieldType } from '../../models/fieldtype-api.model';
 import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
 import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
+import { Table } from 'primeng/table';
+import { SearchService } from '../../services/search.service';
 
 
 @Component({
@@ -37,6 +39,7 @@ import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
 })
 
 export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy {
+    @ViewChild('dt') table: Table;
     routeParamsSubscription: any;
     tagUid: number;
     tag: TagType;
@@ -103,6 +106,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     constructor(private route: ActivatedRoute,
         private uiAdvancedFiltering: UiAdvancedFiltering,
+        private searchService: SearchService,
         private router: Router,
         private loc: Location,
         private dataProfileService: DataProfileService,
@@ -132,6 +136,10 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         if (this.selection != null && this.sidePanelTab === 'dataprofile') {
             return this.selection.HasProfiling;
         }
+    }
+
+    onSearch(searchString: string): void {
+        this.searchService.serachTableLocally(this.table, searchString);
     }
 
     getFilterValues(): Observable<LookupValuesAPIModel> {

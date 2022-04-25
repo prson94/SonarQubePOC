@@ -28,6 +28,7 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
 import { SemanticsModule } from '../semantic/semantics.module';
 import { TooltipModule } from 'primeng/tooltip';
 import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
+import { SearchFieldModule } from '../shared/controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -56,6 +57,7 @@ import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advance
         TaggedAssetDetailModule,
         SemanticsModule,
         AdvancedFiltersModule,
+        SearchFieldModule,
         
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        
