@@ -25,6 +25,7 @@ import { tap } from 'rxjs/operators';
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
+import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
 
 
 @Component({
@@ -84,7 +85,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             RemovePopulatedOperator: true
         },
         {
-            Name: 'AddedBy',
+            Name: 'AddedByUid',
             FriendlyName: 'Added By',
             Type: new FieldType("Lookup"),
             Category: "",
@@ -134,21 +135,19 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     getFilterValues(): Observable<LookupValuesAPIModel> {
-        const addedBy: string[] = this.tagUsage.map((taggedAsset) => {
-            return taggedAsset.AddedBy;
+        const addedBy: {name: string, value: string}[] = this.readOnlyFullListOfTagUsage.map((taggedAsset: TagDetail) => {
+            return {name: taggedAsset.AddedBy, value: taggedAsset.AddedByUid};
         });
-        const uniqueAddedBy = addedBy.filter((addedByItem, index) => {
-            return addedBy.indexOf(addedByItem) === index;
-        });
-        if(uniqueAddedBy.length === 1 && uniqueAddedBy[0] === '') {
+        const uniqAddedBy = _uniqWith(addedBy, _isEqual);
+        if(uniqAddedBy.length === 1 && uniqAddedBy[0].name === '') {
             return of({
                 items: [],
                 count: 0
             });
         } else {
             return of({
-                items: uniqueAddedBy,
-                count: uniqueAddedBy.length
+                items: uniqAddedBy,
+                count: uniqAddedBy.length
             });
         }
     }
@@ -298,6 +297,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             } else {
                 tagDetail['AddedBy'] = ``;
             }
+            tagDetail['AddedByUid'] = `${selectedTag?.CreatedByUid}`;
             tagDetail['CreatedOn'] = `${selectedTag?.CreatedOn}`;
         });
     }
