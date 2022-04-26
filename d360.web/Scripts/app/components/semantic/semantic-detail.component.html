@@ -85,7 +85,7 @@
                             </div>
                             <div class="row {{(isSidePanel ? '' : 'definition-panel')}}">
                                 <div class="semantic-field">
-                                    <label class="ig-label" style="margin-right:5px">Semantic Source</label>
+                                    <label class="ig-label" style="margin-right:5px" i18n>Semantic Source</label>
                                     <div class="ig-value">{{sourceMap.get(semanticDetails.source)}}</div>
                                 </div>
                             </div>
@@ -231,7 +231,7 @@
 
 <ng-template #validValuesTemplate>
     <div class="semantic-field">
-        <label class="ig-label" style="margin-right:5px">Valid Values</label>
+        <label class="ig-label" style="margin-right:5px" i18n>Valid Values</label>
         <div *ngIf="!semanticDetails.validList || semanticDetails?.validList.length==0">
             ---
         </div>
@@ -252,7 +252,7 @@
 
 <ng-template #invalidValuesTemplate>
     <div class="semantic-field">
-        <label class="ig-label" style="margin-right:5px">Invalid Values</label>
+        <label class="ig-label" style="margin-right:5px" i18n>Invalid Values</label>
         <div *ngIf="!semanticDetails.invalidList || semanticDetails?.invalidList.length==0">
             ---
         </div>
@@ -274,9 +274,9 @@
 <ng-template #validLocalesTemplate>
     <div class="semantic-field">
         <label class="ig-label" style="margin-right:5px">
-            Valid Locales
+            <ng-container i18n>Valid Locales</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="This Semantic Type will be used to classify assets when the language and region is one of the specified Locales entered in this field." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="This Semantic Type will be used to classify assets when the language and region is one of the specified Locales entered in this field." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div *ngIf="!semanticDetails.validLocales || semanticDetails?.validLocales.length==0">
@@ -289,8 +289,8 @@
             <div *ngIf="semanticDetails?.validLocales.length > 1">
                 <ul class="valueList">
                     <li *ngFor="let v of semanticDetails.validLocales|slice:0:validLocalesToShow let i=index">{{v}}</li>
-                    <li *ngIf="semanticDetails.validLocales.length > 5 && validLocalesToShow < semanticDetails.validLocales.length" (click)="validLocalesToShow = semanticDetails.validLocales.length" class="showMore">Show more...</li>
-                    <li *ngIf="semanticDetails.validLocales.length > 5 && validLocalesToShow == semanticDetails.validLocales.length" (click)="validLocalesToShow = 5" class="showMore">Show less...</li>
+                    <li *ngIf="semanticDetails.validLocales.length > 5 && validLocalesToShow < semanticDetails.validLocales.length" (click)="validLocalesToShow = semanticDetails.validLocales.length" class="showMore" i18n>Show more...</li>
+                    <li *ngIf="semanticDetails.validLocales.length > 5 && validLocalesToShow == semanticDetails.validLocales.length" (click)="validLocalesToShow = 5" class="showMore" i18n>Show less...</li>
                 </ul>
             </div>
         </div>
@@ -300,9 +300,9 @@
 <ng-template #minSamplesTemplate>
     <div class="semantic-field">
         <label class="ig-label" style="margin-right:5px">
-            Minimum Samples
+            <ng-container i18n>Minimum Samples</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="In order for this Semantic Type to be considered the data set must contain at least the number of records specified here." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="In order for this Semantic Type to be considered the data set must contain at least the number of records specified here." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div class="ig-value" *ngIf="!semanticDetails.minSamples">---</div>
@@ -313,9 +313,9 @@
 <ng-template #headerRegExpTemplate>
     <div>
         <label class="ig-label" style="margin-right:5px">
-            Header Regular Expression
+            <ng-container i18n>Header Regular Expression</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="Used to check the heading of the data set in order to classify it with this Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="Used to check the heading of the data set in order to classify it with this Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div class="ig-value" *ngIf="!semanticDetails.headerRegExps">---</div>
@@ -326,9 +326,9 @@
 <ng-template #headerConfidenceTemplate>
     <div>
         <label class="ig-label" style="margin-right:5px">
-            Header Confidence
+            <ng-container i18n>Header Confidence</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="Enter the percentage confidence needed to consider the Header Filters in determining the Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="Enter the percentage confidence needed to consider the Header Filters in determining the Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div class="ig-value" *ngIf="!semanticDetails.headerRegExps">---</div>
@@ -339,9 +339,9 @@
 <ng-template #regularExpressionTemplate>
     <div>
         <label class="ig-label" style="margin-right:5px">
-            Regular Expression
+            <ng-container i18n>Regular Expression</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="Enter the pattern of the data for this semantic type in the form of a regular expression." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="Enter the pattern of the data for this semantic type in the form of a regular expression." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div class="ig-value">{{semanticDetails.regExpReturned}}</div>
@@ -351,9 +351,9 @@
 <ng-template #minMaxPresentTemplate>
     <div>
         <label class="ig-label" style="margin-right:5px">
-            Minimum Maximum Present
+            <ng-container i18n>Minimum Maximum Present</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="Indicates that both the minimum and maximum value must be present in the data set in order for the Semantic Type to be recognized." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="Indicates that both the minimum and maximum value must be present in the data set in order for the Semantic Type to be recognized." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div *ngIf="!semanticDetails.minMaxPresent" class="ig-value">---</div>
@@ -366,9 +366,9 @@
 <ng-template #minTemplate>
     <div class="semantic-field">
         <label class="ig-label" style="margin-right:5px">
-            Minimum
+            <ng-container i18n>Minimum</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="This is the lowest value that is considered valid for this semantic type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="This is the lowest value that is considered valid for this semantic type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div *ngIf="!semanticDetails.minimum" class="ig-value">---</div>
@@ -379,9 +379,9 @@
 <ng-template #maxTemplate>
     <div class="semantic-field">
         <label class="ig-label" style="margin-right:5px">
-            Maximum
+            <ng-container i18n>Maximum</ng-container>
             <span class="tooltip-icon">
-                <i class="fa fa-question-circle" pTooltip="This is the highest value that is considered valid for this semantic type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+                <i class="fa fa-question-circle" i18n-pTooltip pTooltip="This is the highest value that is considered valid for this semantic type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
             </span>
         </label>
         <div *ngIf="!semanticDetails.maximum" class="ig-value">---</div>

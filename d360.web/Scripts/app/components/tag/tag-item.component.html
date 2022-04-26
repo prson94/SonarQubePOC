@@ -50,16 +50,18 @@
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'TagsAsString'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AddedBy'" style="width: 15%">
-                            Added By
+                            <ng-container i18n>Added By</ng-container>
                             <i class="helper fa fa-question-circle" 
+                               i18n-pTooltip
                                pTooltip="The user who added the <b>{{tag.Value}}</b> tag to this asset"
                                tooltipStyleClass="ig-tooltip ig-tooltip-medium"
                                [escape]="false"></i>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AddedBy'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'CreatedOn'" style="width: 20%">
-                            Date Added
+                            <ng-container i18n>Date Added</ng-container>
                             <i class="helper fa fa-question-circle" 
+                               i18n-pTooltip
                                pTooltip="The date on which the user added the <b>{{tag.Value}}</b> tag to this asset"
                                tooltipStyleClass="ig-tooltip ig-tooltip-medium"
                                [escape]="false"></i>

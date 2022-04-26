@@ -39,7 +39,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Responsibilities;
         this.adminHeading = StringConstants.SubArea_Security;
-        this.tabTitle = "Responsibility Types";
+        this.tabTitle = $localize`Responsibility Types`;
         this.theDeleteCallback = this.doDelete.bind(this);
     }
 
@@ -100,10 +100,10 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     doDelete() {
         this.responsibilityTypeService.deleteResponsibilityType(this.selectedRow.uid, true).subscribe((res) => {
             if (res && res.Success) {
-                this.messagesService.showInfoMessage("Success", "Item deleted successfully");
+                this.messagesService.showInfoMessage($localize`Success`, $localize`Item deleted successfully`);
             }
             else {
-                this.messagesService.showError("Error", "An error occurred");
+                this.messagesService.showError($localize`Error`, $localize`An error occurred`);
             }
             this.formMode = FormMode.Default;
             this.selectedRow = null;

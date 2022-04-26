@@ -42,11 +42,11 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     preselectThemeName: string = "";
 
     menuItemsDefaultOptions = [
-        { title: 'Download' },
-        { title: 'Edit' },
-        { title: 'Duplicate' },
-        { title: 'Set as Current Theme' },
-        { title: 'Delete' },
+        { title: $localize`Download` },
+        { title: $localize`Edit` },
+        { title: $localize`Duplicate` },
+        { title: $localize`Set as Current Theme` },
+        { title: $localize`Delete` },
     ];
 
     constructor(
@@ -118,19 +118,19 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         this.selectedRow = item;
         var value = $event.value ?? $event;
         switch (value) {
-            case 'Edit':
+            case $localize`Edit`:
                 this.isEditorVisible = true;
                 break;
-            case 'Delete':
+            case $localize`Delete`:
                 this.showDelete = true;
                 break;
-            case 'Duplicate':
+            case $localize`Duplicate`:
                 this.duplicateSelectedTheme();
                 break;
-            case 'Download':
+            case $localize`Download`:
                 this.download();
                 break;
-            case 'Set as Current Theme':
+            case $localize`Set as Current Theme`:
                 this.isSetCurrentThemeVisible = true;
                 break;
         }
@@ -300,7 +300,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
                 this.checkUploadTheme();
             }
             catch {
-                var error = { error: `Cannot upload file because this is not a valid D360 Govern branding JSON definition` };
+                var error = { error: $localize`Cannot upload file because this is not a valid D360 Govern branding JSON definition` };
                 this.showHttpErrorMessage(this.messagesService, error as HttpErrorResponse);
             }
         };

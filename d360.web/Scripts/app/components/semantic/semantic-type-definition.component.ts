@@ -111,7 +111,7 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
                 this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`);
-                let assetstab = new SecondaryNavItem(`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount ,2);
+                let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
 
                 this.secondaryNavService.showItem(assetstab);
 

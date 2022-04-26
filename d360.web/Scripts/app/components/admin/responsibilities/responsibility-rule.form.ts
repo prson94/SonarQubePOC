@@ -193,7 +193,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 value: mappedValue
             })
         });
-        mapped.unshift({ label: "Choose...", value: null });
+        mapped.unshift({ label: this.chooseLabel, value: null });
         return mapped;
     }
 
@@ -539,7 +539,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 item.IsBool = false;
                 item.ValueOptions = d;
                 item.IntersectTypeValueOptions = d;
-                let excluded = item.IntersectTypeValueOptions.findIndex((a) => a.label === "Choose...");
+                let excluded = item.IntersectTypeValueOptions.findIndex((a) => a.label === this.chooseLabel);
                 if (excluded < 0) {
                     item.IntersectTypeValueOptions.unshift({ label: this.chooseLabel, value: null, assetUid: null });
                 }

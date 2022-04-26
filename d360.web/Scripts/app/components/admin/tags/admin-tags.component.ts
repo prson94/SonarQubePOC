@@ -51,28 +51,28 @@ export class AdminTagsComponent extends AdminBaseComponent {
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'Value',
-            FriendlyName: 'Name',
+            FriendlyName: $localize`Name`,
             Type: new FieldType("Text"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'UseCount',
-            FriendlyName: 'Use Count',
+            FriendlyName: $localize`Use Count`,
             Type: new FieldType("Number"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
-            FriendlyName: 'Date Created',
+            FriendlyName: $localize`Date Created`,
             Type: new FieldType("DateTime"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedBy',
-            FriendlyName: 'Created By',
+            FriendlyName: $localize`Created By`,
             Type: new FieldType("Text"),
             Category: "",
             RemovePopulatedOperator: true

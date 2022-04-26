@@ -16,6 +16,7 @@
                                pInputText
                                size="100"
                                (input)="dt.filterGlobal($event.target.value, 'contains')"
+                               i18n-placeholder
                                placeholder="Search..."
                                class="grid-simple-filter">
                     </div>
@@ -46,11 +47,11 @@
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'CreatedOn'" style="width: 20%">
-                                Date Created
+                                <ng-container i18n>Date Created</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedOn'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'CreatedBy'" style="width: 20%">
-                                Created By
+                                <ng-container i18n>Created By</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedBy'"></d3s-sortIcon>
                             </th>
                             <th style="width: 110px"></th>
