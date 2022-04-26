@@ -86,6 +86,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() supportsPrimaryFilterOption: boolean = false;
 
     @Input() fields: FieldTypeAPIModelField[] = [];
+    @Input() allowSingleSegmentPath: boolean = true;
 
     private currentType: string = "Empty";
 
@@ -203,7 +204,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#region load functions
 
     private getFieldTypeEditorHandler = (responseGetFieldTypeEditor: FieldTypeAPIModelField) => {
-
         this.currentType = this.currentFieldType(responseGetFieldTypeEditor);
         let DBType = this.currentType;
         this.currentType = this.checkCurrentTypeName(this.currentType);
