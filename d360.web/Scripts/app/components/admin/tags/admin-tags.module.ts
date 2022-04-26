@@ -27,6 +27,7 @@ import { TagUsageInfoModule } from './tags-usage-info.module';
 import { AdminTagsActionModule } from './admin-tags-action.module';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [
@@ -41,6 +42,7 @@ import { SearchFieldModule } from '../../shared/controls/search-field/search-fie
         InputTextModule,
         SharedModule,
         TableModule,
+        TooltipModule,
 
         //d3s                
         CoreModule,                
