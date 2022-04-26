@@ -56,18 +56,20 @@
                                 <div *ngIf="hasValidCounts" class="summaryRow">
                                     <label class="ig-label" style="margin-right:5px">Semantic Type:</label>                                    
                                     <div *ngIf="!dataProfile.typeQualifier">
-                                        <div *ngIf="isAdmin">
+                                        <div *ngIf="isAdmin" style="margin-bottom: 8px;margin-top: 2px;">
                                             <a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> Create New</a>
                                         </div>
-                                        <div *ngIf="!isAdmin">
+                                        <div *ngIf="!isAdmin" style="margin-bottom: 10px;">
                                             ---
                                         </div>
                                     </div>
                                     <div *ngIf="dataProfile.typeQualifier" class="ig-value">
-                                        <div *ngIf="!hasDefinedType">
-                                            <span>{{dataProfile.typeQualifier}}</span> 
-                                            <div *ngIf="semanticTypeChecked && isAdmin">
-                                                <span style="padding-left:5px"><i class="fa fa-exclamation-triangle"></i> | <a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> Create New</a></span>
+                                        <div *ngIf="!hasDefinedType" style="display: flex">
+                                            <div style="flex:1; word-wrap:break-word;">
+                                                <span>{{dataProfile.typeQualifier}}</span>
+                                            </div>
+                                            <div *ngIf="semanticTypeChecked && isAdmin" style="flex:0 0 110px">
+                                                <span class="link-Separator"> | </span><span><a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> Create New</a></span>
                                             </div>
                                         </div>
                                         <div *ngIf="hasDefinedType">
@@ -547,7 +549,7 @@
 
 <ng-template #semanticTooltip>
     <span *ngIf="hasDefinedType" class="tooltip-icon" style="margin-left:8px"
-          pTooltip="Name: {{semanticType.name}}<br/>Qualifier: {{semanticType.qualifier}}<br/><a (click)='alert()'>Click here for more info</a>"
+          pTooltip="Name: {{semanticType.name}}<br/>Qualifier: {{semanticType.qualifier}}"
           [escape]="false"
           [hideDelay]="1000" 
           tooltipPosition="top" 
