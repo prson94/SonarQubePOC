@@ -140,6 +140,15 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("createdOn", "t.CreatedOn", SqlFieldType.DateTime));
                 allowedDefaultFields.Add(new DefaultFilter("createdBy", "grc.FirstName + ' ' +grc.LastName", SqlFieldType.Text));
             }
+
+            if (parseType == FilterExpressionParseType.TagDetails)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("displayPath", "DisplayPath", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("assetType", "AST.Name", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "AT.CreatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("addedByUid", "grc.uid", SqlFieldType.Guid));
+            }
         }
 
         public void OverrideAllowedDefaultFields(List<DefaultFilter> defaultFilters)
