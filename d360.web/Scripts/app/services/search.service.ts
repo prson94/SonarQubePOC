@@ -9,6 +9,8 @@ import { SettingsHelper, SearchType } from '../models/settings.model';
 import { IndexableType, IndexableStatus } from "../models/search-admin.model";
 import { FeatureFlags, FeatureFlagsService } from './featureflags.service';
 import { ROUTE_INDEPENDENT_QUERY } from '../http-interceptors';
+import { Table } from 'primeng/table';
+import { FilterMatchMode } from 'primeng/api';
 
 @Injectable({
     providedIn: 'root'
@@ -24,6 +26,19 @@ export class SearchService extends BaseObservableService  {
         result.Matches = 0;
         result.ElapsedMS = { Query: 0, Augment: 0 };
         return result;
+    }
+
+    serachTableLocally(table: Table, searchString: string): void {
+        if(searchString.startsWith('*') && !searchString.endsWith('*')) {
+            const refinedSearchString = searchString.replace(/^\*/i, '');
+            table.filterGlobal(refinedSearchString, FilterMatchMode.ENDS_WITH);
+        } else if (!searchString.startsWith('*') && searchString.endsWith('*')) {
+            const refinedSearchString = searchString.replace(/\*$/i, '');
+            table.filterGlobal(refinedSearchString, FilterMatchMode.STARTS_WITH);
+        } else {
+            const refinedSearchString =  searchString.replace(/(^\*|\*$)/ig, '');
+            table.filterGlobal(refinedSearchString, FilterMatchMode.CONTAINS);
+        }
     }
 
     getSearchResultsByQuery(query: SearchQuery): Observable<SearchResults> {

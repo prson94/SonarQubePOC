@@ -639,8 +639,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         let loadedData = [];
 
         res.items.forEach((str) => {
-            if (typeof str === 'object' && str.value && str.name && str.count) {
-                loadedData.push({ title: str.name, value: str.value, count: str.count });
+            if (typeof str === 'object' && str.value && str.name) {
+                loadedData.push({ title: str.name, value: str.value, count:str.count });
             }
             else {
                 loadedData.push({ title: str, value: str });

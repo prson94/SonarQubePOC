@@ -11,14 +11,12 @@
             </header>
             <div class="grid-actions-header">
                 <div class="simple-search">
-                    <input [(ngModel)]="filters.globalSearch"
-                           type="text"
-                           pInputText
-                           i18n-placeholder
-                           size="100"
-                           (input)="dt.filterGlobal($event.target.value, 'contains')"
-                           placeholder="Search..."
-                           class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
+                        <ig-search-field mode="Keypress"
+                                         [debounce]="600"
+                                         (onSearch)="onSearch($event)"
+                                         [(ngModel)]="filters.globalSearch"
+                                         [infoTooltip]="simpleSearchTooltipHTML">
+                        </ig-search-field>
                 </div>
                 <advanced-filtering  [loadIdentifier]="'TaggedAssets'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
             </div>
@@ -26,7 +24,7 @@
                      [value]="tagUsage"
                      selectionMode="single"
                      [metaKeySelection]="true"
-                     [globalFilterFields]="['DisplayPath','AssetType','TagsAsString']"
+                     [globalFilterFields]="['DisplayPath','AssetType','TagsAsString', 'AddedBy', 'CreatedOn']"
                      sortField="DisplayValue"
                      [sortOrder]="1"
                      [pageLinks]="3"
