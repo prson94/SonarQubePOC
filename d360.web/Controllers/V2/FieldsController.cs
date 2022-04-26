@@ -229,6 +229,8 @@ namespace d360.web.Controllers.V2
 				IEnumerable<TypeIdentifierInfoModel> relationshipTypeIdentifierInfoModels = null;
 				TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel = null;
 
+				AssetType assetType = null;
+
 				if (model.ActionTypeUid.HasValue)
 				{
 					actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
@@ -244,6 +246,7 @@ namespace d360.web.Controllers.V2
 				{
 					assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
 					typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
+					assetType = AssetRepository.GetAssetTypeByUID(model.AssetTypeUid.Value);
 
 					if (typeIdentifierInfoModel == null)
 					{
@@ -329,7 +332,16 @@ namespace d360.web.Controllers.V2
                     {
                         if (ft.Type.Path.Definition.AssetTypeUid != null)
                         {
-                            var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
+	                        switch (assetType.Class)
+							{
+								case AssetTypeClass.TechnicalAsset:
+								case AssetTypeClass.BusinessAsset:
+									break;
+								default:
+									throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
+										$"Path field could not change selected segment if asset type is not technical or business class.");
+							}
+							var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
                             var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
                             if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
                             {

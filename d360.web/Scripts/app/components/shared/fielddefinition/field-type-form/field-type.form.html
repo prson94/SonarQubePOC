@@ -99,30 +99,28 @@
                             <div class="FieldNameRequired">Sort Order</div>
                             <div class="sort-container">
                                 <input name="sortorder"
-                                    pInputText
-                                    type="number"
-                                    [(ngModel)]="model.FieldType.Type[currentType].SortOrder"
-                                    [disabled]="!model.FieldType.Type[currentType].IsListable"
-                                    [ngStyle]="{'background':(!model.FieldType.Type[currentType].IsListable ? '#EFEFEF': '')}"
-                                    [igDataCy]="'FieldType_Field_Order'"
-                                    style="width: 25%; display: block;" />
+                                       pInputText
+                                       type="number"
+                                       [(ngModel)]="model.FieldType.Type[currentType].SortOrder"
+                                       [disabled]="!model.FieldType.Type[currentType].IsListable"
+                                       [ngStyle]="{'background':(!model.FieldType.Type[currentType].IsListable ? '#EFEFEF': '')}"
+                                       [igDataCy]="'FieldType_Field_Order'"
+                                       style="width: 25%; display: block;" />
 
-                                <p-radioButton 
-                                    igRadioButton 
-                                    name="sortByAscending" 
-                                    [(ngModel)]="model.FieldType.Type[currentType].SortByAscending" 
-                                    [disabled]="!model.FieldType.Type[currentType].IsListable"
-                                    [value]="true" 
-                                    label="Ascending">
+                                <p-radioButton igRadioButton
+                                               name="sortByAscending"
+                                               [(ngModel)]="model.FieldType.Type[currentType].SortByAscending"
+                                               [disabled]="!model.FieldType.Type[currentType].IsListable"
+                                               [value]="true"
+                                               label="Ascending">
                                 </p-radioButton>
-                                
-                                <p-radioButton 
-                                    igRadioButton 
-                                    name="sortByAscending"
-                                    [(ngModel)]="model.FieldType.Type[currentType].SortByAscending" 
-                                    [disabled]="!model.FieldType.Type[currentType].IsListable"
-                                    [value]="false" 
-                                    label="Descending">
+
+                                <p-radioButton igRadioButton
+                                               name="sortByAscending"
+                                               [(ngModel)]="model.FieldType.Type[currentType].SortByAscending"
+                                               [disabled]="!model.FieldType.Type[currentType].IsListable"
+                                               [value]="false"
+                                               label="Descending">
                                 </p-radioButton>
                             </div>
                         </div>
@@ -143,7 +141,7 @@
                                     [disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
                     </div>
                     <div>
-                        <p-checkbox *ngIf="showShowInDetailTile" 
+                        <p-checkbox *ngIf="showShowInDetailTile"
                                     binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].IsDisplayable"
                                     [igDataCy]="'FieldType_Field_IsDisplayable'"
@@ -1013,7 +1011,7 @@
         </simple-accordion>
 
         <!-- asset path -->
-        <simple-accordion *ngIf="currentType == 'Path'"
+        <simple-accordion *ngIf="currentType == 'Path' && allowSingleSegmentPath"
                           header="Asset Path"
                           active="false">
             <div class="row">
