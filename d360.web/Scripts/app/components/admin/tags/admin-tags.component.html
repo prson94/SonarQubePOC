@@ -10,14 +10,12 @@
             <ng-container *ngIf="!isLoading">
                 <div class="grid-actions-header">
                     <div class="simple-search">
-                        <input [(ngModel)]="filters.globalSearch"
-                               type="text"
-                               [hidden]="!showSimpleFilter"
-                               pInputText
-                               size="100"
-                               (input)="dt.filterGlobal($event.target.value, 'contains')"
-                               placeholder="Search..."
-                               class="grid-simple-filter">
+                        <ig-search-field mode="Keypress"
+                                         [debounce]="600"
+                                         (onSearch)="onSearch($event)"
+                                         [(ngModel)]="filters.globalSearch"
+                                         [infoTooltip]="simpleSearchTooltipHTML">
+                        </ig-search-field>
                     </div>
                     <advanced-filtering  [loadIdentifier]="'AdminTags'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 </div>

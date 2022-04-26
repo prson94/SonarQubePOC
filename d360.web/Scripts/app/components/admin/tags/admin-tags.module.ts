@@ -26,6 +26,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TagUsageInfoModule } from './tags-usage-info.module';
 import { AdminTagsActionModule } from './admin-tags-action.module';
 import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/advanced-filtering.module';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 
 @NgModule({
     imports: [
@@ -51,6 +52,7 @@ import { AdvancedFiltersModule } from '../../assets-grid/advanced-filtering/adva
         SiteModalModule,
         TagUsageInfoModule,
         AdvancedFiltersModule,
+        SearchFieldModule,
         AdminTagsActionModule
     ],
     declarations: [

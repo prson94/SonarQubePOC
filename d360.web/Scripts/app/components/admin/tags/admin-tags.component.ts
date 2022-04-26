@@ -16,6 +16,7 @@ import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
+import { SearchService } from '../../../services/search.service';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -81,6 +82,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     constructor(
         private uiAdvancedFiltering: UiAdvancedFiltering,
+        private searchService: SearchService,
         private router: Router,
         private tagsService: TagService,
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -124,6 +126,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
     advancedFiltersChanged(event: Filters): void {
         this.advancedFilter = event.filter;
         this.tags = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTags, event);
+    }
+
+    onSearch(searchString: string): void {
+        this.searchService.serachTableLocally(this.tableEl, searchString);
     }
 
     getTags() {

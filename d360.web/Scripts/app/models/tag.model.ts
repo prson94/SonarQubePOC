@@ -41,6 +41,7 @@ export enum TagTypeState {
 
 export class TagDetail {
     AddedBy?: string;
+    AddedByUid?: string;
     DisplayValue: string;
     AssetId: number;
     AssetUid: string;

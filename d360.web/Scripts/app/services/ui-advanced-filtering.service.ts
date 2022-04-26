@@ -37,7 +37,7 @@ export class UiAdvancedFiltering {
     // should return advanced filter connectin operator 'or', 'and' or null
     findOutTheConnectingOperator(filters: Filters): string {
         const regexpNestedGroup = /\)\)\s(\w*)/; // match: )) word
-        const regexpOneGroup = /\)\)\s(\w*)/; // match: ) word
+        const regexpOneGroup = /\)\s(\w*)/; // match: ) word
         const match = filters.filter.match(regexpNestedGroup) || filters.filter.match(regexpOneGroup);
         if (match) {
             return match[1];
