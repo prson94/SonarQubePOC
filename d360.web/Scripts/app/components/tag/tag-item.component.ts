@@ -71,21 +71,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'DisplayPath',
-            FriendlyName: 'Asset',
+            FriendlyName: $localize`Asset`,
             Type: new FieldType("Path"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'AssetType',
-            FriendlyName: 'Asset Type',
+            FriendlyName: $localize`Asset Type`,
             Type: new FieldType("Path"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'AddedBy',
-            FriendlyName: 'Added By',
+            FriendlyName: $localize`Added By`,
             Type: new FieldType("Lookup"),
             Category: "",
             ValueLoader: this.getFilterValues.bind(this),
@@ -93,7 +93,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         },
         {
             Name: 'CreatedOn',
-            FriendlyName: 'Date Added',
+            FriendlyName: $localize`Date Added`,
             Type: new FieldType("DateTime"),
             Category: "",
             RemovePopulatedOperator: true
