@@ -113,6 +113,8 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         this.value = "";
         this.file = {};
         this.image = {};
+        this.validationMessage = "";
+        this.hasError = false;
         if (this.defaultImage) {
             this.value = this.defaultImage;
         }

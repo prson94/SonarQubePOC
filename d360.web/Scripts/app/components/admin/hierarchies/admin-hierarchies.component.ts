@@ -43,32 +43,6 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     ) {
 
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-
-        this.activatedRoute.parent.url.subscribe((urlPath) => {
-            const url = urlPath[urlPath.length - 1].path;
-
-            if (!url) {
-                console.error('UNSPECIFIED ASSET TYPE FOR HIERARCHY TYPE ADMIN PAGE');
-
-                return;
-            }
-
-            if (url.toUpperCase() == 'TAXONOMIES') {
-                this.assetTypeClass = AssetTypeClass.Model;
-                this.areaName = StringConstants.Section_Models;
-                this.tabTitle = $localize`Model Types`;
-                this.objectType = 'TaxonomyType';
-            }
-            else if (url.toUpperCase() == 'POLICIES') {
-                this.assetTypeClass = AssetTypeClass.Policy;
-                this.areaName = StringConstants.Section_Policies;
-                this.tabTitle = $localize`Policy Types`;
-                this.objectType = 'PolicyType';
-            }
-
-            this.getAssetTypes();
-            this.selectedItemChange();
-        })
     }
 
     selectedItemChange() {
@@ -103,6 +77,32 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
     ngOnInit() {
         this.theDeleteCallback = this.deleteType.bind(this);
+
+        this.activatedRoute.parent.url.subscribe((urlPath) => {
+            const url = urlPath[urlPath.length - 1].path;
+
+            if (!url) {
+                console.error('UNSPECIFIED ASSET TYPE FOR HIERARCHY TYPE ADMIN PAGE');
+
+                return;
+            }
+
+            if (url.toUpperCase() == 'TAXONOMIES') {
+                this.assetTypeClass = AssetTypeClass.Model;
+                this.areaName = StringConstants.Section_Models;
+                this.tabTitle = $localize`Model Types`;
+                this.objectType = 'TaxonomyType';
+            }
+            else if (url.toUpperCase() == 'POLICIES') {
+                this.assetTypeClass = AssetTypeClass.Policy;
+                this.areaName = StringConstants.Section_Policies;
+                this.tabTitle = $localize`Policy Types`;
+                this.objectType = 'PolicyType';
+            }
+
+            this.getAssetTypes();
+            this.selectedItemChange();
+        })
     }
 
     ngOnDestroy() {

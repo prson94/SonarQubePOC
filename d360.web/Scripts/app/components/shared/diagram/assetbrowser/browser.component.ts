@@ -552,8 +552,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let preloadedIntersects = this.helper_GetDiagramIntersectIds(relation.predicateId);
                     let direction = relation.direction;
 
-                    let ancestryMode = (this.displayConfiguration.DiagramType == DiagramType.Impact) ? FilterAncestryMode.NoAncestor : this.displayConfiguration.AncestryMode;
-                    this.browserService.getImpactHop(node.hierarchyKey, relation.predicateUid, direction, assets, preloadedIntersects)
+                    let includeHierarchyBadges = (this.displayConfiguration.DiagramType == DiagramType.Impact);
+                    this.browserService.getImpactHop(node.hierarchyKey, relation.predicateUid, direction, includeHierarchyBadges, assets, preloadedIntersects)
                         .subscribe((response: AssetBrowserResponseModel) => {
 
                             // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.

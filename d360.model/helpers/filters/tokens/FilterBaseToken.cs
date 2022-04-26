@@ -345,7 +345,8 @@ namespace d360.model.helpers.filters
         RelationshipCustomFields,
         CommunityResposibilityResource,
         ComplexLookupField,
-        Semantics
+        Semantics,
+        Tags
     }
 
     public enum SqlFieldType

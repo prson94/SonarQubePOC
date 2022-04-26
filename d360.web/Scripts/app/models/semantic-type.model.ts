@@ -84,6 +84,7 @@ export class SemanticTypeAsset {
     path: string;
     assetTypePath: string;
     confidence: number;
+    effectiveDate: Date;
 }
 
 export class SemanticTypeGetResponse {

@@ -28,5 +28,6 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<DataProfileExportModel>> GetMatchedAssetsForExport(Guid assetUid, string similarType, IEnumerable<KeyValuePair<string, string>> queryParams);
 
         Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false);
+        Task<bool> DoesTypeQualifierExist(string typeQualifier);
     }
 }

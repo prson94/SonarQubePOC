@@ -11,7 +11,7 @@ import { AssetAction, EditFormData, DeleteFormData } from '../../models/secondar
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { TagService } from '../../services/tag.service';
-import { TagType, TagDetail, TagItem } from '../../models/tag.model';
+import { TagType, TagDetail, TagItem, TagDetailResponse } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
@@ -19,14 +19,19 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { DataProfileService } from '../../services/dataprofile.service';
 import { SelectAssetService } from '../../services/select-asset.service';
-import { Subscription } from 'rxjs';
+import { Observable, of, Subscription } from 'rxjs';
 import { AssetDetailClickEvent, LinkClickInterceptor } from '../../services/href-click-service';
+import { tap } from 'rxjs/operators';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { FieldType } from '../../models/fieldtype-api.model';
+import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
 
 
 @Component({
     selector: 'd3s-tag-item',
     providers: [RulesService, PermissionsService, TagService, GridDefinitionService, AuthenticationService, DataProfileService],
     templateUrl: 'tag-item.component.html',
+    styleUrls: ['./tag-item.component.less'],
     host: { 'class': 'gov-detail-page' }
 })
 
@@ -35,8 +40,10 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     tagUid: number;
     tag: TagType;
     tagUsage: TagDetail[];
+    readOnlyFullListOfTagUsage: ReadonlyArray<TagDetail> = [];
     selection: TagDetail;
-
+    advancedFilter: string = '';
+    
     // sidepanel properties
     sidePanelOpen: boolean = false;
     sidePanelTab: string;
@@ -61,8 +68,40 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     private sub: any;
     actions: AssetAction;
 
+    filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
+        {
+            Name: 'DisplayPath',
+            FriendlyName: 'Asset',
+            Type: new FieldType("Path"),
+            Category: "",
+            RemovePopulatedOperator: true
+        },
+        {
+            Name: 'AssetType',
+            FriendlyName: 'Asset Type',
+            Type: new FieldType("Path"),
+            Category: "",
+            RemovePopulatedOperator: true
+        },
+        {
+            Name: 'AddedBy',
+            FriendlyName: 'Added By',
+            Type: new FieldType("Lookup"),
+            Category: "",
+            ValueLoader: this.getFilterValues.bind(this),
+            RemovePopulatedOperator: true
+        },
+        {
+            Name: 'CreatedOn',
+            FriendlyName: 'Date Added',
+            Type: new FieldType("DateTime"),
+            Category: "",
+            RemovePopulatedOperator: true
+        },
+    ]);
 
     constructor(private route: ActivatedRoute,
+        private uiAdvancedFiltering: UiAdvancedFiltering,
         private router: Router,
         private loc: Location,
         private dataProfileService: DataProfileService,
@@ -92,6 +131,31 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         if (this.selection != null && this.sidePanelTab === 'dataprofile') {
             return this.selection.HasProfiling;
         }
+    }
+
+    getFilterValues(): Observable<LookupValuesAPIModel> {
+        const addedBy: string[] = this.tagUsage.map((taggedAsset) => {
+            return taggedAsset.AddedBy;
+        });
+        const uniqueAddedBy = addedBy.filter((addedByItem, index) => {
+            return addedBy.indexOf(addedByItem) === index;
+        });
+        if(uniqueAddedBy.length === 1 && uniqueAddedBy[0] === '') {
+            return of({
+                items: [],
+                count: 0
+            });
+        } else {
+            return of({
+                items: uniqueAddedBy,
+                count: uniqueAddedBy.length
+            });
+        }
+    }
+
+    advancedFiltersChanged(event: Filters): void {
+        this.advancedFilter = event.filter;
+        this.tagUsage = this.uiAdvancedFiltering.runFiltering(this.readOnlyFullListOfTagUsage, event);
     }
 
     selectAsset(event: any) {
@@ -178,17 +242,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                     this.secondaryNavService.showHeader(true);
 
-                    this.tagsService.getTagDetails(this.tag.uid)
-                        .subscribe(data => {
-                            this.tagUsage = data.items;
-                            if (this.tagUsage.length > 0) {
-                                this.selection = this.tagUsage[0];
-                            }
-                            this.tagUsage.forEach(tu => {
-                                tu.TagsAsString = tu.Tags.map(x => x.Value).join('|');
-                            })
-                            this.isLoading = false;
-                        });
+                    this.tagsService.getTagDetails(this.tag.uid).pipe(
+                        tap((tagDetailResponse: TagDetailResponse) => {
+                            this.restoreNecessaryFieldsFromTagToAsset(tagDetailResponse.items);
+                        })
+                    ).subscribe((data: TagDetailResponse): void => {
+                        this.tagUsage = data.items;
+                        if (this.tagUsage.length > 0) {
+                            this.selection = this.tagUsage[0];
+                        }
+                        this.tagUsage.forEach(tu => {
+                            tu.TagsAsString = tu.Tags.map(x => x.Value).join('|');
+                        })
+                        this.readOnlyFullListOfTagUsage = [...this.tagUsage];
+                        this.isLoading = false;
+                    });
 
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
@@ -218,6 +286,22 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     }
 
+    restoreNecessaryFieldsFromTagToAsset(tagDetails: TagDetail[]): void {
+        tagDetails.forEach((tagDetail: TagDetail): void => {
+            const selectedTag = tagDetail?.Tags.find((tag: TagItem) => {
+                return String(tag.uid) === String(this.tagUid);
+            });
+            const addedByFirstName = selectedTag?.CreatedByFirstName;
+            const addedByLastName = selectedTag?.CreatedByLastName;
+            if (addedByFirstName || addedByLastName) {
+                tagDetail['AddedBy'] = `${addedByFirstName} ${addedByLastName}`;
+            } else {
+                tagDetail['AddedBy'] = ``;
+            }
+            tagDetail['CreatedOn'] = `${selectedTag?.CreatedOn}`;
+        });
+    }
+
     buildBreadcrumb() {
         this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', $localize`Tagged Assets`);
 
@@ -238,7 +322,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     export() {
-        this.tagsService.exportTagsByUid(this.tag.uid, this.sort, this.filters);
+        this.tagsService.exportTagsByUid(this.tag.uid, this.sort, this.filters, this.advancedFilter);
     }
 
     setActions() {
@@ -346,7 +430,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 this.tagUsage.forEach(detail => {
                     detail.Tags.forEach(t => {
-                        if (t["uid"] == this.tagUid) {
+                        if (Number(t["uid"]) === Number(this.tagUid)) {
                             t.Value = event.item.Value;
                         }
                     });

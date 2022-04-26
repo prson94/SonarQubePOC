@@ -8,6 +8,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { SemanticType } from '../../../models/semantic-type.model';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
     selector: 'data-profile',
@@ -25,6 +26,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     showMaxValueGraphIcon: boolean;
     showMinValueGraphIcon: boolean;
+    semanticTypeChecked: boolean = false;
+    isAdmin: boolean = false;
 
     constructor(
         private assetService: AssetService,
@@ -32,7 +35,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         protected settingsService: CompanySettingsService,
         private dataProfileService: DataProfileService,
         private cdRef: ChangeDetectorRef,
-        private featureFlagService: FeatureFlagsService
+        private featureFlagService: FeatureFlagsService,
+        private authenticationService: AuthenticationService
     ) {
         super(settingsService);
     }
@@ -97,6 +101,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     matchAssetUid: string = "";
     hasDefinedType: boolean = false;
     semanticType: SemanticType;
+    showEditor: boolean = false;
 
     ngOnInit() {
         this.initialize();
@@ -139,13 +144,25 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     }
                 });
 
+            this.authenticationService.checkCurrentUserAdmin().subscribe((res) => {
+                this.isAdmin = res;
+            });
+
             if (this.dataProfile.typeQualifier && this.featureFlagService.flags[FeatureFlags.SemanticTypesUiFlag]) {
                 this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.dataProfile.typeQualifier}'`).subscribe((s) => {
                     this.semanticType = s.items[0];
                     if (this.semanticType) {
                         this.hasDefinedType = true;
-                    }
-                });
+                    }                    
+                    },
+                    (err) => {
+                        this.hasDefinedType = false;
+                        this.semanticTypeChecked = false;
+                    },
+                    () => {
+                        this.semanticTypeChecked = true;
+                        this.cdRef.markForCheck();
+                    });
             }
         }
 
@@ -764,5 +781,23 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     openSemanticTab() {
         this.secondaryPanelLinkClicked.emit({ semanticType: this.semanticType });
+    }
+
+    onCreateSemantic($event: any) {
+        this.semanticType = $event.item;
+                        
+        if (!this.dataProfile?.typeQualifier) {
+            this.dataProfile.typeQualifier = this.semanticType.qualifier;
+            //need to put the data profile record when no qualifier existed before
+            this.dataProfileService.putDataProfile(this.dataProfile).subscribe(
+                (res) => {
+                    this.hasDefinedType = true;
+                    this.showEditor = false;
+                }
+            );
+        } else {
+            this.hasDefinedType = true;
+            this.showEditor = false;
+        }        
     }
 }

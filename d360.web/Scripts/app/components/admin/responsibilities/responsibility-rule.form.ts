@@ -253,7 +253,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             let selectedFieldType = this.whenFieldTypes.find((f) => f.value === item.FieldTypeID);
             if (selectedFieldType) {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
-                item.FieldTypeName = selectedFieldType.fieldTypeName;
+                item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
                     let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
                     if (excluded < 0) {
@@ -440,16 +440,13 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 AssetTypeUid: this.model.AssetTypeUid,
                 Definition: {
                     When: [],
-                    Then: Object.values(groupBy(
-                        thenTest.StructuredDefinition.Then.Conditions,
-                        (then) => this.getAssigneeTypeUid(then)
-                    )).map((conditions) => (
+                    Then: [
                         {
-                            AssigneeTypeUid: this.getAssigneeTypeUid(conditions[0]),
+                            AssigneeTypeUid: this.getAssigneeTypeUid(thenTest.StructuredDefinition.Then.Conditions[0]),
                             MatchType: thenTest.StructuredDefinition.Then.MatchType as ('and' | 'or'),
-                            Conditions: conditions.map((then) => this.mapToThenV2(then))
+                            Conditions: thenTest.StructuredDefinition.Then.Conditions.map((then) => this.mapToThenV2(then))
                         }
-                    ))
+                    ]
                 }
             })
             .subscribe((response) => {
@@ -464,6 +461,12 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
     }
 
     getAssigneeTypeUid(then: ResponsibilityTypeRelationRuleDefinitionThenItem) {
+        if (then == null) {
+            return this.thenFieldTypes
+                .map((field) => field.assigneeTypeUid)
+                .filter((x) => x != null)[0];
+        }
+        
         const field = this.thenFieldTypes.find((field) => field.value === then.FieldTypeID);
         return field.assigneeTypeUid;
     }
@@ -502,7 +505,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
         if (clearValue !== undefined && clearValue === true) item.Value = "";
         if (selectedFieldType) {
             item.IsBool = false;
-            item.FieldTypeName = selectedFieldType.fieldTypeName;
+            item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
             if (selectedFieldType.isLookup) {
                 let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
                 if (excluded < 0) {

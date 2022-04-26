@@ -60,6 +60,7 @@ export class ProcessDiagramTemplates {
 
     static activity_HeaderPanel(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
+        const maxHeaderTextLength = 200;
 
         function isColorLight(color) {
             const hex = color.replace('#', '');
@@ -71,23 +72,10 @@ export class ProcessDiagramTemplates {
         }
 
         function getGovernanceRoleValue(data: any) {
+            debugger;
             var val = data.governanceDisplayValue as string;
-            if (val) {
-                var hasIcon = !!data.icon;
-                var hasRelationship = +data.relCount > 0;
-                var trimSize = val.length;
-
-                if (hasIcon || hasRelationship)
-                    trimSize = 27;
-
-                if (!hasIcon && !hasRelationship)
-                    trimSize = 30;
-
-                if (hasIcon && hasRelationship)
-                    trimSize = 22;
-
-                if (val.length > trimSize)
-                    return val.substring(0, trimSize - 1) + '...';
+            if (val && val.length > maxHeaderTextLength) {
+                return val.substring(0, maxHeaderTextLength) + '...';
             }
             return val;
         }
@@ -100,7 +88,7 @@ export class ProcessDiagramTemplates {
                 {
                     strokeWidth: 1,
                     minSize: new go.Size(200, NaN),
-                    maxSize: new go.Size(200, 32)
+                    maxSize: new go.Size(200, NaN)
                 },
                 new go.Binding('stroke', 'refItemColor').makeTwoWay(),
                 new go.Binding('fill', 'refItemColor').makeTwoWay()
@@ -135,7 +123,8 @@ export class ProcessDiagramTemplates {
                     textAlign: "left",
                     font: this.textFont,
                     margin: new go.Margin(12, 0, 0, 34),
-                    minSize: new go.Size(160, 24),
+                    minSize: new go.Size(136, 24),
+                    wrap: go.TextBlock.WrapDesiredSize,
                 },
                 new go.Binding("text", "", function (data) {
                     return getGovernanceRoleValue(data);
@@ -150,6 +139,10 @@ export class ProcessDiagramTemplates {
                         return "#202020";
                     }
                     return "white";
+                }),
+                new go.Binding("maxSize", "relCount", function (v) {
+                    if (v > 0) return new go.Size(136, NaN);
+                    return new go.Size(200, NaN);
                 })
             ),
             this.getRelBadge('activity', component)

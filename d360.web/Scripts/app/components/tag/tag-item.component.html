@@ -1,17 +1,27 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="row" *ngIf="!isLoading">
     <div class="col s12" style="display: flex">
-        <div class="tile tile-detail main-panel">
+        <div class="tag-item-tile tile tile-detail main-panel">
             <header class="flex-header">
-                <d3s-tile-actions [hasAdd]="false"
-                                  [hasFilterMode]="true"
-                                  [(filterMode)]="showSimpleFilter"
+                <d3s-tile-actions class="d3s-tile-actions"
+                                  [hasAdd]="false"
                                   [hasExport]="true"
                                   (exportClick)="export()">
-                    <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
                 </d3s-tile-actions>
-                <div class="clearfix"></div>
             </header>
+            <div class="grid-actions-header">
+                <div class="simple-search">
+                    <input [(ngModel)]="filters.globalSearch"
+                           type="text"
+                           pInputText
+                           i18n-placeholder
+                           size="100"
+                           (input)="dt.filterGlobal($event.target.value, 'contains')"
+                           placeholder="Search..."
+                           class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
+                </div>
+                <advanced-filtering  [loadIdentifier]="'TaggedAssets'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
+            </div>
             <p-table #dt
                      [value]="tagUsage"
                      selectionMode="single"
@@ -27,27 +37,41 @@
                      (selectionChange)="selectAsset($event)">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th [pSortableColumn]="'DisplayPath'" style="width: 20%">
+                        <th [pSortableColumn]="'DisplayPath'" style="width: 15%">
                             <ng-container i18n>Asset</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'DisplayPath'"></d3s-sortIcon>
                         </th>
-                        <th [pSortableColumn]="'AssetType'" style="width: 20%">
+                        <th [pSortableColumn]="'AssetType'" style="width: 17%">
                             <ng-container i18n>Asset Type</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetType'"></d3s-sortIcon>
-
                         </th>
-                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
+                        <th [pSortableColumn]="'TagsAsString'" style="width: 33%">
                             <ng-container i18n>Tags</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'TagsAsString'"></d3s-sortIcon>
-
                         </th>
-                        <th style="width: 10%"></th>
+                        <th [pSortableColumn]="'AddedBy'" style="width: 15%">
+                            Added By
+                            <i class="helper fa fa-question-circle" 
+                               pTooltip="The user who added the <b>{{tag.Value}}</b> tag to this asset"
+                               tooltipStyleClass="ig-tooltip ig-tooltip-medium"
+                               [escape]="false"></i>
+                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AddedBy'"></d3s-sortIcon>
+                        </th>
+                        <th [pSortableColumn]="'CreatedOn'" style="width: 20%">
+                            Date Added
+                            <i class="helper fa fa-question-circle" 
+                               pTooltip="The date on which the user added the <b>{{tag.Value}}</b> tag to this asset"
+                               tooltipStyleClass="ig-tooltip ig-tooltip-medium"
+                               [escape]="false"></i>
+                            <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedOn'"></d3s-sortIcon>
+                        </th>
                     </tr>
                     <tr [hidden]="showSimpleFilter">
                         <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'DisplayValue'" [datatype]="'text'"></d3s-column-filter></th>
                         <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'AssetType'" [datatype]="'text'"></d3s-column-filter></th>
                         <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'TagsAsString'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th></th>
+                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'AddedBy'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'CreatedOn'" [datatype]="'date'"></d3s-column-filter></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
@@ -57,8 +81,8 @@
                         <td>
                             <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid"></d3s-tag-view>
                         </td>
-                        <td>
-                        </td>
+                        <td>{{item.AddedBy}}</td>
+                        <td>{{item.CreatedOn | date:'medium'}}</td>
                     </tr>
                 </ng-template>
                 <ng-template *ngIf="dt.totalRecords" pTemplate="summary">

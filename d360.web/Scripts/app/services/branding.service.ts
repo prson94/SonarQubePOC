@@ -46,6 +46,8 @@ export class Theme {
     homeBackgroundUri: string;
     iconUri: string;
 
+    customCssUri: string;
+
     svg: string;
     menuItems: any[] = [];
 
@@ -67,6 +69,7 @@ export class Theme {
             this.tabLinkColor = "#002d4b";
             this.tableHeaderBackColor = "#f1f2f3";
             this.tableRowBackColor = "#e4cfff";
+            this.customCss = "";
         }
     }
 
@@ -196,9 +199,7 @@ export class BrandingService extends BaseObservableService {
             .pipe(
                 map((res: any) => {
                     return res;
-                }),
-                catchError((err) => this.handleError(err))
-            );
+                }));
     }
 
     public saveTheme(theme: Theme): Observable<any> {
@@ -232,9 +233,6 @@ export class BrandingService extends BaseObservableService {
             theme.homeBackground = "";
         }
 
-        theme.customCss = theme.customCss ? window.btoa(theme.customCss) : null;
-
-
         if (theme.uid) {
             url += "/" + theme.uid;
             return this
@@ -258,6 +256,22 @@ export class BrandingService extends BaseObservableService {
                     catchError((err) => this.handleError(err))
                 );
         }
+    }
+
+    public getThemeCustomCSS(theme: Theme): Observable<string> {
+        if (!theme.customCssUri) {
+            return of(null);
+        }
+        const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
+
+        return this.http
+            .get(theme.customCssUri, { headers, responseType: 'text' })
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError((err) => this.handleError(err))
+            );
     }
 
     public deleteTheme(uid: string): Observable<any> {

@@ -24,8 +24,9 @@
   }
 }
 
-/* || Ovveride grid-actions-header styles for "Admin Tags" page */
-.admin-tags-tile {
+/* || Ovveride grid-actions-header styles for "Admin Tags" and "Tagged Asset" pages */
+.admin-tags-tile,
+.tag-item-tile {
   .grid-actions-header {
     padding: 0;
   }
@@ -37,4 +38,18 @@
       height: 32px;
     }
   }
+}
+
+.gov-detail-page .tile-detail header .d3s-tile-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  .TileTools {
+    margin-top: 0;
+  }
+}
+
+.gov-detail-page .tag-item-tile {
+  padding-top: 0;
 }

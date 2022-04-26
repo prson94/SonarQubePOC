@@ -50,18 +50,33 @@
                                     <ng-container *ngTemplateOutlet="sampleCountTooltip"></ng-container>
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.type" class="summaryRow">
-                                    <label class="ig-label" style="margin-right:5px" i18n>Base Type: </label>
+                                    <label class="ig-label" style="margin-right:5px"><ng-container i18n>Base Type</ng-container>: </label>
                                     <span class="ig-value">{{baseType}}</span>
                                 </div>
                                 <div *ngIf="hasValidCounts" class="summaryRow">
-                                    <label class="ig-label" style="margin-right:5px" i18n>Semantic Type: </label>
+                                    <label class="ig-label" style="margin-right:5px"><ng-container i18n>Semantic Type</ng-container>:</label>                                    
                                     <div *ngIf="!dataProfile.typeQualifier">
-                                        ---
+                                        <div *ngIf="isAdmin" style="margin-bottom: 8px;margin-top: 2px;">
+                                            <a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> <ng-container i18n>Create New</ng-container></a>
+                                        </div>
+                                        <div *ngIf="!isAdmin" style="margin-bottom: 10px;">
+                                            ---
+                                        </div>
                                     </div>
                                     <div *ngIf="dataProfile.typeQualifier" class="ig-value">
-                                        <span *ngIf="!hasDefinedType">{{dataProfile.typeQualifier}}</span>
-                                        <span *ngIf="hasDefinedType"><a (click)='openSemanticTab()'>{{semanticType.name}}</a></span>
-                                        <ng-container *ngTemplateOutlet="semanticTooltip"></ng-container>
+                                        <div *ngIf="!hasDefinedType" style="display: flex">
+                                            <div style="flex:1; word-wrap:break-word;">
+                                                <span>{{dataProfile.typeQualifier}}</span>
+                                            </div>
+                                            <div *ngIf="semanticTypeChecked && isAdmin" style="flex:0 0 110px">
+                                                <span class="link-Separator"> | </span><span><a (click)="showEditor=true"><i class="fa fa-plus-circle"></i> <ng-container i18n>Create New</ng-container></a></span>
+                                            </div>
+                                        </div>
+                                        <div *ngIf="hasDefinedType">
+                                            <span><a (click)='openSemanticTab()'>{{semanticType.name}}</a></span>
+                                            <ng-container *ngTemplateOutlet="semanticTooltip"></ng-container>
+                                            <ng-container *ngTemplateOutlet="outOfDateSemanticTemplate"></ng-container>                                            
+                                        </div>                                                                                
                                     </div>
                                 </div>
                                 <div *ngIf="hasValidCounts && dataProfile.confidence!=null" class="summaryRow">
@@ -547,7 +562,7 @@
 <ng-template #semanticTooltip>
     <span *ngIf="hasDefinedType" class="tooltip-icon" style="margin-left:8px"
           i18n-pTooltip
-          pTooltip="Name: {{semanticType.name}}<br/>Qualifier: {{semanticType.qualifier}}<br/><a (click)='alert()'>Click here for more info</a>"
+          pTooltip="Name: {{semanticType.name}}<br/>Qualifier: {{semanticType.qualifier}}"
           [escape]="false"
           [hideDelay]="1000"
           tooltipPosition="top"
@@ -572,6 +587,24 @@
     </label>
 </ng-template>
 
+<ng-template #outOfDateSemanticTemplate>
+    <span *ngIf="semanticType.effectiveDate>dataProfile.profileSetDate" style="margin-left:8px">
+        <i class="fa fa-exclamation-triangle"
+            pTooltip="<b>Out of date classification</b> - This asset was identified as a semantic type of Date, but the definition of this semantic type has since changed."
+            [escape]="false"
+            [hideDelay]="1000"
+            tooltipPosition="top"
+            tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+    </span>    
+</ng-template>
+
 <ng-container *ngIf="timeSeriesProfileList.length>1 && displayChart">
     <data-profile-time-series [dataProfileList]="timeSeriesProfileList" [chartType]="chartType" (close)="displayChart=false"></data-profile-time-series>
 </ng-container>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog asset-editor"
+           (onClose)="showEditor=false"
+           [showTitle]="false" 
+           [isVisible]="showEditor">
+    <semantic-editor *ngIf="showEditor" [semanticType]="null" [dataProfile]="dataProfile" (closeClick)="showEditor=false" (saveClick)="onCreateSemantic($event)"></semantic-editor>
+</d3s-modal>

@@ -584,6 +584,7 @@ namespace d360.model.DataAccessLayer
 								NDP.DisplayPath as [path],
 								P.[path] as assetTypePath,
 								ADP.Confidence,
+								ADP.ProfileSetDate as effectiveDate,
 								NDP.assettypeUid
 								{(isExport ? ", s.Uid as semanticTypeUid" : "")}
 							FROM                                     
@@ -1093,6 +1094,11 @@ namespace d360.model.DataAccessLayer
 															) as [value]
 													) topK "
 					: "")}";
+		}
+
+		public async Task<bool> DoesTypeQualifierExist(string typeQualifier)
+		{
+			return (await CompanyContext.QueryAsync<int>("select count(1) from Semantic where Qualifier = @typeQualifier", new { typeQualifier })).FirstOrDefault() > 0;
 		}
 	}
 }

@@ -268,6 +268,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Property {0} does not have valid Base64 value..
+        /// </summary>
+        public static string NotValidBase64Value {
+            get {
+                return ResourceManager.GetString("NotValidBase64Value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to primaryButtonBackColor is not a valid RGB color..
         /// </summary>
         public static string PrimaryButtonColorFormat {

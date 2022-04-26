@@ -26,6 +26,8 @@ import { AssetDetailModule } from '../shared/asset-detail/asset-detail.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
 import { SemanticsModule } from '../semantic/semantics.module';
+import { TooltipModule } from 'primeng/tooltip';
+import { AdvancedFiltersModule } from '../assets-grid/advanced-filtering/advanced-filtering.module';
 
 @NgModule({
     imports: [
@@ -39,6 +41,7 @@ import { SemanticsModule } from '../semantic/semantics.module';
         //primeng
         TableModule,
         OverlayPanelModule,
+        TooltipModule,
                 
         //d3s
         CoreModule,
@@ -52,6 +55,7 @@ import { SemanticsModule } from '../semantic/semantics.module';
         AssetTypeDetailModule,
         TaggedAssetDetailModule,
         SemanticsModule,
+        AdvancedFiltersModule,
         
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        

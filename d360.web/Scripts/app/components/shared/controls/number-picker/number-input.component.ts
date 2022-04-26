@@ -35,6 +35,7 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
     @Input() ariaLabel: string;
     @Input() ariaRequired: boolean;
     @Input() ariaInvalid: boolean;
+    @Input() allowDecimal: boolean = true;
 
     @Input() enforceMaxMin: boolean = false;
 
@@ -117,6 +118,12 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
                     min: +this.min
                 }
             };
+        } else if (!this.allowDecimal && this.hasDecimal()) {
+            result = {
+                hasDecimal: {
+                    actual: +this.value
+                }
+            };
         }
         return result;
     }
@@ -127,6 +134,10 @@ export class IgNumberFieldcomponent implements ControlValueAccessor, OnInit, Val
 
     private isUnderMin(): boolean {
         return this.value !== null && typeof this.min !== "undefined" && this.value < +this.min;
+    }
+
+    private hasDecimal(): boolean {
+        return this.value !== null && this.value.toString().indexOf(".") >= 0;
     }
 
     registerOnValidatorChange?(fn: () => void): void {

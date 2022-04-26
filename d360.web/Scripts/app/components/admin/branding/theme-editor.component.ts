@@ -76,6 +76,7 @@ export class ThemeEditorComponent implements OnChanges {
             this.theme.headerLogo = this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault;
             this.theme.homeBackground = this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault;
             this.theme.icon = this.theme.iconUri ?? this.brandingService.iconDefault;
+
             _th = this.theme;
         }
         else {
@@ -83,14 +84,25 @@ export class ThemeEditorComponent implements OnChanges {
         }
 
         this.isCurrentTheme = this.theme ? this.theme.isCurrent : false;
-        var properties = Object.keys(this.formGroup.controls);
-        this.formGroup.reset();
-        properties.forEach((p) => {
-            var valObj = {};
-            valObj[`${p}`] = _th[`${p}`];
-            this.formGroup.patchValue(valObj);
-        });
-        this.changesMade = false;
+
+        this.brandingService.getThemeCustomCSS(_th)
+            .subscribe((res) => {
+                if (res) {
+                    _th.customCss = res;
+                }
+                else {
+                    _th.customCss = "";
+                }
+
+                var properties = Object.keys(this.formGroup.controls);
+                this.formGroup.reset();
+                properties.forEach((p) => {
+                    var valObj = {};
+                    valObj[`${p}`] = _th[`${p}`];
+                    this.formGroup.patchValue(valObj);
+                });
+                this.changesMade = false;
+            });
     }
 
     save() {
@@ -98,12 +110,14 @@ export class ThemeEditorComponent implements OnChanges {
         var _theme = new Theme();
         if (this.theme?.uid) {
             _theme.uid = this.theme.uid;
+            _theme.isCurrent = this.theme.isCurrent;
         }
         var properties = Object.keys(this.formGroup.controls);
 
         properties.forEach((p) => {
             _theme[`${p}`] = this.formGroup.get(`${p}`).value;
         });
+        _theme.customCss = _theme.customCss ? window.btoa(_theme.customCss) : null;
 
         this.brandingService.saveTheme(_theme).subscribe((res) => {
             if (res) {

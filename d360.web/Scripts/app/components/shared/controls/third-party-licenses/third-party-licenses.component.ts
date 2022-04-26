@@ -1,12 +1,14 @@
 ﻿import { CommonModule } from "@angular/common";
-import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit } from "@angular/core";
+import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, OnChanges, SimpleChanges } from "@angular/core";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { CoreModule } from "../../core.module";
 import { ThirdPartyLibraryListModule } from "@precisely/prism-ng/third-party-library-list";
 import { LicenseInformationModel } from "@precisely/prism-ng/third-party-library-list/Models/third-party-license-model";
 
 @Component({
     selector: "ig-thirdpartylicenses",
     template: `<div>
+    <d3s-loading [isLoading]="loading"></d3s-loading>
     <div *ngIf="loadError" [innerText]="loadErrorMessage"></div>
     <ng-container *ngIf="!loading">
         <png-third-party-library-list [licenseInformation]="licensemodel"></png-third-party-library-list>
@@ -15,8 +17,10 @@ import { LicenseInformationModel } from "@precisely/prism-ng/third-party-library
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ThirdPartyLicenses implements OnInit {
+export class ThirdPartyLicenses implements OnInit, OnChanges {
     @Input() src: string;
+    @Input() lazy: boolean = false;
+    @Input() visible: boolean = false;
 
     public licensemodel: LicenseInformationModel;
     public loadError: boolean = false;
@@ -27,24 +31,41 @@ export class ThirdPartyLicenses implements OnInit {
     constructor(public ref: ChangeDetectorRef, private http: HttpClient) { }
 
     ngOnInit() {
-        const headers = new HttpHeaders({ "Content-Type": "application/json" });
-        this.http.get<LicenseInformationModel>(this.src, { headers }).subscribe(
-            (res) => {
-                this.licensemodel = res;
-                this.loading = false;
-                this.ref.markForCheck();
-            },
-            (err) => {
-                this.loadError = true;
-                this.ref.markForCheck();
+        if (!this.lazy) {
+            this.fetchLicenseInformation();
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (this.lazy && changes["visible"]) {
+            if (changes["visible"].currentValue === true) {
+                this.fetchLicenseInformation();
             }
-        );
+        }
+    }
+
+    private fetchLicenseInformation() {
+        if (typeof this.licensemodel === "undefined") {
+            const headers = new HttpHeaders({ "Content-Type": "application/json" });
+            this.http.get<LicenseInformationModel>(this.src, { headers }).subscribe(
+                (res) => {
+                    this.licensemodel = res;
+                    this.loading = false;
+                    this.ref.markForCheck();
+                },
+                (err) => {
+                    this.loadError = true;
+                    this.ref.markForCheck();
+                }
+            );
+        }
     }
 }
 
 @NgModule({
     imports: [
         CommonModule,
+        CoreModule,
         ThirdPartyLibraryListModule
     ],
     declarations: [ThirdPartyLicenses],

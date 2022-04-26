@@ -466,6 +466,9 @@ namespace d360.core.entities
 
         [JsonIgnore]
         public Guid semanticTypeUid { get; set; }
+
+        [DataMember]
+        public DateTime effectiveDate { get; set; }
     }
 
     public class AssetDataProfileByTypeQualifierApiViewModel : PagedApiBaseViewModel
