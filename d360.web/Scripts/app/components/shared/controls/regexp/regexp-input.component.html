@@ -11,8 +11,10 @@
 			<button *ngIf="showSamples"
 				igButton
 				[disabled]="disabled"
-				(click)="menu.toggle($event)"
+				(click)="menuFocus && menu.toggle($event)"
 				class="samples-button"
+				(focusout)="menuFocus=false"
+				(focus)="menuFocus=true"
 				pTooltip="Sample Regular Expression"
 				tooltipPosition="left"
 				tooltipStyleClass="ig-tooltip">
