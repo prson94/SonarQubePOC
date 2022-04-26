@@ -98,6 +98,7 @@
                             <ig-number-input [tabindex]="5"
                                              [required]="true"
                                              [min]="1"
+                                             [max]="2147483647"
                                              [allowDecimal]="false"
                                              [step]="1"
                                              formControlName="priority"
@@ -106,6 +107,9 @@
                             <div *ngIf="semanticForm.get('priority').invalid && (semanticForm.get('priority').dirty || semanticForm.get('priority').touched)">
                                 <div *ngIf="semanticForm.get('priority').errors?.underMin" class="ig-text-required">
                                     Please enter a value greater than 0.
+                                </div>
+                                <div *ngIf="semanticForm.get('priority').errors?.overMax" class="ig-text-required">
+                                    Value exceeds maximum allowed.
                                 </div>
                                 <div *ngIf="semanticForm.get('priority').errors?.hasDecimal" class="ig-text-required">
                                     Priority cannot contain any decimal places.
@@ -312,13 +316,19 @@
         </label>
         <ig-number-input [tabindex]="4"
                          [min]="1"
+                         [max]="2147483647"
                          [step]="1"
                          formControlName="minSamples"
                          [disabled]="isBuiltIn"
                          [allowDecimal]="false"
                          [(ngModel)]="model.minSamples"></ig-number-input>
-        <div *ngIf="(semanticForm.get('minSamples').dirty || semanticForm.get('minSamples').touched) && (model.minSamples && model.minSamples <=0)" class="ig-text-required">
-            Please enter a value greater than 0
+        <div *ngIf="semanticForm.get('minSamples').invalid && (semanticForm.get('minSamples').dirty || semanticForm.get('minSamples').touched)" class="ig-text-required">
+            <div *ngIf="semanticForm.get('minSamples').errors?.underMin" class="ig-text-required">
+                Please enter a value greater than 0
+            </div>            
+            <div *ngIf="semanticForm.get('minSamples').errors?.overMax" class="ig-text-required">
+                Value exceeds maximum allowed.
+            </div>
         </div>
         <div *ngIf="semanticForm.get('minSamples').invalid && (semanticForm.get('minSamples').dirty || semanticForm.get('minSamples').touched)">
             <div *ngIf="semanticForm.get('minSamples').errors?.hasDecimal" class="ig-text-required">
