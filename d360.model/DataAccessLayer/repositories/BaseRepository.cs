@@ -656,7 +656,14 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else if (field.Type == "Path")
 										{
-											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
+											if (field.Definition.Equals("{}", StringComparison.OrdinalIgnoreCase))
+											{
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
+											}
+											else
+											{
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"[{field.Name}] {orderDirection}";
+											}
 										}
 										else if (field.Type == "Score")
 										{
