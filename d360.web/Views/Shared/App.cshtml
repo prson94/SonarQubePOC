@@ -7,7 +7,7 @@
     var settings = (Dictionary<string, string>)ViewData["Settings"];
 
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
-    var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
+    var customStylesheetURL = "/api/v2/environment/themes/current.css";
     var useCdn = System.Configuration.ConfigurationManager.AppSettings["cdn:enabled"];
 
     var DataDogApplicationId = (System.Configuration.ConfigurationManager.AppSettings["DD_RUM_APPLICATIONID"] ?? "a6856a29-b0df-4399-9209-fab1529c798b");
