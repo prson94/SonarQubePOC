@@ -651,7 +651,7 @@ div.powerbi iframe {
 /* raise issue*/
 
 .issue-button {
-  background: @ig-pink-t1;
+  background: var(--buttonBackColor);
   border-radius: 4px;
   border: none;
   line-height: 25px;
@@ -999,6 +999,7 @@ div.breadcrumbs {
 
         &.breadcrumb-link {
           color: var(--breadcrumbLinkColor);
+
           &:hover, &.hover {
             cursor: pointer;
             text-decoration: none;
@@ -1032,6 +1033,7 @@ div.breadcrumbs {
 
       &.breadcrumb-link {
         color: var(--breadcrumbLinkColor);
+
         &:hover, &.hover {
           cursor: pointer;
         }
@@ -1108,6 +1110,7 @@ a.breadcrumb {
 
     &.breadcrumb-link {
       color: var(--breadcrumbLinkColor);
+
       &:hover, &.hover {
         cursor: pointer;
         text-decoration: underline;
