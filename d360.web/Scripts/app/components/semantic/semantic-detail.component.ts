@@ -1,7 +1,7 @@
 ﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef, Output, EventEmitter, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SemanticType } from '../../models/semantic-type.model';
-import { CompanySettingEnum } from '../../models/settings.model';
+import { AppSettingsEnum, CompanySettingEnum } from '../../models/settings.model';
 import { AuthenticationService } from '../../services/authentication.service';
 
 import { DataProfileService } from '../../services/dataprofile.service';
@@ -54,6 +54,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     validValuesToShow: number = 5;
     invalidValuesToShow: number = 5;
     validLocalesToShow: number = 5;
+    semanticHelpURL: string;
 
     constructor(        
         protected router: Router,
@@ -73,7 +74,8 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     }
 
     ngOnInit() {
-        this.canViewUsers  = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
+        this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
+        this.semanticHelpURL = `${this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri)}Default.htm#c-user-guide/create-semantic-types.htm#Data_Profiler`;
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
