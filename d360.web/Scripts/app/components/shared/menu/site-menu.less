@@ -4,7 +4,7 @@
 .left-side-nav-open .menu-category,
 .left-side-nav .menu-category,
 .menu-toggle {
-  color: #202020 !important;
+  color: var(--calculatedNavbarTextColor);
 }
 
 @toggleContainerHeightWhenMenuClosed: 80px;
@@ -32,7 +32,7 @@
   margin-top: 0;
   margin-bottom: 0;
   height: auto;
-  background-color: var(--navbarBackColor);
+  background: var(--navbarBackColor);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.16);
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
@@ -41,7 +41,6 @@
   transition: width 200ms ease;
   outline: none !important;
   scroll-behavior: smooth;
-  
   /* hiding scrollbar */
   scrollbar-width: none !important; /* Firefox */
   /* end hiding scrollbar*/
@@ -122,6 +121,7 @@
 
     .menu-category-box {
       display: flex;
+      color: var(--calculatedNavbarTextColor);
 
       > i {
         padding: 12px;
@@ -135,11 +135,17 @@
 
       &:active {
         background: var(--navbarBackColorSelected);
+        color: var(--calculatedNavbarSelectedTextColor);
       }
     }
 
     &:hover {
       background: var(--navbarBackColorSelected);
+      color: var(--calculatedNavbarSelectedTextColor);
+
+      .menu-category-box {
+        color: var(--calculatedNavbarSelectedTextColor);
+      }
     }
   }
 }
@@ -276,7 +282,7 @@
 }
 
 .menu-item {
-  color: @ig-black;
+  color: var(--calculatedNavbarTextColor);
   cursor: pointer;
   width: 100%;
   padding: 4px 15px !important;

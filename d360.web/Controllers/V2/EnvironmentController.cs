@@ -156,7 +156,8 @@ namespace d360.web.Controllers.V2
             {
                 await _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch {
+            catch
+            {
                 //no handling of this case
             }
 
@@ -172,7 +173,8 @@ namespace d360.web.Controllers.V2
                     SettingsRepository.DeleteSetting(Setting.CustomCSSLocation);
                 }
             }
-            catch {
+            catch
+            {
                 //no handling of this case
             }
 
@@ -1390,6 +1392,16 @@ namespace d360.web.Controllers.V2
             {
                 var theme = await ThemeRepository.GetCurrentThemeByUserAsync();
 
+                string textColorFromBackground(string backgroundColor)
+                {
+                    Color col = ColorTranslator.FromHtml(backgroundColor);
+                    if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
+                    {
+                        return "white";
+                    }
+                    return "black";
+                }
+
                 if (theme == null)
                 {
                     throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoActiveThemeExists);
@@ -1399,14 +1411,25 @@ namespace d360.web.Controllers.V2
                 css.AppendLine(":root {");
                 css.AppendCssVariable("backColor", theme.BackColor);
                 css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
+
                 css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
+                css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
+
                 css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
+                css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+
                 css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
+                css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
+
                 css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
+
                 css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
                 css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+
+
                 css.AppendLine("}");
 
                 var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();
