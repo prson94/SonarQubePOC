@@ -201,10 +201,11 @@
                         [loading]="savingInProgress && savingInProgressWithAddNew"
                         (click)="onSubmit(true)">
                 </button>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <button type="submit"
                         class="ig-button-primary"
                         [igDataCy]="'Semantic_Modal_Button_Save'"
-                        igButton 
+                        igButton
                         [disabled]="!semanticForm.valid || savingInProgress || !hasFormChanged || !isValid()"
                         label="{{semanticType ? 'Save Changes' : 'Create'}}"
                         tooltip="{{semanticType ? 'Save Changes' : 'Create'}}"
