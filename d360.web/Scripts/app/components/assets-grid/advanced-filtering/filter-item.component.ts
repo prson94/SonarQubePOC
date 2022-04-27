@@ -1191,8 +1191,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             if (this.currentOperator.toString() === "StartsWith" || this.currentOperator.toString() === "EndsWith") {
                 return "text";
             }
-
-            return "multi-input";
+            
+            return this?.condition?.type?.Type?.Path?.Definition ? "text" : "multi-input";
         }
 
         return "text";
