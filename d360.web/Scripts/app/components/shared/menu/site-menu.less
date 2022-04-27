@@ -32,7 +32,7 @@
   margin-top: 0;
   margin-bottom: 0;
   height: auto;
-  background-color: white;
+  background-color: var(--navbarBackColor);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.16);
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
@@ -134,12 +134,12 @@
       }
 
       &:active {
-        background: @ig-purple-t4;
+        background: var(--navbarBackColorSelected);
       }
     }
 
     &:hover {
-      background: @ig-purple-t5;
+      background: var(--navbarBackColorSelected);
     }
   }
 }
@@ -232,7 +232,7 @@
   transition: all 200ms ease;
   bottom: 16px;
   border-bottom-right-radius: 8px;
-  background: white;
+  background: var(--navbarBackColor);
 
   &.open {
     width: 198px;
@@ -266,7 +266,7 @@
 .menu-active > .megamenu-panel {
   display: block !important;
   width: min-content;
-  background: @ig-white;
+  background: var(--navbarBackColor);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.33);
 }
@@ -308,12 +308,12 @@
   }
 
   &:hover {
-    background: @ig-purple-t5;
+    background: var(--navbarBackColorSelected);
     color: @ig-black;
   }
 
   &:active {
-    background: @ig-purple-t4;
+    background: var(--navbarBackColorSelected);
   }
 
   &.dim {
