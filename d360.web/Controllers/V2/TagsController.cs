@@ -562,7 +562,7 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Asset Type");
             document.SetCellValue(1, index++, "Tags");
             document.SetCellValue(1, index++, "Added By");
-            document.SetCellValue(1, index++, "Date Added");
+            document.SetCellValue(1, index, "Date Added");
 
             #endregion
 
@@ -576,7 +576,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, $"{row.AssetType}");
                 document.SetCellValue(rowNumber, index++, $"{string.Join("|", row.Tags.Select(x => x.Value))}");
                 document.SetCellValue(rowNumber, index++, $"{tagDetails.CreatedByFirstName} {tagDetails.CreatedByLastName}");
-                document.SetCellValue(rowNumber, index++, $"{tagDetails.CreatedOn}");
+                document.SetCellValue(rowNumber, index, $"{tagDetails.CreatedOn}");
             }
 
             #endregion
