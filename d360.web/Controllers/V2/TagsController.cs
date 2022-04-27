@@ -561,6 +561,8 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Asset");
             document.SetCellValue(1, index++, "Asset Type");
             document.SetCellValue(1, index++, "Tags");
+            document.SetCellValue(1, index++, "Added By");
+            document.SetCellValue(1, index++, "Date Added");
 
             #endregion
 
@@ -569,9 +571,12 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
+                var tagDetails = row.Tags.SingleOrDefault(t => t.uid == uid);
                 document.SetCellValue(rowNumber, index++, row.DisplayValue);
-                document.SetCellValue(rowNumber, index++, $"{row.AssetType.ToString()}");
+                document.SetCellValue(rowNumber, index++, $"{row.AssetType}");
                 document.SetCellValue(rowNumber, index++, $"{string.Join("|", row.Tags.Select(x => x.Value))}");
+                document.SetCellValue(rowNumber, index++, $"{tagDetails.CreatedByFirstName} {tagDetails.CreatedByLastName}");
+                document.SetCellValue(rowNumber, index++, $"{tagDetails.CreatedOn}");
             }
 
             #endregion
@@ -586,7 +591,7 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = string.Format("{1} {0}.xlsx", System.DateTime.Now.ToShortDateString(), tag.Value)
+                FileName = string.Format("{1} {0}.xlsx", DateTime.Now.ToShortDateString(), tag.Value)
             };
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
