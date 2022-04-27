@@ -177,9 +177,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             });
 
-        this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((assetTypeAncestries: AssetTypeAncestry[]) => {
-            this.assetTypeAncestries = assetTypeAncestries;
-        });
+        if(this.assetTypeUid) {
+            this.fieldsService.getAssetTypeAncestry(this.assetTypeUid).subscribe((assetTypeAncestries: AssetTypeAncestry[]) => {
+                this.assetTypeAncestries = assetTypeAncestries;
+            });
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
