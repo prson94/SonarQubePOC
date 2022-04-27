@@ -51,8 +51,8 @@
                         Asset Type Path
                         <d3s-sortIcon [field]="'AssetTypePath'"></d3s-sortIcon>
                     </th>
-                    <th alignFrozen="right" pFrozenColumn></th>
-                    <th alignFrozen="right" pFrozenColumn></th>
+                    <th alignFrozen="right" pFrozenColumn style="width:28px"></th>
+                    <th alignFrozen="right" pFrozenColumn style="width:28px"></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
@@ -64,7 +64,7 @@
                         </a>
                     </td>
                     <td *ngIf="!isSidePanel">
-                        {{item.assetTypePath}}| item effective: {{item.effectiveDate}} | semantic type: {{semanticType.effectiveDate}}
+                        {{item.assetTypePath}}
                     </td>
                     <td class="asset-grid-tools" alignFrozen="right" pFrozenColumn style=" width: 32px; text-align: center; padding-top:7px;">
                         <div style="display:inline-block" *ngIf="semanticType.effectiveDate>item.effectiveDate">
