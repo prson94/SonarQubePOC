@@ -68,10 +68,10 @@ fieldset legend {
   top: 100px;
   width: 360px;
   margin: auto;
-  background-color: @ig-purple-s3;
+  background-color: var(--backColor);
   border-radius: 8px;
   padding: 32px;
-  color: white;
+  color: var(--calculatedBackTextColor);
 
   h4 {
     padding-top: 0;
@@ -165,7 +165,7 @@ fieldset legend {
   right: 0;
 
   .background {
-    background: linear-gradient(to right, #340776, #280057);
+    background: var(--headerBackColor);
     position: absolute;
     top: 0;
     left: 0;
@@ -727,5 +727,5 @@ fieldset legend {
 }
 
 d3s-artifact-list .ql-editor ul > li::marker {
-    content: "" !important;
+  content: "" !important;
 }

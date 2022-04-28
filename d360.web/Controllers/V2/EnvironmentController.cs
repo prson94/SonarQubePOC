@@ -1410,6 +1410,8 @@ namespace d360.web.Controllers.V2
                 var css = new StringBuilder();
                 css.AppendLine(":root {");
                 css.AppendCssVariable("backColor", theme.BackColor);
+                css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
+
                 css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
 
                 css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
@@ -1431,6 +1433,11 @@ namespace d360.web.Controllers.V2
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
 
+                var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
+                css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri})");
+
+                var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
+                css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri})");
 
                 css.AppendLine("}");
 
