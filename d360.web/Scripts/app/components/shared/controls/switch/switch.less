@@ -24,7 +24,7 @@
     left: 52px;
     width: 46px;
     height: 26px;
-    background: @ig-purple-t1;
+    background: var(--primaryButtonBackColor);
     border-radius: 2px;
     transition: left 150ms ease;
   }
@@ -56,9 +56,8 @@
   }
 
   &.checked button.check, &:not(.checked) button.uncheck {
-    color: white;
+    color: var(--calculatedPrimaryButtonTextColor);
   }
-
 
   &.checked::before {
     left: 2px;

@@ -1541,28 +1541,28 @@ button.p-button.p-highlight, .p-button.p-highlight {
 .p-checkbox-box.p-highlight,
 .p-checkbox-box.p-state-active {
   border: 1px solid @ig-black;
-  background: @ig-purple-t1;
-  color: @ig-white;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
   line-height: 1px;
 }
 
 .p-checkbox-box.p-checkbox-checked .pi-check,
 .p-checkbox-box.p-focus.p-checkbox-checked .pi-check,
 .p-checkbox-box.p-highlight .pi-check {
-  color: @ig-white;
-  background: @ig-purple-t1;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
 }
 
 
 .p-radiobutton-box.p-highlight,
 .p-radiobutton-box.p-focus.p-highlight {
-  border: 1px solid @ig-purple-t1;
+  border: 1px solid var(--primaryButtonBackColor);
   background: white;
-  color: @ig-purple-t1;
+  color: var(--primaryButtonBackColor);
   line-height: 1px;
 
   .p-radiobutton-icon {
-    background: @ig-purple-t1;
+    background: var(--primaryButtonBackColor);
   }
 }
 
@@ -2465,15 +2465,42 @@ p-table .p-column-filter {
 }
 /* Buttons */
 .p-button, button.p-button.p-state-default, .p-button.p-state-default, .p-button:focus {
-  background: @ig-purple-t1;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
 }
 
 .p-button:hover, button.p-button.p-state-default:hover, .p-button.p-state-default:hover, .p-selectbutton .p-button:hover {
-  background: @ig-purple-t1;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
+
+  ::after {
+    content: "";
+    position: absolute;
+    border-radius: @ig-field-border-radius;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.3;
+  }
 }
 
 .p-button:active, button.p-button.p-state-default:active, .p-button.p-state-default:active {
-  background: @ig-purple-s3;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
+
+  ::after {
+    content: "";
+    position: absolute;
+    border-radius: @ig-field-border-radius;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    opacity: 0.3;
+  }
 }
 
 .p-button .p-button-label {
@@ -2483,7 +2510,20 @@ p-table .p-column-filter {
 }
 
 .p-button:hover, button.p-button.p-state-hover {
-  background: @ig-purple;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
+
+  ::after {
+    content: "";
+    position: absolute;
+    border-radius: @ig-field-border-radius;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.3;
+  }
 }
 
  

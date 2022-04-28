@@ -2845,16 +2845,55 @@ modal-overlay .modal-dialog .content {
     }
 
     button.button {
-      background: @ig-purple-t1;
-      color: @ig-white;
-      border-radius: 4px;
+      background: var(--primaryButtonBackColor);
+      color: var(--calculatedPrimaryButtonTextColor);
 
-      &:hover {
-        background: @ig-purple;
+      &:not(:disabled):hover, &.hover {
+        background: var(--primaryButtonBackColor);
+
+        ::after {
+          content: "";
+          position: absolute;
+          border-radius: @ig-field-border-radius;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: white;
+          opacity: 0.3;
+        }
       }
 
-      &:active {
-        background: @ig-purple-s3;
+      &:not(:disabled):active, &.active {
+        background: var(--primaryButtonBackColor);
+
+        ::after {
+          content: "";
+          position: absolute;
+          border-radius: @ig-field-border-radius;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: black;
+          opacity: 0.3;
+        }
+      }
+
+      &:disabled {
+        background: var(--primaryButtonBackColor);
+
+        ::after {
+          content: "";
+          position: absolute;
+          border-radius: @ig-field-border-radius;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: white;
+          opacity: 0.6;
+        }
       }
     }
   }
@@ -2931,19 +2970,55 @@ button.button, a.link-button {
   }
 
   &.primary {
-    background: @ig-purple;
-    color: @ig-white;
+    background: var(--primaryButtonBackColor);
+    color: var(--calculatedPrimaryButtonTextColor);
 
     &:not(:disabled):hover, &.hover {
-      background: @ig-purple;
+      background: var(--primaryButtonBackColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        border-radius: @ig-field-border-radius;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        opacity: 0.3;
+      }
     }
 
     &:not(:disabled):active, &.active {
-      background: @ig-purple-s3;
+      background: var(--primaryButtonBackColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        border-radius: @ig-field-border-radius;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0.3;
+      }
     }
 
-    &:disabled, &.hover {
-      background: @ig-purple;
+    &:disabled {
+      background: var(--primaryButtonBackColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        border-radius: @ig-field-border-radius;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        opacity: 0.6;
+      }
     }
   }
 

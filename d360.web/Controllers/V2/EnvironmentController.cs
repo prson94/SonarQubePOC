@@ -1425,6 +1425,8 @@ namespace d360.web.Controllers.V2
                 css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
 
                 css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
+                css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
+
                 css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);

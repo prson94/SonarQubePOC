@@ -62,9 +62,6 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
         featureFlagService?: FeatureFlagsService) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
-        if (!featureFlagService.flags[FeatureFlags.BrandingThemeUiTemp]) {
-            this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-        }
         this.areaName = StringConstants.Section_Branding;
         this.setCommonItems();
     }

@@ -37,7 +37,7 @@
 
   &.ig-button-primary {
     background: var(--primaryButtonBackColor);
-    color: @ig-white;
+    color: var(--calculatedPrimaryButtonTextColor);
 
     &:hover:not(:disabled), &.ig-state-hover {
       background: var(--primaryButtonBackColor);
@@ -75,7 +75,7 @@
     }
 
     &:disabled {
-       background: var(--primaryButtonBackColor);
+      background: var(--primaryButtonBackColor);
 
       ::after {
         content: "";
