@@ -41,7 +41,7 @@ import {
     HTTPResponseSettings,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { map, concatMap } from 'rxjs/operators';
+import { tap, map, concatMap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
  
@@ -151,8 +151,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.isWindowVisible = true;
             this.HideSqlProcedure = false;
         }
-
-        this.isLoadingCounter++;
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -341,11 +339,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (this.model != null) {
             if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
                 console.warn('Model passed to workflow diagram with no Event Registration data.');
-                this.isLoadingCounter--;
                 return of();
 
             }
 
+            this.isLoadingCounter++;
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
                 .pipe(
                     map(r => this.fieldTypes = r),
@@ -357,7 +355,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         //if we don't have at least an id at this point, there's nothing we can do
         if (!this.id && this.uid == "00000000-0000-0000-0000-000000000000") {
-            this.isLoadingCounter--;
             return of();
         }
 
@@ -532,7 +529,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 concatMap(() => of(this.initializeFormFields())),
                 concatMap(() => of(this.getObjectName())),
                 concatMap(() => of(this.setWorkflowFields())),
-            concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
+                concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
             ).subscribe();
     }
 
@@ -731,8 +728,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private getActivityTypes(): Observable<any> {
+        this.isLoadingCounter++;
         return this.workflowService.getActivityTypes()
             .pipe(
+                tap(() => { this.isLoadingCounter--; }),
                 map(r => {
                     let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
 
