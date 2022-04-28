@@ -800,28 +800,35 @@ namespace d360.model.DataAccessLayer.repositories
 
 		protected string getFieldDataTypeWrapper(FieldType ft)
 		{
-			var fieldType = getFieldDataType(ft);
-
-			if (!string.IsNullOrEmpty(fieldType))
+			if (ft.Type == "Score")
 			{
-				string val = $"F{ft.ID}.FormattedValue";
-
-				if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
-				{
-					val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
-				}
-
-				if (fieldType == "bit")
-				{
-					return $"try_cast(case when {val} = 'true' then 1 else 0 end as {fieldType})";
-				}
-				else
-				{
-					return $"try_cast({val} as {fieldType})";
-				}
+				return $"F{ft.ID}.Value";
 			}
+			else
+			{ 
+				var fieldType = getFieldDataType(ft);
 
-			return $"F{ft.ID}.FormattedValue";
+				if (!string.IsNullOrEmpty(fieldType))
+				{
+					string val = $"F{ft.ID}.FormattedValue";
+
+					if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
+					{
+						val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
+					}
+
+					if (fieldType == "bit")
+					{
+						return $"try_cast(case when {val} = 'true' then 1 else 0 end as {fieldType})";
+					}
+					else
+					{
+						return $"try_cast({val} as {fieldType})";
+					}
+				}
+
+				return $"F{ft.ID}.FormattedValue";			
+			}
 		}
 		
 		protected string getFieldDataType(FieldType field)
