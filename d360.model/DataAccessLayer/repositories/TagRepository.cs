@@ -822,6 +822,22 @@ namespace d360.model.DataAccessLayer
 			{
 				switch (param.Key.ToLower())
 				{
+					case "_filter":
+						{
+							var value = param.Value;
+							if (!string.IsNullOrEmpty(value))
+							{
+								var filterDataProvider = new FilterDataProvider(companyContext);
+								var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.TagDetails);
+								var sqlParams = new Dictionary<string, object>();
+								whereClauses.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out _) + ")");
+								foreach (var item in sqlParams)
+								{
+									dbArgs.Add(item.Key, item.Value);
+								}
+							}
+						}
+						break;
 					case "displayvalue":
 						if (!hasGlobalSearch)
 						{
@@ -1050,6 +1066,7 @@ namespace d360.model.DataAccessLayer
 						AssetTags.Tags as Tags
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
+							inner join reporting.Global_Resource grc ON AT.CreatedBy = grc.ResourceID
 							inner join Asset A ON A.ID = AT.AssetID
 							inner join graph.AssetNode Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId

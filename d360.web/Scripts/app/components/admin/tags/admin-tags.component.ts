@@ -10,13 +10,14 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldType, Filters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
 import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
+import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -73,9 +74,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
         },
         {
             Name: 'CreatedBy',
+            Type: new FieldType("Lookup"),
             FriendlyName: $localize`Created By`,
-            Type: new FieldType("Text"),
             Category: "",
+            ValueLoader: this.getFilterValuesForCreatedBy.bind(this),
             RemovePopulatedOperator: true
         },
     ]);
@@ -111,6 +113,24 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     ngOnDestroy() {
         this.clearSidebar();
+    }
+
+    getFilterValuesForCreatedBy(): Observable<LookupValuesAPIModel> {
+        const createdBy: string[] = this.readOnlyFullListOfTags.map((tag: TagType) => {
+            return tag.CreatedBy;
+        });
+        const uniqCreatedBy = _uniqWith(createdBy, _isEqual);
+        if(uniqCreatedBy.length === 1 && uniqCreatedBy[0].name === '') {
+            return of({
+                items: [],
+                count: 0
+            });
+        } else {
+            return of({
+                items: uniqCreatedBy,
+                count: uniqCreatedBy.length
+            });
+        }
     }
 
     updateSort(event) { 

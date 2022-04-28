@@ -48,6 +48,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() isDeleting = false;
 
     @Input() supportsPrimaryFilterOption: boolean = false;
+    @Input() allowSingleSegmentPath: boolean = true;
 
     public dataCyPrefix: string = 'FieldType_';
     private fieldDefinitions = new Array<FieldTypeAPIModelField>();

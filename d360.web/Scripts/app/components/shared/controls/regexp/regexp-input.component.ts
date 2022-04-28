@@ -38,6 +38,7 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
     validationMessage: string = "";
 
     expressionTestString = "";
+    menuFocus: boolean = false;
 
     onModelChange: Function = () => { };
     onModelTouched: Function = () => { };

@@ -211,7 +211,7 @@ export class SiteMenuService extends BaseObservableService {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
             }),
-            context: new HttpContext().set(IS_QUERY, true)
+            context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
         }
 
         return this.http.post(`navigation/secondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)

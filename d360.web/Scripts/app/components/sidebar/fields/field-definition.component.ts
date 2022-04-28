@@ -20,6 +20,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                                [objectType]="objectType"
                                                [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
+                                               [allowSingleSegmentPath]="false"
                                                [objectName]="objectName"
                                                [title]="objectName"></d3s-field-definition-tile>
                 </div>

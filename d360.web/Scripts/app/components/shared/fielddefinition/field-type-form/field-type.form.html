@@ -1036,7 +1036,7 @@
         </simple-accordion>
 
         <!-- asset path -->
-        <simple-accordion *ngIf="currentType == 'Path'"
+        <simple-accordion *ngIf="currentType == 'Path' && allowSingleSegmentPath"
                           header="Asset Path"
                           active="false">
             <div class="row">

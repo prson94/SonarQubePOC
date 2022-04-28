@@ -54,7 +54,7 @@ export class ColorDisplayComponent implements OnInit {
                 this.colorsObject = this.colorsJSON;
             }
         }
-        if (this.field.FieldName === 'GovernanceRole') {
+        if (this.field?.FieldName && this.field.FieldName === 'GovernanceRole') {
             this.whiteSpace = 'normal';
         }
     }

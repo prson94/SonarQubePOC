@@ -598,8 +598,8 @@
 <ng-template #outOfDateSemanticTemplate>
     <span *ngIf="semanticType.effectiveDate>dataProfile.profileSetDate" style="margin-left:8px">
         <i class="fa fa-exclamation-triangle"
-           i18n-pTooltip
-            pTooltip="<b>Out of date classification</b> - This asset was identified as a semantic type of Date, but the definition of this semantic type has since changed."
+            i18n-pTooltip
+            pTooltip="<b>Out of date classification</b> - This asset was identified as a semantic type of <b>{{semanticType.name}}</b>, but the definition of this semantic type has since changed."
             [escape]="false"
             [hideDelay]="1000"
             tooltipPosition="top"

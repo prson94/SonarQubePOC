@@ -8,24 +8,26 @@
                    igInput
                    igSize="full">
 
-            <button *ngIf="showSamples"
-                    igButton
-                    [disabled]="disabled"
-                    (click)="menu.toggle($event)"
-                    class="samples-button"
-                    i18n-pTooltip
-                    pTooltip="Sample Regular Expression"
-                    tooltipPosition="left"
-                    tooltipStyleClass="ig-tooltip">
-                <i class="pi pi-ellipsis-v"></i>
-
-                <ig-popup-menu #menu
-                               [items]="examples"
-                               [tabIndex]="10"
-                               (onSelect)="setExample($event.value)">
-                </ig-popup-menu>
-            </button>
-        </div>
+			<button *ngIf="showSamples"
+				igButton
+				[disabled]="disabled"
+				(click)="menuFocus && menu.toggle($event)"
+				class="samples-button"
+				(focusout)="menuFocus=false"
+				(focus)="menuFocus=true"
+			    i18n-pTooltip
+				pTooltip="Sample Regular Expression"
+				tooltipPosition="left"
+				tooltipStyleClass="ig-tooltip">
+				<i class="pi pi-ellipsis-v"></i>
+			
+				<ig-popup-menu #menu
+					[items]="examples"
+					[tabIndex]="10"
+					(onSelect)="setExample($event.value)">
+				</ig-popup-menu>
+			</button>
+		</div>
 
         <div *ngIf="hasError"
              class="ig-text-required">
