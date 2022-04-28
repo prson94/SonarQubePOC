@@ -136,6 +136,10 @@
       &:active {
         background: var(--navbarBackColorSelected);
         color: var(--calculatedNavbarSelectedTextColor);
+
+        .menu-category {
+          color: var(--calculatedNavbarSelectedTextColor);
+        }
       }
     }
 
@@ -145,6 +149,10 @@
 
       .menu-category-box {
         color: var(--calculatedNavbarSelectedTextColor);
+
+        .menu-category {
+          color: var(--calculatedNavbarSelectedTextColor);
+        }
       }
     }
   }
@@ -191,11 +199,12 @@
   bottom: 16px;
 
   &:hover {
-    background: @ig-purple-t5;
+    background: var(--navbarBackColorSelected);
+    color: blue;
   }
 
   &:active {
-    background: @ig-purple-t4;
+    background: var(--navbarBackColorSelected);
   }
 
   &.scroll {
