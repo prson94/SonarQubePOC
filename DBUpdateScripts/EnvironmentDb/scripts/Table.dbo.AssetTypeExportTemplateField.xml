@@ -47,35 +47,40 @@
 	</rollback>
   </changeSet>
 
-    <changeSet author="Puneet Gupta" id="Index.dbo.AssetTypeExportTemplateField-v1">
+    <changeSet author="Puneet Gupta" id="Index.dbo.AssetTypeExportTemplateField-v2">
     <comment>GOV-17918</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_TemplateID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetTypeExportTemplateField')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IDX_AssetTypeExportTemplateField_TemplateID] ON [dbo].[AssetTypeExportTemplateField] ( [TemplateID] ASC )
-END
+	IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_TemplateID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IDX_AssetTypeExportTemplateField_TemplateID] ON [dbo].[AssetTypeExportTemplateField] ( [TemplateID] ASC )
+	END
 
-IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_FieldTypeID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
-BEGIN
-	CREATE NONCLUSTERED INDEX [IDX_AssetTypeExportTemplateField_FieldTypeID] ON [dbo].[AssetTypeExportTemplateField] ( [FieldTypeID] ASC )
+	IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_FieldTypeID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IDX_AssetTypeExportTemplateField_FieldTypeID] ON [dbo].[AssetTypeExportTemplateField] ( [FieldTypeID] ASC )
+	END
 END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-IF EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_TemplateID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetTypeExportTemplateField')
 BEGIN
-	DROP INDEX [IDX_AssetTypeExportTemplateField_TemplateID] ON [dbo].[AssetTypeExportTemplateField]
-END
-IF EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_FieldTypeID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
-BEGIN
-	DROP INDEX [IDX_AssetTypeExportTemplateField_FieldTypeID] ON [dbo].[AssetTypeExportTemplateField]
-END
-		]]>
+	IF EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_TemplateID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
+	BEGIN
+		DROP INDEX [IDX_AssetTypeExportTemplateField_TemplateID] ON [dbo].[AssetTypeExportTemplateField]
+	END
+	IF EXISTS (select 1 from [sys].[indexes] i where name = 'IDX_AssetTypeExportTemplateField_FieldTypeID' and object_id = object_id(N'dbo.AssetTypeExportTemplateField'))
+	BEGIN
+		DROP INDEX [IDX_AssetTypeExportTemplateField_FieldTypeID] ON [dbo].[AssetTypeExportTemplateField]
+	END
+END		]]>
 	</rollback>
   </changeSet>
 
