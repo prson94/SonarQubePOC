@@ -329,6 +329,14 @@ namespace d360.model.DataAccessLayer
 						{
 							sortField = "t.value";
 						}
+						if (qitem.Value.ToLower() == "createdon")
+						{
+							sortField = "t.CreatedOn";
+						}
+						if (qitem.Value.ToLower() == "createdby")
+						{
+							sortField = "grc.FirstName + ' ' +grc.LastName";
+						}
 						break;
 					case "sortorder":
 						int val = int.Parse(qitem.Value);
@@ -936,6 +944,14 @@ namespace d360.model.DataAccessLayer
 						else if (param.Value.ToLower() == "assetid")
 						{
 							sortField = "assetid";
+						}
+						else if (param.Value.ToLower() == "createdon")
+						{
+							sortField = "AT.CreatedOn";
+						}
+						else if (param.Value.ToLower() == "addedby")
+						{
+							sortField = "grc.FirstName + ' ' +grc.LastName";
 						}
 						else
 						{
