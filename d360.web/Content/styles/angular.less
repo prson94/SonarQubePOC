@@ -175,14 +175,14 @@ body {
   font-size: 14px;
   overflow: hidden;
   background-color: var(--backColor);
-  background-image: var(--homeBackgroundUri);
-  background-position: bottom;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
+  background-image: none;
 
-  .no-image {
-    background-image: none;
+  &.show-image {
+    background-image: var(--homeBackgroundUri);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
   }
 }
 
