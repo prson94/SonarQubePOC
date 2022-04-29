@@ -126,8 +126,8 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("baseType",
                     SemanticBaseType.Boolean.GetSqlCaseFilterStatement("BaseType"), SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("effectiveDate", "EffectiveDate", SqlFieldType.DateTime));
-                allowedDefaultFields.Add(new DefaultFilter("createdOn", "CreatedOn", SqlFieldType.DateTime));
-                allowedDefaultFields.Add(new DefaultFilter("updatedOn", "UpdatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "CAST(CreatedOn as DATE)", SqlFieldType.Date));
+                allowedDefaultFields.Add(new DefaultFilter("updatedOn", "CAST(UpdatedOn as DATE)", SqlFieldType.Date));
                 allowedDefaultFields.Add(new DefaultFilter("createdBy", "CreatedBy", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("updatedBy", "UpdatedBy", SqlFieldType.Text));
             }

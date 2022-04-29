@@ -123,13 +123,13 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         {
             Name: 'CreatedOn',
             FriendlyName: 'Date Created',
-            Type: new FieldType("DateTime"),
+            Type: new FieldType("Date"),
             Category: ""
         },
         {
             Name: 'UpdatedOn',
             FriendlyName: 'Date Last Modified',
-            Type: new FieldType("DateTime"),
+            Type: new FieldType("Date"),
             Category: ""
         }
     ]
