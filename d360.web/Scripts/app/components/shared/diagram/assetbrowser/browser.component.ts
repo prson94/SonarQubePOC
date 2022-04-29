@@ -185,7 +185,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private readonly badgeFont: string = "14px 'Precisely'";
     private readonly badgeStrokeColor = "#d6d5d5";
-    private readonly badgeTextColor = "#6d18dd";
+    private badgeTextColor = "#6d18dd";
     private readonly ignoredPanelFieldTypes = [
         "Tag",
         "Relationship",
@@ -235,6 +235,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.selectedDiagramAsset = null;
             this.linkClickInterceptor.handleEvent(this, ev);
         });
+
+        this.badgeTextColor = getComputedStyle(document.documentElement).getPropertyValue('--tabLinkColor');
 
         this.maxLinkCountToAvoidNodesTemplate = settingsService.getSettingById(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount).NumberSetting.Value;
     }
