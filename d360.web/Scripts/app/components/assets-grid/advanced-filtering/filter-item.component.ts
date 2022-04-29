@@ -117,7 +117,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 if (this.condition.isDefaultFilter === true && this.condition.field.toLowerCase() === data.fieldName.toLowerCase()) {
                     var values = [];
                     data.values.forEach((d) => {
-                        values.push({ title: d.name, value: d.uid });
+                        let val: string = d.uid;
+
+                        if (d["perspective"]) {
+                            //if values are coming from relationship type filters on relationship screen they contain perspective value (subject or object) which must be included in selection value
+                            val = d.uid + "|" + d["perspective"];
+                        }
+                        values.push({ title: d.name, value: val });
                     });
                     if (values.length === 0) {
                         this.remove();
@@ -638,7 +644,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
         res.items.forEach((str) => {
             if (typeof str === 'object' && str.value && str.name) {
-                loadedData.push({ title: str.name, value: str.value, count:str.count });
+                loadedData.push({ title: str.name, value: str.value, count: str.count });
             }
             else {
                 loadedData.push({ title: str, value: str });
@@ -1191,7 +1197,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             if (this.currentOperator.toString() === "StartsWith" || this.currentOperator.toString() === "EndsWith") {
                 return "text";
             }
-            
+
             return this?.condition?.type?.Type?.Path?.Definition ? "text" : "multi-input";
         }
 
