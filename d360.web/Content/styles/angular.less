@@ -141,7 +141,7 @@
 }
 
 a {
-  color: @ig-purple;
+  color: var(--tabLinkColor);
 
   &.disabled {
     color: @ig-black;
@@ -3228,7 +3228,7 @@ button.tab, button.tab-scroller {
   background: none;
   border: none;
   border-radius: 0;
-  color: @ig-purple;
+  color: var(--tabLinkColor);
   border-bottom: 3px solid transparent;
   border-top: 3px solid transparent;
 
@@ -3324,7 +3324,7 @@ button.tab-scroller {
   text-align: center;
   white-space: nowrap;
   line-height: 1;
-  background: @ig-purple;
+  background: var(--tabLinkColor);
   color: white;
   border: none;
   border-radius: 3px;
@@ -4298,7 +4298,7 @@ button.tab-scroller {
 .action-tile-span {
   padding-right: 5px;
   cursor: pointer;
-  color: @ig-purple;
+  color: var(--tabLinkColor);
   font-weight: normal;
   font-size: 14px;
 }
@@ -5724,12 +5724,10 @@ d3s-header-typeahead-search {
 
   .value {
     font-size: 14px;
-    color: @ig-purple;
+    color: var(--tabLinkColor);
     text-decoration: underline;
     font-weight: normal;
   }
-
-
 
   &:hover {
     .tooltip-content {
@@ -6306,7 +6304,7 @@ table {
         position: relative;
         font-size: 14px;
         width: initial;
-        color: @ig-purple;
+        color: var(--tabLinkColor);
         line-height: 11px;
         background: none;
       }
@@ -6830,7 +6828,6 @@ table {
       background: none;
       border: none;
       border-radius: 0;
-      color: @ig-purple;
       border-bottom: 3px solid transparent;
       outline: none;
 
@@ -6892,7 +6889,7 @@ table {
 }
 
 .cell-link {
-  color: @ig-purple;
+  color: var(--tabLinkColor);
 
   &:hover {
     text-decoration: underline;
