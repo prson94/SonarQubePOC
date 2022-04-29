@@ -182,10 +182,6 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
             });
     }
 
-    //get selectedPerspective(): string {
-    //    return this.selectedRelationshipType.perspective;
-    //}
-
     get selectedType(): RelationshipType {
         var type = this.relationshipTypes.filter((x) => x.Uid === this.selectedRelationshipType.uid);
         return type[0];
@@ -218,8 +214,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     get isSelectedRelationshipSubject(): boolean {
-        //return this.selectedType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase();
-        return (this.selectedRelationshipType.perspective == "Subject");
+        return (this.selectedRelationshipType.perspective === "Subject");
     }
 
     get modalSubtitle(): string {
