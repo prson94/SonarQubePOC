@@ -1410,28 +1410,25 @@ namespace d360.web.Controllers.V2
                 var css = new StringBuilder();
                 css.AppendLine(":root {");
                 css.AppendCssVariable("backColor", theme.BackColor);
-                css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
-
                 css.AppendCssVariable("breadcrumbLinkColor", theme.BreadcrumbLinkColor);
-
                 css.AppendCssVariable("buttonBackColor", theme.ButtonBackColor);
-                css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
-
                 css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
-                css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
-
                 css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
-                css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
-
                 css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
-                css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
-
                 css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-                css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
-
                 css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                css.AppendLine("");
+                css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
+                css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
+                css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+                css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
+                css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
+                css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
+                css.AppendCssVariable("calculatedTableHeaderTextColor", textColorFromBackground(theme.TableHeaderBackColor));
+                css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
+                css.AppendLine("");
 
                 var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
                 css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri})");

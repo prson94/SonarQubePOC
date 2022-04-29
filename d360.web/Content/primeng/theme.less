@@ -2304,12 +2304,12 @@ p-table .p-datatable-tfoot > tr > td {
   font-weight: bold;
   text-transform: capitalize;
   border-radius: 0;
-  background-color: @ig-grey-t5;
+  background-color: var(--tableHeaderBackColor);
 }
 
 p-table thead th {
   text-align: left;
-  color: @ig-black;
+  color: var(--calculatedTableHeaderTextColor);
 }
 
 .p-sort-icon .fa {
@@ -2419,11 +2419,37 @@ tr.p-highlight,
 .p-component-content .p-highlight,
 .p-component-header .p-highlight,
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background: @ig-purple-t4;
+  background-color: var(--tableRowBackColor);
+  cursor: default !important;
+
+  td,
+  .RowTools,
+  .RowTools a {
+    color: var(--calculatedTableRowTextColor);
+  }
 }
 
 p-table tbody.p-datatable-tbody > tr:hover:not(.p-highlight) {
-  background: @ig-purple-t5;
+  background-color: var(--tableRowBackColor);
+  color: var(--calculatedTableRowTextColor);
+  position: relative;
+
+  ::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.02;
+  }
+
+  td,
+  .RowTools,
+  .RowTools a {
+    color: var(--calculatedTableRowTextColor);
+  }
 }
 
 p-table td {
@@ -2554,17 +2580,44 @@ th.p-state-default, .p-treetable th.p-state-default {
 
   .p-treetable-thead > tr > th,
   .p-treetable-tfoot > tr > td {
-    background-color: @ig-grey-t5;
+    background-color: var(--tableHeaderBackColor);
+    color: var(--calculatedTableHeaderTextColor);
   }
 
   tr {
+    position: relative;
+
     &.p-highlight {
-      background-color: @ig-purple-t4;
+      background-color: var(--tableRowBackColor);
       cursor: default !important;
+
+      td,
+      .RowTools,
+      .RowTools a {
+        color: var(--calculatedTableRowTextColor);
+      }
     }
 
     &:hover:not(.p-highlight) {
-      background-color: @ig-purple-t5;
+      background-color: var(--tableRowBackColor);
+      color: var(--calculatedTableRowTextColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        opacity: 0.02;
+      }
+
+      td,
+      .RowTools,
+      .RowTools a {
+        color: var(--calculatedTableRowTextColor);
+      }
     }
   }
 }
