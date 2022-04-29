@@ -1291,9 +1291,10 @@ namespace d360.model.DataAccessLayer
 				left join graph.AssetNode Node on Node.id = a.id 
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", countJoins)}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
+				{string.Join("\n", countJoins.Where(cj => cj.TrimStart().StartsWith("cross apply")))}
+				{string.Join("\n", countJoins.Where(cj => !cj.TrimStart().StartsWith("cross apply")))}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
 				{(includeProfilingCheck ? profilingCheckSql : "")}
 				{hierarchyParentUidSelect}
@@ -1335,7 +1336,8 @@ namespace d360.model.DataAccessLayer
 				left join graph.AssetNode Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", fieldJoins)}
+				{string.Join("\n", fieldJoins.Where(fj => fj.TrimStart().StartsWith("cross apply")))}
+				{string.Join("\n", fieldJoins.Where(fj => !fj.TrimStart().StartsWith("cross apply")))}
 				{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
