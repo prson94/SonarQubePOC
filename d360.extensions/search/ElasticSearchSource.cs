@@ -656,16 +656,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-
-            //Refresh all shards after the query delete to avoid 409 versioning conflicts
-            DeleteByQueryRequestParameters requestParameters = new DeleteByQueryRequestParameters
-            {
-                Refresh = true
-            };
-            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString, requestParameters);
+            StringResponse deleteResponse = PerformDeleteByQuery(companyID, sReq);
 
             if (!deleteResponse.Success)
             {
@@ -686,16 +677,7 @@ namespace d360.extensions.search
                 }
             };
 
-            var client = GetElasticClient(companyID);
-            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-
-            //Refresh all shards after the query delete to avoid 409 versioning conflicts
-            DeleteByQueryRequestParameters requestParameters = new DeleteByQueryRequestParameters
-            {
-                Refresh = true
-            };
-            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString, requestParameters);
+            StringResponse deleteResponse = PerformDeleteByQuery(companyID, sReq);
 
             if (!deleteResponse.Success)
             {
@@ -725,13 +707,27 @@ namespace d360.extensions.search
                 }
             };
 
-            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
-            StringResponse deleteResponse = client.LowLevel.DeleteByQuery<StringResponse>(indexName, jsonString);
+            StringResponse deleteResponse = PerformDeleteByQuery(companyID, sReq);
 
             if (!deleteResponse.Success)
             {
                 throw new ArgumentException(deleteResponse.OriginalException.Message);
             }
+        }
+
+        private StringResponse PerformDeleteByQuery(int companyID, SearchRequest sReq)
+        {
+            var client = GetElasticClient(companyID);
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+
+            //Refresh all shards after the query delete to avoid 409 versioning conflicts
+            DeleteByQueryRequestParameters requestParameters = new DeleteByQueryRequestParameters
+            {
+                Refresh = true
+            };
+            return client.LowLevel.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), jsonString, requestParameters);
+
         }
 
         private bool IsElasticSearchSpecialChar(char ch)
