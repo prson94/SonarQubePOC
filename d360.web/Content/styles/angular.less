@@ -23,6 +23,11 @@
   content: var(--headerLogoUri);
 }
 
+//hide button spinner after element to avoid having double backgrounds
+.ig-button-spinner::after {
+  content: none !important;
+}
+
 .link-context-menu {
   background-color: white;
   padding: 4px 0;
@@ -2763,7 +2768,7 @@ div.home-image-title-text {
         a {
           display: inline;
           font-size: 14px;
-          color: @ig-purple;
+          color: var(--tabLinkColor);
         }
 
         p {

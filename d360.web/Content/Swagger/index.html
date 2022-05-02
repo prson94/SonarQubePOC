@@ -25,6 +25,13 @@
     <script src='lib/jsoneditor-min-js' type='text/javascript'></script>
     <script src='lib/marked-js' type='text/javascript'></script>
     <script src='lib/swagger-oauth-js' type='text/javascript'></script>
+    <link rel="stylesheet" type="text/css" href="/api/v2/environment/themes/current.css" />
+
+    <style>
+        .logo-img {
+            content: var(--headerLogoUri);
+        }
+    </style>
 
     <script type="text/javascript">
         $(function () {
@@ -78,7 +85,7 @@
                     }
                     if (window.SwaggerTranslator) {
                         window.SwaggerTranslator.translate();
-                    }                    
+                    }
                     window.swaggerApi = swaggerApi;
                     _.each(swashbuckleConfig.customScripts, function (script) {
                         $.getScript(script);
@@ -95,7 +102,7 @@
                 oauth2RedirectUrl: window.location.href.replace('index', 'o2c-html').split('#')[0]
             });
             if (window.swashbuckleConfig.validatorUrl !== '')
-                window.swaggerUi.options.validatorUrl = window.swashbuckleConfig.validatorUrl;            
+                window.swaggerUi.options.validatorUrl = window.swashbuckleConfig.validatorUrl;
             window.swaggerUi.load();
             function log() {
                 if ('console' in window) {

@@ -1693,7 +1693,9 @@
 }
 
 .swagger-section #header {
-  background: linear-gradient(to right, #340776, #280057);
+  color: var(--calculatedHeaderTextColor);
+  height: 40px;
+  background: var(--headerBackColor);
   height: 40px;
   min-width: 775px;
   padding: 0px;
