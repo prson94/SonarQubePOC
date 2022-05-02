@@ -5,7 +5,8 @@
             Site Navigation
             <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
         </header>
-        <p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection">
+        <p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection"
+                 [scrollable]="true" scrollHeight="420px">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
