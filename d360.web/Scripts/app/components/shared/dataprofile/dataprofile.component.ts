@@ -800,4 +800,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.showEditor = false;
         }        
     }
+
+    isOutOfDate(semanticDate: Date, profileDate: Date) {
+        let sDate = (new Date(semanticDate));
+        sDate.setUTCHours(0, 0, 0, 0);
+        return sDate > new Date(profileDate);
+    }
 }

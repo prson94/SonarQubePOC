@@ -95,11 +95,11 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.relationshipTypesResolvedNames.forEach((item) => {
             if (params.filter) {
                 if (item["name"].toLowerCase().indexOf(params.filter.toLowerCase()) !== -1) {
-                    data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+                    data.items.push({ value: item["uid"] + "|" + item["perspective"], name: item["name"], count: item.count });
                 }
             }
             else {
-                data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+                data.items.push({ value: item["uid"] + "|" + item["perspective"], name: item["name"], count: item.count });
             }
         });
         return of(data);
@@ -292,7 +292,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                         uid: rc.IntersectTypeUid,
                         name,
                         count: rc.Count,
-                        isSelected: false
+                        isSelected: false,
+                        perspective: rc.IsSubject ? "Subject" : "Object"
                     });
             }
         });
@@ -424,6 +425,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         if (this.singleSelectedRelationship) {
             params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
+            let sideUid = this.singleSelectedRelationship.perspective === "Subject" ? "SubjectUid" : "ObjectUid";
+            params[sideUid] = this.assetUid;
         }
 
         if (!isExport) {
@@ -446,7 +449,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         var relFilter = this.advancedFilterData.filter((x) => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
-            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase())[0];
+            let splitValue = value.split("|");
+            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === splitValue[0].toLowerCase() && x.perspective === splitValue[1])[0];
         }
         return null;
     }
@@ -500,7 +504,11 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             typeFilters.forEach((f) => {
                 if (f.value) {
                     f.value.forEach((item) => {
-                        var names = this.relationshipTypesResolvedNames.filter((x) => x.uid.toLowerCase() === item.value.toLowerCase());
+                        if ((item.value as string).indexOf("undefined") > -1) {
+                            item.value.replace("|undefined", "|Subject");
+                        }
+                        let splitValue = item.value.split("|");
+                        var names = this.relationshipTypesResolvedNames.filter((x) => x.uid.toLowerCase() === splitValue[0].toLowerCase() && x.perspective === splitValue[1]);
                         names.forEach((sel) => sel.isSelected = true);
                     });
                 }

@@ -39,6 +39,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     simpleFilter: string = "";
     advancedFilter: string = "";
     isExportInProgress: boolean = false;
+    semanticEffectiveDate: Date;
 
     menuItems: any[] = [
         { title: $localize`Open` },
@@ -62,8 +63,15 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
             FriendlyName: 'Asset Type Path',
             Type: new FieldType("Text"),
             Category: ""
-        }
-    ]
+        },
+        {
+            Name: 'outOfDate',
+            FriendlyName: 'Out of date classification',
+            Type: new FieldType("Boolean"),
+            Category: "",
+            RemovePopulatedOperator: true
+        }     
+    ]    
 
     constructor(private route: ActivatedRoute,
         protected router: Router,
@@ -91,6 +99,8 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
     getData() {
+        this.semanticEffectiveDate = new Date(this.semanticType.effectiveDate);
+        this.semanticEffectiveDate.setUTCHours(0, 0, 0, 0);
         if (this.semanticTypesEnabled) {
             this.isLoading = true;
             this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
@@ -161,4 +171,9 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         this.isExportInProgress = true;
         this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, this.maxExportRows, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, this.semanticType.name, () => { this.isExportInProgress = false; });
     }
+
+    isOutOfDate(profileDate) {
+        return this.semanticEffectiveDate > new Date(profileDate);
+    }
+    
 }

@@ -112,6 +112,25 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         this.selectedAssetsDetail = [];
     }
 
+    setDisabledClassOnConditions(count: number, thisCardinality: string, targetCardinality: string, type: RelationshipType): string {
+        let disabledClass: string = "";
+
+        if (count > 0 && thisCardinality === "One" && targetCardinality === "Many") {
+            disabledClass = 'disabled-cardinality-many';
+        }
+        if (count > 0 && targetCardinality === "One" && thisCardinality === "One") {
+            disabledClass = 'disabled-cardinality-one';
+        }
+
+        if (type.Predicate.Type === "InterTypeHierarchy"
+            || type.Predicate.Type === "IntraTypeHierarchy"
+        ) {
+            disabledClass = 'disabled-predicate';
+        }
+
+        return disabledClass;
+    }
+
     public initialLoad(): void {
         if (this.loadTypesSub) {
             this.loadTypesSub.unsubscribe();
@@ -129,43 +148,33 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
                 this.relationshipTypesResolvedNames = [];
 
                 this.relationshipTypes.forEach((type) => {
-                    type["IsSubject"] = type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase();
-                    let count: number = 0;
-                    var rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
-                    let disabledClass = "";
-                    let targetCardinality = "";
 
+                    let count: number = 0;
+                    let disabledClass: string = "";
+                    let name: string = "";
+                    let thisCardinality: string = "";
+                    let targetCardinality: string = "";
+                    let rc = this.relationshipCounts.filter((item) => type.Uid.toLocaleLowerCase() === item.IntersectTypeUid.toLocaleLowerCase());
                     if (rc.length > 0) {
                         count = rc[0].Count;
                     }
-                    let name: string = "";
-                    var thisCardinality = "";
 
-                    if (type["IsSubject"]) {
+                    if (type.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase()) {
                         name = type.Predicate.Name + " " + type.Object.Name;
                         targetCardinality = type.Subject.Cardinality;
                         thisCardinality = type.Object.Cardinality;
+                        disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
+                        this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Subject" });
                     }
-                    else {
+
+                    if (type.Object.Uid.toLowerCase() === this.assetTypeUid.toLowerCase()) {
                         name = type.Predicate.Inverse + " " + type.Subject.Name;
                         targetCardinality = type.Object.Cardinality;
                         thisCardinality = type.Subject.Cardinality;
+                        disabledClass = this.setDisabledClassOnConditions(count, thisCardinality, targetCardinality, type);
+                        this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass, perspective: "Object" });
                     }
 
-                    if (count > 0 && thisCardinality === "One" && targetCardinality === "Many") {
-                        disabledClass = 'disabled-cardinality-many';
-                    }
-                    if (count > 0 && targetCardinality === "One" && thisCardinality === "One") {
-                        disabledClass = 'disabled-cardinality-one';
-                    }
-
-                    if (type.Predicate.Type === "InterTypeHierarchy"
-                        || type.Predicate.Type === "IntraTypeHierarchy"
-                    ) {
-                        disabledClass = 'disabled-predicate';
-                    }
-
-                    this.relationshipTypesResolvedNames.push({ uid: type.Uid, name, count, isSelected: false, disabledClass });
                 });
                 this.relationshipTypesResolvedNames.sort((a, b) => a["name"].localeCompare(b["name"]));
                 this.cdRef.detectChanges();
@@ -205,7 +214,7 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     get isSelectedRelationshipSubject(): boolean {
-        return this.selectedType.Subject.Uid.toLowerCase() === this.assetTypeUid.toLowerCase();
+        return (this.selectedRelationshipType.perspective === "Subject");
     }
 
     get modalSubtitle(): string {

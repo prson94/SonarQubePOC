@@ -377,6 +377,10 @@ export class AdvancedFilterFieldCondition {
             }
 
             if (this.fieldType === "Path") {
+                if (this.type?.Type?.Path?.Definition) {
+                    return value;
+                }
+
                 if (this.operator.toString() === "StartsWith" || this.operator.toString() === "EndsWith") {
                     return _.escape(value);
                 }
@@ -461,7 +465,14 @@ export class AdvancedFilterFieldCondition {
                 return `'${value.value}'`;
             }
         }
-        value = (value as string).replace(/'/g, "&apos;");
+
+        if (Array.isArray(value)) {
+            value = value[0];
+        }
+        else {
+            value = (value as string).replace(/'/g, "&apos;");
+        }
+
         return `'${encodeURIComponent(value)}'`;
     }
     getValue2(): string {
@@ -560,7 +571,7 @@ export class AdvancedFilterFieldConditionCollection {
             else if (cond.fieldType === "Score" && cond.operator.toString() === "IsInBand") {
                 queries.push(this.getInBandQuery(cond));
             }
-            else if (cond.fieldType === "Path" && cond.value) {
+            else if (!cond.type?.Type?.Path?.Definition && cond.fieldType === "Path" && cond.value) {
                 if (cond.operator.toString() === "StartsWith" || cond.operator.toString() === "EndsWith") {
                     queries.push(cond.getQueryString());
                 }

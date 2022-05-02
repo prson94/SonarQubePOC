@@ -67,7 +67,7 @@
                         {{item.assetTypePath}}
                     </td>
                     <td class="asset-grid-tools" alignFrozen="right" pFrozenColumn style=" width: 32px; text-align: center; padding-top:7px;">
-                        <div style="display:inline-block" *ngIf="semanticType.effectiveDate>item.effectiveDate">
+                        <div style="display:inline-block" *ngIf="isOutOfDate(item.effectiveDate)">
                             <i class="fa fa-exclamation-triangle"
                                i18n-pTooltip
                                pTooltip="<b>Out of date classification</b> - This asset was identified as a semantic type of <b>{{semanticType.name}}</b>, but the definition of this semantic type has since changed."

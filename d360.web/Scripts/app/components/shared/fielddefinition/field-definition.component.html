@@ -147,8 +147,8 @@
                         <span><i *ngIf="item?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
                     </td>
-                    <td>{{item.SortOrder}}</td>
-                    <td>{{item.SortByAscending ? 'Ascending' : 'Descending'}}</td>
+                    <td><ng-container *ngIf="item.IsListable">{{item.SortOrder}}</ng-container></td>
+                    <td><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? 'Ascending' : 'Descending'}}</ng-container></td>
                     <td>
                         <div class="RowTools">
                             <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveUp'">
