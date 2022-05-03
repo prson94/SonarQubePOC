@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
@@ -115,11 +115,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.clearSidebar();
     }
 
-    getFilterValuesForCreatedBy(): Observable<LookupValuesAPIModel> {
+    getFilterValuesForCreatedBy(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         const createdBy: string[] = this.readOnlyFullListOfTags.map((tag: TagType) => {
             return tag.CreatedBy;
         });
-        const uniqCreatedBy = _uniqWith(createdBy, _isEqual);
+        const uniqCreatedBy = _uniqWith(createdBy, _isEqual)
+            .filter((s: string) => s.toLowerCase().includes(params.filter?.toLowerCase() ?? ""));
+
         if(uniqCreatedBy.length === 1 && uniqCreatedBy[0].name === '') {
             return of({
                 items: [],
