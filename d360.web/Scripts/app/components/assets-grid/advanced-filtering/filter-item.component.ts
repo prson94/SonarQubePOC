@@ -174,7 +174,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     filterTable($event: any) {
-        this.dataTable.filterGlobal($event, "contains");
+        this.dataTable.filterGlobal($event, 'contains');
     }
 
     setSelectionVirtualScrollHeight() {
@@ -503,6 +503,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
 
+            if (this.condition.field === "CreatedBy") {
+                this.hasSelectAllCheckbox = true;
+            }
+
             if (type.Type.Score && !this.condition.value) {
                 this.condition.value = "poor";
             }
@@ -651,9 +655,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             }
         });
 
-        Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
-
-        this.currentField.Values = [...this.currentField.Values];
+        if (loadedData.length <= params.take) {
+            this.currentField.Values = loadedData;
+        }
+        else {
+            Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+            this.currentField.Values = [...this.currentField.Values];
+        }
 
         this.isLookupValuesLoading = false;
 
