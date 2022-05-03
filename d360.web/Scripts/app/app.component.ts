@@ -86,7 +86,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             }
         });
 
-        this.router.events.subscribe(event => {
+        this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 if (event.url === "/home") {
                     this.renderer.addClass(this.document.body, 'show-image');
