@@ -1,0 +1,537 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>Âçƭïôñ T¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ 'ÌƨÞářƭÓƒKè¥' ƨèƭ ƭô ƭřúè.</value>
+  </data>
+  <data name="ActionNotAllowedScoreFieldType" xml:space="preserve">
+    <value>Âçƭïôñƨ çáññôƭ λáƲè §çôřè ƒïèℓδ ƭ¥ƥè</value>
+  </data>
+  <data name="ActionNotAllowedTagFieldType" xml:space="preserve">
+    <value>Âçƭïôñƨ çáññôƭ λáƲè Táϱ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="ActionNotSupportPath" xml:space="preserve">
+    <value>Âçƭïôñƨ çáññôƭ λáƲè Þáƭλ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="ActionTypeUidNotFound" xml:space="preserve">
+    <value>Âçƭïôñ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ûïδ ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="AllowMultipleValues" xml:space="preserve">
+    <value>ÂℓℓôωMúℓƭïƥℓèVáℓúèƨ</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="AssetTypeError" xml:space="preserve">
+    <value>Âƨƨèƭ ƭ¥ƥè èřřôř</value>
+  </data>
+  <data name="AssetTypeNotFoundField" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè ñôƭ ƒôúñδ ƒôř ƒïèℓδ [{0}].</value>
+  </data>
+  <data name="AssetTypeNotHaveKeyField" xml:space="preserve">
+    <value>Tλïƨ áƨƨèƭ ƭ¥ƥè ₥á¥ ñôƭ λáƲè á ƙè¥ ƒïèℓδƨ δèƒïñèδ!</value>
+  </data>
+  <data name="AssetTypeNotHaveScoreField" xml:space="preserve">
+    <value>Tλïƨ áƨƨèƭ ƭ¥ƥè ₥á¥ ñôƭ λáƲè á §çôřè ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="AssetTypeUidNotFound" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ûïδ ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="AssetTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ ƥřôƲïδè áñ ÂƨƨèƭT¥ƥèÛïδ ƨïñçè ¥ôú λáƲè áℓřèáδ¥ ƥřôƲïδèδ áñ ÂçƭïôñT¥ƥèÛïδ.</value>
+  </data>
+  <data name="ComputedOwnershipLookupNotSupported" xml:space="preserve">
+    <value>Çô₥ƥúƭèδÓωñèřƨλïƥ£ôôƙúƥ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="ComputedRelationshipFieldNotSupported" xml:space="preserve">
+    <value>Çô₥ƥúƭèδRèℓáƭïôñƨλïƥFïèℓδ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="ComputedRelationshipLookupNotSupported" xml:space="preserve">
+    <value>Çô₥ƥúƭèδRèℓáƭïôñƨλïƥ£ôôƙúƥ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="ComputedRelationshipReferenceListNotSupported" xml:space="preserve">
+    <value>Çô₥ƥúƭèδRèℓáƭïôñƨλïƥRèƒèřèñçè£ïƨƭ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="Constantfalse" xml:space="preserve">
+    <value>ƒáℓƨè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantIncrement" xml:space="preserve">
+    <value>Ìñçřè₥èñƭ</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumLength" xml:space="preserve">
+    <value>Máжï₥ú₥£èñϱƭλ</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMaximumValue" xml:space="preserve">
+    <value>Máжï₥ú₥Váℓúè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumLength" xml:space="preserve">
+    <value>Mïñï₥ú₥£èñϱƭλ</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="ConstantMinimumValue" xml:space="preserve">
+    <value>Mïñï₥ú₥Váℓúè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="Constanttrue" xml:space="preserve">
+    <value>ƭřúè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="CounterFieldNotSupportedThisAssetType" xml:space="preserve">
+    <value>Tλïƨ áƨƨèƭ ƭ¥ƥè ₥á¥ ñôƭ λáƲè á Çôúñƭèř ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="CounterPrefixMax10Char" xml:space="preserve">
+    <value>Çôúñƭèř Þřèƒïж çáññôƭ βè ℓôñϱèř ƭλáñ 10 çλářáçƭèřƨ.</value>
+  </data>
+  <data name="CounterPrefixRule" xml:space="preserve">
+    <value>Çôúñƭèř Þřèƒïж ₥úƨƭ βè çôñƨïƨƭèδ ôƒ áℓƥλáñú₥èřïçáℓƨ áñδ/ôř ƨ¥₥βôℓƨ _ ôř -.</value>
+  </data>
+  <data name="CounterPrefixStartWithAlpha" xml:space="preserve">
+    <value>Çôúñƭèř Þřèƒïж ₥úƨƭ ƨƭářƭ ωïƭλ á çλářáçƭèř.</value>
+  </data>
+  <data name="CounterRange" xml:space="preserve">
+    <value>Çôúñƭèř Ìñïƭïáℓ Váℓúè ₥úƨƭ βè βèƭωèèñ 1 áñδ 9999999.</value>
+  </data>
+  <data name="DefaultValueError" xml:space="preserve">
+    <value>Ðèƒáúℓƭ Ʋáℓúè ₥úƨƭ βè βèƭωèèñ {0} áñδ {1}</value>
+  </data>
+  <data name="DiagramATCustomError" xml:space="preserve">
+    <value>Nôñ ƨƭáƭïç ƒïèℓδƨ ôñ Ðïáϱřá₥ Âƨƨèƭ T¥ƥè çáññôƭ λáƲè '{0}' ƨèƭ ƭô {1}!</value>
+  </data>
+  <data name="DisplayInColumnMustFlaseOnComputedWonerShipLookup" xml:space="preserve">
+    <value>Ðïƨƥℓá¥ÌñÇôℓú₥ñ ôñ Çô₥ƥúƭèδÓωñèřƨλïƥ£ôôƙúƥ çáñ βè ƨèƭ ƭô Třúè ôñℓ¥ ïƒ Ðïƨƥℓá¥Âƨ£ïƨƭ ïƨ ƨèƭ ƭô Třúè.</value>
+  </data>
+  <data name="DuplicateFieldNames" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè ƒïèℓδ ñá₥èƨ</value>
+  </data>
+  <data name="DuplicateRelationship" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè řèℓáƭïôñƨλïƥ ôñ ƨá₥è áƨƨèƭ ƭ¥ƥè</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>Éжïƨƭïñϱ ïƭè₥ƨ ïñ ƨ¥ƨƭè₥</value>
+  </data>
+  <data name="FailRemoveFieldNotExistsType" xml:space="preserve">
+    <value>Ýôú ářè áƭƭè₥ƥƭïñϱ ƭô řè₥ôƲè ôñè ôř ₥ôřè ƒïèℓδƨ ƭλáƭ δô ñôƭ èжïƨƭ ôñ ƭλïƨ ƭ¥ƥè.</value>
+  </data>
+  <data name="FieldConversionError" xml:space="preserve">
+    <value>Fïèℓδ çôñƲèřƨïôñ èřřôř</value>
+  </data>
+  <data name="FieldNameMustUnique" xml:space="preserve">
+    <value>Tλè ƒôℓℓôωïñϱ ƒïèℓδ ñá₥èƨ ářè úƨèδ ₥ôřè ƭλáñ ôñçè: {0}. Fïèℓδ ñá₥èƨ ₥úƨƭ βè úñï9úè.</value>
+  </data>
+  <data name="FieldPropertyError" xml:space="preserve">
+    <value>Fïèℓδ ƥřôƥèřƭ¥ èřřôř</value>
+  </data>
+  <data name="FieldsContainErrors" xml:space="preserve">
+    <value>Fïèℓδƨ çôñƭáïñ èřřôřƨ</value>
+  </data>
+  <data name="FieldTypeConversionError" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ çôñƲèřƭ ƒïèℓδ {0} ƒřô₥ á {1} ƭô á {2} ôř á ƒïèℓδ ωïƭλ ƭλè ƨá₥è ñá₥è áñδ δïƒƒèřèñƭ ƭ¥ƥè ₥á¥ áℓřèáδ¥ èжïƨƭ.</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>Fïèℓδ ƭ¥ƥè èřřôř</value>
+  </data>
+  <data name="FieldTypeListNotSpecified" xml:space="preserve">
+    <value>Fïèℓδ T¥ƥè - ℓïƨƭ ñôƭ ƨƥèçïƒïèδ</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>Fïèℓδ T¥ƥè Nôƭ Fôúñδ</value>
+  </data>
+  <data name="FieldTypeNotFoundByName" xml:space="preserve">
+    <value>Fïèℓδ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ná₥è ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="FormDescriptionMustBeEmptyForRelationship" xml:space="preserve">
+    <value>Fïèℓδ {0}. Fôř₥ δèƨçřïƥƭïôñ ₥úƨƭ βè è₥ƥƭ¥ ƒôř Rèℓáƭïôñƨλïƥ ƒïèℓδ ωλèñ ÌƨÉδïƭáβℓè ƨèƭ ƭô ƒáℓƨè.</value>
+  </data>
+  <data name="FriendNameCannotBe" xml:space="preserve">
+    <value>Fřïèñδℓ¥Ná₥è çáññôƭ βè [{0}].</value>
+  </data>
+  <data name="GreaterThanError" xml:space="preserve">
+    <value>{0} ₥úƨƭ βè ϱřèáƭèř ƭλáñ {1}</value>
+  </data>
+  <data name="GroupInvalidFieldType" xml:space="preserve">
+    <value>Gřôúƥƨ çáññôƭ λáƲè {0} ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="InvalidAssetTypeUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ Âƨƨèƭ T¥ƥè Ûïδ ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="InvalidField" xml:space="preserve">
+    <value>ÌñƲáℓïδ Fïèℓδ {0}</value>
+  </data>
+  <data name="InvalidFieldFriendlyName" xml:space="preserve">
+    <value>ÌñƲáℓïδ Fïèℓδ Fřïèñδℓ¥Ná₥è</value>
+  </data>
+  <data name="InvalidFieldName" xml:space="preserve">
+    <value>ÌñƲáℓïδ Fïèℓδ Ná₥è</value>
+  </data>
+  <data name="InvalidFields" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƒïèℓδƨ</value>
+  </data>
+  <data name="InvalidJsonFieldType" xml:space="preserve">
+    <value>ÌñƲáℓïδ Jƨôñ áƭƭřïβúƭè ƒïèℓδ ƭ¥ƥè. Âℓℓôωèδ Ʋáℓúèƨ ářè {0}!"</value>
+  </data>
+  <data name="InvalidLookupDisplayFormat" xml:space="preserve">
+    <value>ÌñƲáℓïδ £ôôƙúƥ δïƨƥℓá¥ Fôř₥áƭ</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>Ýôú δïδ ñôƭ ƥřôƲïδè á Ʋáℓïδ ₥ôδèℓ. Þℓèáƨè çλèçƙ ¥ôúř řè9úèƨƭ áñδ ƭř¥ áϱáïñ.</value>
+  </data>
+  <data name="InvalidparentField" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƥářèñƭ Fïèℓδ</value>
+  </data>
+  <data name="InvalidRemoveKeyFields" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ řè₥ôƲè ƙè¥ ƒïèℓδƨ áƨ ƭλèřè ářè èжïƨƭïñϱ ïƭè₥ƨ ïñ ¥ôúř èñƲïřôñ₥èñƭ. Ýôú ₥á¥ ñôƭ ƥèřƒôř₥ á Ðèℓèƭè áçƭïôñ úñƭïℓ ƭλôƨè ïƭè₥ƨ ářè řè₥ôƲèδ, ôř ¥ôú áℓƭèř ƭλè ƙè¥ ƒïèℓδƨ δèƒïñèδ ôñ ƭλïƨ ƭ¥ƥè.</value>
+  </data>
+  <data name="IsDisplayable" xml:space="preserve">
+    <value>ÌƨÐïƨƥℓá¥áβℓè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsDisplayAbleTrueReferenceItemListForRelationship" xml:space="preserve">
+    <value>Fïèℓδ {0}. ÌƨÐïƨƥℓá¥áβℓè ƥářá₥èƭèř Ʋáℓúè ₥úƨƭ βè ƭřúè ƒôř ƭ¥ƥè Rèƒèřèñçè Ìƭè₥ £ïƨƭ ƒřô₥ Rèℓáƭïôñƨλïƥ.</value>
+  </data>
+  <data name="IsDisplayAbleTrueRelationshipLookup" xml:space="preserve">
+    <value>Fïèℓδ {0}. ÌƨÐïƨƥℓá¥áβℓè ƥářá₥èƭèř Ʋáℓúè ₥úƨƭ βè ƭřúè ƒôř ƭ¥ƥè Rèℓáƭïôñ £ôôƙúƥ.</value>
+  </data>
+  <data name="IsEditable" xml:space="preserve">
+    <value>ÌƨÉδïƭáβℓè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsEditableCanotTrue" xml:space="preserve">
+    <value>ÌƨÉδïƭáβℓè çáññôƭ βè ƭřúè ƒôř ƭλïƨ ƒïèℓδ ƭ¥ƥè.</value>
+  </data>
+  <data name="IsListable" xml:space="preserve">
+    <value>Ìƨ£ïƨƭáβℓè</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsListableParameterMustBeFalseForBooleanType" xml:space="preserve">
+    <value>Fïèℓδ {0}. Ìƨ£ïƨƭáβℓè ƥářá₥èƭèř Ʋáℓúè ₥úƨƭ βè ƒáℓƨè ƒôř βôôℓèáñ ƭ¥ƥè ƒïèℓδ δèƒïñèδ ƒôř áçƭïôñ ƭ¥ƥè!</value>
+  </data>
+  <data name="IsPartOfKey" xml:space="preserve">
+    <value>ÌƨÞářƭÓƒKè¥</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilter" xml:space="preserve">
+    <value>ÌƨÞřï₥ář¥Fïℓƭèř</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="IsPrimaryFilterMustBefalseForBooleanType" xml:space="preserve">
+    <value>Fïèℓδ {0}. ÌƨÞřï₥ář¥Fïℓƭèř(§λôω Âƨ Tôƥ £èƲèℓ Fïℓƭèř) ƥářá₥èƭèř Ʋáℓúè ₥úƨƭ βè ƒáℓƨè ƒôř βôôℓèáñ ƭ¥ƥè ƒïèℓδ δèƒïñèδ ƒôř áçƭïôñ ƭ¥ƥè!</value>
+  </data>
+  <data name="IsRequired" xml:space="preserve">
+    <value>ÌƨRè9úïřèδ</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="JsonElementFieldTypeNotenabled" xml:space="preserve">
+    <value>JƨôñÉℓè₥èñƭ ƒïèℓδ ƭ¥ƥèƨ ářè ñôƭ èñáβℓèδ ïñ ƭλïƨ èñƲïřôñ₥èñƭ.  Ìñ ôřδèř ƭô úƨè JƨôñÉℓè₥èñƭ ƒïèℓδ ƭ¥ƥè ¥ôú ₥úƨƭ èñáβℓè ƨ¥ƨƭè₥ ƨèƭƭïñϱ 75.</value>
+  </data>
+  <data name="JsonElementNotSupported" xml:space="preserve">
+    <value>JƨôñÉℓè₥èñƭ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="JsonFiledNotPartAssetType" xml:space="preserve">
+    <value>J§ÓN ƒïèℓδ {0} δôèƨ ñôƭ èжïƨƭ ôř ïƨ ñôƭ ƥářƭ ôƒ ƭλïƨ áƨƨèƭ ƭ¥ƥè!</value>
+  </data>
+  <data name="JsonNotSupported" xml:space="preserve">
+    <value>Jƨôñ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="JSONTypeNotSupportIsRequiredTrue" xml:space="preserve">
+    <value>ÌƨRè9úïřèδ ƥřôƥèřƭ¥ çáñ ñôƭ βè ƭřúè ƒôř J§ÓN ƒïèℓδ ƭ¥ƥèƨ δèƒïñèδ ôñ ƭλïƨ áƨƨèƭ ƭ¥ƥè!</value>
+  </data>
+  <data name="KeyFieldNotDefined" xml:space="preserve">
+    <value>Ýôú λáƲè èℓèçƭèδ ƭô řèƥℓáçè áℓℓ çúřřèñƭ ƒïèℓδƨ, ¥èƭ ¥ôú λáƲè ñôƭ δèƒïñèδ á ƙè¥. Ýôú ₥úƨƭ δèƒïñè áƭ ℓèáƨƭ ôñè ƒïèℓδ áƨ á ƙè¥, ôř çλôôƨè Mèřϱè áƨ áñ Âçƭïôñ.</value>
+  </data>
+  <data name="LessThanError" xml:space="preserve">
+    <value>{0} ₥úƨƭ βè ℓèƨƨ ƭλáñ {1}</value>
+  </data>
+  <data name="LinkTypeNotSupportIsPartOfKeyTrue" xml:space="preserve">
+    <value>£ïñƙ T¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ ÌƨÞářƭÓƒKè¥ ôñ ƒïèℓδ {0} ƨèƭ ƭô ƭřúè.</value>
+  </data>
+  <data name="ListAssetTypeNotFound" xml:space="preserve">
+    <value>£ïƨƭ Âƨƨèƭ T¥ƥè ñôƭ ƒôúñδ</value>
+  </data>
+  <data name="LookupFieldTypeIsIncomplete" xml:space="preserve">
+    <value>£ôôƙúƥ Fïèℓδ T¥ƥè ïƨ ïñçô₥ƥℓèƭè áƨ ïƭ δôèƨ ñôƭ λáƲè á Ʋáℓïδ çℓáƨƨ ƨƥèçïƒïèδ.</value>
+  </data>
+  <data name="LookupNotSpecifiedList" xml:space="preserve">
+    <value>£ôôƙúƥ Fïèℓδ T¥ƥè ïƨ ïñçô₥ƥℓèƭè áƨ ïƭ δôèƨ ñôƭ λáƲè á £ïƨƭ ƨƥèçïƒïèδ.</value>
+  </data>
+  <data name="MaxDecimalFieldValue" xml:space="preserve">
+    <value>10000000000</value>
+  </data>
+  <data name="MissingJsonAttribute" xml:space="preserve">
+    <value>Mïƨƨïñϱ Jƨôñ áƭƭřïβúƭè δèƒïñïƭïôñ!</value>
+  </data>
+  <data name="MissingListDisplayFormat" xml:space="preserve">
+    <value>£ïƨƭ Ðïƨƥℓá¥ Fôř₥áƭ ïƨ řè9úïřèδ ƒôř £ôôƙúƥ Fïèℓδ T¥ƥè.</value>
+  </data>
+  <data name="MustProvideLinkTextValue" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á ℓïñƙ Tèжƭ Ʋáℓúè ïƒ ƨèƭƭïñϱ á δèƒáúℓƭ Ʋáℓúè ƒôř {0}.</value>
+  </data>
+  <data name="MustProvideLinkUrlValue" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á ℓïñƙ Ûřℓ Ʋáℓúè ïƒ ƨèƭƭïñϱ á δèƒáúℓƭ Ʋáℓúè ƒôř {0}.</value>
+  </data>
+  <data name="NameCannotBe" xml:space="preserve">
+    <value>Ná₥è çáññôƭ βè [{0}].</value>
+  </data>
+  <data name="NameReservedword" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè {ƒ.Ná₥è} áƨ ƭλè Ná₥è ôƒ ¥ôúř ƒïèℓδ βèçáúƨè ïƭ ïƨ á řèƨèřƲèδ ωôřδ.</value>
+  </data>
+  <data name="NoModelFound" xml:space="preserve">
+    <value>Nô ₥ôδèℓ ƒôúñδ</value>
+  </data>
+  <data name="NoPrimaryKeyDefined" xml:space="preserve">
+    <value>Nô ƥřï₥ář¥ ƙè¥ δèƒïñèδ</value>
+  </data>
+  <data name="NotIncludedValidTypeFieldType" xml:space="preserve">
+    <value>Ýôú λáƲè ñôƭ ïñçℓúδèδ á Ʋáℓïδ ƭ¥ƥè ƒôř ƭλè ƒïèℓδ ƭ¥ƥè [{0}].</value>
+  </data>
+  <data name="NotUseComputedRelationshipLookuptypeField" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á Çô₥ƥúƭèδRèℓáƭïôñƨλïƥ£ôôƙúƥ ƭ¥ƥè ôñ áñ áƨƨèƭ ôƒ ƭ¥ƥè {0} ƒôř ƒïèℓδ {1}.</value>
+  </data>
+  <data name="NotUseJSONonActionType" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á J§ÓN ƭ¥ƥè ôñ áñ áçƭïôñ ƭ¥ƥè ôř řèℓáƭïôñƨλïƥ ƭ¥ƥè ƒôř ƒïèℓδ {0}.</value>
+  </data>
+  <data name="NotUseReferenceListItemList" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á Rèƒèřèñçè Ìƭè₥ £ïƨƭ ƒřô₥ Rèℓáƭïôñƨλïƥ ƭ¥ƥè ôñ áñ áçƭïôñ ƭ¥ƥè ôř řèℓáƭïôñƨλïƥ ƭ¥ƥè ƒôř ƒïèℓδ {0}.</value>
+  </data>
+  <data name="NotUseRelationshipLookupField" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á Rèℓáƭïôñƨλïƥ £ôôƙúƥ ƭ¥ƥè ôñ áñ áçƭïôñ ƭ¥ƥè ôř řèℓáƭïôñƨλïƥ ƭ¥ƥè ƒôř ƒïèℓδ {0}.</value>
+  </data>
+  <data name="NotUserOwnershipLookup" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á Óωñèřƨλïƥ £ôôƙúƥ ƭ¥ƥè ôñ áñ áçƭïôñ ƭ¥ƥè ôř řèℓáƭïôñƨλïƥ ƭ¥ƥè ƒôř ƒïèℓδ {0}.</value>
+  </data>
+  <data name="NotUseSCoreTypeAssetForField" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á §çôřè ƭ¥ƥè ôñ áñ áƨƨèƭ ôƒ ƭ¥ƥè {0} ƒôř ƒïèℓδ {1}.</value>
+  </data>
+  <data name="NotUseScoreTypeOnActionAndRelationshipType" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ úƨè á §çôřè ƭ¥ƥè ôñ áñ áçƭïôñ ƭ¥ƥè ôř řèℓáƭïôñƨλïƥ ƭ¥ƥè ƒôř ƒïèℓδ {0}.</value>
+  </data>
+  <data name="NotValidRegex" xml:space="preserve">
+    <value>Váℓïδáƭïôñ ƥáƭƭèřñ ïƨ ñôƭ Ʋáℓïδ Rèϱèж èжƥřèƨƨïôñ!</value>
+  </data>
+  <data name="NoUidFound" xml:space="preserve">
+    <value>Nô Ûïδ ƒôúñδ</value>
+  </data>
+  <data name="NoValidTypeDefined" xml:space="preserve">
+    <value>Nô Ʋáℓïδ ƭ¥ƥè δèƒïñèδ</value>
+  </data>
+  <data name="OneThanOneTypeDefined" xml:space="preserve">
+    <value>Tλè ƒôℓℓôωïñϱ ƒïèℓδƨ λáƲè ₥ôřè ƭλáñ ôñè ƭ¥ƥè δèƒïñèδ: {0}.</value>
+  </data>
+  <data name="OnlyOneTagFieldAllowed" xml:space="preserve">
+    <value>Âƨƨèƭ ƭ¥ƥè çáñ λáƲè ôñℓ¥ ôñè Táϱ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="ParameterError" xml:space="preserve">
+    <value>Þářá₥èƭèř èřřôř</value>
+  </data>
+  <data name="ParentFieldRefernceItemNotfound" xml:space="preserve">
+    <value>Þářèñƭ ƒïèℓδ [{0}] ôƒ ƭ¥ƥè RèƒèřèñçèÌƭè₥ ñôƭ ƒôúñδ ôñ ƭλïƨ áƨƨèƭ.</value>
+  </data>
+  <data name="ProvideComputedRealtionshipLookupField" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á δèƒïñïƭïôñ ƒôř ƭλè çô₥ƥúƭèδ řèℓáƭïôñƨλïƥ ℓôôƙúƥ ƒïèℓδ {0}.</value>
+  </data>
+  <data name="ProvideOneValueActionAssetRelationship" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè ôñℓ¥ ôñè ôƒ ƭλè ƭλřèè Ûïδ ƥřôƥèřƭïèƨ: ÂçƭïôñT¥ƥèÛïδ, ÂƨƨèƭT¥ƥèÛïδ, ôř RèℓáƭïôñƨλïƥT¥ƥèÛïδ.</value>
+  </data>
+  <data name="ReferenceItemIsPartOfKeyNotAllowedTrue" xml:space="preserve">
+    <value>Rèƒèřèñçè ïƭè₥ ƭ¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ 'ÌƨÞářƭÓƒKè¥' ƨèƭ ƭô ƭřúè.</value>
+  </data>
+  <data name="ReferenceItemNotSupportJsonElement" xml:space="preserve">
+    <value>Fïèℓδ ƭ¥ƥè JƨôñÉℓè₥èñƭ ñôƭ ƨúƥƥôřƭ ƒôř řèƒèřèñçè ïƭè₥ ƭ¥ƥè!</value>
+  </data>
+  <data name="ReferenceListNotSupportJson" xml:space="preserve">
+    <value>Fïèℓδ ƭ¥ƥè Jƨôñ ñôƭ ƨúƥƥôřƭ ƒôř řèƒèřèñçè ïƭè₥ ƭ¥ƥè!</value>
+  </data>
+  <data name="ReferenceListNotSupportTag" xml:space="preserve">
+    <value>Fïèℓδ ƭ¥ƥè Táϱ ñôƭ ƨúƥƥôřƭ ƒôř řèƒèřèñçè ïƭè₥ ƭ¥ƥè</value>
+  </data>
+  <data name="RelationNotAllowedIsPartyOFKeyTrue" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ 'ÌƨÞářƭÓƒKè¥' ƨèƭ ƭô ƭřúè.</value>
+  </data>
+  <data name="RelationshipIDUsedMoreThanOnce" xml:space="preserve">
+    <value>Tλè ƒôℓℓôωïñϱ řèℓáƭïôñƨλïƥ ÌÐ ářè úƨèδ ₥ôřè ƭλáñ ôñçè: {0}. Rèℓáƭïôñƨλïƥ ₥úƨƭ βè úñï9úè ôñ ƨá₥è áƨƨèƭƭ¥ƥè</value>
+  </data>
+  <data name="RelationshipNotAllowedScoreFieldType" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥƨ çáññôƭ λáƲè §çôřè ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="RelationshipNotSupported" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="RelationshipNotSupportPath" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥƨ çáññôƭ λáƲè Þáƭλ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="RelationshipsNotAllowedTagFieldType" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥƨ çáññôƭ λáƲè Táϱ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="RelationshipTypeFieldNotFound" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè/Fïèℓδ ñôƭ ƒôúñδ</value>
+  </data>
+  <data name="RelationshipTypeNotFound" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ñôƭ ƒôúñδ</value>
+  </data>
+  <data name="RelationshipTypeNotFoundBasedOnUid" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ôř Fïèℓδ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ûïδ ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="RelationshipTypeOrFieldTypeNotFound" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ôř Fïèℓδ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ûïδ ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="RelationshipTypeUIdNotFound" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ûïδ ƥřôƲïδèδ [{0}].</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfActionTypeUidProvided" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ ƥřôƲïδè áñ RèℓáƭïôñƨλïƥT¥ƥèÛïδ ƨïñçè ¥ôú λáƲè áℓřèáδ¥ ƥřôƲïδèδ áñ ÂçƭïôñT¥ƥèÛïδ.</value>
+  </data>
+  <data name="RelationShipTypeUidNotRequiredIfAssetTypeUidProvided" xml:space="preserve">
+    <value>Ýôú ₥á¥ ñôƭ ƥřôƲïδè áñ RèℓáƭïôñƨλïƥT¥ƥèÛïδ ƨïñçè ¥ôú λáƲè áℓřèáδ¥ ƥřôƲïδèδ áñ ÂƨƨèƭT¥ƥèÛïδ.</value>
+  </data>
+  <data name="RelationshipUidMustUniqueWithinAssetType" xml:space="preserve">
+    <value>Tλè ƒôℓℓôωïñϱ řèℓáƭïôñƨλïƥ ÌÐ ářè úƨèδ ₥ôřè ƭλáñ ôñçè: {0}. Rèℓáƭïôñƨλïƥ ₥úƨƭ βè úñï9úè ôñ ƨá₥è áƨƨèƭƭ¥ƥè.</value>
+  </data>
+  <data name="ScoreNotSupported" xml:space="preserve">
+    <value>§çôřè ƒïèℓδƨ ářè ñôƭ áℓℓôωèδ ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè!</value>
+  </data>
+  <data name="ScoreTypeCannotAllocateAssetType" xml:space="preserve">
+    <value>§çôřè ƭ¥ƥè {0} çáññôƭ βè áℓℓôçáƭèδ ƭô ƭλïƨ áƨƨèƭ ƭ¥ƥè ƒôř ƒïèℓδ {1}.</value>
+  </data>
+  <data name="ShowIfEmpty" xml:space="preserve">
+    <value>§λôωÌƒÉ₥ƥƭ¥</value>
+    <comment>Constant Parameter value</comment>
+  </data>
+  <data name="SpecificHaveTagFieldType" xml:space="preserve">
+    <value>Óñℓ¥ Âřƭïƒáçƭƨ, Þôℓïçïèƨ, Môδèℓƨ áñδ Rúℓèƨ ářè áℓℓôωèδ ƭô λáƲè Táϱ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="TaskTypeGovernanceRoleCustomError" xml:space="preserve">
+    <value>Táƨƙ T¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ '{0}' ôñ ƒïèℓδ GôƲèřñáñçèRôℓè ƨèƭ ƭô {1}.</value>
+  </data>
+  <data name="TaskTypeNameCustomError" xml:space="preserve">
+    <value>Táƨƙ T¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ '{0}' ôñ ƒïèℓδ Ná₥è ƨèƭ ƭô {1}.</value>
+  </data>
+  <data name="TaskTypeStepNoCustomError" xml:space="preserve">
+    <value>Táƨƙ T¥ƥèƨ çáññôƭ λáƲè ƒïèℓδ ƥřôƥèřƭ¥ '{0}' ôñ ƒïèℓδ §ƭèƥNô ƨèƭ ƭô {1}.</value>
+  </data>
+  <data name="ThisAssetTypeNotSupportPath" xml:space="preserve">
+    <value>Tλïƨ áƨƨèƭ ƭ¥ƥè ₥á¥ ñôƭ λáƲè á Þáƭλ ƒïèℓδ ƭ¥ƥè!</value>
+  </data>
+  <data name="TypeObjectMissing" xml:space="preserve">
+    <value>Tλè 'T¥ƥè' ôβJèçƭ ïƨ ₥ïƨƨïñϱ ƒřô₥ ôñè ôř ₥ôřè ƒïèℓδ ƭ¥ƥè δèƒïñïƭïôñƨ.</value>
+  </data>
+  <data name="WholeNumberError" xml:space="preserve">
+    <value>{0} ₥úƨƭ βè á ωλôℓè ñú₥βèř</value>
+  </data>
+</root>

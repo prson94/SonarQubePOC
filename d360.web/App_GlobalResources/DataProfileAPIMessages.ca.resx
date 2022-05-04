@@ -1,0 +1,394 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApiSheetName" xml:space="preserve">
+    <value>Âƥï Ìñƒô</value>
+  </data>
+  <data name="AssetIdColumn" xml:space="preserve">
+    <value>Âƨƨèƭ ÌÐ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetPathColumn" xml:space="preserve">
+    <value>Âƨƨèƭ Þáƭλ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetSheetName" xml:space="preserve">
+    <value>Âƨƨèƭƨ</value>
+  </data>
+  <data name="AssetTypePathColumn" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè Þáƭλ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetTypeUidColumn" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè Ûïδ</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+  <data name="AssetUidColumn" xml:space="preserve">
+    <value>Âƨƨèƭ ÛÌÐ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="AssetUidProfileSetDateRecordNotfound" xml:space="preserve">
+    <value>Rèçôřδ δôèƨ ñôƭ èжïƨƭ ƒôř ÂƨƨèƭÛïδ {0} áñδ Þřôƒïℓè§èƭÐáƭè {1}</value>
+  </data>
+  <data name="UrlColumn" xml:space="preserve">
+    <value>Ûřℓ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="BaseTypeColumn" xml:space="preserve">
+    <value>ßáƨè T¥ƥè</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="DataProfileDeleteMaxLimit" xml:space="preserve">
+    <value>Ýôú ₥á¥ ôñℓ¥ δèℓèƭè á ₥áжï₥ú₥ ôƒ {0} δáƭáƥřôƒïℓè řèçôřδƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè úƨè ƭλè ßÂTÇH ÂÞÌ èñδƥôïñƭ.</value>
+  </data>
+  <data name="DataProfileRecordsLimit" xml:space="preserve">
+    <value>Ýôú ₥á¥ ôñℓ¥ ƥřôƲïδè á ₥áжï₥ú₥ ôƒ {0} Ðáƭá Þřôƒïℓè řèçôřδƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè çáℓℓ ƭλè ßÂTÇH ÂÞÌ ƭô ƨúβ₥ïƭ ₥ôřè ƭλáñ {1} ïƭè₥ƨ.</value>
+  </data>
+  <data name="DescriptionColumn" xml:space="preserve">
+    <value>Ðèƨçřïƥƭïôñ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="DisabledColumn" xml:space="preserve">
+    <value>Ðïƨáβℓèδ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="Duplicate" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè</value>
+  </data>
+  <data name="DuplicateRecordBatchProfile" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè Rèçôřδƨ: {0}. ÂƨƨèƭÛïδ áñδ Þřôƒïℓè§èƭÐáƭè ƥáïřƨ ářè úƨèδ áƨ řèçôřδ ïδèñƭïƒïèřƨ áñδ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.</value>
+  </data>
+  <data name="EffectiveFromColumn" xml:space="preserve">
+    <value>ÉƒƒèçƭïƲè Fřô₥</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="EffectiveThroughColumn" xml:space="preserve">
+    <value>ÉƒƒèçƭïƲè Tλřôúϱλ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ElementBottomKNotEmpty" xml:space="preserve">
+    <value>Éℓè₥èñƭƨ ïñ βôƭƭô₥K çáññôƭ βè É₥ƥƭ¥ ƨƭřïñϱƨ</value>
+  </data>
+  <data name="ElementTopKNotEmpty" xml:space="preserve">
+    <value>Éℓè₥èñƭƨ ïñ ƭôƥK çáññôƭ βè É₥ƥƭ¥ ƨƭřïñϱ</value>
+  </data>
+  <data name="HeaderFilterColumn" xml:space="preserve">
+    <value>Hèáδèř Fïℓƭèř</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="HeaderFilterConfidenceColumn" xml:space="preserve">
+    <value>Hèáδèř Fïℓƭèř Çôñƒïδèñçè</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="InvalidOrder" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'ƥáƭλ' áñδ 'ƭáϱƨ'.</value>
+  </data>
+  <data name="InvalidSimilarType" xml:space="preserve">
+    <value>'{0}' ïƨ áñ ïñƲáℓïδ ƨï₥ïℓář ƭ¥ƥè.</value>
+  </data>
+  <data name="InvalidValuesColumn" xml:space="preserve">
+    <value>ÌñƲáℓïδ Váℓúèƨ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="JsonColumn" xml:space="preserve">
+    <value>J§ÓN</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MatchedAssetExportFileName" xml:space="preserve">
+    <value>Fïℓƭèřèδ {0} {1} Fïèℓδƨ £ïƨƭ _{2}_.жℓƨж</value>
+  </data>
+  <data name="MatchedAssetIdColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Âƨƨèƭ ÌÐ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetNameColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Ná₥è</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetPathColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Âƨƨèƭ Þáƭλ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetTagsColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Táϱƨ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetTypePathColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Âƨƨèƭ T¥ƥè Þáƭλ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetUidColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Âƨƨèƭ ÛÌÐ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchedAssetUrlColumn" xml:space="preserve">
+    <value>{0} Fïèℓδ Ûřℓ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="MatchTypeColumn" xml:space="preserve">
+    <value>Máƭçλ T¥ƥè</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MaximumColumn" xml:space="preserve">
+    <value>Máжï₥ú₥</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinConfidenceInvalid" xml:space="preserve">
+    <value>Mïñ Çôñƒïδèñçè Þářá₥èƭèř ïƨ ïñƲáℓïδ</value>
+  </data>
+  <data name="MinimumColumn" xml:space="preserve">
+    <value>Mïñï₥ú₥</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinimumMaximumPresentColumn" xml:space="preserve">
+    <value>Mïñï₥ú₥ Máжï₥ú₥ Þřèƨèñƭ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="MinimumSamplesColumn" xml:space="preserve">
+    <value>Mïñï₥ú₥ §á₥ƥℓèƨ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="NameColumn" xml:space="preserve">
+    <value>Ná₥è</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="NoSimilarTypeForAssetUid" xml:space="preserve">
+    <value>{0} ƨïϱñáƭúřè ñôƭ ƒôúñδ ƒôř ÂƨƨèƭÛïδ {1}</value>
+  </data>
+  <data name="OrderInvalid" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'çôñƒïδèñçè', 'ƥáƭλ' ôř 'áƨƨèƭƭ¥ƥèƥáƭλ'.</value>
+  </data>
+  <data name="PriorityColumn" xml:space="preserve">
+    <value>Þřïôřïƭ¥</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ProfileRecordAlreadyExists" xml:space="preserve">
+    <value>Rèçôřδ áℓřèáδ¥ èжïƨƭƨ ƒôř ÂƨƨèƭÛïδ {0} áñδ Þřôƒïℓè§èƭÐáƭè {1}</value>
+  </data>
+  <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
+    <value>Tλè áƨƨèƭ çℓáƨƨ {0} δôèƨ ñôƭ ƨúƥƥôřƭ δáƭá ƥřôƒïℓïñϱ. Þřôƒïℓïñϱ δáƭá çáñ ôñℓ¥ βè áƨƨôçïáƭèδ ωïƭλ ßúƨïñèƨƨ ôř Tèçλñïçáℓ Âƨƨèƭ ƭ¥ƥèƨ.</value>
+  </data>
+  <data name="QualifierColumn" xml:space="preserve">
+    <value>Qúáℓïƒïèř</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="RegularExpressionColumn" xml:space="preserve">
+    <value>Rèϱúℓář Éжƥřèƨƨïôñ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="RequiredSimilarType" xml:space="preserve">
+    <value>ƨï₥ïℓářT¥ƥè ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="SemanticBaseTypeBoolean" xml:space="preserve">
+    <value>Třúè/Fáℓƨè (ßôôℓèáñ)</value>
+  </data>
+  <data name="SemanticBaseTypeNumber" xml:space="preserve">
+    <value>Nú₥βèř ({0})</value>
+  </data>
+  <data name="SemanticMatchTypeAdvanced" xml:space="preserve">
+    <value>ÂδƲáñçèδ (J§ÓN)</value>
+  </data>
+  <data name="SemanticMatchTypeList" xml:space="preserve">
+    <value>£ïƨƭ ôƒ Váℓúèƨ</value>
+  </data>
+  <data name="SemanticMatchTypePattern" xml:space="preserve">
+    <value>Þáƭƭèřñ ïñ Ðáƭá</value>
+  </data>
+  <data name="SemanticSourceBuiltIn" xml:space="preserve">
+    <value>ßúïℓƭ-Ìñ</value>
+  </data>
+  <data name="SemanticSourceUserDefined" xml:space="preserve">
+    <value>Ûƨèř-Ðèƒïñèδ</value>
+  </data>
+  <data name="SemanticStatusUnderReview" xml:space="preserve">
+    <value>Ûñδèř RèƲïèω</value>
+  </data>
+  <data name="SemanticTypeExportFilename" xml:space="preserve">
+    <value>Fïℓƭèřèδ §è₥áñƭïç T¥ƥèƨ £ïƨƭ {0}.жℓƨж</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeUidColumn" xml:space="preserve">
+    <value>§è₥áñƭïç T¥ƥè Ûïδ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeURLColumn" xml:space="preserve">
+    <value>§è₥áñƭïç T¥ƥè ÛR£</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeAssetExportFilename" xml:space="preserve">
+    <value>Fïℓƭèřèδ Âƨƨèƭ ℓïƨƭ ƒôř {0} {1}.жℓƨж</value>
+    <comment>Used for semantic type asset list export</comment>
+  </data>
+  <data name="Similar" xml:space="preserve">
+    <value>§ï₥ïℓář</value>
+  </data>
+  <data name="SourceColumn" xml:space="preserve">
+    <value>§è₥áñƭïç §ôúřçè</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="StatusColumn" xml:space="preserve">
+    <value>§ƭáƭúƨ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="TagFieldNotFound" xml:space="preserve">
+    <value>Táϱ ƒïèℓδ ñôƭ ƒôúñδ</value>
+    <comment>Tag field not found</comment>
+  </data>
+  <data name="TagsColumn" xml:space="preserve">
+    <value>Táϱƨ</value>
+    <comment>Used for data profile match export</comment>
+  </data>
+  <data name="ThresholdColumn" xml:space="preserve">
+    <value>Tλřèƨλôℓδ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="TypeQualifierInvalid" xml:space="preserve">
+    <value>T¥ƥè Qúáℓïƒïèř Þářá₥èƭèř ïƨ ïñƲáℓïδ</value>
+  </data>
+  <data name="ValidLocalesColumn" xml:space="preserve">
+    <value>Váℓïδ £ôçáℓèƨ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="ValidValuesColumn" xml:space="preserve">
+    <value>Váℓïδ Váℓúèƨ</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeStatusExportFilename" xml:space="preserve">
+    <value>§è₥áñƭïç T¥ƥè §ƭáƭúƨ £ïƨƭ {0}.жℓƨж</value>
+  </data>
+  <data name="ColorColumn" xml:space="preserve">
+    <value>Çôℓôř</value>
+    <comment>User for Semantic Type Status export</comment>
+  </data>
+  <data name="AssetUrlColumn" xml:space="preserve">
+    <value>Âƨƨèƭ ÛR£</value>
+    <comment>Used for Semantic Types Assets Export</comment>
+  </data>
+  <data name="EndpointNotAccessible" xml:space="preserve">
+    <value>Tλïƨ èñδƥôïñƭ ïƨ ñôƭ áççèƨƨïβℓè.</value>
+    <comment>Used for LD Flags</comment>
+  </data>
+  <data name="ErrorOnRequest" xml:space="preserve">
+    <value>Éřřôř ôñ řè9úèƨƭ.</value>
+    <comment>Used for LD Flags</comment>
+  </data>
+  <data name="TypeQualifierNotFound" xml:space="preserve">
+    <value>T¥ƥè Qúáℓïƒïèř '{0}' δôèƨ ñôƭ èжïƨƭ</value>
+  </data>
+</root>

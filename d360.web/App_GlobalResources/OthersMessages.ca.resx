@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllNodeMustLink" xml:space="preserve">
+    <value>Âℓℓ ñôδèƨ ωïƭλïñ δïáϱřá₥ ₥úƨƭ βè ℓïñƙèδ.</value>
+  </data>
+  <data name="AllocationIdentifierDoesnotValidAllocation" xml:space="preserve">
+    <value>Âℓℓôçáƭïôñ ïδèñƭïƒïèř ωïƭλ Ʋáℓúè {0} δôèƨ ñôƭ çôřřèƨƥôñδ ƭô á Ʋáℓïδ áℓℓôçáƭïôñ.</value>
+  </data>
+  <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
+    <value>áℓℓôçáƭïôñÛïδ {0} ïƨ ñôƭ á çôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř.</value>
+  </data>
+  <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
+    <value>Âƨƨèƭ ïδèñƭïƒïèř ωïƭλ Ʋáℓúè {0} δôèƨ ñôƭ çôřřèƨƥôñδ ƭô á Ʋáℓïδ áƨƨèƭ.</value>
+  </data>
+  <data name="AssetuidDoesnotExists" xml:space="preserve">
+    <value>Tλè áƨƨèƭ ωïƭλ úïδ ƨƥèçïƒïèδ δôèƨ ñôƭ èжïƨƭ.</value>
+  </data>
+  <data name="AssetUidMustSpecified" xml:space="preserve">
+    <value>Tλè áƨƨèƭ úïδ ₥úƨƭ βè ƨƥèçïƒïèδ.</value>
+  </data>
+  <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
+    <value>áƨƨèƭÛïδ {0} ïƨ ñôƭ á çôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř.</value>
+  </data>
+  <data name="BadRequestSubmitted" xml:space="preserve">
+    <value>ßáδ řè9úèƨƭ ƨúβ₥ïƭƭèδ</value>
+  </data>
+  <data name="CriticalException" xml:space="preserve">
+    <value>Çřïƭïçáℓ Éжçèƥƭïôñ</value>
+  </data>
+  <data name="CustomConstant" xml:space="preserve">
+    <value>Çúƨƭô₥</value>
+  </data>
+  <data name="DatasourceNotReachable" xml:space="preserve">
+    <value>Tλè úñδèřℓ¥ïñϱ δáƭá ƨôúřçè ïƨ ñôƭ řèáçλáβℓè.</value>
+  </data>
+  <data name="EndPointNotFound" xml:space="preserve">
+    <value>Éñδƥôïñƭ ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="FailedToVerifySignature" xml:space="preserve">
+    <value>ÂƨƨèřƭïôñÇôñƨú₥èř§èřƲïçè =&gt; Fáïℓèδ ƭô Vèřïƒ¥ §ïϱñáƭúřè ωλèřè áñ ÌÐÞ-ƨúƥƥℓïèδ ÇÉR ƒïℓè ωáƨ ƨƭôřèδ</value>
+  </data>
+  <data name="FailedToVerifySignatureNoIDP" xml:space="preserve">
+    <value>ÂƨƨèřƭïôñÇôñƨú₥èř§èřƲïçè =&gt; Fáïℓèδ ƭô Vèřïƒ¥ §ïϱñáƭúřè ωλèřè ñô ÌÐÞ-ƨúƥƥℓïèδ ÇÉR ƒïℓè ωáƨ ƨƭôřèδ</value>
+  </data>
+  <data name="FilterExpressionErrors" xml:space="preserve">
+    <value>Fïℓƭèř èжƥřèƨƨïôñƨ çôñƭáïñèδ ƭλè ƒôℓℓôωïñϱ èřřôřƨ: {0}.</value>
+  </data>
+  <data name="GovernEnvironmentInactive" xml:space="preserve">
+    <value>Tλè GôƲèřñ èñƲïřôñ₥èñƭ ¥ôú řè9úèƨƭèδ ïƨ çúřřèñƭℓ¥ ïñáçƭïƲè. Þℓèáƨè çôñƭáçƭ Þřèçïƨèℓ¥ ƨúƥƥôřƭ ƒôř áδδïƭïôñáℓ ïñƒôř₥áƭïôñ.</value>
+  </data>
+  <data name="IncorrectPassword" xml:space="preserve">
+    <value>Tλè úƨèř ñá₥è ôř ƥáƨƨωôřδ ƥřôƲïδèδ ïƨ ïñçôřřèçƭ.</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Tλïƨ è₥áïℓ δôèƨ ñôƭ ℓôôƙ Ʋáℓïδ.</value>
+  </data>
+  <data name="InvalidFieldFilterParameter" xml:space="preserve">
+    <value>Ýôú λáƲè ïñƲáℓïδ ƒïèℓδƨ ïñ ¥ôúř ƒïℓƭèř 9úèř¥ ƥářá₥èƭèřƨ: {0}.</value>
+  </data>
+  <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
+    <value>Ýôú λáƲè ïñƲáℓïδ ƒïèℓδƨ ïñ ¥ôúř ƨèℓèçƭ 9úèř¥ ƥářá₥èƭèřƨ: {0}.</value>
+  </data>
+  <data name="InvalidField_OrderParameter" xml:space="preserve">
+    <value>Ýôú λáƲè ïñƲáℓïδ ƒïèℓδƨ ïñ ¥ôúř _ôřδèř 9úèř¥ ƥářá₥èƭèř.</value>
+  </data>
+  <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
+    <value>ÌñƲáℓïδ Rèℓáƭïôñƨλïƥ ƒïèℓδ èñçôúñƭèřèδ ïñƲáℓïδ ôř δèℓèƭèδ řèℓáƭïôñƨλïƥ ƭ¥ƥè èñçôúñƭèřèδ.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Ìƭè₥ ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="LinkWithoutFromToDetected" xml:space="preserve">
+    <value>£ïñƙ ωïƭλôúƭ ƒřô₥ áñδ ƭô ñôδè δèƭèçƭèδ.</value>
+  </data>
+  <data name="ModelNotEmpty" xml:space="preserve">
+    <value>Môδèℓ çáññôƭ βè è₥ƥƭ¥.</value>
+  </data>
+  <data name="MustAcceptTermsOfUse" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ áççèƥƭ ƭλè ƭèř₥ƨ ôƒ úƨè.</value>
+  </data>
+  <data name="NeedAdministratorHelp" xml:space="preserve">
+    <value>Âñ èřřôř ôççúřřèδ, ƥℓèáƨè ƭř¥ áϱáïñ ôř çôñƭáçƭ ƭλè áδ₥ïñïƨƭřáƭôř</value>
+  </data>
+  <data name="NoAssertionsInResponse" xml:space="preserve">
+    <value>Nô áƨƨèřƭïôñƨ ïñ řèƨƥôñƨè</value>
+  </data>
+  <data name="NoEmailDomainResolved" xml:space="preserve">
+    <value>Nô è₥áïℓ δô₥áïñ çôúℓδ βè řèƨôℓƲèδ.</value>
+  </data>
+  <data name="NoPremissiontoviewScoreHistory" xml:space="preserve">
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô Ʋïèω ƨçôřè λïƨƭôř¥ ôñ ƭλïƨ áƨƨèƭ.</value>
+  </data>
+  <data name="NoRegistrationFound" xml:space="preserve">
+    <value>Nô řèϱïƨƭřáƭïôñ ƒôúñδ.</value>
+  </data>
+  <data name="NoRelationshipTypeFoundToLookup" xml:space="preserve">
+    <value>ÌñƲáℓïδ Rèℓáƭïôñƨλïƥ ƒïèℓδ èñçôúñƭèřèδ ñô řèℓáƭïôñƨλïƥ ƭ¥ƥè ƭô ℓôôƙúƥ ƒôúñδ ïñ δèƒïñïƭïôñ.</value>
+  </data>
+  <data name="NoResourceAccount" xml:space="preserve">
+    <value>Nô řèƨôúřçè áççôúñƭ çôúℓδ βè ℓôçáƭèδ ƒôř ¥ôú.</value>
+  </data>
+  <data name="NotAuthorizedToEditDiagram" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áúƭλôřïƺèδ ƭô èδïƭ ƭλïƨ ƥřôçèƨƨ δïáϱřá₥</value>
+  </data>
+  <data name="NoTermOfAgreementFound" xml:space="preserve">
+    <value>Nô ƭèř₥ƨ ôƒ úƨè áϱřèè₥èñƭ ƒôúñδ.</value>
+  </data>
+  <data name="NotMeetPasswordRule" xml:space="preserve">
+    <value>Ýôúř ƥáƨƨωôřδ δôèƨ ñôƭ ₥èèƭ ƭλè ƒôℓℓôωïñϱ çô₥ƥℓèжïƭ¥ řè9úïřè₥èñƭƨ: {0}.</value>
+  </data>
+  <data name="OrganisationNotYetRegistered" xml:space="preserve">
+    <value>Ýôúř ôřϱáñïƨáƭïôñ ïƨ ñôƭ ¥èƭ řèϱïƨƭèřèδ ωïƭλ ƭλè Mářƙèƭ ßúƨïñèƨƨ Gℓôƨƨář¥ ôř ¥ôúř δèƭáïℓƨ ářè ïñƲáℓïδ. Þℓèáƨè çôñƭáçƭ &lt;á λřèƒ='₥áïℓƭô:δáƭáƨúƥƥôřƭ@ℓôñδôñ₥ářƙèƭϱřôúƥ.çô.úƙ'&gt;δáƭáƨúƥƥôřƭ@ℓôñδôñ₥ářƙèƭϱřôúƥ.çô.úƙ&lt;/á&gt; ƒôř áƨƨïƨƭáñçè.</value>
+  </data>
+  <data name="OwnershipConfirmationMail" xml:space="preserve">
+    <value>Ýôú ωïℓℓ řèçèïƲè áñ è₥áïℓ ƨλôřƭℓ¥ ƭô çôñƒïř₥ ôωñèřƨλïƥ ôƒ ƭλïƨ è₥áïℓ áδδřèƨƨ, áñδ ƭô çôñƭïñúè řèϱïƨƭřáƭïôñ.</value>
+  </data>
+  <data name="PasswordNotMatch" xml:space="preserve">
+    <value>Þáƨƨωôřδƨ δô ñôƭ ₥áƭçλ.</value>
+  </data>
+  <data name="RequestURINotExceed16Kchar" xml:space="preserve">
+    <value>Rè9úèƨƭ ÛRÌ ₥úƨƭ ñôƭ èжçèèδ 16,000 çλářáçƭèřƨ.</value>
+  </data>
+  <data name="ResoourceAccountNotAllocatedToCompany" xml:space="preserve">
+    <value>Rèƨôúřçè áççôúñƭ ñôƭ ¥èƭ áℓℓôçáƭèδ ƭô ƭλïƨ çô₥ƥáñ¥.</value>
+  </data>
+  <data name="ResourceNotSetOrgResource" xml:space="preserve">
+    <value>Rèƨôúřçè áççôúñƭ ñôƭ ¥èƭ ƨèƭ áƨ áñ ôřϱáñïƺáƭïôñáℓ řèƨôúřçè.</value>
+  </data>
+  <data name="ResourceNotThisUser" xml:space="preserve">
+    <value>Rèƨôúřçè ñôƭ áƲáïℓáβℓè ƒôř ƭλïƨ úƨèř.</value>
+  </data>
+  <data name="SearchFilterInvalid" xml:space="preserve">
+    <value>§èářçλ ƒïℓƭèřƨ ářè ïñƲáℓïδ ïñ ¥ôúř ƒïℓƭèř 9úèř¥ ƥářá₥èƭèř: ℓáƨƭ_₥ôδïƒïèδ.</value>
+  </data>
+  <data name="ServerErrorOccurred" xml:space="preserve">
+    <value>Â ƨèřƲèř èřřôř ôççúřřèδ. Þℓèáƨè ƭř¥ ¥ôúř řè9úèƨƭ áϱáïñ áƭ á ℓáƭèř ƭï₥è</value>
+  </data>
+  <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
+    <value>Wλèñ úƨïñϱ çôƥ¥/řèƥℓáçè ôƥƭïôñ ωïƭλ ƨôúřçèÂƨƨèƭÛïδ ₥ôδèℓ ₥úƨƭ βè è₥ƥƭ¥.</value>
+  </data>
+  <data name="SourceTargetNotSame" xml:space="preserve">
+    <value>§ôúřçè áñδ ƭářϱèƭ áƨƨèƭ çáññôƭ βè ƨá₥è.</value>
+  </data>
+  <data name="SourceTargetTypeMustSame" xml:space="preserve">
+    <value>§ôúřçè áñδ ƭářϱèƭ áƨƨèƭ ƭ¥ƥèƨ ₥úƨƭ βè ƨá₥è.</value>
+  </data>
+  <data name="SourceUidNotExists" xml:space="preserve">
+    <value>ƨôúřçèÂƨƨèƭÛïδ ïƨ ïñƲáℓïδ ôř áƨƨèƭ δôèƨ ñôƭ èжïƨƭ.</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Ûñáúƭλôřïƺèδ</value>
+  </data>
+  <data name="_PageNumGT0" xml:space="preserve">
+    <value>_ƥáϱèNú₥ ƥářá₥èƭèř ₥úƨƭ βè ϱřèáƭèř ƭλáñ 0.</value>
+  </data>
+  <data name="_PageSizeMax200" xml:space="preserve">
+    <value>_ƥáϱè§ïƺè ƥářá₥èƭèř λáƨ á ₥áжï₥ú₥ ƨúƥƥôřƭèδ Ʋáℓúè ôƒ 200.</value>
+  </data>
+</root>

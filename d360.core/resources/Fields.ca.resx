@@ -1,0 +1,343 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Code_Name" xml:space="preserve">
+    <value>Çôδè</value>
+  </data>
+  <data name="LastLoggedInOn_Description" xml:space="preserve">
+    <value>Tλè δáƭè ƭλïƨ řèƨôúřçè ℓáƨƭ ℓôϱϱèδ ïñ.</value>
+  </data>
+  <data name="LastLoggedInOn_Name" xml:space="preserve">
+    <value>£áƨƭ ℓôϱϱèδ ïñ ôñ</value>
+  </data>
+  <data name="Description_Description" xml:space="preserve">
+    <value>Tλè δèƨçřïƥƭïôñ ƒôř ƭλïƨ ïƭè₥.</value>
+  </data>
+  <data name="Description_ErrorRequired" xml:space="preserve">
+    <value>Ðèƨçřïƥƭïôñ ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Ðèƨçřïƥƭïôñ</value>
+  </data>
+  <data name="Email_Description" xml:space="preserve">
+    <value>Tλè è₥áïℓ ƒôř ƭλïƨ řèƨôúřçè.</value>
+  </data>
+  <data name="Email_ErrorRegex" xml:space="preserve">
+    <value>É₥áïℓ çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+  </data>
+  <data name="Email_ErrorRequired" xml:space="preserve">
+    <value>É₥áïℓ ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="Email_Name" xml:space="preserve">
+    <value>É₥áïℓ</value>
+  </data>
+  <data name="FirstName_Description" xml:space="preserve">
+    <value>Tλè ƒïřƨƭ ñá₥è ƒôř ƭλïƨ řèƨôúřçè.</value>
+  </data>
+  <data name="FirstName_ErrorRegex" xml:space="preserve">
+    <value>Fïřƨƭ ñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+  </data>
+  <data name="FirstName_ErrorRequired" xml:space="preserve">
+    <value>Fïřƨƭ ñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="FirstName_Name" xml:space="preserve">
+    <value>Fïřƨƭ ñá₥è</value>
+  </data>
+  <data name="FriendlyName_Description" xml:space="preserve">
+    <value>Tλè ñá₥è úƨèδ ωλèñ δïƨƥℓá¥ïñϱ ƭλïƨ ƒïèℓδ Ʋáℓúè ƭô ¥ôúř áúδïèñçè.</value>
+  </data>
+  <data name="FriendlyName_ErrorRequired" xml:space="preserve">
+    <value>Fřïèñδℓ¥ Ná₥è ïƨ řè9úïřèδ.</value>
+  </data>
+  <data name="FriendlyName_Name" xml:space="preserve">
+    <value>Fřïèñδℓ¥ Ná₥è</value>
+  </data>
+  <data name="ID_Description" xml:space="preserve">
+    <value>Tλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥.</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ÌÐ</value>
+    <comment>u</comment>
+  </data>
+  <data name="LastName_Description" xml:space="preserve">
+    <value>Tλè ℓáƨƭ ñá₥è ƒôř ƭλïƨ řèƨôúřçè.</value>
+  </data>
+  <data name="LastName_ErrorRegex" xml:space="preserve">
+    <value>£áƨƭ ñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+  </data>
+  <data name="LastName_ErrorRequired" xml:space="preserve">
+    <value>£áƨƭ ñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="LastName_Name" xml:space="preserve">
+    <value>£áƨƭ ñá₥è</value>
+  </data>
+  <data name="Length_Description" xml:space="preserve">
+    <value>Tλè èжáçƭℓ ℓèñϱƭλ ƭλáƭ ƭλïƨ ƒïèℓδ řè9úïřèƨ ƒôř á Ʋáℓúè.</value>
+  </data>
+  <data name="Length_Name" xml:space="preserve">
+    <value>£èñϱƭλ</value>
+  </data>
+  <data name="LookupObjectID_Description" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="LookupObjectID_Name" xml:space="preserve">
+    <value>£ôôƙúƥ ÓβJèçƭ ÌÐ</value>
+  </data>
+  <data name="LookupObjectType_Description" xml:space="preserve">
+    <value>Tλè ƭ¥ƥè ôƒ ℓôôƙúƥ ƭλïƨ ƒïèℓδ úƨèƨ.</value>
+  </data>
+  <data name="LookupObjectType_Name" xml:space="preserve">
+    <value>£ôôƙúƥ ÓβJèçƭ T¥ƥè</value>
+  </data>
+  <data name="MaximumLength_Description" xml:space="preserve">
+    <value>Tλè ₥áжï₥ú₥ áℓℓôωèδ ℓèñϱƭλ ƒôř ƭλïƨ ƒïèℓδ'ƨ Ʋáℓúè.</value>
+  </data>
+  <data name="MaximumLength_Name" xml:space="preserve">
+    <value>Máжï₥ú₥ £èñϱƭλ</value>
+  </data>
+  <data name="MinimumLength_Description" xml:space="preserve">
+    <value>Tλè ₥ïñï₥ú₥ áℓℓôωèδ ℓèñϱƭλ ƒôř ƭλïƨ ƒïèℓδ'ƨ Ʋáℓúè.</value>
+  </data>
+  <data name="MinimumLength_Name" xml:space="preserve">
+    <value>Mïñï₥ú₥ £èñϱƭλ</value>
+  </data>
+  <data name="Name_Description" xml:space="preserve">
+    <value>Tλè ñá₥è ƒôř ƭλïƨ ïƭè₥.</value>
+  </data>
+  <data name="Name_ErrorRegex" xml:space="preserve">
+    <value>Ná₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+  </data>
+  <data name="Name_ErrorRequired" xml:space="preserve">
+    <value>Ná₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="Name_Name" xml:space="preserve">
+    <value>Ná₥è</value>
+  </data>
+  <data name="Path_Description" xml:space="preserve">
+    <value>Tλè ƥáƭλ ωïƭλïñ ƭλè λïèřáçλ¥.</value>
+  </data>
+  <data name="Path_Name" xml:space="preserve">
+    <value>Þáƭλ</value>
+  </data>
+  <data name="Pattern_Description" xml:space="preserve">
+    <value>Tλè Ʋáℓïδáƭïôñ ƥáƭƭèřñ úƨèδ ωλèñ ƥřôƲïδïñϱ á Ʋáℓúè ƒôř ƭλïƨ ƒïèℓδ.</value>
+  </data>
+  <data name="Pattern_Name" xml:space="preserve">
+    <value>Váℓïδáƭïôñ Þáƭƭèřñ</value>
+  </data>
+  <data name="Status_Name" xml:space="preserve">
+    <value>§ƭáƭúƨ</value>
+  </data>
+  <data name="Type_Description" xml:space="preserve">
+    <value>Tλè ƭ¥ƥè ƒôř ƭλïƨ ïƭè₥.</value>
+  </data>
+  <data name="Type_ErrorRequired" xml:space="preserve">
+    <value>T¥ƥè ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="Type_Name" xml:space="preserve">
+    <value>T¥ƥè</value>
+  </data>
+  <data name="Username_Description" xml:space="preserve">
+    <value>Tλè úƨèřñá₥è ƒôř ƭλïƨ řèƨôúřçè.</value>
+  </data>
+  <data name="Username_ErrorRegex" xml:space="preserve">
+    <value>Ûƨèřñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+  </data>
+  <data name="Username_ErrorRequired" xml:space="preserve">
+    <value>Ûƨèřñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+  </data>
+  <data name="Username_Name" xml:space="preserve">
+    <value>Ûƨèřñá₥è</value>
+  </data>
+  <data name="Level_Description" xml:space="preserve">
+    <value>Tλè ℓèƲèℓ ôƒ ƭλïƨ ïñƒôř₥áƭïôñ ₥ôδèℓ ωïƭλïñ ƭλè ôƲèřáℓℓ çáƭáℓôϱ ƭřèè.</value>
+  </data>
+  <data name="Level_Name" xml:space="preserve">
+    <value>£èƲèℓ</value>
+  </data>
+  <data name="DisplayDescription_Description" xml:space="preserve">
+    <value>Tλè δèƨçřïƥƭïôñ ƭλáƭ ωïℓℓ βè Ʋïƨïβℓè ωλèñ á úƨèř řèáδƨ ƭλè ïñƒôř₥áƭïôñ ïñ ƭλïƨ ƒïèℓδ.</value>
+  </data>
+  <data name="DisplayDescription_Name" xml:space="preserve">
+    <value>Ðïƨƥℓá¥ Ðèƨçřïƥƭïôñ</value>
+  </data>
+  <data name="FormDescription_Description" xml:space="preserve">
+    <value>Tλè δèƨçřïƥƭïôñ ƭλáƭ ωïℓℓ βè Ʋïƨïβℓè ωλèñ á úƨèř úƥδáƭèƨ ƭλè ïñƒôř₥áƭïôñ ïñ ƭλïƨ ƒïèℓδ.</value>
+  </data>
+  <data name="FormDescription_Name" xml:space="preserve">
+    <value>Fôř₥ Ðèƨçřïƥƭïôñ</value>
+  </data>
+  <data name="MaximumDepth_Description" xml:space="preserve">
+    <value>Tλè ₥áжï₥ú₥ δèƥƭλ ôƒ ƭλè ïñƒôř₥áƭïôñ ₥ôδèℓ.</value>
+  </data>
+  <data name="MaximumDepth_Name" xml:space="preserve">
+    <value>Máжï₥ú₥ Ðèƥƭλ</value>
+  </data>
+  <data name="GroupPrimaryOwner_Description" xml:space="preserve">
+    <value>Tλè ƥřï₥ář¥ ôωñèř ôƒ ƭλè ϱřôúƥ.  Tλïƨ ƥèřƨôñ ïƨ řèƨƥôñƨïβℓè ƒôř ƭλè δá¥ ƭô δá¥ ₥áñáϱè₥èñƭ ôƒ ƭλè ϱřôúƥ, ïñçℓúδïñϱ áƨƨïϱñïñϱ áñ¥ ƭáƨƙƨ ƭô ₥è₥βèřƨ.</value>
+  </data>
+  <data name="GroupPrimaryOwner_Name" xml:space="preserve">
+    <value>Þřï₥ář¥ Óωñèř</value>
+  </data>
+  <data name="GroupSecondaryOwner_Description" xml:space="preserve">
+    <value>Tλè ƨèôñδář¥ ôωñèř ôƒ ƭλè ϱřôúƥ.  Tλïƨ ƥèřƨôñ ïƨ ƭλè βáçƙúƥ ôωñèř ôƒ ƭλè ϱřôúƥ ïƒ ƭλè ƥřï₥ář¥ ôωñèř ïƨ ñôƭ áƲáïℓáβℓè.</value>
+  </data>
+  <data name="GroupSecondaryOwner_Name" xml:space="preserve">
+    <value>§èçôñδář¥ Óωñèř</value>
+  </data>
+  <data name="ReportDescription_Description" xml:space="preserve">
+    <value>Â δèƨçřïƥƭïôñ ôƒ ƭλè ₥èáñïñϱ ƒôř ƭλïƨ řèƥôřƭ; ωλáƭ ƭλïƨ řèƥôřƭ ƭř¥ïñϱ ƭô èжƥℓáïñ.</value>
+  </data>
+  <data name="ValidationDescription_Description" xml:space="preserve">
+    <value>Tλïƨ ₥èƨƨáϱè ωïℓℓ áƥƥèář ƭô ƭλè úƨèř ïƒ ƭλè¥ ƥřôƲïδè ïñƲáℓïδ ôř ₥ïƨƨïñϱ ïñƒôř₥áƭïôñ ôñ ƭλïƨ ƒïèℓδ.  Ýôú ₥úƨƭ èñáβℓè ƨô₥è ƒôř₥ ôƒ řèϱúℓář èжƥřèƨƨïôñ ƥáƭƭèřñ Ʋáℓïδáƭïôñ ôñ ƭλïƨ ƒïèℓδ ïñ ôřδèř ƒôř ƭλè ₥èƨƨáϱè ƭô áƥƥèář.</value>
+  </data>
+  <data name="ValidationDescription_Name" xml:space="preserve">
+    <value>Váℓïδáƭïôñ Mèƨƨáϱè</value>
+  </data>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>Tλè ƒôř₥áƭ ôƒ ƭλè δïƨƥℓá¥ Ʋáℓúè.</value>
+  </data>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Ðïƨƥℓá¥ Fôř₥áƭ</value>
+  </data>
+  <data name="ReportName_Description" xml:space="preserve">
+    <value>Tλè ñá₥è ƒôř ƭλïƨ řèƥôřƭ.  Tλïƨ ñá₥è ωïℓℓ βè úƨèδ ωλèřèƲèř ƭλè řèƥôřƭ ïƨ áƲáïℓáβℓè ƒôř δïƨƥℓá¥.</value>
+  </data>
+  <data name="ReportObjectType_Description" xml:space="preserve">
+    <value>Tλè ƭ¥ƥè ôƒ ôβJèçƭ ωλèřè ƭλïƨ řèƥôřƭ ωïℓℓ βè áƲáïℓáβℓè.</value>
+  </data>
+  <data name="ReportObjectType_Name" xml:space="preserve">
+    <value>Tářϱèƭ T¥ƥè</value>
+  </data>
+  <data name="SourceNotes_Description" xml:space="preserve">
+    <value>Ðèƒïñèƨ ïñƒôř₥áƭïôñ řèϱářδïñϱ ƭλè ƨôúřçè ôř ôřïϱïñáƭôř ôƒ ƭλïƨ řèƒèřèñçè ℓïƨƭ.</value>
+  </data>
+  <data name="SourceNotes_Name" xml:space="preserve">
+    <value>§ôúřçè Nôƭèƨ</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Description" xml:space="preserve">
+    <value>Wλèƭλèř ôř ñôƭ ƭλïƨ ϱřôúƥ ƨλôúℓδ βè ₥áñáϱèδ áúƭô₥áƭïçáℓℓ¥ ƭλřôúϱλ §ÂM£ Gřôúƥ çℓáï₥ƨ</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Name" xml:space="preserve">
+    <value>Ìƨ ÂçƭïƲè Ðïřèçƭôř¥</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Óωñèř/Þářèñƭ</value>
+  </data>
+</root>

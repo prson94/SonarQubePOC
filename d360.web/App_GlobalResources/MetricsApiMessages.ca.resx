@@ -1,0 +1,243 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetIdentifierNotFound" xml:space="preserve">
+    <value>Âƨƨèƭ çôřřèƨƥôñδïñϱ ωïƭλ ïδèñƭïƒïèř ôƒ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+  </data>
+  <data name="ConditionFieldTypeNameNotEmpty" xml:space="preserve">
+    <value>ÇôñδïƭïôñFïèℓδT¥ƥèNá₥è ₥úƨƭ ñôƭ βè è₥ƥƭ¥.</value>
+  </data>
+  <data name="ConditionIntersectTypeUidNotValid" xml:space="preserve">
+    <value>ÇôñδïƭïôñÌñƭèřƨèçƭT¥ƥèÛïδ ₥úƨƭ βè Ʋáℓïδ.</value>
+  </data>
+  <data name="ConditionNotEmpty" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ úƨè èïƭλèř á ÇôñδïƭïôñFïèℓδT¥ƥèNá₥è ôř ÇôñδïƭïôñÌñƭèřƨèçƭT¥ƥèÛïδ ωïƭλïñ á çôñδïƭïôñ.</value>
+  </data>
+  <data name="ConditionValueMaxChar250" xml:space="preserve">
+    <value>Çôñδïƭïôñ Váℓúè ₥úƨƭ ñôƭ βè ℓôñϱèř ƭλáñ 250 çλářáçƭèřƨ.</value>
+  </data>
+  <data name="CustomAtLeastOneProvided" xml:space="preserve">
+    <value>Âƭ ℓèáƨƭ ôñè ôƒ ƭλè ƒôℓℓôωïñϱ MÛ§T βè ƥřôƲïδèδ: {0}.</value>
+  </data>
+  <data name="CustomNotValid" xml:space="preserve">
+    <value>{0} {1} ïƨ ñôƭ á Ʋáℓïδ.</value>
+  </data>
+  <data name="CustomOrderMessage" xml:space="preserve">
+    <value>{0} Ʋáℓúè '{1}' ïƨ ñôƭ Ʋáℓïδ. Váℓúè ₥úƨƭ βè ôñè ôƒ ƭλè ƒôℓℓôωïñϱ: {2}.</value>
+  </data>
+  <data name="CustomRequiredParameter" xml:space="preserve">
+    <value>{0} ïƨ á řè9úïřèδ ƥářá₥èƭèř</value>
+  </data>
+  <data name="CustomStartEndDateMessage" xml:space="preserve">
+    <value>{0} ₥úƨƭ βè áƒƭèř {1}.</value>
+  </data>
+  <data name="CustomUidNotFound" xml:space="preserve">
+    <value>{0} ωïƭλ Ûïδ {1} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} {1} ïƨ ñôƭ á Ʋáℓïδ Ûïδ</value>
+  </data>
+  <data name="DescriptionLengthValidation" xml:space="preserve">
+    <value>Ðèƨçřïƥƭïôñ ℓèñϱƭλ({0} çλářáçƭèřƨ) ïƨ ƭôô ℓôñϱ . Ìƭ ₥úƨƭ βè ₥áжï₥ú₥ ℓèñϱƭλ ôƒ 4000 çλářáçƭèřƨ ôř ℓèƨƨ.</value>
+  </data>
+  <data name="Errorlocatingmetric" xml:space="preserve">
+    <value>Éřřôř ℓôçáƭïñϱ ₥èƭřïç</value>
+  </data>
+  <data name="ErrorRemoveMetric" xml:space="preserve">
+    <value>Éřřôř řè₥ôƲïñϱ ₥èƭřïç</value>
+  </data>
+  <data name="ErrorRuleResult" xml:space="preserve">
+    <value>Éřřôř řè₥ôƲïñϱ řúℓè řèƨúℓƭƨ</value>
+  </data>
+  <data name="EvalAssetInvalid" xml:space="preserve">
+    <value>ÉƲáℓúáƭèδ Âƨƨèƭ ÌñƲáℓïδ</value>
+  </data>
+  <data name="EvalAssetNotFound" xml:space="preserve">
+    <value>ÉƲáℓúáƭèδ Âƨƨèƭ ñôƭ ƒôúñδ</value>
+  </data>
+  <data name="GroupConditionNotFound" xml:space="preserve">
+    <value>Gřôúƥƨ ƨλôúℓδ ñôƭ λáƲè çôñδïƭïôñƨ.</value>
+  </data>
+  <data name="GroupNotHaveCondition" xml:space="preserve">
+    <value>Gřôúƥƨ ƨλôúℓδ ñôƭ λáƲè çôñδïƭïôñƨ.</value>
+  </data>
+  <data name="InvalidDate" xml:space="preserve">
+    <value>Tλè Ʋáℓúè {0} ïƨ ñôƭ á Ʋáℓïδ δáƭè.</value>
+  </data>
+  <data name="InvalidDateYear" xml:space="preserve">
+    <value>Tλè Ʋáℓúè {0} ïƨ ñôƭ á Ʋáℓïδ δáƭè. Tλè ¥èář ₥úƨƭ βè βèƭωèèñ 1900 áñδ ƭλè çúřřèñƭ ¥èář.</value>
+  </data>
+  <data name="InvalidEffectiveDate" xml:space="preserve">
+    <value>ÌñƲáℓïδ ÉƒƒèçƭïƲè δáƭè ƥřôƲïδèδ!</value>
+  </data>
+  <data name="IsGroupTrueParentMetric" xml:space="preserve">
+    <value>Þářèñƭ ₥èƭřïç ₥úƨƭ λáƲè 'ÌƨGřôúƥ' Ʋáℓúè ƨèƭ ƭô Třúè.</value>
+  </data>
+  <data name="MetricAdded" xml:space="preserve">
+    <value>Mèƭřïç Âδδèδ</value>
+  </data>
+  <data name="MetricAddedSuccessfully" xml:space="preserve">
+    <value>Tλè ƨƥèçïƒïèδ ₥èƭřïç ωáƨ ƨúççèƨƨƒúℓℓ¥ áδδèδ</value>
+  </data>
+  <data name="MetricNotFound" xml:space="preserve">
+    <value>Mèƭřïç ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="MetricRemoved" xml:space="preserve">
+    <value>Mèƭřïç řè₥ôƲèδ.</value>
+  </data>
+  <data name="MetricRemoveMessage" xml:space="preserve">
+    <value>Mèƭřïç ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.</value>
+  </data>
+  <data name="MetricRemoveNotAllowed" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô řè₥ôƲè ƭλïƨ ₥èƭřïç.</value>
+  </data>
+  <data name="MetricUidNotFound" xml:space="preserve">
+    <value>Mèƭřïç ωïƭλ Ûïδ ôƒ {0} ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="MetricUpdated" xml:space="preserve">
+    <value>Mèƭřïç Ûƥδáƭèδ</value>
+  </data>
+  <data name="MetricUpdatedSuccessfully" xml:space="preserve">
+    <value>Tλè ƨƥèçïƒïèδ ₥èƭřïç ωáƨ ƨúççèƨƨƒúℓℓ¥ úƥδáƭèδ</value>
+  </data>
+  <data name="NameNotEmpty" xml:space="preserve">
+    <value>Ná₥è ₥úƨƭ ñôƭ βè è₥ƥƭ¥.</value>
+  </data>
+  <data name="NoAllocationAssetTypeScoreType" xml:space="preserve">
+    <value>Tλèřè ïƨ ñô áℓℓôçáƭïôñ ƒôř ƨƥèçïƒïèδ Âƨƨèƭ T¥ƥè ÛÌÐ áñδ §çôřè T¥ƥè.</value>
+  </data>
+  <data name="NoAllocationForUid" xml:space="preserve">
+    <value>Tλèřè ïƨ ñô áℓℓôçáƭïôñ ƒôř ƨƥèçïƒïèδ Âℓℓôçáƭïôñ Ûïδ.</value>
+  </data>
+  <data name="NotAllowUpdateMetric" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô úƥδáƭè ƭλïƨ ₥èƭřïç.</value>
+  </data>
+  <data name="ParentMetricNotFound" xml:space="preserve">
+    <value>Þářèñƭ ₥èƭřïç ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="ScoreAllocationCorrespondingAssetNotFound" xml:space="preserve">
+    <value>§çôřè Âℓℓôçáƭïôñ çôřřèƨƥôñδïñϱ ƭô áƨƨèƭ ωïƭλ ïδèñƭïƒïèř ôƒ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+  </data>
+  <data name="UseSingleCondition" xml:space="preserve">
+    <value>Ýôú çáññôƭ úƨè βôƭλ ÇôñδïƭïôñFïèℓδT¥ƥèNá₥è áñδ ÇôñδïƭïôñÌñƭèřƨèçƭT¥ƥèÛïδ ωïƭλïñ á ƨïñϱℓè çôñδïƭïôñ</value>
+  </data>
+  <data name="WeightDecimalValidation" xml:space="preserve">
+    <value>Wèïϱλƭ ₥úƨƭ βè á δèçï₥áℓ ϱřèáƭèř ƭλáñ 0 áñδ ℓèƨƨ ƭλáñ ôř è9úáℓ ƭô 1</value>
+  </data>
+</root>

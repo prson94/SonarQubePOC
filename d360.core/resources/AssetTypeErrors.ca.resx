@@ -1,0 +1,375 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetsWithAssignedParents" xml:space="preserve">
+    <value>Âƨƨèƭƨ áℓřèáδ¥ èжïƨƭ ωïƭλ áƨƨïϱñèδ ƥářèñƭƨ. Ýôú ₥á¥ ñôƭ çλáñϱè ƭλè ƥářèñƭ ôƒ ƭλïƨ áƨƨèƭ ƭ¥ƥè.</value>
+  </data>
+  <data name="AssetTypeExistsTitle" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè Âℓřèáδ¥ Éжïƨƭƨ</value>
+  </data>
+  <data name="AssetTypeWithUidExists" xml:space="preserve">
+    <value>Âñ áƨƨèƭ ƭ¥ƥè ωïƭλ ƭλè ƨƥèçïƒïèδ Ûïδ áℓřèáδ¥ èжïƨƭƨ.</value>
+  </data>
+  <data name="CheckRequest" xml:space="preserve">
+    <value>Þℓèáƨè çλèçƙ ¥ôúř řè9úèƨƭ áñδ ƭř¥ áϱáïñ.</value>
+  </data>
+  <data name="ExistingOrganizationType" xml:space="preserve">
+    <value>Tλèřè ïƨ áℓřèáδ¥ áñ ôřϱáñïƺáƭïôñ ƭ¥ƥè ωïƭλ ƭλáƭ ñá₥è.</value>
+  </data>
+  <data name="ImproperPredicate" xml:space="preserve">
+    <value>Ýôú λáƲè ñôƭ ƥřôƲïδèδ á ƥřôƥèř ƥřèδïçáƭè βáƨèδ ôñ ïƭƨ áƨƨèƭ ƭ¥ƥè çℓáƨƨ.</value>
+  </data>
+  <data name="InvalidDisplayFormat" xml:space="preserve">
+    <value>Ðïƨƥℓá¥Fôř₥áƭ ƥřôƲïδèδ ïƨ ïñƲáℓïδ.</value>
+  </data>
+  <data name="InvalidModelDepth" xml:space="preserve">
+    <value>ÌñƲáℓïδ ₥áжï₥ú₥ δèƥƭλ. Môδèℓ ℓèƲèℓ ƨƥèçïƒïèδ ₥úƨƭ βè á Ʋáℓúè βèƭωèèñ 1 áñδ 10.</value>
+  </data>
+  <data name="InvalidPolicyDepth" xml:space="preserve">
+    <value>ÌñƲáℓïδ ₥áжï₥ú₥ δèƥƭλ. Þôℓïç¥ ℓèƲèℓ ƨƥèçïƒïèδ ₥úƨƭ βè á Ʋáℓúè βèƭωèèñ 1 áñδ 10.</value>
+  </data>
+  <data name="InvalidParentUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ ÞářèñƭÛïδ ƥřôƲïδèδ.</value>
+  </data>
+  <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
+    <value>ÌñƲáℓïδ řè9úèƨƭ</value>
+  </data>
+  <data name="InvalidStyle" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ìçôñ §ƭ¥ℓè ƥřôƲïδèδ.</value>
+  </data>
+  <data name="NotFoundBasedOnClass" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Çℓáƨƨ ƥřôƲïδèδ.</value>
+  </data>
+  <data name="ErrorNameTaken" xml:space="preserve">
+    <value>Tλè ñá₥è ïƨ ƭáƙèñ. Þℓèáƨè ƭř¥ áñôƭλèř ñá₥è.</value>
+  </data>
+  <data name="NotFoundBasedOnUid" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè ñôƭ ƒôúñδ βáƨèδ ôñ Ûïδ ƥřôƲïδèδ.</value>
+  </data>
+  <data name="NotFoundGeneric" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="RelationshipExistsForAssetType" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ ÓR Rèℓáƭïôñƨλïƥ ƭ¥ƥè èжïƨƭƨ ωïƭλ ƭλïƨ ƭλè áƨƨèƭ ƭ¥ƥè ôř áñ¥ áƨƨèƭ úñδèř ƭλïƨ ƭ¥ƥè ƥářƭïçïƥáƭèƨ ïñ ƭλè řèℓáƭïôñƨλïƥ.</value>
+  </data>
+  <data name="TransformationClassRestriction" xml:space="preserve">
+    <value>Ûƨè Âƨ Třáñƨƒôř₥áƭïôñ çáñ βè ƨèƭ ôñℓ¥ áƨƨèƭ ƭ¥ƥèƨ ƭλáƭ ářè á ßúƨïñèƨƨ ôř Tèçλñïçáℓ çℓáƨƨ.</value>
+  </data>
+  <data name="TransformationLimitExceeded" xml:space="preserve">
+    <value>Tλè ƭôƭáℓ ñú₥βèř ôƒ áƨƨèƭ ƭ¥ƥèƨ èжçèèδƨ ƭλè Třáñƨƒôř₥áƭïôñ ℓï₥ïƭ.</value>
+  </data>
+  <data name="UnsupportedAssetClass" xml:space="preserve">
+    <value>Ûñƨúƥƥôřƭèδ áƨƨèƭ çℓáƨƨ.</value>
+  </data>
+  <data name="MatchingIconStyle" xml:space="preserve">
+    <value>Ìçôñ §ƭ¥ℓè FôřèÇôℓôř áñδ ßáçƙÇôℓôř çáññôƭ βè ƭλè ƨá₥è Ʋáℓúè.</value>
+  </data>
+  <data name="AutoDisplayParentRestriction" xml:space="preserve">
+    <value>Âúƭô Ðïƨƥℓá¥ Þářèñƭ çáñ βè ƨèƭ ôñℓ¥ áƨƨèƭ ƭ¥ƥèƨ ƭλáƭ ářè á ßúƨïñèƨƨ ôř Tèçλñïçáℓ çℓáƨƨ áñδ ářè ƭλè çλïℓδ ôƒ áñôƭλèř áƨƨèƭ ƭ¥ƥè.</value>
+  </data>
+  <data name="MissingFlowObjectType" xml:space="preserve">
+    <value>FℓôωÓβJèçƭT¥ƥè ïƨ řè9úïřèδ ƒïèℓδ ƒôř Âƨƨèƭ T¥ƥè ωïƭλ çℓáƨƨ Ðïáϱřá₥.</value>
+  </data>
+  <data name="UnsupportedFlowObjectType" xml:space="preserve">
+    <value>FℓôωÓβJèçƭT¥ƥè ïƨ ñôƭ ƨúƥƥôřƭ ƒôř çℓáƨƨ {0}.</value>
+  </data>
+  <data name="GovernanceRoleNotSet" xml:space="preserve">
+    <value>Çáññôƭ áδδ Âƨƨèƭ T¥ƥè ôƒ çℓáƨƨ Ðïáϱřá₥. GôƲèřñáñçè Rôℓè Rèƒèřèñçè ÛÌÐ ïƨ ñôƭ ƨèƭ.</value>
+  </data>
+  <data name="GroupEndPoint" xml:space="preserve">
+    <value>/áƥï/Ʋ2/₥è₥βèřƨλïƥ/ϱřôúƥƨ</value>
+  </data>
+  <data name="UserEndPoint" xml:space="preserve">
+    <value>/áƥï/Ʋ2/₥è₥βèřƨλïƥ/úƨèřƨ</value>
+  </data>
+  <data name="InvalidParameterProvided" xml:space="preserve">
+    <value>ÌñƲáℓïδ {0} ƥřôƲïδèδ</value>
+  </data>
+  <data name="CanEditParentClassRestriction" xml:space="preserve">
+    <value>Çáñ Éδïƭ Þářèñƭ çáñ βè ƨèƭ ôñℓ¥ áƨƨèƭ ƭ¥ƥèƨ ƭλáƭ ářè á ßúƨïñèƨƨ ôř Tèçλñïçáℓ çℓáƨƨ áñδ ářè ƭλè çλïℓδ ôƒ áñôƭλèř áƨƨèƭ ƭ¥ƥè.</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>ÌñƲáℓïδ ôřδèř δïřèçƭïôñ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.</value>
+  </data>
+  <data name="InvalidOrderPassed" xml:space="preserve">
+    <value>ÌñƲáℓïδ ôřδèř β¥ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>{0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+  </data>
+  <data name="PredicateHttpErrorTitle" xml:space="preserve">
+    <value>Þřèδïçáƭè</value>
+  </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>ÌñƲáℓïδ áƨƨèƭT¥ƥè ƨƥèçïƒïèδ</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ áƨƨèƭ Ûïδ ïñ ƥářá₥èƭèřƨ!</value>
+  </data>
+  <data name="InvalidMaximumDepthTitle" xml:space="preserve">
+    <value>ÌñƲáℓïδ Máжï₥ú₥ Ðèƥƭλ</value>
+  </data>
+  <data name="InvalidOwnerUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ Óωñèř Ûïδ ïñ ƥářá₥èƭèřƨ!</value>
+  </data>
+  <data name="InvalidValueautoDisplayDescription" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [áúƭôÐïƨƥℓá¥Ðèƨçřïƥƭïôñ]</value>
+  </data>
+  <data name="InvalidValueAutoDisplayParent" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [áúƭôÐïƨƥℓá¥Þářèñƭ]</value>
+  </data>
+  <data name="InvalidValueForuseastransformation" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [úƨèáƨƭřáñƨƒôř₥áƭïôñ]</value>
+  </data>
+  <data name="InvalidValueHierachical" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [λïèřářçλïçáℓ]</value>
+  </data>
+  <data name="InvalidValueincludeLevels" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [ïñçℓúδè£èƲèℓƨ]</value>
+  </data>
+  <data name="InvalidValueObj" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [ôβJ]</value>
+  </data>
+  <data name="InvalidValueObjID" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [ôβJÌÐ]</value>
+  </data>
+  <data name="InvalueValue_includeFields" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè {0} ïñ _ïñçℓúδèFïèℓδƨ ƥářá₥èƭèř, ƒïèℓδ ωïƭλ ƭλïƨ ñá₥è ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="UnableParse_IncludeFields" xml:space="preserve">
+    <value>Çôúℓδ ñôƭ ƥářƨè Ʋáℓúè ôƒ _ïñçℓúδèFïèℓδƨ</value>
+  </data>
+  <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
+    <value>ÛƨèÂƨÂδ₥ïñ ƥářá₥èƭèř çáñ βè úƨèδ ôñℓ¥ ωïƭλ _áƨƨèƭÛïδ ƨƥèçïƒïèδ!</value>
+  </data>
+  <data name="WrongNameHttpErrorTitle" xml:space="preserve">
+    <value>Wřôñϱ Ná₥è</value>
+  </data>
+  <data name="DuplicateFound" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè Fôúñδ</value>
+  </data>
+  <data name="DuplicateNameFound" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè Ná₥è Fôúñδ</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>Éжèçúƭïôñ úñï9úè ïδèñƭïƒïèř ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="InvalidClass" xml:space="preserve">
+    <value>ÌñƲáℓïδ {0} ƥřôƲïδèδ.</value>
+  </data>
+  <data name="InvalidOrganization" xml:space="preserve">
+    <value>ÌñƲáℓïδ Óřϱáñïƺáƭïôñ ƥřôƲïδèδ.</value>
+  </data>
+  <data name="InvalidParentSelected" xml:space="preserve">
+    <value>ÌñƲáℓïδ Þářèñƭ §èℓèçƭèδ</value>
+  </data>
+  <data name="ItemConflicit" xml:space="preserve">
+    <value>{0} çôúℓδ ñôƭ βè áδδèδ ôř úƥδáƭèδ βèçáúƨè áñ èжïƨƭïñϱ ïƭè₥ áℓřèáδ¥ ƒôúñδ.</value>
+  </data>
+  <data name="MaxNumberAllowedAssetType" xml:space="preserve">
+    <value>Máжï₥ú₥ ñú₥βèř ôƒ áƨƨèƭ ƭ¥ƥèƨ ƒôř ƭλïƨ ₥èƭλôδ ïƨ 1.</value>
+  </data>
+  <data name="NameConflicit" xml:space="preserve">
+    <value>{0} çôúℓδ ñôƭ βè áδδèδ ôř úƥδáƭèδ βèçáúƨè áñ ïƭè₥ ωïƭλ ƭλè ƨá₥è ñá₥è áℓřèáδ¥ èжïƨƭƨ.</value>
+  </data>
+  <data name="ParentChildRelationExists" xml:space="preserve">
+    <value>Tλèřè ářè èжïƨƭïñϱ ƥářèñƭ/çλïℓδ řèℓáƭïôñƨλïƥƨ ƒôř áƨƨèƭƨ ôƒ ƭλïƨ ƭ¥ƥè. Ýôú ₥á¥ ñôƭ áℓƭèř ƭλè ƥářèñƭ ƭ¥ƥè úñƭïℓ ƭλèƨè řèℓáƭïôñƨλïƥƨ ářè řè₥ôƲèδ.</value>
+  </data>
+  <data name="TitleWrongOrganization" xml:space="preserve">
+    <value>Wřôñϱ Óřϱáñïƺáƭïôñ</value>
+  </data>
+  <data name="WrongClass" xml:space="preserve">
+    <value>Wřôñϱ {0}</value>
+  </data>
+  <data name="_parentuidNotValidAsset" xml:space="preserve">
+    <value>_ƥářèñƭÛïδ ωïƭλ Ʋáℓúè {0} δôèƨ ñôƭ çôřřèƨƥôñδ ƭô á Ʋáℓïδ áƨƨèƭ!</value>
+  </data>
+  <data name="_parentUidNotValidUid" xml:space="preserve">
+    <value>_ƥářèñƭÛïδ ƥářá₥èƭèř ₥úƨƭ βè á Ʋáℓïδ Gúïδ, βè ƨèƭ ƭô ñúℓℓ, ôř ñôƭ βè ƥřèƨèñƭ!</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>ßáδ Rè9úèƨƭ</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Fôřβïδδèñ</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Ìñƭèřñáℓ §èřƲèř Éřřôř</value>
+  </data>
+  <data name="InvalidFieldEntry" xml:space="preserve">
+    <value>ÌñƲáℓïδ Fïèℓδ Éñƭř¥</value>
+  </data>
+  <data name="InvalidFieldMessage" xml:space="preserve">
+    <value>{0} çôúℓδ ñôƭ βè úƥδáƭèδ βèçáúƨè ïƭ ïƨ {1}.</value>
+  </data>
+  <data name="MissingPropertyMessage" xml:space="preserve">
+    <value>{0} ïƨ ₥ïƨƨïñϱ řè9úïřèδ ƥřôƥèřƭïèƨ ƒôř ƭλè řè9úèƨƭ ƭô ƥřôçèèδ.</value>
+  </data>
+  <data name="MissingPropertyTitle" xml:space="preserve">
+    <value>Ìƭè₥ Mïƨƨïñϱ Þřôƥèřƭïèƨ</value>
+  </data>
+  <data name="NoFormDataMessage" xml:space="preserve">
+    <value>Nô ƒôř₥ δáƭá ƥřèƨèñƭ ƭô çřèáƭèδ {0}.</value>
+  </data>
+  <data name="NoFormDataTitle" xml:space="preserve">
+    <value>Nô Fôř₥ Ðáƭá</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Nôƭ Fôúñδ</value>
+  </data>
+  <data name="ScoreAlreadyProcessed" xml:space="preserve">
+    <value>§çôřèƨ Mèƨƨáϱè Âℓřèáδ¥ ßèïñϱ Þřôçèƨƨèδ</value>
+  </data>
+  <data name="InvalidValueReturnCount" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [RèƭúřñÇôúñƭ]</value>
+  </data>
+  <data name="FieldIsEmpty" xml:space="preserve">
+    <value>{0} ƨλôúℓδ ñôƭ βè è₥ƥƭ¥.</value>
+  </data>
+  <data name="FieldIsInvalid" xml:space="preserve">
+    <value>{0} ïƨ ïñƲáℓïδ.</value>
+  </data>
+  <data name="FieldProvideCorrectValue" xml:space="preserve">
+    <value>Þℓèáƨè ƥřôƲïδè Ʋáℓïδ Ʋáℓúè.</value>
+  </data>
+  <data name="InvalidRelationshipFieldType" xml:space="preserve">
+    <value>ÌñƲáℓïδ ôř δèℓèƭèδ řèℓáƭïôñƨλïƥ ƭ¥ƥè èñçôúñƭèřèδ ôñ Rèℓáƭïôñƨλïƥ ƒïèℓδ ωïƭλ ƒřïèñδℓ¥ ñá₥è "{Fřïèñδℓ¥Ná₥è}".</value>
+  </data>
+  <data name="InvalidValueincludedashboardflag" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř [ïñçℓúδèδáƨλβôářδƒℓáϱ]</value>
+  </data>
+  <data name="UnhandledError" xml:space="preserve">
+    <value>Âñ úñλáñδℓèδ èřřôř ôççúřèδ. Þℓèáƨè ƭř¥ ¥ôúř řè9úèƨƭ áϱáïñ.</value>
+  </data>
+  <data name="TypeNotFound" xml:space="preserve">
+    <value>T¥ƥè ñôƭ ƒôúñδ.</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ûƨèř</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>§úççèƨƨ</value>
+  </data>
+  <data name="DuplicateItem" xml:space="preserve">
+    <value>Ðúƥℓïçáƭè ïƭè₥ƨ ƒôúñδ ïñ řè9úèƨƭ</value>
+  </data>
+  <data name="MaxLengthExceeded" xml:space="preserve">
+    <value>{0} çáññôƭ èжçèèδ {1} çλářáçƭèřƨ.</value>
+  </data>
+</root>

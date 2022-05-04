@@ -1,0 +1,480 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionMessage_Desc" xml:space="preserve">
+    <value>Tλïƨ ïƨ ƭλè ₥èƨƨáϱè ƭô ƨλôω ƭô úƨèřƨ ôñ ƭλè ƭáƙè áçƭïôñ ƥáϱè.</value>
+  </data>
+  <data name="ActionMessage_Name" xml:space="preserve">
+    <value>Táƙè áçƭïôñ ₥èƨƨáϱè</value>
+  </data>
+  <data name="AllowedOrigins_Desc" xml:space="preserve">
+    <value>Çô₥₥á ƨèƥářáƭèδ ℓïƨƭ ôƒ áℓℓôωèδ ÇÓR§ ôřïϱïñƨ.</value>
+  </data>
+  <data name="AllowedOrigins_Name" xml:space="preserve">
+    <value>Âℓℓôωèδ Óřïϱïñƨ</value>
+  </data>
+  <data name="ApiTimeout_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ çλáñϱèƨ ƭλè ƭï₥èôúƭ ôƒ áℓℓ Ʋ2 ÂÞÌ GÉT çáℓℓƨ βáƨèδ ôñ ƭλè Ʋáℓúè ïñ ƨèçôñδƨ.</value>
+  </data>
+  <data name="ApiTimeout_Name" xml:space="preserve">
+    <value>ÂÞÌ Tï₥èôúƭ</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Desc" xml:space="preserve">
+    <value>Nú₥βèř ôƒ δá¥ƨ ƭλáƭ Âƨƨèƭ Ðáƭá Þřôƒïℓè δáƭá ƨλôúℓδ βè řèƭáïñèδ ƒôř.</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Name" xml:space="preserve">
+    <value>Âƨƨèƭ Ðáƭá Þřôƒïℓè £ïƒèƨƥáñ</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
+    <value>Wïδƭλ ôƒ çôℓú₥ñƨ (ïñ ƥïжèℓƨ) úƨèδ ƭô ℓá¥ ôúƭ ƒïèℓδƨ ôñ ƭλè áƨƨèƭ Ðèƒïñïƭïôñ ƥáñèℓ.</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
+    <value>Âƨƨèƭ Ðèƒïñïƭïôñ Çôℓú₥ñ Wïδƭλ</value>
+  </data>
+  <data name="AzureADTenant_Desc" xml:space="preserve">
+    <value>Tλè ñá₥è ôƒ ƭλè Âƺúřè ÂçƭïƲè δïřèçƭôř¥ ƭèñáñƭ.</value>
+  </data>
+  <data name="AzureADTenant_Name" xml:space="preserve">
+    <value>Âƺúřè ÂÐ Tèñáñƭ Ná₥è</value>
+  </data>
+  <data name="AzureApplicationId_Desc" xml:space="preserve">
+    <value>Tλè áƥƥℓïçáƭïôñ ÌÐ ôƒ ƭλè Ðáƭá3§ïжƭ¥ ωèβƨïƭè ƒřô₥ ƭλè Âƺúřè ÂÐ ƥôřƭáℓ</value>
+  </data>
+  <data name="AzureApplicationId_Name" xml:space="preserve">
+    <value>Âƺúřè ÂÐ Âƥƥℓïçáƭïôñ ÌÐ</value>
+  </data>
+  <data name="AzureGraphAPIKey_Desc" xml:space="preserve">
+    <value>Tλè ƙè¥ ƒôř ƭλè Âƺúřè ÂçƭïƲè δïřèçƭôř¥ ϱřáƥλ ÂÞÌ.</value>
+  </data>
+  <data name="AzureGraphAPIKey_Name" xml:space="preserve">
+    <value>Âƺúřè Gřáƥλ ÂÞÌ Kè¥</value>
+  </data>
+  <data name="BrowserTitlePrefix_Desc" xml:space="preserve">
+    <value>Þřèƒïж ƭô úƨè ƒôř βřôωƨèř ƭïƭℓè βář.</value>
+  </data>
+  <data name="BrowserTitlePrefix_Name" xml:space="preserve">
+    <value>ßřôωƨèř Tïƭℓè Þřèƒïж</value>
+  </data>
+  <data name="CompanyIcon_Desc" xml:space="preserve">
+    <value>Ûƥℓôáδ ¥ôúř çô₥ƥáñ¥ ïçôñ.</value>
+  </data>
+  <data name="CompanyIcon_Name" xml:space="preserve">
+    <value>Çô₥ƥáñ¥ Ìçôñ</value>
+  </data>
+  <data name="CompanyLogo_Desc" xml:space="preserve">
+    <value>Ûƥℓôáδ ¥ôúř çô₥ƥáñ¥ ℓôϱô.</value>
+  </data>
+  <data name="CompanyLogo_Name" xml:space="preserve">
+    <value>Çô₥ƥáñ¥ £ôϱô</value>
+  </data>
+  <data name="CustomCSSLocation_Desc" xml:space="preserve">
+    <value>Tλè ℓôçáƭïôñ ôƒ áñ¥ çúƨƭô₥ ƨƭ¥ℓèƨλèèƭ.</value>
+  </data>
+  <data name="CustomCSSLocation_Name" xml:space="preserve">
+    <value>Çúƨƭô₥ §ƭ¥ℓèƨλèèƭ £ôçáƭïôñ</value>
+  </data>
+  <data name="DefaultRoute_Desc" xml:space="preserve">
+    <value>Tλè δèƒáúℓƭ ƥáϱè ¥ôú ωïℓℓ ƨèè áƒƭèř ℓôϱϱïñϱ ïñƭô Ðáƭá3§ïжƭ¥.</value>
+  </data>
+  <data name="DefaultRoute_Name" xml:space="preserve">
+    <value>Ðèƒáúℓƭ Rôúƭè</value>
+  </data>
+  <data name="DefaultSearchTypes_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ çôñƭřôℓƨ ƭλè δèƒáúℓƭ ƭ¥ƥèƨ ƭô úƨè ƒôř ƭλè ƨèářçλ ƒúñçƭïôñáℓïƭ¥.</value>
+  </data>
+  <data name="DefaultSearchTypes_Name" xml:space="preserve">
+    <value>Ðèƒáúℓƭ ƭ¥ƥèƨ ƭô úƨè ƒôř ƨèářçλ</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Desc" xml:space="preserve">
+    <value>Máжï₥ú₥ ñú₥βèř ôƒ ℓïñƙƨ ôñ £ïñèáϱè δïáϱřá₥ ƭλáƭ ωïℓℓ úƨè 'ÂƲôïδNôδèƨ' řèñδèř ƨèƭƭïñϱ. Ìƒ λïϱλèř, ℓïñƙƨ ωïℓℓ řèñδèř ωïƭλôúƭ çôřñèřƨ áñδ áƨ á ƨƭřáïϱλƭ ℓïñè βèƭωèèñ 2 ñôδèƨ. Tλïƨ ï₥ƥřôƲèƨ řèñδèř ƥèřƒôř₥áñçè ôñ δïáϱřá₥ƨ ωïƭλ ₥ôřè δáƭá.</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Name" xml:space="preserve">
+    <value>Máжï₥ú₥ çôúñƭ ôƒ Ðïáϱřá₥ ℓïñƙƨ ƭô úƨè 'ÂƲôïδNôδèƨ' řèñδèř ƭè₥ƥℓáƭè</value>
+  </data>
+  <data name="DisableCommunityPosting_Desc" xml:space="preserve">
+    <value>Tλïƨ áℓℓôωƨ ƒôř ƭλè δïƨáβℓïñϱ ôƒ ƥôƨƭïñϱ çô₥₥èñƭƨ áñδ řèƥℓïèƨ ôñ áℓℓ Çô₥₥úñïƭ¥ ßôářδƨ ƭλřôúϱλôúƭ ƭλè ƨ¥ƨƭè₥.  Ûƨèřƨ ωïℓℓ ƨƭïℓℓ βè áβℓè ƭô ƨèè Çô₥₥úñïƭ¥ ßôářδƨ áñδ áℓℓ ƨ¥ƨƭè₥-ℓèƲèℓ çô₥₥èñƭƨ.</value>
+  </data>
+  <data name="DisableCommunityPosting_Name" xml:space="preserve">
+    <value>Ðïƨáβℓè Çô₥₥úñïƭ¥ Þôƨƭƨ</value>
+  </data>
+  <data name="DisableIssueManagement_Desc" xml:space="preserve">
+    <value>Tλïƨ áℓℓôωƨ λïδïñϱ ƭλè ƭáƙè áçƭïôñ βúƭƭôñ áñδ ₥ôñïƭôř ƥáϱè ƒřô₥ ƭλè ÛÌ.</value>
+  </data>
+  <data name="DisableIssueManagement_Name" xml:space="preserve">
+    <value>Ðïƨáβℓè Táƙè Âçƭïôñ</value>
+  </data>
+  <data name="EmailDomainWhitelist_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ çôñƭáïñƨ á çô₥₥á ƨèƥářáƭèδ ℓïƨƭ ôƒ áℓℓôωèδ δô₥áïñƨ. Ìƒ ƥřèƨèñƭ, ôñℓ¥ úƨèřƨ ωïƭλ è₥áïℓƨ ƒřô₥ ƭλè ƨƥèçïƒïèδ δô₥áïñƨ ωïℓℓ βè áℓℓôωèδ ƭô ℓôϱïñ ƭô GôƲèřñ.</value>
+  </data>
+  <data name="EmailDomainWhitelist_Name" xml:space="preserve">
+    <value>Âℓℓôωèδ É₥áïℓ Ðô₥áïñƨ</value>
+  </data>
+  <data name="EnableJsonAttribute_Desc" xml:space="preserve">
+    <value>Éñáβℓè J§ÓN Âƭƭřïβúƭè ƒïèℓδ ƭ¥ƥè ƨúƥƥôřƭ.  Éñáβℓïñϱ ƭλïƨ ƨƭôřèƨ áℓℓ ƥřôƥèřƭïèƨ ƒôř áℓℓ J§ÓN ƒïèℓδƨ ïñ ƭλè ϱôƲèřñ èñƲïřôñ₥èñƭ áƨ ωèℓℓ áƨ èñáβℓïñϱ ƭλïƨ ƒïèℓδ ƭ¥ƥè. Ðèƒáúℓƭ ƒáℓƨè.  Çλáñϱïñϱ ƭλïƨ Ʋáℓúè řè9úïřèƨ řèℓôáδïñϱ áƒƒèçƭèδ δáƭá ƭô ƥářƨè Jƨôñ ƥřôƥèřƭïèƨ.</value>
+  </data>
+  <data name="EnableJsonAttribute_Name" xml:space="preserve">
+    <value>Éñáβℓè Jƨôñ Âƭƭřïβúƭè</value>
+  </data>
+  <data name="EnableOrganizations_Desc" xml:space="preserve">
+    <value>Âℓℓôω ƭλè çřèáƭïôñ áñδ ₥áñáϱè₥èñƭ ôƒ ôřϱáñïƺáƭïôñƨ áƨ ωèℓℓ áƨ řèϱïƨƭřáƭïôñ ôƒ úƨèřƨ βèℓôñϱïñϱ ƭô ƭλèƨè ôřϱáñïƺáƭïôñƨ ïñƭô ƭλè ƨ¥ƨƭè₥.</value>
+  </data>
+  <data name="EnableOrganizations_Name" xml:space="preserve">
+    <value>Éñáβℓè Óřϱáñïƺáƭïôñƨ</value>
+  </data>
+  <data name="EnableSagacity_Desc" xml:space="preserve">
+    <value>Éñáβℓèƨ ƭλè úƨè ôƒ ÐQ+ Ðáƨλβôářδƨ</value>
+  </data>
+  <data name="EnableSagacity_Name" xml:space="preserve">
+    <value>Éñáβℓè ÐQ+ Ðáƨλβôářδƨ</value>
+  </data>
+  <data name="EnableShoppingCart_Desc" xml:space="preserve">
+    <value>Éñáβℓèƨ ƭλè úƨè ôƒ ƭλè ƨλôƥƥïñϱ çářƭ ƒèáƭúřè.</value>
+  </data>
+  <data name="EnableShoppingCart_Name" xml:space="preserve">
+    <value>Éñáβℓè §λôƥƥïñϱ Çářƭ</value>
+  </data>
+  <data name="FramingDomains_Desc" xml:space="preserve">
+    <value>§ƥèçïƒ¥ á çô₥₥á ƨèƥářáƭèδ ℓïƨƭ ôƒ áℓℓôωèδ δô₥áïñƨ</value>
+  </data>
+  <data name="FramingDomains_Name" xml:space="preserve">
+    <value>Fřá₥ïñϱ</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Desc" xml:space="preserve">
+    <value>Tλè Ûïδ ôƒ ƭλè řèƒèřèñçè ℓïƨƭ ƭλáƭ çôñƭáïñƨ ƭλè GôƲèřñáñçè Rôℓèƨ ƭλáƭ ƭλè Ðïáϱřá₥ Ðèƨïϱñèř δèƥèñδƨ ôñ.</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
+    <value>GôƲèřñáñçè Rôℓè Rèƒèřèñçè £ïƨƭ Ûïδ</value>
+  </data>
+  <data name="HasRegisterLink_Desc" xml:space="preserve">
+    <value>Háƨ Rèϱïƨƭèř £ïñƙ ôñ £ôϱïñ Þáϱè.</value>
+  </data>
+  <data name="HasRegisterLink_Name" xml:space="preserve">
+    <value>Háƨ £ôϱïñ Rèϱïƨƭèř £ïñƙ</value>
+  </data>
+  <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
+    <value>Tλïƨ λïδèƨ Ðáƭá3§ïжƭ¥ úƨèřƨ ƒřô₥ áñ èñƲïřôñ₥èñƭ, ƨô áƨ ƭô ñôƭ ₥áƙè ƭλèƨè áççôúñƭƨ èδïƭáβℓè.</value>
+  </data>
+  <data name="HideData3SixtyUsers_Name" xml:space="preserve">
+    <value>Hïδè Ðáƭá3§ïжƭ¥ Ûƨèřƨ</value>
+  </data>
+  <data name="HideHeaderBarControls_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ λïδèƨ ƭλè çôñƭřôℓƨ ôñ ƭλè řïϱλƭ ƨïδè ôƒ ƭλè λèáδèř βář</value>
+  </data>
+  <data name="HideHeaderBarControls_Name" xml:space="preserve">
+    <value>Hïδè Hèáδèř ßář Çôñƭřôℓƨ</value>
+  </data>
+  <data name="HomePageBackgroundImage_Desc" xml:space="preserve">
+    <value>Wλèñ ƨèƭ ƭλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô δïƨƥℓá¥ á çúƨƭô₥ ï₥áϱè ôñ ƭλè λô₥è ƥáϱè.</value>
+  </data>
+  <data name="HomePageBackgroundImage_Name" xml:space="preserve">
+    <value>Hô₥è Þáϱè ßáçƙϱřôúñδ Ì₥áϱè</value>
+  </data>
+  <data name="HomePageTitleColor_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨèƭ ƭλè çôℓôř ôƒ ƭλè λô₥è ƥáϱè ƭïƭℓè.</value>
+  </data>
+  <data name="HomePageTitleColor_Name" xml:space="preserve">
+    <value>Hô₥è Þáϱè Tïƭℓè Çôℓôř</value>
+  </data>
+  <data name="HomePageTitleSize_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨèƭ ƭλè ƨïƺè ôƒ ƭλè λô₥è ƥáϱè ƭïƭℓè.</value>
+  </data>
+  <data name="HomePageTitleSize_Name" xml:space="preserve">
+    <value>Hô₥è Þáϱè Tïƭℓè §ïƺè</value>
+  </data>
+  <data name="IpRestriction_Desc" xml:space="preserve">
+    <value>Ýôú ₥á¥ ôƥƭïôñáℓℓ¥ çλôôƨè ƭô řèƨƭřïçƭ áççèƨƨ ƭô ƭλïƨ èñƲïřôñ₥èñƭ β¥ ÌÞ řáñϱè.</value>
+  </data>
+  <data name="IpRestriction_Name" xml:space="preserve">
+    <value>ÌÞ Ráñϱè Rèƨƭřïçƭïôñƨ</value>
+  </data>
+  <data name="JwtAuthority_Desc" xml:space="preserve">
+    <value>Âúƭλôřïƭ¥ Ûřï ƒôř JWT ƭôƙèñƨ.</value>
+  </data>
+  <data name="JwtAuthority_Name" xml:space="preserve">
+    <value>Âúƭλôřïƭ¥ Ûřï ƒôř JWT</value>
+  </data>
+  <data name="MaxDropdownItems_Desc" xml:space="preserve">
+    <value>Tλïƨ ïƨ ƭλè ₥áжï₥ú₥ ñú₥βèř ôƒ ïƭè₥ƨ ƭô ƨλôω ïñ á δřôƥδôωñ βèƒôřè ƨωïƭçλïñϱ ƭô ƭ¥ƥèáλèáδ.</value>
+  </data>
+  <data name="MaxDropdownItems_Name" xml:space="preserve">
+    <value>Máжï₥ú₥ Ðřôƥδôωñ Ìƭè₥ƨ</value>
+  </data>
+  <data name="MaxExcelExportRows_Desc" xml:space="preserve">
+    <value>Tλïƨ ïƨ ƭλè ₥áжï₥ú₥ ñú₥βèř ôƒ ïƭè₥ƨ áβℓè ƭô βè èжƥôřƭèδ ïñ áñ èжçèℓ ƨƥřèáδƨλèèƭ.</value>
+  </data>
+  <data name="MaxExcelExportRows_Name" xml:space="preserve">
+    <value>Máжï₥ú₥ Éжçèℓ Éжƥôřƭ Rôωƨ</value>
+  </data>
+  <data name="PowerBIClientId_Desc" xml:space="preserve">
+    <value>Tλè çℓïèñƭ ïδ ƒôř ƭλè çℓïèñƭƨ ƥôωèřβï è₥βèδδèδ.</value>
+  </data>
+  <data name="PowerBIClientId_Name" xml:space="preserve">
+    <value>Þôωèř ßÌ É₥βèδδèδ Çℓïèñƭ Ìδ</value>
+  </data>
+  <data name="PowerBIGroupId_Desc" xml:space="preserve">
+    <value>Ìδ ƒôř ƭλïƨ çℓïèñƭƨ ωôřƙƨƥáçè ïñ ƥôωèř βï.</value>
+  </data>
+  <data name="PowerBIGroupId_Name" xml:space="preserve">
+    <value>Þôωèř ßÌ É₥βèδδèδ Wôřƙƨƥáçè/Gřôúƥ Ìδ</value>
+  </data>
+  <data name="RequestCertificationDraft_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô çôñƭřôℓ ωλèñ ƭλè řè9úèƨƭ çèřƭïƒïçáƭïôñ βúƭƭôñ ïƨ áƲáïℓáβℓè ïñ ϱôƲèřñ áñδ ωλáƭ ïƨ çôñƨïδèřèδ δřáƒƭ ƨƭáƭúƨ.</value>
+  </data>
+  <data name="RequestCertificationDraft_Name" xml:space="preserve">
+    <value>§ƭáƭúƨ Ʋáℓúèƨ ƭλáƭ δèƭèř₥ïñè ïƒ řè9úèƨƭ çèřƭïƒïçáƭïôñ βúƭƭôñ ïƨ áƲáïℓáβℓè</value>
+  </data>
+  <data name="SessionTimeout_Desc" xml:space="preserve">
+    <value>Nú₥βèř ôƒ ₥ïñúƭèƨ βèƒôřè ƭλè úƨèřƨ ƨèƨƨïôñ ƭï₥èƨ ôúƭ.</value>
+  </data>
+  <data name="SessionTimeout_Name" xml:space="preserve">
+    <value>§èƨƨïôñ Tï₥èôúƭ (₥ïñúƭèƨ)</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨλôω/λïδè ƭλè úƨèř áƥï ƙè¥ ôñ ÛÌ.</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Name" xml:space="preserve">
+    <value>§λôω Ûƨèř ÂÞÌ Kè¥</value>
+  </data>
+  <data name="ShowChangeLogTab_Desc" xml:space="preserve">
+    <value>Wλèñ ƨèƭ ƭô ƒáℓƨè ƭλè Çλáñϱè £ôϱ ƭáβ ωïℓℓ βè λïδδèñ ïñ ƭλè ÛÌ.</value>
+  </data>
+  <data name="ShowChangeLogTab_Name" xml:space="preserve">
+    <value>§λôω Çλáñϱè £ôϱ Táβ</value>
+  </data>
+  <data name="ShowCommentsTab_Desc" xml:space="preserve">
+    <value>Wλèñ ƨèƭ ƭô ƒáℓƨè ƭλè Çô₥₥èñƭƨ ƭáβ ωïℓℓ βè λïδδèñ ïñ ƭλè ÛÌ.</value>
+  </data>
+  <data name="ShowCommentsTab_Name" xml:space="preserve">
+    <value>§λôω Çô₥₥èñƭƨ Táβ</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ çôñƭřôℓƨ ïƒ ƭλè çúƨƭô₥ ÂÞÌ Âδ₥ïñïƨƭřáƭïôñ ƥáϱè ïƨ ƨλôωñ ôř ñôƭ.</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Name" xml:space="preserve">
+    <value>§λôω Çúƨƭô₥ ÂÞÌ Âδ₥ïñ Þáϱè</value>
+  </data>
+  <data name="ShowFavorites_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô δïƨáβℓè ƭλè ƒáƲôřïƭèƨ ƒúñçƭïôñáℓïƭ¥.</value>
+  </data>
+  <data name="ShowFavorites_Name" xml:space="preserve">
+    <value>§λôω FáƲôřïƭèƨ</value>
+  </data>
+  <data name="ShowFollowersSidebar_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô δïƨáβℓè ƭλè ƒôℓℓôωèřƨ ƨïδèβář.</value>
+  </data>
+  <data name="ShowFollowersSidebar_Name" xml:space="preserve">
+    <value>§λôω Fôℓℓôωèřƨ §ïδèβář</value>
+  </data>
+  <data name="ShowHomeActivityTile_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨλôω/λïδè ƭλè áçƭïƲïƭ¥ ƭïℓè ôñ ƭλè λô₥è ƥáϱè.</value>
+  </data>
+  <data name="ShowHomeActivityTile_Name" xml:space="preserve">
+    <value>§λôω Hô₥è ÂçƭïƲïƭ¥ Tïℓè</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨλôω/λïδè ƭλè áƨƨïϱñ₥èñƭ ƭïℓè ôñ ƭλè λô₥è ƥáϱè.</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Name" xml:space="preserve">
+    <value>§λôω Hô₥è Âƨƨïϱñ₥èñƭ Tïℓè</value>
+  </data>
+  <data name="ShowHomeBoardTile_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨλôω/λïδè ƭλè βôářδ ƭïℓè ôñ ƭλè λô₥è ƥáϱè.</value>
+  </data>
+  <data name="ShowHomeBoardTile_Name" xml:space="preserve">
+    <value>§λôω Hô₥è ßôářδ Tïℓè</value>
+  </data>
+  <data name="ShowHomePageTitle_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô ƨλôω/λïδè ƭλè ƭïƭℓè ôñ ƭλè λô₥è ƥáϱè.</value>
+  </data>
+  <data name="ShowHomePageTitle_Name" xml:space="preserve">
+    <value>§λôω Hô₥è Þáϱè Tïƭℓè</value>
+  </data>
+  <data name="ShowImpactSidebar_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô δïƨáβℓè ƭλè ï₥ƥáçƭ ƨïδèβář.</value>
+  </data>
+  <data name="ShowImpactSidebar_Name" xml:space="preserve">
+    <value>§λôω Ì₥ƥáçƭ §ïδèβář</value>
+  </data>
+  <data name="ShowLineageSidebar_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô δïƨáβℓè ƭλè ℓïñèáϱè ƨïδèβář.</value>
+  </data>
+  <data name="ShowLineageSidebar_Name" xml:space="preserve">
+    <value>§λôω £ïñèáϱè §ïδèβář</value>
+  </data>
+  <data name="ShowNavigationChildren_Desc" xml:space="preserve">
+    <value>§λôω ƭλè Çλïℓδ NáƲïϱáƭïôñ Mèñú Ìƭè₥ƨ.</value>
+  </data>
+  <data name="ShowNavigationChildren_Name" xml:space="preserve">
+    <value>§λôω Mèñú NáƲïϱáƭïôñ Çλïℓδřèñ</value>
+  </data>
+  <data name="ShowOwnersSidebar_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ úƨèδ ƭô δïƨáβℓè ƭλè ôωñèřƨλïƥ ƨïδèβář.</value>
+  </data>
+  <data name="ShowOwnersSidebar_Name" xml:space="preserve">
+    <value>§λôω Óωñèřƨλïƥ §ïδèβář</value>
+  </data>
+  <data name="ShowResources_Desc" xml:space="preserve">
+    <value>§λôω ôƭλèř úƨèřƨ ƭô ñôñè áδ₥ïñïƨƭřáƭïƲè úƨèřƨ.</value>
+  </data>
+  <data name="ShowResources_Name" xml:space="preserve">
+    <value>§λôω Rèƨôúřçèƨ</value>
+  </data>
+  <data name="ShowSocialScoreBar_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ áℓℓôωƨ áδ₥ïñïƨƭřáƭôřƨ ƭô ƭúřñ ôƒƒ ƭλè ƨôçïáℓ βář ƭλáƭ áƥƥèářƨ áƭ ƭλè ƭôƥ ôƒ δèƭáïℓ ƥáϱèƨ. Tλïƨ ƨèƭƭïñϱ ïƨ ôñ β¥ δèƒáúℓƭ.</value>
+  </data>
+  <data name="ShowSocialScoreBar_Name" xml:space="preserve">
+    <value>§λôω §ôçïáℓ/§çôřè ßář</value>
+  </data>
+  <data name="UseAsTransformationLimit_Desc" xml:space="preserve">
+    <value>Máжï₥ú₥ ñú₥βèř ôƒ áƨƨèƭ ƭ¥ƥèƨ ƭλáƭ çáñ βè ₥ářƙèδ áƨ á ƭřáñƨƒôř₥áƭïôñ áƨƨèƭ ƭ¥ƥè.</value>
+  </data>
+  <data name="UseAsTransformationLimit_Name" xml:space="preserve">
+    <value>Ûƨè Âƨ Třáñƨƒôř₥áƭïôñ £ï₥ïƭ</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ çôñƭřôℓƨ ωλïçλ ϱřôúƥ ôƒ úƨèřƨ ƨλôúℓδ ϱèƭ è₥áïℓƨ ïƒ řèƨƥôñƨïβïℓïƭïèƨ ïñ á ωôřƙƒℓôω èñδ úƥ řèƨúℓƭïñϱ ïñ ñô úƨèř ϱèƭƭïñϱ ƭλè ωôřƙƒℓôω áƨƨïϱ₥èñƭ. Ìƒ 0 ôř úñδèƒïñèδ áℓℓ áδ₥ïñïƨƭřáƭôřƨ ïñ á řèϱïôñ ωïℓℓ ϱèƭ ƭλè áƨƨïϱñ₥èñƭƨ.</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
+    <value>Wôřƙƒℓôω Ðèƒáúℓƭ Ûƨèř Gřôúƥ</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Desc" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ çôñƭřôℓƨ ωλáƭ δá¥ƨ ωôřƙƒℓôω δïϱèƨƭ è₥áïℓƨ ářè ƨèñƭ.</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Name" xml:space="preserve">
+    <value>Wôřƙƒℓôω δïϱèƨƭ è₥áïℓ δá¥ƨ</value>
+  </data>
+  <data name="WorkflowFromEmail_Desc" xml:space="preserve">
+    <value>Tλïƨ ïƨ ƭλè è₥áïℓ áδδřèƨƨ ƭλáƭ è₥áïℓƨ ƒřô₥ ωôřƙƒℓôω ωïℓℓ λáƲè áƨ ƭλè ƒřô₥ è₥áïℓ áδδřèƨƨ.</value>
+  </data>
+  <data name="WorkflowFromEmail_Name" xml:space="preserve">
+    <value>Wôřƙƒℓôω Fřô₥ è₥áïℓ áδδřèƨƨ</value>
+  </data>
+  <data name="WorkflowFromName_Desc" xml:space="preserve">
+    <value>Tλïƨ ïƨ ƭλè ñá₥è ƭλáƭ ïƨ δïƨƥℓá¥èδ ωλèñ áñ è₥áïℓ ïƨ ƨèñƭ ƒřô₥ ωôřƙƒℓôω.</value>
+  </data>
+  <data name="WorkflowFromName_Name" xml:space="preserve">
+    <value>Wôřƙƒℓôω Fřô₥ è₥áïℓ ñá₥è</value>
+  </data>
+  <data name="WriteActionDescription_Desc" xml:space="preserve">
+    <value>Wřïƭè Âçƭïôñ Ðèƨçřïƥƭïôñ ƭô Çô₥₥èñƭƨ.</value>
+  </data>
+  <data name="WriteActionDescription_Name" xml:space="preserve">
+    <value>Wřïƭè Âçƭïôñ Ðèƨçřïƥƭïôñ</value>
+  </data>
+</root>
