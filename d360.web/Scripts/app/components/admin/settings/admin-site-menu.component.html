@@ -32,7 +32,7 @@
                     <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" (click)="selectRow(item)">
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
-                            <ig-popup-menu [items]="item.IsCustom ? menuItemsWithDelete : menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
+                            <ig-popup-menu [items]="getMenuOptions(item)" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>
                 </tr>

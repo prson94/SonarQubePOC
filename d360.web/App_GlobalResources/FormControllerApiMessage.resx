@@ -264,6 +264,12 @@
   <data name="FolderMovedDown" xml:space="preserve">
     <value>Folder {0} moved down successfully.</value>
   </data>
+  <data name="FolderMovedToBottom" xml:space="preserve">
+    <value>Folder {0} moved to bottom successfully.</value>
+  </data>
+  <data name="FolderMovedToTop" xml:space="preserve">
+    <value>Folder {0} moved to top successfully.</value>
+  </data>
   <data name="FolderMovedUp" xml:space="preserve">
     <value>Folder {0} moved up successfully.</value>
   </data>

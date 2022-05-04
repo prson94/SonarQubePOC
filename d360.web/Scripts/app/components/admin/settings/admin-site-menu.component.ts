@@ -61,18 +61,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     IsMenuPermissionsAdding: boolean= false;
     permissionMode: FormMode = FormMode.Default;
 
-    menuItems = [
-        { title: 'Edit' },
-        { title: 'Move Up' },
-        { title: 'Move Down' },
-    ];
-
-    menuItemsWithDelete = [
-        { title: 'Edit' },
-        { title: 'Delete' },
-        { title: 'Move Up' },
-        { title: 'Move Down' },
-    ];
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -304,6 +292,38 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             })
     }
 
+    moveToTop(item: SiteNav) {
+        this.selection = item;
+        this.isLoading = true;
+        this.siteMenuService.moveFolderToTop(this.selection.ID)
+            .subscribe(() => {
+                this.siteMenuService.getSiteNavItems()
+                    .subscribe(s => {
+                        this.companySettings.SiteNav = s;
+                        this.companySettingsChange.emit(this.companySettings);
+                        this.stateService.reloadLeftNavMenu();
+                        this.isLoading = false;
+                    });
+
+            })
+    }
+
+    moveToBottom(item: SiteNav) {
+        this.selection = item;
+        this.isLoading = true;
+        this.siteMenuService.moveFolderToBottom(this.selection.ID)
+            .subscribe(() => {
+                this.siteMenuService.getSiteNavItems()
+                    .subscribe(s => {
+                        this.companySettings.SiteNav = s;
+                        this.companySettingsChange.emit(this.companySettings);
+                        this.stateService.reloadLeftNavMenu();
+                        this.isLoading = false;
+                    });
+
+            })
+    }
+
     moveFolderUp(item: SiteNav, i: number) {
         if (i != 0) {
             this.selection = item;
@@ -447,6 +467,28 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         }
     }
 
+    getMenuOptions(folder: SiteNav): any[] {
+        let menuOptions = [
+            { title: 'Edit' },
+        ];
+
+        if (folder.IsCustom) {
+            menuOptions.push({ title: 'Delete' });
+        }
+
+        if (this.companySettings.SiteNav[0].ID != folder.ID) {
+            menuOptions.push({ title: 'Move To Top' });
+            menuOptions.push({ title: 'Move Up' });
+        }
+
+        if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
+            menuOptions.push({ title: 'Move Down' });
+            menuOptions.push({ title: 'Move To Bottom' });
+        }
+
+        return menuOptions;
+    }
+
     loadSiteNavPermissions(item: SiteNav) {
         this.isLoading = true;
         return this.siteMenuService.getSiteNavPermissions(item.ID)
@@ -476,6 +518,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.moveUp(item);
         } else if (key === 'move down') {
             this.moveDown(item);
+         } else if(key === 'move to top') {
+            this.moveToTop(item);
+        } else if (key === 'move to bottom') {
+            this.moveToBottom(item);
         }
     }
 }

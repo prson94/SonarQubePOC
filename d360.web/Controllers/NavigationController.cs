@@ -454,6 +454,82 @@ namespace d360.web.Controllers
 			};
 		}
 
+		[HttpPut, Route("MoveToTop"), NonNullableParameters]
+		public JsonNetResult MoveToTop(int id)
+		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			}
+
+			var success = true;
+			string message;
+
+			try
+			{
+				var siteNav = Company.GetById<SiteNav>(id);
+
+				if (siteNav == null)
+				{
+					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+				}
+				var allItems = Company.SiteNav.ToList();
+				siteNav.SortOrder = 1;
+                foreach (var item in Company.SiteNav.Where(x => x.ID != siteNav.ID))
+                {
+					item.SortOrder++; 
+                }
+				Company.SaveChanges();
+				message = string.Format(FormControllerApiMessage.FolderMovedToTop, siteNav.Name);
+			}
+			catch (Exception ex)
+			{
+				success = false;
+				message = ex.GetFullExceptionData();
+			}
+			return new JsonNetResult
+			{
+				Data = new { success, message },
+				Formatting = Newtonsoft.Json.Formatting.None
+			};
+		}
+
+		[HttpPut, Route("MoveToBottom"), NonNullableParameters]
+		public JsonNetResult MoveToBottom(int id)
+		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			}
+
+			var success = true;
+			string message;
+
+			try
+			{
+				var siteNav = Company.GetById<SiteNav>(id);
+
+				if (siteNav == null)
+				{
+					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+				}
+
+				siteNav.SortOrder = Company.SiteNav.Max(x => x.SortOrder) + 1;
+				Company.SaveChanges();
+				message = string.Format(FormControllerApiMessage.FolderMovedToBottom, siteNav.Name);
+			}
+			catch (Exception ex)
+			{
+				success = false;
+				message = ex.GetFullExceptionData();
+			}
+			return new JsonNetResult
+			{
+				Data = new { success, message },
+				Formatting = Newtonsoft.Json.Formatting.None
+			};
+		}
+
 		[HttpPut, Route("EditFolder")]
 		public async Task<JsonNetResult> EditFolder(SiteNav folder)
 		{

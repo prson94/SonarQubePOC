@@ -85,6 +85,22 @@ export class SiteMenuService extends BaseObservableService {
             );
     }
 
+    moveFolderToTop(id: number) {
+        return this.http.put(`navigation/MoveToTop?id=${id}`, null)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    moveFolderToBottom(id: number) {
+        return this.http.put(`navigation/MoveToBottom?id=${id}`, null)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     editFolder(folder: SiteNav): Observable<JsonResult> {
         return this.http.put('navigation/EditFolder', folder)
             .pipe(
