@@ -63,6 +63,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     menuItems = [
         { title: 'Edit' },
+        { title: 'Move Up' },
+        { title: 'Move Down' },
+    ];
+
+    menuItemsWithDelete = [
+        { title: 'Edit' },
         { title: 'Delete' },
         { title: 'Move Up' },
         { title: 'Move Down' },
