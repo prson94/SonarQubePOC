@@ -49,6 +49,9 @@ namespace d360.core.entities
         public string IconPayload { get; set; }
 
         [NotMapped, DataMember]
+        public string Type { get { return "Folder1"; } }
+
+        [NotMapped, DataMember]
         public string FullURL
         {
             get

@@ -10,7 +10,8 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
-                    <th></th>
+                    <th width="35%" >Type</th>
+                    <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
@@ -25,12 +26,13 @@
                         </span>
                         &nbsp;&nbsp;{{item.Title}}
                     </td>
-                    <td>
-                        <div class="RowTools">
-                            <a *ngIf="item.IsCustom" (click)="delete(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                            <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                            <a (click)="moveUp(item)" style="cursor:pointer;"><i class="fa fa-caret-up"></i></a>
-                            <a (click)="moveDown(item)" style="cursor:pointer;"><i class="fa fa-caret-down"></i></a>
+                    <td width="35%">
+                        {{item.Type}}
+                    </td>
+                    <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" (click)="selectRow(item)">
+                        <div style="display:inline-block">
+                            <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
+                            <ig-popup-menu [items]="menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>
                 </tr>

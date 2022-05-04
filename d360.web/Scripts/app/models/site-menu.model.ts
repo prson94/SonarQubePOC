@@ -40,6 +40,7 @@ export class SiteNav {
 
     Icon: string;
     Title: string;
+    Type: string = "Folder";
 
     ImageIconUrl: string;
     FullURL: string;

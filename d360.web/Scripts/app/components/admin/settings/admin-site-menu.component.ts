@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
@@ -60,6 +60,13 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     IsMenuPermissionsAdding: boolean= false;
     permissionMode: FormMode = FormMode.Default;
+
+    menuItems = [
+        { title: 'Edit' },
+        { title: 'Delete' },
+        { title: 'Move Up' },
+        { title: 'Move Down' },
+    ];
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -447,5 +454,22 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.permissionMode = $event;
         this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
        
+    }
+
+    selectRow(data) {
+        this.selection = data;
+    }
+
+    clickMenuItem(event: any, item: any) {
+        let key = event.value.toLowerCase();
+        if (key === 'edit') {
+            this.edit(item);
+        } else if (key === 'delete') {
+            this.delete(item);
+        } else if (key === 'move up') {
+            this.moveUp(item);
+        } else if (key === 'move down') {
+            this.moveDown(item);
+        }
     }
 }
