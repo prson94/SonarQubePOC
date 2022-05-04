@@ -669,13 +669,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadLookupValuesForComplexFields(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
-        }
-
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -757,13 +750,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadRelationshipValues(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
-        }
-
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
