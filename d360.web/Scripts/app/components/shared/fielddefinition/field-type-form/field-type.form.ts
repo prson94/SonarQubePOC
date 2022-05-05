@@ -59,7 +59,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() name: string;
     @Input() objectType: string;
     @Input() objectID: number;
-    @Input() actionName: string = "Add";
+    @Input() actionName: string = $localize`Add`;
     @Input() objectName: string = '';
 
 
@@ -253,7 +253,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private load(): void {
         if (this.name && (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid)) {
-            this.actionName = 'Edit';
+            this.actionName = $localize`Edit`;
             this.isLoading = true;
 
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
@@ -278,7 +278,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         });
                 });
         } else if (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid) {
-            this.actionName = 'Add';
+            this.actionName = $localize`Add`;
             this.isLoading = true;
             this.model = new FieldTypeEditorModel();
             this.model.FieldType = new FieldTypeAPIModelField();
@@ -846,7 +846,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.fieldsService.putFieldsV2(apiModel).subscribe(
             r => {
                 if (r && r.Success) {
-                    r.Message = this.actionName == "Edit" ? $localize`Field Type successfully updated` : $localize`Field Type successfully added`;
+                    r.Message = this.actionName == $localize`Edit` ? $localize`Field Type successfully updated` : $localize`Field Type successfully added`;
                     this.showMessageForApiResponse(this.messagesService, r);
                     this.model.FieldType.Type = new FieldType("Empty");
                     this.onComplete.emit({ action: this.actionName.toLowerCase(), field: this.model });
@@ -1087,7 +1087,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (fieldname == '*' || fieldname == "NameTaken") {
             this.setValidation('name_already_taken', $localize`API Name already in use.`, (() => {
-                if (this.model.FieldType.Name && this.actionName == 'Add') {
+                if (this.model.FieldType.Name && this.actionName == $localize`Add`) {
                     if (this.fields && this.fields.length > 0) {
                         return this.fields.filter((x) => {
                             return x.Name.toLowerCase().trim() == this.model.FieldType.Name.toLowerCase().trim();
@@ -1325,7 +1325,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private updateApiName(event) {
-        if (this.actionName == 'Edit')
+        if (this.actionName == $localize`Edit`)
             return;
         let nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
         this.model.FieldType.Name = nameValue.substring(0, 128);
@@ -1558,12 +1558,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     public getSelectResponsibilityTypePlaceholder() {
         //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
-        return this.enableListSingleResponsibilityType ? "Value Required" : " ";
+        return this.enableListSingleResponsibilityType ? $localize`Value Required` : " ";
     }
 
     public getListSingleSegmentPlaceholder() {
         //Using a string with space, because if empty string is returned, p-dropdown behaves like there is no placeholder
-        return this.listSingleSegmentCheckbox ? "Value Required" : " ";
+        return this.listSingleSegmentCheckbox ? $localize`Value Required` : " ";
     }
 
     setListSingleSegmentCheckbox(fieldTypeEditor: FieldTypeAPIModelField) {

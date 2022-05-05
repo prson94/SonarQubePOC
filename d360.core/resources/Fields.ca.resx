@@ -340,4 +340,25 @@
   <data name="Parent_Name" xml:space="preserve">
     <value>Óωñèř/Þářèñƭ</value>
   </data>
+  <data name="RegexPatternChoose" xml:space="preserve">
+    <value>Çλôôƨè ƨá₥ƥℓè...</value>
+  </data>
+  <data name="RegexPatternEmail" xml:space="preserve">
+    <value>É₥áïℓ</value>
+  </data>
+  <data name="RegexPatternInternalUrl" xml:space="preserve">
+    <value>Ìñƭèřñáℓ Ûřℓ</value>
+  </data>
+  <data name="RegexPatternIP" xml:space="preserve">
+    <value>ÌÞ Âδδřèƨƨ</value>
+  </data>
+  <data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
+    <value>Nôřƭλ Â₥èřïçáñ Þλôñè</value>
+  </data>
+  <data name="RegexPatternPublicUrl" xml:space="preserve">
+    <value>Þúβℓïç Ûřℓ</value>
+  </data>
+  <data name="RegexPatternUSZipCode" xml:space="preserve">
+    <value>Û§ Zïƥ Çôδè</value>
+  </data>
 </root>
