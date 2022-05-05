@@ -938,13 +938,13 @@ namespace d360.web.Controllers
 
 					if (model.Class == AssetTypeClass.TechnicalAsset)
 					{
-						responseModel.DisplayValue = "Technical Assets";
-						responseModel.MainTabTitle = "Technical Asset Types";
+						responseModel.DisplayValue = PageNames.TechnicalAssetsPage;
+						responseModel.MainTabTitle = PageNames.TechnicalAssetsPageTabTitle;
 					}
 					if (model.Class == AssetTypeClass.BusinessAsset)
 					{
-						responseModel.DisplayValue = "Business Assets";
-						responseModel.MainTabTitle = "Business Asset Types";
+						responseModel.DisplayValue = PageNames.BusinessAssetsPage;
+						responseModel.MainTabTitle = PageNames.BusinessAssetsPageTabTitle;
 					}
 				}
 				else if (model.ObjectType == SystemObjects.TaskType.ToString())
@@ -964,8 +964,8 @@ namespace d360.web.Controllers
 					}
 
 					responseModel.Items.HasAudit = true;
-					responseModel.DisplayValue = "Diagram Assets";
-					responseModel.MainTabTitle = "Diagram Asset Types";
+					responseModel.DisplayValue = PageNames.DiagramAssetsPage;
+					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Object = SystemObjects.TaskType.ToString();
 
 					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
@@ -977,8 +977,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Relationships";
-					responseModel.MainTabTitle = "Relationship Types";
+					responseModel.DisplayValue = PageNames.RelationshipsTab;
+					responseModel.MainTabTitle = PageNames.RelationshipsTabTitle;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -987,8 +987,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Workflow Actions";
-					responseModel.MainTabTitle = "Action Types";
+					responseModel.DisplayValue = PageNames.WorkflowActionsTab;
+					responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
@@ -996,8 +996,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Responsibilities";
-					responseModel.MainTabTitle = "Responsibility Types";
+					responseModel.DisplayValue = PageNames.ResponsibilitiesTab;
+					responseModel.MainTabTitle = PageNames.ResponsibilitiesTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Report.ToString())
@@ -1005,8 +1005,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Dashboards";
-					responseModel.MainTabTitle = "Dashboards";
+					responseModel.DisplayValue = PageNames.DashboardsPage;
+					responseModel.MainTabTitle = PageNames.DashboardsPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
@@ -1014,8 +1014,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Models";
-					responseModel.MainTabTitle = "Model Types";
+					responseModel.DisplayValue = PageNames.ModelsPage;
+					responseModel.MainTabTitle = PageNames.ModelsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.PolicyType.ToString())
@@ -1023,8 +1023,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Policies";
-					responseModel.MainTabTitle = "Policy Types";
+					responseModel.DisplayValue = PageNames.PoliciesPage;
+					responseModel.MainTabTitle = PageNames.PoliciesPageTabTitle;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Tag.ToString())
@@ -1032,8 +1032,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Tags";
-					responseModel.MainTabTitle = "Tags";
+					responseModel.DisplayValue = PageNames.TagsPage;
+					responseModel.MainTabTitle = PageNames.TagsPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.RuleType.ToString())
@@ -1041,8 +1041,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.RuleType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Rules";
-					responseModel.MainTabTitle = "Rules";
+					responseModel.DisplayValue = PageNames.RulesPage;
+					responseModel.MainTabTitle = PageNames.RulesPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
@@ -1050,8 +1050,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Diagram Assets";
-					responseModel.MainTabTitle = "Diagram Asset Types";
+					responseModel.DisplayValue = PageNames.DiagramAssetsPage;
+					responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
 					responseModel.Items.HasAudit = true;
 					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
@@ -1071,8 +1071,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Users";
-					responseModel.MainTabTitle = "Users";
+					responseModel.DisplayValue = PageNames.UsersPage;
+					responseModel.MainTabTitle = PageNames.UsersPage;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1081,8 +1081,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Groups";
-					responseModel.MainTabTitle = "Groups";
+					responseModel.DisplayValue = PageNames.GroupsTab;
+					responseModel.MainTabTitle = PageNames.GroupsTab;
 					responseModel.Items.HasAudit = true;
 					responseModel.Items.HasField = true;
 				}
@@ -1091,8 +1091,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Scoring Definitions";
-					responseModel.MainTabTitle = "Scoring Definitions";
+					responseModel.DisplayValue = PageNames.ScoringDefinitionsTab;
+					responseModel.MainTabTitle = PageNames.ScoringDefinitionsTab;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Predicate.ToString())
@@ -1101,8 +1101,8 @@ namespace d360.web.Controllers
 					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
 					responseModel.ObjectID = model.ObjectId ?? 0;
 					responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-b00000000012");
-					responseModel.DisplayValue = "Predicates";
-					responseModel.MainTabTitle = "Predicates";
+					responseModel.DisplayValue = PageNames.PredicatesPage;
+					responseModel.MainTabTitle = PageNames.PredicatesPage;
 					responseModel.Items.HasAudit = true;
 				}
 				else if (model.ObjectType == SystemObjects.Resource.ToString())
@@ -1120,7 +1120,7 @@ namespace d360.web.Controllers
 				responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
 				responseModel.ObjectID = model.ObjectId ?? 0;
 				responseModel.DisplayValue = tag.Value;
-				responseModel.MainTabTitle = "Tagged Assets";
+				responseModel.MainTabTitle = PageNames.TaggedAssetsPage;
 				responseModel.Items.HasAudit = true;
 				responseModel.Uid = tag.uid;
 			}
@@ -1134,8 +1134,8 @@ namespace d360.web.Controllers
 					execProcedure = false;
 					responseModel.Object = asset.Object;
 					responseModel.ObjectID = asset.ObjectID;
-					responseModel.DisplayValue = "Groups";
-					responseModel.MainTabTitle = "Groups";
+					responseModel.DisplayValue = PageNames.GroupsTab;
+					responseModel.MainTabTitle = PageNames.GroupsTab;
 					responseModel.Items.HasAudit = true;
 					responseModel.Uid = asset.uid;
 				}
@@ -1153,8 +1153,8 @@ namespace d360.web.Controllers
 				execProcedure = false;
 				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
 				responseModel.ObjectID = model.ObjectId ?? 0;
-				responseModel.DisplayValue = "Semantic Types";
-				responseModel.MainTabTitle = "Semantic Types";
+				responseModel.DisplayValue = PageNames.SemanticTypePage;
+				responseModel.MainTabTitle = PageNames.SemanticTypePage;
 				responseModel.Items.HasAudit = true;
 
 				if (model.AssetUid.HasValue)
@@ -1287,7 +1287,7 @@ namespace d360.web.Controllers
 				responseModel.Object = asset.Object;
 				responseModel.ObjectID = asset.ObjectID;
 				responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
-				responseModel.MainTabTitle = "Profile";
+				responseModel.MainTabTitle = PageNames.ProfilePage;
 				responseModel.Items.HasItemOwn = true;
 				responseModel.Items.HasRelationship = true;
 				responseModel.Items.HasGroups = true;

@@ -126,6 +126,9 @@
   <data name="BusinessAssetsPage" xml:space="preserve">
     <value>ßúƨïñèƨƨ Âƨƨèƭƨ</value>
   </data>
+  <data name="BusinessAssetsPageTabTitle" xml:space="preserve">
+    <value>ßúƨïñèƨƨ Âƨƨèƭ T¥ƥèƨ</value>
+  </data>
   <data name="CartPage" xml:space="preserve">
     <value>Çářƭ</value>
   </data>
@@ -149,6 +152,12 @@
   </data>
   <data name="DefinitionTab" xml:space="preserve">
     <value>Ðèƒïñïƭïôñ</value>
+  </data>
+  <data name="DiagramAssetsPage" xml:space="preserve">
+    <value>Ðïáϱřá₥ Âƨƨèƭƨ</value>
+  </data>
+  <data name="DiagramAssetsPageTabTitle" xml:space="preserve">
+    <value>Ðïáϱřá₥ Âƨƨèƭ T¥ƥèƨ</value>
   </data>
   <data name="FieldDefinitionsTab" xml:space="preserve">
     <value>Fïèℓδ Ðèƒïñïƭïôñƨ</value>
@@ -174,17 +183,29 @@
   <data name="ModelsPage" xml:space="preserve">
     <value>Môδèℓƨ</value>
   </data>
+  <data name="ModelsPageTabTitle" xml:space="preserve">
+    <value>Môδèℓ T¥ƥèƨ</value>
+  </data>
   <data name="ModelTab" xml:space="preserve">
     <value>Môδèℓ</value>
   </data>
   <data name="PoliciesPage" xml:space="preserve">
     <value>Þôℓïçïèƨ</value>
   </data>
+  <data name="PoliciesPageTabTitle" xml:space="preserve">
+    <value>Þôℓïç¥ T¥ƥèƨ</value>
+  </data>
   <data name="PolicyTab" xml:space="preserve">
     <value>Þôℓïç¥</value>
   </data>
+  <data name="PredicatesPage" xml:space="preserve">
+    <value>Þřèδïçáƭèƨ</value>
+  </data>
   <data name="ProcessDiagramTab" xml:space="preserve">
     <value>Þřôçèƨƨ Ðïáϱřá₥</value>
+  </data>
+  <data name="ProfilePage" xml:space="preserve">
+    <value>Þřôƒïℓè</value>
   </data>
   <data name="ProfileTab" xml:space="preserve">
     <value>Þřôƒïℓè</value>
@@ -198,11 +219,23 @@
   <data name="RelationshipsTab" xml:space="preserve">
     <value>Rèℓáƭïôñƨλïƥƨ</value>
   </data>
+  <data name="RelationshipsTabTitle" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥèƨ</value>
+  </data>
   <data name="ResponsibilitiesTab" xml:space="preserve">
     <value>Rèƨƥôñƨïβïℓïƭïèƨ</value>
   </data>
+  <data name="ResponsibilitiesTabTitle" xml:space="preserve">
+    <value>Rèƨƥôñƨïβïℓïƭ¥ T¥ƥèƨ</value>
+  </data>
   <data name="RuleResultsTab" xml:space="preserve">
     <value>Rúℓè Rèƨúℓƭƨ</value>
+  </data>
+  <data name="RulesPage" xml:space="preserve">
+    <value>Rúℓèƨ</value>
+  </data>
+  <data name="ScoringDefinitionsTab" xml:space="preserve">
+    <value>§çôřïñϱ Ðèƒïñïƭïôñƨ</value>
   </data>
   <data name="ScoringTab" xml:space="preserve">
     <value>§çôřïñϱ</value>
@@ -210,8 +243,26 @@
   <data name="SemanticTypePage" xml:space="preserve">
     <value>§è₥áñƭïç T¥ƥèƨ</value>
   </data>
+  <data name="TaggedAssetsPage" xml:space="preserve">
+    <value>Táϱϱèδ Âƨƨèƭƨ</value>
+  </data>
+  <data name="TagsPage" xml:space="preserve">
+    <value>Táϱƨ</value>
+  </data>
   <data name="TechnicalAssetsPage" xml:space="preserve">
     <value>Tèçλñïçáℓ Âƨƨèƭƨ</value>
+  </data>
+  <data name="TechnicalAssetsPageTabTitle" xml:space="preserve">
+    <value>Tèçλñïçáℓ Âƨƨèƭ T¥ƥèƨ</value>
+  </data>
+  <data name="UsersPage" xml:space="preserve">
+    <value>Ûƨèřƨ</value>
+  </data>
+  <data name="WorkflowActionsTab" xml:space="preserve">
+    <value>Wôřƙƒℓôω Âçƭïôñƨ</value>
+  </data>
+  <data name="WorkflowActionsTabTitle" xml:space="preserve">
+    <value>Âçƭïôñ T¥ƥèƨ</value>
   </data>
   <data name="WorkflowPage" xml:space="preserve">
     <value>Wôřƙƒℓôω</value>

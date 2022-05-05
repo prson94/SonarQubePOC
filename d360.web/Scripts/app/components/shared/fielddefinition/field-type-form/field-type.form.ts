@@ -846,7 +846,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.fieldsService.putFieldsV2(apiModel).subscribe(
             r => {
                 if (r && r.Success) {
-                    r.Message = this.actionName == "Edit" ? "Field Type successfully updated" : "Field Type successfully added";
+                    r.Message = this.actionName == "Edit" ? $localize`Field Type successfully updated` : $localize`Field Type successfully added`;
                     this.showMessageForApiResponse(this.messagesService, r);
                     this.model.FieldType.Type = new FieldType("Empty");
                     this.onComplete.emit({ action: this.actionName.toLowerCase(), field: this.model });
