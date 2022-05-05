@@ -94,10 +94,6 @@ stages:
         msbuildArguments: /p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/bulkloadprocessor/"
         clean: true
         maximumCpuCount: true
-    - template: build/steps/step-whitesource-scan.yml@templates
-      parameters:
-        whitesourceApiKey: $(whitesourceApiKey)
-        projectName: 'Bulk Load Processor'
     - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
         blackduckApiToken: $(blackduckApi)
