@@ -11,7 +11,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/artifacts/admin-artifacts.component.ts</context>
-          <context context-type="linenumber">35,43</context>
+          <context context-type="linenumber">53,58</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/customapi/admin-customapi-endpoint-version-fields.component.ts</context>
@@ -334,12 +334,40 @@
           <context context-type="linenumber">201,205</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="7e892ba15f2c6c17e83510e273b3e10fc32ea016" datatype="html">
+        <source>Search</source>
+        <target xmlns="">§èářçλ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/artifacts/admin-artifacts.component.ts</context>
+          <context context-type="linenumber">36,43</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.html</context>
+          <context context-type="linenumber">132,136</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid-top-level-list.component.ts</context>
+          <context context-type="linenumber">35,41</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/controls/search-field/search-field.component.ts</context>
+          <context context-type="linenumber">57,65</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/header/header-breadcrumb-item.component.ts</context>
+          <context context-type="linenumber">20,22</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/header/header-breadcrumb-item.component.ts</context>
+          <context context-type="linenumber">25,29</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="c3c5e008d4a94fede64610c4d12326901906a1cd" datatype="html">
         <source>No asset types found.</source>
         <target xmlns="">Nô áƨƨèƭ ƭ¥ƥèƨ ƒôúñδ.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/artifacts/admin-artifacts.component.ts</context>
-          <context context-type="linenumber">54,59</context>
+          <context context-type="linenumber">68,74</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/diagram-asset/admin-diagram-asset.component.ts</context>
@@ -1388,6 +1416,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/rightsidebar/right-sidebar.component.ts</context>
           <context context-type="linenumber">149,157</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8301989999093324484" datatype="html">
@@ -2633,6 +2665,10 @@
           <context context-type="sourcefile">Scripts/app/components/admin/dashboards/admin-dashboards.component.ts</context>
           <context context-type="linenumber">149,157</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="364035539745424233" datatype="html">
         <source>Are you sure you want to delete the dashboard [<x id="PH" equiv-text="this.selected?.Name" />]?</source>
@@ -2680,6 +2716,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/workflow/workflow-step-field-change.component.ts</context>
           <context context-type="linenumber">50</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">42,43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5204665838629618239" datatype="html">
@@ -6094,22 +6134,6 @@
           <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7e892ba15f2c6c17e83510e273b3e10fc32ea016" datatype="html">
-        <source>Search</source>
-        <target xmlns="">§èářçλ</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.html</context>
-          <context context-type="linenumber">132,136</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid-top-level-list.component.ts</context>
-          <context context-type="linenumber">35,41</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/controls/search-field/search-field.component.ts</context>
-          <context context-type="linenumber">57,65</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="bcc8653aca36393d3e0bdaebd9053dbe91f21f5c" datatype="html">
         <source> Set the initial scope of any search performed from the header bar or home page search. The scope can then be modified after the initial search from the Search Results page. </source>
         <target xmlns=""> §èƭ ƭλè ïñïƭïáℓ ƨçôƥè ôƒ áñ¥ ƨèářçλ ƥèřƒôř₥èδ ƒřô₥ ƭλè λèáδèř βář ôř λô₥è ƥáϱè ƨèářçλ. Tλè ƨçôƥè çáñ ƭλèñ βè ₥ôδïƒïèδ áƒƭèř ƭλè ïñïƭïáℓ ƨèářçλ ƒřô₥ ƭλè §èářçλ Rèƨúℓƭƨ ƥáϱè. </target>
@@ -6613,6 +6637,10 @@
           <context context-type="sourcefile">Scripts/app/components/shared/shortcuts/shortcut-item.component.ts</context>
           <context context-type="linenumber">234</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="d33b639ee4668535495dabce3f9ffd27f9280eab" datatype="html">
         <source>Available Folder Items</source>
@@ -6700,6 +6728,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/shortcuts/shortcut-item.component.ts</context>
           <context context-type="linenumber">234</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/sidebar/governance-roles/governance-roles-sidebar.component.ts</context>
@@ -6896,6 +6928,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/survey/take-survey.component.ts</context>
           <context context-type="linenumber">27,33</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/where-used/where-used.component.html</context>
@@ -9564,6 +9600,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/header/header-profile.component.ts</context>
           <context context-type="linenumber">91</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3a6e5a6aa78ca864f6542410c5dafb6334538106" datatype="html">
@@ -13346,7 +13386,7 @@ Click to investigate and add tags.</source>
       </trans-unit>
       <trans-unit id="44ea34ef2b86bb04ffa260e9b5de2a0fd9a2eb10" datatype="html">
         <source>Download Where Used <x id="ICU" equiv-text="{items?.length, plural, =0 {Report} =1 {Report} other {Reports}}" /></source>
-        <target xmlns="">Ðôωñℓôáδ Wλèřè Ûƨèδ <x id="ICU" equiv-text="{items?.length, plural, =0 {Rèƥôřƭ} =1 {Rèƥôřƭ} other {Rèƥôřƭƨ}}" xmlns="urn:oasis:names:tc:xliff:document:1.2" /></target>
+        <target xmlns="">Ðôωñℓôáδ Wλèřè Ûƨèδ <x id="ICU" equiv-text="{items?.length, plural, =0 {Report} =1 {Report} other {Reports}}" xmlns="urn:oasis:names:tc:xliff:document:1.2" /></target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/delete.form.ts</context>
           <context context-type="linenumber">81</context>
@@ -13996,6 +14036,10 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/model-diagram.component.ts</context>
           <context context-type="linenumber">56,65</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="def755457793d5ad40597886d2d317bc5f415a2f" datatype="html">
@@ -18726,6 +18770,14 @@ Click to investigate and add tags.</source>
           <context context-type="linenumber">115</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="dd0b5fe9948fe6bc55c0f06e93b2115e0811fb1c" datatype="html">
+        <source>Suggest</source>
+        <target xmlns="">§úϱϱèƨƭ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">62,67</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="4373659748637624473" datatype="html">
         <source>Export Disabled</source>
         <target xmlns="">Éжƥôřƭ Ðïƨáβℓèδ</target>
@@ -18736,6 +18788,14 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-filter.component.ts</context>
           <context context-type="linenumber">75,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a44548d4363fdce1e0017477c4a41845b9c4265d" datatype="html">
+        <source>Choose export to Excel format</source>
+        <target xmlns="">Çλôôƨè èжƥôřƭ ƭô Éжçèℓ ƒôř₥áƭ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">88,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1270819636986112737" datatype="html">
@@ -18760,6 +18820,62 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
           <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="27bc39713f6e0384e372145e910be9077c00a92b" datatype="html">
+        <source>Export Errors to Excel</source>
+        <target xmlns="">Éжƥôřƭ Éřřôřƨ ƭô Éжçèℓ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">106,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="c08a025a022faf4ec40bcaa9cc91a4361c2f99d9" datatype="html">
+        <source>Export Original Spreadsheet</source>
+        <target xmlns="">Éжƥôřƭ Óřïϱïñáℓ §ƥřèáδƨλèèƭ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1048aebf11787380f8114cf61f51313d39941c82" datatype="html">
+        <source>Filter Mode</source>
+        <target xmlns="">Fïℓƭèř Môδè</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ed72606056198896f46c65d0dbbe854d04f3de47" datatype="html">
+        <source>Authentication</source>
+        <target xmlns="">Âúƭλèñƭïçáƭïôñ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="a59da67cc713ac630ec8fbabaf38058bb29c1b35" datatype="html">
+        <source>Fullscreen</source>
+        <target xmlns="">Fúℓℓƨçřèèñ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d81588f820f301aa231ee664e33267d336be4303" datatype="html">
+        <source>New Window</source>
+        <target xmlns="">Nèω Wïñδôω</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="663bf139cc5e0ae37b00b3401cee9610ac52fbbe" datatype="html">
+        <source>Show my items only</source>
+        <target xmlns="">§λôω ₥¥ ïƭè₥ƨ ôñℓ¥</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="34557152cff7bc7db72a2a8706794d7fba4bac86" datatype="html">
