@@ -121,12 +121,22 @@ export class UiAdvancedFiltering {
             },
             [OperatorString.Before]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
-                    return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
             },
             [OperatorString.After]: (filterOption: AdvancedFilterFieldCondition) => {
                 filtredData = filtredData.filter((elementToFilter: object) => {
-                    return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    return this.isGivenDateAfterSearchDate(elementToFilter[filterOption.field], filterOption.value, filterOption);
+                });
+            },
+            [OperatorString.OnOrBefore]: (filterOption: AdvancedFilterFieldCondition) => {
+                filtredData = filtredData.filter((elementToFilter: object) => {
+                    return this.isGivenDateOnOrBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                });
+            },
+            [OperatorString.OnOrAfter]: (filterOption: AdvancedFilterFieldCondition) => {
+                filtredData = filtredData.filter((elementToFilter: object) => {
+                    return this.isGivenDateOnOrAfterSearchDate(elementToFilter[filterOption.field], filterOption.value);
                 });
             },
         };
@@ -233,13 +243,25 @@ export class UiAdvancedFiltering {
             },
             [OperatorString.Before]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
-                    return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    return this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value, filterOption);
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
             [OperatorString.After]: (filterOption: AdvancedFilterFieldCondition) => {
                 filteredData = remove(fullData, (elementToFilter: object) => {
-                    return !this.isGivenDateBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                    return this.isGivenDateAfterSearchDate(elementToFilter[filterOption.field], filterOption.value, filterOption);
+                });
+                filterResult = [...filterResult, ...filteredData];
+            },
+            [OperatorString.OnOrBefore]: (filterOption: AdvancedFilterFieldCondition) => {
+                filteredData = remove(fullData, (elementToFilter: object) => {
+                    return this.isGivenDateOnOrBeforeSearchDate(elementToFilter[filterOption.field], filterOption.value);
+                });
+                filterResult = [...filterResult, ...filteredData];
+            },
+            [OperatorString.OnOrAfter]: (filterOption: AdvancedFilterFieldCondition) => {
+                filteredData = remove(fullData, (elementToFilter: object) => {
+                    return this.isGivenDateOnOrAfterSearchDate(elementToFilter[filterOption.field], filterOption.value);
                 });
                 filterResult = [...filterResult, ...filteredData];
             },
@@ -300,6 +322,8 @@ export class UiAdvancedFiltering {
             return givenValue.toLowerCase() === (searchValue as string).toLowerCase();
         } else if (options.fieldType === 'Number') {
             return Number(givenValue) === Number(searchValue);
+        } else if (options.fieldType === 'Date') {
+            return this.isGivenDateEqualToSearchDate(givenValue, searchValue as string);
         } else {
             this.messagesService.showInfoMessage(`Unknown FilterFieldType`, `Not recognized FilterFieldType`);
         }
@@ -360,11 +384,53 @@ export class UiAdvancedFiltering {
     isGivenValueBetweenSearchValues({givenValue, searchValue1, searchValue2, valueType}: FilterBetweenParams): boolean {
         if (valueType === 'DateTime') {
             return new Date(givenValue) > new Date(searchValue1) && new Date(givenValue) < new Date(searchValue2);
+        } else if (valueType === 'Date') {
+            const [givenDateWithoutTime, searchDateWithoutTime, searchDateWithoutTime2] = this.removeTimeFromDate(givenValue, searchValue1, searchValue2);
+            return givenDateWithoutTime > searchDateWithoutTime && givenDateWithoutTime < searchDateWithoutTime2;
         }
         return givenValue > searchValue1 && givenValue < searchValue2;
     }
 
-    isGivenDateBeforeSearchDate(givenDate: string, searchDate: string): boolean {
-        return new Date(givenDate) < new Date(searchDate);
+    isGivenDateBeforeSearchDate(givenDate: string, searchDate: string, options: AdvancedFilterFieldCondition): boolean {
+        if (options.fieldType === 'DateTime') {
+            return new Date(givenDate) < new Date(searchDate);
+        } else if (options.fieldType === 'Date') {
+            const [givenDateWithoutTime, searchDateWithoutTime] = this.removeTimeFromDate(givenDate, searchDate);
+            return givenDateWithoutTime < searchDateWithoutTime;
+        }
+    }
+
+    isGivenDateAfterSearchDate(givenDate: string, searchDate: string, options: AdvancedFilterFieldCondition): boolean {
+        if (options.fieldType === 'DateTime') {
+            return new Date(givenDate) > new Date(searchDate);
+        } else if (options.fieldType === 'Date') {
+            const [givenDateWithoutTime, searchDateWithoutTime] = this.removeTimeFromDate(givenDate, searchDate);
+            return givenDateWithoutTime > searchDateWithoutTime;
+        }
+    }
+
+    isGivenDateOnOrBeforeSearchDate(givenDate: string, searchDate: string): boolean {
+        const [givenDateWithoutTime, searchDateWithoutTime] = this.removeTimeFromDate(givenDate, searchDate);
+        return givenDateWithoutTime <= searchDateWithoutTime;
+    }
+
+    isGivenDateOnOrAfterSearchDate(givenDate: string, searchDate: string): boolean {
+        const [givenDateWithoutTime, searchDateWithoutTime] = this.removeTimeFromDate(givenDate, searchDate);
+        return givenDateWithoutTime >= searchDateWithoutTime;
+    }
+
+    removeTimeFromDate(givenValue: string, searchValue: string, searchValue2?: string): number[] {
+        const givenDate: Date = new Date(givenValue);
+        const searchDate: Date = new Date(searchValue as string);
+        const searchDate2: Date = new Date(searchValue2 as string);
+        const givenDateWithoutTime: number = givenDate.setHours(0,0,0,0);
+        const searchDateWithoutTime: number = searchDate.setHours(0,0,0,0);
+        const searchDateWithoutTime2: number = searchDate2.setHours(0,0,0,0);
+        return [givenDateWithoutTime, searchDateWithoutTime, searchDateWithoutTime2];
+    }
+
+    isGivenDateEqualToSearchDate(givenValue: string, searchValue: string): boolean {
+        const [givenDateWithoutTime, searchDateWithoutTime] = this.removeTimeFromDate(givenValue, searchValue);
+        return givenDateWithoutTime === searchDateWithoutTime;
     }
 }
