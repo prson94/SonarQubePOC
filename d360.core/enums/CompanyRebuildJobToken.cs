@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.resources;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,23 +9,17 @@ namespace d360.core.enums
     public enum CompanyRebuildJobToken
     {
         [
-            Name("Asset Graph"),
-            QueueSettingName("AssetGraphQueue"),
-            Description("Rebuild Visualization diagrams for assets. This request may take a significant amount of time to complete, depending on the number of assets contained within your environment. Additionally, this action has a performance impact on your environment.")
+            QueueSettingName("AssetGraphQueue")
         ]
         AssetGraph = 1,
-        
+
         [
-            Name("Display Values"),
-            QueueSettingName("DisplayValueQueue"),
-            Description("Rebuild display values for all assets within your environment.")
+            QueueSettingName("DisplayValueQueue")
         ]
         DisplayValues,
-        
+
         [
-            Name("Search Index"),
-            QueueSettingName("SearchIndexQueue"),
-            Description("Rebuilds the full-text index for all assets within your environment, and can take up to sixty minutes to fully rebuild.")
+            QueueSettingName("SearchIndexQueue")
         ]
         SearchIndex
     }
@@ -71,9 +66,9 @@ namespace d360.core.enums
 
                     list.Add(new CompanyRebuildJobTokenInfo
                     {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Name = NameAsDisplayString(type),
                         QueueSettingName = ((QueueSettingNameAttribute)tm.GetCustomAttribute(typeof(QueueSettingNameAttribute))).Name,
-                        Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                        Description = DescriptionAsDisplayString(enumValue),
                         ID = enumValue,
                         Value = enumValue.ToString()
                     });
@@ -89,12 +84,33 @@ namespace d360.core.enums
 
             var member = type.GetType().GetMember(type.ToString()).Single();
 
-            info.Description = member.GetCustomAttribute<DescriptionAttribute>().Description;
-            info.Name = member.GetCustomAttribute<NameAttribute>().Name;
+            info.Description = DescriptionAsDisplayString(type);
+            info.Name = NameAsDisplayString(type);
             info.QueueSettingName = member.GetCustomAttribute<QueueSettingNameAttribute>().Name;
             info.ID = type;
             info.Value = type.ToString();
             return info;
+        }
+        private static string DescriptionAsDisplayString(CompanyRebuildJobToken type)
+        {
+            switch (type)
+            {
+                case CompanyRebuildJobToken.AssetGraph: return Enums.CompanyRebuildJobToken_AssetGraph_Desc;
+                case CompanyRebuildJobToken.DisplayValues: return Enums.CompanyRebuildJobToken_DisplayValues_Desc;
+                case CompanyRebuildJobToken.SearchIndex: return Enums.CompanyRebuildJobToken_SearchIndex_Desc;
+                default: throw new ArgumentOutOfRangeException("CompanyRebuildJobToken");
+            }
+        }
+
+        private static string NameAsDisplayString(CompanyRebuildJobToken type)
+        {
+            switch (type)
+            {
+                case CompanyRebuildJobToken.AssetGraph: return Enums.CompanyRebuildJobToken_AssetGraph;
+                case CompanyRebuildJobToken.DisplayValues: return Enums.CompanyRebuildJobToken_DisplayValues;
+                case CompanyRebuildJobToken.SearchIndex: return Enums.CompanyRebuildJobToken_SearchIndex;
+                default: throw new ArgumentOutOfRangeException("CompanyRebuildJobToken");
+            }
         }
     }
 }
