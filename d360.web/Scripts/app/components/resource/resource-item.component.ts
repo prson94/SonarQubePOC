@@ -17,6 +17,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { ResourceApiModel } from '../../models/resource.model';
 import { CompanySettingsService } from '../../services/settings.service';
 import { CompanySettingEnum } from '../../models/settings.model';
+import '@angular/localize/init';
 
 declare var CurrentResourceID;
 declare var SingleSignOn;

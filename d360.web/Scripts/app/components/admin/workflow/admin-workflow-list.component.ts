@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { State } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 
 

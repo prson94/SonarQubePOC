@@ -8,6 +8,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GroupSearchResultModel } from '../../models/group.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */

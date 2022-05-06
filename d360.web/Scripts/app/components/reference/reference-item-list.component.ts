@@ -10,6 +10,7 @@ import { filter } from 'lodash';
 import { Table } from 'primeng/table';
 import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-reference-item-list',

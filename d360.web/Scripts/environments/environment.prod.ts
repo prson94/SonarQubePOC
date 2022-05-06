@@ -4,5 +4,5 @@
 export const environment = {
     production: true,
     version: VersionNumber,
-    timeStamp: "{BUILD_TIMESTAMP}"
+    timeStamp: "06/05/2022, 11:12:54"
 };

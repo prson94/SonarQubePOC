@@ -18,6 +18,7 @@ import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.com
 import { Table } from 'primeng/table';
 import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import '@angular/localize/init';
 
 declare var CurrentResourceID;
 @Component({

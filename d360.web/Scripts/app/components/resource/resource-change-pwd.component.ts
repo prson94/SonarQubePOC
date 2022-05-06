@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-resource-change-pwd',

@@ -7,6 +7,7 @@ import { HelpResource } from '../../models/resource.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Observable } from 'rxjs';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-help-component',

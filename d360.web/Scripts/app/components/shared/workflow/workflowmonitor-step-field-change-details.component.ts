@@ -2,6 +2,7 @@
 import { BaseComponent } from "../../shared/base.component";
 import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
 import { CompanySettingsService } from "../../../services/settings.service";
+import '@angular/localize/init';
 
 
 @Component({

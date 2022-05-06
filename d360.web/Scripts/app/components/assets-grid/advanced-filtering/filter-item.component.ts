@@ -12,6 +12,7 @@ import { MultiInputField } from "../../shared/controls/multi-input-field/multi-i
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
 import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
+import '@angular/localize/init';
 
 @Component({
     selector: "filter-item",

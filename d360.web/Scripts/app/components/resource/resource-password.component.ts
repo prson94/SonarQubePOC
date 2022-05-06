@@ -6,6 +6,7 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { ResourceApiModel } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-resource-password',

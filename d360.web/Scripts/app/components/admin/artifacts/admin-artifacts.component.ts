@@ -14,6 +14,7 @@ import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-artifacts',

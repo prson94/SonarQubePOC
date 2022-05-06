@@ -12,6 +12,7 @@ import { SelectItem } from 'primeng/api';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
+import '@angular/localize/init';
 
 @Component({
     selector: 'dataquality-measure-editor',

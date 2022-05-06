@@ -4,6 +4,7 @@ import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-level-editor',

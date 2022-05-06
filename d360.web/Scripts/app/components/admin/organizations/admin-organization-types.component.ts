@@ -6,6 +6,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-organization-types',

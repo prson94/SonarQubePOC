@@ -8,6 +8,7 @@ import { AssetTypeService } from "../../../services/asset-type.service";
 import { SelectItem } from "primeng/api";
 import { AllocationAPIModel, AllocationRequestModel } from "../../../models/workflow.model";
 import { CompanySettingsService } from "../../../services/settings.service";
+import '@angular/localize/init';
 
 @Component({
     selector: "d3s-admin-issue-type-allocation-editor",

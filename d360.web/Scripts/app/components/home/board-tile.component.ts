@@ -3,6 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/social.service';
 import { Count } from '../../models/counts.model';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-board-tile',
