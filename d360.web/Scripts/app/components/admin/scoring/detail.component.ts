@@ -19,7 +19,6 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { StringConstants } from '../../../static/string-constants';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-allocation-detail',

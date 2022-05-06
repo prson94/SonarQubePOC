@@ -7,7 +7,6 @@ import * as _ from 'lodash';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-dashboards-editor',

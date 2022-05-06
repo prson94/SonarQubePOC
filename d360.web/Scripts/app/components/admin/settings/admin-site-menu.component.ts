@@ -12,7 +12,6 @@ import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-site-menu',

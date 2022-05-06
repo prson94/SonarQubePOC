@@ -5,7 +5,6 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { CompanySettingsService } from '../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-hero-search-input',

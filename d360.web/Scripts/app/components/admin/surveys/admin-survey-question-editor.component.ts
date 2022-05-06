@@ -4,7 +4,6 @@ import { SurveyQuestionTypeDetails } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
 import { NgForm, FormGroup } from '@angular/forms';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-survey-question-editor',

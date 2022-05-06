@@ -43,7 +43,6 @@ import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.compon
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
-import '@angular/localize/init';
 
 @Component({
     selector: "d3s-asset-grid",

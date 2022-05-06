@@ -3,7 +3,6 @@ import { MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
 import { Operator } from '../../../models/operator.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-metric-pass-test-details',

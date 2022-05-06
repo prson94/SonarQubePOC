@@ -1,10 +1,9 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelationRule, ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
+import { ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-responsibility-rules',

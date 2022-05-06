@@ -2,8 +2,6 @@
 import { BaseComponent } from "../../shared/base.component";
 import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
 import { CompanySettingsService } from "../../../services/settings.service";
-import '@angular/localize/init';
-
 
 @Component({
     selector: 'd3s-workflow-monitor-step-field-change-details',

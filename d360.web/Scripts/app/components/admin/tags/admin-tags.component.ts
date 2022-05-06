@@ -18,7 +18,6 @@ import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
 import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-tags',

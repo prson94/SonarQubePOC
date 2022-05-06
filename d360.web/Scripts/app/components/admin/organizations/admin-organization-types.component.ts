@@ -1,12 +1,10 @@
-﻿import { Component, Input, OnInit, SimpleChange, Output, EventEmitter } from '@angular/core';
+﻿import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { OrganizationType } from '../../../models/organization.model';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { BaseComponent } from '../../shared/base.component';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-organization-types',
