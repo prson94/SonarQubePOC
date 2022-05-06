@@ -232,7 +232,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage as number;
+            this.rowsPerPage = rowsPerPage['Main'];
         });
     }
 

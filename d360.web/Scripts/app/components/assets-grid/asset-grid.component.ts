@@ -186,9 +186,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            if (typeof rowsPerPage === 'number') {
-                this.rowsPerPage = rowsPerPage;
-            }
+            this.rowsPerPage = rowsPerPage['Main'];
         });
     }
 
