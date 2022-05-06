@@ -320,7 +320,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     getOperators(item: AdvancedFilterFieldCondition) {
         let options: SelectItem[] = [];
-        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+        if (this.condition.field === SystemFields.OwnedByFieldCode
+            || this.condition.field === SystemFields.CreatedByFieldCode
+            || this.condition.field === SystemFields.LastModifiedBy) {
             options.push({ label: $localize`contains`, value: "Equals" });
             options.push({ label: $localize`does not contain`, value: "NotEquals" });
             return options;
@@ -561,7 +563,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                if (this.condition.field === "[Level]") {
+                if (this.condition.field === SystemFields.LastModifiedBy) {
+                    this.loadLookupValuesForRedactors();
+                }
+                else if (this.condition.field === SystemFields.CreatedByFieldCode) {
+                    this.loadLookupValuesForCreators();
+                }
+                else if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
                 }
                 else if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
@@ -718,6 +726,28 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
 
         }
+    }
+
+    loadLookupValuesForCreators() {
+        this.isLookupValuesLoading = true;
+
+        this.assetTypeService.GetAssetTypePossibleCreators(this.assetTypeUid).subscribe((res) => {
+            this.currentField.Values = [];
+            res.map((creator) => this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' }));
+        });
+
+        this.isLookupValuesLoading = false;
+    }
+
+    loadLookupValuesForRedactors() {
+        this.isLookupValuesLoading = true;
+
+        this.assetTypeService.GetAssetTypePossibleRedactors(this.assetTypeUid).subscribe((res) => {
+            this.currentField.Values = [];
+            res.map((creator) => this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' }));
+        });
+
+        this.isLookupValuesLoading = false;
     }
 
     loadLookupValuesForOwners() {

@@ -697,6 +697,8 @@ export class Filters {
 
 export class SystemFields {
     public static OwnedByFieldCode: string = "$OwnedBy";
+    public static CreatedByFieldCode: string = "CreatedBy";
+    public static LastModifiedBy: string = "LastModifiedBy";
     public static RelationshipFieldCode: string = "$Related";
 
     public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldAdvancedCondition[] {
@@ -725,6 +727,26 @@ export class SystemFields {
 
         fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
             Category: "System Fields",
+            FriendlyName: "Created By",
+            Name: this.CreatedByFieldCode,
+            Type: new FieldType("Lookup"),
+            Operators: [],
+            Values: [],
+            IsSystemField: true
+        }));
+
+        fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
+            Category: "System Fields",
+            FriendlyName: "Last Modified By",
+            Name: this.LastModifiedBy,
+            Type: new FieldType("Lookup"),
+            Operators: [],
+            Values: [],
+            IsSystemField: true
+        }));
+
+        fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
+            Category: "System Fields",
             FriendlyName: "Owned By",
             Name: this.OwnedByFieldCode,
             Type: null,
@@ -732,7 +754,7 @@ export class SystemFields {
             Values: [],
             IsOwnerField: true,
             IsSystemField: true
-        }));
+        }));        
 
         if (gridType === "Tree") {
             fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
