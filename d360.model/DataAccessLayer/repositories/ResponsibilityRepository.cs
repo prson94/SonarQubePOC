@@ -1016,6 +1016,8 @@ namespace d360.model.DataAccessLayer
 											Success bit
 										);
 
+										create index idx_result_uid on #results(uid)
+
 										create table #measureResults
 										(
 											AssetUid uniqueidentifier, 
@@ -1085,9 +1087,22 @@ namespace d360.model.DataAccessLayer
 					await Company
 						.Connection
 						.ExecuteAsync(@"
-										delete T from ResponsibilityRuleResultSecurityAsset T inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID inner join #results D on D.Uid = R.Uid and D.Success is null;
-										delete T from ResponsibilityRuleResultAsset T inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID inner join #results D on D.Uid = R.Uid and D.Success is null;
-										delete T from ResponsibilityTypeRelationRule T inner join #results D on D.Uid = T.Uid and D.Success is null
+										drop table if exists #r;
+										create table #r(ID int);
+										
+										insert into #r(ID)
+										select T.ID 
+										from ResponsibilityTypeRelationRule T 
+										inner join #results D on D.Uid = T.Uid and D.Success is null;
+
+										create index idx_r_id on #r(id);
+										
+										if exists(select 1 from #r)
+										begin
+											delete T from ResponsibilityRuleResultSecurityAsset T inner join #r R on R.ID = T.RuleID;
+											delete T from ResponsibilityRuleResultAsset T inner join #r R on R.ID = T.RuleID;
+											delete T from ResponsibilityTypeRelationRule T inner join #r D on D.ID = T.ID;
+										end
 
 										update  #results
 										set     Message = 'Responsibility rule successfully deleted.',
