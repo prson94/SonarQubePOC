@@ -4,7 +4,6 @@ import { ExportTemplateService } from "../../../services/export-template.service
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-export-template-styles',

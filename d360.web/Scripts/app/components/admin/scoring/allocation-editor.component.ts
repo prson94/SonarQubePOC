@@ -7,7 +7,6 @@ import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
-import '@angular/localize/init';
 
 @Component({
     selector: 'allocation-editor',

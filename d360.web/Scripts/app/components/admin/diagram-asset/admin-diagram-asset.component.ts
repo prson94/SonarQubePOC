@@ -7,13 +7,12 @@ import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
+import { AssetTypeClass } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-diagram-asset',

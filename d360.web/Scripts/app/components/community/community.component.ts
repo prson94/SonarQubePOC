@@ -4,12 +4,9 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as Highcharts from 'highcharts';
 import { CompanySettingsService } from '../../services/settings.service';
-import '@angular/localize/init';
-
 
 @Component({
     selector: 'd3s-community-component',

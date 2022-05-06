@@ -13,7 +13,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetAction, EditFormData } from '../../models/secondaryNav.model';
 import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-connector-label-item',

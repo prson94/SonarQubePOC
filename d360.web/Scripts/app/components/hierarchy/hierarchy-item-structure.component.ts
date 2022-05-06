@@ -30,7 +30,6 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { AppConstants } from '../../static/constants';
 import { takeUntil } from 'rxjs/operators';
-import '@angular/localize/init';
 
 declare var CurrentResourceID;
 

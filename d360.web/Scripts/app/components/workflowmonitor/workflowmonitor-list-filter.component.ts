@@ -8,9 +8,6 @@ import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';
 import { map } from 'rxjs/operators';
 import { CompanySettingsService } from '../../services/settings.service';
-import '@angular/localize/init';
-
-
 
 @Component({
     selector: 'd3s-workflowmonitor-list-filter',

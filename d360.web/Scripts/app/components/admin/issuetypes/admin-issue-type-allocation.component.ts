@@ -1,12 +1,10 @@
-﻿import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
-import { AdminBaseComponent } from '../admin-base.component'
+﻿import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-issue-type-allocation',

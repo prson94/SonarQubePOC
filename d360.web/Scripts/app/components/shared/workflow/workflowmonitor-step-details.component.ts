@@ -9,7 +9,6 @@ import * as _ from 'lodash';
 import { Observable, of } from 'rxjs';
 import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { CompanySettingsService } from '../../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-workflow-monitor-step-details',

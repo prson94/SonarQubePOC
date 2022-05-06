@@ -1,16 +1,13 @@
 ﻿import { Component } from '@angular/core';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SurveysService } from '../../../services/surveys.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../../models/survey.model';
-import { catchError } from 'rxjs/operators';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-surveys',

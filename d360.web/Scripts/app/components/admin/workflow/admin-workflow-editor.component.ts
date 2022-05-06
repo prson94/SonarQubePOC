@@ -10,7 +10,6 @@ import {
     WorkflowDiagramModel,
     EmailTaskRecipientType,
 } from '../../../models/workflow.model';
-import { FieldType } from '../../../models/fields.model';
 import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../services/workflow-fields.service';
@@ -18,11 +17,10 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { map, finalize, concatMap } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
-import { Observable, of, Subscription } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-workflow-editor',

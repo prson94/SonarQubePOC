@@ -16,7 +16,6 @@ import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { Subscription } from 'rxjs';
 import { CompanySettingsService } from '../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-reference-list',

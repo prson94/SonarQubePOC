@@ -3,7 +3,6 @@ import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/artifacts.service';
 import { Count } from '../../models/counts.model';
 import { CompanySettingsService } from '../../services/settings.service';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-activity-tile',
