@@ -20,109 +20,115 @@
         </div>
     </div>
     <div class="col s12 m12 l3">
-        <div *ngIf="distributedCacheEnabled" class="info-tip">
+        <div *ngIf="distributedCacheEnabled" class="info-tip" i18n>
             Caching Is Distributed
         </div>
         <div class="tile tile-detail">
-            <header>Features</header>
+            <header i18n>Features</header>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.DisableCommunityPosting"
                         label="Disable Discussion Posts"
+                        i18n-label
                         binary="true">
             </p-checkbox>
-            <div class="directions">
+            <div class="directions" i18n>
                 Disable the ability for users to post new comments or replies to the boards of other users and assets.  Users will still be able to see any system-generated comments.
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.DisableIssueManagement"
                         label="Disable Take Action"
+                        i18n-label
                         binary="true">
             </p-checkbox>
-            <div class="directions">
+            <div class="directions" i18n>
                 Hide the Take Action button and Monitor page from the interface.
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.HideData3SixtyUsers"
                         label="Hide Precisely Users"
+                        i18n-label
                         binary="true">
             </p-checkbox>
-            <div class="directions">
+            <div class="directions" i18n>
                 Hide the precisely users throughout the UI.
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.ShowAllUsersAPIKey"
                         label="Display API Key"
+                        i18n-label
                         binary="true">
             </p-checkbox>
-            <div class="directions">
+            <div class="directions" i18n>
                 Displays the API Key for all users in their Profile Screen. Uncheck to display for administrators only.
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.WriteActionDescription"
                         label="Write Action Description to Comments?"
+                        i18n-label
                         binary="true">
             </p-checkbox>
-            <div class="directions">
+            <div class="directions" i18n>
                 When a user takes an action, create a comment based on the description.
             </div>
             <p-checkbox igCheckbox
                         [(ngModel)]="companySettings.HideHeaderBarControls"
                         label="Hide Header Bar Controls"
+                        i18n-label
                         binary="true">
             </p-checkbox>
-            <div class="directions">
+            <div class="directions" i18n>
                 Hide the global search and menu controls in the header bar.
             </div>
-            <div class="FieldName">Maximum Dropdown Items</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Maximum Dropdown Items</div>
+            <div class="directions" i18n>
                 The maximum number of items to show in a dropdown list before enabling typeahead search.
             </div>
             <input type="number" min="0" [(ngModel)]="companySettings.MaxDropdownItems" style="width: 95%" /> <br />
-            <div class="FieldName">Maximum Number of Excel Export Items</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Maximum Number of Excel Export Items</div>
+            <div class="directions" i18n>
                 The maximum number of items able to be exported in an excel spreadsheet.
             </div>
             <ng-container>
-                <ig-number-input igSize="full" min="1" max="100000" [(ngModel)]="companySettings.MaxExcelExportRows" (ngModelChange)="validateExcelSize();" #excelval="ngModel"></ig-number-input>            
-                 <div *ngIf="excelval.invalid && (excelval.dirty || excelval.touched)">
-                    <div *ngIf="excelval.errors.underMin" class="ig-text-required">Please enter a positive value of 100,000 or less</div>
-                    <div *ngIf="excelval.errors.overMax" class="ig-text-required">Please enter a value of 100,000 or less</div>
+                <ig-number-input igSize="full" min="1" max="100000" [(ngModel)]="companySettings.MaxExcelExportRows" (ngModelChange)="validateExcelSize();" #excelval="ngModel"></ig-number-input>
+                <div *ngIf="excelval.invalid && (excelval.dirty || excelval.touched)">
+                    <div *ngIf="excelval.errors.underMin" class="ig-text-required" i18n>Please enter a positive value of 100,000 or less</div>
+                    <div *ngIf="excelval.errors.overMax" class="ig-text-required" i18n>Please enter a value of 100,000 or less</div>
                 </div>
             </ng-container>
-            <div class="FieldName">Asset Definition Panel Column Width</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Asset Definition Panel Column Width</div>
+            <div class="directions" i18n>
                 Width of columns (in pixels) used to lay out fields on the asset Definition panel.
             </div>
             <input type="number" min="100" max="1000" [(ngModel)]="companySettings.AssetDefinitionColumnWidth" style="width: 95%" /> <br />
 
-            <div class="FieldName">Maximum count of Diagram links to use 'AvoidNodes' render template</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Maximum count of Diagram links to use 'AvoidNodes' render template</div>
+            <div class="directions" i18n>
                 Maximum number of links on Lineage diagram that will use 'AvoidNodes' render setting. If higher, links will render without corners and as a straight line between 2 nodes. This improves render performance on diagrams with more data.
             </div>
             <input type="number" min="0" max="100000" [(ngModel)]="companySettings.DiagramMaxAvoidNodesLinkCount" style="width: 95%" /> <br />
 
         </div>
         <div class="tile tile-detail">
-            <header>Workflow</header>
-            <div class="FieldName">Default recipient for workflow forms and emails</div>
+            <header i18n>Workflow</header>
+            <div class="FieldName" i18n>Default recipient for workflow forms and emails</div>
             <p-dropdown [options]="groups" [(ngModel)]="companySettings.WorkflowCatchAllGroup" [style]="{ 'width' : '95%' }"></p-dropdown>
-            <div class="directions">Determines the default recipient of a workflow form or email when the recipient in the setup of the Email Activity or Form Activity cannot be found.</div>
-            <div class="FieldName">Certification Workflow</div>
-            <div class="directions">Enter the status that will enable the Request Certification button on assets where there is a Request Certification workflow configured.</div>
+            <div class="directions" i18n>Determines the default recipient of a workflow form or email when the recipient in the setup of the Email Activity or Form Activity cannot be found.</div>
+            <div class="FieldName" i18n>Certification Workflow</div>
+            <div class="directions" i18n>Enter the status that will enable the Request Certification button on assets where there is a Request Certification workflow configured.</div>
             <div>
-                <input type="text" [ngModel]="companySettings.RequestCertificationDraft" (ngModelChange)="companySettings.RequestCertificationDraft = $event; " 
-                       style="width: 95%" maxlength="250"/>
+                <input type="text" [ngModel]="companySettings.RequestCertificationDraft" (ngModelChange)="companySettings.RequestCertificationDraft = $event; "
+                       style="width: 95%" maxlength="250" />
             </div>
-            <div class="FieldName">Summary email for workflow assignments</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Summary email for workflow assignments</div>
+            <div class="directions" i18n>
                 Check to send an email to all users who have outstanding workflow assignments summarizing new and total items.<br />
                 Send summary email on the following days:
             </div>
             <d3s-dayofweek-input [(ngModel)]="companySettings.WorkflowDigestEmailDays"></d3s-dayofweek-input>
         </div>
         <div class="tile tile-detail">
-            <header>Search</header>
-            <div class="directions">
+            <header i18n>Search</header>
+            <div class="directions" i18n>
                 Set the initial scope of any search performed from the header bar or home page search. The scope can then be modified after the initial search from the Search Results page.
             </div>
             <ul>
@@ -132,13 +138,13 @@
                                 label="{{searchType.title}}"
                                 binary="true">
                     </p-checkbox>
-                    <span *ngIf="!searchType.visible" class="hiddencategory">(hidden)</span>
+                    <span *ngIf="!searchType.visible" class="hiddencategory" i18n>(hidden)</span>
                 </li>
             </ul>
         </div>
         <div class="tile tile-detail">
-            <header>Default Route</header>
-            <div class="directions">
+            <header i18n>Default Route</header>
+            <div class="directions" i18n>
                 Specify the default route users will be redirected to when logging into Data360 (ex: /artifact/1). Leave blank to use the default value.
             </div>
             <div>
@@ -149,7 +155,7 @@
             </div>
         </div>
         <div class="tile tile-detail rebuild-panel">
-            <header>Rebuild Requests</header>
+            <header i18n>Rebuild Requests</header>
 
             <div style="margin-bottom: 20px" *ngFor="let rs of rebuildStatuses">
                 <div>
@@ -158,29 +164,32 @@
                 <div class="description" [innerHtml]="rs.jobTokenDescription"></div>
                 <div class="status" [innerHtml]="rs.validationMessage"></div>
                 <div class="status" *ngIf="rs.lastStartedOn">
-                    <span *ngIf="isDisabled(rs)">In progress. </span>
-                    Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
+                    <span *ngIf="isDisabled(rs)" i18n>In progress. </span>
+                    <ng-container i18n>
+                        Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
+                    </ng-container>
+
                 </div>
             </div>
         </div>
         <div class="tile tile-detail rebuild-panel">
-            <header>Security</header>
-            <div class="FieldName">Cross-origin resource sharing (CORS)</div>
-            <div class="directions">
+            <header i18n>Security</header>
+            <div class="FieldName" i18n>Cross-origin resource sharing (CORS)</div>
+            <div class="directions" i18n>
                 Specify a comma separated list of allowed origins.
             </div>
             <div>
                 <input type="text" [(ngModel)]="companySettings.AllowedOrigins" style="width: 95%" /> <br />
             </div>
-            <div class="FieldName">Framing</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Framing</div>
+            <div class="directions" i18n>
                 Specify a comma separated list of allowed domains.
             </div>
             <div>
                 <input type="text" [(ngModel)]="companySettings.FramingDomains" style="width: 95%" /> <br />
             </div>
-            <div class="FieldName">Allowed Email Domains</div>
-            <div class="directions">
+            <div class="FieldName" i18n>Allowed Email Domains</div>
+            <div class="directions" i18n>
                 Specify a comma separated list of allowed email domains.
             </div>
             <div>

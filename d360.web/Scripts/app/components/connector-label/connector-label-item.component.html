@@ -7,7 +7,7 @@
                                   [(filterMode)]="showSimpleFilter"
                                   [hasExport]="true"
                                   (exportClick)="export()">
-                    <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
+                    <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
                 </d3s-tile-actions>
                 <div class="clearfix"></div>
             </header>
@@ -24,16 +24,16 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Diagram'" style="width: 20%">
-                            Diagram
+                            <ng-container i18n>Diagram</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Diagram'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AssetTypeName'" style="width: 20%">
-                            Asset Type
+                            <ng-container i18n>Asset Type</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetTypeName'"></d3s-sortIcon>
 
                         </th>
                         <th [pSortableColumn]="'Occurrences'" style="width: 20%">
-                            Occurrences
+                            <ng-container i18n>Occurrences</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Occurrences'"></d3s-sortIcon>
 
                         </th>
@@ -72,7 +72,7 @@
     </div>
 </div>
 
-<d3s-modal [title]="'Edit Connector Label'"
+<d3s-modal [title]="editConnectorLabel"
            additionalClasses="modal-dyn-editor medium-dialog"
            (onClose)="isEditorVisible=false"
            [isVisible]="isEditorVisible">
@@ -97,13 +97,13 @@
                  (onUsageExport)="exportUsage()"
                  [isUsageLoading]="false">
     <div prompt>
-        <p>
+        <p i18n>
             Please confirm that you wish to delete the connector label '{{label.Value}}'.
         </p>
 
         <d3s-where-used [uid]="label.uid" [objectType]="'ConnectorLabel'"></d3s-where-used>
 
-        <p>
+        <p i18n>
             Please note that this operation cannot be undone. Check the option below to confirm that you wish to continue.
         </p>
     </div>

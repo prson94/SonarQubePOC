@@ -5,8 +5,6 @@ import { HierarchyListComponent } from './hierarchy-list.component';
 import { HierarchyItemComponent } from './hierarchy-item.component';
 import { HierarchyItemStructureComponent } from './hierarchy-item-structure.component';
 
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-
 const routes: Routes = [
     {
         path: '',

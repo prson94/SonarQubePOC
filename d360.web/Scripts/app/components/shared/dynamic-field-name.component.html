@@ -1,6 +1,7 @@
 <span *ngIf="fieldTooltip" pTooltip="{{fieldTooltip}}" tooltipPosition="top" tooltipStyleClass="ig-tooltip">{{field.Name}}</span>
 <span *ngIf="!fieldTooltip">{{field.Name}}</span>
 <span *ngIf="field.IsPartOfKey"
+      i18n-pTooltip
       pTooltip="Key field used to uniquely identify records"
       tooltipPosition="top"
       tooltipStyleClass="ig-tooltip">

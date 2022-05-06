@@ -1,5 +1,6 @@
 <div class="tile tile-detail">
-    <header *ngIf="!showEditor && !showDelete">URI Types for v{{version?.MajorVersion}}.{{version?.MinorVersion}}
+    <header *ngIf="!showEditor && !showDelete">
+        <ng-container i18n>URI Types for v{{version?.MajorVersion}}.{{version?.MinorVersion}}</ng-container>
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                           [(filterMode)]="showSimpleFilter"
                           [hasAdd]="true"
@@ -11,7 +12,7 @@
                [hidden]="!showSimpleFilter"
                class="grid-simple-filter"
                pInputText
-               placeholder="Search..."
+               placeholder="{{searchText}}"
                size="100"
                type="text">
         <p-table #dt [(selection)]="selected"
@@ -26,21 +27,25 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Format'">
-                        Segment
+                        <ng-container i18n>Segment</ng-container>
                         <d3s-sortIcon [field]="'Format'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'UriType'">
-                        Type
+                        <ng-container i18n>Type</ng-container>
                         <d3s-sortIcon [field]="'UriType'"></d3s-sortIcon>
                     </th>
                     <th style="width:40px"></th>
                     <th style="width:40px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'Format'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'UriType'"></d3s-column-filter></th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Format'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'UriType'"></d3s-column-filter>
+                    </th>
                     <th></th>
                     <th></th>
                 </tr>
@@ -89,6 +94,6 @@
                      [callback]="theDeleteCallback"
                      [itemId]="selected?.ID"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the uri [' + [selected?.Format] + ']?'">
+                     [prompt]="deleteModalTitle">
     </d3s-delete-form>
 </div>

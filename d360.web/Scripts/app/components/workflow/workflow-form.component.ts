@@ -130,7 +130,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private onSubmit() {
 
         if (this.fieldsComponent.setValidators()) {
-           return false;
+            return false;
         }
         this.fieldsComponent.prepareValuesForSubmit();
 
@@ -145,45 +145,45 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.workflowService.getWorkflowForm(this.workflowId, this.workflowItemStepId)
             .pipe(
                 map(res => {
-                this.title = res.Title;
-                this.description = res.Description;
-                this.fields = res.Fields;
-                this.isLoading = false;
-                this.isCompleted = res.IsCompleted;
-                this.isItemDeleted = res.IsItemDeleted;
-                this.isFormInvalid = res.IsFormInvalid;
-                this.objectName = res.ObjectName;
-                this.objectType = res.ObjectType;
-                this.objectID = res.ObjectID;
-                this.isUserAllowedToComplete = res.IsUserAllowedToComplete;
-                this.issueObject = res.IssueObject;
-                this.issueObjectID = res.IssueObjectID;
-                this.issueObjectName = res.IssueObjectName;
-                this.issueTypeName = res.IssueTypeName;
-                this.objectTypeID = res.ObjectTypeID;
-                this.typeName = res.TypeName;
-                this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
-                if (res.AllowReassignObject) {
-                    this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
-                }
-                if (res.AllowReassignResource) {
-                    this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
-                    if (this.canViewUsers) {
-                        this.loadResources();
+                    this.title = res.Title;
+                    this.description = res.Description;
+                    this.fields = res.Fields;
+                    this.isLoading = false;
+                    this.isCompleted = res.IsCompleted;
+                    this.isItemDeleted = res.IsItemDeleted;
+                    this.isFormInvalid = res.IsFormInvalid;
+                    this.objectName = res.ObjectName;
+                    this.objectType = res.ObjectType;
+                    this.objectID = res.ObjectID;
+                    this.isUserAllowedToComplete = res.IsUserAllowedToComplete;
+                    this.issueObject = res.IssueObject;
+                    this.issueObjectID = res.IssueObjectID;
+                    this.issueObjectName = res.IssueObjectName;
+                    this.issueTypeName = res.IssueTypeName;
+                    this.objectTypeID = res.ObjectTypeID;
+                    this.typeName = res.TypeName;
+                    this.IsClearAssignementsAllowed = res.IsClearAssignementsAllowed;
+                    if (res.AllowReassignObject) {
+                        this.reassignAvailableTypes.push({ value: 'object', text: 'Object' });
                     }
-                }
-                this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
-            }),map(() => {
-                window.setTimeout(() => {
-                    this.fieldsComponent.setValidators();
-                }, 500);
-            })).subscribe(() => { },error => {
-                this.isLoading = false;
-                this.isCompleted = false;
-                this.isItemDeleted = true;
-                this.title = "Cannot find the requested item.";
-            })
-           
+                    if (res.AllowReassignResource) {
+                        this.reassignAvailableTypes.push({ value: 'resource', text: 'Resource' });
+                        if (this.canViewUsers) {
+                            this.loadResources();
+                        }
+                    }
+                    this.hasObjectReassign = (this.reassignAvailableTypes.length > 0);
+                }), map(() => {
+                    window.setTimeout(() => {
+                        this.fieldsComponent.setValidators();
+                    }, 500);
+                })).subscribe(() => { }, error => {
+                    this.isLoading = false;
+                    this.isCompleted = false;
+                    this.isItemDeleted = true;
+                    this.title = $localize`Cannot find the requested item.`;
+                })
+
     }
 
     private close() {
@@ -199,15 +199,15 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
         this.isLoading = true;
         if (this.reassignType == 'object') {
             this.workflowService.reassignObject(this.workflowItemId, this.workflowId, this.selectedReassignmentAsset.ObjectID, this.selectedReassignmentAsset.Object, this.workflowItemStepId)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
-                this.isLoading = false;
-                this.isCompleted = true;
-            });
+                .subscribe(result => {
+                    this.showMessageForResult(this.messagesService, result, $localize`Successfully Assigned`);
+                    this.isLoading = false;
+                    this.isCompleted = true;
+                });
         }
         else if (this.reassignType == 'resource') {
             this.workflowService.reassignUser(this.workflowItemStepId, this.selectedReassignResource, this.clearAssignments).subscribe(result => {
-                this.showMessageForResult(this.messagesService, result, 'Successfully Assigned');
+                this.showMessageForResult(this.messagesService, result, $localize`Successfully Assigned`);
                 this.isLoading = false;
                 this.isCompleted = true;
             });

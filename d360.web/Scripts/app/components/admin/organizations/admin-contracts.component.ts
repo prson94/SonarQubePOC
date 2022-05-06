@@ -3,13 +3,14 @@
     OnInit
 } from '@angular/core';
 
-import {ContractDetail} from '../../../models/organization.model';
+import { ContractDetail } from '../../../models/organization.model';
 
-import {OrganizationsService} from '../../../services/organizations.service';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-contracts',
@@ -28,7 +29,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                    pInputText
                    size="100"
                    (input)="dt.filterGlobal($event.target.value, 'contains')"
-                   placeholder="Search..."
+                   placeholder="searchText"
                    class="grid-simple-filter">
             <p-table #dt
                      [value]="contracts"
@@ -43,15 +44,15 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Title'">
-                            Title
+                            <ng-container i18n>Title</ng-container>
                             <d3s-sortIcon [field]="'Title'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'ContractTypeName'">
-                            Type
+                            <ng-container i18n>Type</ng-container>
                             <d3s-sortIcon [field]="'ContractTypeName'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'PublishedOn'">
-                            Published On
+                            <ng-container i18n>Published On</ng-container>
                             <d3s-sortIcon [field]="'PublishedOn'"></d3s-sortIcon>
                         </th>
                         <th style="width: 40px"></th>
@@ -124,7 +125,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.ID"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to delete the contract [' + [selected?.Title] + ']?'"
+                         [prompt]="deleteModalTitle"
                          (onCancel)="showDelete=false;"
         ></d3s-delete-form>
         <div *ngIf="showHistory">
@@ -149,6 +150,7 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
     selected: ContractDetail;
 
     theDeleteCallback: Function;
+    searchText = $localize`Search...`;
 
     constructor(
         private organizationsService: OrganizationsService,
@@ -201,5 +203,9 @@ export class AdminContractsComponent extends BaseComponent implements OnInit {
         if (this.selected == null && this.contracts.length > 0) {
             this.selected = this.contracts[0];
         }
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the contract [${this.selected?.Title}]?`;
     }
 }

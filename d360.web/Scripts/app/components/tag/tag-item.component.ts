@@ -75,21 +75,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'DisplayPath',
-            FriendlyName: 'Asset',
+            FriendlyName: $localize`Asset`,
             Type: new FieldType("Path"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'AssetType',
-            FriendlyName: 'Asset Type',
+            FriendlyName: $localize`Asset Type`,
             Type: new FieldType("Path"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'AddedByUid',
-            FriendlyName: 'Added By',
+            FriendlyName: $localize`Added By`,
             Type: new FieldType("Lookup"),
             Category: "",
             ValueLoader: this.getFilterValues.bind(this),
@@ -97,7 +97,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         },
         {
             Name: 'CreatedOn',
-            FriendlyName: 'Date Added',
+            FriendlyName: $localize`Date Added`,
             Type: new FieldType("DateTime"),
             Category: "",
             RemovePopulatedOperator: true
@@ -269,7 +269,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.currentAreaName = "Tags";
+                    this.currentAreaName = $localize`Tags`;
                     let areaBreadcrumb = new Breadcrumb(
                         this.currentAreaName, ``
                     );
@@ -313,7 +313,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     buildBreadcrumb() {
-        this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
+        this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', $localize`Tagged Assets`);
 
     }
 
@@ -349,11 +349,11 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.actions.showEdit = true;
             this.actions.editCallback = this.onActionEditClick.bind(this);
             let editAction: EditFormData = new EditFormData();
-            editAction.title = 'Edit Tag';
+            editAction.title = $localize`Edit Tag`;
             editAction.closeClick = this.onActionEditCloseClick.bind(this);
             editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
             editAction.isModalVisible = false;
-            editAction.modalTitle = "Edit Tag";
+            editAction.modalTitle = $localize`Edit Tag`;
             editAction.objectID = this.tag.uid;
             editAction.objectType = 'Tag';
             editAction.saveClick = this.saveTag.bind(this);
@@ -364,7 +364,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             let deleteAction: DeleteFormData = new DeleteFormData();
             deleteAction.callback = this.deleteCallback.bind(this);
             deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
-            deleteAction.modalTitle = 'Delete Tag';
+            deleteAction.modalTitle = $localize`Delete Tag`;
             deleteAction.isModalVisible = false;
             deleteAction.showAsModal = true;
             this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
@@ -428,14 +428,14 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
+                    msg = $localize`${result.Value} succesfully created`;
                 }
                 else {
-                    msg = `${result.Value} succesfully updated`;
+                    msg = $localize`${result.Value} succesfully updated`;
                 }
                 this.tag = event.item;
                 this.showMessageForResult(this.messagesService, result, msg);
-                this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
+                this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', $localize`Tagged Assets`);
                 this.setBrowserTitle(this.titleService, this.tag.Value);
 
                 this.tagUsage.forEach(detail => {
@@ -457,7 +457,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             .subscribe(result => {
 
                 if (result) {
-                    this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
                     this.onActionEditCloseClick();
                     this.openTagPageByID(parentUid);
 

@@ -10,6 +10,7 @@
                pInputText
                size="100"
                (input)="dt.filterGlobal($event.target.value, 'contains')"
+               i18n-placeholder
                placeholder="Search..."
                class="grid-simple-filter"
                [ngModel]="dt.filters['global']?.value">
@@ -31,15 +32,15 @@
                         <d3s-sortIcon [field]="'Id'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Subject.Name'">
-                        Subject
+                        <ng-container i18n>Subject</ng-container>
                         <d3s-sortIcon [field]="'Subject.Name'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Predicate.Name'">
-                        Predicate
+                        <ng-container i18n>Predicate</ng-container>
                         <d3s-sortIcon [field]="'Predicate.Name'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Object.Name'">
-                        Object
+                        <ng-container i18n>Object</ng-container>
                         <d3s-sortIcon [field]="'Object.Name'"></d3s-sortIcon>
                     </th>
                     <th style="width: 40px"></th>
@@ -102,6 +103,6 @@
                  [callback]="theDeleteCallback"
                  [itemId]="selected?.Uid"
                  [method]="'callback'"
-                 [prompt]="'Are you sure you want to delete the relationship [' + [selected?.Subject.Name] + ' / ' + [selected?.Object.Name]  + ']?'"
+                 [prompt]="deletePromptText"
                  (onCancel)="showDelete=false;"></d3s-delete-form>
 <d3s-admin-relationships-editor *ngIf="showEditor" [relationshipType]="selected" (saveClick)="saveRelationship($event)" (closeClick)="closeEditor()"></d3s-admin-relationships-editor>

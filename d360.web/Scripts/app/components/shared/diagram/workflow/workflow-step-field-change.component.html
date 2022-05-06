@@ -9,27 +9,27 @@
             <p-table #dt [value]="fieldUpdate.Field" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="[5,10,25,50,100]">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>Field</th>
-                        <th>Value</th>
+                        <th i18n>Field</th>
+                        <th i18n>Value</th>
                         <th></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item let-i="rowIndex">
                     <tr [pSelectableRow]="item">
-                        
+
                         <td>{{getTableFieldName(item)}}</td>
                         <td>
                             <div *ngIf="item != null">
-                              
+
                                 <span *ngIf="item['@UseCurrentDate'] != null && item['@UseCurrentDate'].toString() == 'true'">[use date at time of execution]</span>
                                 <span *ngIf="item['@ClearValue'] != null && item['@ClearValue'].toString() == 'true'">[clear the field value]</span>
                                 <span *ngIf="item['@UseFormValue'] != null && item['@UseFormValue'].toString() == 'true' && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false')">[use value from form input {{item['@Formlabel']}}]</span>
                                 <span *ngIf="item['@IsActionForm'] != null && item['@IsActionForm'].toString() == 'true'">[use value from action form field {{item['@Formlabel']}}]</span>
                                 <span *ngIf="item['@UseOutputValue'] != null && item['@UseOutputValue'].toString() == 'true'">[use value from output field {{item['@FormLabel']}}]</span>
-                                <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false') 
-                                     && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false') 
-                                     && (item['@UseOutputValue'] == null || item['@UseOutputValue'].toString() == 'false') 
-                                     && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false') 
+                                <div *ngIf="(item['@UseCurrentDate'] == null || item['@UseCurrentDate'].toString() == 'false')
+                                     && (item['@UseFormValue'] == null || item['@UseFormValue'].toString() == 'false')
+                                     && (item['@UseOutputValue'] == null || item['@UseOutputValue'].toString() == 'false')
+                                     && (item['@IsActionForm'] == null || item['@IsActionForm'].toString() == 'false')
                                      && (item['@ClearValue'] == null || item['@ClearValue'].toString() == 'false')">
                                     <ng-container *ngIf="isHtml(item); else str">
                                         <div [innerHtml]="getValue(item)" style="max-height: 42px; overflow: hidden; text-overflow: ellipsis">
@@ -59,10 +59,10 @@
     <div *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing">
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">Field</div>
+                <div class="FieldName" i18n>Field</div>
                 <div>
                     <select style="width: 95%" [ngModel]="selectedField['@FieldId']" (ngModelChange)="select($event, true)">
-                        <option value="">Choose...</option>
+                        <option value="" i18n>Choose...</option>
                         <option *ngFor="let f of fields" [value]="f.ID">{{getFieldNameForDropDown(f)}}</option>
                     </select>
                 </div>
@@ -70,7 +70,7 @@
         </div>
         <div class="row" *ngIf="field != null">
             <div class="col s12">
-                <div class="FieldName">Value</div>
+                <div class="FieldName" i18n>Value</div>
                 <div>
                     <input type="radio" name="valueType" [checked]="valueType == 'manual' || valueType == null" (change)="changeValueType('manual')" /> Enter a value <br />
                     <div *ngIf="valueType == 'manual'" style="padding-bottom:10px;">
@@ -80,9 +80,9 @@
                         </div>
                         <div *ngIf="field.Type == 'Link'">
                             <input [(ngModel)]="selectedField['@Value']" style="width: 95%;" type="text">
-                            <div>(Link Name)</div>
+                            <div i18n>(Link Name)</div>
                             <input [(ngModel)]="selectedField['@Url']" style="width: 95%;" type="text">
-                            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                            <div i18n>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
                         </div>
                         <div *ngIf="field.Type == 'Text'">
                             <input type="text" style="width: 95%" [(ngModel)]="selectedField['@Value']" />
@@ -116,7 +116,7 @@
                                     </p-multiSelect>
                                 </div>
                                 <div>
-                                    <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                                    <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> <ng-container i18n>Append selected values?</ng-container>
                                 </div>
                             </ng-container>
 
@@ -136,10 +136,10 @@
                     </div>
                 </div>
                 <div *ngIf="field.Type == 'Date' || field.Type == 'DateTime'" style="padding-bottom:10px;">
-                    <input type="radio" name="valueType" [checked]="valueType == 'timestamp'" (change)="changeValueType('timestamp')" /> Use the current date at the time of execution
+                    <input type="radio" name="valueType" [checked]="valueType == 'timestamp'" (change)="changeValueType('timestamp')" /> <ng-container i18n>Use the current date at the time of execution</ng-container>
                 </div>
                 <div *ngIf="hasFormResponses" style="padding-bottom:10px;">
-                    <input type="radio" name="valueType" [checked]="valueType == 'form'" (change)="changeValueType('form')" /> Choose a form result value <br />
+                    <input type="radio" name="valueType" [checked]="valueType == 'form'" (change)="changeValueType('form')" /> <ng-container i18n>Choose a form result value</ng-container> <br />
                     <div *ngIf="valueType == 'form'">
                         <div>
                             <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
@@ -148,63 +148,63 @@
                             </select>
                         </div>
                         <div *ngIf="allowMultiple">
-                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> <ng-container i18n>Append selected values?</ng-container>
                         </div>
                     </div>
                 </div>
 
                 <div *ngIf="canSelectFromAction" style="padding-bottom:10px">
-                    <input type="radio" name="valueType" [checked]="valueType == 'actionForm'" (change)="changeValueType('actionForm')" /> Choose an Action field<br />
+                    <input type="radio" name="valueType" [checked]="valueType == 'actionForm'" (change)="changeValueType('actionForm')" /> <ng-container i18n>Choose an Action field</ng-container><br />
                     <div *ngIf="valueType == 'actionForm'">
                         <div>
                             <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeFormValue($event)" style="width: 95%">
-                                <option value="">Choose...</option>
+                                <option value="" i18n>Choose...</option>
                                 <option *ngFor="let f of availableActionFields" [value]="f['@FormFieldId']">{{f['@FormLabel']}}</option>
                             </select>
                         </div>
                         <div *ngIf="allowMultiple">
-                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> <ng-container i18n>Append selected values?</ng-container>
                         </div>
                     </div>
                 </div>
 
                 <div *ngIf="hasOutputFields" style="padding-bottom:10px;">
-                    <input type="radio" name="valueType" [checked]="valueType == 'output'" (change)="changeValueType('output')" /> Choose a HTTP Response value <br />
+                    <input type="radio" name="valueType" [checked]="valueType == 'output'" (change)="changeValueType('output')" /> <ng-container i18n>Choose a HTTP Response value</ng-container> <br />
                     <div *ngIf="valueType == 'output'">
                         <div>
                             <select [ngModel]="selectedFormFieldId" (ngModelChange)="changeOutputValue($event)" style="width: 95%">
-                                <option value="">Choose...</option>
+                                <option value="" i18n>Choose...</option>
                                 <option *ngFor="let f of availableOutputFields" [value]="f.key">{{f['@FormLabel']}}</option>
                             </select>
                         </div>
                         <div *ngIf="allowMultiple">
-                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" /> Append selected values?
+                            <input type="checkbox" [(ngModel)]="selectedField['@AppendValue']" />  <ng-container i18n>Append selected values?</ng-container>
                         </div>
                     </div>
                 </div>
                 <div style="padding-bottom:10px;">
-                    <input type="radio" name="valueType" [checked]="valueType == 'clear'" (change)="changeValueType('clear')" /> Clear the field value <br />
+                    <input type="radio" name="valueType" [checked]="valueType == 'clear'" (change)="changeValueType('clear')" /> <ng-container i18n>Clear the field value</ng-container> <br />
                 </div>
             </div>
         </div>
         <div class="row" style="padding-top:10px">
             <div class="col s12">
-                <button pButton type="button" label="Cancel" (click)="cancel()"></button>
-                <button pButton type="button" [label]="(formMode == FormMode.Adding) ? 'Add' : 'Update'" (click)="save()" [disabled]="!valid()"></button>
+                <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
+                <button pButton type="button" label="{{buttonLabel}}" (click)="save()" [disabled]="!valid()"></button>
             </div>
         </div>
     </div>
-    
+
     <div *ngIf="formMode == FormMode.Deleting">
         <div class="row">
-            <div class="col s12">
+            <div class="col s12" i18n>
                 Are you sure you want to delete this field change item?
             </div>
         </div>
         <div class="row">
             <div class="col s12">
-                <button pButton type="button" label="Cancel" (click)="selectedField = null; formMode = FormMode.Default"></button>
-                <button pButton type="button" label="Delete" (click)="confirmDelete()"></button>
+                <button pButton type="button" i18n-label label="Cancel" (click)="selectedField = null; formMode = FormMode.Default"></button>
+                <button pButton type="button" i18n-label label="Delete" (click)="confirmDelete()"></button>
             </div>
         </div>
     </div>

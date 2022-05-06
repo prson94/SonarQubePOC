@@ -1,8 +1,8 @@
-﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ApiEndpoint, ApiService} from '../../../models/custom-api.model';
-import {CustomAPIService} from '../../../services/custom-api.service';
-import {BaseComponent} from '../../shared/base.component';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiEndpoint, ApiService } from '../../../models/custom-api.model';
+import { CustomAPIService } from '../../../services/custom-api.service';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -18,6 +18,8 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
     public endpoints: ApiEndpoint[] = [];
     public selected: ApiEndpoint = null;
     public showDelete: boolean = false;
+
+    searchText = $localize`Search...`;
 
     theDeleteCallback: Function;
 
@@ -74,5 +76,9 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
                 this.showDelete = false;
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return `Are you sure you want to delete the end point [${this.selected?.Name}]?'`;
     }
 }

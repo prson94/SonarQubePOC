@@ -5,25 +5,27 @@
             <header>{{workflow?.Name}}<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col l2 m4 s12">
-                    <span class="FieldName FieldDisplayName">Version:&nbsp;</span>
+                    <span class="FieldName FieldDisplayName">
+                        <ng-container i18n>Version</ng-container>:&nbsp;
+                    </span>
                     <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.Version}}</span>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col l4 m6 s12">
-                    <span class="FieldName FieldDisplayName">Step:&nbsp;</span>
+                    <span class="FieldName FieldDisplayName"><ng-container i18n>Step</ng-container>:&nbsp;</span>
                     <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.StepName}}</span>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col l4 m6 s12">
-                    <span class="FieldName FieldDisplayName">Object:&nbsp;</span>
+                    <span class="FieldName FieldDisplayName"><ng-container i18n>Object</ng-container>:&nbsp;</span>
                     <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.ObjectName}}</span>
                 </div>
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col l4 m6 s12">
-                    <span class="FieldName FieldDisplayName">Type:&nbsp;</span>
+                    <span class="FieldName FieldDisplayName"><ng-container i18n>Type</ng-container>:&nbsp;</span>
                     <span *ngIf="assignmentSummary" class="FieldDisplayContent">{{assignmentSummary.TypeName}}</span>
                 </div>
             </div>
@@ -35,15 +37,15 @@
                     <tr>
                         <th style="width: 35px"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
                         <th [pSortableColumn]="'Name'">
-                            Name
+                            <ng-container i18n>Name</ng-container>
                             <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'StartedOn'">
-                            Started On
+                            <ng-container i18n>Started On</ng-container>
                             <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'StartedBy'">
-                            Started By
+                            <ng-container i18n>Started By</ng-container>
                             <d3s-sortIcon [field]="'StartedBy'"></d3s-sortIcon>
                         </th>
                         <th style="width: 35px"></th>
@@ -92,9 +94,9 @@
                 </ng-template>
             </p-table>
             <div style="padding:10px">
-                <button *ngIf="hasCloseButton" pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
-                <button pButton type="button" (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
-                <button *ngIf="isAdmin" pButton type="button" (click)="bulkReassign();" label="Bulk Reassign" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
+                <button *ngIf="hasCloseButton" i18n-label pButton type="button" (click)="close();" label="Close" style="width: 150px;"></button>
+                <button pButton type="button" i18n-label (click)="bulkRespond();" label="Bulk Respond" style="width: 150px;" [disabled]="selection == null || selection.length < 1 || !isMe"></button>
+                <button *ngIf="isAdmin" pButton i18n-label type="button" (click)="bulkReassign();" label="Bulk Reassign" style="width: 150px;" [disabled]="selection == null || selection.length < 1"></button>
             </div>
         </div>
     </div>

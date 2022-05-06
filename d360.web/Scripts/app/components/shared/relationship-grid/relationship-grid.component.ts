@@ -131,7 +131,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     selectedTag: any;
 
     public rowsPerPage: number;
-    public title: string = 'Relationships Grid'
+    public title: string = 'Relationships Grid';
     private destroy = new Subject<void>();
 
     constructor(
@@ -357,12 +357,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                     i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy";
 
                     if ((this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) && type[0].HasFieldTypes) {
-                        i[this.menuKey].push({ title: 'Edit Relationship' });
+                        i[this.menuKey].push({ title: $localize`Edit Relationship` });
                     }
                 }
 
                 if (this.assetPermissions.DeleteRelationships) {
-                    i[this.menuKey].push({ title: 'Delete Relationship' });
+                    i[this.menuKey].push({ title: $localize`Delete Relationship` });
                 }
             });
         }
@@ -483,9 +483,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key === 'edit relationship') {
+        if (key === $localize`Edit Relationship`.toLowerCase()) {
             this.showEditor = true;
-        } else if (key === 'delete relationship') {
+        } else if (key === $localize`Delete Relationship`.toLowerCase()) {
             this.showDelete = true;
         }
     }
@@ -574,7 +574,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         this.relationshipService.deleteRelationshipV2(this.selectedRelationship.RelationshipTypeUid, [item])
             .subscribe((res) => {
-                let msg = 'Relationship Successfully deleted';
+                let msg = $localize`Relationship Successfully deleted`;
                 this.showMessageForApiResult(this.messagesService, res[0], msg);
                 this.deleteInProgress = false;
                 this.showDelete = false;
@@ -589,13 +589,13 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.relationshipService
             .getRelationshipsForAssetExcel(
                 this.assetUid, this.getParams(true),
-                'Filtered ' + this.assetDetail.DisplayValue + ' Relationships',
+                $localize`Filtered ${this.assetDetail?.DisplayValue} Relationships`,
                 () => { this.isExportInProgress = false; }
             );
     }
 
     get fullRelationshipNameAsHTML(): string {
-        return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp;</strong> - ${this.selectedRelAsset.target}`;
+        return `${this.assetDetail.DisplayValue} - <strong>& nbsp;${this.selectedRelAsset.name}& nbsp; </strong> - ${this.selectedRelAsset.target}`;
 
     }
     get selectionScrollHeight(): string {

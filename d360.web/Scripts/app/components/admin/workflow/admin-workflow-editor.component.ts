@@ -22,6 +22,7 @@ import { Observable, of, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-workflow-editor',
@@ -38,13 +39,13 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     @ViewChild('ed2', { static: false }) ed: Editor;
     @Input() isClone: boolean = false;
     @Output() onWorkflowNameChange = new EventEmitter();
-    private workflowObjectTypes: WorkflowObjectType[] = [];  
+    private workflowObjectTypes: WorkflowObjectType[] = [];
     private changesTypes: ChangeTypeInfo[] = [];
     private selectedObjectType: any = null;
     private conditions: any[] = [];
     private issueObjectTypes: any[] = [];
     private scoreTypes: any[] = [];
-    private scheduleTypes: any[] = [{ label: 'Daily', value: 'd' }, { label: 'Hourly', value:'h' }]
+    private scheduleTypes: any[] = [{ label: $localize`Daily`, value: 'd' }, { label: $localize`Hourly`, value: 'h' }]
     private resSub: Subscription;
     private defaultWorkflowObject = new WorkflowObjectType();
 
@@ -107,10 +108,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.workflowService.deleteWorkflowType(this.id, this.uid)
                 .subscribe(r => {
                     this.isLoading = false;
-                    this.messageService.showInfoMessage("Workflow not saved.", "");
+                    this.messageService.showInfoMessage($localize`Workflow not saved.`, "");
                     this.onClose.emit();
                 }, err => {
-                    this.messageService.showError("Problem deleting cloned Workflow", err);
+                    this.messageService.showError($localize`Problem deleting cloned Workflow`, err);
                     this.onClose.emit();
                 });
         } else {
@@ -119,7 +120,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     load() {
-        this.isLoading = true;        
+        this.isLoading = true;
         this.workflowService.getChangeTypes()
             .pipe(map(r => { this.changesTypes = r; }))
             .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id, this.uid)
@@ -373,7 +374,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.workflowService.hasPendingWorkflowItems(this.model.Type.ID)
             .subscribe(x => {
                 if (x) {
-                    this.warningMessage = "There are pending workflow items for this workflow. These items can still be completed, but no new workflow items will be created.";
+                    this.warningMessage = $localize`There are pending workflow items for this workflow. These items can still be completed, but no new workflow items will be created.`;
                 }
             });
     }
@@ -484,12 +485,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 return;
 
             if (c['@FieldName'] == null && c['@ContextualFieldID'] == null) {
-                this.errorMessage = "One or more conditions is not valid.";
+                this.errorMessage = $localize`One or more conditions is not valid.`;
                 hasConditionsError = true;
                 return;
             }
             if (this.model.Event.ChangeType != WorkflowChangeType.Update && c['@Operator'] == 'C') {
-                this.errorMessage = "The value changed operator for conditions may only be used with the Item Changed workflow change type.";
+                this.errorMessage = $localize`The value changed operator for conditions may only be used with the Item Changed workflow change type.`;
                 hasConditionsError = true;
                 return;
             }
@@ -502,37 +503,37 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
             if (this.scheduleTypes.map(s => s.value).indexOf(this.model.Event.SettingsObject.Settings.ScheduleType) == -1) {
-                this.errorMessage = "Please select a Run Interval.";
+                this.errorMessage = $localize`Please select a Run Interval.`;
                 this.isValid = false;
                 return;
             }
 
             if (this.model.Event.SettingsObject.Settings.ScheduleInterval == null) {
-                this.errorMessage = "Please enter a Run Frequency.";
+                this.errorMessage = $localize`Please enter a Run Frequency.`;
                 this.isValid = false;
                 return;
             } else if (!Number.isInteger(+this.model.Event.SettingsObject.Settings.ScheduleInterval)) {
-                this.errorMessage = "Run Frequency must be an integer.";
+                this.errorMessage = $localize`Run Frequency must be an integer.`;
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval < 1) {
-                this.errorMessage = "Run Frequency must be greater than or equal to 1.";
+                this.errorMessage = $localize`Run Frequency must be greater than or equal to 1.`;
                 this.isValid = false;
                 return;
             } else if (+this.model.Event.SettingsObject.Settings.ScheduleInterval > this.runFrequencyMax()) {
-                this.errorMessage = "Run Frequency must be less than or equal to " + this.runFrequencyMax() + ".";
+                this.errorMessage = $localize`Run Frequency must be less than or equal to ${this.runFrequencyMax()}`;
                 this.isValid = false;
                 return;
             }
 
             if (+this.model.Event.SettingsObject.Settings.ScheduleDays == 0) {
-                this.errorMessage = "At least one Run Day must be selected.";
+                this.errorMessage = $localize`At least one Run Day must be selected.`;
                 this.isValid = false;
                 return;
             }
 
             if (this.conditions.length < 1) {
-                this.errorMessage = "At least 1 condition is required when using change type Schedule.";
+                this.errorMessage = $localize`At least 1 condition is required when using change type Schedule.`;
                 this.isValid = false;
                 return;
             }
@@ -540,7 +541,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             let t = this.workflowObjectTypes.find(t => t.value == this.selectedObjectType);
 
             if (t != null && t.count > this.SCHEDULE_OBJECT_LIMIT) {
-                this.errorMessage = `The chosen object type has more than ${this.SCHEDULE_OBJECT_LIMIT} items, which exceeds the limit for change type Schedule.`;
+                this.errorMessage = $localize`The chosen object type has more than ${this.SCHEDULE_OBJECT_LIMIT} items, which exceeds the limit for change type Schedule.`;
                 this.isValid = false;
                 return;
             }
@@ -592,7 +593,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
 
         if (this.model.Event.ChangeType == WorkflowChangeType.ScoreUpdate && this.model.Event.ScoreType == null) {
-            this.errorMessage = "Please select a score type";
+            this.errorMessage = $localize`Please select a score type`;
             this.isValid = false;
             return;
         }

@@ -1,6 +1,6 @@
 ﻿<div *ngIf="isDataQualityMeasure()">
     <div class="measure-details-item">
-        <div class="details-header">Rule Results</div>
+        <div class="details-header" i18n>Rule Results</div>
         <div class="details-condition">
             <div class="condition-content">
                 <div class="condition-items" [innerHtml]="ruleResultPathHtml"></div>
@@ -8,7 +8,7 @@
         </div>
     </div>
     <div class="measure-details-item">
-        <div class="details-header">Rule Result Operation</div>
+        <div class="details-header" i18n>Rule Result Operation</div>
         <div class="details-condition">
             <div class="condition-content">
                 <div class="condition-items" [innerHtml]="ruleResultOperation"></div>
@@ -16,7 +16,7 @@
         </div>
     </div>
     <div *ngIf="hasRuleResultFilters()" class="measure-details-item">
-        <div class="details-header">Rule Result Filters</div>
+        <div class="details-header" i18n>Rule Result Filters</div>
         <div class="details-condition">
             <div class="condition-content">
                 <div class="condition-items">
@@ -30,7 +30,7 @@
 </div>
 
 <div *ngIf="isGovernanceMeasure()" class="measure-details-item">
-    <div class="details-header">Pass Test</div>
+    <div class="details-header"i18n>Pass Test</div>
     <div class="details-condition">
         <div [ngSwitch]="definition.Governance.Check">
             <div *ngSwitchCase="'External'">
@@ -43,35 +43,36 @@
             <div class="row row-margin" *ngSwitchCase="'Field'">
                 <div class="condition-content">
                     <div class="condition-items">
-                        <div *ngIf="dateShowType == null">Field: {{formattedCheck}}</div>
-                        <div *ngIf="dateShowType == 'Date'">Field: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> and {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
+                        <div *ngIf="dateShowType == null"><ng-container i18n>Field</ng-container>: {{formattedCheck}}
+                        </div>
+                        <div *ngIf="dateShowType == 'Date'"><ng-container i18n>Field</ng-container>: {{formattedCheck}} {{dateVal1 | utcDate  | date:'shortDate'}}<span *ngIf="dateVal2"> <ng-container i18n>and</ng-container> {{dateVal2  | utcDate  | date:'shortDate'}} </span></div>
                     </div>
                 </div>
             </div>
             <div class="row row-margin" *ngSwitchCase="'Owner'">
                 <div class="condition-content">
                     <div class="condition-items">
-                        Ownership: {{formattedCheck}}
+                        <ng-container i18n>Ownership</ng-container>: {{formattedCheck}}
                     </div>
                 </div>
             </div>
             <div class="row row-margin" *ngSwitchCase="'Predicate'">
                 <div class="condition-content">
                     <div class="condition-items">
-                        Predicate: {{formattedCheck}}
+                        <ng-container i18n>Predicate</ng-container>: {{formattedCheck}}
                     </div>
                 </div>
             </div>
             <div class="row row-margin" *ngSwitchCase="'Relation'">
                 <div class="condition-content">
                     <div class="condition-items">
-                        Relationship: {{formattedCheck}}
+                        <ng-container i18n>Relationship</ng-container>: {{formattedCheck}}
                     </div>
                 </div>
             </div>
             <ng-template ngSwitchDefault>
                 <div class="condition-content">
-                    <div class="condition-items">
+                    <div class="condition-items" i18n>
                         default
                     </div>
                 </div>

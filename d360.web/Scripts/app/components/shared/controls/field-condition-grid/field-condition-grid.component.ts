@@ -27,6 +27,9 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
     visible: boolean = false;
     operatorRequiredValue: boolean = false;
     Operators = Operator;
+
+    valueRequiredLabel = $localize`Value required`;
+
     private disabledValuesOperators = [Operator.NotPopulated, Operator.Populated, Operator.IsFalse, Operator.IsTrue];
 
     constructor(public cdRef: ChangeDetectorRef, private fb: FormBuilder) {
@@ -125,7 +128,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         }
 
         window.setTimeout(() => {
-            this.removeFormControl(null,item.hash);
+            this.removeFormControl(null, item.hash);
         }, 100);
     }
 
@@ -168,7 +171,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
                         this.conditions.forEach(x => {
                             if (control.indexOf(x.hash) !== -1) {
                                 shouldDelete = false;
-                             }
+                            }
                         });
 
                         if (shouldDelete) {
@@ -178,7 +181,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
                 }
             });
         }
-        this.cdRef.markForCheck(); 
+        this.cdRef.markForCheck();
     }
 
     resetFormControls() {

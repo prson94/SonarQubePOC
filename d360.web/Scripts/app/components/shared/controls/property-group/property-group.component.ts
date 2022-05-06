@@ -12,7 +12,7 @@ import * as _ from 'lodash';
 })
 export class PropertyGroupComponent implements OnInit, AfterViewInit {
     @Input() igformGroup: FormGroup;
-    @Input() title: string = "Property Group";
+    @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
     @Input() moreInfoHtml: string = "";
     @Input() shouldBePadded: boolean = true;
@@ -72,7 +72,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                 }
             });
         }
-        
+
         return reqCount;
     }
 

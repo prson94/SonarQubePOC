@@ -2,7 +2,7 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">Headers</div>
+            <div class="FieldName" i18n>Headers</div>
             <div>
                 <header>
                     &nbsp;
@@ -11,8 +11,8 @@
                 <p-table #dt [value]="step.settings.HTTPRequest.Headers" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th>Key</th>
-                            <th>Value</th>
+                            <th i18n>Key</th>
+                            <th i18n>Value</th>
                             <th style="width: 40px"></th>
                         </tr>
                     </ng-template>
@@ -40,7 +40,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">Method</div>
+            <div class="FieldName" i18n>Method</div>
             <div>
                 <select [ngModel]="step.settings.HTTPRequest.Method" (ngModelChange)="step.settings.HTTPRequest.Method = $event; stepChange.emit(step)" style="width: 95%">
                     <option value=""></option>
@@ -51,7 +51,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">Url</div>
+            <div class="FieldName" i18n>Url</div>
             <div>
                 <input type="text" style="width: 95%" [ngModel]="step.settings.HTTPRequest.Url" (ngModelChange)="step.settings.HTTPRequest.Url = $event; stepChange.emit(step)" />
             </div>
@@ -59,7 +59,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">Body</div>
+            <div class="FieldName" i18n>Body</div>
             <div>
                 <div class="textarea-editor" style="border-bottom: none;">
                     <d3s-workflow-template-tool [step]="step"
@@ -81,7 +81,7 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">Request Timeout</div>
+                <div class="FieldName" i18n>Request Timeout</div>
                 <div>
                     <input type="number" style="width: 95%" [ngModel]="step.settings.HTTPRequest.Timeout" (ngModelChange)="step.settings.HTTPRequest.Timeout = $event; stepChange.emit(step)" />
                 </div>

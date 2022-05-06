@@ -28,39 +28,51 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
     editedDes: string = '';
     newID: number = -1;
 
+
+    editMenu = $localize`Edit`;
+    deleteMenu = $localize`Delete`;
+    visibleMenu = $localize`Visible`;
+    visibleToAdminsMenu = $localize`Visible to Admins Only`;
+    hiddenMenu = $localize`Hidden`;
+
     private editMenuItems: any[] = [
-        { title: "Edit" },
+        { title: this.editMenu },
     ];
 
     private deleteMenuItem: any[] = [
-        { title: "Edit" },
-        { title: "Delete" },
+        { title: this.editMenu },
+        { title: this.deleteMenu },
     ];
 
     private visibleVisibilityItems: any[] = [
-        { title: "Visible", hasSelectedBox: true,  isSelected: true },
-        { title: "Visible to Admins Only", hasSelectedBox: true, isSelected: false },
-        { title: "Hidden", hasSelectedBox: true, isSelected: false },
+        { title: this.visibleMenu, hasSelectedBox: true, isSelected: true },
+        { title: this.visibleToAdminsMenu, hasSelectedBox: true, isSelected: false },
+        { title: this.hiddenMenu, hasSelectedBox: true, isSelected: false },
     ];
     private adminVisibilityItems: any[] = [
-        { title: "Visible", hasSelectedBox: true, isSelected: false },
-        { title: "Visible to Admins Only", hasSelectedBox: true, isSelected: true },
-        { title: "Hidden", hasSelectedBox: true, isSelected: false },
+        { title: this.visibleMenu, hasSelectedBox: true, isSelected: false },
+        { title: this.visibleToAdminsMenu, hasSelectedBox: true, isSelected: true },
+        { title: this.hiddenMenu, hasSelectedBox: true, isSelected: false },
     ];
     private hiddenVisibilityItems: any[] = [
-        { title: "Visible", hasSelectedBox: true, isSelected: false },
-        { title: "Visible to Admins Only", hasSelectedBox: true, isSelected: false },
-        { title: "Hidden", hasSelectedBox: true, isSelected: true },
+        { title: this.visibleMenu, hasSelectedBox: true, isSelected: false },
+        { title: this.visibleToAdminsMenu, hasSelectedBox: true, isSelected: false },
+        { title: this.hiddenMenu, hasSelectedBox: true, isSelected: true },
     ];
 
+    menuMTT = $localize`Move to Top`;
+    menuMU = $localize`Move Up`;
+    menuMD = $localize`Move Down`;
+    menuMTB = $localize`Move to Bottom`;
+
     private upMenuItems: any[] = [
-        { title: "Move to Top" },
-        { title: "Move Up" }
+        { title: this.menuMTT },
+        { title: this.menuMU }
     ];
 
     private downMenuItems: any[] = [
-        { title: "Move Down" },
-        { title: "Move to Bottom" }
+        { title: this.menuMD },
+        { title: this.menuMTB }
     ];
 
     constructor(
@@ -161,7 +173,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
         this.items.forEach((i) => {
             if (i.ID === option.ID) {
-                i.order = i.order -1;
+                i.order = i.order - 1;
             }
             else if (i.ID === newOption.ID) {
                 i.order = i.order + 1;
@@ -181,7 +193,7 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
                 i.order = i.order + 1;
             }
             else if (i.ID === newOption.ID) {
-                i.order = i.order -1;
+                i.order = i.order - 1;
             }
         });
 
@@ -260,22 +272,22 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
     clickMenu(e: any, item: any) {
         switch (e.value.toLowerCase()) {
-            case "edit": 
+            case this.editMenu.toLowerCase():
                 this.edit(item.ID);
                 break;
-            case "delete":
+            case this.deleteMenu.toLowerCase():
                 this.delete(item.ID);
                 break;
-            case "move up":
+            case this.menuMU.toLowerCase():
                 this.moveUp(item.ID);
                 break;
-            case "move to top":
+            case this.menuMTT.toLowerCase():
                 this.moveTop(item.ID);
                 break;
-            case "move down":
+            case this.menuMD.toLowerCase():
                 this.moveDown(item.ID);
                 break;
-            case "move to bottom":
+            case this.menuMTB.toLowerCase():
                 this.moveBottom(item.ID);
                 break;
         }
@@ -283,13 +295,13 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
 
     changeVisibility(e: any, item: any) {
         switch (e.value.toLowerCase()) {
-            case "visible":
+            case this.visibleMenu.toLowerCase():
                 item.visibility = 1;
                 break;
-            case "visible to admins only":
+            case this.visibleToAdminsMenu.toLowerCase():
                 item.visibility = 2;
                 break;
-            case "hidden":
+            case this.hiddenMenu.toLowerCase():
                 item.visibility = 3;
                 break;
         }
@@ -329,6 +341,6 @@ export class HelpMenuListComponent extends BaseComponent implements OnInit {
         }
         else {
             return "";
-        }       
+        }
     }
 }

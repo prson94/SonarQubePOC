@@ -9,13 +9,13 @@ import { CompanySettingsService } from "../../../services/settings.service";
     providers: [RelationshipsService],
     template: `
 <ng-container>
-    <div class="FieldName">Use As Transformation?</div>
+    <div class="FieldName" i18n>Use As Transformation?</div>
     <div class="row">
         <div class="col l1 m2 s12">
             <input pCheckbox type="checkbox" [(ngModel)]="UseAsTransformation" [disabled]="isRelationsExist" (ngModelChange)="tranformationChange($event)" />
         </div>
         <div class="col l11 m10 s12">
-            <div class="FieldInstructions">If enabled, assets of this type may be used as a connecting asset to form lineage relationships.</div>
+            <div class="FieldInstructions" i18n>If enabled, assets of this type may be used as a connecting asset to form lineage relationships.</div>
         </div>
     </div>
 </ng-container>

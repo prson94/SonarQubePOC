@@ -1,5 +1,5 @@
 ﻿<d3s-loading [(isLoading)]="loading"></d3s-loading>
-<div [(hidden)]="loading" *ngIf="alerts.length == 0" class="error-msg">
+<div [(hidden)]="loading" *ngIf="alerts.length == 0" class="error-msg" i18n>
     No alerts displayed.
 </div>
 <div [(hidden)]="loading" class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts" [ngClass]="alert.selected ? 'alert-selected' : ''">
@@ -10,22 +10,22 @@
             <i style="opacity: 1" class="fa fa-ellipsis-v"></i>
             <div class="popup-menu place-right">
                 <ul>
-                    <li (click)="openAssetDetail(alert)"><span style="font-weight: 700;">Show Asset Detail</span></li>
-                    <li (click)="openInNewTab(alert)"><span>Open in New Tab</span></li>
+                    <li (click)="openAssetDetail(alert)"><span style="font-weight: 700;" i18n>Show Asset Detail</span></li>
+                    <li (click)="openInNewTab(alert)"><span i18n>Open in New Tab</span></li>
                 </ul>
             </div>
         </div>
     </div>
     <div class="action" *ngIf="alert.action">
         <div>
-            <span class="label">Action Alert:</span>
+            <span class="label" i18n>Action Alert:</span>
             <span class="type">{{alert.action.name}}</span>
         </div>
         <div class="content" [innerHTML]="alert.action.description"></div>
     </div>
     <div class="score" *ngIf="alert.score">
         <div>
-            <span class="label">Quality Alert:</span>
+            <span class="label" i18n>Quality Alert:</span>
             <span class="type">{{alert.score.name}}</span>
         </div>
     </div>

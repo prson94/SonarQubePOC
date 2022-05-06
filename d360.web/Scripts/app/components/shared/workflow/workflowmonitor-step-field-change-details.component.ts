@@ -2,8 +2,9 @@
 import { BaseComponent } from "../../shared/base.component";
 import { WorkflowStepFieldChangeDetail } from "../../../models/workflow.model";
 import { CompanySettingsService } from "../../../services/settings.service";
+import '@angular/localize/init';
 
- 
+
 @Component({
     selector: 'd3s-workflow-monitor-step-field-change-details',
     template:
@@ -14,27 +15,27 @@ import { CompanySettingsService } from "../../../services/settings.service";
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'FieldName'">
-                                        Name
+                                        <ng-container i18n>Name</ng-container>        
                                         <d3s-sortIcon [field]="'FieldName'"></d3s-sortIcon>
                                     </th>
                                     <th [pSortableColumn]="'Value'">
-                                        Value
+                                        <ng-container i18n>Value</ng-container>        
                                         <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
                                     </th>
                                     <th [pSortableColumn]="'FormValue'">
-                                        Form
+                                        <ng-container i18n>Form</ng-container>        
                                         <d3s-sortIcon [field]="'FormValue'"></d3s-sortIcon>
                                     </th>
                                    <th [pSortableColumn]="'OutputValue'">
-                                        Output
+                                        <ng-container i18n>Output</ng-container>        
                                         <d3s-sortIcon [field]="'OutputValue'"></d3s-sortIcon>
                                     </th>
                                     <th [pSortableColumn]="'AppendValue'">
-                                        Appended
+                                        <ng-container i18n>Appended</ng-container>        
                                         <d3s-sortIcon [field]="'AppendValue'"></d3s-sortIcon>
                                     </th>
                                     <th [pSortableColumn]="'ClearValue'">
-                                        Cleared
+                                        <ng-container i18n>Cleared</ng-container>        
                                         <d3s-sortIcon [field]="'ClearValue'"></d3s-sortIcon>
                                     </th>
                                 </tr>
@@ -95,8 +96,8 @@ export class WorkflowMonitorStepFieldChangeDetailsComponent extends BaseComponen
 
     getFieldName(item: WorkflowStepFieldChangeDetail): string {
         if (item.ObjectType != '' && item.ObjectType != 'Issue')
-            return 'Asset Field::' + item.FieldName;
-        return 'Action Field::' + item.FieldName;
+            return $localize`Asset Field` + '::' + item.FieldName;
+        return $localize`Action Field` + '::' + item.FieldName;
     }
 
 }

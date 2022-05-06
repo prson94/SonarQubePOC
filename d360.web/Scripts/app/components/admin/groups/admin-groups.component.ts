@@ -18,6 +18,7 @@ import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.com
 import { Table } from 'primeng/table';
 import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import '@angular/localize/init';
 
 declare var CurrentResourceID;
 @Component({
@@ -43,6 +44,12 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     sidePanelStorageKey: string;
     sidePanelTab: string = 'detail';
 
+    createButtonLabel = $localize`Create New Group`;
+    deleteModalTitle = $localize`Delete Group`;
+
+    labelCancel = $localize`Cancel`;
+    labelDelete = $localize`Delete`;
+
     simpleTextFilter: string = '';
 
     columns: GridColumn[] = [];
@@ -63,8 +70,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     @ViewChild('assetDetail', { static: false }) assetDetail: AssetDetailComponent;
 
     menuItems = [
-        { title: 'Edit' },
-        { title: 'Delete' },
+        { title: $localize`Edit` },
+        { title: $localize`Delete` },
     ];
 
     constructor(
@@ -187,9 +194,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
-        if (key === 'edit') {
+        if (key === $localize`Edit`.toLowerCase()) {
             this.edit(item);
-        } else if (key === 'delete') {
+        } else if (key === $localize`Delete`.toLowerCase()) {
             this.deleteGroup(item);
         }
     }

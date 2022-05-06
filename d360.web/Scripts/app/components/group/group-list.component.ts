@@ -1,13 +1,14 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../shared/base.component';
-import {Title} from '@angular/platform-browser';
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {GroupService} from '../../services/group.service';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {GroupSearchResultModel} from '../../models/group.model';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
+import { Title } from '@angular/platform-browser';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { GroupService } from '../../services/group.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { GroupSearchResultModel } from '../../models/group.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -21,7 +22,8 @@ import { CompanySettingsService } from '../../services/settings.service';
                 <div class="tile tile-detail">
                     <div class="row" *ngIf="!isLoading">
                         <div class="col s12">
-                            <header>Groups
+                            <header>
+                                <ng-container i18n>Groups</ng-container>
                                 <d3s-tile-actions [hasAdd]="false" [hasFilterMode]="true"
                                                   [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
                             </header>
@@ -35,7 +37,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th [pSortableColumn]="'Name'" style="width: 60%">
-                                            Name
+                                            <ng-container i18n>Name</ng-container>
                                             <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                         </th>
                                         <th [pSortableColumn]="'ID'" style="width: 10%">
@@ -43,7 +45,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                                             <d3s-sortIcon [field]="'ID'"></d3s-sortIcon>
                                         </th>
                                         <th [pSortableColumn]="'NumberOfMembers'" style="width: 20%">
-                                            Member Count
+                                            <ng-container i18n>Member Count</ng-container>
                                             <d3s-sortIcon [field]="'NumberOfMembers'"></d3s-sortIcon>
                                         </th>
                                         <th style="width:   30px "></th>
@@ -102,7 +104,7 @@ export class GroupListComponent extends BaseComponent implements OnInit {
         protected titleService: Title,
         private route: ActivatedRoute,
         private router: Router
-        ) {
+    ) {
         super(settingsService);
     }
 
@@ -111,7 +113,7 @@ export class GroupListComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Groups`));
 
         this.load();
     }

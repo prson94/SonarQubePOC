@@ -7,16 +7,16 @@ import { MessageService } from 'primeng/api';//primeng/api
 
 
 @Component({
-    selector: 'd3s-header-follow',    
+    selector: 'd3s-header-follow',
     template:
-    `
+        `
         <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="toggleFollow()">
             <div class="mini-menu-line">
                 <div class="check-gutter">
                     <i *ngIf="active && !isLoading" class="fa fa-check"></i>
                     <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
                 </div>
-                <div class="text">Follow</div>
+                <div class="text" i18n>Follow</div>
                 <div class="expand-gutter"></div>            
             </div>
         </div>
@@ -55,7 +55,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         private breadcrumbService: HeaderBreadcrumbService,
         protected headerActionsService: HeaderActionsService,
         private ref: ChangeDetectorRef,
-        private messageService: MessageService 
+        private messageService: MessageService
     ) { }
 
     ngOnInit() {
@@ -71,7 +71,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         if (o != null) {
             this.objectType = o.type;
             this.objectId = o.id;
-            this.checkActive();        
+            this.checkActive();
         }
     }
 
@@ -103,7 +103,7 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
         );
     }
 
-    toggleFollow() {        
+    toggleFollow() {
         if (this.isFollowingParent && (this.objectType != this.parentObjectType || this.objectId != this.parentObjectId)) {
             this.messageService.add({ severity: 'info', summary: 'Following Parent', detail: 'Following via Parent.\nTo unfollow, please go to type list.' });
             return;
@@ -116,16 +116,16 @@ export class HeaderFollowComponent implements OnInit, OnDestroy {
 
         this.followerService.updateFollowStatus(this.objectType, this.objectId, includeChildren).subscribe(
             f => {
-                if (f.type == 'notification') {                                        
+                if (f.type == 'notification') {
                     this.active = !this.active;
                     let crumbs = this.breadcrumbService.getBreadcrumbsFromStorage();
                     let toastMessage = `You are now following '${crumbs[crumbs.length - 1].text}'`;
                     let toastTitle = "Followed";
-                    if (this.active) {  
+                    if (this.active) {
                         if (includeChildren) {
                             toastTitle = "Following Type";
-                            toastMessage = `You are now following type '${crumbs[crumbs.length - 1].text}'`;                        
-                        }                            
+                            toastMessage = `You are now following type '${crumbs[crumbs.length - 1].text}'`;
+                        }
                     } else {
                         if (includeChildren) {
                             toastTitle = "Unfollowed Type";

@@ -151,6 +151,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public listSingleSegmentCheckbox: boolean = false;
     public assetTypeAncestries: AssetTypeAncestry[] = [];
 
+    chooseLabel = $localize`Choose...`;
+
     constructor(private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
         private objectDetailService: ObjectDetailService,
@@ -161,9 +163,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldTypeAPIModelField();
         this.booleanDefaultValueOptions = [
-            { label: '-No Default-', value: null },
-            { label: 'True', value: true },
-            { label: 'False', value: false },
+            { label: $localize`-No Default-`, value: null },
+            { label: $localize`True`, value: true },
+            { label: $localize`False`, value: false },
         ]
     }
 
@@ -234,9 +236,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return { value: x.value, label: x.label };
         });
         this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
-        this.lookups.Field_JsonDataTypes.unshift({ label: 'Choose..', value: null });
-        this.lookups.Field_JsonFields.unshift({ label: 'Choose..', value: null });
-        this.lookups.DataTypes.unshift({ label: 'Choose..', value: null });
+        this.lookups.Field_JsonDataTypes.unshift({ label: this.chooseLabel, value: null });
+        this.lookups.Field_JsonFields.unshift({ label: this.chooseLabel, value: null });
+        this.lookups.DataTypes.unshift({ label: this.chooseLabel, value: null });
     };
 
     private getFormDataHandler = (responseGetFormData) => {
@@ -662,7 +664,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 );
 
-                this.listFilterPredicates.push({ value: null, label: 'Choose..' });
+                this.listFilterPredicates.push({ value: null, label: this.chooseLabel });
                 this.listFilterOptions.forEach(
                     d => {
                         if (d.fieldtypeOptions.length > 0)
@@ -774,7 +776,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             .pipe(
                 map(r => {
                     this.scoreTypeOptions = r;
-                    this.scoreTypeOptions.unshift({ label: 'Choose..', value: null });
+                    this.scoreTypeOptions.unshift({ label: this.chooseLabel, value: null });
 
                 })
             );
@@ -928,7 +930,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     item.relationItems = x;
                 }
             ), map(() => item.relationsLoading = false));
-        
+
     }
     private GetCurrentUid() {
         if (this.assetTypeUid != null)
@@ -1084,7 +1086,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (fieldname == '*' || fieldname == "NameTaken") {
-            this.setValidation('name_already_taken', 'API Name already in use.', (() => {
+            this.setValidation('name_already_taken', $localize`API Name already in use.`, (() => {
                 if (this.model.FieldType.Name && this.actionName == 'Add') {
                     if (this.fields && this.fields.length > 0) {
                         return this.fields.filter((x) => {
@@ -1100,7 +1102,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (fieldname == '*' || fieldname == 'NameTaken') {
-            this.setValidation('name_already_taken', 'API Name not allowed.', (() => {
+            this.setValidation('name_already_taken', $localize`API Name not allowed.`, (() => {
                 if (this.model.FieldType.Name) {
                     var dissallowedFields: string[] = ['id', 'uid', 'assetid', 'assetuid', 'assettypeid',
                         'assettypeuid', 'createdon', 'updatedon', 'parentdisplayname', 'parentassetuid',
@@ -1121,29 +1123,29 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Number' || this.currentType == 'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength') {
-                this.setValidation('MinimumLength_toobig', 'Please enter a smaller Minimum Value.', (() => {
+                this.setValidation('MinimumLength_toobig', $localize`Please enter a smaller Minimum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumValue > this.minLengthUpperNumeric);
                 })());
-                this.setValidation('MinimumLength_toosmall', 'Please enter a larger Minimum Value.', (() => {
+                this.setValidation('MinimumLength_toosmall', $localize`Please enter a larger Minimum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumValue < this.minLengthLowerNumeric);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
-                this.setValidation('MaximumLength_toobig', 'Please enter a smaller Maximum Value.', (() => {
+                this.setValidation('MaximumLength_toobig', $localize`Please enter a smaller Maximum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumValue && this.model.FieldType.Type[this.currentType].Validation.MaximumValue > this.maxLengthUpperNumeric);
                 })());
-                this.setValidation('MaximumLength_toosmall', 'Please enter a larger Maximum Value.', (() => {
+                this.setValidation('MaximumLength_toosmall', $localize`Please enter a larger Maximum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumValue && this.model.FieldType.Type[this.currentType].Validation.MaximumValue < this.maxLengthLowerNumeric);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'Increment') {
-                this.setValidation('Increment_negative', 'Please enter a positive number for the increment.', (() => {
+                this.setValidation('Increment_negative', $localize`Please enter a positive number for the increment.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Increment < 0);
                 })());
 
-                this.setValidation('Increment_toobig', 'Please enter a smaller number for the increment.', (() => {
+                this.setValidation('Increment_toobig', $localize`Please enter a smaller number for the increment.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Increment > Number.MAX_SAFE_INTEGER);
                 })());
             }
@@ -1151,25 +1153,25 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Number') {
             if (fieldname == '*' || fieldname == 'Increment') {
-                this.setValidation('Increment_integer', 'Please enter a valid integer for Increment.', (() => {
+                this.setValidation('Increment_integer', $localize`Please enter a valid integer for Increment.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Increment && this.model.FieldType.Type[this.currentType].Increment % 1 != 0);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength') {
-                this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
+                this.setValidation('MinimumLength_integer', $localize`Please enter a valid integer for Minimum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumValue % 1 != 0);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
-                this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
+                this.setValidation('MaximumLength_integer', $localize`Please enter a valid integer for Maximum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumValue && this.model.FieldType.Type[this.currentType].Validation.MaximumValue % 1 != 0);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'DefaultValue') {
-                this.setValidation('default_integer', 'Please enter a valid integer for Default Value.', (() => {
+                this.setValidation('default_integer', $localize`Please enter a valid integer for Default Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].DefaultValue && +this.model.FieldType.Type[this.currentType].DefaultValue % 1 != 0);
                 })());
             }
@@ -1177,7 +1179,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Decimal') {
             if (fieldname == '*' || fieldname == 'Precision') {
-                this.setValidation('precision_range', 'Please enter decimal places between 0 and 5.', (() => {
+                this.setValidation('precision_range', $localize`Please enter decimal places between 0 and 5.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.Precision && this.model.FieldType.Type[this.currentType].Validation.Precision < 0 || this.model.FieldType.Type[this.currentType].Validation.Precision > 5);
                 })());
             }
@@ -1199,7 +1201,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Number' || this.currentType == 'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.Type[this.currentType].Validation.MinimumValue + ' in Default Value.', (() => {
+                this.setValidation('default_MinimumLength', $localize`Please enter a minimum value of ${this.model.FieldType.Type[this.currentType].Validation.MinimumValue} in Default Value.`, (() => {
                     if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].DefaultValue)) {
                         if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MinimumValue) && this.model.FieldType.Type[this.currentType].DefaultValue < this.model.FieldType.Type[this.currentType].Validation.MinimumValue) {
                             return true;
@@ -1211,7 +1213,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.Type[this.currentType].Validation.MaximumValue + ' in Default Value.', (() => {
+                this.setValidation('default_MaximumLength', $localize`Please enter a maximum value of ${this.model.FieldType.Type[this.currentType].Validation.MinimumValue} in Default Value.`, (() => {
                     if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].DefaultValue)) {
                         if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue) && +this.model.FieldType.Type[this.currentType].DefaultValue > this.model.FieldType.Type[this.currentType].Validation.MaximumValue) {
                             return true;
@@ -1222,7 +1224,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
-                this.setValidation('number_minmax', 'Please enter a minimum value which is lower than the maximum value.', (() => {
+                this.setValidation('number_minmax', $localize`Please enter a minimum value which is lower than the maximum value.`, (() => {
                     if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue) && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue))
                         return (this.model.FieldType.Type[this.currentType].Validation.MinimumValue > this.model.FieldType.Type[this.currentType].Validation.MaximumValue);
                     return false;
@@ -1232,7 +1234,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Text') {
             if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
-                this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
+                this.setValidation('default_validationpattern', $localize`Default Value does not match Validation Pattern.`, (() => {
                     if (this.model.FieldType.Type[this.currentType].Validation.Pattern > "" && this.model.FieldType.Type[this.currentType].DefaultValue > "") {
                         var patternRegex = new RegExp(this.model.FieldType.Type[this.currentType].Validation.Pattern);
                         return !patternRegex.test(this.model.FieldType.Type[this.currentType].DefaultValue);
@@ -1242,32 +1244,32 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength') {
-                this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
+                this.setValidation('MinimumLength_integer', $localize`Please enter a valid integer for Minimum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumLength % 1 != 0);
                 })());
-                this.setValidation('MinimumLength_toolong', 'Please enter a Minimum Length shorter than ' + this.minLengthUpperNumeric + '.', (() => {
+                this.setValidation('MinimumLength_toolong', $localize`Please enter a Minimum Length shorter than ${this.minLengthUpperNumeric}.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumLength > this.minLengthUpperNumeric);
                 })());
-                this.setValidation('MinimumLength_tooshort', 'Minimum Length must be a positive numnber.', (() => {
+                this.setValidation('MinimumLength_tooshort', $localize`Minimum Length must be a positive number.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumLength < this.minLengthLowerText);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 var m
-                this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
+                this.setValidation('MaximumLength_integer', $localize`Please enter a valid integer for Maximum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength % 1 != 0);
                 })());
-                this.setValidation('MaximumLength_toolong', 'Please enter Maximum Length shorter than ' + this.maxLengthUpperText + '.', (() => {
+                this.setValidation('MaximumLength_toolong', $localize`Please enter Maximum Length shorter than ${this.maxLengthUpperText}.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength > this.maxLengthUpperText);
                 })());
-                this.setValidation('MaximumLength_tooshort', 'Maximum Length must be a positive numnber.', (() => {
+                this.setValidation('MaximumLength_tooshort', $localize`Maximum Length must be a positive numnber.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength < this.maxLengthLowerText);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.Type[this.currentType].Validation + '.', (() => {
+                this.setValidation('default_MinimumLength_text', $localize`Default value is shorter than ${this.model.FieldType.Type[this.currentType].Validation}.`, (() => {
                     if (this.model.FieldType.Type[this.currentType].DefaultValue) {
                         return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation) && this.model.FieldType.Type[this.currentType].DefaultValue.length > 0 && this.model.FieldType.Type[this.currentType].DefaultValue.length < this.model.FieldType.Type[this.currentType].Validation.MinimumLength);
                     } else {
@@ -1277,7 +1279,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.Type[this.currentType].Validation.MaximumLength + '.', (() => {
+                this.setValidation('default_MaximumLength_text', $localize`Default value is longer than ${this.model.FieldType.Type[this.currentType].Validation.MaximumLength}.`, (() => {
                     if (this.model.FieldType.Type[this.currentType].DefaultValue) {
                         return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumLength) && this.model.FieldType.Type[this.currentType].DefaultValue.length > this.model.FieldType.Type[this.currentType].Validation.MaximumLength);
                     } else {
@@ -1287,7 +1289,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
-                this.setValidation('MinimumLengthMaximumLength_text', 'Maximum Lenght is shorter than Minimum Length.', (() => {
+                this.setValidation('MinimumLengthMaximumLength_text', $localize`Maximum Lenght is shorter than Minimum Length.`, (() => {
                     if (this.model.FieldType.Type[this.currentType].Validation && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumLength)) {
                         return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumLength) && this.model.FieldType.Type[this.currentType].Validation.MinimumLength > this.model.FieldType.Type[this.currentType].Validation.MaximumLength);
                     } else {
@@ -1299,7 +1301,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.currentType == 'Lookup') {
-            this.setValidation('AllowAllLabel_text', 'Please specify a label for ALL Value Selection.', (() => {
+            this.setValidation('AllowAllLabel_text', $localize`Please specify a label for ALL Value Selection.`, (() => {
                 if (this.model.FieldType.Type[this.currentType].AllowAllValue) {
                     return (this.model.FieldType.Type[this.currentType].AllowAllLabel == undefined || this.model.FieldType.Type[this.currentType].AllowAllLabel.length == 0);
                 } else {
@@ -1422,7 +1424,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return (['ComplexRelationLookup', 'RefListRelationship', 'Json', 'JSON'].indexOf(this.currentType) > -1
                     || (this.currentType == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                    return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Counter'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag', 'Score', 'Link']
                     .indexOf(this.currentType) > -1
@@ -1450,7 +1452,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 return false;
             default:
-                console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
+                console.warn(`invalid setting[${val}]passed to isSettingDisabled`);
         }
     }
 

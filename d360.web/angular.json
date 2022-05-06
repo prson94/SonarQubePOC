@@ -27,6 +27,10 @@
           "en-gb": {
             "translation": "locale/messages.en-gb.xlf",
             "baseHref": ""
+          },
+          "ca": {
+            "translation": "locale/messages.ca.xlf",
+            "baseHref": ""
           }
         }
       },
@@ -89,6 +93,11 @@
             "en-gb": {
               "localize": [
                 "en-gb"
+              ]
+            },
+            "ca": {
+              "localize": [
+                "ca"
               ]
             }
           },

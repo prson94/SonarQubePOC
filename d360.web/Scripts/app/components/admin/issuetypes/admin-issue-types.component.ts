@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-issue-types',
@@ -15,7 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <div class="row">
                     <div class="col l6 s12">                    
                         <div class="tile tile-detail">
-                            <header *ngIf="!showEditor && !showDelete">Action Types
+                            <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Action Types</ng-container>
                                 <d3s-tile-actions [hasAdd]="true" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" (addClick)="showAdd()"></d3s-tile-actions>                            
                             </header>  
                             <d3s-loading [isLoading]="isLoading && !showDelete"></d3s-loading>
@@ -25,10 +26,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'">
-                                                Name
+                                                <ng-container i18n>Name</ng-container>                         
                                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                             </th>
-                                            <th>Description</th>
+                                            <th i18n>Description</th>
                                             <th style="width: 30px"></th>
                                             <th style="width: 30px"></th>
                                             <th style="width: 30px"></th>
@@ -72,7 +73,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <d3s-dynamic-editor *ngIf="showEditor" 
                                         [objectID]="selected?.ID"
                                         [objectType]="'IssueType'"                                         
-                                        [title]="'Action Type'" 
+                                        [title]="editorTitle" 
                                         [selection]="selected" 
                                         (saveClick)="saveIssueType($event)" 
                                         (closeClick)="closeEditor()"                                         
@@ -82,7 +83,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                 [callback]="theDeleteCallback"
                                 [itemUid]="selected?.Uid"
                                 [method]="'callback'"
-                                [prompt]="'Are you sure you want to delete the action type [' + [selected?.Name] + ']?'"                                         
+                                [prompt]="deleteModalTitle"                                         
                                 (onCancel)="showDelete=false;"
                             ></d3s-delete-form>        
                         </div>
@@ -115,10 +116,17 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class AdminIssueTypesComponent extends AdminBaseComponent {
     issueTypes: WorkflowIssueType[] = [];
-    selected: WorkflowIssueType;    
+    selected: WorkflowIssueType;
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
+
+    editorTitle = $localize`Action Type`;
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the action type [${this.selected?.Name}]?`;
+    }
+
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected messagesService: MessagesObservableService,
@@ -129,7 +137,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Actions;
         this.adminHeading = StringConstants.Section_Actions;
-        this.tabTitle = 'Action Types';
+        this.tabTitle = $localize`Action Types`;
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
     }
@@ -140,7 +148,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     ngOnDestroy() {
         this.clearSidebar();
-    }   
+    }
 
     private deleteIssueType(uid: string) {
         this.isLoading = true;
@@ -158,7 +166,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
             });
     }
 
-    selectedItemChange(callback: Function = null) {        
+    selectedItemChange(callback: Function = null) {
         if (this.selected) {
             if (!this.selected.ID) {
                 this.workflowService.getIssueByUID(this.selected.Uid)
@@ -177,7 +185,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 }
             }
         }
-        
+
     }
     private load() {
         this.isLoading = true;
@@ -203,7 +211,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 this.isLoading = false;
                 this.showMessageForApiResponse(this.messagesService, result);
                 if (result.Success) {
-                    this.load();                    
+                    this.load();
                 }
                 this.showEditor = false;
             });

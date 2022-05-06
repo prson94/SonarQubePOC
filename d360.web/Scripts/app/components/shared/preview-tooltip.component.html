@@ -32,16 +32,16 @@
         </div>
         <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
         <div *ngIf="data?.AssetID && data?.AssetID > 0">
-            <b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span>
+            <b i18n>Asset ID</b>: <span [innerHtml]="data.AssetID"></span>
         </div>
         <div *ngIf="data?.UID">
             <b>UID</b>: <span [innerHtml]="data.UID"></span>
         </div>
         <div *ngIf="data?.WorkflowTypeUID">
-            <b>Workflow Type UID</b>: <span [innerHtml]="data.WorkflowTypeUID"></span>
+            <b i18n>Workflow Type UID</b>: <span [innerHtml]="data.WorkflowTypeUID"></span>
         </div>
         <div *ngIf="data?.WorkflowVersionUID">
-            <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
+            <b i18n>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
         </div>
         <div *ngFor="let field of data?.FieldValues" [ngStyle]="{ display: field.Type == 'Color' ? 'inline-flex' : 'block' }">
             <ng-container *ngIf="field.Value">

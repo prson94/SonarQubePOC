@@ -39,44 +39,44 @@ export class ThemeDetailComponent implements OnChanges {
         header.active = true;
         header.rows = [];
         header.rows.push(
-            { title: 'Header logo image', value: this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault, type: "img", style: "logo" });
+            { title: $localize`Header logo image`, value: this.theme.headerLogoUri ?? this.brandingService.headerLogoDefault, type: "img", style: "logo" });
         header.rows.push(
-            { title: 'Browser logo icon', value: this.theme.iconUri ?? this.brandingService.iconDefault, type: "img", style: "icon" });
+            { title: $localize`Browser logo icon`, value: this.theme.iconUri ?? this.brandingService.iconDefault, type: "img", style: "icon" });
         header.rows.push(
-            { title: 'Background color', value: this.theme.navbarBackColor, type: "color" });
+            { title: $localize`Background color`, value: this.theme.navbarBackColor, type: "color" });
         header.rows.push(
-            { title: 'Background link color', value: this.theme.breadcrumbLinkColor, type: "color" });
+            { title: $localize`Background link color`, value: this.theme.breadcrumbLinkColor, type: "color" });
         header.rows.push(
-            { title: 'Button color', value: this.theme.buttonBackColor, type: "color" }
+            { title: $localize`Button color`, value: this.theme.buttonBackColor, type: "color" }
         );
 
         var navSidebar = new Category('Navigation Sidebar');
         navSidebar.rows.push(
-            { title: 'Side menu color', value: this.theme.navbarBackColor, type: "color" }
+            { title: $localize`Side menu color`, value: this.theme.navbarBackColor, type: "color" }
         );
         navSidebar.rows.push(
-            { title: 'Side menu selection color', value: this.theme.navbarBackColorSelected, type: "color" }
+            { title: $localize`Side menu selection color`, value: this.theme.navbarBackColorSelected, type: "color" }
         );
 
-        var home = new Category('Home Page');
+        var home = new Category($localize`Home Page`);
         home.rows.push(
-            { title: 'Background Image', value: this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault, type: "img" });
+            { title: $localize`Background Image`, value: this.theme.homeBackgroundUri ?? this.brandingService.homeBackgroundDefault, type: "img" });
 
-        var general = new Category('General');
+        var general = new Category($localize`General`);
         general.rows.push(
-            { title: 'Primary Button Color', value: this.theme.primaryButtonBackColor, type: "color" }
+            { title: $localize`Primary Button Color`, value: this.theme.primaryButtonBackColor, type: "color" }
         );
         general.rows.push(
-            { title: 'Background color', value: this.theme.backColor, type: "color" }
+            { title: $localize`Background color`, value: this.theme.backColor, type: "color" }
         );
         general.rows.push(
-            { title: 'Tab/link color', value: this.theme.tabLinkColor, type: "color" }
+            { title: $localize`Tab/link color`, value: this.theme.tabLinkColor, type: "color" }
         );
         general.rows.push(
-            { title: 'Table Header Color', value: this.theme.tableHeaderBackColor, type: "color" }
+            { title: $localize`Table Header Color`, value: this.theme.tableHeaderBackColor, type: "color" }
         );
         general.rows.push(
-            { title: 'Table Row Background Color', value: this.theme.tableRowBackColor, type: "color" }
+            { title: $localize`Table Row Background Color`, value: this.theme.tableRowBackColor, type: "color" }
         );
         this.categories.push(header);
         this.categories.push(navSidebar);
@@ -85,7 +85,7 @@ export class ThemeDetailComponent implements OnChanges {
 
         let cssCat: Category;
         if (this.hasCustomCss) {
-            cssCat = new Category('CSS Customization');
+            cssCat = new Category($localize`CSS Customization`);
             cssCat.rows.push(
                 { title: '', value: this.theme.customCss, type: "code" });
 

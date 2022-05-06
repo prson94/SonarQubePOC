@@ -42,9 +42,11 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     semanticEffectiveDate: Date;
 
     menuItems: any[] = [
-        { title: "Open" },
-        { title: "Open in New Tab" },
+        { title: $localize`Open` },
+        { title: $localize`Open in New Tab` },
     ];
+
+    exportTooltip: string = '';
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -81,13 +83,14 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         private featureFlagService: FeatureFlagsService,
     ) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
+        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
     }
 
     ngOnInit() {
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
         this.filterFieldsSubject.complete();
-        
+
         this.getData();
     }
 
@@ -110,7 +113,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
                 this.assetCountUpdated.emit({ assetCount: this.assetsTotal });
                 this.isLoading = false;
             });
-        }       
+        }
     }
 
     advancedFiltersChanged($event: Filters) {
@@ -153,9 +156,9 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     clickMenuItem(event: any, item: SemanticTypeAsset) {
         let key = event.value.toLowerCase();
 
-        if (key === 'open') {
+        if (key === $localize`Open`.toLowerCase()) {
             this.selectSemanticTypeAsset(item);
-        } else if (key === 'open in new tab') {
+        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
             this.selectSemanticTypeAsset(item, true);
         }
     }

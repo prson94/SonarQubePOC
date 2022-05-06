@@ -5,14 +5,14 @@ import { CountObject } from '../../models/resource.model';
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-resource-responsibility-tile',  
+    selector: 'd3s-resource-responsibility-tile',
     template: `
                 <header *ngIf="isMe">
-                    Items You Own
+                    <ng-container i18n>Items You Own</ng-container>
                     <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" [(filterMode)]="showFilter"></d3s-tile-actions> 
                 </header>
                 <header *ngIf="!isMe">
-                    Items {{resource?.FirstName}} Owns
+                    <ng-container i18n>Items {{resource?.FirstName}} Owns</ng-container>
                     <d3s-tile-actions [hasExport]="true" (exportClick)="export()" hasFilterMode="true" [(filterMode)]="showFilter"></d3s-tile-actions> 
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      
@@ -52,12 +52,12 @@ export class ResourceResponsibilityComponent implements OnChanges {
     showFilter: boolean = true;
 
     constructor(private resourcesService: ResourcesService) { }
-    
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['resourceId'] && this.resourceId > 0) this.resource = null;
         this.load();
     }
-    
+
     isSelected(item: any) {
         return (item == this.selected);
     }

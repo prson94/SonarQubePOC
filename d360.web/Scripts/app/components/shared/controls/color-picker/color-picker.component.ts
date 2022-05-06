@@ -44,8 +44,8 @@ export const COLORPICKER_VALUE_ACCESSOR: any = {
 export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit, OnChanges {
 
     @Input() colors: SelectItem[] = [];
-    @Input() placeholder: string = 'Optional';
-    @Input() filterplaceholder: string = 'Search colors';
+    @Input() placeholder: string = $localize`Optional`;
+    @Input() filterplaceholder: string = $localize`Search colors`;
     @Input() selectedColor: string;
     @Input() invalidOptions: string[] = [];
     @Input() disabled: boolean = false;

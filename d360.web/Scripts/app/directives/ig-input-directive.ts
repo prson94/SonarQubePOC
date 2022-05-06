@@ -27,9 +27,9 @@ export class InputDirective implements AfterViewInit, OnDestroy {
 
         if (!placeholder && placeholder != '') {
             if (this.required == null) {
-                this.el.nativeElement.setAttribute("placeholder", "Optional");
+                this.el.nativeElement.setAttribute("placeholder", $localize`Optional`);
             } else {
-                this.el.nativeElement.setAttribute("placeholder", "Value required");
+                this.el.nativeElement.setAttribute("placeholder", $localize`Value required`);
             }
         }
 

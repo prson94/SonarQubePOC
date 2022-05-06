@@ -1,5 +1,5 @@
 ﻿<header>
-    Help Menu
+    <ng-container i18n>Help Menu</ng-container>
     <d3s-tile-actions [hasAdd]="formMode == FormMode.Default"
                       (addClick)="add()"></d3s-tile-actions>
 </header>
@@ -14,8 +14,8 @@
                  [rows]="10">
             <ng-template pTemplate="header">
                 <tr>
-                    <th>Name</th>
-                    <th>Url</th>
+                    <th i18n>Name</th>
+                    <th i18n>Url</th>
                     <th style="width: 40px"></th>
                     <th style="width: 40px"></th>
                 </tr>
@@ -53,26 +53,26 @@
     <div *ngSwitchCase="FormMode.Adding">
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">Name</div>
-                <input type="text" placeholder="Value required" style="width: 98%" maxlength="250" #name />
+                <div class="FieldName" i18n>Name</div>
+                <input type="text" i18n-placeholder placeholder="Value required" style="width: 98%" maxlength="250" #name />
             </div>
         </div>
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">Url</div>
-                <input type="text" placeholder="Value required" style="width: 98%" maxlength="250" #url/>
+                <div class="FieldName" i18n>Url</div>
+                <input type="text" i18n-placeholder placeholder="Value required" style="width: 98%" maxlength="250" #url />
             </div>
         </div>
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">Description</div>
-                <input type="text" placeholder="Optional" style="width: 98%" maxlength="500" #description/>
+                <div class="FieldName" i18n>Description</div>
+                <input type="text" i18n-placeholder placeholder="Optional" style="width: 98%" maxlength="500" #description />
             </div>
         </div>
         <div class="row" style="padding-top:12px">
             <div class="col s12">
-                <button pButton type="button" label="Save" (click)="addNew(name.value,url.value,description.value)" [disabled]="!validAdd(name.value,url.value)"></button>
-                <button pButton type="button" label="Cancel" (click)="closeSave()"></button>
+                <button pButton type="button" i18n-label label="Save" (click)="addNew(name.value,url.value,description.value)" [disabled]="!validAdd(name.value,url.value)"></button>
+                <button pButton type="button" i18n-label label="Cancel" (click)="closeSave()"></button>
             </div>
         </div>
     </div>

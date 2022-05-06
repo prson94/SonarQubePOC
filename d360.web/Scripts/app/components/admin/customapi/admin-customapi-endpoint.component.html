@@ -1,5 +1,6 @@
 <div class="tile tile-detail">
-    <header *ngIf="!showEditor && !showDelete">Endpoints
+    <header *ngIf="!showEditor && !showDelete">
+        <ng-container i18n>Endpoints</ng-container>
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                           [(filterMode)]="showSimpleFilter"
                           [hasAdd]="true"
@@ -7,78 +8,84 @@
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <span *ngIf="!isLoading && !showDelete && !showEditor">
-                                <input (input)="dt.filterGlobal($event.target.value, 'contains')"
-                                       [hidden]="!showSimpleFilter"
-                                       class="grid-simple-filter"
-                                       pInputText
-                                       placeholder="Search..."
-                                       size="100"
-                                       type="text"/>
-                                <p-table #dt [(selection)]="selected"
-                                         [globalFilterFields]="['Name','UriPrefix','Description']"
-                                         [pageLinks]="3"
-                                         [paginator]="true"
-                                         [rows]="10"
-                                         [value]="endpoints"
-                                         selectionMode="single">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th [pSortableColumn]="'Name'">
-                                                Name
-                                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
-                                            </th>
-                                            <th [pSortableColumn]="'UriPrefix'">
-                                                Uri Segment
-                                                <d3s-sortIcon [field]="'UriPrefix'"></d3s-sortIcon>
-                                            </th>
-                                            <th>Description</th>
-                                            <th style="width: 40px"></th>
-                                            <th style="width: 40px"></th>
-                                        </tr>
-                                        <tr [hidden]="showSimpleFilter">
-                                            <th><d3s-column-filter [datatype]="'text'"
-                                                                   [field]="'Name'"></d3s-column-filter></th>
-                                            <th><d3s-column-filter [datatype]="'text'"
-                                                                   [field]="'UriPrefix'"></d3s-column-filter></th>
-                                            <th><d3s-column-filter [datatype]="'text'"
-                                                                   [field]="'Description'"></d3s-column-filter></th>
-                                            <th></th>
-                                            <th></th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template let-item
-                                                 pTemplate="body">
-                                        <tr (dblclick)="selected=item;showEditor=true"
-                                            [pSelectableRow]="item">
-                                            <td>
-                                                <a (click)="showEndpoint(item);">{{item.Name}}</a>
-                                            </td>
-                                            <td>{{item.UriPrefix}}</td>
-                                            <td>
-                                                <div [innerHtml]="item.Description"></div>
-                                            </td>
-                                            <td>
-                                                <div class="RowTools">
-                                                    <a (click)="selected=item;showEditor=true"
-                                                       style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="RowTools">
-                                                    <a (click)="selected=item;showDelete=true;"
-                                                       style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template *ngIf="dt.totalRecords"
-                                                 pTemplate="summary">
-                                        <d3s-grid-paging-info [first]="dt.first"
-                                                              [rows]="dt.rows"
-                                                              [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                                    </ng-template>
-                                </p-table>
-                            </span>
+        <input (input)="dt.filterGlobal($event.target.value, 'contains')"
+               [hidden]="!showSimpleFilter"
+               class="grid-simple-filter"
+               pInputText
+               placeholder="{{searchText}}"
+               size="100"
+               type="text" />
+        <p-table #dt [(selection)]="selected"
+                 [globalFilterFields]="['Name','UriPrefix','Description']"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="10"
+                 [value]="endpoints"
+                 selectionMode="single">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th [pSortableColumn]="'Name'">
+                        <ng-container i18n>Name</ng-container>
+                        <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                    </th>
+                    <th [pSortableColumn]="'UriPrefix'">
+                        <ng-container i18n>Uri Segment</ng-container>
+                        <d3s-sortIcon [field]="'UriPrefix'"></d3s-sortIcon>
+                    </th>
+                    <th><ng-container i18n>Description</ng-container></th>
+                    <th style="width: 40px"></th>
+                    <th style="width: 40px"></th>
+                </tr>
+                <tr [hidden]="showSimpleFilter">
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Name'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'UriPrefix'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Description'"></d3s-column-filter>
+                    </th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </ng-template>
+            <ng-template let-item
+                         pTemplate="body">
+                <tr (dblclick)="selected=item;showEditor=true"
+                    [pSelectableRow]="item">
+                    <td>
+                        <a (click)="showEndpoint(item);">{{item.Name}}</a>
+                    </td>
+                    <td>{{item.UriPrefix}}</td>
+                    <td>
+                        <div [innerHtml]="item.Description"></div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selected=item;showEditor=true"
+                               style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="RowTools">
+                            <a (click)="selected=item;showDelete=true;"
+                               style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template *ngIf="dt.totalRecords"
+                         pTemplate="summary">
+                <d3s-grid-paging-info [first]="dt.first"
+                                      [rows]="dt.rows"
+                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+            </ng-template>
+        </p-table>
+    </span>
     <d3s-dynamic-editor (closeClick)="showEditor=false"
                         (saveClick)="saveEndpoint($event)"
                         *ngIf="showEditor"
@@ -92,5 +99,5 @@
                      [callback]="theDeleteCallback"
                      [itemId]="selected?.ID"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the end point [' + [selected?.Name] + ']?'"></d3s-delete-form>
+                     [prompt]="deleteModalTitle"></d3s-delete-form>
 </div>

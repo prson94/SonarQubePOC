@@ -8,12 +8,13 @@ import {OrganizationsService} from '../../../services/organizations.service';
 import {BaseComponent} from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-organization-contract-history',
     providers: [OrganizationsService],
     template: `
-        <header>Contract History for {{ objectName }}
+        <header><ng-container i18n>Contract History for {{ objectName }}</ng-container>
             <d3s-tile-actions [hasFilterMode]="true"
                               [(filterMode)]="showSimpleFilter"
                               [hasClose]="true"
@@ -26,7 +27,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                    pInputText
                    size="100"
                    (input)="dt.filterGlobal($event.target.value, 'contains')"
-                   placeholder="Search..."
+                   placeholder="searchText"
                    class="grid-simple-filter">
             <p-table #dt
                      [value]="contracts"
@@ -41,19 +42,19 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'ResourceName'">
-                            Resource Name
+                            <ng-container i18n>Resource Name</ng-container>
                             <d3s-sortIcon [field]="'ResourceName'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'ContractName'">
-                            Contract Name
+                            <ng-container i18n>Contract Name</ng-container>
                             <d3s-sortIcon [field]="'ContractName'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'Accepted'">
-                            Accepted
+                            <ng-container i18n>Accepted</ng-container>
                             <d3s-sortIcon [field]="'Accepted'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AcceptedOn'">
-                            Accepted On
+                            <ng-container i18n>Accepted On</ng-container>
                             <d3s-sortIcon [field]="'AcceptedOn'"></d3s-sortIcon>
                         </th>
                     </tr>
@@ -113,6 +114,8 @@ export class AdminOrganizationContractHistoryComponent extends BaseComponent imp
     error: any;
     isLoading = false;
     contracts: ContractAcceptanceDetail[] = [];
+
+    searchText = $localize`Search...`;
 
     constructor(
         private route: ActivatedRoute,

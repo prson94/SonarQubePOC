@@ -1,10 +1,10 @@
 ﻿<div class="row">
     <div class="col s12">
         <div class="tile tile-detail">
-            <header>{{model?.StepName}} Reassignment</header>
+            <header i18n>{{model?.StepName}} Reassignment</header>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col s6 m10 l12">
-                    <div>
+                    <div i18n>
                         Please choose a user:
                     </div>
                     <d3s-resource-multiselect-grid [multiple]="false"
@@ -19,17 +19,17 @@
             <div class="row" style="margin-bottom: 5px">
                 <div *ngIf="model.IsClearOtherAssignmentsAllowed" class="col s6 m10 l12">
                     <p-checkbox [(ngModel)]="model.ClearOtherAssignments" binary="true"></p-checkbox>
-                    <span>Clear other assignments for the selected form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span> (leave unchecked to only reassign this user's form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span>)</span>
+                    <span i18n>Clear other assignments for the selected form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span> (leave unchecked to only reassign this user's form<span *ngIf="model?.ItemStepIDs?.length > 1">s</span>)</span>
                 </div>
                 <div class="col s6 m10 l12">
                     <p-checkbox [(ngModel)]="dontSendFormEmails" binary="true"></p-checkbox>
-                    <span>Do not send form emails (leave unchecked to send out {{model?.ItemStepIDs?.length}} notification email{{model?.ItemStepIDs?.length > 1 ? 's' : ''}} to this user)</span>
-            </div>
+                    <span i18n>Do not send form emails (leave unchecked to send out {{model?.ItemStepIDs?.length}} notification email{{model?.ItemStepIDs?.length > 1 ? 's' : ''}} to this user)</span>
+                </div>
             </div>
             <div class="row" style="margin-bottom: 5px">
                 <div class="col s6 m10 l12">
                     <div *ngIf="model?.NewAssigneeResourceID > -1">
-                        <div class="col s6 m10 l12">
+                        <div class="col s6 m10 l12" i18n>
                             {{model?.NewAssigneeResourceName}} will replace {{model?.OriginalAssigneeResourceName}} responsible for responding to the {{model?.ItemStepIDs?.length}} selected forms.
                         </div>
                     </div>
@@ -38,8 +38,8 @@
             <div class="row">
                 <div class="col s6 m10 l12">
                     <button *ngIf="isLoading" pButton type="button" icon="fa fa-spin fa-spinner" style="width: 150px;" [disabled]="true"></button>
-                    <button *ngIf="!isLoading" pButton type="submit" (click)="save()" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
-                    <button pButton type="button" (click)="onClose.emit()" label="Close" style="width: 150px;"></button>
+                    <button *ngIf="!isLoading" i18n-label pButton type="submit" (click)="save()" label="Submit" style="width: 150px;" [disabled]="!valid()"></button>
+                    <button pButton type="button" i18n-label (click)="onClose.emit()" label="Close" style="width: 150px;"></button>
                 </div>
             </div>
         </div>

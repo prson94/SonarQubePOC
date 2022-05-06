@@ -5,14 +5,14 @@
                 <div class="diagram-top-header">
                     <div class="flex-row">
                         <div class="title">
-                            Hierarchy
+                            <ng-container i18n>Hierarchy</ng-container>
                             <span *ngIf="isLoading"
                                   id="LoadingProgress"
-                                  style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+                                  style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i><ng-container i18n>Loading</ng-container>...</span>
                         </div>
                         <div class="flex-grow"></div>
                         <div class="button-wrapper">
-                            <button igButton icon="fa-refresh" (click)="populateDiagram()" tooltip="Refresh"></button>
+                            <button igButton icon="fa-refresh" (click)="populateDiagram()" i18n-tooltip tooltip="Refresh"></button>
                         </div>
                     </div>
                 </div>

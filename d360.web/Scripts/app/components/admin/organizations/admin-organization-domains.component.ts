@@ -1,18 +1,19 @@
-﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 
-import {Organization, OrganizationDomain} from '../../../models/organization.model';
+import { Organization, OrganizationDomain } from '../../../models/organization.model';
 
-import {OrganizationsService} from '../../../services/organizations.service';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-organization-domains',
     providers: [OrganizationsService],
     template: `
-        <header *ngIf="!showEditor && !showDelete">Domains for this organization
+        <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Domains for this organization</ng-container>
             <d3s-tile-actions [hasAdd]="true"
                               (addClick)="add()"
                               [hasFilterMode]="true"
@@ -25,7 +26,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                            pInputText
                            size="100"
                            (input)="dt.filterGlobal($event.target.value, 'contains')"
-                           placeholder="Search..."
+                           placeholder="{{searchText}}"
                            class="grid-simple-filter">
                     <p-table #dt
                              [value]="domains"
@@ -40,7 +41,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Domain'">
-                                    Domain
+                                    <ng-container i18n>Domain</ng-container>
                                     <d3s-sortIcon [field]="'Domain'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 40px"></th>
@@ -83,7 +84,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <d3s-dynamic-editor *ngIf="showEditor"
                             [objectID]="organization?.ID"
                             [objectType]="'OrganizationDomain'"
-                            [title]="'Organization Domain'"
+                            [title]="editorTitle"
                             [rowID]="'ID'"
                             [selection]="selected"
                             (saveClick)="save($event)"
@@ -93,7 +94,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                              [callback]="theDeleteCallback"
                              [itemId]="selected?.ID"
                              [method]="'callback'"
-                             [prompt]="'Are you sure you want to delete the domain [' + selected?.Domain + ']?'"
+                             [prompt]="deleteText"
                              (onCancel)="showDelete=false;"
             ></d3s-delete-form>
         </div>
@@ -113,6 +114,9 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
     selected: OrganizationDomain;
 
     theDeleteCallback: Function;
+
+    searchText = $localize`Search...`;
+    editorTitle = $localize`Organization Domain`;
 
     constructor(
         private organizationsService: OrganizationsService,
@@ -184,6 +188,10 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
                     this.getDomains();
                 }
             )
-        ;
+            ;
+    }
+
+    get deleteText(): string {
+        return $localize`Are you sure you want to delete the domain [${this.selected?.Domain}]?`;
     }
 }

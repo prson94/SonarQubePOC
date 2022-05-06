@@ -9,6 +9,7 @@ import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from "../../../services/settings.service";
+import '@angular/localize/init';
 
 @Component({
     selector: "admin-governance",
@@ -26,6 +27,9 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     theDeleteCallback: Function;
 
+    searchText = $localize`Search...`;
+    deletePromptText = $localize`Are you sure you want to delete this responsibility type?`;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         private responsibilityTypeService: ResponsibilityTypeService,
@@ -36,7 +40,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Responsibilities;
         this.adminHeading = StringConstants.SubArea_Security;
-        this.tabTitle = "Responsibility Types";
+        this.tabTitle = $localize`Responsibility Types`;
         this.theDeleteCallback = this.doDelete.bind(this);
     }
 
@@ -74,7 +78,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.selectedRow = this.responsibilityTypeItems.find((i) => i.uid === uid);
         this.selectedItemChange();
     }
-     
+
     delete(uid: string): void {
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.uid === uid);
@@ -97,10 +101,10 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     doDelete() {
         this.responsibilityTypeService.deleteResponsibilityType(this.selectedRow.uid, true).subscribe((res) => {
             if (res && res.Success) {
-                this.messagesService.showInfoMessage("Success", "Item deleted successfully");
+                this.messagesService.showInfoMessage($localize`Success`, $localize`Item deleted successfully`);
             }
             else {
-                this.messagesService.showError("Error", "An error occurred");
+                this.messagesService.showError($localize`Error`, $localize`An error occurred`);
             }
             this.formMode = FormMode.Default;
             this.selectedRow = null;

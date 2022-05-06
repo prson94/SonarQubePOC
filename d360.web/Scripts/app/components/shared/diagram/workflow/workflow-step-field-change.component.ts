@@ -47,6 +47,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     private valueType = 'manual';
     private allowMultiple = false;
 
+    get buttonLabel(): string { return this.formMode == FormMode.Adding ? $localize`Add` : `Update`; }
 
     constructor(
         protected settingsService: CompanySettingsService,
@@ -111,10 +112,10 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
                             }
                             this.formFields.push(actionFormField);
                         }, this);
-                    }            
+                    }
                 }),
                 map(() => this.isLoading = false)
-            ).subscribe();     
+            ).subscribe();
 
 
     }
@@ -389,7 +390,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
 
         if (this.valueType == "actionForm") {
             this.selectedFormFieldId = this.selectedField['@FormFieldId'];
-        }       
+        }
 
         this.select(this.selectedField['@FieldId'], false);
         this.formMode = FormMode.Editing;
@@ -415,7 +416,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     }
 
     cancel() {
-        
+
         let field = _.cloneDeep(this.selectedField);
         if (field && field['@FieldId']) {
             let fieldTypeIndex = this.fields.findIndex(f => f.ID.toString() == field['@FieldId'].toString());
@@ -563,15 +564,15 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
     getTableFieldName(item: any): string {
         if (this.issueObject == "") return item['@FieldName'];
         if (typeof item['@ObjectType'] == 'undefined' || item['@ObjectType'] == 'Issue')
-            return "Action Field::" + item['@FieldName'];
-        return "Asset Field::" + item['@FieldName'];
+            return $localize`Action Field` + "::" + item['@FieldName'];
+        return $localize`Asset Field` + "::" + item['@FieldName'];
     }
 
     getFieldNameForDropDown(f: any): string {
         if (this.issueObject == "") return f.FriendlyName;
         if (f.Object == "IssueType")
-            return "Action Field::" + f.FriendlyName;
-        return "Asset Field::" + f.FriendlyName;
+            return $localize`Action Field` + "::" + f.FriendlyName;
+        return $localize`Asset Field` + "::" + f.FriendlyName;
     }
 
     get availableActionFields(): any[] {

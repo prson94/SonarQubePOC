@@ -8,7 +8,7 @@ import { ToolTipService } from '../../../services/tooltip.service';
         <div class="detail-panel" [hidden]="isLoading">
             <div>
                 <span class="FieldName">
-                    Action Type:&nbsp;
+                    <ng-container i18n>Action Type</ng-container>:&nbsp;
                 </span>
                 <span>
                     {{data?.TypeName}}

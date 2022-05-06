@@ -55,7 +55,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnDestroy
 
     getRuleResultsSub: Subscription;
 
-    ruleResultsExportTooltip: string = "Export to Excel";
+    ruleResultsExportTooltip: string = $localize`Export to Excel`;
     ruleResultsExportEnabled: boolean = true;
     ruleResultsExportLimit: number = 0;
 

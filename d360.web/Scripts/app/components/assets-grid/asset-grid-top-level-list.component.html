@@ -2,27 +2,28 @@
     <div class="col s12">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="tile tile-detail"
-            *ngIf="!isLoading">
+             *ngIf="!isLoading">
             <header></header>
             <input type="text"
-                [(ngModel)]="searchValue"
-                placeholder="Search"
-                style="width: 100%;margin-bottom:10px;">
+                   [(ngModel)]="searchValue"
+                   placeholder="Search"
+                   i18n-placeholder
+                   style="width: 100%;margin-bottom:10px;">
             <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'name'"
-                selectionMode="single"
-                [(selection)]="selectedRow"                
-                [style]="{ 'width': '100%' }">
+                         selectionMode="single"
+                         [(selection)]="selectedRow"
+                         [style]="{ 'width': '100%' }">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 20%">Name</th>
-                        <th style="width: 70%">Description</th>
-                        <th style="width: 5%">Count</th>
+                        <th style="width: 20%" i18n>Name</th>
+                        <th style="width: 70%" i18n>Description</th>
+                        <th style="width: 5%" i18n>Count</th>
                         <th style="width: 5%"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body"
-                    let-rowNode
-                    let-item="rowData">
+                             let-rowNode
+                             let-item="rowData">
                     <tr [ttSelectableRow]="rowNode">
                         <td style="vertical-align: top">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>

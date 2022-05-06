@@ -4,18 +4,16 @@
         <div class="col s12">
             <div class="row">
                 <div class="col s6">
-                    <div class="FieldName">
-                        Name
-                    </div>
+                    <div class="FieldName" i18n>Name</div>
                     <div>
                         <input igInput type="text" [(ngModel)]="item.Name" [ngClass]="{'invalid': item.Name?.length > 250}" style="width: 95%" name="name" required />
-                        <div *ngIf="item.Name?.length > 250" class="ig-text-required">
+                        <div *ngIf="item.Name?.length > 250" class="ig-text-required" i18n>
                             Name must be less than 250 characters.
                         </div>
                     </div>
                 </div>
                 <div class="col s6">
-                    <div class="FieldName">
+                    <div class="FieldName" i18n>
                         Responsibility Allocated To
                     </div>
                     <div>
@@ -25,11 +23,11 @@
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="FieldName">
+                    <div class="FieldName" i18n>
                         Description
                     </div>                    
                     <p-editor [(ngModel)]="item.Description" name="description" [ngClass]="{'invalid': item.Description?.length > 4000}" [style]="{ 'height':'200px' }"></p-editor>
-                    <div *ngIf="item.Description?.length > 4000" class="ig-text-required">
+                    <div *ngIf="item.Description?.length > 4000" class="ig-text-required" i18n>
                         Description must be less than 4000 characters in length.
                         <br/>Note: Formatting effects character count.
                     </div>
@@ -38,7 +36,8 @@
             <div class="row">
                 <div class="col s12">
                     <div style="padding-top:10px;">
-                        <button pButton label="Save" type="submit" [disabled]="!isValid()"></button><button pButton label="Cancel" type="button" (click)="cancel()"></button>
+                        <button pButton label="{{saveLabel}}" type="submit" [disabled]="!isValid()"></button>
+                        <button pButton label="{{cancelLabel}}" type="button" (click)="cancel()"></button>
                     </div>
                 </div>
             </div>

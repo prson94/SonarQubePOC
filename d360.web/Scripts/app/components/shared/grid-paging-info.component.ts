@@ -7,7 +7,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 @Component({
     selector: 'd3s-grid-paging-info',
     template: `   
-        <ng-container *ngIf="totalRecords">
+        <ng-container *ngIf="totalRecords" i18n>
             Rows {{startValue}} - {{endValue}} of {{totalRecords?.toLocaleString()}} Items
         </ng-container>
         `,

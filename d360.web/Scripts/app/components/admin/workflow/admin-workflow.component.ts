@@ -8,6 +8,7 @@ import { Title } from '@angular/platform-browser';
 import { WorkflowDiagramModel } from '../../../models/workflow.model';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 
 @Component({
@@ -36,7 +37,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     ngOnInit() {
         this.areaName = StringConstants.Section_Workflows;
         this.clearSidebar();
-        this.titleService.setTitle('Workflows');
+        this.titleService.setTitle($localize`Workflows`);
         this.setCommonItems();
     }
 

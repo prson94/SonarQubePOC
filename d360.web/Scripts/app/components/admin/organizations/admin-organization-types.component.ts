@@ -1,17 +1,18 @@
-﻿import {Component, Input, OnInit, SimpleChange, Output, EventEmitter} from '@angular/core';
-import {OrganizationType} from '../../../models/organization.model';
-import {OrganizationsService} from '../../../services/organizations.service';
-import {BaseComponent} from '../../shared/base.component';
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+﻿import { Component, Input, OnInit, SimpleChange, Output, EventEmitter } from '@angular/core';
+import { OrganizationType } from '../../../models/organization.model';
+import { OrganizationsService } from '../../../services/organizations.service';
+import { BaseComponent } from '../../shared/base.component';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-organization-types',
     providers: [OrganizationsService],
     template: `
-        <header *ngIf="!showEditor && !showDelete">Organization Types
+        <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Organization Types</ng-container>
             <d3s-tile-actions [hasAdd]="true"
                               (addClick)="add()"
                               [hasFilterMode]="true"
@@ -24,7 +25,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                            pInputText
                            size="100"
                            (input)="dt.filterGlobal($event.target.value, 'contains')"
-                           placeholder="Search..."
+                           placeholder="{{searchText}}"
                            class="grid-simple-filter">
                     <p-table #dt
                              [value]="organizationTypes"
@@ -40,12 +41,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'OrganizationCount'"
                                     style="width: max-150px">
-                                    Organization Count
+                                    <ng-container i18n>Organization Count</ng-container>
                                     <d3s-sortIcon [field]="'OrganizationCount'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 40px"></th>
@@ -92,14 +93,14 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <d3s-asset-type-editor *ngIf="showEditor"
                                [assetTypeClass]="assetTypeClass"
                                [id]="type?.AssetTypeID"
-                               [title]="(type?'Edit':'Add') + ' Organization Type'"
+                               [title]="editorTitle"
                                (onCancel)="cancel()"
                                (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         <d3s-delete-form *ngIf="showDelete"
                          [callback]="theDeleteCallback"
                          [itemId]="type?.ID"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to delete the organization type [' + [type?.Name] + ']?'"
+                         [prompt]="deletePromptText"
                          (onCancel)="showDelete=false;"
         ></d3s-delete-form>
     `
@@ -119,6 +120,19 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
     organizationTypes: OrganizationType[] = [];
 
     theDeleteCallback: Function;
+
+    searchText = $localize`Search...`;
+
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the organization type [${this.type?.Name}]?`;
+    }
+
+    get editorTitle(): string {
+        if (this.type) {
+            return $localize`Edit Organization Type`;
+        }
+        return $localize`Add Organization Type`;
+    }
 
     constructor(
         private organizationsService: OrganizationsService,

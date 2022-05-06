@@ -1,14 +1,14 @@
-﻿import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange} from '@angular/core';
-import {SelectItem} from 'primeng/api';
-import {RelationshipsService} from '../../services/relationships.service';
-import {    
+﻿import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange } from '@angular/core';
+import { SelectItem } from 'primeng/api';
+import { RelationshipsService } from '../../services/relationships.service';
+import {
     GridFilterColumn,
     GridFilterExpression,
     GridFilterFieldType,
     GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
-import {ObjectRelationship} from '../../models/relationship.model';
-import {FilterExpression, FilterField, FilterFieldType} from '../../models/filter-field.model';
+import { ObjectRelationship } from '../../models/relationship.model';
+import { FilterExpression, FilterField, FilterFieldType } from '../../models/filter-field.model';
 
 @Component({
     selector: 'd3s-rule-column-filter',
@@ -35,10 +35,10 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
     @Input() relationshipFilter: GridRelationshipFilterExpression = null;
     @Output() relationshipFilterChange = new EventEmitter();
-        
+
     relationshipTypes: ObjectRelationship[];
     relationshipValues: SelectItem[] = [];
-    connectors: SelectItem[] = [{label: "And", value: "All"}, {label: "Or", value: "Any"}];
+    connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
     filterFieldType = FilterFieldType;
 
     internalFilters: FilterExpression[] = [];
@@ -46,12 +46,12 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
     selectedFilter: any;
 
     constructor(
-        private relationshipsService: RelationshipsService        
+        private relationshipsService: RelationshipsService
     ) {
     }
 
     ngOnInit() {
-        
+
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -62,7 +62,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
             for (let field of this.fields) {
                 this.availableFilters.push({
-                    Data: field, Name: `Field - ${field.text}`, Type: FilterFieldType.Field
+                    Data: field, Name: $localize`Field` + ` - ${field.text}`, Type: FilterFieldType.Field
                 });
             }
 
@@ -96,7 +96,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
         for (let internalFilter of this.internalFilters) {
             if (internalFilter.Type == FilterFieldType.Field) {
-                this.filters.push(internalFilter.Data);            
+                this.filters.push(internalFilter.Data);
             } else if (internalFilter.Type == FilterFieldType.Relationship) {
                 this.relationshipFilter = internalFilter.Data;
             }
@@ -110,7 +110,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
         this.filterChanged.emit({
             filter: this.filters,
-            relationships: this.relationshipFilter        
+            relationships: this.relationshipFilter
         });
     }
 
@@ -122,9 +122,9 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
         this.relationshipFilter = null;
         this.relationshipFilterChange.emit(this.relationshipFilter);
-                
 
-        this.filterChanged.emit({filter: this.filters, relationshipFilter: this.relationshipFilter});
+
+        this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilter });
     }
 
     private changeFilterField(target, filter) {
@@ -143,7 +143,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
             //determine the field type
             if (target.Data.hiddenfield) {
-                filter.Data.fieldtype = GridFilterFieldType.Hidden;            
+                filter.Data.fieldtype = GridFilterFieldType.Hidden;
             } else {
                 filter.Data.fieldtype = GridFilterFieldType.Normal;
             }
@@ -160,7 +160,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
         return this.internalFilters.filter(x => x.Type == FilterFieldType.Relationship).length > 1;
     }
 
-    
+
     private addFilter() {
         this.internalFilters.push(new FilterExpression());
     }
@@ -178,7 +178,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
         for (let relationship of relTypes) {
             this.availableFilters.push({
                 Data: relationship,
-                Name: `Relationship - ${relationship.TargetName}`,
+                Name: $localize`Relationship` + ` - ${relationship.TargetName}`,
                 Type: FilterFieldType.Relationship
             });
         }
@@ -197,17 +197,17 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
             });
         }
     }
-        
+
     private loadRelationshipValues(relationshipType: ObjectRelationship) {
         this.relationshipValues.splice(0, this.relationshipValues.length);
 
         this.relationshipsService.getRelatedObjects(relationshipType.TargetType, relationshipType.TargetTypeID, relationshipType.IntersectTypeID)
             .subscribe(
-            result => {
-                for (let item of result) {
-                    this.relationshipValues.push({label: item.Name, value: item.ID});
-                }
-            });
+                result => {
+                    for (let item of result) {
+                        this.relationshipValues.push({ label: item.Name, value: item.ID });
+                    }
+                });
     }
 
     private addRelationshipFilter() {

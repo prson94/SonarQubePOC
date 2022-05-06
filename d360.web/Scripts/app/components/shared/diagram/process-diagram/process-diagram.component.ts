@@ -110,13 +110,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('overview') overviewControlRef: AssetBrowserOverviewComponent;
     @ViewChild('palleteTooltip', { static: true }) palleteTooltip: ElementRef;
 
+    get importButtonText(): string {
+        return this.isReplace ? $localize`Replace` : $localize`Import`;
+    }
+
     public popupMenuItems = [
         {
-            title: 'Export to Excel',
+            title: $localize`Export to Excel`,
             callback: () => this.doControlledAction('export')
         },
         {
-            title: 'Replace Diagram',
+            title: $localize`Replace Diagram`,
             callback: () => this.doControlledAction('open-diagram-replace'),
             disabled: true
         }
@@ -364,7 +368,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     get deleteModelTitle(): string {
-        return this.getSelectedNodeCount() > 1 ? 'Delete Selected Items' : 'Delete Selected Item';
+        return this.getSelectedNodeCount() > 1 ? $localize`Delete Selected Items` : $localize`Delete Selected Item`;
     }
 
     onDeleteClick() {
@@ -1041,7 +1045,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.isSavingChangesModalOpened = true;
             switch (actionName) {
                 case 'switchModes':
-                    this.actionMessage = 'Would you like to save your changes to the diagram before leaving the Diagram Designer?';
+                    this.actionMessage = $localize`Would you like to save your changes to the diagram before leaving the Diagram Designer?`;
                     this.actionAfterSaved = () => {
                         this.switchModes();
                         this.actionAfterSaved = null;
@@ -1049,7 +1053,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.showDiscardChanges = true;
                     break;
                 case 'open-related-assets':
-                    this.actionMessage = 'Please save your changes to the diagram before opening Relationships.';
+                    this.actionMessage = $localize`Please save your changes to the diagram before opening Relationships.`;
                     this.showDiscardChanges = false;
                     this.actionAfterSaved = () => {
                         this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
@@ -1057,7 +1061,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                     break;
                 case 'export':
-                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
+                    this.actionMessage = $localize`Please save your changes to the diagram before exporting process diagram.`;
 
                     this.actionAfterSaved = () => {
                         this.downloadProcessDiagram();
@@ -1087,7 +1091,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                     break;
                 case 'export':
-                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
+                    this.actionMessage = $localize`Please save your changes to the diagram before exporting process diagram.`;
                     this.downloadProcessDiagram();
                     break;
                 case 'open-diagram-import':
@@ -1159,7 +1163,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 else {
                     this.hasNoImportAssets = true;
 
-                    this.popupMenuItems[1]['tooltip'] = `There are currently no other assets of type ${this.assetDetail?.TypeName} to import a diagram from.`;
+                    this.popupMenuItems[1]['tooltip'] = $localize`There are currently no other assets of type ${this.assetDetail?.TypeName} to import a diagram from.`;
                 }
                 this.cdRef.detectChanges();
             })

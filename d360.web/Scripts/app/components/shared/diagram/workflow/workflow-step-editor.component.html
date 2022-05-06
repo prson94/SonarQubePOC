@@ -1,6 +1,6 @@
 ﻿<div class="row" style="padding-bottom: 16px;">
     <div class="col s12">
-        <div class="FieldName">Name</div>
+        <div class="FieldName" i18n>Name</div>
         <div>
             <input type="text" style="width: 95%" [ngModel]="step.name" (ngModelChange)="changeName($event)" />
         </div>
@@ -8,7 +8,7 @@
     <div [ngSwitch]="step.activityType">
         <div class="row" *ngSwitchCase="WorkflowActivityType.EmailNotification">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Recipient Type
                 </div>
                 <div>
@@ -19,7 +19,7 @@
                 </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'SpecificUser'" class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Recipient
                 </div>
                 <div>
@@ -33,11 +33,11 @@
                                                       [objectId]="objectId">
                 </d3s-workflow-responsibility-selector>
                 <div>
-                    <p-checkbox igCheckbox binary="true" label="Send to default users when no responsibility exists" [ngModel]="step.settings.SendToDefaultUsers" (ngModelChange)="step.settings.SendToDefaultUsers = $event; stepChange.emit(step)"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Send to default users when no responsibility exists" [ngModel]="step.settings.SendToDefaultUsers" (ngModelChange)="step.settings.SendToDefaultUsers = $event; stepChange.emit(step)"></p-checkbox>
                 </div>
             </div>
             <div *ngIf="step.settings.MessageRecipientType == 'Group'" class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Recipient Group
                 </div>
                 <div>
@@ -48,7 +48,7 @@
                 </div>
             </div>
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Subject
                 </div>
                 <div>
@@ -56,7 +56,7 @@
                 </div>
             </div>
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Body
                 </div>
                 <div style="width: 95%">
@@ -75,13 +75,13 @@
             </div>
             <div class="col s12" style="padding-top:8px;">
                 <div>
-                    <p-checkbox igCheckbox binary="true" label="Include previous form responses" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Include previous form responses" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)"></p-checkbox>
                 </div>
             </div>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.StatusChange">
             <div class="col s12">
-                <div class="FieldName">Status</div>
+                <div class="FieldName" i18n>Status</div>
                 <div>
                     <select [ngModel]="step.settings.Status" (ngModelChange)="step.settings.Status = $event; stepChange.emit(step)" style="width: 95%">
                         <option value=""></option>
@@ -104,7 +104,7 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.Procedure">
             <div class="col s12">
-                <div class="FieldName">Procedure</div>
+                <div class="FieldName" i18n>Procedure</div>
                 <div>
                     <select style="width: 95%" [ngModel]="step.settings.ProcedureID" (ngModelChange)="step.settings.ProcedureID = $event; stepChange.emit(step);">
                         <option></option>
@@ -149,7 +149,7 @@
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.RelationshipUpdate">
             <div class="col s12">
-                <div class="FieldName">Relationship Form Field</div>
+                <div class="FieldName" i18n>Relationship Form Field</div>
                 <div>
                     <select [ngModel]="formRelationship" (ngModelChange)="changeRelationship($event)" style="width:95%">
                         <option></option>
@@ -159,16 +159,16 @@
                     </select>
                 </div>
                 <div style="padding-top: 10px">
-                    <p-checkbox igCheckbox binary="true" label="Append relationships?" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Append relationships?" [ngModel]="step.settings.RelationshipUpdate.Relationship['@AppendValue']" (ngModelChange)="changeValueType($event, '@AppendValue');"></p-checkbox>
                 </div>
                 <div style="padding-top: 10px">
-                    <p-checkbox igCheckbox binary="true" label="Clear relationships?" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Clear relationships?" [ngModel]="step.settings.RelationshipUpdate.Relationship['@ClearValue']" (ngModelChange)="changeValueType($event, '@ClearValue');"></p-checkbox>
                 </div>
             </div>
         </div>
         <div class="row" *ngSwitchCase="WorkflowActivityType.StateChange">
             <div class="col s12">
-                <div class="FieldName">State</div>
+                <div class="FieldName" i18n>State</div>
                 <div>
                     <select [ngModel]="step.settings.State" (ngModelChange)="step.settings.State = $event; stepChange.emit(step)" style="width: 95%">
                         <option value=""></option>
@@ -187,6 +187,6 @@
         </ng-container>
     </div>
     <div *ngIf="step.hasMultipleInputs" class="col s12" style="padding-top: 8px">
-        <p-checkbox igCheckbox binary="true" label="Wait for all transitions to complete??" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)"></p-checkbox>
+        <p-checkbox igCheckbox binary="true" i18n-label label="Wait for all transitions to complete??" [ngModel]="step.settings.WaitForAllTransitions" (ngModelChange)="step.settings.WaitForAllTransitions = $event; stepChange.emit(step)"></p-checkbox>
     </div>
 </div>

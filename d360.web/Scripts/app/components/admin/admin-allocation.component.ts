@@ -12,10 +12,10 @@ import { BaseComponent } from '../shared/base.component';
                             <tr>
                                 <th style="width: 25px; padding-left: 2px; padding-right: 2px; text-align: center"></th>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
-                            </tr>
+                            </tr> 
                             <tr [hidden]="showSimpleFilter">
                                 <th></th>
                                 <th></th>

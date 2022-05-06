@@ -2,11 +2,12 @@
     <div #title class="title-bar search">
         <div class="title">
             <span class="d3s-icon asset-icon"><i class="fa fa-search"></i></span>
-            <h1>Search Results</h1>
+            <h1 i18n>Search Results</h1>
             <div class="titlebar-search">
                 <div class="field grow mr10">
                     <d3s-header-typeahead-search [additionalCssClasses]="'gov-search'"
-                                                 [autocompletePlaceholder]="'What are you looking for?'"
+                                                 i18n-autocompletePlaceholder
+                                                 autocompletePlaceholder="What are you looking for?"
                                                  [searchOptions]="searchTypes"
                                                  [defaultValue]="searchText"
                                                  [keepFilter]="true">
@@ -44,20 +45,20 @@
                 <div *ngIf="(searchStateService.connectionError | async)">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">
-                            <header>No Connection to Search Server.</header>
-                            <span style="padding-left:15px">Cannot connect to the search server at the moment. Please try again later.</span>
+                            <header i18n>No Connection to Search Server.</header>
+                            <span style="padding-left:15px" i18n>Cannot connect to the search server at the moment. Please try again later.</span>
                         </div>
                     </div>
                 </div>
                 <div *ngIf="!(searchStateService.loading | async) &&!(searchStateService.connectionError | async) && (searchStateService.resultCount | async) == 0">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">
-                            <header>Your search did not find any results.</header>
-                            <span style="padding-left:15px">Suggestions:</span>
+                            <header i18n>Your search did not find any results.</header>
+                            <span style="padding-left:15px" i18n>Suggestions:</span>
                             <ul>
-                                <li>Check your spelling</li>
-                                <li>Try broader search criteria</li>
-                                <li>Try a different keyword</li>
+                                <li i18n>Check your spelling</li>
+                                <li i18n>Try broader search criteria</li>
+                                <li i18n>Try a different keyword</li>
                             </ul>
                         </div>
                     </div>
@@ -107,28 +108,28 @@
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail' && selection.ObjectType !== 'Semantic Type'">
                         <ig-asset-detail #elseAssetDetail
-                         [objectUID]="selection.AssetUid"
-                         [objectType]="selection.ObjectType"
-                         [useAccordion]="true"
-                         [shouldBePadded]="false"
-                         [showHeader]="true"
-                         [showHeaderLine]="false"
-                         [spacerHeight]="'16px'"
-                         [tooltipAlign]="'left'"
-                         [isSidePanel]="true"
-                         [hasEditLink]="false"
-                         [hasAddRelationshipsPermissions]="false"
-                         [hasModifyRelationshipsPermissions]="false"
-                         [hasDeleteRelationshipsPermissions]="false"
-                         (onEditClick)="showEditor=true"></ig-asset-detail>
+                                         [objectUID]="selection.AssetUid"
+                                         [objectType]="selection.ObjectType"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="false"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [hasEditLink]="false"
+                                         [hasAddRelationshipsPermissions]="false"
+                                         [hasModifyRelationshipsPermissions]="false"
+                                         [hasDeleteRelationshipsPermissions]="false"
+                                         (onEditClick)="showEditor=true"></ig-asset-detail>
                     </ng-container>
                 </ng-container>
                 <ng-container *ngIf="secondarySidePanelOpen">
                     <div #semanticTile class="secondary-side-panel">
                         <div class="panel-header">
-                            <span class="header-label">Information</span>
+                            <span class="header-label" i18n>Information</span>
                             <div class="button-container">
-                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" i18n-tooltip tooltip="Close" class="close-button"></button>
                             </div>
                         </div>
                         <div class="details-container">
@@ -173,7 +174,7 @@
                       *ngIf="showEditor"
                       [objectID]="selection?.AssetUid"
                       [objectType]="selection?.ObjectType"
-                      [title]="selection ? 'Edit Asset' : 'Create New Asset'"
+                      [title]="assetEditorTitle"
                       [selection]="selection"
                       [objectTypeUid]="selection?.Data?.AssetTypeUid"
                       [assetTypePath]="''"

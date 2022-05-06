@@ -1,22 +1,24 @@
 <div class="row">
     <div class="col s12">
         <div class="tile tile-detail">
-            <header>Service: {{service?.Name}}</header>
+            <header>
+                <ng-container i18n>Service</ng-container>: {{service?.Name}}
+            </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!isLoading"
                  class="row">
                 <div class="col l6 s12">
                     <div class="row">
                         <div class="col l6 s12">
-                            <div class="FieldName">URI Segment</div>
+                            <div class="FieldName"><ng-container i18n>URI Segment</ng-container></div>
                             <div>{{service?.UriPrefix}}</div>
                         </div>
                         <div class="col l6 s12">
-                            <div class="FieldName"># Endpoints</div>
+                            <div class="FieldName"># <ng-container i18n>Endpoints</ng-container></div>
                             <div>{{numberOfEndpoints}}</div>
                         </div>
                         <div class="col s12">
-                            <div class="FieldName">Description</div>
+                            <div class="FieldName"><ng-container i18n>Description</ng-container></div>
                             <div [innerHtml]="service.Description"></div>
                         </div>
                     </div>

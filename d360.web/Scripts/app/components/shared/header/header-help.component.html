@@ -27,21 +27,21 @@
                     <img class="precisely-image" src="../../../../../Content/images/About-Govern.png" />
 
                     <ul>
-                        <li><b>Build Version:</b> {{environment.version}}</li>
-                        <li><b>Build Date:</b> {{environment.timeStamp | date:'short'}}</li>
-                        <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
-                        <li><a class="thirdPartyLicence" (click)="showThirdparty()">Third Party Licenses</a></li>
-                        <li><b>Usage information:</b> <br /></li>
+                        <li><b i18n>Build Version:</b> {{environment.version}}</li>
+                        <li><b i18n>Build Date:</b> {{environment.timeStamp | date:'short'}}</li>
+                        <li><b i18n>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
+                        <li><a class="thirdPartyLicence" (click)="showThirdparty()" i18n>Third Party Licenses</a></li>
+                        <li><b i18n>Usage information:</b> <br /></li>
                         <ul class="licence-info" *ngIf="licenceData">
-                            <li><strong>Asset count:</strong> {{numberWithCommas(licenceData.assets.count)}}</li>
-                            <li><strong>User count:</strong> {{numberWithCommas(licenceData.users.total)}}</li>
-                            <li><strong>Contributor count:</strong> {{numberWithCommas(licenceData.users.contributors)}}</li>
-                            <li><strong>Administrator count:</strong> {{numberWithCommas(licenceData.users.administrators)}}</li>
+                            <li><strong i18n>Asset count:</strong> {{numberWithCommas(licenceData.assets.count)}}</li>
+                            <li><strong i18n>User count:</strong> {{numberWithCommas(licenceData.users.total)}}</li>
+                            <li><strong i18n>Contributor count:</strong> {{numberWithCommas(licenceData.users.contributors)}}</li>
+                            <li><strong i18n>Administrator count:</strong> {{numberWithCommas(licenceData.users.administrators)}}</li>
                         </ul>
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     </ul>
                     <br />
-                    <p>Copyright 2014, {{environment.timeStamp | date:'yyyy'}} Precisely.</p>
+                    <p i18n>Copyright 2014, {{environment.timeStamp | date:'yyyy'}} Precisely.</p>
                 </div>
             </div>
         </div>

@@ -9,7 +9,7 @@ import * as _ from 'lodash';
     providers: [ResponsibilityTypeService, WorkflowService],
     template: `
          <ng-container *ngIf="objectType == 'IntersectType'">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Responsible Party
             </div>
             <div>
@@ -21,7 +21,7 @@ import * as _ from 'lodash';
             </div>
         </ng-container>
         <ng-container *ngIf="((step.settings.ResponsibilitySide != null && step.settings.ResponsibilitySide != '' && objectType == 'IntersectType') || objectType != 'IntersectType') && !isLoading">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Responsibility
             </div>
             <div *ngFor="let x of step.settings.ResponsibilityTypeID; let i = index; trackBy: trackRes">
@@ -34,7 +34,7 @@ import * as _ from 'lodash';
                 </div>
             </div>
             <div>
-                <a style="cursor: pointer;" (click)="addResponsibility()"><i class="fa fa-plus"></i> Add a backup responsibility</a>
+                <a style="cursor: pointer;" (click)="addResponsibility()"><i class="fa fa-plus"></i> <ng-container i18n>Add a backup responsibility</ng-container></a>
             </div>
         </ng-container>       
 `

@@ -18,6 +18,7 @@ import { tap } from 'rxjs/operators';
 import { UiAdvancedFiltering } from '../../../services/ui-advanced-filtering.service';
 import { SearchService } from '../../../services/search.service';
 import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -40,8 +41,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     advancedFilter: string = '';
     sort: any;
 
-    deletePopupTitle: string = 'Delete Tag';
-    editPopupTitle: string = 'Edit Tag';
+    deletePopupTitle: string = $localize`Delete Tag`;
+    editPopupTitle: string = $localize`Edit Tag`;
 
 
     public theDeleteCallback: Function;
@@ -53,29 +54,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'Value',
-            FriendlyName: 'Name',
+            FriendlyName: $localize`Name`,
             Type: new FieldType("Text"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'UseCount',
-            FriendlyName: 'Use Count',
+            FriendlyName: $localize`Use Count`,
             Type: new FieldType("Number"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
-            FriendlyName: 'Date Created',
+            FriendlyName: $localize`Date Created`,
             Type: new FieldType("Date"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedBy',
-            FriendlyName: 'Created By',
             Type: new FieldType("Lookup"),
+            FriendlyName: $localize`Created By`,
             Category: "",
             ValueLoader: this.getFilterValuesForCreatedBy.bind(this),
             RemovePopulatedOperator: true
@@ -188,8 +189,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
-        this.editPopupTitle = 'Edit Tag';
-
+        this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
@@ -262,7 +262,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     add() {
         this.selected = [];
-        this.editPopupTitle = 'Add Tag';
+        this.editPopupTitle = $localize`Add Tag`;
         this.showEditor = true;
 
     }
@@ -279,10 +279,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
+                    msg = $localize`${result.Value} succesfully created`;
                 }
                 else {
-                    msg = `${result.Value} succesfully updated`;
+                    msg = $localize`${result.Value} succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
@@ -320,7 +320,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     openDeleteModal() {
         window.setTimeout(() => {
-            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
+            this.deletePopupTitle = this.selected.length == 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
         }, 100)
 
@@ -336,7 +336,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 if (result) {
 
-                    this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
 
                     result.forEach(t => {
                         if (t.UseCount != 0)

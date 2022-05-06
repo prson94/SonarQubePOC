@@ -12,7 +12,7 @@
                 </div>
                 <div class="grid-action-buttons">
                     <button igButton
-                            pTooltip="Create New Group"
+                            pTooltip="{{createButtonLabel}}"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
                             class="ig-button-primary"
@@ -21,7 +21,6 @@
                     </button>
                 </div>
             </div>
-
 
             <div id="List">
                 <p-table #dt [value]="groupItems"
@@ -40,7 +39,6 @@
                         <colgroup>
                             <col *ngFor="let col of columns"
                                  [style.width]="col.columnWidth ? col.columnWidth + 'px' : null" />
-
                             <col style="width: 48px" />
                         </colgroup>
                     </ng-template>
@@ -141,15 +139,15 @@
 
 <d3s-modal *ngIf="selectedRow" additionalClasses="modal-dyn-editor asset-editor"
            (onClose)="showDelete=false"
-           [title]="'Delete Group'"
+           [title]="deleteModalTitle"
            [isVisible]="showDelete">
-    <div class="content">
+    <div class="content" i18n>
         Please confirm that you wish to delete the group <strong>{{selectedRow.Name}}</strong>. Please note that this operation cannot be undone.
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus label="{{labelCancel}}" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+        <button igButton class="ig-button-primary" label="{{labelDelete}}" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>
 </d3s-modal>
 

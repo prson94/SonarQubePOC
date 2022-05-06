@@ -17,7 +17,7 @@ import { SubscriptionLike as ISubscription, Subject } from 'rxjs';
 
 export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     @Input() searchOptions: string[];
-    @Input() autocompletePlaceholder: string = 'Search Govern...';
+    @Input() autocompletePlaceholder: string = $localize`Search Govern...`;
     @Input() additionalCssClasses: string = '';
     @Input() showBigButton: boolean = false;
     @Input() defaultValue: string;

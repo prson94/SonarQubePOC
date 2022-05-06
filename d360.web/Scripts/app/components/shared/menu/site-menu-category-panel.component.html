@@ -1,14 +1,14 @@
 ﻿<d3s-links-keyboard-navigation>
     <div class="ie-min-content">
         <div class="megamenu-header truncate">
-            <ig-search-field #searchinput [darkMode]="true" mode="Keypress" (onSearch)="contentSizeChanged.emit();" [(ngModel)]="searchText" [placeholder]="'Search menu...'"></ig-search-field><br />
+            <ig-search-field #searchinput [darkMode]="true" mode="Keypress" (onSearch)="contentSizeChanged.emit();" [(ngModel)]="searchText" i18n-placeholder placeholder="Search menu..."></ig-search-field><br />
             <div class="additional-buttons">
                 <button *ngIf="showVisiblityToggle"
                         igButton
                         (click)="toggleEmptyVisibility()"
                         class="hide-menu-button"
                         icon="{{(hideEmptyItems ? 'fa-eye' : 'fa-eye-slash')}}"
-                        pTooltip="{{(hideEmptyItems ? 'Show empty collections' : 'Hide empty collections')}}"
+                        pTooltip="{{tooltipText}}"
                         tooltipPosition="top"
                         tooltipStyleClass="ig-tooltip">
                 </button>

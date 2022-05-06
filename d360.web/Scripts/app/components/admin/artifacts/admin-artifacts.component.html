@@ -15,7 +15,7 @@
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 60%">Name</th>
+                        <th style="width: 60%"><ng-container i18n>Name</ng-container></th>
                         <th style="width: 30px; overflow:visible"></th>
                         <th style="width: 30px"></th>
                         <th style="width: 30px"></th>
@@ -63,7 +63,7 @@
                 <ng-template pTemplate="emptymessage" let-columns>
                     <tr>
                         <td colspan="5">
-                            No asset types found.
+                            <ng-container i18n>No asset types found.</ng-container>
                         </td>
                     </tr>
                 </ng-template>
