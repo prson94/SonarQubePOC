@@ -62,10 +62,6 @@ stages:
         solutionToBuild: igx.jobs.apiexecutionprocessor/igx.jobs.apiexecutionprocessor.csproj
         nuGetCommand: 'restore -Project2ProjectTimeOut 20'
         buildArguments: '/p:Configuration=Release /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(Build.Repository.LocalPath)/apiexecutionprocessor/"'
-    - template: build/steps/step-whitesource-scan.yml@templates
-      parameters:
-        whitesourceApiKey: $(whitesourceApiKey)
-        projectName: 'API Execution Processor'
     - template: build/steps/step-blackduck-nuget.yml@templates
       parameters:
         blackduckApiToken: $(blackduckApi)
