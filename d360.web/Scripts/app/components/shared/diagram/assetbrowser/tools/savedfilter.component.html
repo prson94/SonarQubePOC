@@ -5,6 +5,7 @@
                 [showClear]="true"
                 [style]="{'width':'100%'}"
                 optionLabel="name"
+                i18n-placeholder
                 placeholder="Select a predefined filter"
                 (onChange)="apply($event)"
                 styleClass="filter-dropdown"
@@ -13,31 +14,31 @@
     <ig-popup-menu #filtermenu [items]="menuitems"></ig-popup-menu>
 </div>
 
-<d3s-modal [title]="'Create New Filter Set'" additionalClasses="modal-consolidate" [isVisible]="saveFilterModalVisible">
+<d3s-modal i18n-title title="Create New Filter Set" additionalClasses="modal-consolidate" [isVisible]="saveFilterModalVisible">
     <form #createfilterform="ngForm">
         <div class="content">
             <div class="row">
-                <label for="name" style="margin-right:10px;">Name</label>
+                <label for="name" style="margin-right:10px;" i18n>Name</label>
                 <input igInput igAutoFocus igSize="full" type="text" [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field" />
             </div>
         </div>
         <div class="action-bar">
-            <button igButton (click)="cancel()" [disabled]="saveFilterModalWorking" label="Cancel"></button>
+            <button igButton (click)="cancel()" [disabled]="saveFilterModalWorking" i18n-label label="Cancel"></button>
             <span class="grow"></span>
-            <button igButton class="ig-button-primary" (click)="create()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid" label="Create"></button>
+            <button igButton class="ig-button-primary" (click)="create()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid" i18n-label label="Create"></button>
         </div>
     </form>
 </d3s-modal>
 
-<d3s-modal [title]="'Delete Filter Set'" additionalClasses="modal-consolidate" [isVisible]="deleteFilterModalVisible">
+<d3s-modal i18n-title title="Delete Filter Set" additionalClasses="modal-consolidate" [isVisible]="deleteFilterModalVisible">
     <div class="content">
-        <div class="row">
+        <div class="row" i18n>
             Are you sure you want to delete the <b>{{selectedFilter?.name}}</b> filter?
         </div>
     </div>
     <div class="action-bar">
-        <button igButton (click)="cancel()" label="Cancel" [disabled]="saveFilterModalWorking"></button>
+        <button igButton (click)="cancel()" i18n-label label="Cancel" [disabled]="saveFilterModalWorking"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" (click)="delete()" label="Delete"></button>
+        <button igButton class="ig-button-primary" (click)="delete()" i18n-label label="Delete"></button>
     </div>
 </d3s-modal>

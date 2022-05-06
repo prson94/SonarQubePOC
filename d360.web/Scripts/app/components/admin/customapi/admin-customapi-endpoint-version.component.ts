@@ -1,7 +1,7 @@
 ﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiEndpoint, ApiVersion } from '../../../models/custom-api.model';
-import { CustomAPIService} from '../../../services/custom-api.service';
+import { CustomAPIService } from '../../../services/custom-api.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -23,6 +23,9 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
 
     @Input() numberOfVersions: number = 0;
     @Output() numberOfVersionsChange = new EventEmitter();
+
+    searchText = $localize`Search...`;
+    editorTitle = $localize`Version`;
 
     constructor(
         protected customAPIService: CustomAPIService,
@@ -79,5 +82,9 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
                 this.showDelete = false;
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the version [${this.selected?.UriPrefix}]?`;
     }
 }

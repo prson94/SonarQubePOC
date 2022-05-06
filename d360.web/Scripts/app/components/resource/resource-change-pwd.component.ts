@@ -6,6 +6,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-resource-change-pwd',
@@ -32,11 +33,11 @@ export class ResourceChangePwdComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Change Your Password'));
-        this.setBrowserTitle(this.titleService, 'Change Your Password');
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Change Your Password`));
+        this.setBrowserTitle(this.titleService, $localize`Change Your Password`);
     }
 
     public onCloseEvent() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_HOME_ROOT}`);
-    }    
+    }
 }

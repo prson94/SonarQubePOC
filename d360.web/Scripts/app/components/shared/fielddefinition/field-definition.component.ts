@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
-    @Input() title: string = 'Field Definition';
+    @Input() title: string = $localize`Field Definition`;
 
     @Input() actionTypeUid: string;
     @Input() assetTypeUid: string;
@@ -218,7 +218,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             res => {
                 if (res != null && res.Success === true) {
-                    this.messagesService.showInfoMessage('Success', 'Field definition successfully removed.');
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Field definition successfully removed.`);
                     let index = this.fieldDisplayModel.findIndex(f => f.Name == this.selectedRow.Name);
 
                     this.isDeleting = false;

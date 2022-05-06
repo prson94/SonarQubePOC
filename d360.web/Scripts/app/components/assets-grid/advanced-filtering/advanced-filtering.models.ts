@@ -7,6 +7,7 @@ import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator, OperatorString } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
+import '@angular/localize/init';
 
 export enum ConnectingOperator {
     And = 'and',
@@ -82,9 +83,9 @@ export class AdvancedFilterFieldCondition {
 
     public getTooltipValue() {
         if (!this.operator) {
-            return this.friendlyFieldName + ": Any";
+            return this.friendlyFieldName + ": " + $localize`Any`;
         }
-        return `Filter: ${this.getDescriptionText()}<br/>Click to modify`;
+        return $localize`Filter: ${this.getDescriptionText()}<br/>Click to modify`;
     }
 
 
@@ -96,15 +97,15 @@ export class AdvancedFilterFieldCondition {
 
         switch (this.operator.toString()) {
             case "IsTrue":
-                return this.friendlyFieldName + " is True";
+                return this.friendlyFieldName + $localize` is True`;
             case "IsFalse":
-                return this.friendlyFieldName + " is False";
+                return this.friendlyFieldName + $localize` is False`;
             case "Contains":
                 if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
-                    str += " is ";
+                    str += $localize` is `;
                 }
                 else {
-                    str += " contains ";
+                    str += $localize` contains `;
                 }
                 break;
             case "NotContains":
@@ -112,90 +113,90 @@ export class AdvancedFilterFieldCondition {
                     str += " is not ";
                 }
                 else {
-                    str += " does not contain ";
+                    str += $localize` does not contain `;
                 }
                 break;
             case "Equals":
                 if ((this.isRelationship && this.relationshipCardinality !== "One") || this.field === SystemFields.OwnedByFieldCode) {
-                    str += " contains ";
+                    str += $localize` contains `;
                 }
                 else {
-                    str += " is ";
+                    str += $localize` is `;
                 }
                 break;
             case "NotEquals":
                 if ((this.isRelationship && this.relationshipCardinality !== "One") || this.field === SystemFields.OwnedByFieldCode) {
-                    str += " does not contain ";
+                    str += $localize` does not contain `;
                 }
                 else {
-                    str += " is not ";
+                    str += $localize` is not `;
                 }
                 break;
             case "StartsWith":
-                str += " starts with ";
+                str += $localize` starts with `;
                 break;
             case "EndsWith":
-                str += " ends with ";
+                str += $localize` ends with `;
                 break;
             case "Populated":
                 if (this.isRelationship || this.fieldType === "Relationship") {
-                    str += " relationships exist ";
+                    str += $localize` relationships exist `;
                 }
                 else {
-                    str += " is populated ";
+                    str += $localize` is populated `;
                 }
                 break;
             case "NotPopulated":
                 if (this.isRelationship || this.fieldType === "Relationship") {
-                    str += " relationships do not exist ";
+                    str += $localize` relationships do not exist `;
                 }
                 else {
-                    str += " is not populated ";
+                    str += $localize` is not populated `;
                 }
                 break;
             case "Before":
-                str += " is before ";
+                str += $localize` is before `;
                 break;
             case "LessThan":
-                str += " is less than ";
+                str += $localize` is less than `;
                 break;
             case "OnOrBefore":
-                str += " is on or before ";
+                str += $localize` is on or before `;
                 break;
             case "LessThanOrEquals":
-                str += " is less than or equal ";
+                str += $localize` is less than or equal `;
                 break;
             case "After":
-                str += " is after ";
+                str += $localize` is after `;
                 break;
             case "GreaterThan":
-                str += " is greater than ";
+                str += $localize` is greater than `;
                 break;
             case "OnOrAfter":
-                str += " is on or before ";
+                str += $localize` is on or before `;
                 break;
             case "GreaterThanOrEquals":
-                str += " is greater than or equal ";
+                str += $localize` is greater than or equal `;
                 break;
             case "Between":
-                str += " is between ";
+                str += $localize` is between `;
                 break;
             case "IsInBand":
-                str += " is in band ";
+                str += $localize` is in band `;
                 break;
             default:
-                return "Description Text not defined";
+                return $localize`Description Text not defined`;
         }
 
         if (this.value) {
             str += this.getTypedValue();
         }
         if (this.value2 && this.operator.toString() === "Between") {
-            str += " and " + this.getTypedValue2();
+            str += $localize` and ` + this.getTypedValue2();
         }
 
         if (this.exact) {
-            str += " (match exact phrase)";
+            str += $localize` (match exact phrase)`;
         }
 
         return str;
@@ -203,26 +204,26 @@ export class AdvancedFilterFieldCondition {
 
     public getFilterLabel() {
         if (!this.field) {
-            return "Add filter";
+            return $localize`Add filter`;
         }
         if (!this.operator) {
-            return this.friendlyFieldName + ": Any";
+            return this.friendlyFieldName + ": " + $localize`Any`;
         }
         var fieldName = this.friendlyFieldName;
 
         switch (this.operator.toString()) {
             case "IsTrue":
-                return fieldName + " is True";
+                return fieldName + $localize` is True`;
             case "IsFalse":
-                return fieldName + " is False";
+                return fieldName + $localize` is False`;
             case "Contains":
                 if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
-                    return `${fieldName} is ${this.getTypedValue(this.value, true)}`;
+                    return `${fieldName} ` + $localize`is` + `${this.getTypedValue(this.value, true)}`;
                 }
                 return `${fieldName} : *${this.getTypedValue(this.value, true)}*`;
             case "NotContains":
                 if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
-                    return `${fieldName} is not ${this.getTypedValue(this.value, true)}`;
+                    return `${fieldName} ` + $localize`is not` + ` ${this.getTypedValue(this.value, true)}`;
                 }
                 return `${fieldName} &#8800; *${this.getTypedValue(this.value, true)}*`;
             case "Equals":
@@ -235,14 +236,14 @@ export class AdvancedFilterFieldCondition {
                 return `${fieldName} : *${this.getTypedValue()}`;
             case "Populated":
                 if (this.isRelationship || this.fieldType === "Relationship") {
-                    return `${fieldName} exists`;
+                    return $localize`${fieldName} exists`;
                 }
-                return `${fieldName} : populated`;
+                return $localize`${fieldName} : populated`;
             case "NotPopulated":
                 if (this.isRelationship || this.fieldType === "Relationship") {
-                    return `${fieldName} does not exist`;
+                    return $localize`${fieldName} does not exist`;
                 }
-                return `${fieldName} : not populated`;
+                return $localize`${fieldName} : not populated`;
             case "Before":
             case "LessThan":
                 return `${fieldName} < ${this.getTypedValue()}`;
@@ -258,9 +259,9 @@ export class AdvancedFilterFieldCondition {
             case "Between":
                 return `${fieldName} : ${this.getTypedValue()} - ${this.getTypedValue2()}`;
             case "IsInBand":
-                return `${fieldName} is in band ${this.getTypedValue()}`;
+                return $localize`${fieldName} is in band ${this.getTypedValue()}`;
             default:
-                return "Any";
+                return $localize`Any`;
         }
 
     }
@@ -353,22 +354,22 @@ export class AdvancedFilterFieldCondition {
                     }
                     if (isForLabel === true && arr.length > 2) {
                         if (this.field === SystemFields.OwnedByFieldCode) {
-                            return arr.length + " users";
+                            return arr.length + ` ` + $localize`Users`.toLowerCase();
                         }
                         else {
-                            return arr.length + " items";
+                            return arr.length + ` ` + $localize`Items`.toLowerCase();
                         }
                     }
 
-                    var match = this.connectingOperator === "and" ? "(match all)" : "(match any)";
+                    var match = this.connectingOperator === "and" ? "(" + $localize`Match all` + ")" : "(" + $localize`Match any` + ")";
 
                     valueAsString = arr.slice(0, 5).join(", ");
                     var leftover = arr.length - 5;
                     if (leftover === 1) {
-                        valueAsString += ", 1 other item";
+                        valueAsString += ", " + $localize`1 other item`;
                     }
                     else if (leftover > 1) {
-                        valueAsString += `, ${leftover} other items`;
+                        valueAsString += `, ${leftover}` + $localize`other items`;
                     }
                     valueAsString += " " + match;
 
@@ -391,7 +392,7 @@ export class AdvancedFilterFieldCondition {
                     return stringArr[0];
                 }
                 if (isForLabel === true && stringArr.length > 1) {
-                    return stringArr.length + " items";
+                    return stringArr.length + " " + $localize`Items`.toLowerCase();
                 }
 
                 for (let i = 0; i < stringArr.length - 1; i++) {

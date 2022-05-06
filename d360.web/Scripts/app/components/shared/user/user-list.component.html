@@ -16,6 +16,7 @@
         <div class="grid-action-buttons">
             <button *ngIf="hasAddAssetPermissions() && IsReadOnly()"
                     igButton
+                    i18n-pTooltip
                     pTooltip="Add new user"
                     tooltipPosition="top"
                     tooltipStyleClass="ig-tooltip"
@@ -24,9 +25,9 @@
                     (click)="add()">
             </button>
 
-            <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-                    tooltipPosition="left"
-                    tooltipStyleClass="ig-tooltip">
+            <div pTooltip="{{exportTooltip}}"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
                 <button igButton
                         [disabled]="!canExportRecords() || isExportInProgress"
                         icon="fa-download"
@@ -81,7 +82,7 @@
                             </ng-container>
                             <ng-container *ngSwitchDefault>
                                 <d3s-dynamic-field-value [column]="column"
-                                                        [fields]="fields" [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
+                                                         [fields]="fields" [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
                             </ng-container>
                         </ng-container>
                     </td>
@@ -116,29 +117,28 @@
         </p-table>
     </div>
 </div>
-    <span *ngIf="showResetPwd  && !isLoading  && IsReadOnly()">
-        <header>Reset Users Password</header>
-        <div class="row">
-            <div class="col s12">
-                Are you sure you would like to reset the password for [{{selected.FirstName}} {{selected.LastName}}
-                ]
-            </div>
-            <div class="col s12">&nbsp;</div>
-            <div class="col s12">
-                <button pButton type="button" (click)="resetPassword()" label="Reset Password"
-                        style="width: 150px;"></button>
-                <button pButton type="button" (click)="showResetPwd=false" label="Cancel"
-                        style="width: 150px;"></button>
-            </div>
+<span *ngIf="showResetPwd  && !isLoading  && IsReadOnly()">
+    <header i18n>Reset Users Password</header>
+    <div class="row">
+        <div class="col s12" i18n>
+            Are you sure you would like to reset the password for [{{selected.FirstName}} {{selected.LastName}}]
         </div>
-    </span>
-    <d3s-dynamic-editor *ngIf="showEditor && !isLoading" [objectID]="objectID" objectType="ResourceType" title="Resource"
-                        [selection]="selected" [useV2ApiLink]="true" rowID="ResourceID" (saveClick)="saveUser($event)"
-                        [selectedObject]="'Resource'" [selectedObjectID]="selected?.ResourceID"
-                        (closeClick)="closeEditor()"></d3s-dynamic-editor>
-    <d3s-delete-form *ngIf="showDelete  && !isLoading"
-                     [callback]="theDeleteCallback"
-                     [itemId]="selected?.ResourceID"
-                     method="callback"
-                     [prompt]="'Are you sure you want to delete the user [' + selected.FirstName + ' ' + selected.LastName + ']?'"
-                     (onCancel)="showDelete=false;"></d3s-delete-form>
+        <div class="col s12">&nbsp;</div>
+        <div class="col s12">
+            <button pButton type="button" (click)="resetPassword()" i18n-label label="Reset Password"
+                    style="width: 150px;"></button>
+            <button pButton type="button" (click)="showResetPwd=false" i18n-label label="Cancel"
+                    style="width: 150px;"></button>
+        </div>
+    </div>
+</span>
+<d3s-dynamic-editor *ngIf="showEditor && !isLoading" [objectID]="objectID" objectType="ResourceType" title="Resource"
+                    [selection]="selected" [useV2ApiLink]="true" rowID="ResourceID" (saveClick)="saveUser($event)"
+                    [selectedObject]="'Resource'" [selectedObjectID]="selected?.ResourceID"
+                    (closeClick)="closeEditor()"></d3s-dynamic-editor>
+<d3s-delete-form *ngIf="showDelete  && !isLoading"
+                 [callback]="theDeleteCallback"
+                 [itemId]="selected?.ResourceID"
+                 method="callback"
+                 [prompt]="deletePromptText"
+                 (onCancel)="showDelete=false;"></d3s-delete-form>

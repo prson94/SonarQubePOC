@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter, ChangeDetectorRef} from '@angular/core';
+﻿import { Input, Component, OnInit, SimpleChanges, OnChanges, AfterViewInit, LOCALE_ID, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 
 import * as Highcharts from 'highcharts';
@@ -17,8 +17,8 @@ import { AuthenticationService } from '../../../services/authentication.service'
 })
 
 export class DataProfileComponent extends BaseComponent implements OnInit {
-    @Input() dataProfile: any;    
-    @Input() isModal: boolean = false;  
+    @Input() dataProfile: any;
+    @Input() isModal: boolean = false;
     @Input() assetData: any;
     @Output() linkClicked = new EventEmitter();
     @Output() showTimeSeries = new EventEmitter();
@@ -38,7 +38,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         private featureFlagService: FeatureFlagsService,
         private authenticationService: AuthenticationService
     ) {
-        super(settingsService);        
+        super(settingsService);
     }
 
     private sampleCountPercentage: number;
@@ -54,7 +54,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     private bottomSamplesToShow: number = 5;
     private topSamples: any[] = [];
     private bottomSamples: any[] = [];
-    
+
     private sampleBarChart: any;
 
     private ShowBoolean: boolean = false;
@@ -103,7 +103,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     semanticType: SemanticType;
     showEditor: boolean = false;
 
-    ngOnInit() { 
+    ngOnInit() {
         this.initialize();
         if (this.assetData) {
             this.assetName = this.assetData.AssetName;
@@ -121,12 +121,12 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     });
                 });
         }
-    }    
-    
+    }
+
     ngAfterViewInit() {
         if (!this.sampleDistributionChart) {
             setTimeout(() => this.renderSampleDistributionChart(), 10);
-        }               
+        }
     }
 
     initialize() {
@@ -165,15 +165,15 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     });
             }
         }
-        
-        
+
+
         if (localStorage.getItem(this.hideDataProfileInstructionMessageKey)) {
-            this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === "true";            
+            this.hideInfoMessage = localStorage.getItem(this.hideDataProfileInstructionMessageKey).toLowerCase() === "true";
         }
         if (!this.dataProfile) {
             this.dataProfile = this.dataProfileList[0];
         }
-        
+
         this.validPercentage = ((this.dataProfile.matchCount / this.dataProfile.totalCount) * 100);
 
         this.nullBlankCountTotal = ((this.dataProfile.nullCount ?? 0) + (this.dataProfile.blankCount ?? 0));
@@ -192,7 +192,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         this.checkVisibility();
 
-        this.setMinAndMaxText();             
+        this.setMinAndMaxText();
     }
 
     private showSidePanel() {
@@ -206,7 +206,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
         if (this.dataProfile.sampleDetail) {
             this.dataProfile.sampleDetail = this.dataProfile.sampleDetail.sort((a, b) => (b.count - a.count));
-        }        
+        }
 
         if (this.dataProfile.cardinalityDetail) {
             if (this.dataProfile.topK) {
@@ -232,10 +232,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                 }
             }
         }
-        
+
         if (this.dataProfile.shapesDetail) {
             this.dataProfile.shapesDetail = this.dataProfile.shapesDetail.sort((a, b) => (b.count - a.count));
-        }      
+        }
     }
 
     private getBackgroundSize(size: number, total: number) {
@@ -313,13 +313,13 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         if (this.dataProfile.type) {
             switch (this.dataProfile.type.toLowerCase()) {
                 case "long":
-                    this.baseType = "Number (Long)";
+                    this.baseType = $localize`Number (Long)`;
                     break;
                 case "double":
-                    this.baseType = "Number (Double)";
+                    this.baseType = $localize`Number (Double)`;
                     break;
                 case "boolean":
-                    this.baseType = "True/False (Boolean)";
+                    this.baseType = $localize`True/False (Boolean)`;
                     break;
                 default:
                     this.baseType = this.dataProfile.type;
@@ -358,12 +358,12 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
     }
 
     getMatchTooltip(type: string, count: number): string {
-        let assetCountStr: string = count > 1 ? `${count} assets` : '1 asset';
-        let descStr: string = type === 'duplicates' ? 'same type and matching data' : 'same type but different data';
-        return `${assetCountStr} detected which have the ${descStr}.\nClick to investigate and add tags.`;
+        let assetCountStr: string = count > 1 ? $localize`${count} assets` : $localize`1 asset`;
+        let descStr: string = type === $localize`duplicates` ? $localize`same type and matching data` : $localize`same type but different data`;
+        return $localize`${assetCountStr} detected which have the ${descStr}.\nClick to investigate and add tags.`;
     }
 
-    matchDetectionLinkClicked(type: string) {        
+    matchDetectionLinkClicked(type: string) {
         if (this.dataProfile.matches != null) {
             this.showDuplicates = this.dataProfile.matches.data > 0;
             this.showSimilar = this.dataProfile.matches.structure > 0;
@@ -372,10 +372,10 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.isMatchDetectionPopupVisible = true;
             this.matchAssetUid = this.dataProfile.assetUid;
             this.matchType = type;
-        } else {           
+        } else {
             this.linkClicked.emit({ assetUid: this.dataProfile.assetUid, matchType: type, showDuplicates: this.showDuplicates, showSimilar: this.showSimilar });
-        }       
-    }    
+        }
+    }
 
     public renderSampleDistributionChart() {
 
@@ -394,8 +394,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         let data: any[] = [];
         let colors: string[] = [];
 
-        var blankNullLabel: string = 'Blank/Null';
-        var invalidOutlierLabel: string = 'Invalid/Outliers';
+        var blankNullLabel: string = $localize`Blank/Null`;
+        var invalidOutlierLabel: string = $localize`Invalid/Outliers`;
 
         let maxSampleCount: number = 24;
         let maxNumberCount: number = 6;
@@ -441,19 +441,19 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
 
 
-        if (dataProfileType === 'boolean') {           
+        if (dataProfileType === 'boolean') {
             pointPadding = 0.05;
             showXAxisLabel = true;
             leftPadding = 0;
 
-                this.dataProfile.cardinalityDetail.forEach((c) => {
-                    categories.push(c.key);
-                    data.push(c.count);
-                    colors.push(validColor);
-                    if (c.count > maxYValue) {
-                        maxYValue = c.count;
-                    }
-                });
+            this.dataProfile.cardinalityDetail.forEach((c) => {
+                categories.push(c.key);
+                data.push(c.count);
+                colors.push(validColor);
+                if (c.count > maxYValue) {
+                    maxYValue = c.count;
+                }
+            });
 
         } else if ((dataProfileType === 'long' || dataProfileType === 'double') && !isNaN(+testCardinality)) {
             showXAxisLabel = true;
@@ -462,7 +462,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             meanIndex = 0;
             //draw the stats widget as long as we have at least a mean value
             includeStatsWidget = this.dataProfile.mean != null && !isNaN(+this.dataProfile.mean);
-            spacingTop = includeStatsWidget ? 50 : 10; 
+            spacingTop = includeStatsWidget ? 50 : 10;
 
             //calculate buckets based on data
             //range of numbers available based on min/max
@@ -474,9 +474,9 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
             //number interval for each bar
             interval = range / sampleCount;
-            
+
             //fill interval buckets and keep track of index where mean widget will be drawn
-            while (current < this.dataProfile.max) {               
+            while (current < this.dataProfile.max) {
                 current += interval;
                 let upper = current;
 
@@ -504,8 +504,8 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             }
 
         } else if ((dataProfileType === 'date' || dataProfileType === 'datetime' || dataProfileType === 'localdate' || dataProfileType === 'localdatetime') && !isNaN(Date.parse(testCardinality))) {
-            pointPadding = 0.1;          
-            leftPadding = 22; 
+            pointPadding = 0.1;
+            leftPadding = 22;
 
             let minDate = new Date(this.dataProfile.min);
             let maxDate = new Date(this.dataProfile.max);
@@ -566,7 +566,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             }
         }
 
-        
+
         let tooltipFormatter = function () {
             let formatString = '';
 
@@ -703,7 +703,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
                     reserveSpace: showXAxisLabel,
                     step: xAxisStep
                 },
-                crosshair: false,   
+                crosshair: false,
             },
             yAxis: {
                 min: 0,
@@ -754,7 +754,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
             this.sampleDistributionChart.destroy();
         }
 
-        this.sampleDistributionChart = Highcharts.chart('sampleChart'+ (this.isModal ? 'Modal': ''), chartOptions, includeStatsWidget ? renderStatsWidget : null);
+        this.sampleDistributionChart = Highcharts.chart('sampleChart' + (this.isModal ? 'Modal' : ''), chartOptions, includeStatsWidget ? renderStatsWidget : null);
     }
 
     handleLinkClicked(event: any) {
@@ -776,7 +776,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     private openChart(chartType: string) {
         this.displayChart = true;
-        this.chartType = chartType;       
+        this.chartType = chartType;
     }
 
     openSemanticTab() {

@@ -1,11 +1,13 @@
 ﻿<table>
     <tr class="filter-row">
-        <td class="filter-row-short-label">Display:</td>
+        <td class="filter-row-short-label">
+            <ng-container i18n>Display</ng-container>:
+        </td>
         <td class="filter-row-control">
-            <div><p-checkbox [(ngModel)]="current.DisplayBadges" binary="true" label="All Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="allBadgesChange()"></p-checkbox></div>
-            <div><p-checkbox [(ngModel)]="current.IncludeNonLeaf" binary="true" label="Ancestor Badges and Lineage" labelStyleClass="filter-checkbox-label" (ngModelChange)="ancestorBadgesChange()"></p-checkbox></div>
-            <div><p-checkbox [(ngModel)]="current.DisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="iconsChange()"></p-checkbox></div>
-            <div><p-checkbox [(ngModel)]="current.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="scoreChange()"></p-checkbox></div>
+            <div><p-checkbox [(ngModel)]="current.DisplayBadges" binary="true" i18n-label label="All Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="allBadgesChange()"></p-checkbox></div>
+            <div><p-checkbox [(ngModel)]="current.IncludeNonLeaf" binary="true" i18n-label label="Ancestor Badges and Lineage" labelStyleClass="filter-checkbox-label" (ngModelChange)="ancestorBadgesChange()"></p-checkbox></div>
+            <div><p-checkbox [(ngModel)]="current.DisplayIcons" binary="true" i18n-label label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="iconsChange()"></p-checkbox></div>
+            <div><p-checkbox [(ngModel)]="current.DisplayScores" binary="true" i18n-label label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="scoreChange()"></p-checkbox></div>
         </td>
     </tr>
 </table>

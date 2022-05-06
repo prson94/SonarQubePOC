@@ -2,14 +2,14 @@
     <header *ngIf="model?.Type?.Name != null && !isLoading">
         {{model.Type.Name}}
     </header>
-    <header *ngIf="model?.Type?.Name == null  && !isLoading">
+    <header *ngIf="model?.Type?.Name == null  && !isLoading" i18n>
         New Workflow Type
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="row"
          *ngIf="!isLoading">
         <div class="col s12 m4">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Name
             </div>
             <div>
@@ -19,12 +19,13 @@
                        style="width: 95%"
                        [d3s-text-highlight]="isClone" />
             </div>
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Change Type
             </div>
             <div>
                 <select style="width:95%;"
                         placeholder="Choose a value"
+                        i18n-placeholder
                         [ngModel]="model.Event.ChangeType"
                         (ngModelChange)="changeTypeChanged($event)">
                     <option></option>
@@ -34,7 +35,7 @@
                     </option>
                 </select>
             </div>
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Object Type
             </div>
             <div class="d3s-type-dropdown">
@@ -44,11 +45,12 @@
                             [disabled]="model.Event.ChangeType == null || +model.Event.ChangeType == 0"
                             [style]="{'width': '95%'}"
                             filterPlaceholder="Choose a value"
+                            i18n-filterPlaceholder
                             [filter]="true">
                 </p-dropdown>
             </div>
             <div *ngIf="objectType == 'IssueType'">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Issue Object Type
                 </div>
                 <div class="d3s-type-dropdown">
@@ -57,12 +59,13 @@
                                 (ngModelChange)="selectIssueObjectType($event)"
                                 [style]="{'width': '95%'}"
                                 filterPlaceholder="Choose a value"
+                                i18n-filterPlaceholder
                                 [filter]="true">
                     </p-dropdown>
                 </div>
             </div>
             <div *ngIf="objectSelected && model.Event.ChangeType == WorkflowChangeType.ScoreUpdate">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Score Type
                 </div>
                 <div class="d3s-type-dropdown">
@@ -71,12 +74,13 @@
                                 (ngModelChange)="model.Event.ScoreType = $event; validate();"
                                 [style]="{'width': '95%'}"
                                 filterPlaceholder="Choose a value"
+                                i18n-filterPlaceholder
                                 [filter]="true">
                     </p-dropdown>
                 </div>
             </div>
             <div *ngIf="model.Event.ChangeType == WorkflowChangeType.Schedule">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Run Interval
                 </div>
                 <div>
@@ -91,7 +95,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Run Frequency
                 </div>
                 <div>
@@ -103,7 +107,7 @@
                            (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleInterval = $event; validate();"
                            style="width: 95%" />
                 </div>
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Run Days
                 </div>
                 <div style="width: 95%">
@@ -115,7 +119,7 @@
         </div>
         <div class="col s12 m8">
             <div *ngIf="objectSelected">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Conditions
                 </div>
                 <div>
@@ -142,7 +146,7 @@
     <div class="row"
          *ngIf="!isLoading">
         <div class="col s12 m4">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Description
             </div>
             <div style="width: 95%">
@@ -157,7 +161,7 @@
          *ngIf="!isLoading">
         <div class="col s12">
             <div class="FieldName">
-                <p-checkbox igCheckbox (ngModelChange)="onStateChange($event)" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" label="Active" [binary]="true"></p-checkbox>
+                <p-checkbox igCheckbox (ngModelChange)="onStateChange($event)" [disabled]="!(model.Type.State==1 || model.Type.State==4)" [ngModel]="model.Type.State==1? true : false" i18n-label label="Active" [binary]="true"></p-checkbox>
             </div>
         </div>
     </div>
@@ -166,14 +170,14 @@
          style="padding-top: 8px;">
         <div class="col s12">
             <div>
-                <p-checkbox igCheckbox (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail" label="Send aggregated email?" [binary]="true"></p-checkbox>
+                <p-checkbox igCheckbox (ngModelChange)="model.Event.SettingsObject.Settings.SendAggregateEmail = $event; validate();" [ngModel]="model.Event.SettingsObject.Settings.SendAggregateEmail" i18n-label label="Send aggregated email?" [binary]="true"></p-checkbox>
             </div>
         </div>
     </div>
     <div class="row"
          *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
         <div class="col s12 m4 offset-m2">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Subject
             </div>
             <div>
@@ -184,17 +188,17 @@
             </div>
         </div>
         <div class="col s12 m4">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Recipient Type
             </div>
             <div>
                 <select style="width: 100%"
                         disabled>
-                    <option value="SpecificUser">Specific User</option>
+                    <option value="SpecificUser" i18n>Specific User</option>
                 </select>
             </div>
             <div>
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Recipient
                 </div>
                 <div>
@@ -209,7 +213,7 @@
     <div class="row"
          *ngIf="!isLoading && model.Event.ChangeType == WorkflowChangeType.Schedule && model.Event.SettingsObject.Settings.SendAggregateEmail == true">
         <div class="col s12 m8 offset-m2">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Body
             </div>
             <div style="width: 100%">
@@ -241,11 +245,13 @@
             <div>
                 <button type="button"
                         pButton
+                        i18n-label
                         label="Cancel"
                         (click)="close()"></button>
                 <button type="button"
                         pButton
                         label="Next"
+                        i18n-label
                         (click)="save()"
                         [disabled]="!isValid || isLoading"></button>
             </div>

@@ -1,6 +1,6 @@
 ﻿
 <d3s-loading [isLoading]="!isHistoryLoaded"></d3s-loading>
-<div class="score-chart-container right-padding-16" [hidden]="!isHistoryLoaded" >
+<div class="score-chart-container right-padding-16" [hidden]="!isHistoryLoaded">
     <div class="heading">
         <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
     </div>
@@ -15,12 +15,12 @@
                     <div class="col s4 column">
                         <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated">
                             <div [style.background-color]="measureScoreGraphColor" class="round-circle"></div>
-                            Measure
+                            <ng-container i18n>Measure</ng-container>
                         </ng-container>
                     </div>
                     <div class="col s4 column">
                         <div [style.background-color]="mainScoreGraphColor" class="round-circle"></div>
-                        Score
+                        <ng-container i18n>Score</ng-container>
                     </div>
                 </div>
                 <div class="body {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
@@ -79,7 +79,7 @@
                                     <span class="icon-holder">
                                         <i class="fa fa-square turn"></i>
                                         <!--Square icon is rotated by 45deg, causing tooltip to appear at wrong position. Adding invisible element to serve as a hitbox element for mouse hover-->
-                                        <span class="score-table-tooltip-hitbox" pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
+                                        <span class="score-table-tooltip-hitbox" i18n-pTooltip pTooltip="Although the final score remains unchanged, the scores of individual measures have changed, which may be worth investigating."
                                               tooltipPosition="top"
                                               tooltipStyleClass="ig-tooltip"></span>
                                     </span>

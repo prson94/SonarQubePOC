@@ -1,4 +1,4 @@
-﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output} from "@angular/core";
+﻿import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from "@angular/core";
 import { WorkflowService } from "../../../services/workflow.service";
 import { BaseComponent } from "../../shared/base.component";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
@@ -8,6 +8,7 @@ import { AssetTypeService } from "../../../services/asset-type.service";
 import { SelectItem } from "primeng/api";
 import { AllocationAPIModel, AllocationRequestModel } from "../../../models/workflow.model";
 import { CompanySettingsService } from "../../../services/settings.service";
+import '@angular/localize/init';
 
 @Component({
     selector: "d3s-admin-issue-type-allocation-editor",
@@ -22,9 +23,13 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
     @Input() issueTypeUid: string;
     @Output() closeClick = new EventEmitter();
     assetTypes: SelectItem[] = [];
-    title: string = "New Issue Type Allocation";
+    title: string = $localize`New Issue Type Allocation`;
     responsibilityList: SelectItem[] = [];
     selection: AllocationRequestModel = new AllocationRequestModel();
+
+    labelRequired = $localize`Value required`;
+    labelSave = $localize`Save`;
+    labelClose = $localize`Close`;
 
     constructor(
         private workflowService: WorkflowService,
@@ -39,9 +44,9 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
     ngOnInit() {
         this.isLoading = true;
         if (this.allocation) {
-            this.title = "Edit Issue Type Allocation";
+            this.title = $localize`Edit Issue Type Allocation`;
             this.selection.AssetTypeUid = this.allocation.AssetTypeUid;
-            this.assetTypeChanged();                       
+            this.assetTypeChanged();
         }
 
         this.assetTypeService.getAssetTypes(null)
@@ -58,14 +63,14 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                         value: r.uid
                     });
                 });
-                
+
                 this.assetTypes.sort((a, b) => a.label.localeCompare(b.label));
                 this.isLoading = false;
             });
     }
 
     isAllowedClass(atc: AssetTypeClass) {
-        
+
         switch (atc) {
             case AssetTypeClass.DiagramAsset:
             case AssetTypeClass.Reference:
@@ -96,7 +101,7 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                     this.cdRef.detectChanges();
                 });
         }
-        
+
     }
 
     save(e: any) {
@@ -108,7 +113,7 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                         .subscribe((r) => {
                             this.closeClick.emit();
                             this.isLoading = false;
-                            r.message = "Allocation Updated Successfully";
+                            r.message = $localize`Allocation Updated Successfully`;
                             this.showMessageForResult(this.messagesService, r);
                         });
                 });
@@ -119,6 +124,6 @@ export class AdminIssueTypeAllocationEditorComponent extends BaseComponent {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
                 });
-        }        
+        }
     }
 }

@@ -7,7 +7,7 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'd3s-object-followers',
     template: `
             <div (click)="toggleDetails()" >
-                <header>Followers</header>
+                <header i18n>Followers</header>
                 <span class="governance-value">{{followerCount}}</span>
             </div>            
         `

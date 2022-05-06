@@ -9,6 +9,7 @@ import { FieldCondition } from '../../../models/field-condition-grid.models';
 import * as _ from 'lodash';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'governance-measure-editor',
@@ -29,15 +30,15 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     //#region Local reference lists
 
     checkTypeOptions = [
-        { label: "Field", value: MetricGovernanceCheckType.Field },
-        { label: "Ownership", value: MetricGovernanceCheckType.Owner },
-        { label: "Relationship", value: MetricGovernanceCheckType.Relation },
-        { label: "Predicate", value: MetricGovernanceCheckType.Predicate },
-        { label: "External", value: MetricGovernanceCheckType.External }
+        { label: $localize`Field`, value: MetricGovernanceCheckType.Field },
+        { label: $localize`Ownership`, value: MetricGovernanceCheckType.Owner },
+        { label: $localize`Relationship`, value: MetricGovernanceCheckType.Relation },
+        { label: $localize`Predicate`, value: MetricGovernanceCheckType.Predicate },
+        { label: $localize`External`, value: MetricGovernanceCheckType.External }
     ];
     existsOperators = [
-        { label: "exists", value: Operator.Populated },
-        { label: "does not exist", value: Operator.NotPopulated }
+        { label: $localize`exists`, value: Operator.Populated },
+        { label: $localize`does not exist`, value: Operator.NotPopulated }
     ];
     restrictedPredicateTypes = [
         "Diagram",
@@ -143,7 +144,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             this.responsibilityTypes = this.screenReferences.responsibilities.map((x) => {
                 return { label: x.Name, value: x.uid };
             });
-            this.responsibilityOperators = [{ label: "is assigned", value: Operator.Populated }, { label: "is not assigned", value: Operator.NotPopulated }];
+            this.responsibilityOperators =
+                [{ label: $localize`is assigned`, value: Operator.Populated },
+                { label: $localize`is not assigned`, value: Operator.NotPopulated }];
             if (this.model.Definition.Governance && this.model.Definition.Governance.Owner) {
                 this.model.Definition.Governance.Owner.Operator = Operator[this.model.Definition.Governance.Owner.Operator + ""];
             }
@@ -415,9 +418,9 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
 
         if (this.verb == "Edit") {
             if (this.hasModelChanged) {
-                this.closeLabel = "Discard Changes"
+                this.closeLabel = $localize`Discard Changes`;
             } else {
-                this.closeLabel = "Close"
+                this.closeLabel = $localize`Close`;
             }
         }
         this.cdRef.markForCheck();

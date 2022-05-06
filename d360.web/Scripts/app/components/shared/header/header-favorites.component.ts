@@ -26,11 +26,11 @@ import * as _ from 'lodash';
                     <i *ngIf="isFavoriteItem && !isLoading" class="fa fa-check"></i>
                     <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin "></i>
                 </div>
-                <div class="text">Favorite</div>
+                <div class="text" i18n>Favorite</div>
                 <div class="expand-gutter"></div>            
             </div>
         </div>
-        <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="isFavoriteItem ? 'Remove from favorites' : 'Add to favorites'">
+        <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isFavoriteItem }" [title]="title">
             <i *ngIf="!isLoading" class="fa fa-star"></i><i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>    
         </div>
     `,
@@ -69,6 +69,8 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
         this.ref.markForCheck();
     }
+
+    get title(): string { return this.isFavoriteItem ? $localize`Remove from favorites` : $localize`Add to favorites`; };
 
     ngOnDestroy() {
         if (this.subBreadcrumb) {

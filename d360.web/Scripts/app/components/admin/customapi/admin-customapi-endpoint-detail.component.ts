@@ -12,6 +12,7 @@ import {SecondaryNavService} from '../../../services/right-sidebar.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-customapi-service-detail',
@@ -54,8 +55,8 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
                     this.service = res;
 
                     this.clearSidebar();
-                    this.adminHeading = 'Integration';
-                    this.areaName = 'Custom API';
+                    this.adminHeading = $localize`Integration`;
+                    this.areaName = $localize`Custom API`;
                     this.areaLink = '/admin/customapi';
                     this.setCommonItems();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`, `/admin/customapi/${this.service.ID}/details`));

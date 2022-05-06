@@ -15,12 +15,12 @@ import {FieldDefinition} from '../../../models/fields.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-export-template-fields-component',
     template: `
-
-        <header>Fields</header>
+        <header i18n>Fields</header>
         <div class="row">
             <div class="col s12">
                 <p-table #dt
@@ -40,7 +40,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <th style="width: 30px">
                                 <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                             </th>
-                            <th>Name</th>
+                            <th i18n>Name</th>
                             <th style="width: 30px"></th>
                             <th style="width: 30px"></th>
                             <th style="width: 30px"></th>
@@ -86,12 +86,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <div class="row">
                     <div class="col s12">
                         <button pButton
-                                label="Save Changes"
+                                label="{{labelSave}}"
                                 (click)="save()"></button>
                         <button pButton
                                 type="button"
                                 (click)="reset()"
-                                label="Revert Changes"></button>
+                                label="{{labelRevert}}"></button>
                     </div>
                 </div>
 
@@ -105,6 +105,9 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
     public availableFields: FieldDefinition[] = new Array<FieldDefinition>();
     public selectedFields: FieldDefinition[] = new Array<FieldDefinition>();
+
+    labelSave = $localize`Save`;
+    labelRevert = $localize`Revert Changes`;
 
     constructor(
         private exportTemplateService: ExportTemplateService,

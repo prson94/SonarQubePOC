@@ -1,10 +1,10 @@
 ﻿<div class="asset-detail">  
     <ng-container>
         <div class="asset-detail-header">
-            <div class="asset-name">
+            <div class="asset-name" i18n>
                 Status
             </div>
-            <div class="class-name">
+            <div class="class-name" i18n>
                 Status List
             </div>
         </div>
@@ -17,18 +17,20 @@
             <ng-container *ngIf="!isLoading">
                 <div class="grid-actions-header" style="padding-left:16px">
                     <div style="width: 100%">
-                        <label class="ig-label">Items</label>
+                        <label class="ig-label" i18n>Items</label>
                     </div>
                     <div class="export-link">
-                        <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
+                        <a (click)="export()">
+                            <i class="fa fa-download"></i><ng-container i18n>Export to Excel</ng-container>
+                        </a>
                     </div>
                 </div>                                    
                 <div class="row asset-grid-wrapper" style="padding-left:16px">
                     <p-table [value]="statuses" class="status-table">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Code</th>
-                                <th>Color</th>
+                                <th i18n>Code</th>
+                                <th i18n>Color</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>

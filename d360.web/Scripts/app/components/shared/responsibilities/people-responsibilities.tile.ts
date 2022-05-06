@@ -165,7 +165,7 @@ export class PeopleResponsibilitiesTile extends BaseComponent implements OnChang
     }
 
     private deleteMessage() {
-        return `Are you sure you want to delete the ${this.selectedRow.Responsibility} - ${ this.selectedRow.Group ?? this.selectedRow.Resource }?`
+        return $localize`Are you sure you want to delete the ${this.selectedRow.Responsibility} - ${this.selectedRow.Group ?? this.selectedRow.Resource}?`
     }
 }
 

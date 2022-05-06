@@ -19,9 +19,9 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     isAdmin: boolean = false;
 
     contextMenuItems: any[] = [
-        { title: 'View Information', value: 'info' },
-        { title: 'Open', value: 'open' },
-        { title: 'Open in New Tab', value: 'new-tab' }
+        { title: $localize`View Information`, value: 'info' },
+        { title: $localize`Open`, value: 'open' },
+        { title: $localize`Open in New Tab`, value: 'new-tab' }
     ]
 
     canViewUsers: boolean = true;
@@ -88,7 +88,13 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
                 isInitialTag = true;
             }
         }
-        html += "Click the " + refElement + " to view information in the side panel or right-click for more options";
+        if (refElement === "link") {
+            html += $localize`Click the link to view information in the side panel or right-click for more options`;
+        }
+        else {
+            html += $localize`Click the tag to view information in the side panel or right-click for more options`;
+        }
+
 
         if (isInitialTag) {
             html = `<i style="margin-left: 44%;" class="fa fa-spinner fa-spin fa-2x"></i>`;
@@ -156,7 +162,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     ngOnDestroy() {
         this.removeElement();
         this.removeTooltip();
-        this.removeEventListener();   
+        this.removeEventListener();
     }
 
     ngAfterViewChecked() {

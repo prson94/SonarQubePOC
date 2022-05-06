@@ -14,7 +14,7 @@ import { Subject, Subscription } from 'rxjs';
     selector: 'd3s-similar-items',
     template: `     
     <div *ngIf="items.length > 0">
-        <div style="color: #FFB230">The following items with similar names already exist:</div>
+        <div style="color: #FFB230" i18n>The following items with similar names already exist:</div>
         <span *ngFor="let s of items; let i = index;">
             <d3s-preview-tooltip [objectType]="s.object" [objectId]="s.objectid"><a [routerLink]="s.Url">{{s.Name}}</a></d3s-preview-tooltip>            
             <span *ngIf="i < (items.length - 1)">,</span>&nbsp; 

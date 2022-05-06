@@ -10,6 +10,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetTypeClass } from '../../../models/asset.model';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -28,6 +29,8 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     AssetTypeClass = AssetTypeClass;
     selectedItemID: number;
     selectedAssetTypeID: number;
+
+    searchText = $localize`Search...`;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -88,13 +91,13 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
             if (url.toUpperCase() == 'TAXONOMIES') {
                 this.assetTypeClass = AssetTypeClass.Model;
                 this.areaName = StringConstants.Section_Models;
-                this.tabTitle = 'Model Types';
+                this.tabTitle = $localize`Model Types`;
                 this.objectType = 'TaxonomyType';
             }
             else if (url.toUpperCase() == 'POLICIES') {
                 this.assetTypeClass = AssetTypeClass.Policy;
                 this.areaName = StringConstants.Section_Policies;
-                this.tabTitle = 'Policy Types';
+                this.tabTitle = $localize`Policy Types`;
                 this.objectType = 'PolicyType';
             }
 
@@ -163,5 +166,14 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
                 this.showDelete = false;
             });
+    }
+
+    get typeEditorModalTitle(): string {
+        return (this.selected == null ? $localize`New` : $localize`Edit`) + ' ' + (this.assetTypeClass == AssetTypeClass.Model ? 'Model' : 'Policy') + '' + $localize`Type`;
+    }
+
+    get deleteModalTitle(): string {
+        var typeClass = this.assetTypeClass == AssetTypeClass.Model ? $localize`Model`.toLowerCase() : $localize`Policy`.toLowerCase();
+        return $localize`Are you sure you want to delete the ${typeClass} [${this.selected?.Name}]?`;
     }
 }

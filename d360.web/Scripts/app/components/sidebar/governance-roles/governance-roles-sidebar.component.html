@@ -1,20 +1,20 @@
 <div class="row">
     <div class="col s12">
         <div class="tile tile-detail" style="max-width:700px;">
-            <header>Governance Role Settings</header>
+            <header i18n>Governance Role Settings</header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <form #form="ngForm" *ngIf="!isLoading" class="gov-form-v2">
                 <div class="row">
                     <div class="col s12">
-                        <div class="FieldName">Governance Role Reference List</div>
-                        <p-dropdown igDropdown igSize="full" placeholder="Select Reference List..." panelStyleClass="dropdown-govrole-correction" name="refListDDL" [(ngModel)]="model.RefListUid" [options]="refListDDL" styleClass="filter-dropdown" [overlayLowerZIndex]="true"></p-dropdown>
+                        <div class="FieldName" i18n>Governance Role Reference List</div>
+                        <p-dropdown igDropdown igSize="full" i18n-placeholder placeholder="Select Reference List..." panelStyleClass="dropdown-govrole-correction" name="refListDDL" [(ngModel)]="model.RefListUid" [options]="refListDDL" styleClass="filter-dropdown" [overlayLowerZIndex]="true"></p-dropdown>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col s12">
                         <div style="padding-top:10px;">
-                            <button pButton label="Save" type="submit" (click)="save()" [disabled]="(!form.form.valid || isSaving || !model.RefListUid || model.RefListUid == '00000000-0000-0000-0000-000000000000')"></button>
-                            <button pButton label="Discard Changes" (click)="discard()"></button>
+                            <button pButton i18n-label label="Save" type="submit" (click)="save()" [disabled]="(!form.form.valid || isSaving || !model.RefListUid || model.RefListUid == '00000000-0000-0000-0000-000000000000')"></button>
+                            <button pButton i18n-label label="Discard Changes" (click)="discard()"></button>
                         </div>
                     </div>
                 </div>

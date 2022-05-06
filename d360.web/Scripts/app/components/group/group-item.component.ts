@@ -8,6 +8,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GroupEditorModel } from '../../models/group.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -64,7 +65,7 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
                     this.model = group;
                     this.headerBreadcrumbService.clearBreadcrumbs();
 
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Groups', SiteUrlHelpers.SITE_URL_GROUP_ROOT));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Groups`, SiteUrlHelpers.SITE_URL_GROUP_ROOT));
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.group.Name));
 
                     this.setBrowserTitle(this.titleService, this.model.group.Name);

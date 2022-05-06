@@ -9,6 +9,7 @@
             <div style="flex:0;">
                 <p-dropdown style="min-width:180px" igDropdown
                             igSize="full"
+                            i18n-placeholder
                             placeholder="Custom"
                             [options]="graphRangeOptions"
                             [(ngModel)]="selectedGraphRangeOption"
@@ -17,6 +18,7 @@
             <div style="flex:0;margin-left:10px;">
                 <button igButton
                         (click)="displayChart=false; close.emit()"
+                        i18n-pTooltip
                         pTooltip="Close Chart"
                         style="font-size:0.75em"
                         tooltipPosition="top"

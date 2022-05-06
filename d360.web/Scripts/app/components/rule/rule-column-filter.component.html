@@ -2,7 +2,9 @@
       (ngSubmit)="onSubmit()">
     <div *ngFor="let filter of internalFilters;let first=first;let last=last;let index=index"
          class="row filter">
-        <div class="col s1 FieldName">Filter:</div>
+        <div class="col s1 FieldName">
+            <ng-container i18n>Filter</ng-container>:
+        </div>
         <div class="col s4">
             <select (ngModelChange)="filter.Field = $event;changeFilterField($event,filter)"
                     [name]="'FilterField_' + index"
@@ -10,7 +12,9 @@
                     required
                     style="width:100%;">
                 <option *ngFor="let p of availableFilters"
-                        [ngValue]="p">{{p.Name}}</option>
+                        [ngValue]="p">
+                    {{p.Name}}
+                </option>
             </select>
         </div>
         <div [ngSwitch]="filter.Type"
@@ -26,7 +30,7 @@
                                 [ngModel]="filter?.Data?.includeType"
                                 [options]="connectors"
                                 name="relationIncludeType"></p-selectButton>
-            </span>            
+            </span>
             <span *ngSwitchDefault>
                 <span [ngSwitch]="filter.Field?.Data?.columntype">
                     <span *ngSwitchCase="'dropdownlist'">
@@ -34,17 +38,22 @@
                                 [name]="'FilterValue_' + index"
                                 [ngModel]="filter?.Data?.value"
                                 placeholder="Choose a field"
+                                i18n-placeholder
                                 required
                                 style="width:100%;">
                             <option *ngFor="let p of filter.Field?.Data?.filteritems"
-                                    [value]="p">{{p}}</option>
+                                    [value]="p">
+                                {{p}}
+                            </option>
                         </select>
                     </span>
                     <input (ngModelChange)="filter.Data.value = $event"
                            *ngSwitchDefault
                            [name]="'FilterValue_' + index"
                            [ngModel]="filter?.Data?.value"
-                           placeholder="Enter a value" required
+                           placeholder="Enter a value"
+                           i18n-placeholder
+                           required
                            style="width:100%;" type="text">
                 </span>
             </span>
@@ -52,6 +61,7 @@
         <div class="col s3">
             <a (click)="addFilter()"
                class="fa-stack fa-lg overlayed-primary"
+               i18n-pTooltip
                pTooltip="Add Filter">
                 <i class="fa fa-filter fa-stack-1x"></i>
                 <i class="fa fa-plus fa-stack-1x overlayed-add"></i>
@@ -59,29 +69,33 @@
             <a (click)="removeFilter(filter)"
                *ngIf="internalFilters.length > 1"
                class="fa-stack fa-lg overlayed-primary"
+               i18n-pTooltip
                pTooltip="Remove Filter">
                 <i class="fa fa-filter fa-stack-1x"></i>
                 <i class="fa fa-minus fa-stack-1x overlayed-remove"></i>
             </a>
         </div>
     </div>
-    <div class="row">        
+    <div class="row">
         <div *ngIf="hasMultipleRelationships()"
              class="red-text center"
-             style="font-weight:bold">**Warning: Only a single relationship filter is supported at a time!
+             style="font-weight:bold" i18n>
+            **Warning: Only a single relationship filter is supported at a time!
         </div>
         <div class="col s12 buttons">
             <button *ngIf="internalFilters.length > 0 || relationshipFilter "
                     [disabled]="!filterForm.form.valid || hasMultipleRelationships()"
                     label="Filter Results"
+                    i18n-label
                     pButton
-                    style="width: '150px';"
+                    style="width: 150px;"
                     type="submit"></button>
             <button (click)="resetFilters()"
                     *ngIf="internalFilters.length || relationshipFilter "
                     label="Clear all Filters"
+                    i18n-label
                     pButton
-                    style="width: '150px';"
+                    style="width: 150px;"
                     type="button"></button>
         </div>
     </div>

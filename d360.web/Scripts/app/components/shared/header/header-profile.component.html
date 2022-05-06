@@ -2,7 +2,7 @@
     <a class="photo hide-on-med-and-down"><img [src]="'/api/v2/membership/users/' + resourceUid + '/image?size=25'" height="25" width="25" /></a>
     <div class="show-on-medium-and-down hide-on-med-and-up">
         <div class="mini-menu-line">
-            <div class="check-gutter"></div><div class="text">My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
+            <div class="check-gutter"></div><div class="text" i18n>My Account</div><div class="expand-gutter"><i class="fa fa-caret-right"></i></div>
         </div>
     </div>
     <div class="search-child header-profile-panel">
@@ -20,22 +20,22 @@
                 </li>
                 <li (click)="viewProfile()" class="header-item">
                     <div class="mini-menu-line">
-                        <div class="text no-gutter">View Profile</div>
+                        <div class="text no-gutter"i18n>View Profile</div>
                     </div>
                 </li>
                 <li *ngIf="showAllUsersAPIKey" (click)="isApiKeysPopupVisible=true" class="header-item">
                     <div class="mini-menu-line">
-                        <div class="text no-gutter">API Key</div>
+                        <div class="text no-gutter"i18n>API Key</div>
                     </div>
                 </li>
                 <li *ngIf="!singleSignOn" [routerLink]="'/resource/'+resourceId+'/changepassword'" class="header-item">
                     <div class="mini-menu-line">
-                        <div class="text no-gutter">Change Password</div>
+                        <div class="text no-gutter"i18n>Change Password</div>
                     </div>
                 </li>
                 <li class="header-item" (click)="signOut()">
                     <div class="mini-menu-line">
-                        <div class="text no-gutter">Sign Out</div>
+                        <div class="text no-gutter"i18n>Sign Out</div>
                     </div>
                 </li>
             </ul>

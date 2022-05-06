@@ -881,7 +881,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             else if (n.activityType == WorkflowActivityType.StateChange)
             {
                 n.fore = "#fff";
-                n.activityDescription = "State Change (Unsupported Activity)";
+                n.activityDescription = $localize`State Change (Unsupported Activity)`;
             }
             else
             {
@@ -1450,34 +1450,34 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
 
         if (invalidNodeCount > 0)
-            this.errors.push('There are one or more invalid steps on the diagram (highlighted in red)');
+            this.errors.push($localize`There are one or more invalid steps on the diagram (highlighted in red)`);
 
         if (invalidLinkCount > 0)
-            this.errors.push('There are one or more invalid transitions on the digram (highlighted in red)');
+            this.errors.push($localize`There are one or more invalid transitions on the digram (highlighted in red)`);
 
         if (startNodes != 1)
-            this.errors.push('There must be exactly 1 start step on the diagram');
+            this.errors.push($localize`There must be exactly 1 start step on the diagram`);
 
         if (finishNodes != 1)
-            this.errors.push('There must be exactly 1 finish step on the diagram');
+            this.errors.push($localize`There must be exactly 1 finish step on the diagram`);
 
         if (disconnectedNodeCount > 0)
-            this.errors.push('There are steps on the diagram which are not connected');
+            this.errors.push($localize`There are steps on the diagram which are not connected`);
 
         if (missingInputCount > 0 || missingOutputCount > 0)
-            this.errors.push('There are steps on the diagram which are missing an input or output');
+            this.errors.push($localize`There are steps on the diagram which are missing an input or output`);
 
         if (startToFinish)
-            this.errors.push('The start step cannot be connected directly to the finish step');
+            this.errors.push($localize`The start step cannot be connected directly to the finish step`);
 
         if (invalidFieldReferences > 0)
-            this.errors.push(`There are ${invalidFieldReferences} invalid field references in workflow`);
+            this.errors.push($localize`There are ${invalidFieldReferences} invalid field references in workflow`);
 
         if (StateChangeCount > 0)
-            this.errors.push(`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);
+            this.errors.push($localize`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);
 
         if (SqlProcedureCount > 0)
-            this.errors.push(`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);
+            this.errors.push($localize`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);
         
         if (this.errors.length > 0)
             this.isValid = false;

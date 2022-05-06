@@ -1,8 +1,9 @@
-﻿import { Component, OnInit, Output, Input, EventEmitter} from '@angular/core';
+﻿import { Component, OnInit, Output, Input, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { ArtifactService } from '../../services/artifacts.service';
-import { Count} from '../../models/counts.model';
+import { Count } from '../../models/counts.model';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-activity-tile',
@@ -12,7 +13,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 export class ActivityTile extends BaseComponent implements OnInit {
     counts: Count[] = [];
-    selected: Count;    
+    selected: Count;
     isLoaded: boolean = false;
 
     @Input() daysToLookBack: number = 7;
@@ -45,7 +46,7 @@ export class ActivityTile extends BaseComponent implements OnInit {
                     this.isLoaded = true;
                 }
             )
-        ;
+            ;
     }
 
     doSelect(item) {
@@ -66,16 +67,16 @@ export class ActivityTile extends BaseComponent implements OnInit {
 
         switch (this.daysToLookBack) {
             case 7:
-                text = ' (Past week)';
+                text = ' (' + $localize`Past week` + ') ';
                 break;
             case 30:
-                text = ' (Past month)';
+                text = ' (' + $localize`Past month` + ')';
                 break;
             case 365:
-                text =  ' (Past year)';
+                text = ' (' + $localize`Past year` + ')';
                 break;
             default:
-                text = ' (All Activity)';
+                text = ' (' + $localize`All Activity` + ')';
                 break;
         }
 

@@ -2,31 +2,31 @@
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
 
-            <button igButton icon="fa-chevron-circle-left" label="Exit Designer" (click)="doControlledAction('switchModes')"></button>
+            <button igButton icon="fa-chevron-circle-left" i18n-label label="Exit Designer" (click)="doControlledAction('switchModes')"></button>
             <div class="button-spacer"></div>
 
-            <button pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" [disabled]="isSaveDisabled" (click)="save()"></button>
+            <button i18n-pTooltip pTooltip="Save changes" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-save" [disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
-            <button pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
-            <button pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-left" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+            <button i18n-pTooltip pTooltip="Delete selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-trash" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
+            <button i18n-pTooltip pTooltip="View and edit relationships for selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-left" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
             <div class="menu-wrapper">
-                <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" i18n-pTooltip pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                 <ig-popup-menu [items]="popupMenuItems" #menu [tabIndex]="10"></ig-popup-menu>
             </div>
         </div>
         <div class="controls-right">
-            <button pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')"></button>
-            <button pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')"></button>
+            <button i18n-pTooltip pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'diagram' ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="changeViewType('diagram')"></button>
+            <button i18n-pTooltip pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{viewType == 'list' ? 'ig-state-active' : ''}}" icon="fa-list" (click)="changeViewType('list')"></button>
             <div class="button-spacer"></div>
-            <button pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" (click)="changeInfoPanelMode()"></button>
+            <button i18n-pTooltip pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" (click)="changeInfoPanelMode()"></button>
         </div>
     </div>
 
 
     <div class="diagram-content">
         <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
-            <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
+            <d3s-loading isLoading="true" i18n>Loading Process Diagram</d3s-loading>
         </div>
         <div id="myPaletteDiv" class="{{(isLoaded && isEditMode && viewType == 'diagram') ? '' : 'hide'}}">
             <div class="pallete-wrapper">
@@ -36,7 +36,7 @@
                             <i class="fa fa-chevron-down"></i>
                             <i class="fa fa-chevron-right"></i>
 
-                            <span>Events</span>
+                            <span i18n>Events</span>
                         </div>
                         <div class="content">
                             <div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
@@ -46,7 +46,7 @@
                         <div class="title">
                             <i class="fa fa-chevron-down"></i>
                             <i class="fa fa-chevron-right"></i>
-                            <span>Activities</span>
+                            <span i18n>Activities</span>
                         </div>
                         <div class="content">
 
@@ -57,7 +57,7 @@
                         <div class="title">
                             <i class="fa fa-chevron-down"></i>
                             <i class="fa fa-chevron-right"></i>
-                            <span>Gateways</span>
+                            <span i18n>Gateways</span>
                         </div>
                         <div class="content">
                             <div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
@@ -72,13 +72,13 @@
                     <div class="icon-holder">
                         <i class="fa fa-plus"></i>
                     </div>
-                    <span>Drag and drop flow objects to start building your diagram</span>
+                    <span i18n>Drag and drop flow objects to start building your diagram</span>
                 </div>
                 <div class="content" *ngIf="!isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-pencil"></i>
                     </div>
-                    <span>Choose Edit to start creating your diagram</span>
+                    <span i18n>Choose Edit to start creating your diagram</span>
                 </div>
             </div>
             <div [hidden]="viewType == 'list'" id="diagram"></div>
@@ -111,7 +111,7 @@
 <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="closeErrorModal()" [isVisible]="isErrorModalOpened">
     <div class="content">
         <div class="row">
-            Sorry, we cannot save your changes to the diagram until the following issues are resolved:
+            <ng-container i18n>Sorry, we cannot save your changes to the diagram until the following issues are resolved</ng-container>:
             <br />
             <br />
             <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
@@ -125,7 +125,7 @@
                         </ul>
                     </ng-template>
                     <ng-template #elseBlock>
-                        <span class="error-title">
+                        <span class="error-title" i18n>
                             Asset <strong>{{item.AssetName}}</strong> has following issues:
                         </span>
                         <ul>
@@ -137,30 +137,30 @@
                 </div>
                 <span *ngIf="areNamesUnique">
                     <br />
-                    Please rename your flow objects to ensure that each has a unique name.
+                    <ng-container i18n>Please rename your flow objects to ensure that each has a unique name.</ng-container>
                 </span>
             </div>
         </div>
     </div>
     <div class="action-bar">
         <div class="grow"></div>
-        <button igAutoFocus igButton class="ig-button-primary" label="Close" (click)="isErrorModalOpened=false"></button>
+        <button igAutoFocus igButton class="ig-button-primary" i18n-label label="Close" (click)="isErrorModalOpened=false"></button>
 
     </div>
 </d3s-modal>
 
-<d3s-modal [title]="'Save Changes?'" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
+<d3s-modal i18n-title title="Save Changes?" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
     <div class="content">
         <div class="row">
             {{actionMessage}}
         </div>
     </div>
     <div class="action-bar">
-        <button igButton label="Cancel" tabindex="2001" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;"></button>
+        <button igButton i18n-label label="Cancel" tabindex="2001" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;"></button>
         <span class="spacer"></span>
-        <button igButton label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
+        <button igButton i18n-label label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
         <div class="grow"></div>
-        <button igAutoFocus igButton class="ig-button-primary" label="Save Changes" tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
+        <button igAutoFocus igButton class="ig-button-primary" i18n-label label="Save Changes" tabindex="2000" (click)="isSavingChangesModalOpened=false;save(true);"></button>
 
     </div>
 </d3s-modal>
@@ -170,13 +170,13 @@
         <div class="row">
             <div class="loader">
                 <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                <span class="text" *ngIf="isSaving && !isExporting && !isImporting">
+                <span class="text" *ngIf="isSaving && !isExporting && !isImporting" i18n>
                     Saving changes
                 </span>
-                <span class="text" *ngIf="isExporting">
+                <span class="text" *ngIf="isExporting" i18n>
                     Exporting diagram
                 </span>
-                <span class="text" *ngIf="isImporting">
+                <span class="text" *ngIf="isImporting" i18n>
                     Importing diagram
                 </span>
             </div>
@@ -186,24 +186,24 @@
 
 <d3s-modal [title]="deleteModelTitle" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
     <div class="content">
-        <div class="row" *ngIf="getSelectedNodeCount() <= 1">
+        <div class="row" *ngIf="getSelectedNodeCount() <= 1" i18n>
             Please confirm that you wish to delete the selected item, as this operation cannot be undone.
         </div>
-        <div class="row" *ngIf="getSelectedNodeCount() > 1">
+        <div class="row" *ngIf="getSelectedNodeCount() > 1" i18n>
             Please confirm that you wish to delete the {{getSelectedNodeCount()}} selected items, as this operation cannot be undone.
         </div>
     </div>
     <div class="action-bar">
-        <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
+        <button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="promptDeleteOpened=false;myDiagram.focus();"></button>
         <div class="grow"></div>
-        <button igButton class="ig-button-primary" label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
 
     </div>
 </d3s-modal>
 
-<d3s-modal [title]="'Import Diagram'" additionalClasses="large-dialog" (onClose)="isImportVisible=false" [isVisible]="isImportVisible">
+<d3s-modal i18n-title title="Import Diagram" additionalClasses="large-dialog" (onClose)="isImportVisible=false" [isVisible]="isImportVisible">
     <div class="content">
-        <div class="row" *ngIf="importAssets.length > 0">
+        <div class="row" *ngIf="importAssets.length > 0" i18n>
             Choose an asset (of type {{importAssets[0].typePath}} ) to import a diagram from:
         </div>
         <div class="row">
@@ -230,7 +230,7 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'assetPath'" style="width: 60%">
-                                Asset
+                                <ng-container i18n>Asset</ng-container>
                                 <d3s-sortIcon [field]="'assetPath'"></d3s-sortIcon>
                             </th>
                         </tr>
@@ -250,24 +250,24 @@
             </ng-container>
 
             <ng-container *ngIf="isReplace">
-                <p>
+                <p i18n>
                     Please note that replacing the current diagram cannot be undone. Check the option below to confirm that you wish to continue.
                 </p>
-                <p-checkbox igCheckbox [binary]="true" [(ngModel)]="confirmation" label="Replace the current diagram"></p-checkbox>
+                <p-checkbox igCheckbox [binary]="true" [(ngModel)]="confirmation" i18n-label label="Replace the current diagram"></p-checkbox>
             </ng-container>
         </div>
     </div>
     <div class="action-bar">
-        <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="isImportVisible=false;"></button>
+        <button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="isImportVisible=false;"></button>
         <div class="grow"></div>
-        <button igButton [loading]="loadingRelationships" class="ig-button-primary" label="{{isReplace ? 'Replace' : 'Import'}}" [disabled]="!selectedImportFromAsset || (isReplace && !confirmation) || loadingRelationships" tabindex="1001" (click)="confirmation=false;isImportVisible=false;importDiagram();"></button>
+        <button igButton [loading]="loadingRelationships" class="ig-button-primary" label="{{importButtonText}}" [disabled]="!selectedImportFromAsset || (isReplace && !confirmation) || loadingRelationships" tabindex="1001" (click)="confirmation=false;isImportVisible=false;importDiagram();"></button>
 
     </div>
 </d3s-modal>
 
-<d3s-modal [title]="'Diagram Import: Cannot Copy Relationships'" additionalClasses="large-dialog" (onClose)="showRelationshipsConfirmation=false" [isVisible]="showRelationshipsConfirmation">
+<d3s-modal i18n-title title="Diagram Import: Cannot Copy Relationships" additionalClasses="large-dialog" (onClose)="showRelationshipsConfirmation=false" [isVisible]="showRelationshipsConfirmation">
     <div class="content">
-        <div class="row">
+        <div class="row" i18n>
             The following relationships in the source diagram cannot be copied, due to cardinality (eg. one-to-one, many-to-one) restrictions on relationship types:<br /><br />
         </div>
 
@@ -281,11 +281,11 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'FlowObject'" style="width: 60%">
-                            Flow Object
+                            <ng-container i18n>Flow Object</ng-container>
                             <d3s-sortIcon [field]="'FlowObject'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'RelatedAsset'" style="width: 60%">
-                            Related Asset
+                            <ng-container i18n>Related Asset</ng-container>
                             <d3s-sortIcon [field]="'RelatedAsset'"></d3s-sortIcon>
                         </th>
                     </tr>
@@ -307,9 +307,9 @@
         </div>
     </div>
     <div class="action-bar">
-        <button igAutoFocus igButton label="Cancel" tabindex="1000" (click)="isImportVisible=false;showRelationshipsConfirmation=false;"></button>
+        <button igAutoFocus igButton i18n-label label="Cancel" tabindex="1000" (click)="isImportVisible=false;showRelationshipsConfirmation=false;"></button>
         <div class="grow"></div>
-        <button igButton class="ig-button-primary" label="Continue" tabindex="1001" (click)="showRelationshipsConfirmation=false;isImportVisible=false;hasPassedRelationshipCheck=true;importDiagram();"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Continue" tabindex="1001" (click)="showRelationshipsConfirmation=false;isImportVisible=false;hasPassedRelationshipCheck=true;importDiagram();"></button>
 
     </div>
 </d3s-modal>

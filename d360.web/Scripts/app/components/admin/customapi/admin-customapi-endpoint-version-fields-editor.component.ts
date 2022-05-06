@@ -1,11 +1,12 @@
-﻿import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ApiField} from '../../../models/custom-api.model';
-import {FieldType} from '../../../models/fields.model';
-import {CustomAPIService} from '../../../services/custom-api.service';
-import {BaseComponent} from '../../shared/base.component';
+﻿import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiField } from '../../../models/custom-api.model';
+import { FieldType } from '../../../models/fields.model';
+import { CustomAPIService } from '../../../services/custom-api.service';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-api-endpoint-version-fields-editor',
@@ -21,6 +22,10 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
     @Output() onCloseClick = new EventEmitter();
 
     isAdding: boolean = false;
+
+    labelSave = $localize`Save`;
+    labelClose = $localize`Close`;
+
     private fieldTypes: FieldType[] = [];
     private multiSelectFieldTypes: FieldType[] = [];
     private selectedFields: any[] = [];
@@ -53,8 +58,8 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
                     this.isLoading = false;
                     if (this.fieldTypes != null && this.fieldTypes.length > 0) {
                         this.customAPIService.getEndpointVersionField_LookupFieldTypes(this.fieldTypes[0].ID).subscribe(t => {
-                                this.multiSelectFieldTypes = t;
-                            }
+                            this.multiSelectFieldTypes = t;
+                        }
                         );
                     }
                 }
@@ -120,5 +125,12 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
 
     private valid(): boolean {
         return !(this.model.FieldTypeID == null || this.model.FieldTypeID < 1);
+    }
+
+    get headerTitle(): string {
+        if (this.isAdding) {
+            return $localize`Add Version Field`;
+        }
+        return $localize`Edit Version Field`;
     }
 }

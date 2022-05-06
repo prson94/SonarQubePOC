@@ -1,13 +1,13 @@
-﻿import {Injectable} from '@angular/core';
-import {LoadDetail, LoadFilePostModel, LoadColumn, LoadItemsModel} from '../models/load.model';
-import {MessagesObservableService} from './messages-observable.service';
-import {GridColumn} from '../models/grid-definition.model';
-import {SelectItem} from 'primeng/api';
-import {JsonResult} from '../models/jsonresult.model';
-import {BaseObservableService} from "./baseObservable.service";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+﻿import { Injectable } from '@angular/core';
+import { LoadDetail, LoadFilePostModel, LoadColumn, LoadItemsModel } from '../models/load.model';
+import { MessagesObservableService } from './messages-observable.service';
+import { GridColumn } from '../models/grid-definition.model';
+import { SelectItem } from 'primeng/api';
+import { JsonResult } from '../models/jsonresult.model';
+import { BaseObservableService } from "./baseObservable.service";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
 @Injectable({
     providedIn: 'root'
@@ -69,11 +69,11 @@ export class LoadService extends BaseObservableService {
 
     getActionOptions(): SelectItem[] {
         this.aOptions = [
-            {label: 'Promotion', value: 'P'},
-            {label: 'Relation', value: 'R'},
-            {label: 'Responsibilities', value: 'O'},
-            {label: 'Unrelation', value: 'U'},
-            {label: 'Users/Groups', value: 'M'}
+            { label: $localize`Promotion`, value: 'P' },
+            { label: $localize`Relation`, value: 'R' },
+            { label: $localize`Responsibilities`, value: 'O' },
+            { label: $localize`Unrelation`, value: 'U' },
+            { label: $localize`Users/Groups`, value: 'M' }
         ];
         return this.aOptions;
     }
@@ -85,7 +85,7 @@ export class LoadService extends BaseObservableService {
                     let i = [];
 
                     response["forEach"](r => {
-                        i.push({label: r.title, value: r.value});
+                        i.push({ label: r.title, value: r.value });
                     });
 
                     return <SelectItem[]>i;

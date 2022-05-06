@@ -72,4 +72,8 @@ export class AssetBrowserPanelsComponent {
     private execute_Settings() {
         this.execute(AssetBrowserPanelCommand.Settings);
     }
+
+    get expandShringLabel(): string {
+        return this.isFullScreen ? $localize`Shrink View` : $localize`Expand View`;
+    }
 } 

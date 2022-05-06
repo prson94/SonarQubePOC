@@ -13,6 +13,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AssetAction, EditFormData } from '../../models/secondaryNav.model';
 import { Location } from '@angular/common';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-connector-label-item',
@@ -35,7 +36,8 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     isDeleteVisible: boolean = false;
     isSaving: boolean = false;
 
-    deletePopupTitle = 'Delete Connector Label';
+    deletePopupTitle = $localize`Delete Connector Label`;
+    editConnectorLabel = $localize`Edit Connector Label`;
     deleteConfirmationText = '';
 
     private theDeleteCallback: Function;
@@ -106,7 +108,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                     this.setObjectInfo('ConnectorLabel', this.labelUid);
                     this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.label.Value);
-                    this.deleteConfirmationText = `Delete the Connector Label '${this.label.Value}'`;
+                    this.deleteConfirmationText = $localize`Delete the Connector Label '${this.label.Value}'`;
 
                     this.setObjectInfo(
                         'ConnectorLabel',
@@ -143,7 +145,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
 
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.currentAreaName = "Connector Labels";
+                    this.currentAreaName = $localize`Connector Labels`;
                     let areaBreadcrumb = new Breadcrumb(
                         this.currentAreaName, ``
                     );
@@ -224,10 +226,10 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `Connector label succesfully created`;
+                    msg = $localize`Connector label succesfully created`;
                 }
                 else {
-                    msg = `Connector label succesfully updated`;
+                    msg = $localize`Connector label succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 this.label.Value = event.item.Value;
@@ -244,7 +246,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
             .subscribe(result => {
 
                 if (result) {
-                    this.messagesService.showInfoMessage("Success", "Connector label consolidation succesfull");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Connector label consolidation succesfull`);
                 }
                 this.isEditorVisible = false;
                 this.isSaving = false;
@@ -267,12 +269,12 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
             }, err => this.showMessageForResult(this.messagesService, err));
     }
     private exportUsage() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, `Where Used report for Connector Label "${this.label.Value}"`)
+        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`)
     }
     openConnectorLabelPageByUID(uid: string) {
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
     }
     private export() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, `Connector Labels`, this.sort, this.filters)
+        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters)
     }
 }

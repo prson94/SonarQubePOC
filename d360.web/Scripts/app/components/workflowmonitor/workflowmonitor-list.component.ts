@@ -5,7 +5,7 @@ import { WorkflowMonitorService } from "../../services/workflowmonitor.service";
 import { Subject, Subscription } from "rxjs";
 import { WorkflowMonitorItem } from "../../models/workflowmonitor.model";
 import { SortOrder } from "../../models/enums.model";
-import {  GridFilterExpression } from "../../models/grid-definition.model";
+import { GridFilterExpression } from "../../models/grid-definition.model";
 import { StateService } from "../../services/state.service";
 import { StringHelpers } from "../../static/string-helpers";
 import { AuthenticationService } from '../../services/authentication.service';
@@ -19,15 +19,15 @@ import { takeUntil } from "rxjs/operators";
     selector: 'd3s-workflowmonitor-list',
     providers: [WorkflowMonitorService],
     templateUrl: 'workflowmonitor-list.component.html',
-    changeDetection: ChangeDetectionStrategy.OnPush,  
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
-export class WorkflowMonitorListComponent extends BaseComponent  implements OnInit, OnDestroy,OnChanges {
+export class WorkflowMonitorListComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() predefinedFilters: GridFilterExpression[] = [];
     @Input() showHeader: boolean = true;
     title: string = 'WorkFlow Items';
     items: WorkflowMonitorItem[] = [];;
-    subItems : Subscription
+    subItems: Subscription
     totalRecords: number;
     rowsPerPage: number = 10;
     sortField: string = undefined;
@@ -41,6 +41,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     @Output() hideDetails = new EventEmitter();
     private destroy = new Subject<void>();
 
+    exportMessage: string = "";
+
     constructor(private wfMonitorService: WorkflowMonitorService,
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
         public stateService: StateService,
@@ -48,6 +50,8 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         protected settingsService: CompanySettingsService,
         private authenticationService: AuthenticationService) {
         super(settingsService);
+
+        this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
     }
 
     ngOnInit(): void {
@@ -62,7 +66,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         ).subscribe((rowsPerPage) => {
             this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
             this.isLoading = true;
-            this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
+            this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
         });
     }
 
@@ -70,9 +74,9 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         if (changes['predefinedFilters']) {
             this.usePredefinedFilters = (this.predefinedFilters && this.predefinedFilters.length > 0);
             this.isLoading = true;
-            this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0});
+            this.loadWorkflowMonitorItems({ rows: this.rowsPerPage, first: 0 });
         }
-     }
+    }
 
     ngOnDestroy(): void {
         if (this.subItems) {
@@ -114,7 +118,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
                 (!this.stateService.workflowItemFilters.workflowTypeFilters ||
                     StringHelpers.isNullOrEmpty(this.stateService.workflowItemFilters.workflowTypeFilters.value)))) {
             return filter;
-        } 
+        }
 
         if (this.stateService.workflowItemFilters.columFilters && this.stateService.workflowItemFilters.columFilters.length > 0)
             filter = _.clone(this.stateService.workflowItemFilters.columFilters);
@@ -138,7 +142,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
         }
 
         this.isLoading = true;
-        this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder,filter)
+        this.subItems = this.wfMonitorService.getWorkFlowMonitorItems(this.rowsPerPage, this.stateService.workflowItemFilters.currentPageNumber, this.sortField, this.sortOrder, filter)
             .subscribe(result => {
                 this.items = result.Items;
                 this.totalRecords = +result.Total;
@@ -188,12 +192,12 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
     }
 
     loadWorkflowMonitorItems(event: LazyLoadEvent) {
-     
+
         this.rowsPerPage = event.rows;
-        this.sortOrder = event.sortField == undefined ? SortOrder.Descending: event.sortOrder;
+        this.sortOrder = event.sortField == undefined ? SortOrder.Descending : event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
-        this.stateService.workflowItemFilters.currentPageNumber =  event.first / event.rows;
+        this.stateService.workflowItemFilters.currentPageNumber = event.first / event.rows;
         this.loadData();
     }
 
@@ -217,7 +221,7 @@ export class WorkflowMonitorListComponent extends BaseComponent  implements OnIn
 
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
-    }    
+    }
 }
 
 

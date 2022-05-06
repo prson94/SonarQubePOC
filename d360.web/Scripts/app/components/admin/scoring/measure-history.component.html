@@ -2,22 +2,22 @@
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="row" *ngIf="!isLoading" style="height:100%">
         <div style="margin-left: 0.67em;height: 5%">
-            <p>Version history of the measure '{{Measure.Name}}' for asset type '{{AssetType.Name}}'</p>
+            <p i18n>Version history of the measure '{{Measure.Name}}' for asset type '{{AssetType.Name}}'</p>
         </div>
         <div class="col s7" style="height:90%;overflow-y:auto;">
             <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px', 'height' : '100%' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)" styleClass="treetable">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [ttSortableColumn]="'Version'">
-                            Version
+                            <ng-container i18n>Version</ng-container>
                             <p-treeTableSortIcon [field]="'Version'"></p-treeTableSortIcon>
                         </th>
                         <th *ngIf="!isExternallyCalculated" [ttSortableColumn]="'Weight'">
-                            Weight
+                            <ng-container i18n>Weight</ng-container>
                             <p-treeTableSortIcon [field]="'Weight'"></p-treeTableSortIcon>
                         </th>
                         <th [ttSortableColumn]="'EffectiveDate'">
-                            Effective From
+                            <ng-container i18n>Effective From</ng-container>
                             <p-treeTableSortIcon [field]="'EffectiveDate'"></p-treeTableSortIcon>
                         </th>
                     </tr>
@@ -38,27 +38,27 @@
             <div>
                 <div>
                     <div class="measure-details-item">
-                        <div class="details-header">Name</div>
+                        <div class="details-header" i18n>Name</div>
                         <div class="details-content">{{selection?.Name}}</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Description</div>
+                        <div class="details-header" i18n>Description</div>
                         <div class="details-content">{{selection?.Description ? selection?.Description :'---'}}</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Effective Dates</div>
+                        <div class="details-header" i18n>Effective Dates</div>
                         <div class="details-content">{{selection?.EffectiveDate  | utcDate | date:'shortDate'}} - {{selection?.EffectiveEndDate ? (selection.EffectiveEndDate  | utcDate | date:'shortDate') : 'Present'}}</div>
                     </div>
                     <div *ngIf="!isExternallyCalculated" class="measure-details-item">
-                        <div class="details-header">Weight</div>
+                        <div class="details-header" i18n>Weight</div>
                         <div class="details-content">{{getAsPrecentage(selection?.Weight)}}</div>
                     </div>
                     <div *ngIf="!isExternallyCalculated && selection?.Threshold" class="measure-details-item">
-                        <div class="details-header">Use Pass Threshold</div>
-                        <div class="details-content">Yes</div>
+                        <div class="details-header" i18n>Use Pass Threshold</div>
+                        <div class="details-content" i18n>Yes</div>
                     </div>
                     <div *ngIf="!isExternallyCalculated && selection?.Threshold" class="measure-details-item">
-                        <div class="details-header">Pass Threshold</div>
+                        <div class="details-header" i18n>Pass Threshold</div>
                         <div class="details-content">{{getAsPrecentage(selection?.Threshold)}}</div>
                     </div>
                     <div *ngIf="!isExternallyCalculated && showPassTest" class="measure-details-item">
@@ -66,7 +66,7 @@
                         </d3s-admin-metric-pass-test-details>
                     </div>
                     <div *ngIf="showConditions" class="measure-details-item">
-                        <div class="details-header">Asset Conditions and Weighting</div>
+                        <div class="details-header" i18n>Asset Conditions and Weighting</div>
                         <measure-conditions-details [screenReferences]="screenReferences" [conditionGroups]="selection?.ConditionGroups" [matchAll]="selection?.MatchConditionsOnly"></measure-conditions-details>
                     </div>
                     <div class="measure-details-item">

@@ -11,7 +11,7 @@
                     <ng-container [ngSwitch]="step.ActivityType">
                         <div *ngSwitchCase="WorkflowActivityType.Form" class="col s4">
                             <span class="FieldName">
-                                Form:
+                                <ng-container i18n>Form</ng-container>:
                             </span>
                             <span>
                                 {{step?.Fields?.form['@title']}}
@@ -19,7 +19,7 @@
                         </div>
                         <div *ngSwitchDefault class="col s4">
                             <span class="FieldName">
-                                Activity Type: 
+                                <ng-container i18n>Activity Type</ng-container>:
                             </span>
                             <span>
                                 {{helper.activityTypeName(step.ActivityType)}}
@@ -28,7 +28,7 @@
                     </ng-container>
                     <div class="col s4">
                         <span class="FieldName">
-                            Date Started:
+                            <ng-container i18n>Date Started</ng-container>:
                         </span>
                         <span>
                             {{(step.StartedOn | date: 'short')}}
@@ -36,7 +36,7 @@
                     </div>
                     <div class="col s4">
                         <span class="FieldName">
-                            Date Completed:
+                            <ng-container i18n>Date Completed</ng-container>:
                         </span>
                         <span>
                             {{step.CompletedOn == null ? 'N/A' : (step.CompletedOn | date: 'short')}}
@@ -74,7 +74,7 @@
                     <div class="row">
                         <div class="col s6">
                             <span class="FieldName">
-                                State:
+                                <ng-container i18n>State</ng-container>:
                             </span>
                             <span>
                                 {{states[step?.StateChange]?.label || 'Unknown'}}
@@ -89,10 +89,10 @@
                     </ng-container>
                     <div *ngIf="bulkReassignments.length > 0" class="row">
                         <div class="col s12">
-                            <div class="FieldName">
+                            <div class="FieldName" i18n>
                                 Form was reassigned to another User
                             </div>
-                            <div *ngFor="let r of bulkReassignments; let i = index">
+                            <div *ngFor="let r of bulkReassignments; let i = index" i18n>
                                 {{r.ByResourceName}} reassigned this action from {{r.FromResourceName}} to {{r.ToResourceName}} on {{(r.ReassignOn | date: 'short')}} <br *ngIf="i != last" />
                             </div>
                         </div>
@@ -100,7 +100,7 @@
                     <div *ngIf="step.ItemSettings.hasEmails == false && step.Settings.MessageRecipientType == 'Responsibility'" class="row">
                         <div class="col s12">
                             <div class="FieldName">
-                                Form Responsibilities:
+                                <ng-container i18n>Form Responsibilities</ng-container>:
                             </div>
                             <div *ngFor="let res of step.ItemSettings.Responsibilities">
                                 {{res.name}}
@@ -110,7 +110,7 @@
                     <div class="row">
                         <div class="col s12">
                             <div class="FieldName">
-                                Form Description:
+                                <ng-container i18n>Form Description</ng-container>:
                             </div>
                             <div *ngIf="step?.Fields?.form['@description'] != null" class="panel-section FormFieldContent" [innerHTML]="step?.Fields?.form['@description'] | safeHtml">
                             </div>
@@ -127,7 +127,7 @@
                         </div>
                         <div class="row" *ngIf="reassignment.ReassignType == 'Object'">
                             <div class="col s12">
-                                <span>
+                                <span i18n>
                                     {{reassignment.ByResourceName}} reassigned this action from <strong>{{step?.IssueDetails?.ObjectName}}</strong> to <strong>{{reassignment.ObjectName}}</strong> on {{reassignment.ReassignOn | date: 'medium'}}.
                                     <ng-container *ngIf="reassignment.NewItemId != null">
                                         A <a [href]="'/monitor?itemId=' + reassignment.NewItemId" target="_blank">new workflow <i class="fa fa-external-link"></i></a> has been created.
@@ -139,7 +139,7 @@
                     <div class="row">
                         <div class="col s12">
                             <span class="FieldName">
-                                Form Response Type:
+                                <ng-container i18n>Form Response Type</ng-container>:
                             </span>
                             <span>
                                 {{helper.formResponseTypeName(step.Settings.FormResponseType)}}
@@ -155,7 +155,7 @@
                 <div class="row">
                     <div class="col s4">
                         <span class="FieldName">
-                            Change Type:
+                            <ng-container i18n>Change Type</ng-container>:
                         </span>
                         <span>
                             {{helper.changeTypeName(step.ChangeType)}}
@@ -163,7 +163,7 @@
                     </div>
                     <div class="col s4">
                         <span class="FieldName">
-                            Date Started:
+                            <ng-container i18n>Date Started</ng-container>:
                         </span>
                         <span>
                             {{(step.StartedOn | date: 'short')}}
@@ -171,7 +171,7 @@
                     </div>
                     <div class="col s4">
                         <span class="FieldName">
-                            Date Completed:
+                            <ng-container i18n>Date Completed</ng-container>:
                         </span>
                         <span>
                             {{step.CompletedOn == null ? 'N/A' : (step.CompletedOn | date: 'short')}}
@@ -183,7 +183,7 @@
                         <div class="row">
                             <div class="col s12">
                                 <span class="FieldName">
-                                    Version:
+                                    <ng-container i18n>Version</ng-container>:
                                 </span>
                                 <span>
                                     {{step.Version}} {{step.IsPublishedVersion ? '(Published)' : ''}}
@@ -193,7 +193,7 @@
                         <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule" class="row">
                             <div class="col s12">
                                 <span class="FieldName">
-                                    Schedule Interval:
+                                    <ng-container i18n>Schedule Interval</ng-container>:
                                 </span>
                                 <span>
                                     {{step?.EventSettings?.ScheduleInterval}}
@@ -204,7 +204,7 @@
                             <div class="row">
                                 <div class="col s12">
                                     <span class="FieldName">
-                                        Action Type:
+                                        <ng-container i18n>Action Type</ng-container>:
                                     </span>
                                     <span>
                                         {{step.IssueDetails.IssueName}}
@@ -214,7 +214,7 @@
                             <div class="row">
                                 <div class="col s12">
                                     <span class="FieldName">
-                                        Action Asset Type:
+                                        <ng-container i18n>Action Asset Type</ng-container>:
                                     </span>
                                     <span>
                                         {{step.IssueDetails.ObjectTypeName}}
@@ -224,7 +224,7 @@
                             <div class="row">
                                 <div class="col s12">
                                     <span class="FieldName">
-                                        Asset:
+                                        <ng-container i18n>Asset</ng-container>:
                                     </span>
                                     <span>
                                         {{step.IssueDetails.ObjectName}}
@@ -236,7 +236,7 @@
                             <div class="row">
                                 <div class="col s12">
                                     <span class="FieldName">
-                                        Asset Type:
+                                        <ng-container i18n>Asset Type</ng-container>:
                                     </span>
                                     <span>
                                         {{step.ObjectTypeName}}
@@ -246,7 +246,7 @@
                             <div class="row">
                                 <div class="col s12">
                                     <span class="FieldName">
-                                        Asset:
+                                        <ng-container i18n>Asset</ng-container>:
                                     </span>
                                     <span>
                                         {{step.ObjectName}}
@@ -257,10 +257,10 @@
                         <div *ngIf="step.ItemSettings.hasConditions == true" class="row">
                             <div class="col s12">
                                 <div class="FieldName">
-                                    Trigger Conditions:
+                                    <ng-container i18n>Trigger Conditions</ng-container>:
                                 </div>
                                 <div class="panel-section">
-                                    <div *ngIf="showAllAnyCondition">
+                                    <div *ngIf="showAllAnyCondition" i18n>
                                         Satisfy <strong>{{isSatisfyAll ? "all" : "any" }}</strong>
                                     </div>
                                     <ng-container *ngFor="let condition of filteredConditions">
@@ -274,7 +274,7 @@
                         <div *ngIf="step.ChangeType == WorkflowChangeType.Schedule" class="row">
                             <div class="col s12">
                                 <span class="FieldName">
-                                    Send Aggregate Email:
+                                    <ng-container i18n>Send Aggregate Email</ng-container>:
                                 </span>
                                 <span>
                                     {{(step?.EventSettings?.SendAggregateEmail == 'true' ? 'Yes' : 'No')}}

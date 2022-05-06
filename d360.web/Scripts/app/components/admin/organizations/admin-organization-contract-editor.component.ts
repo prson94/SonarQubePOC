@@ -6,18 +6,19 @@
     OnInit
 } from '@angular/core';
 
-import {Contract} from '../../../models/organization.model';
-import {OrganizationsService} from '../../../services/organizations.service';
+import { Contract } from '../../../models/organization.model';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-organization-contract-editor',
     providers: [OrganizationsService],
     template: `
-        <header>{{ isAdding ? 'Add' : 'Edit' }} Contract
+        <header i18n>{{ headerTitle }}
         </header>
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">
@@ -36,12 +37,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                    autocomplete="off"
                                    #title="ngModel"/>
                             <div [hidden]="title.pristine || title.valid"
-                                 class="errorMessage">* Title is required
+                                 class="errorMessage">* <ng-container i18n>Title is required</ng-container>
                             </div>
                         </div>
                     </div>
                     <div class="col s6">
-                        <div class="FieldName">Contract Type</div>
+                        <div class="FieldName" i18n>Contract Type</div>
                         <div>
                             <select [(ngModel)]="contract.ContractType"
                                     name="contractType"
@@ -53,7 +54,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                         [value]="c.value">{{ c.label }}</option>
                             </select>
                             <div [hidden]="type.pristine || type.valid"
-                                 class="errorMessage">* Contract Type is required
+                                 class="errorMessage">* <ng-container i18n>Contract Type is required</ng-container>
                             </div>
                         </div>
                     </div>
@@ -61,7 +62,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <div class="row"
                      style="padding-bottom: 10px">
                     <div class="col s12">
-                        <div class="FieldName">Body</div>
+                        <div class="FieldName" i18n>Body</div>
                         <div>
                             <p-editor [style]="{'height':'150px'}"
                                       [(ngModel)]="contract.Body" required
@@ -74,12 +75,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
                      style="padding-bottom: 10px"
                      *ngIf="!isAdding">
                     <div class="col s6">
-                        <div class="FieldName">Last Updated</div>
+                        <div class="FieldName" i18n>Last Updated</div>
                         <div>{{ contract.UpdatedOn | date : 'short' }}</div>
                     </div>
                     <div class="col s6">
-                        <div class="FieldName">Last published</div>
-                        <div>{{ contract.PublishedOn == null ? 'Never' : (contract.PublishedOn | date : 'short') }}</div>
+                        <div class="FieldName" i18n>Last published</div>
+                        <div>{{ contract.PublishedOn == null ? labelNever : (contract.PublishedOn | date : 'short') }}</div>
                     </div>
 
                 </div>
@@ -88,17 +89,17 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     <div class="col s12">
                         <button pButton
                                 type="submit"
-                                label="Save"
+                                label="{{labelSave}}"
                                 (click)="save()"
                                 [disabled]="!contractForm.form.valid"></button>
                         <button pButton
                                 type="submit"
-                                label="Save & Publish"
+                                label="{{labelPublish}}"
                                 (click)="save(true)"
                                 [disabled]="!contractForm.form.valid"></button>
                         <button pButton
                                 type="button"
-                                label="Close"
+                                label="{{labelClose}}"
                                 (click)="onClose.emit()"></button>
                     </div>
                 </div>
@@ -112,13 +113,19 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
     @Input() organizationId: number = null;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
+
+    headerTitle: string = ``;
     contract: Contract;
     isAdding = true;
     isLoading = false;
+    labelNever = $localize`Never`;
+    labelSave = $localize`Save`;
+    labelClose = $localize`Close`;
+    labelPublish = $localize`Save & Publish`;
 
     contractType = [
-        {value: 1, label: 'Organization Terms of Use'},
-        {value: 2, label: 'User Terms of Use'}
+        { value: 1, label: $localize`Organization Terms of Use` },
+        { value: 2, label: $localize`User Terms of Use` }
     ];
 
     constructor(
@@ -134,9 +141,11 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
             this.isAdding = true;
             this.contract = new Contract();
             this.contract.OrganizationID = this.organizationId;
+            this.headerTitle = $localize`Add Contract`;
         } else {
             this.isAdding = false;
             this.load();
+            this.headerTitle = $localize`Edit Contract`;
         }
     }
 
@@ -169,7 +178,7 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
                         this.onSave.emit(r);
                     }
                 )
-            ;
+                ;
         } else {
             this.organizationsService.putContract(this.contract, publish)
                 .subscribe(
@@ -180,7 +189,7 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
                         this.onSave.emit(r);
                     }
                 )
-            ;
+                ;
         }
     }
 }

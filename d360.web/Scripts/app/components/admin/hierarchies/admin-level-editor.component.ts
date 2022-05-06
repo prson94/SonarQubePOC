@@ -4,6 +4,7 @@ import { HierarchyTypeLevel } from '../../../models/hierarchy-type-level.model';
 import { BaseComponent } from '../../shared/base.component';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-level-editor',
@@ -18,10 +19,14 @@ export class AdminLevelEditorComponent extends BaseComponent {
     @Input() maxDepth: number;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
-    action: string = "Edit";
+    action: string = $localize`Edit`;
     error: any;
     editedLevel: HierarchyTypeLevel;
     levels: number[] = [];
+
+    labelSave = $localize`Save`;
+    labelCancel = $localize`Cancel`;
+    labelClose = $localize`Close`;
 
     constructor(
         private levelsService: LevelsService,
@@ -34,7 +39,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
             this.editedLevel = _.cloneDeep(this.level);
         else {
             this.editedLevel = new HierarchyTypeLevel();
-            this.action = "New";
+            this.action = $localize`New`;
         }
         this.getUnusedLevels();
     }
@@ -60,7 +65,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
     }
 
     onSubmit() {
-        this.saveClick.emit({level: this.editedLevel, action: this.level == null ? "new" : "edit"});
+        this.saveClick.emit({ level: this.editedLevel, action: this.level == null ? "new" : "edit" });
     }
 
     close() {

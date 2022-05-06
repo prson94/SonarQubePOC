@@ -22,10 +22,10 @@ export const SWITCH_VALUE_ACCESSOR: any = {
         '(focus)': 'focus($event)',
     }
 })
-export class Switch implements ControlValueAccessor, OnInit  {        
-    @Input() trueLabel = "Yes";
+export class Switch implements ControlValueAccessor, OnInit {
+    @Input() trueLabel = $localize`Yes`;
 
-    @Input() falseLabel = "No";
+    @Input() falseLabel = $localize`No`;
 
     @Input() optional: boolean = false;
 
@@ -53,17 +53,16 @@ export class Switch implements ControlValueAccessor, OnInit  {
 
     constructor(
         protected changeDetectorRef: ChangeDetectorRef
-    )
-    {
+    ) {
     }
-    
-    ngOnInit(): void {        
+
+    ngOnInit(): void {
         if (!this.trueLabel || this.trueLabel.length > 5) {
             console.error("Invalid use of switch component true label should be 5 or less characters and not null")
-        }    
+        }
         if (!this.falseLabel || this.falseLabel.length > 5) {
             console.error("Invalid use of switch component true label should be 5 or less characters and not null")
-        }    
+        }
     }
 
     @ViewChild("switch", { static: false }) _el: ElementRef;
@@ -76,7 +75,7 @@ export class Switch implements ControlValueAccessor, OnInit  {
     tryChangeValue(val: boolean) {
         if (!this.disabled) {
             this.writeValue(val);
-        }        
+        }
     }
 
     writeValue(obj: boolean): void {

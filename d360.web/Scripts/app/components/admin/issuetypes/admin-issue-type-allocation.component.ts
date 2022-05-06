@@ -6,32 +6,33 @@ import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-issue-type-allocation',
     template: `
                 <div class="row"> 
-                <header *ngIf="formMode == FormMode.Default">Allocations
+                <header *ngIf="formMode == FormMode.Default"><ng-container i18n>Allocations</ng-container>
                     <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                 </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     <div *ngIf="!isLoading">
                         <div [ngSwitch]="formMode">
                             <div *ngSwitchCase="FormMode.Default" class="col s12">
-                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="searchText" class="grid-simple-filter">
                                 <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ClassName','Path']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th style="width: 150px" [pSortableColumn]="'ClassName'">
-                                                Class
+                                                <ng-container i18n>Class</ng-container>
                                                 <d3s-sortIcon [field]="'ClassName'"></d3s-sortIcon>
                                             </th>
                                             <th [pSortableColumn]="'Path'">
-                                                Object Name
+                                                <ng-container i18n>Object Name</ng-container>
                                                 <d3s-sortIcon [field]="'Path'"></d3s-sortIcon>
                                             </th>
                                             <th *ngIf="showResponsibilities">
-                                                Responsibilities
+                                                <ng-container i18n>Responsibilities</ng-container>
                                             </th>
                                             <th style="width: 40px"></th>
                                             <th style="width: 40px"></th>
@@ -82,7 +83,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                 <d3s-delete-form
                                             [callback]="deleteCallback"
                                             method="callback"
-                                            [prompt]="'Are you sure you want to delete this allocation?'"                                         
+                                            [prompt]="deleteModalTitle"                                         
                                             (onCancel)="formMode = FormMode.Default"
                                 ></d3s-delete-form> 
                             </div>
@@ -102,6 +103,9 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     selection = null;
     deleteCallback: Function;
     showResponsibilities: boolean;
+
+    searchText = $localize`Search...`;
+    deleteModalTitle = $localize`Are you sure you want to delete this allocation?`;
 
     constructor(
         protected messagesService: MessagesObservableService,
@@ -135,7 +139,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
 
     add() {
         this.selection = null;
-        this.formMode = FormMode.Adding;        
+        this.formMode = FormMode.Adding;
     }
 
     delete() {
@@ -158,16 +162,16 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
         var name = className;
         switch (className) {
             case "BusinessAsset":
-                name = "Business Asset";
+                name = $localize`Business Asset`;
                 break;
             case "TechnicalAsset":
-                name = "Technical Asset";
+                name = $localize`Technical Asset`;
                 break;
             case "DiagramAsset":
-                name = "Diagram Asset";
+                name = $localize`Diagram Asset`;
                 break;
             case "ReferenceItemType":
-                name = "Reference Item Type";
+                name = $localize`Reference Item Type`;
                 break;
         }
         return name;

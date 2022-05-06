@@ -8,11 +8,11 @@ import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
-import { JsonResult } from '../../../models/jsonresult.model';
 
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-site-menu',
@@ -146,7 +146,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
         if (files[0] != null) {
             if (files[0].size > (1024 * 1024)) {
-                this.messagesService.showError('File too large.', `Navigation icon image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+                this.messagesService.showError($localize`File too large.`, $localize`Navigation icon image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
                 target.value = null;
                 return;
             }
@@ -303,7 +303,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     this.stateService.reloadLeftNavMenu()
                 })
         } else {
-            this.messagesService.showError("Error", "First item can not be moved up.")            
+            this.messagesService.showError($localize`Error`, $localize`First item can not be moved up.`)            
         }        
         
     }
@@ -320,7 +320,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     this.stateService.reloadLeftNavMenu()
                 })
         } else {
-            this.messagesService.showError("Error", "Last item can not be moved down.")                       
+            this.messagesService.showError($localize`Error`, $localize`Last item can not be moved down.`)                       
         }        
     }
 

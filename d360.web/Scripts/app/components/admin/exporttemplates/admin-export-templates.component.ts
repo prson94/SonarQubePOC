@@ -8,6 +8,7 @@ import { ExportTemplate } from '../../../models/export-template.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-export-templates-component',
@@ -19,12 +20,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <d3s-tile-actions [hasAdd]="!showDelete" (addClick)="selected=null;showEditor=true;showDelete=false;"></d3s-tile-actions>                            
                     </header>                    
                     <span>                        
-                        <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                        <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{searchText}}" class="grid-simple-filter">
                         <p-table #dt [value]="exportTemplates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected" (selectionChange)="selectNode($event)">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'Name'">
-                                        Name<d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                                        <ng-container i18n>Name</ng-container><d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                     </th>
                                     <th style="width: 28px"></th>
                                     <th style="width: 28px"></th>
@@ -67,7 +68,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             [callback]="theDeleteCallback"
                             [itemUid]="selected?.Uid"
                             [method]="'callback'"
-                            [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                            [prompt]="deleteModalMsg"                                         
                             (onCancel)="showDelete=false;"
                         ></d3s-delete-form>  
                         </div>
@@ -95,9 +96,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <div class="tile tile-detail" *ngIf="selected">  
                             <header>Template File</header>
                             <div class="row">
-                                <div class="col s12">
-                                    An Excel template file can be used as the starting point for an export template, providing custom static content on a first worksheet. Exported data will be output to a second worksheet.                                    
-                                </div>
+                                <div class="col s12" i18n>An Excel template file can be used as the starting point for an export template, providing custom static content on a first worksheet. Exported data will be output to a second worksheet.                                    </div>
                                 <div class="col s12">&nbsp;</div>                        
                                 <div class="col s2">                                    
                                     <p-fileUpload name="template" [url]="'./api/v2/ExportTemplates/TemplateFile/'+ selected.Uid"
@@ -131,7 +130,9 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     uploadedFiles: any[] = [];
 
     theDeleteCallback: Function;
-    
+    searchText = $localize`Search...`;
+    deleteModalMsg = $localize`Are you sure you want to delete the selected item?`;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,        

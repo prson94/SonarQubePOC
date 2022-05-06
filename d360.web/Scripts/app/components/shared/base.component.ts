@@ -249,7 +249,7 @@ export class BaseComponent {
 
             if (showLineage || showImpact || opts.hasProcessDiagram) {
                 this.lineageSidebar = new SecondaryNavItem(
-                    'Diagrams',
+                    $localize`Diagrams`,
                     'lineage',
                     ['fa-random'],
                     `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
@@ -264,7 +264,7 @@ export class BaseComponent {
 
             if ((opts.hasAudit || opts.hasAudit === undefined) && this.getBooleanSetting(CompanySettingEnum.ShowChangeLogTab)) {
                 this.auditSidebar = new SecondaryNavItem(
-                    'Change Log',
+                    $localize`Change Log`,
                     'Change Log',
                     ['fa-eye'],
                     `/sidebar/audit${this.auditContextUrl()}`, null, 40
@@ -274,7 +274,7 @@ export class BaseComponent {
 
             if (opts.hasField) {
                 this.fieldNav = new SecondaryNavItem(
-                    'Field Definitions',
+                    $localize`Field Definitions`,
                     'fields',
                     ['fa-drivers-license-o'],
                     `/sidebar/fields/${this.objectType}/${this.objectID}`, null, 1);
@@ -284,7 +284,7 @@ export class BaseComponent {
             if (opts.hasOwnership && this.getBooleanSetting(CompanySettingEnum.ShowOwnersSidebar)) {
                 if (this.objectType == 'ReferenceItemType') {
                     this.ownershipSidebar = new SecondaryNavItem(
-                        'Responsibilities',
+                        $localize`Responsibilities`,
                         'responsibilities',
                         ['fa-user'],
                         `/sidebar/responsibilities${this.auditContextUrl()}`, null, 25
@@ -292,7 +292,7 @@ export class BaseComponent {
                 }
                 else {
                     this.ownershipSidebar = new SecondaryNavItem(
-                        'Responsibilities',
+                        $localize`Responsibilities`,
                         'ownership',
                         ['fa-user'],
                         `/sidebar/ownership/${this.assetID}`, null, 25
@@ -303,7 +303,7 @@ export class BaseComponent {
 
             if (opts.hasDashboard) {
                 this.dashboardSidebar = new SecondaryNavItem(
-                    'Dashboards',
+                    $localize`Dashboards`,
                     'dashboards',
                     ['fa-tachometer'],
                     `/dashboard${this.objectContextUrl()}`, null, 5
@@ -314,7 +314,7 @@ export class BaseComponent {
 
             if (opts.hasGroups) {
                 this.groupsSidebar = new SecondaryNavItem(
-                    'Groups',
+                    $localize`Groups`,
                     'memberGroup',
                     ['fa-user-circle'],
                     `/sidebar/membergroup/${this.uid}`, null, 5
@@ -325,9 +325,9 @@ export class BaseComponent {
 
             if (opts.hasItemOwn) {
                 this.itemOwnSidebar = new SecondaryNavItem(
-                    'Responsibilities', 'itemOwn', ['fa-tasks'],
-                    `/sidebar/itemown/${this.objectID}`, 
-                    null, 
+                    $localize`Responsibilities`, 'itemOwn', ['fa-tasks'],
+                    `/sidebar/itemown/${this.objectID}`,
+                    null,
                     25
                 );
 
@@ -336,7 +336,7 @@ export class BaseComponent {
 
             if (opts.hasFollowing) {
                 this.followingSidebar = new SecondaryNavItem(
-                    'Following',
+                    $localize`Following`,
                     'itemFollow',
                     ['fa-user-plus'],
                     `/sidebar/itemfollow/${this.objectID}`, null, 30
@@ -347,7 +347,7 @@ export class BaseComponent {
 
             if (opts.hasRelationships) {
                 this.relationsSidebar = new SecondaryNavItem(
-                    'Relationships',
+                    $localize`Relationships`,
                     'relationship',
                     ['fa-retweet'],
                     `/sidebar/relationships${this.objectContextUrl()}`, null, 20
@@ -357,7 +357,7 @@ export class BaseComponent {
 
             if (opts.hasFollowers && this.getBooleanSetting(CompanySettingEnum.ShowFollowersSidebar)) {
                 this.followersSidebar = new SecondaryNavItem(
-                    'Followers',
+                    $localize`Followers`,
                     'followers',
                     ['fa-bookmark-o'],
                     `/sidebar/followers${this.objectContextUrl()}`, null, 35
@@ -367,7 +367,7 @@ export class BaseComponent {
 
             if (opts.hasMonitor) {
                 this.monitorSidebar = new SecondaryNavItem(
-                    'Workflow',
+                    $localize`Workflow`,
                     'monitor',
                     ['fa-usb'],
                     `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
@@ -377,7 +377,7 @@ export class BaseComponent {
 
             if (opts.hasChild) {
                 this.childSidebar = new SecondaryNavItem(
-                    'Children',
+                    $localize`Children`,
                     'children',
                     ['fa-sitemap'],
                     `/sidebar/children${this.objectContextUrl()}`
@@ -388,7 +388,7 @@ export class BaseComponent {
 
             if (opts.hasRuleResult) {
                 this.ruleResultSidebar = new SecondaryNavItem(
-                    'Rule Results',
+                    $localize`Rule Results`,
                     'Rule Results',
                     ['fa-sitemap'],
                     `/sidebar/ruleResults/${this.objectID}/${this.uid}`
@@ -398,7 +398,7 @@ export class BaseComponent {
 
             if (isCommonAsset) {
                 this.scoreSidebar = new SecondaryNavItem(
-                    'Scoring',
+                    $localize`Scoring`,
                     'Scoring',
                     ['fa-sitemap'],
                     `/sidebar/score/${this.uid}`, null, 7
@@ -408,7 +408,7 @@ export class BaseComponent {
 
                 if (!this.getBooleanSetting(CompanySettingEnum.DisableIssueManagement)) {
                     this.actionsSidebar = new SecondaryNavItem(
-                        'Actions', 'Actions', null,
+                        $localize`Actions`, 'Actions', null,
                         `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
                     );
                     this.secondaryNavService.showItem(this.actionsSidebar);
@@ -418,7 +418,7 @@ export class BaseComponent {
             const goodAssetTypeForComments = isCommonAsset || this.objectType === 'Resource';
             if (goodAssetTypeForComments && this.getBooleanSetting(CompanySettingEnum.ShowCommentsTab)) {
                 this.commentsSidebar = new SecondaryNavItem(
-                    'Comments', 'Comments', ['fa-comments'],
+                    $localize`Comments`, 'Comments', ['fa-comments'],
                     `/sidebar/comments/${this.uid}`, null, 33
                 );
                 this.secondaryNavService.showItem(this.commentsSidebar);
@@ -426,7 +426,7 @@ export class BaseComponent {
 
             if (this.objectType == 'TaskType') {
                 this.governanceRolesSidebar = new SecondaryNavItem(
-                    'Governance Roles', 'GovernanceRoles', null,
+                    $localize`Governance Roles`, 'GovernanceRoles', null,
                     '/sidebar/governanceRoles', null, 3);
                 if (!opts.hasGovernanceRoleSet) {
                     this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
@@ -434,7 +434,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.governanceRolesSidebar);
 
                 this.connectorLabels = new SecondaryNavItem(
-                    'Connector Labels', 'ConnectorLabels', null,
+                    $localize`Connector Labels`, 'ConnectorLabels', null,
                     '/sidebar/connectorLabels', null, 4);
                 this.secondaryNavService.showItem(this.connectorLabels);
             }
@@ -671,7 +671,7 @@ export class BaseComponent {
 
     showMessageForResult(messagesService: MessagesObservableService, result: JsonResult, defaultMessage?: string) {
         if (defaultMessage == undefined) {
-            defaultMessage = 'Success';
+            defaultMessage = $localize`Success`;
         }
 
         if (result.type == 'error') {
@@ -686,14 +686,14 @@ export class BaseComponent {
 
     showMessageForApiResponse(messagesService: MessagesObservableService, result: ApiResult & ErrorResponse, defaultMessage?: string) {
         if (defaultMessage == undefined) {
-            defaultMessage = 'Success';
+            defaultMessage = $localize`Success`;
         }
 
         if (!result.Success) {
             messagesService.showError(result.Title == null ? 'Error' : result.Title, result.Message);
         } else {
             messagesService.showInfoMessage(
-                'Success',
+                $localize`Success`,
                 result.Message != null ? result.Message : defaultMessage
             );
         }
@@ -701,14 +701,14 @@ export class BaseComponent {
 
     showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult, defaultMessage?: string) {
         if (defaultMessage == undefined) {
-            defaultMessage = 'Success';
+            defaultMessage = $localize`Success`;
         }
 
         if (!result.Success) {
             messagesService.showError('Error', result.Message);
         } else {
             messagesService.showInfoMessage(
-                'Success',
+                $localize`Success`,
                 result.Message != null ? result.Message : defaultMessage
             );
         }
@@ -720,7 +720,7 @@ export class BaseComponent {
 
         if (succeeded.length > 0) {
             let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
-            messagesService.showInfoMessage('Success', message);
+            messagesService.showInfoMessage($localize`Success`, message);
         }
 
         if (failed.length > 0) {
@@ -731,7 +731,7 @@ export class BaseComponent {
     }
 
     showHttpErrorMessage(messagesService: MessagesObservableService, err: HttpErrorResponse) {
-        messagesService.showError('An error occurred', err.error);
+        messagesService.showError($localize`An error occurred`, err.error);
     }
 
     public getLocaleDateString(): string {
@@ -871,8 +871,8 @@ export class BaseComponent {
                 else if (this.objectType.toLowerCase() == 'referenceitemtype') {
                     this.breadcrumbsService.clearBreadcrumbs();
 
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
-                    this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb($localize`Reference Lists`, homeUrl));
+                    this.setBrowserTitle(this.breadcrumbsService.getTitleService(), $localize`Reference Lists`);
                 }
                 else if (this.objectType.toLowerCase() == 'resource') {
                     this.setResourceBreadcrumbs(r);
@@ -888,7 +888,7 @@ export class BaseComponent {
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
 
-            var areaIcon = area === 'Configuration' ? 'fa-sliders' : "fa-cog";
+            var areaIcon = area === $localize`Configuration` ? 'fa-sliders' : "fa-cog";
             if (r.Object == 'Tag')
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
@@ -898,11 +898,11 @@ export class BaseComponent {
                 hasOwnership: r.Items.HasOwnership,
                 hasDashboard: r.Items.HasDashboard,
                 hasLineage: r.Items.HasLineage,
-                hasImpact: r.Items.HasImpact, 
-                hasRelationships: r.Items.HasRelationship, 
-                hasFollowers: r.Items.HasFollowers, 
+                hasImpact: r.Items.HasImpact,
+                hasRelationships: r.Items.HasRelationship,
+                hasFollowers: r.Items.HasFollowers,
                 hasMonitor: r.Items.HasWorkflow,
-                hasField: r.Items.HasField, 
+                hasField: r.Items.HasField,
                 hasChild: r.Items.HasChild,
                 hasRuleResult: this.objectType == 'Rule',
                 hasGovernanceRoleSet: r.Items.HasGovernanceRoleUidSet,
@@ -911,7 +911,7 @@ export class BaseComponent {
                 hasFollowing: r.Items.HasFollowing,
                 hasItemOwn: r.Items.HasItemOwn
             });
-            
+
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid, r.Items.HasRequestCertificationWorkflow));
             this.secondaryNavService.showHeader(true);
@@ -965,7 +965,7 @@ export class BaseComponent {
         var adminHeading = '';
 
         if (data.DisplayValue == 'Responsibilities') {
-            adminHeading = "Security";
+            adminHeading = $localize`Security`;
         }
 
         this.breadcrumbsService.clearBreadcrumbs();
@@ -1148,7 +1148,7 @@ export class BaseComponent {
                     let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
                     this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe((res) => {
-                        this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, res, $localize`Definition`);
                     });
 
                     let areaRootUriSegment: string = (objectName.toLowerCase() == 'policy') ? SiteUrlHelpers.SITE_URL_POLICY_ROOT : SiteUrlHelpers.SITE_URL_MODEL_ROOT;

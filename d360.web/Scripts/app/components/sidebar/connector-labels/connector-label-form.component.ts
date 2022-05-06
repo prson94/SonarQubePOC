@@ -28,6 +28,10 @@ export class ConnectorLabelsFormComponent implements OnChanges {
 
     get value() { return this.connectorLabelForm.get('value'); }
 
+    get saveLabel(): string {
+        return this.selectedValue ? $localize`Consolidate` : (this.label ? $localize`Save` : $localize`Create`);
+    }
+
     constructor(
         private asyncValidators: AsyncValidatorService,
         private cdRef: ChangeDetectorRef,

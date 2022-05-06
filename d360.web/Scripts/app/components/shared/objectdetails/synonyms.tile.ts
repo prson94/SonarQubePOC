@@ -16,7 +16,7 @@ import { LinkClickInterceptor } from '../../../services/href-click-service';
 @Component({
     selector: 'd3s-synonyms-tile',
     styles: [
-            `
+        `
             p-autoComplete > span > input {
                 width: 100%;
             }
@@ -46,10 +46,10 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected FormMode = FormMode;
     protected items: Synonym[] = [];
     protected selectedItem;
-    protected synonymTypes = [];    
+    protected synonymTypes = [];
     protected selectedType: string = '';
     protected synonymItems = [];
-    protected selectedSynonym: SynonymItem;    
+    protected selectedSynonym: SynonymItem;
     protected customSynonymName: string = '';
     protected isLoadingItems = false;
 
@@ -68,7 +68,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         this.load();
-     }
+    }
 
     load(): void {
         if (this.objectType == null || this.objectID == null) {
@@ -98,8 +98,8 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
                 res => {
                     this.isLoading = false;
 
-                    this.showMessageForApiResults(this.messagesService, res,`${this.predicateName} successfully deleted.`);
-                    
+                    this.showMessageForApiResults(this.messagesService, res, `${this.predicateName} successfully deleted.`);
+
                     this.items = this.items.filter(x => x.IntersectID != item.IntersectID);
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
@@ -113,7 +113,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
 
                     this.showMessageForResult(this.messagesService, res);
 
-                    this.items = this.items.filter(x => x.CustomID != item.CustomID);                    
+                    this.items = this.items.filter(x => x.CustomID != item.CustomID);
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
                 }
@@ -144,25 +144,25 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected save() {
         this.isLoading = true;
 
-        if (this.selectedSynonym && this.selectedSynonym.uid) {            
+        if (this.selectedSynonym && this.selectedSynonym.uid) {
             let type = this.synonymTypes.find(t => t.Value == this.selectedType);
             let relationships: Array<RelationshipV2> = [];
             let relationship = new RelationshipV2();
 
-            if (type.IntersectTypeIsSubjectSide) {                
+            if (type.IntersectTypeIsSubjectSide) {
                 relationship.SubjectAssetUid = this.assetUid;
-                relationship.ObjectAssetUid = this.selectedSynonym.uid;                
+                relationship.ObjectAssetUid = this.selectedSynonym.uid;
             }
-            else {                
+            else {
                 relationship.SubjectAssetUid = this.selectedSynonym.uid;
-                relationship.ObjectAssetUid = this.assetUid;                
+                relationship.ObjectAssetUid = this.assetUid;
             }
 
             relationships.push(relationship);
-            
+
             this.relationshipsService.saveRelationships(type.uid, relationships).subscribe(
                 res => {
-                    this.showMessageForApiResults(this.messagesService, res, `${this.predicateName} successfully saved.`,true);
+                    this.showMessageForApiResults(this.messagesService, res, $localize`${this.predicateName} successfully saved.`, true);
                     this.formMode = FormMode.Default;
                     this.load();
                 }
@@ -208,7 +208,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
             this.isLoadingItems = false;
             return;
         }
-        
+
         this.objectDetailService.getSynonymOptions(this.predicateId, type.Object, type.ObjectID, this.objectType, this.objectID, (e.query || '')).subscribe(
             r => {
                 this.synonymItems = r;
@@ -228,5 +228,9 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
     protected clearSearch() {
         this.synonymItems = [];
         this.selectedSynonym = null;
+    }
+
+    get deletePrompt(): string {
+        return `Are you sure you want to remove the ${this.predicateName} ${this.selectedItem?.Name}?`;
     }
 }

@@ -12,7 +12,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     selector: 'd3s-group-responsibility',
     template: `
         <header>
-            Items {{group?.Name}} Owns
+            <ng-container i18n>Items {{group?.Name}} Owns</ng-container>
             <d3s-tile-actions [hasExport]="false" [hasFilterMode]="true" [filterMode]="showFilter"
                               (filterModeChange)="showFilter = !showFilter"></d3s-tile-actions>
         </header>

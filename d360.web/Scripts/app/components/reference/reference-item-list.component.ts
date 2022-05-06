@@ -10,6 +10,7 @@ import { filter } from 'lodash';
 import { Table } from 'primeng/table';
 import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-reference-item-list',
@@ -59,9 +60,11 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         this.showEditor = true;
     }
 
+    exportMessage: string = '';
     private title: string = 'Items';
 
     ngOnInit() {
+        this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
         this.setRowsPerPage();
         this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
     }

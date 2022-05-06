@@ -49,9 +49,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         this.showHideFollow(false);
 
         this.breadcrumbsService.clearCurrentObjectInfo();
-        this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb($localize`Workflow Item Status`));
 
-        this.setBrowserTitle(this.titleService, 'Workflow Item Status');
+        this.setBrowserTitle(this.titleService, $localize`Workflow Item Status`);
 
         this.sub = this.route.params.subscribe(params => {
             this.workflowInstance = params['workflowInstance'];

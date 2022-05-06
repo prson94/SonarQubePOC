@@ -1,30 +1,30 @@
 ﻿<form class="modal-edit-form" [formGroup]="connectorLabelForm">
     <div class="content">
-        <label class="ig-input-label">Name</label>
-        <input igAutoFocus *ngIf="!label" tabindex="10" igInput placeholder="Value required" type="text" maxlength="41" formControlName="value">
+        <label class="ig-input-label" i18n>Name</label>
+        <input igAutoFocus *ngIf="!label" tabindex="10" igInput i18n-placeholder placeholder="Value required" type="text" maxlength="41" formControlName="value">
         <p-autoComplete igAutoFocus igAutocomplete *ngIf="label"
                         placeholder="Value required"
+                        i18n-placeholder
                         formControlName="value"
                         (onBlur)="OnBlurTrim()"
                         [suggestions]="suggestionResults"
                         (completeMethod)="onAutocomplete($event)"
                         (onSelect)="onAutocompleteSelect($event)"
-                        tabindex="10"
-                        >
+                        tabindex="10">
         </p-autoComplete>
         <div *ngIf="(value.invalid && (value.dirty || value.touched)) && !value.errors.required" class="error-message">
-            <div *ngIf="value.errors.maxlength">
+            <div *ngIf="value.errors.maxlength" i18n>
                 Connector label name maximum length of 40 characters exceeded
             </div>
-            <div *ngIf="value.errors.alreadyExists">
+            <div *ngIf="value.errors.alreadyExists" i18n>
                 Please enter a unique name
             </div>
         </div>
 
 
         <div *ngIf="selectedValue && label" class="warningMessage">
-            <h4>Consolidate Labels?</h4>
-            <p>
+            <h4 i18n>Consolidate Labels?</h4>
+            <p i18n>
                 A label with the name '{{selectedValue.name}}' already exists, used in
                 <d3s-where-used [displayValue]="selectedValue.name" [uid]="selectedValue.uid" [objectType]="'ConnectorLabel'" [showAsModal]="true">{{selectedValue.UseCount}} diagrams</d3s-where-used>
                 <br />
@@ -36,8 +36,8 @@
         </div>
     </div>
     <div class="action-bar">
-        <button igButton type="button" label="Cancel" (click)="onCancel.emit()"></button>
+        <button igButton type="button" i18n-label label="Cancel" (click)="onCancel.emit()"></button>
         <div class="grow"></div>
-        <button igButton type="submit" [loading]="isSaving" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{(selectedValue ? 'Consolidate' : (label ? 'Save' : 'Create'))}}"></button>
+        <button igButton type="submit" [loading]="isSaving" (click)="onSubmit()" class="ig-button-primary" [disabled]="!connectorLabelForm.valid" label="{{saveLabel}}"></button>
     </div>
 </form>

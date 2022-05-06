@@ -10,64 +10,68 @@
             <div class="err-message">{{isInErrorMessage}}</div>
         </div>
         <div class="row"
-                *ngIf="!isLoading">
+             *ngIf="!isLoading">
             <div class="form-instructions" *ngIf="hasDirections">
                 {{directions}}
             </div>
             <form [formGroup]="form">
                 <ng-template ngFor
-                                let-category
-                                [ngForOf]="categories">
+                             let-category
+                             [ngForOf]="categories">
                     <simple-accordion *ngIf="useAccordion(category)"
-                                        [header]="category.name"
-                                        [active]="true">
+                                      [header]="category.name"
+                                      [active]="true">
                         <div class="row"
-                                *ngFor="let row of category.rows">
+                             *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                    [class]="'field-col col ' + row.getColClass()"
-                                    style="padding-bottom:10px;">
+                                 [class]="'field-col col ' + row.getColClass()"
+                                 style="padding-bottom:10px;">
                                 <d3s-dynamic-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
-                                                    [form]="form"
-                                                    (listItemChange)="listSelectionChanged($event)"
-                                                    [editorChange]="editorChange"
-                                                    [object]="objectType"
-                                                    [objectID]="objectID"
-                                                    [selectedObject]="selectedObject"
-                                                    [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
+                                                   [form]="form"
+                                                   (listItemChange)="listSelectionChanged($event)"
+                                                   [editorChange]="editorChange"
+                                                   [object]="objectType"
+                                                   [objectID]="objectID"
+                                                   [selectedObject]="selectedObject"
+                                                   [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
                             </div>
                         </div>
                     </simple-accordion>
                     <span *ngIf="!useAccordion(category)">
                         <div class="row"
-                                *ngFor="let row of category.rows">
+                             *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                    [class]="'field-col col ' + row.getColClass()"
-                                    style="padding-bottom:10px;">
+                                 [class]="'field-col col ' + row.getColClass()"
+                                 style="padding-bottom:10px;">
                                 <d3s-dynamic-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
-                                                    [form]="form"
-                                                    (listItemChange)="listSelectionChanged($event)"
-                                                    [editorChange]="editorChange"
-                                                    [object]="objectType"
-                                                    [objectID]="objectID"
-                                                    [selectedObject]="selectedObject"
-                                                    [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
+                                                   [form]="form"
+                                                   (listItemChange)="listSelectionChanged($event)"
+                                                   [editorChange]="editorChange"
+                                                   [object]="objectType"
+                                                   [objectID]="objectID"
+                                                   [selectedObject]="selectedObject"
+                                                   [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
                             </div>
                         </div>
                     </span>
                 </ng-template>
                 <div *ngIf="hasIconFields && fore.Value == back.Value"
-                        class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+                     class="col s12 errorMessage">
+                    * <ng-container i18n>Foreground and background color cannot be the same</ng-container>
+                </div>
                 <div class="col s12">&nbsp;</div>
                 <div *ngIf="showActions" class="col s12">
                     <button pButton
                             type="button"
                             [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
                             style="width: '150px';"
+                            i18n-label
                             label="Save" (click)="onSubmit()"></button>
                     <button pButton
                             type="button"
                             (click)="closeClick.emit();"
                             label="Close"
+                            i18n-label
                             style="width: '150px';"></button>
                 </div>
             </form>
@@ -137,13 +141,14 @@
                 <button class="left button"
                         type="button"
                         (click)="closeClick.emit();"
-                        label="Close">
+                        i18n-label
+                        label="Close" i18n>
                     Close
                 </button>
                 <span class="grow"></span>
                 <button class="right button primary {{isLoading ? 'loading' : ''}}"
                         type="submit"
-                        [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)">
+                        [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)" i18n>
                     Save
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>

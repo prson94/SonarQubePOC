@@ -19,6 +19,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { StringConstants } from '../../../static/string-constants';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-allocation-detail',
@@ -177,9 +178,9 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     private changeAssetType(event) {
         this.isLoading = true;
         this.selectedAssetType = event;
-        this.areaName = 'Scoring Definitions';
+        this.areaName = $localize`Scoring Definitions`;
         this.areaLink = '/admin/scoring';
-        this.tabTitle = 'Governance Score';
+        this.tabTitle = $localize`Governance Score`;
 
         if (this.selectedAssetType && this.allocation) {
             this.setCommonItems(true, this.selectedAssetType.Name);
@@ -238,7 +239,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     }
     private formatScoreCalc() {
         if (this.allocation) {
-            this.formattedScoreCalc = (this.allocation.isExternallyCalculated ? 'Externally Calculated' : 'Internally Calculated');
+            this.formattedScoreCalc = (this.allocation.isExternallyCalculated ? $localize`Externally Calculated` : $localize`Internally Calculated`);
         }
     }
 

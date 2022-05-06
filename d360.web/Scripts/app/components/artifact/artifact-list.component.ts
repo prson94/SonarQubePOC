@@ -22,6 +22,7 @@ import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import '@angular/localize/init';
 
 declare var CurrentResourceID;
 
@@ -167,7 +168,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                         if (this.artifactType.HasV2Workflows) {
                             this.secondaryNavService.showItem(
-                                new SecondaryNavItem('Workflow',
+                                new SecondaryNavItem($localize`Workflow`,
                                                      'workflowmonitor',
                                                      ['fa-usb'],
                                                      `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`)

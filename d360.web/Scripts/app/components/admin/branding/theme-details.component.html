@@ -5,16 +5,16 @@
             <div class="flex-grow"></div>
             <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
         </div>
-        <div *ngIf="theme.isDefaultTheme" class="class-name">Default theme</div>
+        <div *ngIf="theme.isDefaultTheme" class="class-name" i18n>Default theme</div>
         <br />
         <div>
-            <a (click)="linkClicked.emit('Edit')" *ngIf="theme.hasEditOption">Edit</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
-            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption">Duplicate</a> <span *ngIf="theme.hasDuplicateOption && theme.hasSetAsCurrentThemeOption" class="grey-delimiter">|</span>
-            <a (click)="linkClicked.emit('Set as Current Theme')" *ngIf="theme.hasSetAsCurrentThemeOption">Set as Current Theme</a>
+            <a (click)="linkClicked.emit('Edit')" *ngIf="theme.hasEditOption" i18n>Edit</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption" i18n>Duplicate</a> <span *ngIf="theme.hasDuplicateOption && theme.hasSetAsCurrentThemeOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit('Set as Current Theme')" *ngIf="theme.hasSetAsCurrentThemeOption" i18n>Set as Current Theme</a>
         </div>
     </div>
     <div class="windowtabs">
-        <button class="tab-selected">Details</button>
+        <button class="tab-selected" i18n>Details</button>
     </div>
     <div class="asset-detail-tabs">
         <div *ngFor="let category of categories; let first=first">

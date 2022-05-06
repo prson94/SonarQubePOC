@@ -18,7 +18,7 @@ export class AdminBaseComponent extends BaseComponent {
     public areaLink: string = undefined;    
     public area: string = StringConstants.Area_Administration;
     public adminHeading: string;
-    public tabTitle: string = 'Admin'
+    public tabTitle: string = $localize`Admin`;
 
     @ViewChildren('treetableRows') treeTableElements: any;
     private isDefaultTreeValuesSet: boolean = false;

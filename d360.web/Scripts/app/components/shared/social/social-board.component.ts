@@ -55,13 +55,13 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         }
         else {
             if (this.limitToType == CommentType.Social) {
-                this.socialMessage = `My comments ${this.daysMessage()}`;
+                this.socialMessage = $localize`My comments ${this.daysMessage()}`;
             }
             else if (this.limitToType == CommentType.Issue) {
-                this.socialMessage = `My issues ${this.daysMessage()}`;
+                this.socialMessage = $localize`My issues ${this.daysMessage()}`;
             }
             else {
-                this.socialMessage = "My comments";
+                this.socialMessage = $localize`My comments`;
             }
         }
 
@@ -72,7 +72,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     }
 
     private daysMessage(): string {
-        return this.daysToLookBack > 0 ? ("for the last " + this.daysToLookBack + " days") : "- all";
+        return this.daysToLookBack > 0 ? ($localize`for the last ${this.daysToLookBack} days`) : "- " + $localize`all`;
     }
 
     loadComments() {
@@ -120,7 +120,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
                     if (index >= 0 && !(comment.Comments && comment.Comments.length > 0)) {
                         this.comments.splice(index, 1);
                     }
-                    this.messagesService.showInfoMessage("Success", "Item deleted successfully");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Item deleted successfully`);
                 }
                 this.countsChanged.emit({}); // counts changed fire event
                 this.isLoading = false;

@@ -1,0 +1,95 @@
+﻿<div class="row">
+    <div class="col l4 s12">
+        <div class="tile tile-detail">
+            <header *ngIf="!showEditor && !showDelete">
+                <ng-container i18n>Dashboards</ng-container>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasAuthenticate]="true" (authenticateClick)="showCredentials=true;powerBiUser='';powerBiPassword=''"></d3s-tile-actions>
+            </header>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <span *ngIf="!isLoading && !showEditor && !showDelete && !showCredentials">
+                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{searchText}}" class="grid-simple-filter">
+                <p-table #dt [value]="reports" selectionMode="single" [globalFilterFields]="['Name','DisplayType']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange()">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th [pSortableColumn]="'Name'">
+                                <ng-container i18n>Name</ng-container>
+                                <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'DisplayType'">
+                                <ng-container i18n>Type</ng-container>
+                                <d3s-sortIcon [field]="'DisplayType'"></d3s-sortIcon>
+                            </th>
+                            <th style="width: 40px"></th>
+                            <th style="width: 40px"></th>
+                        </tr>
+                        <tr [hidden]="showSimpleFilter">
+                            <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th><d3s-column-filter [field]="'DisplayType'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
+                            <td>{{item.Name}}</td>
+                            <td>{{item.DisplayType}}</td>
+                            <td>
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </span>
+            <d3s-delete-form *ngIf="showDelete"
+                             [callback]="theDeleteCallback"
+                             [itemId]="selected?.ID"
+                             [method]="'callback'"
+                             [prompt]="deleteDashboardModalTitle"
+                             (onCancel)="showDelete=false;"></d3s-delete-form>
+            <d3s-admin-dashboards-editor *ngIf="!isLoading && showEditor" [report]="selected" (saveClick)="saveReport($event)" (closeClick)="closeEditor()"></d3s-admin-dashboards-editor>
+            <span *ngIf="showCredentials">
+                <form (ngSubmit)="onSubmitPowerCreds()" #powerBICredsForm="ngForm">
+                    <div class="form-instructions">
+                        <ng-container i18n>Specify the credentials to be used for Power BI Direct Query type queries.</ng-container>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <div class="FieldName"><ng-container i18n>Username</ng-container>:</div>
+                            <div><input name="user" required type="text" [(ngModel)]="powerBiUser" #name="ngModel" style="width:100%"></div>
+                            <div [hidden]="name.valid || name.pristine" i18n>Name is required</div>
+                        </div>
+                        <div class="col s12">
+                            <div class="FieldName"><ng-container i18n>Password</ng-container>:</div>
+                            <div><input required name="pwd" type="password" [(ngModel)]="powerBiPassword" #pwd="ngModel" style="width:100%"></div>
+                            <div [hidden]="pwd.valid || pwd.pristine" i18n>Password is required</div>
+                        </div>
+                        <div class="col s12">&nbsp;</div>
+                        <div class="col s12">
+                            <button pButton type="submit" [disabled]="!powerBICredsForm.form.valid" label="{{labelSave}}"></button>
+                            <button pButton type="button" (click)="showCredentials=false;" label="{{labelClose}}"></button>
+                        </div>
+                    </div>
+                </form>
+            </span>
+        </div>
+    </div>
+    <div class="col l8 s12" *ngIf="!showEditor && !showDelete && selected">
+        <div class="row">
+            <div class="col s12">
+                <div class="tile tile-detail">
+                    <object-detail [objectType]="'Report'" [objectID]="selected?.ID"></object-detail>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

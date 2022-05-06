@@ -29,11 +29,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     deleteFilterModalVisible: boolean = false;
     deleteFilterModalWorking: boolean = false;
 
+    removeTitle = $localize`Remove`;
+    saveTitle = $localize`Save`;
 
     menuitems = [
-        { title: 'Add', callback: (event) => { this.add() } },
-        { title: 'Save', disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.update() } },
-        { title: 'Remove', disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.showRemove() } }
+        { title: $localize`Add`, callback: (event) => { this.add() } },
+        { title: this.saveTitle, disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.update() } },
+        { title: this.removeTitle, disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.showRemove() } }
     ];
 
     constructor(
@@ -41,7 +43,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         protected messagesService: MessagesObservableService,
         private cdRef: ChangeDetectorRef
     ) {
-        
+
     }
 
     public ngOnInit() {
@@ -66,7 +68,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         if (this.diagramType == DiagramType.Lineage) {
             numberOfHops = this.filterModel.NumberOfLineageHops;
         }
-        return numberOfHops;   
+        return numberOfHops;
     }
 
     private add() {
@@ -90,7 +92,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
     apply(e) {
         this.menuitems.forEach(x => {
-            if (x.title == "Remove" || x.title == "Save") {
+            if (x.title == this.removeTitle || x.title == this.saveTitle) {
                 x.disabled = !this.hasSelectedUserFilter();
                 this.cdRef.markForCheck();
             }
@@ -153,12 +155,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
                 this.menuitems.forEach(x => {
-                    if (x.title == "Remove" || x.title == "Save") {
+                    if (x.title == this.removeTitle || x.title == this.saveTitle) {
                         x.disabled = !this.hasSelectedUserFilter();
                         this.cdRef.markForCheck();
                     }
                 });
-                this.messagesService.showInfoMessage('Success', 'Filter added successfully');
+                this.messagesService.showInfoMessage($localize`Success`, $localize`Filter added successfully`);
                 this.cdRef.markForCheck();
             });
     }
@@ -176,12 +178,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                         this.savedFilters = filters.filter(f => true);
                         this.selectedFilter = undefined;
                         this.menuitems.forEach(x => {
-                            if (x.title == "Remove" || x.title == "Save") {
+                            if (x.title == this.removeTitle || x.title == this.saveTitle) {
                                 x.disabled = !this.hasSelectedUserFilter();
                                 this.cdRef.markForCheck();
                             }
                         });
-                        this.messagesService.showInfoMessage('Success', 'Filter removed successfully');
+                        this.messagesService.showInfoMessage($localize`Success`, $localize`Filter removed successfully`);
                         this.cdRef.markForCheck();
                         this.deleteFilterModalWorking = false;
                         this.deleteFilterModalVisible = false;
@@ -238,12 +240,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
                 this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
                 this.menuitems.forEach(x => {
-                    if (x.title == "Remove" || x.title == "Save") {
+                    if (x.title == this.removeTitle || x.title == this.saveTitle) {
                         x.disabled = !this.hasSelectedUserFilter();
                         this.cdRef.markForCheck();
                     }
                 });
-                this.messagesService.showInfoMessage('Success', 'Filter saved successfully');
+                this.messagesService.showInfoMessage($localize`Success`, $localize`Filter saved successfully`);
                 this.cdRef.markForCheck();
             });
     }

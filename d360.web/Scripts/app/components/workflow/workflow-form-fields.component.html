@@ -8,14 +8,16 @@
         <input *ngSwitchCase="fieldType.Text"
                [name]="'input_'+indx"
                style="width: 100%;"
-               type="string"
+               type="text"
                [(ngModel)]="field.Value">
         <span *ngSwitchCase="fieldType.Boolean">
             <p-radioButton igRadioButton [name]="'input_'+indx" [(ngModel)]="field.Value" value="true" label="Yes"></p-radioButton>&nbsp;&nbsp;
             <p-radioButton igRadioButton [name]="'input_'+indx" [(ngModel)]="field.Value" value="false" label="No"></p-radioButton>
             <span *ngIf="!fieldValue">
                 <span *ngIf="field.Required"
-                      class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
+                      class="error">
+                    &nbsp;&nbsp;&nbsp;* <ng-container i18n>This field is required</ng-container>
+                </span>
             </span>
         </span>
         <input *ngSwitchCase="fieldType.Integer"
@@ -70,11 +72,11 @@
         </div>
         <div *ngSwitchCase="fieldType.Link">
             <input [name]="'inputName_' + indx" ngModel style="width: 100%;" type="text">
-            <div>(Link Name)</div>
+            <div i18n>(Link Name)</div>
             <input [name]="'inputUrl_' + indx" ngModel style="width: 100%;" type="text">
-            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+            <div i18n>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
             <div class="col s12" *ngIf="field.FieldType == fieldType.Link && form && form.controls['inputUrl_'+indx ]">
-                <span *ngIf="!form.controls['inputUrl_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
+                <span *ngIf="!form.controls['inputUrl_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* <ng-container i18n>This field is required</ng-container></span>
             </div>
         </div>
         <div *ngSwitchCase="fieldType.HTML">
@@ -123,7 +125,7 @@
         </div>
     </div>
     <div class="col s12" *ngIf="field.FieldType != fieldType.Boolean && form && form.controls['input_'+indx ]">
-        <span *ngIf="!form.controls['input_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* This field is required</span>
+        <span *ngIf="!form.controls['input_'+indx ].valid" class="error">&nbsp;&nbsp;&nbsp;* <ng-container i18n>This field is required</ng-container></span>
     </div>
     <div class="col s12">&nbsp;</div>
 </div>

@@ -3,10 +3,12 @@
         <div>
             <div class="FieldDisplayContent">
                 <ng-container *ngIf="!interceptLinkClick">
-                    <div>Reference List: <d3s-preview-tooltip objectType="ReferenceItemType" [objectId]="data.objectId"><a [href]="data?.url" (click)="navigate(data?.url, $event)">{{data?.name}}</a></d3s-preview-tooltip></div>
+                    <div>
+                        <ng-container i18n>Reference List</ng-container>: <d3s-preview-tooltip objectType="ReferenceItemType" [objectId]="data.objectId"><a [href]="data?.url" (click)="navigate(data?.url, $event)">{{data?.name}}</a></d3s-preview-tooltip>
+                    </div>
                 </ng-container>
                 <ng-container *ngIf="interceptLinkClick">
-                    <div>Reference List: <a context-link (click)="navigate(data?.url, $event, data)">{{data?.name}}</a></div>
+                    <div><ng-container i18n>Reference List</ng-container>: <a context-link (click)="navigate(data?.url, $event, data)">{{data?.name}}</a></div>
                 </ng-container>
             </div>
             <div *ngIf="data?.description" class="FieldDisplayContent">
@@ -38,6 +40,7 @@
                         class="ig-lookup-grid-button"
                         icon="fa-download"
                         (click)="export()"
+                        i18n-pTooltip
                         pTooltip="Export to Excel"
                         tooltipPosition="top"
                         tooltipStyleClass="ig-tooltip"></button>
@@ -49,7 +52,9 @@
                                     [template]="assetGridExportLink">
             <ng-template #assetGridExportLink>
                 <div class="asset-grid-export-link">
-                    <a (click)="export()"><i class="fa fa-download"></i>Export to Excel</a>
+                    <a (click)="export()">
+                        <i class="fa fa-download"></i><ng-container i18n>Export to Excel</ng-container>
+                    </a>
                 </div>
             </ng-template>
         </ig-portal-content-provider>

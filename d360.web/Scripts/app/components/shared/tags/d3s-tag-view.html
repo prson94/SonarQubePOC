@@ -13,13 +13,13 @@
                     {{tag.Value}}
                 </div>
                 <div>
-                    <div *ngIf="isEditable && !deletingTag" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+                    <div *ngIf="isEditable && !deletingTag" i18n-pTooltip pTooltip="Remove Tag" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
                         <span>
                             <i style="padding-left:10px" class="fa fa-times-circle"></i>
                         </span>
                     </div>
                     <div *ngIf="deletingTag" class="link-button">
-                        <span [pTooltip]="'Removing Tag'" style="padding-left:10px;padding-right:7px;">
+                        <span i18n-pTooltip pTooltip="Removing Tag" style="padding-left:10px;padding-right:7px;">
                             <i class="pi pi-spin pi-spinner"></i>
                         </span>
                     </div>
@@ -36,13 +36,13 @@
                     {{tag.Value}}
                 </div>
                 <div>
-                    <div *ngIf="isEditable && !deletingTag" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+                    <div *ngIf="isEditable && !deletingTag" i18n-pTooltip pTooltip="Remove Tag" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
                         <span>
                             <i style="padding-left:10px" class="fa fa-times-circle"></i>
                         </span>
                     </div>
                     <div *ngIf="deletingTag" class="link-button">
-                        <span [pTooltip]="'Removing Tag'" style="padding-left:10px;padding-right:7px;">
+                        <span i18n-pTooltip pTooltip="Removing Tag" style="padding-left:10px;padding-right:7px;">
                             <i class="pi pi-spin pi-spinner"></i>
                         </span>
                     </div>
@@ -52,7 +52,8 @@
 
     </span>
     <span *ngIf="savingTag">
-        <a pTooltip="Saving Tag"
+        <a i18n-pTooltip
+           pTooltip="Saving Tag"
            [escape]="false"
            tooltipPosition="top"
            tooltipStyleClass="ig-tooltip"
@@ -73,6 +74,7 @@
                         value="inputValue"
                         inputStyleClass="inputBox"
                         [style]="{'margin-bottom':'12px'}"
+                        i18n-placeholder
                         placeholder="{{placeHolder}}"
                         [suggestions]="searchResults"
                         (onKeyUp)="checkKey($event,inputValue)"
@@ -86,8 +88,8 @@
     </ng-container>
     <ng-container *ngIf="tags && tags.length > 10">
         <a (click)="showAllToggle($event);" class="show-all-tags">
-            <ng-container *ngIf="isShowAll">Show Less</ng-container>
-            <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
+            <ng-container *ngIf="isShowAll" i18n>Show Less</ng-container>
+            <ng-container *ngIf="!isShowAll" i18n>Show all {{tags.length}} tags</ng-container>
         </a>
     </ng-container>
 </div>

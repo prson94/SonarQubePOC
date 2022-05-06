@@ -69,8 +69,8 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
     noAssetOnDiagram: boolean = false;
 
-    sourceBtnText: string = 'Add source asset';
-    targetBtnText: string = 'Add target asset';
+    sourceBtnText: string = $localize`Add source asset`;
+    targetBtnText: string = $localize`Add target asset`;
 
     missingPredicateSource: boolean = false;
     missingPredicateTarget: boolean = false;
@@ -272,7 +272,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
     changeEditorType(type: RelationshipEditorType) {
         if (this.sourceAssets.length > 0 || this.targetAssets.length > 0) {
-            this.topWarningMessage = 'You cannot switch! Save your changes or remove selection from Source and Target assets';
+            this.topWarningMessage = $localize`You cannot switch! Save your changes or remove selection from Source and Target assets`;
         }
         else {
             this.topWarningMessage = '';
@@ -283,14 +283,14 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
 
     onAssetSearchSelection(event: any) {
         if (this.sourceAssets.length > 0) {
-            this.sourceBtnText = 'Add another source asset';
+            this.sourceBtnText = $localize`Add another source asset`;
         }
-        else this.sourceBtnText = 'Add source asset';
+        else this.sourceBtnText = $localize`Add source asset`;
 
         if (this.targetAssets.length > 0) {
-            this.targetBtnText = 'Add another target asset';
+            this.targetBtnText = $localize`Add another target asset`;
         }
-        else this.targetBtnText = 'Add target asset';
+        else this.targetBtnText = $localize`Add target asset`;
 
         this.checkSelectionValues();
         this.buildTransformationFilters();
@@ -427,14 +427,14 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                     this.sourceAssets.forEach(sa => {
                         if (sa.Predicate && inv.PredicateUid == sa.Predicate.Uid.toString() && sa.Uid == rel.SubjectAssetUid) {
                             sa.Warnings = [];
-                            sa.Warnings.push("Cannot create relationship of this type!");
+                            sa.Warnings.push($localize`Cannot create relationship of this type!`);
                         }
                     });
                     this.targetAssets.forEach(ta => {
 
                         if (ta.Predicate && inv.PredicateUid == ta.Predicate.Uid.toString() && ta.Uid == rel.ObjectAssetUid) {
                             ta.Warnings = [];
-                            ta.Warnings.push("Cannot create relationship of this type!");
+                            ta.Warnings.push($localize`Cannot create relationship of this type!`);
                         }
                     });
                 });
@@ -477,7 +477,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             else {
                 this.afterSaveEvent(false);
                 relationships.filter(x => x.IntersectTypeUid == null).forEach(fail => {
-                    let errorMsg = 'This lineage relationship cannot be created, as there is no relationship type defined between 2 asset types:';
+                    let errorMsg = $localize`This lineage relationship cannot be created, as there is no relationship type defined between 2 asset types:`;
 
                     let subjectTitle = 'Source Asset:';
                     let objectTitle = 'Transformation:';

@@ -53,7 +53,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Output() listItemChange = new EventEmitter();
     @Output() relationItemChange = new EventEmitter();
 
-    private regexErrorMessage: string = "The field doesnt meet the required pattern.";
+    private regexErrorMessage: string = $localize`The field doesnt meet the required pattern.`;
     private cascadeSub: any;
     private relationSource$ = new Subject<any>();
     private relationSub: any;
@@ -74,6 +74,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private filterException: string = '';
     private fieldChangeSub;
     private editorChangeSub;
+
+    chooseText = $localize`Choose...`;
 
     private hasCascadeLoaded: boolean = false;
 
@@ -138,7 +140,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsSelectItem(items: any[]): SelectItem[] {
         if (items.length > 0) {
-            return items.filter(x => x.Text != "Choose...").map((x) => {
+            return items.filter(x => x.Text != this.chooseText).map((x) => {
                 try {
 
                     let colorobj = JSON.parse(x.Text);
@@ -153,7 +155,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
         if (items.length > 0) {
-            let its = items.filter(x => x.Text != "Choose...").map((x) => {
+            let its = items.filter(x => x.Text != this.chooseText).map((x) => {
                 try {
                     let colorobj = JSON.parse(x.Text);
                     if (colorobj)
@@ -344,7 +346,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
-                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : 'Value does not match the required pattern.';
+                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : $localize`Value does not match the required pattern.`;
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
                     this.Increment = +validation.rule.split("increment=")[1];
                 } else if (validation.rule && validation.rule.startsWith('min')) {
@@ -509,7 +511,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         for (let i = 0; i < numInputs.length; i++) {
             let elem = numInputs[i] as HTMLInputElement;
 
-            if (elem.validity.badInput && elem.validationMessage == "Please enter a number.") {
+            if (elem.validity.badInput && elem.validationMessage == $localize`Please enter a number.`) {
                 if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
                     this.form.controls[this.field.FieldName].setErrors({ integer: true });
                 }
@@ -584,23 +586,23 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         if (errors["number"]) {
-            message += "Please enter a valid number. ";
+            message += $localize`Please enter a valid number.`;
         }
 
         if (errors["integer"]) {
-            message += "Please enter a valid integer. ";
+            message += $localize`Please enter a valid integer.`;
         }
 
         if (errors["maxlength"]) {
-            message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}] `;
+            message += $localize`${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}] `;
         }
 
         if (errors["minlength"]) {
-            message += `${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}] `;
+            message += $localize`${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}] `;
         }
 
         if (errors["validDay"]) {
-            message += "Value cannot be less than 1 or greater than 365. ";
+            message += $localize`Value cannot be less than 1 or greater than 365.`;
         }
 
         if (errors["required"]) {
@@ -608,24 +610,24 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 message += `${this.currentFieldName} `;
             }
             else {
-                message += `${this.currentFieldName} is required. `;
+                message += $localize`${this.currentFieldName} is required. `;
             }
         }
 
         if (errors["max"]) {
-            message += ` Please enter a maximum value of ${errors["max"].max} `;
+            message += $localize`Please enter a maximum value of ${errors["max"].max} `;
         }
 
         if (errors["min"]) {
-            message += ` Please enter a minimum value of ${errors["min"].min} `;
+            message += $localize`Please enter a minimum value of ${errors["min"].min} `;
         }
 
         if (errors["alreadyExists"]) {
-            message += `A ${this.object.toLowerCase()} with this name already exists, please enter a unique name.`;
+            message += $localize`A ${this.object.toLowerCase()} with this name already exists, please enter a unique name.`;
         }
 
         if (errors["hasPipe"]) {
-            message += `Tag name should not have pipe symbol '|' in name!`;
+            message += $localize`Tag name should not have pipe symbol '|' in name!`;
         }
 
         return message;
@@ -678,8 +680,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     multiselectLabel(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0 && (this.field.Items == null || this.field.Items.length == 0))
-            return `Select a ${this.field.ParentFieldTypeName}`;
-        return "Choose";
+            return $localize`Select a ${this.field.ParentFieldTypeName}`;
+        return $localize`Choose`;
     }
 
     OnBlurTrim() {

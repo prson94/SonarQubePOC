@@ -1,8 +1,8 @@
-﻿import {Component, Input, OnChanges, OnInit, SimpleChange} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ApiField, ApiVersion} from '../../../models/custom-api.model';
-import {CustomAPIService} from '../../../services/custom-api.service';
-import {BaseComponent} from '../../shared/base.component';
+﻿import { Component, Input, OnChanges, OnInit, SimpleChange } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiField, ApiVersion } from '../../../models/custom-api.model';
+import { CustomAPIService } from '../../../services/custom-api.service';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -19,6 +19,7 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
     public fields: ApiField[] = [];
     public selected: ApiField = null;
     theDeleteCallback: Function;
+    searchText = $localize`Search...`;
 
     constructor(
         protected customAPIService: CustomAPIService,
@@ -71,5 +72,9 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
                 this.load();
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return `Are you sure you want to delete the  field [${this.selected?.Name}]?`;
     }
 }

@@ -4,6 +4,7 @@ import { LevelsService } from '../../../services/levels.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-level-grid',
@@ -15,6 +16,8 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() maxDepth: number;
+
+    searchText = $localize`Search...`;
 
     error: any;
     levels: HierarchyTypeLevel[] = [];
@@ -78,5 +81,9 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
                 this.getLevels();
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the level [${this.selectedLevel?.Name}]?`;
     }
 }

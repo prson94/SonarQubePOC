@@ -13,7 +13,7 @@ export class DeactivateGuard implements CanDeactivate<CanDeactivateComponent> {
             if (component && (component as BrowserComponent)) {
                 var state = (component as BrowserComponent).isSaved;
                 if (state != null && state == false) {
-                    return window.confirm("Changes that you made may not be saved.");
+                    return window.confirm($localize`Changes that you made may not be saved.`);
                 }
             }
 

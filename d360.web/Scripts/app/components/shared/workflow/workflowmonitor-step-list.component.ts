@@ -8,7 +8,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     selector: 'd3s-workflow-monitor-step-list',
     template: ` 
     <header *ngIf="!isIssueType" style="min-height: 32px">
-        Steps
+        <ng-container i18n>Steps</ng-container> 
         <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
     </header>
     <simple-accordion *ngIf="isIssueType" [active]="true" [header]="'Action'">
@@ -19,13 +19,13 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <d3s-tile-actions [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
         </header>
         <div style="padding: 5px">
-            Select a step to view details:    
+            <ng-container i18n>Select a step to view details</ng-container>:    
         </div>
         <d3s-workflow-monitor-step-grid [itemSteps]="itemSteps" (selectionChange)="select($event)"></d3s-workflow-monitor-step-grid>
     </simple-accordion>
     <ng-container *ngIf="!isIssueType">
             <div style="padding: 5px">
-                Select a step to view details:    
+            <ng-container i18n>Select a step to view details:</ng-container>:        
             </div>
             <d3s-workflow-monitor-step-grid [itemSteps]="itemSteps" (selectionChange)="select($event)"></d3s-workflow-monitor-step-grid>
     </ng-container>

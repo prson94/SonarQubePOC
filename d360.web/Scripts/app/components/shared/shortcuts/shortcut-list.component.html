@@ -1,68 +1,70 @@
 <header>
-    Shortcuts
+    <ng-container i18n>Shortcuts</ng-container>
     <d3s-tile-actions [hasAdd]="formMode == FormMode.Default"
-        (addClick)="add()"></d3s-tile-actions>
+                      (addClick)="add()"></d3s-tile-actions>
 </header>
 <div [ngSwitch]="formMode">
     <div *ngSwitchCase="FormMode.Default">
         <p-table #dt
-            [value]="shortcuts"
-            selectionMode="single"
-            [metaKeySelection]="true"
-            [pageLinks]="3"
-            [paginator]="true"
-            [rows]="10">
+                 [value]="shortcuts"
+                 selectionMode="single"
+                 [metaKeySelection]="true"
+                 [pageLinks]="3"
+                 [paginator]="true"
+                 [rows]="10">
             <ng-template pTemplate="header">
                 <tr>
-                    <th>Name</th>
+                    <th i18n>Name</th>
                     <th></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body"
-                let-item>
+                         let-item>
                 <tr [pSelectableRow]="item">
                     <td>{{item.Name}}</td>
                     <td>
                         <div class="RowTools">
                             <a (click)="moveUp(item.ID)"
-                                class="cursor-pointer"><i class="fa fa-caret-up"></i></a>
+                               class="cursor-pointer"><i class="fa fa-caret-up"></i></a>
                             <a (click)="moveDown(item.ID)"
-                                class="cursor-pointer"><i class="fa fa-caret-down"></i></a>
+                               class="cursor-pointer"><i class="fa fa-caret-down"></i></a>
                             <a (click)="edit(item.ID)"
-                                class="cursor-pointer"><i class="fa fa-pencil"></i></a>
+                               class="cursor-pointer"><i class="fa fa-pencil"></i></a>
                             <a (click)="delete(item.ID)"
-                                class="cursor-pointer"><i class="fa fa-trash-o"></i></a>
+                               class="cursor-pointer"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="summary">
                 <d3s-grid-paging-info [first]="dt.first"
-                    [rows]="dt.rows"
-                    [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                      [rows]="dt.rows"
+                                      [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
             </ng-template>
         </p-table>
     </div>
     <div *ngSwitchCase="FormMode.Adding">
         <d3s-shortcut-item (onSave)="cancel()"
-            (onCancel)="cancel()"></d3s-shortcut-item>
+                           (onCancel)="cancel()"></d3s-shortcut-item>
     </div>
     <div *ngSwitchCase="FormMode.Editing">
         <d3s-shortcut-item [shortcut]="selectedShortcut"
-            (onSave)="cancel()"
-            (onCancel)="cancel()"></d3s-shortcut-item>
+                           (onSave)="cancel()"
+                           (onCancel)="cancel()"></d3s-shortcut-item>
     </div>
     <div *ngSwitchCase="FormMode.Deleting">
-        <div>
+        <div i18n>
             Are you sure you want to delete the [{{selectedShortcut.Name}}] shortcut?
         </div>
         <button pButton
-            type="button"
-            label="Delete"
-            (click)="confirmDelete()"></button>
+                type="button"
+                i18n-label
+                label="Delete"
+                (click)="confirmDelete()"></button>
         <button pButton
-            type="button"
-            label="Cancel"
-            (click)="formMode = FormMode.Default"></button>
+                type="button"
+                i18n-label
+                label="Cancel"
+                (click)="formMode = FormMode.Default"></button>
     </div>
 </div>

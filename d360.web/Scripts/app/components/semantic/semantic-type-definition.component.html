@@ -6,7 +6,7 @@
                 <div class="tile tile-detail main-panel">
                     <div *ngIf="!isLoading" style="padding: 16px 11px 6px 11px">
                         <div style="height: 0">
-                            &nbsp;<button class="ig-button-primary" igButton *ngIf="isAdmin" icon="fa-pencil" label="Edit" (click)="showEditor=true" style="float:right;z-index:1000"></button>
+                            &nbsp;<button class="ig-button-primary" igButton *ngIf="isAdmin" icon="fa-pencil" i18n-label label="Edit" (click)="showEditor=true" style="float:right;z-index:1000"></button>
                         </div>
 
                         <semantic-detail [qualifier]="semanticType.qualifier"
@@ -31,7 +31,7 @@
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
                                     </div>
-                                    <span>Click a link or a tag to display the properties of a referenced item</span>
+                                    <span i18n>Click a link or a tag to display the properties of a referenced item</span>
                                 </div>
                             </div>
                             <ng-container *ngIf="resourceUid && sidePanelTab === 'detail'">

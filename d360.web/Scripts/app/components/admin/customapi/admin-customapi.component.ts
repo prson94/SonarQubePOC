@@ -1,14 +1,15 @@
-﻿import {Component, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
-import {Title} from '@angular/platform-browser';
-import {ApiService} from '../../../models/custom-api.model';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {CustomAPIService} from '../../../services/custom-api.service';
+﻿import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { ApiService } from '../../../models/custom-api.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CustomAPIService } from '../../../services/custom-api.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-customapi',
@@ -23,6 +24,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
     public showEditor: boolean = false;
     public showDelete: boolean = false;
 
+    searchText = "Search...";
     theDeleteCallback: Function;
 
     constructor(
@@ -37,7 +39,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
         this.areaName = StringConstants.Section_CustomApi;
-        this.adminHeading = 'Integration';
+        this.adminHeading = $localize`Integration`;
         this.setCommonItems();
         this.clearSidebar();
         this.theDeleteCallback = this.deleteService.bind(this);
@@ -83,5 +85,9 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
                 this.load();
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the api service [${this.selected?.Name}]?`;
     }
 }

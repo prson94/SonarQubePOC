@@ -8,6 +8,7 @@ import { LazyLoadEvent } from 'primeng/api';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { SortOrder } from '../../../models/enums.model';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-bulk-load-item',
@@ -17,7 +18,7 @@ import { SortOrder } from '../../../models/enums.model';
 
 export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     @Input() id: number;
-    @Input() title: string = "Load Details";
+    @Input() title: string = $localize`Load Details`;
 
     @Output() refreshClick = new EventEmitter();
 

@@ -8,6 +8,7 @@ import { ResourceResponsibilityTypeCount } from '../../models/responsibility-typ
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as Highcharts from 'highcharts';
 import { CompanySettingsService } from '../../services/settings.service';
+import '@angular/localize/init';
 
 
 @Component({
@@ -21,7 +22,7 @@ import { CompanySettingsService } from '../../services/settings.service';
         <div class="row">
             <div class="col l6 m12 s12">
                 <div class="tile tile-detail">   
-                    <header>User's Responsibilities</header>
+                    <header i18n>User's Responsibilities</header>
                     <div *ngIf="isLoading">
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     </div>
@@ -62,7 +63,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Community');
+        this.setBrowserTitle(this.titleService, $localize`Community`);
         this.headerBreadcrumbService.getFolderTitle('#Community').then((res) => {
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.headerBreadcrumbService.clearCurrentObjectInfo();
@@ -70,7 +71,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
 
             this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                 this.clearSidebar();
-                this.secondaryNavService.setCurrentArea(res, icon, 'Community');
+                this.secondaryNavService.setCurrentArea(res, icon, $localize`Community`);
                 this.secondaryNavService.clearCurrentObject();
             });
             this.secondaryNavService.showHeader(true);
@@ -83,7 +84,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityTypeBreakdown().
-            subscribe(result => {    
+            subscribe(result => {
                 let options: any = {
                     chart: {
                         plotBackgroundColor: null,
@@ -99,14 +100,14 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         text: null
                     },
                     subtitle: {
-                        text: 'Click on a pie piece for more details.'
+                        text: $localize`Click on a pie piece for more details.`
                     },
                     credits: {
                         enabled: false
                     },
                     tooltip: {
                         formatter: function () {
-                            return this.point.name + '<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') + ' Total Assigned Items';
+                            return this.point.name + '<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') + ' ' + $localize`Total Assigned Items`;
                         }
                     },
                     plotOptions: {
@@ -148,6 +149,6 @@ export class CommunityComponent extends BaseComponent implements OnInit {
         this.selectedResponsibilityUid = e.point.uid; // triggers user responsibilities piece to load.    
     }
     GetHeadingLabel() {
-        return 'Users Assigned As ' + this.selectedResponsibilityName;
+        return $localize`Users Assigned As ${this.selectedResponsibilityName}`;
     }
 }

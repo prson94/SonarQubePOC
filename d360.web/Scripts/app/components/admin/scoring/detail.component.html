@@ -3,7 +3,7 @@
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading && allocation">
             <div class="measure-heading">
-                <div class="title">Score Definition</div>
+                <div class="title" i18n>Score Definition</div>
                 <div class="actions">
                     <button igButton icon="fa-pencil" (click)="showEdit = true" tooltip="Edit score definition"></button>
                 </div>
@@ -11,17 +11,17 @@
             <div class="measure-details">
                 <div class="col s6">
                     <div class="measure-details-item">
-                        <div class="details-header">Asset Type</div>
+                        <div class="details-header" i18n>Asset Type</div>
                         <div class="details-content">{{allocation?.assetTypePath}}</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Score Calculation</div>
+                        <div class="details-header" i18n>Score Calculation</div>
                         <div class="details-content">{{formattedScoreCalc}}</div>
                     </div>
                 </div>
                 <div class="col s6 measure-ranges">
                     <div class="measure-details-item">
-                        <div class="details-header">Scoring Bands</div>
+                        <div class="details-header" i18n>Scoring Bands</div>
                         <div class="score-ranges">
                             <div class="score-range">
                                 <span class="score-box score-poor"></span>
@@ -54,7 +54,7 @@
         </div>
     </div>
     <div class="measure-heading measure-list">
-        <div class="title">Measures</div>
+        <div class="title" i18n>Measures</div>
     </div>
     <div class="measure-details">
         <div class="col s7">

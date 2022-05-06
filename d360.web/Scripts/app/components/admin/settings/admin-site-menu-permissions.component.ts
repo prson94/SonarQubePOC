@@ -17,10 +17,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
     <div *ngSwitchCase="FormMode.Default">
         <div class="row">
             <div class="col s12" *ngSwitchCase="FormMode.Default">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     View Permissions
                 </div>
-                <div class="directions">
+                <div class="directions" i18n>
                     By default all users can see each nav folder. If there are any permissions defined below, only those users/groups will see the folder on their nav.
                 </div>
                 <header>
@@ -30,7 +30,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     <p-table #dt [value]="siteNav.Permissions" selectionMode="single" [metaKeySelection]="true">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Permissions</th>
+                                <th i18n>Permissions</th>
                                 <th style="width: 35px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
@@ -56,10 +56,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
     <div *ngSwitchCase="FormMode.Adding">
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     View Permissions
                 </div>
-                <div class="directions">
+                <div class="directions" i18n>
                     By default all users can see each nav folder. If there are any permissions defined below, only those users/groups will see the folder on their nav.
                 </div>
                 <header>
@@ -67,8 +67,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 </header>
                 <div>
                     <d3s-resource-multiselect-grid [multiple]="field.MultiSelect" [(ngModel)]="field.Value" showToolTip="false"  ngDefaultControl [field]="field" [showResourceType]="true" ></d3s-resource-multiselect-grid>  
-                    <button pButton type="button" label="Cancel" (click)="selection = null; formMode = FormMode.Default; onModeChange.emit(this.formMode);"></button>
-                    <button pButton type="button" label="Add" (click)="add()" [disabled]="field.Value == null || field.Value.length==0"></button>
+                    <button pButton type="button" i18n-label label="Cancel" (click)="selection = null; formMode = FormMode.Default; onModeChange.emit(this.formMode);"></button>
+                    <button pButton type="button" i18n-label label="Add" (click)="add()" [disabled]="field.Value == null || field.Value.length==0"></button>
                 </div>
             </div>
         </div>

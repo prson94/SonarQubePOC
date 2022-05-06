@@ -10,11 +10,11 @@ declare var CurrentResourceID;
     selector: 'd3s-resource-following-tile',    
     template: `
                 <header *ngIf="isMe">
-                    Items You Follow
+                    <ng-container i18n>Items You Follow</ng-container>
                     <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>    
                 </header>
                 <header *ngIf="!isMe">
-                    Items {{resource?.FirstName}} Follows
+                    <ng-container i18n>Items {{resource?.FirstName}} Follows</ng-container>
                     <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>      
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      

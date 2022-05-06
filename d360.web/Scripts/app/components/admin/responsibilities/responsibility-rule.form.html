@@ -2,41 +2,41 @@
     <i class="fa fa-spinner fa-spin fa-2x"></i>
 </div>
 <div *ngIf="!isLoading">
-    <header>{{actionName}} Rule</header>
+    <header>
+        {{actionName}} <ng-container i18n>Rule</ng-container>
+    </header>
     <form (ngSubmit)="onSubmit()" #ruleEditor="ngForm">
         <div class="row">
             <div class="col s12 form-instructions">
-                Modify your rule using the form below.
+                <ng-container i18n>Modify your rule using the form below.</ng-container>
                 <div class="form-instructions-error" data-bind="visible: FormInvalid, text: FormValidationMessage">
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col l6 m6 s12">
-                <div id='NameTip' class="FieldNameRequired">Name</div>
+                <div id='NameTip' class="FieldNameRequired" i18n>Name</div>
                 <input required name="Name" pInputText maxlength="250" type="text" [(ngModel)]="model.Name" style="width: 98%; display: block;" #Name="ngModel" />
-                <div [hidden]="Name.valid || Name.pristine" class="validation-text">Friendly name is required</div>
+                <div [hidden]="Name.valid || Name.pristine" class="validation-text" i18n>Friendly name is required</div>
             </div>
             <div class="col l6 m6 s12">
-                <div id='TypeTip' class="FieldNameRequired">Selected Type</div>
+                <div id='TypeTip' class="FieldNameRequired" i18n>Selected Type</div>
                 <p-dropdown required name="objecttype" [options]="objectTypes" [ngModel]="model.ObjectString" [style]="{'width':'98%', 'display' : 'block'}" (onChange)="loadObjectType($event.value)" #objectType="ngModel"></p-dropdown>
-                <div [hidden]="objectType.valid || objectType.pristine">Object type is required</div>
+                <div [hidden]="objectType.valid || objectType.pristine" i18n>Object type is required</div>
             </div>
         </div>
         <div class="row">
             <div class="col l6 m6 s12">
                 <div id='IsVisibleTip' class="FieldName" style="display: block;">
-                    Visible?
-                    <span style="margin-left: 15px" pTooltip="Marking the rule as visible applies a visibility setting to all applied responsibilities for this rule. Users will be able to see users and groups assigned via this rule. 
-                    Setting the rule to not be visible simply hides the users that are assigned via the rule. Permissions are still applied." class="fa fa-info-circle blue-grey-text"></span>
+                    <ng-container i18n>Visible?</ng-container>
+                    <span style="margin-left: 15px" pTooltip="{{visibleTooltip}}" class="fa fa-info-circle blue-grey-text"></span>
                 </div>
                 <p-checkbox required name="isVisible" [(ngModel)]="model.IsVisible" binary="true"></p-checkbox>
             </div>
             <div class="col l6 m6 s12">
                 <div id='ApplyToTypeTip' class="FieldName" style="display: block;">
-                    Applies To Entire Type?
-                    <span style="margin-left: 15px" pTooltip="Marking the rule as applying to a type grants the applied responsibilities to act upon the type itself, including all instances under the type. 
-                    For example, if you wanted to grant a user or group with the ability to create a specific business term you would need to check this box." class="fa fa-info-circle blue-grey-text"></span>
+                    <ng-container i18n>Applies To Entire Type?</ng-container>
+                    <span style="margin-left: 15px" pTooltip="{{applyToTooltip}}" class="fa fa-info-circle blue-grey-text"></span>
                 </div>
                 <p-checkbox required name="applyToType" [(ngModel)]="model.ApplyToType" (ngModelChange)="clearWhen()" binary="true"></p-checkbox>
             </div>
@@ -48,7 +48,7 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div id='ContextTip' class="FieldNameRequired">Context</div>
+                <div id='ContextTip' class="FieldNameRequired" i18n>Context</div>
                 <p-editor [ngModelOptions]="{standalone: true}" name="context" [(ngModel)]="model.Context" [style]="{'height':'150px','width':'100%'}">
                     <header style="padding-bottom:0px !important">
                         <span class="ql-formats">
@@ -97,9 +97,9 @@
             <div class="col s12">&nbsp;</div>
         </div>
 
-        <simple-accordion header="When Filters" active="true" *ngIf="model.Object && !model.ApplyToType" >
+        <simple-accordion header="When Filters" active="true" *ngIf="model.Object && !model.ApplyToType">
             <div class="row">
-                <div class="col s12 form-instructions">
+                <div class="col s12 form-instructions" i18n>
                     You can define "When" filters to limit when the rule applies. Responsibilities will be applied to any items which match the Selected Type and meet the filter criteria that you specify below.<br />
                     The When filters do not apply to create, only read ,modify, and remove.  The user will be able to create any asset of the asset type.
                 </div>
@@ -109,11 +109,11 @@
                     <table class="highlight, striped responsive-table" cellpadding="5">
                         <thead>
                             <tr>
-                                <th>Check Type</th>
-                                <th>Field/Relation</th>
-                                <th>Value</th>
+                                <th i18n>Check Type</th>
+                                <th i18n>Field/Relation</th>
+                                <th i18n>Value</th>
                                 <th style="width: 50px; text-align: right">
-                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addWhen()"><i class='fa fa-plus' title='Add check'></i></a>
+                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addWhen()"><i class='fa fa-plus' title='{{addCheckTitle}}'></i></a>
                                 </th>
                             </tr>
                         </thead>
@@ -142,12 +142,12 @@
                     </table>
                 </div>
                 <div class="col l4 m5 s12">
-                    <button pButton type="button" [disabled]="disableTestWhen" label="Test Filters" (click)="testWhen()"></button>
+                    <button pButton type="button" [disabled]="disableTestWhen" label="{{testWhenLabel}}" (click)="testWhen()"></button>
                     <p-table #dt [value]="WhenTestRows" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="5">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'path'">
-                                    Path
+                                    <ng-container i18n>Path</ng-container>
                                     <d3s-sortIcon [field]="'path'"></d3s-sortIcon>
                                 </th>
                             </tr>
@@ -167,15 +167,15 @@
 
         <simple-accordion header="Then Filters" active="true" *ngIf="model.Object">
             <div class="row">
-                <div class="col s12 form-instructions">
+                <div class="col s12 form-instructions" i18n>
                     You can define "Then" filters to specify to whom the objects are assigned. Responsibilities will be assigned to users who match the Security Object Type criteria specified below for objects that meet the filter criteria specified above.
                 </div>
             </div>
             <div class="row" *ngIf="model.Object">
-                <div class="col s12 FieldNameRequired">Security Object Type</div>
+                <div class="col s12 FieldNameRequired" i18n>Security Object Type</div>
                 <div class="col l8 m7 s12">
                     <p-dropdown required name="thenObjectType" [options]="thenObjectTypes" [(ngModel)]="model.StructuredDefinition.Then.Object" [style]="{ 'width' : '100%' }" (onChange)="loadThenFilterOptions($event.value)" #thenObjectType="ngModel"></p-dropdown>
-                    <div [hidden]="thenObjectType.valid || thenObjectType.pristine">Security Object Type is required</div>
+                    <div [hidden]="thenObjectType.valid || thenObjectType.pristine" i18n>Security Object Type is required</div>
                 </div>
             </div>
             <div class="row" *ngIf="model.Object">
@@ -183,10 +183,10 @@
                     <table class="highlight, striped responsive-table" cellpadding="5">
                         <thead>
                             <tr>
-                                <th>Field</th>
-                                <th>Value</th>
+                                <th i18n>Field</th>
+                                <th i18n>Value</th>
                                 <th style="width: 50px; text-align: right">
-                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addThenCondition()"><i class='fa fa-plus' title='Add condition'></i></a>
+                                    <a style="text-decoration:none; color:#000; cursor: pointer; font-size:1.5em; padding:5px" (click)="addThenCondition()"><i class='fa fa-plus' title='{{addConditionLabel}}'></i></a>
                                 </th>
                             </tr>
                         </thead>
@@ -211,7 +211,7 @@
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'path'">
-                                    Security Asset
+                                     <ng-container i18n>Security Asset</ng-container>
                                     <d3s-sortIcon [field]="'path'"></d3s-sortIcon>
                                 </th>
                             </tr>
@@ -228,8 +228,8 @@
                 </div>
             </div>
             <div class="row">
-                <p-radioButton igRadioButton name="thenMatchType" [(ngModel)]="model.StructuredDefinition.Then.MatchType" value="and" label="Match all"></p-radioButton>&nbsp;
-                <p-radioButton igRadioButton name="thenMatchType" [(ngModel)]="model.StructuredDefinition.Then.MatchType" value="or" label="Match any"></p-radioButton>
+                <p-radioButton igRadioButton name="thenMatchType" [(ngModel)]="model.StructuredDefinition.Then.MatchType" value="and" label="{{matchAllLabel}}"></p-radioButton>&nbsp;
+                <p-radioButton igRadioButton name="thenMatchType" [(ngModel)]="model.StructuredDefinition.Then.MatchType" value="or" label="{{matchAnyLabel}}"></p-radioButton>
             </div>
         </simple-accordion>
 
@@ -242,8 +242,8 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px">
-                    <button pButton type="submit" [disabled]="!ruleEditor.form.valid || !isValid()" label="Save"></button>
-                    <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                    <button pButton type="submit" [disabled]="!ruleEditor.form.valid || !isValid()" label="{{saveLabel}}"></button>
+                    <button pButton type="button" label="{{cancelLabel}}" (click)="cancel()"></button>
                 </div>
             </div>
         </div>

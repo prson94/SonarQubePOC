@@ -1,4 +1,5 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import '@angular/localize/init';
 
 
 @Component({

@@ -2,30 +2,30 @@
 
     <ng-container *ngIf="showPassTest()">
         <div class="calculation-group">
-            <div class="title">Pass Test</div>
+            <div class="title" i18n>Pass Test</div>
             <div class="pass-test">{{formattedCheck}}</div>
-            <div *ngIf="selected.Threshold" class="pass-test">Rule results score >= Pass Threshold</div>
+            <div *ngIf="selected.Threshold" class="pass-test" i18n>Rule results score >= Pass Threshold</div>
             <div *ngIf="selected.Threshold" class="pass-test">{{getAsRawPrecentage(selected.DecimalValue, 3)}} >= {{getAsRawPrecentage(selected.Threshold, 3)}}</div>
             <ng-container *ngIf="selected.Value">
-                <i class="fa fa-check-circle good"></i> Succeeded
+                <i class="fa fa-check-circle good"></i> <ng-container i18n>Succeeded</ng-container>
             </ng-container>
             <ng-container *ngIf="!selected.Value">
-                <i class="fa fa-times-circle bad"></i> Failed
+                <i class="fa fa-times-circle bad"></i> <ng-container i18n>Failed</ng-container>
             </ng-container>
         </div>
     </ng-container>
 
     <ng-container *ngIf="matchedCondition">
         <div class="calculation-group">
-            <div class="title">Asset Conditions and Weighting</div>
+            <div class="title" i18n>Asset Conditions and Weighting</div>
             <div>
-                <span *ngIf="selected.MatchConditionsOnly">Measure applied to all assets</span>
-                <span *ngIf="!selected.MatchConditionsOnly">Apply only to assets which match a condition group</span>
+                <span *ngIf="selected.MatchConditionsOnly" i18n>Measure applied to all assets</span>
+                <span *ngIf="!selected.MatchConditionsOnly" i18n>Apply only to assets which match a condition group</span>
             </div>
             <div class="conditions">
                 <div>
-                    <div>Weight: {{formatWeight(matchedCondition.Weight)}}, <span *ngIf="matchedCondition.Threshold">Threshold: {{formatThreshold(matchedCondition.Threshold)}}</span> - Determined via match on Condition Group {{matchedCondition.Position}}</div>
-                    
+                    <div i18n>Weight: {{formatWeight(matchedCondition.Weight)}}, <span *ngIf="matchedCondition.Threshold">Threshold: {{formatThreshold(matchedCondition.Threshold)}}</span> - Determined via match on Condition Group {{matchedCondition.Position}}</div>
+
                     <span *ngFor="let item of matchedCondition.ConditionItems;let i = index;">
                         <span *ngIf="i > 0">&nbsp;,</span> {{item.FieldName}} {{Operator[item.Operator]}} {{isDate(item) ? (item.Value | utcDate | date: shortdate) : item.Value}}
                     </span>
@@ -35,8 +35,10 @@
         <div class="calculation-group" *ngIf="selected.OtherConditions && selected.OtherConditions.length > 0">
             <div class="conditions">
                 <div>
-                    <span class="fa fa-exclamation-triangle warning"></span> Also Matched on Condition Group<span *ngIf="selected.OtherConditions.length > 1">s</span> {{getOtherMatchedGroups()}}
-                    - the definition of this measure should be reviewed, as matching on multiple condition groups should be considered a configuration error
+                    <span class="fa fa-exclamation-triangle warning"></span> <ng-container i18n>
+                        Also Matched on Condition Group<span *ngIf="selected.OtherConditions.length > 1">s</span> {{getOtherMatchedGroups()}}
+                        - the definition of this measure should be reviewed, as matching on multiple condition groups should be considered a configuration error
+                    </ng-container>
                 </div>
             </div>
         </div>
@@ -44,13 +46,13 @@
 
     <ng-container *ngIf="selected.DisplayMaxWeight !== selected.Weight">
         <div class="calculation-group">
-            <div class="title">Adjusted Weight</div>
+            <div class="title" i18n>Adjusted Weight</div>
             <div class="indented-line">= ({{weightLabel()}} &#247; weights total) &#215; {{formulaMultiplierLabel()}}</div>
             <div class="indented-line">
                 = (
                 <span *ngIf="matchedCondition">{{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}}</span>
                 <span *ngIf="!matchedCondition">{{getAsPrecentage(selected.Weight)}}</span>
-                &#247; <span>{{getAsPrecentageNoMax(selected._rawWeightSum)}}</span>) &#215; 
+                &#247; <span>{{getAsPrecentageNoMax(selected._rawWeightSum)}}</span>) &#215;
                 <span *ngIf="!selected.IsGroup && selected._groupDisplayMaxWeight">{{getAsPrecentageNoMax(selected._groupDisplayMaxWeight)}}</span>
                 <span *ngIf="selected.IsGroup || !selected._groupDisplayMaxWeight">100%</span>
             </div>
@@ -61,7 +63,7 @@
     </ng-container>
 
     <div class="calculation-group">
-        <div class="title">Maximum Possible Score</div>
+        <div class="title" i18n>Maximum Possible Score</div>
         <div class="indented-line">= ({{weightLabel()}} &#247; sum of weights) &#215; {{formulaMultiplierLabel()}}</div>
 
         <!--Scores of groups -->
@@ -88,7 +90,7 @@
     </div>
 
     <div class="calculation-group">
-        <div class="title">Measure Score</div>
+        <div class="title" i18n>Measure Score</div>
 
         <ng-container *ngIf="selected.IsGroup">
             <div class="indented-line">= sum of sub-measures</div>
@@ -105,19 +107,19 @@
         </ng-container>
 
         <ng-container *ngIf="showPassTest() && !selected.IsGroup">
-            <div class="indented-line" *ngIf="selected.DisplayWeight > 0">= maximum possible score</div>
+            <div class="indented-line" *ngIf="selected.DisplayWeight > 0" i18n>= maximum possible score</div>
             <div class="indented-line">
                 = {{getAsPrecentage(selected.DisplayWeight)}}
             </div>
         </ng-container>
 
         <ng-container *ngIf="!selected.Threshold && ruleResultsVisible()">
-            <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
+            <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight" i18n>= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight</div>
             <div class="indented-line" *ngIf="!selected._groupDisplayMaxWeight">
                 = {{getAsPrecentage(selected.DecimalValue)}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}}
             </div>
 
-            <div class="indented-line" *ngIf="selected._groupDisplayMaxWeight">= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight &#215; group weight</div>
+            <div class="indented-line" *ngIf="selected._groupDisplayMaxWeight" i18n>= rule results score ({{definition?.DataQuality?.ResultOperation}}) &#215; measure weight &#215; group weight</div>
             <div class="indented-line" *ngIf="selected._groupDisplayMaxWeight">
                 = {{selected.DecimalValue ? getAsPrecentage(selected.DecimalValue) : "ERROR"}} &#215; {{getAsPrecentage(selected.AdjustedMaxWeight)}} &#215; {{getAsPrecentage(selected._groupDisplayMaxWeight)}}
             </div>
@@ -130,7 +132,7 @@
 
         <ng-container *ngIf="ruleResultsVisible()">
             <div style="margin-top: 16px;">
-                <button class="link" (click)="showRuleResults(true)">Show rule results</button>
+                <button class="link" (click)="showRuleResults(true)" i18n>Show rule results</button>
             </div>
         </ng-container>
     </div>
