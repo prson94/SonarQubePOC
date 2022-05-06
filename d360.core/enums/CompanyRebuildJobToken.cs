@@ -91,6 +91,7 @@ namespace d360.core.enums
             info.Value = type.ToString();
             return info;
         }
+        
         private static string DescriptionAsDisplayString(CompanyRebuildJobToken type)
         {
             switch (type)
