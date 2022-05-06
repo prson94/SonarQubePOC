@@ -47,6 +47,8 @@ namespace d360.model.helpers
 
             allowedDefaultFields.Add(new DefaultFilter("CreatedOn", "A.CreatedOn", SqlFieldType.DateTime));
             allowedDefaultFields.Add(new DefaultFilter("UpdatedOn", "A.UpdatedOn", SqlFieldType.DateTime));
+            allowedDefaultFields.Add(new DefaultFilter("CreatedBy", "A.CreatedBy", SqlFieldType.Number));
+            allowedDefaultFields.Add(new DefaultFilter("LastModifiedBy", "A.UpdatedBy", SqlFieldType.Number));
 
             if (useUserDefaultFields)
             {

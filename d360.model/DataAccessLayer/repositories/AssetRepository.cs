@@ -4499,5 +4499,31 @@ namespace d360.model.DataAccessLayer
 
 			return results;
 		}
-	}
+
+        public IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType)
+        {
+			var sql = @"select distinct Asset.CreatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
+						from dbo.Asset
+							join reporting.Global_Resource globalResource on globalResource.ResourceID = Asset.CreatedBy
+						where Asset.AssetTypeID = @assetTypeId
+						order by globalResource.FirstName + ' ' + globalResource.LastName";
+
+			var results = CompanyContext.Query<dynamic>(sql, new { assetTypeId = assetType.ID}, ApiTimeout);
+
+			return results;
+        }
+
+        public IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType)
+        {
+			var sql = @"select distinct Asset.UpdatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
+						from dbo.Asset
+							join reporting.Global_Resource globalResource on globalResource.ResourceID = Asset.UpdatedBy
+						where Asset.AssetTypeID = @assetTypeId
+						order by globalResource.FirstName + ' ' + globalResource.LastName";
+
+			var results = CompanyContext.Query<dynamic>(sql, new { assetTypeId = assetType.ID }, ApiTimeout);
+
+			return results;
+		}
+    }
 }
