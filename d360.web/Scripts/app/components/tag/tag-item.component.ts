@@ -22,7 +22,7 @@ import { SelectAssetService } from '../../services/select-asset.service';
 import { Observable, of, Subscription } from 'rxjs';
 import { AssetDetailClickEvent, LinkClickInterceptor } from '../../services/href-click-service';
 import { tap } from 'rxjs/operators';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../models/fieldtype-api.model';
 import { UiAdvancedFiltering } from '../../services/ui-advanced-filtering.service';
 import {uniqWith as _uniqWith, isEqual as _isEqual} from 'lodash';
@@ -142,11 +142,13 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.searchService.serachTableLocally(this.table, searchString);
     }
 
-    getFilterValues(): Observable<LookupValuesAPIModel> {
+    getFilterValues(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         const addedBy: {name: string, value: string}[] = this.readOnlyFullListOfTagUsage.map((taggedAsset: TagDetail) => {
             return {name: taggedAsset.AddedBy, value: taggedAsset.AddedByUid};
         });
-        const uniqAddedBy = _uniqWith(addedBy, _isEqual);
+        const uniqAddedBy = _uniqWith(addedBy, _isEqual)
+            .filter((s: {name: string, value: string}) => s.name.toLowerCase().includes(params.filter?.toLowerCase() ?? ""));
+
         if(uniqAddedBy.length === 1 && uniqAddedBy[0].name === '') {
             return of({
                 items: [],

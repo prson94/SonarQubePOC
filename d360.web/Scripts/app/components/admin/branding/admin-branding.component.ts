@@ -13,6 +13,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { AdminBaseComponent } from '../admin-base.component';
+import '@angular/localize/init';
 
 @Component({
     selector: "admin-branding",

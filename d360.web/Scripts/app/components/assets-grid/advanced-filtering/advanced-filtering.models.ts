@@ -7,6 +7,7 @@ import { FieldType, FieldTypeAPIModelField } from "../../../models/fieldtype-api
 import { ScoreTypeAllocation } from "../../../models/metrics.model";
 import { Operator, OperatorString } from "../../../models/operator.model";
 import { RelationshipType } from "../../../models/relationship.model";
+import '@angular/localize/init';
 
 export enum ConnectingOperator {
     And = 'and',

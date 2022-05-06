@@ -13,6 +13,7 @@ import { StringConstants } from "../../../static/string-constants";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { AssetService } from "../../../services/asset.service";
 import { CompanySettingsService } from "../../../services/settings.service";
+import '@angular/localize/init';
 
 @Component({
     selector: "d3s-admin-rules-component",

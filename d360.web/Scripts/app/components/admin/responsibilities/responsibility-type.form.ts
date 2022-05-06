@@ -2,6 +2,7 @@
 import { ResponsibilityType, ResponsibilityTypeRelation } from '../../../models/responsibility-type.model';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import * as _ from 'lodash';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-responsibility-type-form',

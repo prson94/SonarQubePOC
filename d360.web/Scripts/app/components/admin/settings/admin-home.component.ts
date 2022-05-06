@@ -1,6 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CompanySettings, CompanyImage } from '../../../models/settings.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-home',

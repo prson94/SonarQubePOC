@@ -22,6 +22,7 @@ import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import '@angular/localize/init';
 
 declare var CurrentResourceID;
 

@@ -12,6 +12,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'scoring-index-component',

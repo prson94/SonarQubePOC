@@ -22,6 +22,7 @@ import { Observable, of, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-admin-workflow-editor',

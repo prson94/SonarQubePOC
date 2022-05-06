@@ -7,6 +7,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import * as _ from 'lodash';
 import { BaseMeasureEditorComponent } from './measure-editor-base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'external-measure-editor',

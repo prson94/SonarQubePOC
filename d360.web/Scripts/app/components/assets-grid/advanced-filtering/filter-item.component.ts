@@ -12,6 +12,7 @@ import { MultiInputField } from "../../shared/controls/multi-input-field/multi-i
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
 import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
+import '@angular/localize/init';
 
 @Component({
     selector: "filter-item",
@@ -176,7 +177,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     filterTable($event: any) {
-        this.dataTable.filterGlobal($event, "contains");
+        this.dataTable.filterGlobal($event, 'contains');
     }
 
     setSelectionVirtualScrollHeight() {
@@ -505,6 +506,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
 
+            if (this.condition.field === "CreatedBy") {
+                this.hasSelectAllCheckbox = true;
+            }
+
             if (type.Type.Score && !this.condition.value) {
                 this.condition.value = "poor";
             }
@@ -653,9 +658,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             }
         });
 
-        Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
-
-        this.currentField.Values = [...this.currentField.Values];
+        if (loadedData.length <= params.take) {
+            this.currentField.Values = loadedData;
+        }
+        else {
+            Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+            this.currentField.Values = [...this.currentField.Values];
+        }
 
         this.isLookupValuesLoading = false;
 
@@ -663,13 +672,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadLookupValuesForComplexFields(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
-        }
-
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -751,13 +753,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadRelationshipValues(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
-        }
-
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }

@@ -10,6 +10,7 @@ import { TreeNode } from "primeng/api";
 import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
+import '@angular/localize/init';
 
 
 

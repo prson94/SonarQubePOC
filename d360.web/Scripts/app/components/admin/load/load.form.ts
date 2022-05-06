@@ -4,6 +4,7 @@ import { LoadFilePostModel, LoadColumn } from '../../../models/load.model';
 import { LoadService } from '../../../services/load.service';
 import { FormHelper } from '../../../models/form.model';
 import * as _ from 'lodash';
+import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-load-form',

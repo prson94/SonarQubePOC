@@ -12,6 +12,7 @@ import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
 import { ScoreService } from '../../../services/score.service';
+import '@angular/localize/init';
 
 @Component({
     selector: 'measure-list',

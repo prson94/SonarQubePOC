@@ -124,13 +124,15 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             Name: 'CreatedOn',
             FriendlyName: $localize`Date Created`,
             Type: new FieldType("Date"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         },
         {
             Name: 'UpdatedOn',
             FriendlyName: $localize`Date Last Modified`,
             Type: new FieldType("Date"),
-            Category: ""
+            Category: "",
+            RemovePopulatedOperator: true
         }
     ]
 
