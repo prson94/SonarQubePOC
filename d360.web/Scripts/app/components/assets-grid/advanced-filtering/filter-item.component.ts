@@ -12,7 +12,6 @@ import { MultiInputField } from "../../shared/controls/multi-input-field/multi-i
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
 import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
-import '@angular/localize/init';
 
 @Component({
     selector: "filter-item",
@@ -751,7 +750,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             });
         }
     }
-
+    private oldSearchPhrase: string = '';
     loadRelationshipValues(params: any) {
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
@@ -764,12 +763,22 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             nameAsParam = this.relationshipFieldName;
         }
 
+        if (+params["take"] < 40) {
+            //prime table event sometimes tries to load less than 40 results and after that assumes there is no more new items to fetch
+            //forcing to take min 40 items resolves an issue
+            params["take"] = 40;
+        }
+
         this.lazyLoadSubscription = this.assetService
             .getAssetsLookupValues(nameAsParam.split("|")[1], params)
             .subscribe((res) => {
-                if (!this.currentField.Values || params.filter) {
+                if (!this.currentField.Values || (params.filter && params.filter !== this.oldSearchPhrase)) {
+                    //initialize new empty array if its uninitialized or if simple filter changes
                     this.currentField.Values = Array.from({ length: 0 });
                 }
+
+                this.oldSearchPhrase = params.filter ?? "";
+
                 let loadedData = [];
 
                 res.forEach((str) => {

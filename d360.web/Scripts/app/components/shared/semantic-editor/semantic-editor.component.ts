@@ -25,7 +25,6 @@ import { BaseComponent } from '../base.component';
 import { LocaleService } from '../../../services/locale.service';
 import { PropertyGroupComponent } from '../controls/property-group/property-group.component';
 import { AppSettingsEnum } from '../../../models/settings.model';
-import '@angular/localize/init';
 
 @Component({
     selector: 'semantic-editor',

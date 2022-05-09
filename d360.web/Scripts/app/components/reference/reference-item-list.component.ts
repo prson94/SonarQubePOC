@@ -6,11 +6,9 @@ import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { Subject, Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
-import { filter } from 'lodash';
 import { Table } from 'primeng/table';
 import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
-import '@angular/localize/init';
 
 @Component({
     selector: 'd3s-reference-item-list',

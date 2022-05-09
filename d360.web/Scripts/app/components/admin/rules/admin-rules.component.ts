@@ -1,10 +1,8 @@
 ﻿import { Component, OnInit, OnDestroy } from "@angular/core";
 import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
 import { SecondaryNavService } from "../../../services/right-sidebar.service";
-import { RulesService } from "../../../services/rules.service";
 import { StateService } from "../../../services/state.service";
 import { AdminBaseComponent } from "../admin-base.component";
-import { RuleType } from "../../../models/rule.model";
 import { Title } from "@angular/platform-browser";
 import { SecondaryNavItem } from "../../../models/secondaryNav.model";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
@@ -13,7 +11,6 @@ import { StringConstants } from "../../../static/string-constants";
 import { AssetTypeService } from "../../../services/asset-type.service";
 import { AssetService } from "../../../services/asset.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import '@angular/localize/init';
 
 @Component({
     selector: "d3s-admin-rules-component",

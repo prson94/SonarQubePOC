@@ -16,7 +16,6 @@ import { BaseComponent } from "../../shared/base.component";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { CompanySettingsService } from "../../../services/settings.service";
-import '@angular/localize/init';
 
 
 @Component({
