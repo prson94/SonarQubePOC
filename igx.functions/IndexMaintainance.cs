@@ -29,11 +29,10 @@ namespace igx.functions.consumption
 
             try
             {
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
-
-                foreach (var server in companies.Select(c => c.SearchServer).Distinct())
+                foreach (var server in CoreFunction.GetSearchServersByCurrentSlot())
                 {
                     CoreFunction.AITrackTrace(functionName, $"Performing index maintainance for server {server}");
+                    var companies = CoreFunction.GetCompaniesBySearchServer(server);
 
                     var indexCompanies = ElasticSearchSource.GetCompanyByIndices(server);
                     var serverCompanies = companies.Where(c => c.SearchServer == server).Select(c => c.CompanyID);
