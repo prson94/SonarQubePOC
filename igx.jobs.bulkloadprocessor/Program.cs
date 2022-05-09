@@ -481,7 +481,27 @@ on			(T.Name  = S.Name)
 when not matched by target then
 	insert (Name, UpdatedOn, UpdatedBy)
 	values (S.Name, getutcdate(), 0)
-output inserted.ID into #GroupInsertResult;", transaction: trans);
+output inserted.ID into #GroupInsertResult;
+
+merge	into 
+		Asset as A
+using	(
+		select	G.ID,
+				GT.ID as AssetTypeID,
+				G.UpdatedOn,
+				G.UpdatedBy
+		from	[Group] G
+				inner join #GroupInsertResult U on U.ID = G.ID
+				inner join AssetType GT on GT.Object = 'GroupType'
+		) G
+on		(A.Object = 'Group' and A.ObjectID = G.ID)
+when	matched then
+update	set 
+		A.UpdatedOn = G.UpdatedOn,
+		A.UpdatedBy = G.UpdatedBy
+when not matched then
+insert	(AssetTypeID, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+values	(G.AssetTypeID, 'Group', G.ID, G.UpdatedOn, G.UpdatedBy, G.UpdatedOn, G.UpdatedBy);", transaction: trans);
 
                     var results = company.Query<Guid>(@"
 select a.uid
