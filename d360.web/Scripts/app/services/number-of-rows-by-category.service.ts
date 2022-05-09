@@ -54,7 +54,7 @@ export class NumberOfRowsByCategoryService {
    * Emits ListToNumberOfRows for current page
    */
   public rowsPerPage = this.state$.pipe(
-    map(state => {
+    map((state) => {
       if (state.currentPageCategory == null) {
         const pageSettings: ListToNumberOfRows = {};
         this.applyPendingChanges(state.pendingChanges, pageSettings);
@@ -64,7 +64,7 @@ export class NumberOfRowsByCategoryService {
       return state.pageToListToNumberOfRows[state.currentPageCategory];
     }),
     shareReplay(1),
-    filter(listToNumberOfRows => listToNumberOfRows != null)
+    filter((listToNumberOfRows) => listToNumberOfRows != null)
   );
 
   constructor(
@@ -97,18 +97,18 @@ export class NumberOfRowsByCategoryService {
 
   public ngOnInit() {
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
+      filter((event) => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
       // After some redirects we still stay on same page with same components, so we shouldn't reset pendingChanges
       // Typically this happens for urls like '/reference' → '/reference;referenceListId=…'
       if (event.urlAfterRedirects.startsWith(this.state$.value.latestUrl)) {
-        this.mutateState(nextState => {
+        this.mutateState((nextState) => {
           nextState.latestUrl = event.urlAfterRedirects;
         });
         return;
       }
 
-      this.mutateState(nextState => {
+      this.mutateState((nextState) => {
         nextState.currentPageCategory = undefined;
         nextState.pendingChanges = [];
         nextState.latestUrl = event.urlAfterRedirects;
@@ -123,7 +123,7 @@ export class NumberOfRowsByCategoryService {
       });
     });
 
-    this.state$.subscribe(state => {
+    this.state$.subscribe((state) => {
       if (!state.currentPageCategory || state.pendingChanges.length == 0) {
         return;
       }
@@ -144,7 +144,7 @@ export class NumberOfRowsByCategoryService {
     });
 
     this.state$.pipe(
-      map(state => state.pageToListToNumberOfRows),
+      map((state) => state.pageToListToNumberOfRows),
       distinctUntilChanged(isEqual)
     ).subscribe((pageToListToNumberOfRows) => {
       localStorage.setItem(
