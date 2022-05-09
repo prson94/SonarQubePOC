@@ -81,7 +81,6 @@ namespace d360.core.enums
         public static CompanyRebuildJobTokenInfo AsInfoModel(this CompanyRebuildJobToken type)
         {
             var info = new CompanyRebuildJobTokenInfo();
-
             var member = type.GetType().GetMember(type.ToString()).Single();
 
             info.Description = DescriptionAsDisplayString(type);
