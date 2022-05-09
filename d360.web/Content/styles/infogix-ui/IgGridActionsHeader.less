@@ -22,6 +22,27 @@
   .simple-search {
     width: 200px;
   }
+
+  &.column-layout {
+    flex-direction: column;
+  
+    .simple-search {
+      flex-grow: 1;
+      width: auto;
+    }
+
+    .grid-action-buttons {
+      min-width: auto;
+    }
+  }
+  
+  .grid-actions-header-row {
+    display: flex;
+  
+    &:not(:first-child) {
+      padding-top: 8px;
+    }
+  }
 }
 
 /* || Ovveride grid-actions-header styles for "Admin Tags" and "Tagged Asset" pages */
