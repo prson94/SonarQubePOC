@@ -12,6 +12,8 @@ import { D3SSharedModule } from '../../shared/shared.module';
 import { AdminResourcesComponent } from './admin-resources.component';
 import { AdminResourcesRoutingModule } from './admin-resources.routes';
 import { SharedModule } from 'primeng/api';
+import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
+import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
 
 
 @NgModule({
@@ -30,6 +32,8 @@ import { SharedModule } from 'primeng/api';
         D3SSharedModule,       
         SharedFieldDefinitionModule,        
         TilesModule,
+        SidePanelModule,
+        AssetDetailModule,
     ],
     declarations: [
         AdminResourcesComponent,

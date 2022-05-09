@@ -1,7 +1,42 @@
 ﻿<div class="row">
-    <div class="col s12">
-        <div class="tile tile-detail">
-            <d3s-user-list></d3s-user-list>
-        </div>                        
+    <div class="col s12" style="display:flex;">
+        <div class="tile tile-detail main-panel">
+            <d3s-user-list [(selected)]="selectedResource"></d3s-user-list>
+        </div>
+        <div class="tile tile-detail side-panel" *ngIf="!isLoading">
+            <side-panel (expandedChange)="sidePanelOpen=$event"
+                        (selectedPanelChange)="sidePanelTab=$event"
+                        [expanded]="sidePanelOpen"
+                        [panelApplies]="'true'"
+                        [storageKey]="sidePanelStorageKey"
+                        [selectedPanel]="'detail'"
+                        hasDetail="true">
+                <ng-container *ngIf="sidePanelOpen && sidePanelLoading">
+                    <d3s-loading [isLoading]="true"></d3s-loading>
+                </ng-container>
+                <ng-container *ngIf="sidePanelOpen">
+                    <div class="empty-overlay" *ngIf="!selectedResource && sidePanelTab === 'detail'">
+                        <div class="content">
+                            <div class="icon-holder">
+                                <i class="fa fa-info-circle"></i>
+                            </div>
+                            <span>Select a user from the list to display their properties</span>
+                        </div>
+                    </div>
+                    <ng-container *ngIf="selectedResource && sidePanelTab === 'detail'">
+                        <ig-asset-detail [objectUID]="selectedResource.uid"
+                                         [objectType]="'Resource'"
+                                         [useAccordion]="true"
+                                         [shouldBePadded]="true"
+                                         [showHeader]="true"
+                                         [showHeaderLine]="false"
+                                         [spacerHeight]="'16px'"
+                                         [tooltipAlign]="'left'"
+                                         [isSidePanel]="true"
+                                         [interceptLinkClick]="true"></ig-asset-detail>
+                    </ng-container>                    
+                </ng-container>
+            </side-panel>
+        </div>
     </div>
 </div>

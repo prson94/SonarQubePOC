@@ -242,7 +242,10 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                 if (result) {
                     this.items = result.items;
                     this.totalRecords = result.total;
-                    if (this.items && this.items.length > 0) this.selected = this.items[0];
+                    if (this.items && this.items.length > 0) {
+                        this.selected = this.items[0];
+                        this.selectedChange.emit(this.selected);
+                    } 
                     this.isLoading = false;
                     this.changeDetectorRef.markForCheck();
                 }
@@ -328,6 +331,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     add() {
         this.selected = null;
+        this.selectedChange.emit();
         this.showEditor = true;
     }
 
