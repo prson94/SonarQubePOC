@@ -340,4 +340,25 @@
   <data name="Parent_Name" xml:space="preserve">
     <value>Owner/Parent</value>
   </data>
+  <data name="RegexPatternChoose" xml:space="preserve">
+    <value>Choose sample...</value>
+  </data>
+  <data name="RegexPatternEmail" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="RegexPatternInternalUrl" xml:space="preserve">
+    <value>Internal Url</value>
+  </data>
+  <data name="RegexPatternIP" xml:space="preserve">
+    <value>IP Address</value>
+  </data>
+  <data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
+    <value>North American Phone</value>
+  </data>
+  <data name="RegexPatternPublicUrl" xml:space="preserve">
+    <value>Public Url</value>
+  </data>
+  <data name="RegexPatternUSZipCode" xml:space="preserve">
+    <value>US Zip Code</value>
+  </data>
 </root>

@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class PageNames {
@@ -84,6 +84,15 @@ namespace d360.core.resources {
         public static string BusinessAssetsPage {
             get {
                 return ResourceManager.GetString("BusinessAssetsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Business Asset Types.
+        /// </summary>
+        public static string BusinessAssetsPageTabTitle {
+            get {
+                return ResourceManager.GetString("BusinessAssetsPageTabTitle", resourceCulture);
             }
         }
         
@@ -160,6 +169,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Diagram Assets.
+        /// </summary>
+        public static string DiagramAssetsPage {
+            get {
+                return ResourceManager.GetString("DiagramAssetsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Diagram Asset Types.
+        /// </summary>
+        public static string DiagramAssetsPageTabTitle {
+            get {
+                return ResourceManager.GetString("DiagramAssetsPageTabTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field Definitions.
         /// </summary>
         public static string FieldDefinitionsTab {
@@ -232,6 +259,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Model Types.
+        /// </summary>
+        public static string ModelsPageTabTitle {
+            get {
+                return ResourceManager.GetString("ModelsPageTabTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Model.
         /// </summary>
         public static string ModelTab {
@@ -250,6 +286,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Policy Types.
+        /// </summary>
+        public static string PoliciesPageTabTitle {
+            get {
+                return ResourceManager.GetString("PoliciesPageTabTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Policy.
         /// </summary>
         public static string PolicyTab {
@@ -259,11 +304,29 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Predicates.
+        /// </summary>
+        public static string PredicatesPage {
+            get {
+                return ResourceManager.GetString("PredicatesPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Process Diagram.
         /// </summary>
         public static string ProcessDiagramTab {
             get {
                 return ResourceManager.GetString("ProcessDiagramTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile.
+        /// </summary>
+        public static string ProfilePage {
+            get {
+                return ResourceManager.GetString("ProfilePage", resourceCulture);
             }
         }
         
@@ -304,6 +367,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relationship Types.
+        /// </summary>
+        public static string RelationshipsTabTitle {
+            get {
+                return ResourceManager.GetString("RelationshipsTabTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Responsibilities.
         /// </summary>
         public static string ResponsibilitiesTab {
@@ -313,11 +385,38 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Responsibility Types.
+        /// </summary>
+        public static string ResponsibilitiesTabTitle {
+            get {
+                return ResourceManager.GetString("ResponsibilitiesTabTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule Results.
         /// </summary>
         public static string RuleResultsTab {
             get {
                 return ResourceManager.GetString("RuleResultsTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rules.
+        /// </summary>
+        public static string RulesPage {
+            get {
+                return ResourceManager.GetString("RulesPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scoring Definitions.
+        /// </summary>
+        public static string ScoringDefinitionsTab {
+            get {
+                return ResourceManager.GetString("ScoringDefinitionsTab", resourceCulture);
             }
         }
         
@@ -340,11 +439,65 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tagged Assets.
+        /// </summary>
+        public static string TaggedAssetsPage {
+            get {
+                return ResourceManager.GetString("TaggedAssetsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tags.
+        /// </summary>
+        public static string TagsPage {
+            get {
+                return ResourceManager.GetString("TagsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Technical Assets.
         /// </summary>
         public static string TechnicalAssetsPage {
             get {
                 return ResourceManager.GetString("TechnicalAssetsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Technical Asset Types.
+        /// </summary>
+        public static string TechnicalAssetsPageTabTitle {
+            get {
+                return ResourceManager.GetString("TechnicalAssetsPageTabTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users.
+        /// </summary>
+        public static string UsersPage {
+            get {
+                return ResourceManager.GetString("UsersPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workflow Actions.
+        /// </summary>
+        public static string WorkflowActionsTab {
+            get {
+                return ResourceManager.GetString("WorkflowActionsTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Action Types.
+        /// </summary>
+        public static string WorkflowActionsTabTitle {
+            get {
+                return ResourceManager.GetString("WorkflowActionsTabTitle", resourceCulture);
             }
         }
         

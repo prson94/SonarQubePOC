@@ -7,7 +7,8 @@
           #fieldEditor="ngForm">
         <div class="row">
             <div class="col l9 m8 s12">
-                <simple-accordion [header]="actionName + ' Field Type'"
+                <simple-accordion i18n-header
+                                  header="{{actionName}} Field Type"
                                   active="true">
                     <div class="form-instructions">
                         <ng-container i18n>
@@ -55,7 +56,7 @@
                             <div [hidden]="dataType.valid || dataType.pristine" i18n>Field data type is required</div>
                         </div>
                         <div *ngIf="model.FieldType.Type[currentType].IsListable">
-                            <div class="FieldNameRequired">Column Width (pixels)</div>
+                            <div class="FieldNameRequired" i18n>Column Width (pixels)</div>
                             <input name="columnwidth"
                                    pInputText
                                    type="number"
@@ -133,7 +134,8 @@
                 </simple-accordion>
             </div>
             <div class="col l3 m4 s12">
-                <simple-accordion header="Settings"
+                <simple-accordion i18n-header
+                                  header="Settings"
                                   active="true">
                     <div *ngIf="showAddToSearch">
                         <p-checkbox binary="true"
@@ -245,7 +247,8 @@
             </div>
         </div>
 
-        <simple-accordion header="List Configuration"
+        <simple-accordion i18n-header
+                          header="List Configuration"
                           active="true"
                           *ngIf="currentType == 'Lookup'">
             <div class="row">
@@ -326,7 +329,8 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Filter Configuration"
+        <simple-accordion i18n-header
+                          header="Filter Configuration"
                           [active]="expandFilterConfiguration"
                           *ngIf="currentType == 'Lookup' && listFilterable">
             <div class="form-instructions" i18n>
@@ -363,7 +367,8 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Validation"
+        <simple-accordion i18n-header
+                          header="Validation"
                           active="true"
                           *ngIf="['Text','Number','Decimal'].indexOf(currentType) > -1">
             <div class="row">
@@ -442,7 +447,10 @@
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip'
-                         class="FieldName">Maximum{{currentType == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName">
+                        <ng-container i18n *ngIf="currentType === 'Text'">Maximum Length</ng-container>
+                        <ng-container i18n *ngIf="currentType !== 'Text'">Maximum Value</ng-container>
+                    </div>
                     <input *ngIf="currentType == 'Text'; else maxNumberinput" name="maxLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}}"
@@ -493,7 +501,8 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection"
+        <simple-accordion i18n-header
+                          header="Value Selection"
                           active="true"
                           *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal','Score'].indexOf(currentType) > -1">
             <div class="row">
@@ -567,7 +576,7 @@
                                style="width: 100%;"
                                type="string"
                                [ngModelOptions]="{standalone: true}">
-                        <div>(Link Name)</div>
+                        <div i18n>(Link Name)</div>
                         <input [(ngModel)]="defaultLinkAdress"
                                style="width: 100%;"
                                type="string"
@@ -616,7 +625,8 @@
         </simple-accordion>
 
         <!-- complex relation lookup -->
-        <simple-accordion header="Relation Lookup"
+        <simple-accordion i18n-header
+                          header="Relation Lookup"
                           active="true"
                           *ngIf="currentType == 'ComplexRelationLookup'">
             <div class="row">
@@ -677,18 +687,21 @@
                                         <div>
                                             <p-checkbox binary="true"
                                                         [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
+                                                        i18n-label
                                                         label="Hide Footer?"
                                                         [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
                                             <p-checkbox binary="true"
                                                         [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
+                                                        i18n-label
                                                         label="Hide Header?"
                                                         [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
                                             <p-checkbox binary="true"
                                                         [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
+                                                        i18n-label
                                                         label="Hide Search?"
                                                         [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
@@ -788,32 +801,35 @@
         </simple-accordion>
 
         <!-- relation -->
-        <simple-accordion header="Relationship"
+        <simple-accordion i18n-header
+                          header="Relationship"
                           active="true"
                           *ngIf="currentType == 'Relationship'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Relationship</div>
+                    <div class="FieldName" i18n>Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_Relationships"
                                 [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
                                 (ngModelChange)="model.FieldType.Type[currentType].IntersectTypeUid=$event;cardinalRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
-                                [placeholder]="'Select relationship'"
+                                i18n-placeholder
+                                placeholder="'Select relationship'"
                                 ngDefaultControl></p-dropdown>
                 </div>
             </div>
         </simple-accordion>
 
         <!-- field from relation -->
-        <simple-accordion header="Field from Relationship"
+        <simple-accordion i18n-header
+                          header="Field from Relationship"
                           active="true"
                           *ngIf="currentType == 'FieldFromRelationship'">
             <div class="row">
                 <div class="col l6 m6 s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Many-to-One Relationship</div>
+                    <div class="FieldName" i18n>Many-to-One Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_FieldFromRelRelationships"
                                 [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
@@ -835,13 +851,14 @@
         </simple-accordion>
 
         <!-- reference list from relation -->
-        <simple-accordion header="Reference Item List from Relationship"
+        <simple-accordion i18n-header
+                          header="Reference Item List from Relationship"
                           active="true"
                           *ngIf="currentType == 'RefListRelationship'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">One-to-Many Relationship</div>
+                    <div class="FieldNameRequired" i18n>One-to-Many Relationship</div>
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_CardinalReferenceRelationships"
@@ -863,7 +880,8 @@
         </simple-accordion>
 
         <!-- ownership lookup -->
-        <simple-accordion header="Ownership Lookup"
+        <simple-accordion i18n-header
+                          header="Ownership Lookup"
                           active="true"
                           *ngIf="currentType == 'OwnershipLookup'">
             <div class="row">
@@ -968,7 +986,7 @@
         </simple-accordion>
 
         <!-- json property -->
-        <simple-accordion header="JSON Attribute" active="true" *ngIf="currentType == 'JsonElement'">
+        <simple-accordion i18n-header header="JSON Attribute" active="true" *ngIf="currentType == 'JsonElement'">
             <div class="row">
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldNameRequired" i18n>JSON Field</div>
@@ -999,7 +1017,8 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection"
+        <simple-accordion i18n-header
+                          header="Value Selection"
                           active="false"
                           *ngIf="currentType === 'Counter'">
             <div class="row">
@@ -1037,6 +1056,7 @@
 
         <!-- asset path -->
         <simple-accordion *ngIf="currentType == 'Path' && allowSingleSegmentPath"
+                          i18n-header
                           header="Asset Path"
                           active="false">
             <div class="row">
@@ -1045,6 +1065,7 @@
                                 name="listSingleSegmentCheckbox"
                                 [ngModel]="listSingleSegmentCheckbox"
                                 (ngModelChange)="onListSingleSegment($event);"
+                                i18n-label
                                 label="List Single Segment"></p-checkbox>
                     <p-dropdown name="selectListSegment"
                                 [required]="listSingleSegmentCheckbox"
@@ -1062,7 +1083,8 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Descriptions"
+        <simple-accordion i18n-header
+                          header="Descriptions"
                           active="false">
             <div class="row">
                 <div class="col s6">
@@ -1090,7 +1112,8 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Search Results"
+        <simple-accordion i18n-header
+                          header="Search Results"
                           active="false"
                           *ngIf="showAddToSearch && model?.FieldType?.Type[currentType]?.Search?.AddToResult">
             <div class="row">

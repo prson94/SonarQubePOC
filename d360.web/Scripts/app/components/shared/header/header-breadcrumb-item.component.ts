@@ -26,7 +26,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                     </a>
                     <div [ngClass]="'search-results'" #searchPanel>  
                         <div class="breadcrumb-search">
-                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <span *ngIf="searchingTypeahed" class="spinner"></span><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
+                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" i18n-placeholder placeholder="Search" (keyup)="search(searchValue)"> <span *ngIf="searchingTypeahed" class="spinner"></span><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
                             <div *ngFor="let result of results;" class="breadcrumb-search-results">
                                 <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url,result)">{{result.Name}}</div>
                             </div>
@@ -35,7 +35,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                     <div *ngIf="!isLastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
                     <div [ngClass]="'search-results'" #treePanel>  
                         <div class="breadcrumb-search tree-breadcrumb-panel">    
-                            <span class="header-search-input"><input #treeInput type="text" [(ngModel)]="searchTreeValue" placeholder="Search"> <i class="fa fa-search"></i></span> 
+                            <span class="header-search-input"><input #treeInput type="text" [(ngModel)]="searchTreeValue" i18n-placeholder placeholder="Search"> <i class="fa fa-search"></i></span> 
                             <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}"
                                 (onNodeSelect)="nodeSelect($event,treePanel)">
                                 <ng-template let-node pTemplate type="default">

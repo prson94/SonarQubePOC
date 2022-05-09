@@ -35,10 +35,11 @@
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.Name"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
+                     i18n-prompt
+                     prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isEditing && !isDeleting">
-        <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
+        <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error" i18n>Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt [value]="fieldDisplayModel" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder']"
                  [(selection)]="selectedRow" [scrollable]="objectType == 'GroupType' ? false : true" scrollHeight="200px">
