@@ -53,7 +53,6 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("number eq '1'")]
         [InlineData("number ct 1")]
         [InlineData("number eq 2.4")]
         [InlineData("number eq text")]
@@ -98,7 +97,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
         [InlineData("counter eq test")]
         [InlineData("counter eq 'test'")]
-        [InlineData("counter eq '12'")]
         [InlineData("counter ct 12")]
         [InlineData("counter nct 12")]
         public void InvalidFormatExpressions(string expression)
