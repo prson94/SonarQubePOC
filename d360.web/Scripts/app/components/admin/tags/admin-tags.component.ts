@@ -68,7 +68,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         {
             Name: 'CreatedOn',
             FriendlyName: $localize`Date Created`,
-            Type: new FieldType("DateTime"),
+            Type: new FieldType("Date"),
             Category: "",
             RemovePopulatedOperator: true
         },
