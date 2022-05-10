@@ -114,5 +114,9 @@ namespace d360.model.DataAccessLayer
         IEnumerable<dynamic> GetPossibleOwnersForAssetType(AssetType assetType);
 
         Task<AssetDescendantsResults> GetAssetDescendants(Guid assetUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+        IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType);
+
+        IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType);
     }
 }

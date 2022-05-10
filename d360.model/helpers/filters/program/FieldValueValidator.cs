@@ -24,6 +24,9 @@ namespace d360.model.helpers.filters.program
     {
         public FieldValueValidatorResult CheckValue(object value, string fieldName, string @operator)
         {
+            //This tric allows me to avoid some extra checks on UI side.
+            value = value.ToString().Replace("'", "");
+
             var result = new FieldValueValidatorResult
             {
                 Status = true

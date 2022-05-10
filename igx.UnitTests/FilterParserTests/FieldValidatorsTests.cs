@@ -25,7 +25,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData(-800.2)]
         [InlineData("text")]
         [InlineData("15.57")]
-        [InlineData("'15'")]
         public void NumberFieldValidatorValidsInvalids(object value)
         {
             var validator = new NumberFieldValidator();
