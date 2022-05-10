@@ -297,6 +297,10 @@ export class ThemeEditorComponent implements OnChanges {
         // Variables for red, green, blue values
         var r, g, b, hsp;
 
+        if (!color) {
+            return 'dark';
+        }
+
         // Check the format of the color, HEX or RGB?
         if (color.match(/^rgb/)) {
 
