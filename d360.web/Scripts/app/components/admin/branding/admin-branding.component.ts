@@ -156,6 +156,7 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
             .subscribe((res) => {
                 if (res) {
                     this.isSetCurrentThemeVisible = false;
+                    location.reload();
                 }
                 this.settingCurrentThemeInProgress = false;
                 this.ngOnInit();

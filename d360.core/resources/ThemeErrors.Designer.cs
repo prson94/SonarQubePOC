@@ -313,6 +313,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This theme is set as the currently used theme in this environment and IsCurrent property cannot be set to false..
+        /// </summary>
+        public static string ThemeInUseForIsCurrentEdit {
+            get {
+                return ResourceManager.GetString("ThemeInUseForIsCurrentEdit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This theme is set as the currently used theme in this environment and may not be removed..
         /// </summary>
         public static string ThemeInUseForRemoval {

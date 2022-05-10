@@ -124,6 +124,11 @@ export class ThemeEditorComponent implements OnChanges {
                 this.onSave.emit();
                 this.setForm();
             }
+
+            if (_theme.isCurrent) {
+                location.reload();
+            }
+
             this.savingInProgress = false;
             this.confirmCurrentThemeSaveVisible = false;
             this.cdRef.markForCheck();
