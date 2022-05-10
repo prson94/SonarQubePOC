@@ -201,6 +201,9 @@
   <data name="TabLinkColorFormat" xml:space="preserve">
     <value>tabLinkColor is not a valid RGB color.</value>
   </data>
+  <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
+    <value>This theme is set as the currently used theme in this environment and IsCurrent property cannot be set to false.</value>
+  </data>
   <data name="ThemeInUseForRemoval" xml:space="preserve">
     <value>This theme is set as the currently used theme in this environment and may not be removed.</value>
   </data>

@@ -562,7 +562,7 @@ namespace d360.web.Controllers
         }
 
         [AllowAnonymous, Route("sso")]
-        public ActionResult Login()
+        public async Task<ActionResult> Login()
         {
             if (string.Equals(Request?.Browser?.Browser, "internetexplorer", StringComparison.OrdinalIgnoreCase))
             {
@@ -663,7 +663,7 @@ namespace d360.web.Controllers
                     return new RedirectResult(url);
                 default:    // Login via standard forms authentication.
                     ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-                    ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+                    await AppendSettingsToViewData();
 
                     return View();
             }
@@ -984,10 +984,10 @@ namespace d360.web.Controllers
         }
 
         [AllowAnonymous, Route("sso"), HttpPost, ValidateAntiForgeryToken]
-        public ActionResult ParseFormsResponse(LoginModel model, string ReturnUrl)
+        public async Task<ActionResult> ParseFormsResponse(LoginModel model, string ReturnUrl)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await AppendSettingsToViewData();
 
             if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
             {
@@ -1029,16 +1029,16 @@ namespace d360.web.Controllers
         }
 
         [AllowAnonymous, Route("slo-callback")]
-        public ActionResult LogoutCallback()
+        public async Task<ActionResult> LogoutCallback()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await AppendSettingsToViewData();
 
             return View("Logout");
         }
 
         [Route("slo")]
-        public ActionResult Logout()
+        public async Task<ActionResult> Logout()
         {
             FormsAuthentication.SignOut();  // Logout locally.
 
@@ -1093,7 +1093,7 @@ namespace d360.web.Controllers
             }
 
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await AppendSettingsToViewData();
 
             return View("Logout");
         }
@@ -1154,7 +1154,7 @@ namespace d360.web.Controllers
         public async Task<ActionResult> Register(Guid? registrationId = null, RegisterStep startStep = RegisterStep.Initial)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await AppendSettingsToViewData();
 
             var model = new RegisterModel { Step = startStep, RegistrationID = registrationId, Accept = false };
             model.IsUsingActiveDirectory = isUsingActiveDirectory();
@@ -1235,7 +1235,7 @@ namespace d360.web.Controllers
         {
             model.IsUsingActiveDirectory = isUsingActiveDirectory();
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await AppendSettingsToViewData();
 
             if (ModelState.IsValid)
             {
@@ -1991,16 +1991,16 @@ namespace d360.web.Controllers
         }
 
         [AllowAnonymous, Route("reset")]
-        public ActionResult Reset()
+        public async Task<ActionResult> Reset()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await AppendSettingsToViewData();
 
             return View("Reset");
         }
 
         [AllowAnonymous, Route("doreset")]
-        public ActionResult DoReset()
+        public async Task<ActionResult> DoReset()
         {
             var id = Request.QueryString["id"];
 
@@ -2033,7 +2033,7 @@ namespace d360.web.Controllers
                             if (success)
                             {
                                 ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-                                ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+                                await AppendSettingsToViewData();
 
                                 return View("ResetMessage");
                             }

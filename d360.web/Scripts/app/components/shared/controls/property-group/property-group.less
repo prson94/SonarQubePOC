@@ -3,119 +3,119 @@
 
 .ig-property-group {
 
-    &.ig-pg-header-line {
-        border-top: 1px solid @ig-grey-t4;
+  &.ig-pg-header-line {
+    border-top: 1px solid @ig-grey-t4;
+  }
+
+  .ig-pg-header {
+    display: inline-flex;
+    cursor: pointer;
+
+    &:focus {
+      outline: none !important;
+
+      .fa {
+        border: 1px solid @ig-lightblue;
+        border-radius: 16px;
+      }
     }
 
-    .ig-pg-header {
-        display: inline-flex;
-        cursor: pointer;
+    .fa {
+      height: 16px;
+      transition: transform 200ms ease;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      width: 16px;
+      padding-left: 1px;
 
-        &:focus {
-            outline: none !important;
-
-            .fa {
-                border: 1px solid @ig-lightblue;
-                border-radius: 16px;
-            }
-        }
-
-        .fa {
-            height: 16px;
-            transition: transform 200ms ease;
-            border: 1px solid transparent;
-            border-radius: 16px;
-            width: 16px;
-            padding-left: 1px;
-
-            &.down {
-                transform: rotate(90deg);
-            }
-        }
-
-        .info-tip {
-            line-height: 16px;
-            cursor: default;
-
-            .fa {
-                padding-top: 2px;
-                line-height: 10px;
-                border: none;
-                color: @ig-midblue;
-            }
-        }
-
-        .pg-title {
-            display: inline-flex;
-            flex-grow: 1;
-            line-height: 16px;
-            padding: 0px 0px 0px 8px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-right: 8px;
-            white-space: nowrap;
-            display: block;
-        }
+      &.down {
+        transform: rotate(90deg);
+      }
     }
 
-    .header-wrapper {
-        width: 100%;
-        position: relative;
-        padding-top: 6px;
-        padding-bottom: 5px;
+    .info-tip {
+      line-height: 16px;
+      cursor: default;
+
+      .fa {
+        padding-top: 2px;
+        line-height: 10px;
+        border: none;
+        color: var(--tabLinkColor);
+      }
     }
 
-    .badge-containers {
-        position: absolute;
-        right: 0px;
-        top: 0px;
-        padding-top: 4px;
+    .pg-title {
+      display: inline-flex;
+      flex-grow: 1;
+      line-height: 16px;
+      padding: 0px 0px 0px 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 8px;
+      white-space: nowrap;
+      display: block;
+    }
+  }
 
-        .badge-feedback {
-            height: 24px;
-            display: inline-block;
-            line-height: 22px;
-            padding: 0px 8px;
-            border-radius: 4px;
-            white-space: nowrap;
-            border: 1px solid rgba(0,0,0,0);
+  .header-wrapper {
+    width: 100%;
+    position: relative;
+    padding-top: 6px;
+    padding-bottom: 5px;
+  }
 
-            &:not(:first-child) {
-                margin-left: 4px;
-            }
+  .badge-containers {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    padding-top: 4px;
 
-            &:focus {
-                outline: none !important;
-                border: 1px solid @ig-lightblue;
-            }
+    .badge-feedback {
+      height: 24px;
+      display: inline-block;
+      line-height: 22px;
+      padding: 0px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      border: 1px solid rgba(0,0,0,0);
 
-            &.req {
-                background: @ig-lightblue-t2;
-            }
+      &:not(:first-child) {
+        margin-left: 4px;
+      }
 
-            &.inv {
-                background: @ig-red-t4;
-            }
-        }
+      &:focus {
+        outline: none !important;
+        border: 1px solid @ig-lightblue;
+      }
+
+      &.req {
+        background: @ig-lightblue-t2;
+      }
+
+      &.inv {
+        background: @ig-red-t4;
+      }
+    }
+  }
+
+  .pg-collapsable-content {
+    padding-left: 24px;
+    transition: height 200ms ease;
+    overflow: inherit;
+    height: auto;
+    padding-top: 4px;
+
+    &.no-padding {
+      padding-left: 0px;
     }
 
-    .pg-collapsable-content {
-        padding-left: 24px;
-        transition: height 200ms ease;
-        overflow: inherit;
-        height: auto;
-        padding-top: 4px;
-
-        &.no-padding {
-            padding-left: 0px;
-        }
-
-        &.close {
-            height: 0px;
-            opacity: 0;
-            padding-bottom: 0px;
-            padding-top: 0px;
-            overflow: hidden;
-        }
+    &.close {
+      height: 0px;
+      opacity: 0;
+      padding-bottom: 0px;
+      padding-top: 0px;
+      overflow: hidden;
     }
+  }
 }

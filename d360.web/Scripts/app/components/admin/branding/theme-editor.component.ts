@@ -124,6 +124,11 @@ export class ThemeEditorComponent implements OnChanges {
                 this.onSave.emit();
                 this.setForm();
             }
+
+            if (_theme.isCurrent) {
+                location.reload();
+            }
+
             this.savingInProgress = false;
             this.confirmCurrentThemeSaveVisible = false;
             this.cdRef.markForCheck();
@@ -291,6 +296,10 @@ export class ThemeEditorComponent implements OnChanges {
 
         // Variables for red, green, blue values
         var r, g, b, hsp;
+
+        if (!color) {
+            return 'dark';
+        }
 
         // Check the format of the color, HEX or RGB?
         if (color.match(/^rgb/)) {
