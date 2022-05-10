@@ -1944,6 +1944,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("{assetTypeUid:Guid}/possibleCreators"),
+			ApiExplorerSettings(IgnoreApi = true),
 			SwaggerConsumes("application/json"), 
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Assets of specified AssetType."),
@@ -1987,6 +1988,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpGet,
 			Route("{assetTypeUid:Guid}/possibleRedactors"),
+			ApiExplorerSettings(IgnoreApi = true),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of users who were modifying Assets of specified AssetType."),
