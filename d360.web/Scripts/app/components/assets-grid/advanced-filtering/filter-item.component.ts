@@ -563,11 +563,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                if (this.condition.field === SystemFields.LastModifiedBy) {
-                    this.loadLookupValuesForRedactors();
+                if (this.condition.field === SystemFields.LastModifiedBy && !(this.loadIdentifier === "AdminTags")) {
+                    this.loadLookupValuesForRedactors(params);
                 }
-                else if (this.condition.field === SystemFields.CreatedByFieldCode) {
-                    this.loadLookupValuesForCreators();
+                else if (this.condition.field === SystemFields.CreatedByFieldCode && !(this.loadIdentifier === "AdminTags")) {
+                    this.loadLookupValuesForCreators(params);
                 }
                 else if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
@@ -728,23 +728,39 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
-    loadLookupValuesForCreators() {
+    loadLookupValuesForCreators(params: any) {
         this.isLookupValuesLoading = true;
 
         this.assetTypeService.GetAssetTypePossibleCreators(this.assetTypeUid).subscribe((res) => {
             this.currentField.Values = [];
-            res.map((creator) => this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' }));
+            res.map((creator) => {
+                if (params.filter) {
+                    if (!creator.Name.toLowerCase().includes(params.filter.toLowerCase())) {
+                        return;
+                    }
+                }
+
+                this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' });
+            });
         });
 
         this.isLookupValuesLoading = false;
     }
 
-    loadLookupValuesForRedactors() {
+    loadLookupValuesForRedactors(params: any) {
         this.isLookupValuesLoading = true;
 
         this.assetTypeService.GetAssetTypePossibleRedactors(this.assetTypeUid).subscribe((res) => {
             this.currentField.Values = [];
-            res.map((creator) => this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' }));
+            res.map((redactor) => {
+                if (params.filter) {
+                    if (!redactor.Name.toLowerCase().includes(params.filter.toLowerCase())) {
+                        return;
+                    }
+                }
+
+                this.currentField.Values.push({ title: redactor.Name, value: redactor.Id + '' });
+            });
         });
 
         this.isLookupValuesLoading = false;
