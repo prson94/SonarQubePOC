@@ -727,7 +727,7 @@ export class SystemFields {
 
         fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
             Category: "System Fields",
-            FriendlyName: "Created By",
+            FriendlyName: $localize`Created By`,
             Name: this.CreatedByFieldCode,
             Type: new FieldType("Lookup"),
             Operators: [],
@@ -737,7 +737,7 @@ export class SystemFields {
 
         fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
             Category: "System Fields",
-            FriendlyName: "Last Modified By",
+            FriendlyName: $localize`Last Modified By`,
             Name: this.LastModifiedBy,
             Type: new FieldType("Lookup"),
             Operators: [],
