@@ -80,14 +80,15 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             this.loadMenu();
         });
 
-        this.subParams = this.route.queryParams.subscribe((params) => {
+        this.subParams = this.route.queryParams.subscribe(() => {
             let markForCheck = false;
-
-            if (params['nonavigation'] != null) {
-                this.hideNav = params['nonavigation'].toLocaleLowerCase() === 'true';
+            let url = new URL(window.location.href);
+            let search = url.search;
+            let params = new URLSearchParams(search);
+            if (params.has('nonavigation')) {
+                this.hideNav = params.get('nonavigation').toLowerCase() === 'true';
                 markForCheck = true;
             }
-
             if (markForCheck) {
                 this.ref.markForCheck();
             }
