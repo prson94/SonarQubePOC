@@ -1,4 +1,4 @@
-﻿import {Component, Input, Output, EventEmitter, OnInit} from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { WorkflowService } from '../../services/workflow.service';
@@ -11,7 +11,7 @@ import { CompanySettingsService } from '../../services/settings.service';
             <div class="row" *ngIf="!isLoading">
                 <header><d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="issues" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ActivityName','IssueTypeName','Body','Name','RaisedBy','DateStarted','EllapsedDays']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">
                         <ng-template pTemplate="colgroup" let-columns>
                             <colgroup>
@@ -29,25 +29,25 @@ import { CompanySettingsService } from '../../services/settings.service';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'ActivityName'" style="width: 100px">
-                                    Status
+                                    <ng-container i18n>Status</ng-container>
                                     <d3s-sortIcon [field]="'ActivityName'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'IssueTypeName'" style="width: 200px">
-                                    Type
+                                    <ng-container i18n>Type</ng-container>
                                     <d3s-sortIcon [field]="'IssueTypeName'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 300px">Description</th>
                                 <th style="width: 200px">Item Name</th>
                                 <th [pSortableColumn]="'RaisedBy'" style="width: 250px">
-                                    Reported By
+                                    <ng-container i18n>Reported By</ng-container>
                                     <d3s-sortIcon [field]="'RaisedBy'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'DateStarted'" style="width: 250px">
-                                    Created
+                                    <ng-container i18n>Created</ng-container>
                                     <d3s-sortIcon [field]="'DateStarted'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'EllapsedDays'">
-                                    Days Open
+                                    <ng-container i18n>Days Open</ng-container>
                                     <d3s-sortIcon [field]="'EllapsedDays'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 40px"></th>
@@ -107,11 +107,11 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 export class WorkflowIssueDetailsComponent extends BaseComponent implements OnInit {
     private issues: any[] = [];
-    private selected: any;    
+    private selected: any;
 
     @Input() objectID: number = 0;
     @Input() objectType: string;
-        
+
     @Output() countsChanged = new EventEmitter();
 
     constructor(
@@ -131,12 +131,12 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
         this.workflowService.getIssues(this.objectID, this.objectType)
             .subscribe(result => {
                 this.issues = result;
-                    if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
-                    this.isLoading = false;                    
-                });        
+                if (this.issues.length && this.issues.length > 0) this.selected = this.issues[0];
+                this.isLoading = false;
+            });
     }
-    
-    private openIssue(issue) {        
+
+    private openIssue(issue) {
         if (issue.WorkflowItemID > 0)
             this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_V2_VIEW_STATUS}/${issue.WorkflowItemID}`);
         else

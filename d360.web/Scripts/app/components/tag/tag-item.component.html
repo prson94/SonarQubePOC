@@ -40,28 +40,30 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'DisplayPath'" style="width: 15%">
-                            Asset
+                            <ng-container i18n>Asset</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'DisplayPath'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AssetType'" style="width: 17%">
-                            Asset Type
+                            <ng-container i18n>Asset Type</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetType'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'TagsAsString'" style="width: 33%">
-                            Tags
+                            <ng-container i18n>Tags</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'TagsAsString'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'AddedBy'" style="width: 15%">
-                            Added By
+                            <ng-container i18n>Added By</ng-container>
                             <i class="helper fa fa-question-circle" 
+                               i18n-pTooltip
                                pTooltip="The user who added the <b>{{tag.Value}}</b> tag to this asset"
                                tooltipStyleClass="ig-tooltip ig-tooltip-medium"
                                [escape]="false"></i>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AddedBy'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'CreatedOn'" style="width: 20%">
-                            Date Added
+                            <ng-container i18n>Date Added</ng-container>
                             <i class="helper fa fa-question-circle" 
+                               i18n-pTooltip
                                pTooltip="The date on which the user added the <b>{{tag.Value}}</b> tag to this asset"
                                tooltipStyleClass="ig-tooltip ig-tooltip-medium"
                                [escape]="false"></i>
@@ -81,7 +83,7 @@
                         <td>{{item.DisplayPath}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
-                            <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" ></d3s-tag-view>
+                            <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid"></d3s-tag-view>
                         </td>
                         <td>{{item.AddedBy}}</td>
                         <td>{{item.CreatedOn | date:'medium'}}</td>
@@ -139,9 +141,9 @@
                 <ng-container *ngIf="secondarySidePanelOpen && semanticType">
                     <div #semanticTile class="secondary-side-panel">
                         <div class="panel-header">
-                            <span class="header-label">Information</span>
+                            <span class="header-label" i18n>Information</span>
                             <div class="button-container">
-                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="'Close'" class="close-button"></button>
+                                <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" i18n-tooltip tooltip="Close" class="close-button"></button>
                             </div>
                         </div>
                         <div class="details-container">

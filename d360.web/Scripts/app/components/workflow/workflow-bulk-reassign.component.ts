@@ -20,7 +20,7 @@ export class WorkflowBulkReassignComponent extends BaseComponent implements OnIn
     @Output() onClose = new EventEmitter();
     @Output() onComplete = new EventEmitter();
     @Input() model: BulkWorkflowReassignModel = null;
-    @Input() title: string = 'Form Reassignment';
+    @Input() title: string = $localize`Form Reassignment`;
 
     private items: any[] = [];
     private resource: any;

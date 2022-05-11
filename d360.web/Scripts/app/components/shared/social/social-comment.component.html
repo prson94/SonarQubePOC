@@ -1,6 +1,6 @@
 ﻿<div *ngIf="comment.IsDeleted" class="row comment">
     <div class="col s1">&nbsp;</div>
-    <div class="col s5 comment-removed">Comment removed.</div>
+    <div class="col s5 comment-removed" i18n>Comment removed.</div>
     <div class="col s6">&nbsp;</div>
 </div>
 <div *ngIf="!comment.IsDeleted" class="row comment" (mouseenter)="showTools=true" (mouseleave)="showTools=false" [ngStyle]="{'background':(showTools ? '#EFEFEF': '')}">
@@ -13,7 +13,7 @@
                 <span class="commentType"><i class="fa" [ngClass]="{'fa-comment blue-text': isSocial() , 'fa-exclamation-triangle orange-text': isIssue()}" aria-hidden="true"></i></span>&nbsp;
                 <span class="user"><d3s-preview-tooltip objectType="Resource" [objectId]="comment.CreatedBy">{{comment.ResourceName}}</d3s-preview-tooltip></span>&nbsp;
                 <span class="postDate">{{comment.CreatedOn | date:'medium'}}</span>
-                <span class="comment-modified" *ngIf="isModified()">[modified]</span>
+                <span class="comment-modified" *ngIf="isModified()" i18n>[modified]</span>
                 <div *ngIf="showTools" class="comment-tools">
                     <a *ngIf="canReply()" class="comment-tool-item-mid" (click)="showReply=true;"><i class="fa fa-reply" aria-hidden="true"></i></a>
                     <a *ngIf="isDeletable" class="comment-tool-item-mid" (click)="deleteCommentClick();"><i class="fa fa-trash-o" aria-hidden="true"></i></a>
@@ -26,7 +26,7 @@
             </div>
             <div class="col s12" *ngIf="comment.Tags && comment.Tags.length > 0">
                 <i class="fa fa-tag" aria-hidden="true"></i>
-                Comment Tags:
+                <ng-container i18n>Comment Tags</ng-container>:
                 <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [uid]="tag.AssetUid" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">
                     {{getTagName(tag)}}
                 </d3s-preview-tooltip>

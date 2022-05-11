@@ -1,11 +1,11 @@
-﻿<header>{{action}} Level</header>
+﻿<header i18n>{{action}} Level</header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <form (ngSubmit)="onSubmit()"
       #levelForm="ngForm">
     <div class="row"
          *ngIf="!isLoading && ((level != null) || levels.length > 0)">
         <div class="col l6 s12">
-            <div class="FieldName">Name</div>
+            <div class="FieldName" i18n>Name</div>
             <div>
                 <input required
                        type="text"
@@ -16,7 +16,7 @@
                        #name="ngModel"
                        maxlength="250" />
             </div>
-            <div [hidden]="name.valid || name.pristine">Level name is required</div>
+            <div [hidden]="name.valid || name.pristine" i18n>Level name is required</div>
         </div>
         <div class="col l6 s12"
              *ngIf="level==null">
@@ -35,7 +35,7 @@
                     </option>
                 </select>
             </div>
-            <div [hidden]="level.valid || level.pristine">Level value is required</div>
+            <div [hidden]="level.valid || level.pristine" i18n>Level value is required</div>
         </div>
         <div class="col s12">
             <div class="FieldName">Description</div>
@@ -48,16 +48,16 @@
             <button pButton
                     [disabled]="!levelForm.form.valid"
                     type="submit"
-                    label="Save"></button>
+                    label="{{labelSave}}"></button>
             <button pButton
                     type="button"
                     (click)="close()"
-                    label="Close"></button>
+                    label="{{labelCancel}}"></button>
         </div>
     </div>
     <div class="row"
          *ngIf="!isLoading && !level && levels.length == 0">
-        <div class="center">
+        <div class="center" i18n>
             The maximum number of levels available for this item have already been allocated. In
             order to define new levels you can either increase the maximum available levels for this item or
             delete an existing level for this item.
@@ -67,7 +67,7 @@
             <button pButton
                     type="button"
                     (click)="close()"
-                    label="Close"></button>
+                    label="{{labelClose}}"></button>
         </div>
     </div>
 </form>

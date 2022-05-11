@@ -5,40 +5,33 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table_Rename.dbo.CompanyRebuildJobStatus-v1">
-    <comment>GOV-16934</comment>
+  <changeSet author="Puneet Gupta" id="Table_Drop.dbo.CompanyRebuildJobStatus-v1">
+    <comment>GOV-16935</comment>
 	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyRebuildJobStatus')
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyRebuildJobStatus_Backup')
 			BEGIN
-				IF EXISTS (select * from sys.foreign_keys where name = 'FK_CompanyRebuildJobStatus_Company' and parent_object_id = object_id(N'dbo.CompanyRebuildJobStatus'))
-				BEGIN	
-					ALTER TABLE [dbo].[CompanyRebuildJobStatus] DROP CONSTRAINT [FK_CompanyRebuildJobStatus_Company]
-				END
-
-				exec sp_rename 'dbo.CompanyRebuildJobStatus', 'CompanyRebuildJobStatus_backup';
+				drop table if exists dbo.CompanyRebuildJobStatus_backup;
 			END
 
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyRebuildJobStatus_backup')
+			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyRebuildJobStatus_backup')
 			BEGIN
-				exec sp_rename 'dbo.CompanyRebuildJobStatus_backup', 'CompanyRebuildJobStatus'
-			END
-		
-			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CompanyRebuildJobStatus')
-			BEGIN
-				IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_CompanyRebuildJobStatus_Company' and parent_object_id = object_id(N'dbo.CompanyRebuildJobStatus'))
-				BEGIN
-					ALTER TABLE [dbo].[CompanyRebuildJobStatus]  WITH CHECK ADD  CONSTRAINT [FK_CompanyRebuildJobStatus_Company] FOREIGN KEY([CompanyID]) REFERENCES [dbo].[Company] ([ID]) ON DELETE CASCADE
-					ALTER TABLE [dbo].[CompanyRebuildJobStatus] CHECK CONSTRAINT [FK_CompanyRebuildJobStatus_Company]
-				END
+				CREATE TABLE [dbo].[CompanyRebuildJobStatus_backup](
+					CompanyID int NOT NULL,
+					JobToken int NOT NULL,
+					LastStartedOn datetime NOT NULL,
+					LastStartedBy int,
+					LastCompletedOn datetime NULL,
+					[State] int NOT NULL,
+					CONSTRAINT [PK_CompanyRebuildJobStatus] PRIMARY KEY CLUSTERED ( CompanyID ASC, JobToken ASC )
+				)
 			END
 		]]>
 	</rollback>

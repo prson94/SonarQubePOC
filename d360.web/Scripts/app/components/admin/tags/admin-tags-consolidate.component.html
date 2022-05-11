@@ -2,13 +2,13 @@
 <d3s-modal [title]="modalTitle" additionalClasses="modal-consolidate" (onClose)="cancel()" [isVisible]="isModalVisible">
     <div class="content">
         <div class="row">
-            Please choose the one tag you wish to keep:
+            <ng-container i18n>Please choose the one tag you wish to keep</ng-container>:
             <br />
             <div style="max-height: 65vh; overflow-y: auto;">
                 <table class="table table-borderless">
                     <thead>
                         <tr>
-                            <th></th> 
+                            <th></th>
                             <th scope="col"></th>
 
                         </tr>
@@ -26,16 +26,20 @@
                     </tbody>
                 </table>
             </div>
-            Any assets listed above will be tagged with the selected tag.<br />
-            The other tags listed will be deleted.
+            <ng-container i18n>
+                Any assets listed above will be tagged with the selected tag.<br />
+                The other tags listed will be deleted.
+            </ng-container>
         </div>
     </div>
     <div class="action-bar">
-        <button class="button" (click)="cancel()">Cancel</button>
+        <button class="button" (click)="cancel()">
+            <ng-container i18n>Cancel</ng-container>
+        </button>
         <span class="grow"></span>
 
         <button class="button primary {{consolidateInProgress ? 'loading' : ''}}" (click)="consolidate()" [disabled]="!selected">
-            Consolidate
+            <ng-container i18n>Consolidate</ng-container>
             <span class="loader"><span class="spinner light"></span></span>
         </button>
     </div>

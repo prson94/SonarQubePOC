@@ -126,6 +126,9 @@
   <data name="BusinessAssetsPage" xml:space="preserve">
     <value>Business Assets</value>
   </data>
+  <data name="BusinessAssetsPageTabTitle" xml:space="preserve">
+    <value>Business Asset Types</value>
+  </data>
   <data name="CartPage" xml:space="preserve">
     <value>Cart</value>
   </data>
@@ -149,6 +152,12 @@
   </data>
   <data name="DefinitionTab" xml:space="preserve">
     <value>Definition</value>
+  </data>
+  <data name="DiagramAssetsPage" xml:space="preserve">
+    <value>Diagram Assets</value>
+  </data>
+  <data name="DiagramAssetsPageTabTitle" xml:space="preserve">
+    <value>Diagram Asset Types</value>
   </data>
   <data name="FieldDefinitionsTab" xml:space="preserve">
     <value>Field Definitions</value>
@@ -174,17 +183,29 @@
   <data name="ModelsPage" xml:space="preserve">
     <value>Models</value>
   </data>
+  <data name="ModelsPageTabTitle" xml:space="preserve">
+    <value>Model Types</value>
+  </data>
   <data name="ModelTab" xml:space="preserve">
     <value>Model</value>
   </data>
   <data name="PoliciesPage" xml:space="preserve">
     <value>Policies</value>
   </data>
+  <data name="PoliciesPageTabTitle" xml:space="preserve">
+    <value>Policy Types</value>
+  </data>
   <data name="PolicyTab" xml:space="preserve">
     <value>Policy</value>
   </data>
+  <data name="PredicatesPage" xml:space="preserve">
+    <value>Predicates</value>
+  </data>
   <data name="ProcessDiagramTab" xml:space="preserve">
     <value>Process Diagram</value>
+  </data>
+  <data name="ProfilePage" xml:space="preserve">
+    <value>Profile</value>
   </data>
   <data name="ProfileTab" xml:space="preserve">
     <value>Profile</value>
@@ -198,11 +219,23 @@
   <data name="RelationshipsTab" xml:space="preserve">
     <value>Relationships</value>
   </data>
+  <data name="RelationshipsTabTitle" xml:space="preserve">
+    <value>Relationship Types</value>
+  </data>
   <data name="ResponsibilitiesTab" xml:space="preserve">
     <value>Responsibilities</value>
   </data>
+  <data name="ResponsibilitiesTabTitle" xml:space="preserve">
+    <value>Responsibility Types</value>
+  </data>
   <data name="RuleResultsTab" xml:space="preserve">
     <value>Rule Results</value>
+  </data>
+  <data name="RulesPage" xml:space="preserve">
+    <value>Rules</value>
+  </data>
+  <data name="ScoringDefinitionsTab" xml:space="preserve">
+    <value>Scoring Definitions</value>
   </data>
   <data name="ScoringTab" xml:space="preserve">
     <value>Scoring</value>
@@ -210,8 +243,26 @@
   <data name="SemanticTypePage" xml:space="preserve">
     <value>Semantic Types</value>
   </data>
+  <data name="TaggedAssetsPage" xml:space="preserve">
+    <value>Tagged Assets</value>
+  </data>
+  <data name="TagsPage" xml:space="preserve">
+    <value>Tags</value>
+  </data>
   <data name="TechnicalAssetsPage" xml:space="preserve">
     <value>Technical Assets</value>
+  </data>
+  <data name="TechnicalAssetsPageTabTitle" xml:space="preserve">
+    <value>Technical Asset Types</value>
+  </data>
+  <data name="UsersPage" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="WorkflowActionsTab" xml:space="preserve">
+    <value>Workflow Actions</value>
+  </data>
+  <data name="WorkflowActionsTabTitle" xml:space="preserve">
+    <value>Action Types</value>
   </data>
   <data name="WorkflowPage" xml:space="preserve">
     <value>Workflow</value>

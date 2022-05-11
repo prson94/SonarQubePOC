@@ -7,7 +7,7 @@
                     <div *ngIf="cartIsEmpty">
                         <div class="row">
                             <div class="col s12">
-                                <div style="font-size:1.5em; text-align: center; padding: 25px;">
+                                <div style="font-size:1.5em; text-align: center; padding: 25px;" i18n>
                                     Your shopping cart is empty
                                 </div>
                             </div>
@@ -22,10 +22,10 @@
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'ObjectTypeName'">
-                                                Type
+                                                <ng-container i18n>Type</ng-container>
                                                 <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
                                             </th>
-                                            <th>Name</th>
+                                            <th i18n>Name</th>
                                             <th style="width: 35px"></th>
                                         </tr>
                                     </ng-template>
@@ -63,35 +63,35 @@
                     <div>
                         <div class="row">
                             <div class="col s12">
-                                <button pButton label="Back" (click)="back()" type="button"></button>
-                                <button *ngIf="!cartIsEmpty" pButton label="Clear Shopping Cart" (click)="mode = CartMode.ConfirmDelete"></button>
+                                <button pButton i18n-label label="Back" (click)="back()" type="button"></button>
+                                <button *ngIf="!cartIsEmpty" pButton i18n-label label="Clear Shopping Cart" (click)="mode = CartMode.ConfirmDelete"></button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div *ngSwitchCase="CartMode.ConfirmRequest">
                     <div class="row">
-                        <div class="col s12">
+                        <div class="col s12" i18n>
                             Are you sure you want to submit this request?
                         </div>
                     </div>
                     <div class="row" style="padding-top:25px;">
                         <div class="col s12">
-                            <button pButton label="Cancel" type="button" (click)="mode = CartMode.Default"></button>
-                            <button pButton label="Submit" type="button" (click)="request()"></button>
+                            <button pButton i18n-label label="Cancel" type="button" (click)="mode = CartMode.Default"></button>
+                            <button pButton i18n-label label="Submit" type="button" (click)="request()"></button>
                         </div>
                     </div>
                 </div>
                 <div *ngSwitchCase="CartMode.ConfirmDelete">
                     <div class="row">
-                        <div class="col s12">
+                        <div class="col s12" i18n>
                             Are you sure you want to remove all items from your shopping cart?
                         </div>
                     </div>
                     <div class="row" style="padding-top:25px;">
                         <div class="col s12">
-                            <button pButton label="Cancel" (click)="mode = CartMode.Default" type="button"></button>
-                            <button pButton label="Clear" (click)="clear()"></button>
+                            <button pButton i18n-label label="Cancel" (click)="mode = CartMode.Default" type="button"></button>
+                            <button pButton i18n-label label="Clear" (click)="clear()"></button>
                         </div>
                     </div>
                 </div>

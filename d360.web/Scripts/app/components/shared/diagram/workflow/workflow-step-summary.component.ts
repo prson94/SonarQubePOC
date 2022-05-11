@@ -19,7 +19,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 @Component({
     selector: 'd3s-workflow-step-summary',
     templateUrl: './workflow-step-summary.component.html',
-    providers: [ResponsibilityTypeService, WorkflowService, GroupService ],
+    providers: [ResponsibilityTypeService, WorkflowService, GroupService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -34,10 +34,10 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     StepType = StepType;
     private states = [
         //'Unknown',
-        { value: '0', label: 'Pending Add' },
-        { value: '1', label: 'Active' },
-        { value: '2', label: 'Pending Delete' },
-        { value: '3', label: 'Deleted' },
+        { value: '0', label: $localize`Pending Add` },
+        { value: '1', label: $localize`Active` },
+        { value: '2', label: $localize`Pending Delete` },
+        { value: '3', label: $localize`Deleted` },
     ];
 
     private responsibilities = [];
@@ -113,7 +113,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
             let f = this.fields.find(f => f.ID == +item['@FieldId']);
             if (f == undefined)
                 return "";
-            return "Asset Field::" + f.FriendlyName;
+            return $localize`Asset Field` + "::" + f.FriendlyName;
         }
     }
 

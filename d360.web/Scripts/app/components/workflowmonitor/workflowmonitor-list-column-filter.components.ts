@@ -39,10 +39,10 @@ import { CompanySettingsService } from '../../services/settings.service';
                                 </span>   
                         </div>
                         <div class="col s2">
-                            <a (click)="addFilter()" class="fa-stack fa-lg overlayed-primary" pTooltip="Add Filter">                                
+                            <a (click)="addFilter()" class="fa-stack fa-lg overlayed-primary" i18n-pTooltip pTooltip="Add Filter">                                
                                 <i class="fa fa-plus fa-stack-1x" style="color:darkgreen;"></i>                                
                             </a> 
-                            <a *ngIf="internalFilters.length > 1" (click)="removeFilter(filter)" class="fa-stack fa-lg" pTooltip="Remove Filter" >
+                            <a *ngIf="internalFilters.length > 1" (click)="removeFilter(filter)" class="fa-stack fa-lg" i18n-pTooltip pTooltip="Remove Filter" >
                                 <i class="fa fa-minus fa-stack-1x" style="color:red;"></i>                                
                             </a>
                         </div>                                                
@@ -50,8 +50,8 @@ import { CompanySettingsService } from '../../services/settings.service';
                     <div class="row">
                      
                         <div class="col s12 buttons">
-                            <button pButton *ngIf="internalFilters.length > 0" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
-                            <button pButton *ngIf="internalFilters.length" type="button" style="width: '150px';" label="Clear all Filters" (click)="resetFilters()"></button>                        
+                            <button i18n-label pButton *ngIf="internalFilters.length > 0" type="submit" [disabled]="!filterForm.form.valid" style="width: '150px';" label="Filter Results"></button>
+                            <button i18n-label pButton *ngIf="internalFilters.length" type="button" style="width: '150px';" label="Clear all Filters" (click)="resetFilters()"></button>                        
                         </div>
                     </div>
                 </form>
@@ -64,7 +64,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
     @Output() filtersChange = new EventEmitter();
-    connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
+    connectors: SelectItem[] = [{ label: $localize`And`, value: "All" }, { label: $localize`Or`, value: "Any" }];
     filterFieldType = FilterFieldType;
     internalFilters: FilterExpression[] = [];
     availableFilters: FilterField[] = [];

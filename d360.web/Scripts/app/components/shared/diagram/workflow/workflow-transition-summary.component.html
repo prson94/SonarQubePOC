@@ -1,18 +1,18 @@
 ﻿<div *ngIf="link != null" style="padding:10px;">
-    <div class="FieldName">
+    <div class="FieldName" i18n>
         Name
     </div>
     <div>
         {{link.name}}
     </div>
-    <div class="FieldName">
+    <div class="FieldName" i18n>
         Transition Type
     </div>
     <div>
         {{TransitionType[link.transitionType]}}
     </div>
     <div *ngIf="link.transitionType == TransitionType.Condition">
-        <div class="FieldName">
+        <div class="FieldName" i18n>
             Conditions
         </div>
         <d3s-workflow-condition-list [readonly]="true"
@@ -21,7 +21,7 @@
         </d3s-workflow-condition-list>
     </div>
     <div *ngIf="link.transitionType == TransitionType.Timer">
-        <div class="FieldName">
+        <div class="FieldName" i18n>
             Frequency (Days)
         </div>
         <div>
@@ -29,6 +29,6 @@
         </div>
     </div>
 </div>
-<div *ngIf="link == null">
+<div *ngIf="link == null" i18n>
     Nothing selected
 </div>

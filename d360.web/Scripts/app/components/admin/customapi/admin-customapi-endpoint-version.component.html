@@ -1,5 +1,6 @@
 <div class="tile tile-detail">
-    <header *ngIf="!showEditor && !showDelete">Versions
+    <header *ngIf="!showEditor && !showDelete">
+        <ng-container i18n>Versions</ng-container>
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                           [(filterMode)]="showSimpleFilter"
                           [hasAdd]="true"
@@ -11,7 +12,7 @@
                [hidden]="!showSimpleFilter"
                class="grid-simple-filter"
                pInputText
-               placeholder="Search..."
+               placeholder="{{searchText}}"
                size="100"
                type="text"/>
         <p-table #dt [globalFilterFields]="['UriPrefix','MajorVersion','MinorVersion']"
@@ -24,15 +25,15 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'UriPrefix'">
-                        Uri Segment
+                        <ng-container i18n>Uri Segment</ng-container>
                         <d3s-sortIcon [field]="'UriPrefix'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'MajorVersion'">
-                        Major Version
+                        <ng-container i18n>Major Version</ng-container>
                         <d3s-sortIcon [field]="'MajorVersion'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'MinorVersion'">
-                        Minor Version
+                        <ng-container i18n>Minor Version</ng-container>
                         <d3s-sortIcon [field]="'MinorVersion'"></d3s-sortIcon>
                     </th>
                     <th style="width: 40px"></th>
@@ -83,12 +84,12 @@
                         [objectType]="'Version'"
                         [parentID]="endpoint?.ID"
                         [selection]="selected"
-                        [title]="'Version'"></d3s-dynamic-editor>
+                        [title]="editorTitle"></d3s-dynamic-editor>
     <d3s-delete-form (onCancel)="showDelete=false;"
                      *ngIf="showDelete"
                      [callback]="theDeleteCallback"
                      [itemId]="selected?.ID"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the version [' + [selected?.UriPrefix] + ']?'">
+                     [prompt]="deleteModalTitle">
     </d3s-delete-form>
 </div>

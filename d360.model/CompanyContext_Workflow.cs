@@ -132,7 +132,7 @@ namespace d360.model
 
 
 			// 1 determine which users have outstanding workflows
-			IEnumerable<dynamic> users = await GetUsersWithOutstandingWorkflows().ConfigureAwait(false);
+			IEnumerable<dynamic> users = await GetUsersWithOutstandingWorkflows();
 
 			// 2 loop through the users with outstanding workflows and create an email for each
 			if (users != null && users.Any())
@@ -501,7 +501,7 @@ namespace d360.model
 										ObjectTypeID = registration.ObjectID
 									},
 									registration,
-									0).ConfigureAwait(false))
+									0))
 							{
 								matchingItems++;
 								items.Add(artifact.DisplayValue);
@@ -521,7 +521,7 @@ namespace d360.model
 										ObjectTypeID = registration.ObjectID
 									},
 									registration,
-									0).ConfigureAwait(false))
+									0))
 							{
 								matchingItems++;
 								items.Add(rule.DisplayValue);
@@ -543,7 +543,7 @@ namespace d360.model
 										ObjectTypeID = registration.ObjectID
 									},
 									registration,
-									0).ConfigureAwait(false))
+									0))
 							{
 								matchingItems++;
 								items.Add(taxonomy.DisplayValue);
@@ -565,7 +565,7 @@ namespace d360.model
 
 									},
 									registration,
-									0).ConfigureAwait(false))
+									0))
 							{
 								matchingItems++;
 								items.Add(issue.DisplayValue);
@@ -585,7 +585,7 @@ namespace d360.model
 				//if the scheduled workflow needs an aggregate email send it
 				if (settings.SendAggregateEmail && matchingItems > 0)
 				{
-					await SendAggregateWorkflowEmail(settings).ConfigureAwait(false);
+					await SendAggregateWorkflowEmail(settings);
 				}
 			}
 
@@ -614,7 +614,7 @@ namespace d360.model
 			//if the object is an action, the requestor is the initiator of the action
 			if (objectInfo.ObjectType == SystemObjects.IssueType)
 			{
-				Issue issue = await Issues.FirstOrDefaultAsync(i => i.ID == objectInfo.ObjectID).ConfigureAwait(false);
+				Issue issue = await Issues.FirstOrDefaultAsync(i => i.ID == objectInfo.ObjectID);
 				if (issue != null)
 				{
 					requestorId = issue.InitiatorID ?? requestorId;
@@ -671,7 +671,7 @@ namespace d360.model
 
 			if (transitions.Count > 0)
 			{
-				await StartTransitions(transitions, item.ID, objectInfo).ConfigureAwait(false);
+				await StartTransitions(transitions, item.ID, objectInfo);
 			}
 
 			Console.WriteLine("DEBUG - WORKFLOW INSTANCE SUCESSFULLY CREATED.");
@@ -923,11 +923,11 @@ namespace d360.model
 				switch (itemStep.Step.ActivityType)
 				{
 					case WorkflowActivityType.EmailNotification:
-						isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings).ConfigureAwait(false);
+						isStepCompleted = await SendWorkflowEmail(itemStep, eventInfo, stepSettings);
 						break;
 					case WorkflowActivityType.Form:
 						// send form notification to owners
-						await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings).ConfigureAwait(false);
+						await SendFormWorkflowEmail(itemStep, itemStepID, itemID, eventInfo, stepSettings);
 						break;
 					case WorkflowActivityType.StatusChange:
 						// deprecated, just set to true and move on
@@ -940,7 +940,7 @@ namespace d360.model
 						break;
 					case WorkflowActivityType.FieldChange:
 						// change the specified field and mark the step complete
-						await UpdateItemField(itemStep, objectInfo, stepSettings).ConfigureAwait(false);
+						await UpdateItemField(itemStep, objectInfo, stepSettings);
 						isStepCompleted = true;
 						break;
 					case WorkflowActivityType.RelationshipChange:
@@ -956,11 +956,11 @@ namespace d360.model
 						isStepCompleted = true;
 						break;
 					case WorkflowActivityType.HTTPRequest:
-						await SendHttpRequestAsync(itemStep, objectInfo, stepSettings).ConfigureAwait(false);
+						await SendHttpRequestAsync(itemStep, objectInfo, stepSettings);
 						isStepCompleted = true;
 						break;
 					case WorkflowActivityType.HTTPResponse:
-						await ParseHttpResponseAsync(itemStep, stepSettings).ConfigureAwait(false);
+						await ParseHttpResponseAsync(itemStep, stepSettings);
 						isStepCompleted = true;
 						break;
 					default:
@@ -1004,7 +1004,7 @@ namespace d360.model
 
 			if (isStepCompleted)
 			{
-				await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo).ConfigureAwait(false);
+				await MarkStepAsCompleteAndContinue(itemStep, itemID, objectInfo);
 			}
 		}
 
@@ -1064,7 +1064,7 @@ namespace d360.model
 				if (!string.IsNullOrEmpty(requestSettings.Body))
 				{
 					bool lookupfieldspassedbyvalue = requestSettings.LookupFieldsPassedByValue;
-					string body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true, lookupfieldspassedbyvalue).ConfigureAwait(false);
+					string body = await ProcessMessageTokens(requestSettings.Body, info, prefix, item, false, true, lookupfieldspassedbyvalue);
 					byte[] contentArray = Encoding.UTF8.GetBytes(body);
 					request.Content = new ByteArrayContent(contentArray);
 				}
@@ -1077,7 +1077,7 @@ namespace d360.model
 						List<string> contentHeaderKeys = new List<string> { "content-type", "content-md5", "content-length", "content-encoding" };
 						requestSettings.Headers.ForEach(async h =>
 						{
-							string value = await ProcessMessageTokens(h.Value, info, prefix, item, false).ConfigureAwait(false);
+							string value = await ProcessMessageTokens(h.Value, info, prefix, item, false);
 
 							if (contentHeaderKeys.Contains(h.Key.ToLower()) && request.Content != null)
 							{
@@ -1098,7 +1098,7 @@ namespace d360.model
 						});
 					}
 
-					string uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, false).ConfigureAwait(false);
+					string uri = await ProcessMessageTokens(requestSettings.Url, info, prefix, item, false);
 
 					if (!Uri.IsWellFormedUriString(uri, UriKind.Absolute))
 					{
@@ -1109,14 +1109,14 @@ namespace d360.model
 					requestSettings.FormattedUrl = new Uri(uri);
 					client.Timeout = new TimeSpan(0, 0, requestSettings.Timeout);
 
-					response = await client.SendAsync(request).ConfigureAwait(false);
+					response = await client.SendAsync(request);
 				}
 				catch (Exception ex)
 				{
 					Console.WriteLine($"ERROR - HTTP REQUEST TASK FAILED FOR ITEM [{item.ItemID}] STEP [{item.StepID}]\n" + ex.GetFullExceptionData());
 				}
 
-				await SaveHttpResponseResultsAsync(item, requestSettings, response).ConfigureAwait(false);
+				await SaveHttpResponseResultsAsync(item, requestSettings, response);
 			}
 		}
 
@@ -1549,18 +1549,18 @@ namespace d360.model
 					//delete the value
 					string sql = "delete field where objectid = @id and objecttype = @objectType and fieldtypeid = @fieldTypeId";
 
-					await Database.Connection.ExecuteAsync(sql, new { id = objectId, objectType = objectType, fieldTypeId = item.FieldID }).ConfigureAwait(false);
+					await Database.Connection.ExecuteAsync(sql, new { id = objectId, objectType = objectType, fieldTypeId = item.FieldID });
 
 				}
 				else if (item.CurrentDate)
 				{
 					string val = DateTime.UtcNow.Date.ToShortDateString();
-					await UpdateField(objectId, objectType, fieldType, item, val).ConfigureAwait(false);
+					await UpdateField(objectId, objectType, fieldType, item, val);
 				}
 				else if (!item.IsActionForm && !item.UseFormValue && !item.UseOutputValue)
 				{
 					string val = item.Value;
-					await UpdateField(objectId, objectType, fieldType, item, val).ConfigureAwait(false);
+					await UpdateField(objectId, objectType, fieldType, item, val);
 				}
 				//if the value is a form value get it
 				else if (!item.IsActionForm && item.UseFormValue && !string.IsNullOrEmpty(item.FormField) && item.FormStepID > 0)
@@ -1574,7 +1574,7 @@ namespace d360.model
 						{
 							val = tempDate.Date.ToShortDateString();
 						}
-						await UpdateField(objectId, objectType, fieldType, item, val).ConfigureAwait(false);
+						await UpdateField(objectId, objectType, fieldType, item, val);
 					}
 				}
 				//Get the value from action form (Issue)
@@ -1609,12 +1609,12 @@ namespace d360.model
 						}
 					}
 
-					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset).ConfigureAwait(false);
+					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
 				}
 				else if (item.UseOutputValue)
 				{
 					string val = GetOutputFieldValue(item.FormStepID, itemStep.ItemID, item.FormField);
-					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset).ConfigureAwait(false);
+					await UpdateField(objectId, objectType, fieldType, item, val, isAssetEdited, asset);
 				}
 			}
 
@@ -1623,11 +1623,11 @@ namespace d360.model
 				CreateWorkflowItemFieldUpdateExecution(assetType, asset); // Send scoring updates
 			}
 
-			await SaveChangesAsync().ConfigureAwait(false);
+			await SaveChangesAsync();
 
 			if (asset != null)
 			{
-				await Database.Connection.ExecuteAsync("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID }).ConfigureAwait(false);
+				await Database.Connection.ExecuteAsync("update asset set updatedby = @updatedBy, updatedOn = GETUTCDATE() where id = @id", new { updatedBy = CurrentResourceID, id = asset.ID });
 			}
 
 			//update asset table to trigger audit                    
@@ -1642,7 +1642,7 @@ namespace d360.model
 						 ParentObjectID = (asset != null) ? asset.ObjectID : objectInfo.ObjectID,
 						 ResourceID = CurrentResourceID,
 						 op = "Updated"
-					 }).ConfigureAwait(false);
+					 });
 		}
 
 		private string GetFieldValueIntersectFromFormResponse(WorkflowRelationshipUpdateSettings item, long itemId)
@@ -1828,7 +1828,7 @@ namespace d360.model
 
 			if (transitions.Count > 0)
 			{
-				await StartTransitions(transitions, itemID, objectInfo).ConfigureAwait(false);
+				await StartTransitions(transitions, itemID, objectInfo);
 			}
 
 			return transitions.Count;
@@ -1983,12 +1983,12 @@ namespace d360.model
 					}
 
 					itemStep.Settings = settings.ToString();
-					await SaveChangesAsync().ConfigureAwait(false);
+					await SaveChangesAsync();
 
 					//resend email to the reassigned user
 					stepSettings.SpecificUser = resource.Email;
 					stepSettings.RecipientType = EmailTaskRecipientType.SpecificUser;
-					await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, eventInfo, stepSettings).ConfigureAwait(false);
+					await SendFormWorkflowEmail(itemStep, itemStep.ID, itemStep.ItemID, eventInfo, stepSettings);
 				}
 				else
 				{
@@ -2008,7 +2008,7 @@ namespace d360.model
 				}
 			}
 
-			await SaveChangesAsync().ConfigureAwait(false);
+			await SaveChangesAsync();
 		}
 
 		public async Task<bool> SendFormWorkflowEmail(WorkflowItemStep item, long itemStepID, long itemId, EventInfo eventInfo, WorkflowItemStepSettingModel settings)
@@ -2050,7 +2050,7 @@ namespace d360.model
 			{
 				if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
 				{
-					if (await ShouldWaitForResponsibilityRuleToRun(item, settings, itemStepID, eventInfo).ConfigureAwait(false))
+					if (await ShouldWaitForResponsibilityRuleToRun(item, settings, itemStepID, eventInfo))
 					{
 						return false;
 					}
@@ -2126,7 +2126,7 @@ namespace d360.model
 			}
 
 			item.Fields = xml.ToString();
-			await SaveChangesAsync().ConfigureAwait(false);
+			await SaveChangesAsync();
 
 			if (settings.FormShouldSendEmail)
 			{
@@ -2137,7 +2137,7 @@ namespace d360.model
 
 				if (!string.IsNullOrEmpty(settings.SubjectTemplate))
 				{
-					emailSubject = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false).ConfigureAwait(false);
+					emailSubject = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false);
 				}
 				else
 				{
@@ -2146,7 +2146,7 @@ namespace d360.model
 
 				string emailBody = $"<p>The Data3Sixty workflow <b>{typeName}</b> has generated a form that you need to complete for the item <b>{itemName}</b>.  This workflow was initiated by {initiatedBy}.  Please complete the form at {url}</p>";
 
-				string customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item).ConfigureAwait(false);
+				string customBody = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
 
 				if (!string.IsNullOrEmpty(customBody))
 				{
@@ -2168,7 +2168,7 @@ namespace d360.model
 
 					try
 					{
-						await Mail.SendMessage(emailSubject, user.Email, user.FirstName + " " + user.LastName, emailBase, true, fromEmail, fromName).ConfigureAwait(false);
+						await Mail.SendMessage(emailSubject, user.Email, user.FirstName + " " + user.LastName, emailBase, true, fromEmail, fromName);
 					}
 					catch (Exception e)
 					{
@@ -2210,7 +2210,7 @@ namespace d360.model
 				{
 					Console.WriteLine($"DEBUG : WORKFLOW AGGREGATE EMAIL IS EMAILING [{email}].");
 
-					await Mail.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true, fromEmail, fromName).ConfigureAwait(false);
+					await Mail.SendMessage(settings.EmailHeader, email, "", settings.EmailMessageTemplate, true, fromEmail, fromName);
 				}
 			}
 		}
@@ -2230,8 +2230,8 @@ namespace d360.model
 
 			url += $"https://{prefix}.data3sixty.com/workflow/details/{item.ItemID}";
 
-			settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item).ConfigureAwait(false);
-			settings.SubjectTemplate = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false).ConfigureAwait(false);
+			settings.BodyTemplate = await ProcessMessageTokens(settings.BodyTemplate, objectInfo, prefix, item);
+			settings.SubjectTemplate = await ProcessMessageTokens(settings.SubjectTemplate, objectInfo, prefix, item, false);
 
 			settings.BodyTemplate = $"<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><title></title></head><body style=\"font-family:trebuchet ms,helvetica,sans-serif;\">{settings.BodyTemplate}<p>Item Workflow Details {url}</p>";
 
@@ -2271,7 +2271,7 @@ namespace d360.model
 
 				try
 				{
-					await Mail.SendMessage(settings.SubjectTemplate, res.Email, res.FirstName + " " + res.LastName, settings.BodyTemplate, true, fromEmail, fromName).ConfigureAwait(false);
+					await Mail.SendMessage(settings.SubjectTemplate, res.Email, res.FirstName + " " + res.LastName, settings.BodyTemplate, true, fromEmail, fromName);
 				}
 				catch (Exception e)
 				{
@@ -2282,7 +2282,7 @@ namespace d360.model
 			}
 			else if (settings.RecipientType == EmailTaskRecipientType.Responsibility)
 			{
-				if (await ShouldWaitForResponsibilityRuleToRun(item, settings, item.ID, eventInfo).ConfigureAwait(false))
+				if (await ShouldWaitForResponsibilityRuleToRun(item, settings, item.ID, eventInfo))
 				{
 					return false;
 				}
@@ -2297,7 +2297,7 @@ namespace d360.model
 
 					try
 					{
-						await Mail.SendMessage(settings.SubjectTemplate, user.Email, user.FirstName + " " + user.LastName, settings.BodyTemplate, true, fromEmail, fromName).ConfigureAwait(false);
+						await Mail.SendMessage(settings.SubjectTemplate, user.Email, user.FirstName + " " + user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
 					}
 					catch (Exception e)
 					{
@@ -2319,7 +2319,7 @@ namespace d360.model
 
 					try
 					{
-						await Mail.SendMessage(settings.SubjectTemplate, user.Email, user.FirstName + " " + user.LastName, settings.BodyTemplate, true, fromEmail, fromName).ConfigureAwait(false);
+						await Mail.SendMessage(settings.SubjectTemplate, user.Email, user.FirstName + " " + user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
 					}
 					catch (Exception e)
 					{
@@ -2346,7 +2346,7 @@ namespace d360.model
 
 					try
 					{
-						await Mail.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName).ConfigureAwait(false);
+						await Mail.SendMessage(settings.SubjectTemplate, email, "", settings.BodyTemplate, true, fromEmail, fromName);
 					}
 					catch (Exception e)
 					{
@@ -2384,7 +2384,7 @@ namespace d360.model
 
 					try
 					{
-						await Mail.SendMessage(settings.SubjectTemplate, user.Email, user.FirstName + " " + user.LastName, settings.BodyTemplate, true, fromEmail, fromName).ConfigureAwait(false);
+						await Mail.SendMessage(settings.SubjectTemplate, user.Email, user.FirstName + " " + user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
 					}
 					catch (Exception e)
 					{
@@ -2649,7 +2649,7 @@ namespace d360.model
 
 		public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true, bool forJson = false, bool lookupFieldsPassedByValue = false)
 		{
-			return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson, lookupFieldsPassedByValue).ConfigureAwait(false);
+			return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml, forJson, lookupFieldsPassedByValue);
 		}
 
 		public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue)
@@ -3287,7 +3287,7 @@ namespace d360.model
 
 					if (stepSettings.RecipientType == EmailTaskRecipientType.Responsibility)
 					{
-						recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID).ConfigureAwait(false);
+						recipientResponsibility = await GetWorkflowAssignedResponsibility(itemStep.Step.Version.TypeID, itemStep.Step.ID, itemStep.ItemID);
 					}
 
 					result = result.Replace("[RECIPIENT_RESPONSIBILITY]", recipientResponsibility);
@@ -3554,7 +3554,7 @@ namespace d360.model
 
 		private async Task<string> GetWorkflowAssignedResponsibility(int typeId, int stepId, long itemId)
 		{
-			return await Database.Connection.QueryFirstOrDefaultAsync<string>("[utility].[GetAssignedResponsibilityNameForWorkflow] @id, @stepId, @itemId", new { id = typeId, stepId, itemId }).ConfigureAwait(false);
+			return await Database.Connection.QueryFirstOrDefaultAsync<string>("[utility].[GetAssignedResponsibilityNameForWorkflow] @id, @stepId, @itemId", new { id = typeId, stepId, itemId });
 		}
 
 		private string GetDisplayDateTimeValue(string type, string FormattedValue)

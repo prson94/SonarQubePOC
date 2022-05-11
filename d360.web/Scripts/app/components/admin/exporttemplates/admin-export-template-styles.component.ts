@@ -10,7 +10,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
     template: `
   <div *ngIf="!showEditor && !showDelete" class="row">
                 <div class="tile tile-detail">
-                    <header *ngIf="!showEditor">Styling Rules
+                    <header *ngIf="!showEditor"><ng-container i18n>Styling Rules</ng-container>
                         <d3s-tile-actions [hasAdd]="canAdd()" (addClick)="mode='Add';showEditor=true;"></d3s-tile-actions>                            
                     </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -18,12 +18,8 @@ import { CompanySettingsService } from "../../../services/settings.service";
                         <p-table #dt [value]="styleRules" selectionMode="single" [metaKeySelection]="true" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" >
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th>
-                                        Name
-                                   </th>
-                                    <th>
-                                        Style
-                                    </th>
+                                    <th i18n>Name</th>
+                                    <th i18n>Style</th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
                                 </tr>
@@ -31,12 +27,12 @@ import { CompanySettingsService } from "../../../services/settings.service";
                             <ng-template pTemplate="body" let-item>
                                 <tr  [pSelectableRow]="item">
                                     <td>
-                                        <span *ngIf="isPivot() && item.Column ==-1">Row {{item.Row}}</span>
-                                        <span *ngIf="isPivot() && item.Row ==-1">Column {{item.Column}}</span>
-                                         <span *ngIf="!isPivot()">Header</span>
+                                        <span *ngIf="isPivot() && item.Column ==-1"><ng-container i18n>Row</ng-container> {{item.Row}}</span>
+                                        <span *ngIf="isPivot() && item.Row ==-1"><ng-container i18n>Column</ng-container> {{item.Column}}</span>
+                                         <span *ngIf="!isPivot()" i18n>Header</span>
                                     </td>
                                     <td style="padding: 5px">
-                                        <span [ngStyle]="getRowStyles(item)">Style Sample</span>
+                                        <span [ngStyle]="getRowStyles(item)" i18n>Style Sample</span>
                                     </td>
                                     <td>
                                         <div class="RowTools">
@@ -67,14 +63,14 @@ import { CompanySettingsService } from "../../../services/settings.service";
                 [callback]="theDeleteCallback"
                 [itemId]="selectedStyle?.ID"
                 [method]="'callback'"
-                [prompt]="'Are you sure you want to delete the selected item?'"                                         
+                [prompt]="deleteMsg"                                         
                 (onCancel)="showDelete=false">
             </d3s-delete-form> 
         </div>
 `
 })
-export class AdminExportTemplateStylesComponent extends BaseComponent implements OnInit, OnChanges{
-    styleRules: ExportTemplateStyle[]=[];
+export class AdminExportTemplateStylesComponent extends BaseComponent implements OnInit, OnChanges {
+    styleRules: ExportTemplateStyle[] = [];
     selectedStyle: any;
     showEditor: boolean = false;
     showDelete: boolean = false;
@@ -84,12 +80,13 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     exportViewType: ExportViewType;
     mode: string;
     theDeleteCallback: Function;
+    deleteMss = $localize`Are you sure you want to delete the selected item?`;
 
     constructor(
         private exportTemplateService: ExportTemplateService,
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService
-        ) {
+    ) {
         super(settingsService);
         this.theDeleteCallback = this.deleteTemplateStyle.bind(this);
     }
@@ -101,14 +98,14 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     }
 
     isPivot(): boolean {
-        return (this.exportViewType && this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot]);        
+        return (this.exportViewType && this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot]);
     }
 
     ngOnInit(): void {
         this.load();
     }
 
-    canAdd(): boolean {           
+    canAdd(): boolean {
         var retval = false;
         if (this.exportViewType) {
             if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
@@ -120,11 +117,11 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
         return retval
     }
 
-    private getRowStyles(item:ExportTemplateStyle): any {
+    private getRowStyles(item: ExportTemplateStyle): any {
         let styles = {
             'background-color': item.BgColor,
             'font-weight': item.IsBold ? 'bold' : 'normal',
-            'color':item.TextColor,
+            'color': item.TextColor,
             'align': 'left',
             'padding': '10px',
             'width': '100px',
@@ -138,11 +135,11 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
 
     public deleteTemplateStyle(id: number) {
         this.exportTemplateService.deleteExportTemplateStyle(id).subscribe(result => {
-            this.messagesService.showInfoMessage('Success', 'Style deleted successfully');
+            this.messagesService.showInfoMessage($localize`Success`, $localize`Style deleted successfully`);
             this.showDelete = false;
             this.load();
         });
-    }  
+    }
 
     private load() {
         this.isLoading = true;

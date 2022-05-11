@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Fields {
@@ -579,6 +579,69 @@ namespace d360.core.resources {
         public static string Pattern_Name {
             get {
                 return ResourceManager.GetString("Pattern_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Choose sample....
+        /// </summary>
+        public static string RegexPatternChoose {
+            get {
+                return ResourceManager.GetString("RegexPatternChoose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        public static string RegexPatternEmail {
+            get {
+                return ResourceManager.GetString("RegexPatternEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internal Url.
+        /// </summary>
+        public static string RegexPatternInternalUrl {
+            get {
+                return ResourceManager.GetString("RegexPatternInternalUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IP Address.
+        /// </summary>
+        public static string RegexPatternIP {
+            get {
+                return ResourceManager.GetString("RegexPatternIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to North American Phone.
+        /// </summary>
+        public static string RegexPatternNorthAmericanPhone {
+            get {
+                return ResourceManager.GetString("RegexPatternNorthAmericanPhone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Public Url.
+        /// </summary>
+        public static string RegexPatternPublicUrl {
+            get {
+                return ResourceManager.GetString("RegexPatternPublicUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to US Zip Code.
+        /// </summary>
+        public static string RegexPatternUSZipCode {
+            get {
+                return ResourceManager.GetString("RegexPatternUSZipCode", resourceCulture);
             }
         }
         

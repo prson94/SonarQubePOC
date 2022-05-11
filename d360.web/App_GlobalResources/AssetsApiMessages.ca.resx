@@ -1,0 +1,282 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetAssetTypeNotFound" xml:space="preserve">
+    <value>Nô Âƨƨèƭ ôř ÂƨƨƨèƭT¥ƥè ƒôúñδ ƒôř Gúïδ [{0}]</value>
+  </data>
+  <data name="AssetCount" xml:space="preserve">
+    <value>ÂƨƨèƭÇôúñƭ</value>
+  </data>
+  <data name="AssetTagAssociationFailed" xml:space="preserve">
+    <value>Âƨƨèƭ/Táϱ Âƨƨôçïáƭïôñ ƒáïℓèδ. Táϱ ƒïèℓδ ₥á¥ ñôƭ βè áƨƨïϱñèδ ƭô Âƨƨèƭ.</value>
+  </data>
+  <data name="AssetTypeAddAssetPermissionsDenied" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áƨƨèƭƨ ôƒ ƭλïƨ ƭ¥ƥè.</value>
+  </data>
+  <data name="AssetTypeCreatedMessage" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè ïƨ çřèáƭèδ</value>
+  </data>
+  <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
+    <value>Ðèℓèƭïôñ ôƒ Âƨƨèƭ T¥ƥè ωïƭλ ÛÌÐ {0} áℓřèáδ¥ ïñ ƥřôϱřèƨƨ.</value>
+  </data>
+  <data name="AssetTypeUid" xml:space="preserve">
+    <value>ÂƨƨèƭT¥ƥèÛïδ</value>
+  </data>
+  <data name="AutoDisplayParent" xml:space="preserve">
+    <value>Âúƭô Ðïƨƥℓá¥ Þářèñƭ</value>
+  </data>
+  <data name="CanEditParent" xml:space="preserve">
+    <value>Çáñ Éδïƭ Þářèñƭ</value>
+  </data>
+  <data name="ClassNotSupport" xml:space="preserve">
+    <value>Çℓáƨƨ '{0}' ïƨ ñôƭ ƨúƥƥôřƭèδ. Âℓℓôωèδ Ʋáℓúèƨ ářè ßúƨïñèƨƨÂƨƨèƭ, TèçλñïçáℓÂƨƨèƭ, Môδèℓ, Þôℓïç¥, Rúℓè.</value>
+  </data>
+  <data name="CorrectEndpoint" xml:space="preserve">
+    <value>Tλè çôřřèçƭ èñδƥôïñƭ ƒôř {0}ƨ ïƨ {1}://{2}{3}</value>
+  </data>
+  <data name="EnvironmentLevelAssetCountNotAllowed" xml:space="preserve">
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ℓôáδ èñƲïřôñ₥èñƭ ℓèƲèℓ áƨƨèƭ çôúñƭƨ.</value>
+  </data>
+  <data name="ExecutionID" xml:space="preserve">
+    <value>ÉжèçúƭïôñÌÐ</value>
+  </data>
+  <data name="ExecutionUid" xml:space="preserve">
+    <value>ÉжèçúƭïôñÛïδ</value>
+  </data>
+  <data name="ExportTemplateMessage" xml:space="preserve">
+    <value>Éжƥôřƭ Tè₥ƥℓáƭè ÛÌÐ ƥářá₥èƭèř ₥úƨƭ βè úƨèδ ωïƭλ 'Âççèƥƭ' λèáδèř ƨèƭ ƭô 'áƥƥℓïçáƭïôñ/ôçƭèƭ-ƨƭřèá₥'.</value>
+  </data>
+  <data name="ExportTemplateUidNotExist" xml:space="preserve">
+    <value>Éжƥôřƭ Tè₥ƥℓáƭè ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ.</value>
+  </data>
+  <data name="FieldTypeAssetNotFound" xml:space="preserve">
+    <value>Fïèℓδ T¥ƥè '{0}' ñôƭ ƒôúñδ ƒôř áƨƨèƭ.</value>
+  </data>
+  <data name="FieldTypeNotSupport" xml:space="preserve">
+    <value>Fïèℓδ T¥ƥè '{0}' ïƨ ñôƭ ƨúƥƥôřƭèδ. Âℓℓôωèδ ƒïèℓδ ƭ¥ƥèƨ ářè Çô₥ƥℓèжRèℓáƭïôñ£ôôƙúƥ, Rèƒ£ïƨƭRèℓáƭïôñƨλïƥ áñδ Óωñèřƨλïƥ£ôôƙúƥ</value>
+  </data>
+  <data name="FilterResrictPredicateUid" xml:space="preserve">
+    <value>Fïℓƭèřïñϱ úƨïñϱ _řèℓáƭïôñFïℓƭèř çáññôƭ βè úƨèδ ωïƭλ _ƥřèδïçáƭèÛïδ ƥářá₥èƭèř</value>
+  </data>
+  <data name="GovernRoleReferListNotExists" xml:space="preserve">
+    <value>GôƲèřñáñçè Rôℓè Rèƒèřèñçè £ïƨƭ ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ</value>
+  </data>
+  <data name="InvalidAsset" xml:space="preserve">
+    <value>ÌñƲáℓïδ Âƨƨèƭ</value>
+  </data>
+  <data name="InvalidAssetTypeClass" xml:space="preserve">
+    <value>ÌñƲáℓïδ Âƨƨèƭ ƭ¥ƥè çℓáƨƨ '{0}'</value>
+  </data>
+  <data name="InvalidExportTemplateCurrent" xml:space="preserve">
+    <value>ÌñƲáℓïδ Éжƥôřƭ Tè₥ƥℓáƭè ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè.</value>
+  </data>
+  <data name="InvalidExportTemplatedUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ èжƥôřƭTè₥ƥℓáƭèÛÌÐ Ʋáℓúè.</value>
+  </data>
+  <data name="InvalidExportViewType" xml:space="preserve">
+    <value>ÌNVÂ£ÌÐ ÉXÞÓRT VÌÉW TÝÞÉ §ÞÉÇÌFÌÉÐ</value>
+  </data>
+  <data name="InvalidOrder" xml:space="preserve">
+    <value>{0} ïƨ ñôƭ á Ʋáℓïδ _ôřδèř ƒïèℓδ</value>
+  </data>
+  <data name="InvalidPageNumber" xml:space="preserve">
+    <value>Þáϱè ñú₥ ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř.</value>
+  </data>
+  <data name="InvalidPageNumberGT0" xml:space="preserve">
+    <value>Þáϱè ñú₥ ïƨ ïñƲáℓïδ, ₥úƨƭ βè ϱřèáƭèř ƭλáñ 0.</value>
+  </data>
+  <data name="InvalidParameteforUI" xml:space="preserve">
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'ƒôřÛÌ'</value>
+  </data>
+  <data name="InvalidParameterIncludeTotal" xml:space="preserve">
+    <value>Ìñçℓúδè ƭôƭáℓ ïƨ ñôƭ á Ʋáℓïδ βôôℓèáñ.</value>
+  </data>
+  <data name="InvalidParameteruseUidUrls" xml:space="preserve">
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèÛïδÛřℓƨ'</value>
+  </data>
+  <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèÛñƒℓáƭƭèδ§ƭřúçƭúřè'</value>
+  </data>
+  <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèFřïèñδℓ¥Ná₥èƨ'</value>
+  </data>
+  <data name="InvalidParameter_order" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƒïèℓδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'.</value>
+  </data>
+  <data name="InvalidParameter_pageNum" xml:space="preserve">
+    <value>ÌñƲáℓïδ ïñƭèϱèř Ʋáℓúè ƒôř ƥářá₥èƭèř '_ƥáϱèNú₥'</value>
+  </data>
+  <data name="InvalidParameter_pageSize" xml:space="preserve">
+    <value>ÌñƲáℓïδ ïñƭèϱèř Ʋáℓúè ƒôř ƥářá₥èƭèř '_ƥáϱè§ïƺè'</value>
+  </data>
+  <data name="InvalidParentAssetUid" xml:space="preserve">
+    <value>ÞářèñƭÂƨƨèƭÛïδ {0} ïƨ ïñƲáℓïδ</value>
+  </data>
+  <data name="InvalidResourceUID" xml:space="preserve">
+    <value>ÌñƲáℓïδ řèƨôúřçèÛïδ ƥřôƲïδèδ</value>
+  </data>
+  <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
+    <value>ÌñƲáℓïδ úƨèř ôř ϱřôúƥ úïδ áƨ ñôñ ôωñèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+  </data>
+  <data name="InvalidUserGroupRequestAsOwner" xml:space="preserve">
+    <value>ÌñƲáℓïδ úƨèř ôř ϱřôúƥ úïδ áƨ ôωñèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+  </data>
+  <data name="model" xml:space="preserve">
+    <value>₥ôδèℓ</value>
+  </data>
+  <data name="PageSizeNotNumber" xml:space="preserve">
+    <value>Þáϱè ƨïƺè ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř.</value>
+  </data>
+  <data name="PageSizeRange" xml:space="preserve">
+    <value>Þáϱè ƨïƺè ₥úƨƭ βè βèƭωèèñ 1 áñδ 100,000.</value>
+  </data>
+  <data name="ProvidePreFilterCriteria" xml:space="preserve">
+    <value>Ýôú λáƲè ƥřôƲïδèδ ƥřè-ƒïℓƭèř çřïƭèřïá, βúƭ ñôñè áƥƥèář ƭô βè Ʋáℓïδ. Ýôú ₥úƨƭ ƥřôƲïδè áƭ ℓèáƨƭ ôñè çôñδïƭïôñ.</value>
+  </data>
+  <data name="ProvideSearchPhrase" xml:space="preserve">
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á ƨèářçλ ƥλřáƨè.</value>
+  </data>
+  <data name="ReachedTransformationlimit" xml:space="preserve">
+    <value>Rèáçλèδ Třáñƨƒôř₥áƭïôñ ℓï₥ïƭ</value>
+  </data>
+  <data name="ReferenceUIDConfigureAsGovernRole" xml:space="preserve">
+    <value>ÛÌÐ {0} ïƨ á řèƒèřèñçè ℓïƨƭ áñδ ïƨ çôñƒïϱúřèδ áƨ ƭλè GôƲèřñáñçè Rôℓè áñδ çáññôƭ βè δèℓèƭèδ.</value>
+  </data>
+  <data name="RemoveAssetTypeNotAllowed" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô řè₥ôƲè áƨƨèƭ ƭ¥ƥèƨ.</value>
+  </data>
+  <data name="RequestCreatedMsg" xml:space="preserve">
+    <value>Rè9úèƨƭ ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ</value>
+  </data>
+  <data name="RequestMaxAsset" xml:space="preserve">
+    <value>Ýôú ₥á¥ ôñℓ¥ ƥřôƲïδè á ₥áжï₥ú₥ ôƒ {0} áƨƨèƭƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè çáℓℓ ƭλè ßÂTÇH ÂÞÌ ƭô ƨúβ₥ïƭ ₥ôřè ƭλáñ {1} ïƭè₥ƨ.</value>
+  </data>
+  <data name="RestrictReadAssettype" xml:space="preserve">
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řèáδ ƭλè ƨƥèçïƒïèδ áƨƨèƭ ƭ¥ƥè.</value>
+  </data>
+  <data name="TagUIDAssetUIDNotExists" xml:space="preserve">
+    <value>TáϱÛÌÐ {0} áñδ ÂƨƨèƭÛÌÐ {1} áƨƨôçïáƭïôñ  δôèƨ ñôƭ èжïƨƭƨ</value>
+  </data>
+  <data name="TransormationReationExists" xml:space="preserve">
+    <value>Třáñƨƒôř₥áƭïôñ Rèℓáƭïôñƨλïƥ Éжïƨƭƨ Fôř ÂƨƨèƭT¥ƥè</value>
+  </data>
+  <data name="UseAsTransformation" xml:space="preserve">
+    <value>Ûƨè Âƨ Třáñƨƒôř₥áƭïôñ</value>
+  </data>
+</root>

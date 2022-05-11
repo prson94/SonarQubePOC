@@ -10,7 +10,7 @@
         </div>
         <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (closeEvent)="onCancel()" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
 
-        <span class="title">Source Assets</span>
+        <span class="title" i18n>Source Assets</span>
         <d3s-asset-search [multiSelect]="true"
                           [showPredicateSelector]="true"
                           [predicateSelectorType]="predicateType"
@@ -25,7 +25,7 @@
         </d3s-asset-search>
         <div class="info-message" *ngIf="missingPredicateSource">
             <i class="fa fa-info-circle"></i>
-            Please check that all assets have selected predicate
+            <ng-container i18n>Please check that all assets have selected predicate</ng-container> 
         </div>
 
         <ng-container *ngIf="editorType == 'Lineage'">
@@ -42,7 +42,7 @@
                                   (selectedChange)="onAssetSearchSelection($event)">
                 </d3s-asset-search>
                 <div class="flex-grow"></div>
-                <button type="button" [disabled]="isTransformationDisabled" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
+                <button type="button" [disabled]="isTransformationDisabled" i18n-title title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
             </div>
         </ng-container>
 
@@ -61,7 +61,7 @@
         </d3s-asset-search>
         <div class="info-message" *ngIf="missingPredicateTarget">
             <i class="fa fa-info-circle"></i>
-            Please check that all assets have selected predicate
+            <ng-container i18n>Please check that all assets have selected predicate</ng-container>
         </div>
 
 
@@ -100,27 +100,28 @@
 
         <div *ngIf="!areRelationshipsValid && areAllItemsSelected" class="err-message">
             <i class="warning-icon fa fa-exclamation-triangle"></i>
-            <span class="message">Relationships are not resolved, please check your asset selection for warnings</span>
+            <span class="message" i18n>Relationships are not resolved, please check your asset selection for warnings</span>
         </div>
         <div class="info-message" *ngIf="noAssetOnDiagram">
             <i class="fa fa-info-circle"></i>
-            Please note that, as neither the source nor target assets are currently displayed in the diagram, creating this realtionship will not have any effect on the current diagram.
+            <ng-container i18n>Please note that, as neither the source nor target assets are currently displayed in the diagram, creating this realtionship will not have any effect on the current diagram.</ng-container> 
         </div>
 
         <div class="actions">
-            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button">Create lineage chain</button>
+            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button" i18n>Create lineage chain</button>
             <button class="button" *ngIf="isSavingAndContinue"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
             <div class="flex-grow"></div>
-            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button primary">Apply lineage</button>
+            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button primary" i18n>Apply lineage</button>
             <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
         </div>
 
         <div class="help-box">
             <span class="help-title" id="lineageChain" (mouseenter)="lineageChainMouseEnter($event)">
-                <i class="fa fa-info-circle"></i>&nbsp;&nbsp;What is a lineage chain?
+                <i class="fa fa-info-circle"></i>&nbsp;&nbsp;<ng-container i18n>What is a lineage chain?</ng-container>
                 <span class="help-text" [style.top.px]="helpTextTop">
-                    <span class="h-title">What is a lineage chain?</span>
-                    <span class="desc">Create new lineage relationship and update diagram then set up another hop in the lineage sequence being defined
+                    <span class="h-title" i18n>What is a lineage chain?</span>
+                    <span class="desc" i18n>
+                        Create new lineage relationship and update diagram then set up another hop in the lineage sequence being defined
                     </span>
                 </span>
             </span>

@@ -55,7 +55,7 @@
         <div class="gas-search {{isSearchWindowOpened ? 'visible':''}}">
             <div class="search-field {{!isSearchPhraseValid ? 'error' : ''}}">
                 <input #searchInput delayedInput (delayedInput)="search($event)" [delayTime]="600" placeholder="Type to search for assets" />
-                <span class="feedback">Search phrase must have at least one alpha-numerical character!</span>
+                <span class="feedback" i18n>Search phrase must have at least one alpha-numerical character!</span>
             </div>
             <span class="search-button">
                 <i class="fa fa-search"></i>
@@ -82,12 +82,13 @@
                 <p-paginator [rows]="pageSize" [totalRecords]="searchResultsCount" (onPageChange)="paginate($event)"></p-paginator>
             </ng-container>
 
-            <div class="no-results" *ngIf="searchResultsCount == 0">
+            <div class="no-results" *ngIf="searchResultsCount == 0" i18n>
                 No assets that match criteria
             </div>
             <div *ngIf="multiSelect && showSelectFullpathLink && searchresults.length > 0" class="full-path-toggle" (click)="toggleFullPaths()">
                 <span>
-                    {{isFullPathVisible ? 'Hide full paths' : 'Show full paths'}}
+                    <ng-container *ngIf="isFullPathVisible" i18n>Hide full paths</ng-container>
+                    <ng-container *ngIf="!isFullPathVisible" i18n>Show full paths</ng-container>
                 </span>
             </div>
         </div>

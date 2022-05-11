@@ -13,16 +13,16 @@ import { CompanySettingsService } from '../../services/settings.service';
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      
                 <span *ngIf="!isLoading">
-                    <header>Users Assigned As {{responsibilityTypeName}}</header>                            
+                    <header i18n>Users Assigned As {{responsibilityTypeName}}</header>                            
                         <p-table #dt [value]="users" selectionMode="single" [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected);" [metaKeySelection]="true" sortField="OwnedItemCount" [sortOrder]="-1" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'FirstName'">
-                                        Name
+                                        <ng-container i18n>Name</ng-container>
                                         <d3s-sortIcon [field]="'FirstName'"></d3s-sortIcon>
                                     </th>
                                     <th [pSortableColumn]="'OwnedItemCount'">
-                                        Owned Items
+                                        <ng-container i18n>Owned Items</ng-container>
                                         <d3s-sortIcon [field]="'OwnedItemCount'"></d3s-sortIcon>
                                     </th>
                                 </tr>

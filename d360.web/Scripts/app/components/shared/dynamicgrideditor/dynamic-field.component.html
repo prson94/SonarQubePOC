@@ -68,7 +68,9 @@
                         <ng-container *ngIf="!field.UseNativeLookupControl">
                             <ng-container *ngIf="field.UseTypeahead else noTypeahead">
                                 <ng-container *ngIf="!field.UseColorControl else autocompleteColor">
-                                    <p-autoComplete igAutocomplete [placeholder]="'Start typing to select an item'"
+                                    <p-autoComplete igAutocomplete
+                                                    i18n-placeholder
+                                                    placeholder="Start typing to select an item"
                                                     igSize="full"
                                                     [delay]="350"
                                                     [field]="'Text'"
@@ -91,7 +93,8 @@
                                     </p-autoComplete>
                                 </ng-container>
                                 <ng-template #autocompleteColor>
-                                    <p-autoComplete [placeholder]="'Start typing to select an item'"
+                                    <p-autoComplete placeholder="Start typing to select an item"
+                                                    i18n-placeholder
                                                     [delay]="350"
                                                     [field]="'Text'"
                                                     [style]="{'width':'100%'}"
@@ -158,7 +161,8 @@
                                 </p-dropdown>
                             </ng-container>
                             <ng-container *ngIf="field.UseTypeahead">
-                                <p-autoComplete [placeholder]="'Start typing to select an item'"
+                                <p-autoComplete placeholder="Start typing to select an item"
+                                                i18n-placeholder
                                                 [delay]="350"
                                                 [field]="'Text'"
                                                 [style]="{'width':'100%'}"
@@ -206,7 +210,7 @@
                             <th style="width: 30px">
                                 <p-tableHeaderCheckbox *ngIf="field?.MultiSelect"></p-tableHeaderCheckbox>
                             </th>
-                            <th>Name</th>
+                            <th i18n>Name</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
@@ -239,9 +243,9 @@
             </div>
             <div *ngSwitchCase="'Link'">
                 <input igInput igSize="full" [formControlName]="field.FieldName + '_Name'" type="text">
-                <div>(Link Name)</div>
+                <div i18n>(Link Name)</div>
                 <input igInput igSize="full" [formControlName]="field.FieldName + '_Url'" type="text">
-                <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+                <div i18n>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
             </div>
             <d3s-multiselect-grid ngDefaultControl
                                   *ngSwitchCase="'DataTableSelect'"
@@ -262,7 +266,7 @@
 <ng-container *ngIf="useNewUI && useNewUI == true">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
-        <label>            
+        <label>
             <d3s-dynamic-field-name [field]="field"></d3s-dynamic-field-name>
         </label>
         <div [ngSwitch]="field.FieldType" class="col s12 form-field" *ngIf="field.FieldType!='Hidden'">

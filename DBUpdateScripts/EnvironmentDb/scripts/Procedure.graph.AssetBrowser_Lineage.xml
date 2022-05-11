@@ -5,13 +5,672 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v1.5">
-    <comment>GOV-17917</comment>
+  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v2">
+    <comment>GOV-18269</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [graph].[AssetBrowser_Lineage]
+	@ancestry int -- 1 = all, 2 = direct-parent
+	,@descendancy int -- 1 = None, 2 = Direct, 3 = All
+	,@direction char(1) = 'A' -- (A)all, (B)ackward, (F)orward 	,@assets dbo.Ids readonly
+	,@assets dbo.UidTable readonly
+	,@resourceId int
+	,@currentHop int = 0
+	,@hopCount int
+	,@intersects dbo.Ids readonly
+	,@includeOwnershipBadges bit = 1
+	,@includeRelationBadges bit = 1
+	,@hierarchyKey varchar(50) = null -- If this value is populated, you should link all relationships to this key. Not populated during initial load of AB.
+	,@isAdmin bit
+as
+begin
+
+	set nocount on;
+	declare @maxLineageDescendants int = 500;
+	declare @dataLimitReached bit = 0;
+
+	drop table if exists #assetsEditable;
+	create table #assetsEditable (Uid uniqueidentifier);
+	create nonclustered index IX_TempAssetsEditable on #assetsEditable (Uid asc);
+	insert into #assetsEditable
+		select Uid from @assets;
+
+	-- These values indicate how many times to cycle when getting lineage relationships.
+	declare @endForwardHop int = @currentHop + @hopCount,
+			@endBackwardHop int = @currentHop - @hopCount;
+
+	drop table if exists #hopAsset;
+	create table #hopAsset (
+		Hop int, 
+		ID bigint, ParentID bigint, RootID bigint null, TemporaryRootID bigint null, RootPrefix varchar(1) default('A'), 
+		ChildCount int default(0),
+		IncludeInResult bit default(1) not null, IsType bit default(0)
+		);
+	create nonclustered index IX_TempHopAsset_IncludeInResult on #hopAsset (IncludeInResult desc);
+	create nonclustered index IX_TempHopAsset_RootID on #hopAsset (RootID asc);
+
+	drop table if exists #hopIntersect;
+	create table #hopIntersect (IntersectID int, 
+		[from] varchar(100), [to] varchar(100),
+		SubjectHop int, SubjectID bigint, ObjectHop int, ObjectID bigint,
+		predicateId int,
+		predicateUid uniqueidentifier,
+		[text] nvarchar(250),
+		predicateType int,
+		);
+	create nonclustered index IX_TempHopIntersect_Subject on #hopIntersect (SubjectHop asc, SubjectID asc);
+	create nonclustered index IX_TempHopIntersect_Object on #hopIntersect (ObjectHop asc, ObjectID asc);
+	create nonclustered index IX_TempHopIntersect_IntersectID on #hopIntersect (IntersectID asc);
+
+	-- Tables that will contain the data to return. This is the final data that should be loaded into these tables.
+	drop table if exists #edges;
+	create table #edges (
+		[from] varchar(100),
+		[to] varchar(100),
+		back varchar(7),
+		[text] nvarchar(250),
+		linksJson varchar(max)
+		);
+
+	drop table if exists #nodes;
+	create table #nodes (
+		hop int,
+		hierarchyKey varchar(500),
+		focal bit,
+		leaf bit, 
+		childCount int, 
+		template varchar(50),
+		[key] varchar(100),
+		[group] varchar(100),
+		[text] nvarchar(max), 
+		assetUid uniqueidentifier,
+		assetId bigint,
+		assetTypeId int,
+		assetTypeUid uniqueidentifier,
+		backAmount decimal(2,1),
+		back varchar(7),
+		icon varchar(250),
+		class int,
+		actionCount int,
+		useAsTransformation bit default(0),
+		hasAssetReadAccess bit default(1),
+		hasResponsibilityReadAccess bit default(1),
+		isSubjectInTransformation bit default(1)
+	);
+	create nonclustered index IX_TempNodes_HierarchyKey on #nodes (hierarchyKey asc);
+	create nonclustered index IX_TempNodes_Group on #nodes ([group] asc);
+	create nonclustered index IX_TempNodes_Key on #nodes ([key] asc);
+
+	-- Since this is a hop, and not initial, you need to remove any assets that do not have lineage.
+	if @currentHop > 1 
+	begin
+		delete	#assetsEditable 
+		where	Uid not in (
+							select	distinct 
+									T.Uid
+							from	#assetsEditable T
+									inner join Asset N on N.Uid = T.Uid
+									inner join PredicateIntersect E on E.Subject = N.Object and E.SubjectID = N.ObjectID and E.PredicateType in (1, 12, 13)
+							union
+							select	distinct 
+									T.Uid
+							from	#assetsEditable T
+									inner join Asset N on N.Uid = T.Uid
+									inner join PredicateIntersect E on E.Object = N.Object and E.ObjectID = N.ObjectID and E.PredicateType in (1, 12, 13)
+							)
+	end
+
+	-- BEGIN: Get focal point heirarchy (ascendancy/descendancy)
+		
+	declare @focalId bigint;
+	select	top 1 
+			@focalId = ID 
+	from	Asset A inner join #assetsEditable O on O.Uid = A.Uid;
+
+	if @currentHop <> 1
+	begin
+		-- Keep only the assets that are leaves in the incoming data set, where it does NOT acts a parent to anything else in the incoming dataset.
+		delete	T
+		from	#assetsEditable T
+				inner join (
+							select	P.Uid
+							from	#assetsEditable P
+									inner join Asset PP on PP.Uid = P.Uid
+									outer apply (
+										select	count(1) as [Count]
+										from	PredicateIntersect I 
+												inner join Asset CC on	I.PredicateType in (3,4) 
+																		and I.Subject = PP.Object and I.SubjectID = PP.ObjectID 
+																		and CC.Object = I.Object and CC.ObjectID = I.ObjectID 
+																		and CC.uid in (select Uid from #assetsEditable)
+									) O
+							where	O.[Count] = 1
+							) L on L.Uid = T.Uid
+	end;
+
+	-- Get descendants (if any) of the current asset - this is the focal tree.
+	with d as (
+		select	ID,
+				cast(null as bigint) as ParentID,
+				1 as [Level],
+				cast(1 as bit) as IncludeInResult
+		from	Asset 
+		where	Uid in (select Uid from #assetsEditable)
+		union all
+		select	C.ID,
+				d.ID as ParentID,
+				d.[Level] + 1 as [Level],
+				case @descendancy
+					when 1 then cast(0 as bit) 
+					when 2 then cast(iif(d.[Level] < 2, 1, 0) as bit) 
+					else cast(1 as bit) 
+				end as IncludeInResult
+		from	d
+				inner join Asset P on P.ID = d.ID
+				inner join PredicateIntersect I on I.Subject = P.Object and I.SubjectID = P.ObjectID and I.PredicateType in (3, 4)
+				inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+	)
+
+	insert into #hopAsset (Hop, ID, ParentID, IncludeInResult)
+		select @currentHop as Hop, ID, ParentID, IncludeInResult from d;
+
+	-- Get focal asset's ancestry, taking into account whether we should continue past direct parent or not.
+	with a as (
+		select	C.ID,
+				P.ID as ParentID
+		from	#assetsEditable H--#hopAsset H
+				inner join Asset C on C.Uid = H.Uid--C.ID = H.ID and H.ID = @focalId
+				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
+				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+		union all
+		select	C.ID,
+				iif(@ancestry = 1, P.ID, null) as ParentID
+		from	a
+				inner join Asset C on C.ID = a.ParentID
+				outer apply (
+					select	A.ID 
+					from	PredicateIntersect I
+							inner join Asset A on 
+									I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4) 
+									and A.Object = I.Subject and A.ObjectID = I.SubjectID
+				) P
+	)
+
+	merge	#hopAsset as T
+	using	(select ID, ParentID from a group by ID, ParentID) as S
+	on		(T.ID = S.ID)
+	when	matched then
+	update	set
+			T.ParentID = S.ParentID
+	when not matched then
+	insert	(Hop, ID, ParentID, IncludeInResult)
+	values	(@currentHop, S.ID, S.ParentID, 1);
+
+	-- END: Get focal point heirarchy (ascendancy/descendancy)
+
+	-- Check our node limit, to make sure we are not over 500.
+	declare @descendantCount int = 0;
+	select @descendantCount = count(1) from #hopAsset where IncludeInResult = 1
+	if @descendantCount > @maxLineageDescendants and @direction = 'A'
+	begin
+		set @dataLimitReached = 1;
+
+		select null;
+		select null;
+		select null;
+		select null;
+		select @dataLimitReached as dataLimitReached;
+		return;
+	end
+
+	-- BEGIN: Get lineage for the number of hops (backwards/forwards)
+
+	declare @hopAssetIds dbo.Ids,
+			@hopIntersectIds dbo.Ids
+
+	insert into @hopAssetIds
+		select ID from #hopAsset
+
+	-- Add the intersects, IF ANY, that we should skip to begin t=with. This is relevant for lineage hops.
+	insert into @hopIntersectIds
+		select Id from @intersects
+
+	-- Loop forward in lineage.
+	if @direction = 'A' or @direction = 'F'
+	begin
+		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID)
+			select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID 
+			from		graph.GetForwardLineage(@currentHop, @endForwardHop, @hopAssetIds, @hopIntersectIds) 
+			order by	SubjectHop;
+	end
+
+	insert into @hopIntersectIds
+		select IntersectID from #hopIntersect;
+
+	-- Loop backward in lineage.
+	if @direction = 'A' or @direction = 'B'
+	begin
+		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID)
+			select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID 
+			from		graph.GetBackwardLineage(@currentHop, @endBackwardHop, @hopAssetIds, @hopIntersectIds) 
+			order by	SubjectHop desc;
+	end
+
+	-- Now figure out which extra relationships are beyond the specified number of hops, in order to figure out where the reveal nodes should be generated.
+	drop table if exists #revealIntersect;
+	create table #revealIntersect (Direction int, RootID bigint, Hop int, ID bigint);
+
+	insert into #revealIntersect (Direction, Hop, ID)
+		select 1, SubjectHop, SubjectID from #hopIntersect where ObjectHop > @endForwardHop--@currentHop
+		union
+		select 2, ObjectHop, ObjectID from #hopIntersect where SubjectHop < @endBackwardHop; --@currentHop;
+
+	-- Remove the extra edges that should beyond the specified number of hops.
+	delete #hopIntersect where SubjectHop < @endBackwardHop or ObjectHop > @endForwardHop;
+
+-- END: Get lineage for the number of hops (backwards/forwards)
+
+
+-- BEGIN: Get asset records for the forward and backward hops we just performed, and load them into temp tables.
+
+	-- Now add the missing assets discovered in the relationship hopping into the Asset temp table.
+	insert into #hopAsset (Hop, ID)
+		select	distinct 
+				SubjectHop, SubjectID
+		from	#hopIntersect I
+				left join #hopAsset A on A.Hop = I.SubjectHop and A.ID = I.SubjectID
+		where	A.ID is null
+
+	insert into #hopAsset (Hop, ID)
+		select	distinct 
+				ObjectHop, ObjectID 
+		from	#hopIntersect I
+				left join #hopAsset A on A.Hop = I.ObjectHop and A.ID = I.ObjectID
+		where	A.ID is null
+
+	-- Now we find the hop assets, other than @currentHop, that need their ancestry. We take into account the hops as well.
+	drop table if exists #parents;
+	create table #parents (Hop int, ID bigint, ParentID bigint);
+
+	insert into #parents
+		select	distinct
+				H.Hop,
+				n.s.value('@assetId', 'bigint') as ID,
+				P.ID as ParentID
+		from	#hopAsset H
+				inner join graph.AssetNode A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
+				cross apply A.Segments.nodes('/path/segment') n(s)
+				inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
+				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
+				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+
+	-- Update parentId of assets that are already in the table.
+	update	H
+	set		H.ParentID = P.ParentID
+	from	#hopAsset H
+			inner join #parents P on P.Hop = H.Hop and P.ID = H.ID;
+
+	-- Insert the assets that are not already present.
+	insert into #hopAsset (Hop, ID, ParentID)
+		select	P.* 
+		from	#parents P
+				left join #hopAsset A on A.Hop = P.Hop and A.ID = P.ID
+		where	A.ID is null;
+
+-- END: Get asset records for the forward and backward hops we just performed, and load them into temp tables.
+
+	-- Figure out the temporary root first, in order to determine whether we need to add the asset type in as the "new" root.
+	;with r as (
+		select	ID,
+				ID as RootID,
+				Hop
+		from	#hopAsset
+		where	ParentID is null
+		union all
+		select	H.ID,
+				r.RootID,
+				r.Hop
+		from	#hopAsset H
+				inner join r on r.ID = H.ParentID and r.Hop = H.Hop
+	)
+	update	H
+	set		H.TemporaryRootID = r.RootID
+	from	#hopAsset H
+			inner join r on r.Hop = H.Hop and r.ID = H.ID;
+
+
+	-- Figure out which hop assets are along in a hierarchy.
+	drop table if exists #singles;
+	select		TemporaryRootID, 
+				Hop 
+	into		#singles
+	from		#hopAsset 
+	where		IncludeInResult = 1
+	group by	TemporaryRootID, Hop 
+				having count(1) = 1;
+
+	-- Add the asset type as the new root level to single level asset nodes.
+	insert into #hopAsset (Hop, ID, RootPrefix, RootID, TemporaryRootID, IncludeInResult, IsType)	
+		select	S.Hop, A.AssetTypeID, 'T', A.AssetTypeID, S.TemporaryRootID, 1, 1
+		from	#singles S
+				inner join #hopAsset H on H.TemporaryRootID = S.TemporaryRootID and H.Hop = S.Hop and H.ParentID is null
+				inner join Asset A on A.ID = H.ID;
+
+	-- Update the rootID and parentID on single-level nodes.
+	update	T
+	set		T.RootID = R.RootID,
+			T.ParentID = R.ID,
+			T.RootPrefix = 'T'
+	from	#hopAsset T
+			inner join #singles S on S.Hop = T.Hop and S.TemporaryRootID = T.TemporaryRootID and T.RootID is null
+			inner join #hopAsset R on R.Hop = T.Hop and R.TemporaryRootID = T.TemporaryRootID and R.IsType = 1;
+
+	-- Figure out what the root ID of each multi-level asset in a hop hierarchy is.
+	;with r as (
+		select	H.ID,
+				H.ID as RootID,
+				H.Hop
+		from	#hopAsset H
+		where	ParentID is null
+				and RootID is null
+		union all
+		select	H.ID,
+				r.RootID,
+				r.Hop
+		from	#hopAsset H
+				inner join r on r.ID = H.ParentID and r.Hop = H.Hop
+				inner join Asset A on A.ID = H.ID
+				outer apply (
+					select Icon from AssetTypeStyle where ID = A.AssetTypeID
+				) S
+	)
+	update	H
+	set		H.RootID = r.RootID
+	from	#hopAsset H
+			inner join r on r.Hop = H.Hop and r.ID = H.ID
+
+	-- Figure out the RootIDs of the reveal nodes.
+	update	R
+	set		R.RootID = H.RootID
+	from	#revealIntersect R
+			inner join #hopAsset H on H.Hop = R.Hop and H.ID = R.ID;
+
+	-- Load the remainder of the relationship content BEFORE we wipe out the nodes we will not be sending back to client below.
+	update	I
+	set		I.[from] =	S.RootPrefix + '|' + cast(S.Hop as varchar) + '|' + cast(S.RootID as varchar(50)),
+			I.[to] =	O.RootPrefix + '|' + cast(O.Hop as varchar) + '|' + cast(O.RootID as varchar(50)),
+			I.[text] = I.[text]
+	from	#hopIntersect I
+			inner join #hopAsset S on S.Hop = I.SubjectHop and S.ID = I.SubjectID
+			inner join #hopAsset O on O.Hop = I.ObjectHop and O.ID = I.ObjectID;
+
+	-- Load final edge data into the high-level links between nodes.
+	insert into #edges ([from], [to], back, [text], linksJson)
+		select	case 
+					when @hierarchyKey is not null and @direction = 'F' then @hierarchyKey
+					else [from]
+				end, 
+				case 
+					when @hierarchyKey is not null and @direction = 'B' then @hierarchyKey
+					else [to]
+				end, 
+				'#cccccc' as back, 
+				string_agg([text], ', ') as [text],
+				(
+					select	distinct
+							intersectId as id,  
+							'A|' + cast(SubjectHop as varchar) + '|' + cast(SubjectID as varchar(50)) as [from],
+							'A|' + cast(ObjectHop as varchar) + '|' + cast(ObjectID as varchar(50)) as [to],
+							predicateId, 
+							predicateUid, 
+							predicateType
+					from	#hopIntersect
+					where	[from] = I.[from]
+							and [to] = I.[to]
+					for json path
+				) as linkJson
+		from	(
+				select	I.[from],
+						I.[to],
+						I.[text]
+				from	#hopIntersect I	
+				group by I.[from], I.[to], I.[text]
+				) I
+		group by [from], [to];
+
+	-- We leave the Hop to be 0 below b/c that should be the only focal point in any diagram. It should NOT be @currentHop
+	insert into #nodes	(
+						hop, hierarchyKey, leaf, [key], [group], 
+						focal, childCount, template, [text], 
+						assetUid, assetId, assetTypeId, assetTypeUid, 
+						backAmount, --back, icon, class, 
+						actionCount
+						)
+		select	distinct
+				H.Hop,																							--hop
+				H.RootPrefix + '|' + cast(H.Hop as varchar) + '|' + cast(H.RootID as varchar(50)),				--hierarchyKey
+				0,																								--leaf
+				iif(H.IsType = 1, 'T', 'A') + '|' + cast(H.Hop as varchar) + '|' + cast(H.ID as varchar(50)),	--key
+				iif(P.IsType = 1, 'T', 'A') + '|' + cast(P.Hop as varchar) + '|' + cast(P.ID as varchar(50)),	--group
+				cast(iif(H.Hop = 0, 1, 0) as bit),																--focal
+				0,																								--childCount
+				'',																								--template
+				coalesce(DA.DisplayValue, DT.Name, 'No display value'),											--text
+				A.Uid,																							--assetUid
+				A.ID,																							--assetId
+				coalesce(A.AssetTypeID, DT.ID),																	--assetTypeId
+				coalesce(A.AssetTypeUid, DT.Uid),																--assetTypeUid
+				0,																								--backAmount
+				0																								--actionCount
+		from	#hopAsset H
+				left join #hopAsset P on P.Hop = H.Hop and P.ID = H.ParentID
+				left join AssetDisplayValue DA on DA.AssetID = H.ID and H.IsType = 0
+				left join AssetType DT on DT.ID = H.ID and H.IsType = 1
+				left join graph.AssetNode A on A.ID = H.ID and H.IsType = 0
+		where	H.IncludeInResult = 1;
+
+	-- Remove the current hop worth of assets IF this is not an initial load.
+	if @currentHop <> 0
+	begin
+		delete #nodes where Hop = @currentHop
+	end
+
+	-- Update the child Count.
+	update	T
+	set		T.childCount = C.[Count],
+			T.leaf = iif(C.[Count] = 0, 1, 0),
+			T.template = case 
+				when T.Hop = 0 and T.[group] is null then 'FocalPortGroup'
+				when T.Hop <> 0 and T.[group] is null then 'PortGroup'
+				when T.[group] is not null and C.[Count] > 0 then 'Group'
+				when C.[Count] = 0 then ''
+			end
+	from	#nodes T
+			cross apply (select count(1) as [Count] from #nodes where [group] = T.[key]) C;
+
+	-- Figure out what the root ID of each asset in a hop hierarchy is.
+	;with r as (
+		select	H.[key],
+				H.[group],
+				cast(0 as decimal(2,1)) as backAmount,
+				coalesce(S.IconBackColor, '#000000') as back,
+				coalesce(S.Icon, 'fa-book') as icon
+		from	#nodes H
+				left join AssetTypeStyle S on S.ID = H.assetTypeId
+		where	[group] is null
+		union all
+		select	H.[key],
+				H.[group],
+				case 
+					when r.BackAmount = 0.8 then r.BackAmount
+					else cast(r.BackAmount + 0.2 as decimal(2,1))
+				end as BackAmount,
+				r.back,
+				coalesce(S.Icon, 'fa-book') as icon
+		from	#nodes H
+				inner join r on r.[key] = H.[group]
+				outer apply (
+					select Icon from AssetTypeStyle where ID = H.assetTypeId
+				) S
+	)
+
+	update	n
+	set		n.back = r.back,
+			n.backAmount = r.backAmount,
+			n.icon = r.icon
+	from	#nodes n
+			inner join r on r.[key] = n.[key]
+
+	-- Update assets that have open actions
+	update	T
+	set		T.actionCount = C.[Count]
+	from	#nodes T
+			inner join Asset A on A.ID = T.assetId
+			cross apply (
+			select	count(1) as [Count] 
+			from	Issue 
+			where	Object = A.Object 
+					and ObjectID = A.ObjectID 
+					and CompletedOn is null
+			) C;
+
+	-- Update asset read permissions
+	drop table if exists #TempUserPremission;
+
+	with rs as
+	(
+	 select AssetTypeID from #nodes group by AssetTypeID
+	)
+	select distinct P.AssetID, H.AssetTypeID, P.PermissionsBitMask
+	into #TempUserPremission
+	from rs H
+	cross apply dbo.UserAssetPermissions(@resourceId, H.AssetTypeID) P; 
+			
+	create index ix_TempUserPremission on #TempUserPremission(AssetTypeID, AssetID);
+
+	IF EXISTS(SELECT 1 FROM #TempUserPremission)
+	BEGIN
+		update	H
+		set		HasAssetReadAccess = iif(P.PermissionsBitMask & 1 = 1, 1, 0),
+				HasResponsibilityReadAccess = iif(P.PermissionsBitMask & 32 = 32, 1, 0)
+		from	#nodes H
+				inner join #TempUserPremission P on P.AssetTypeID = H.AssetTypeID  AND P.AssetID = H.assetId;
+	
+		update	H
+		set		HasAssetReadAccess = iif(P.PermissionsBitMask & 1 = 1, 1, 0),
+				HasResponsibilityReadAccess = iif(P.PermissionsBitMask & 32 = 32, 1, 0)
+		from	#nodes H
+				inner join #TempUserPremission P on P.AssetTypeID = H.AssetTypeID  AND P.AssetID = 0;
+	END
+
+	-- Get ownership badge data, IF we are supposed to include.
+	drop table if exists #GroupedOwners;
+	create table #GroupedOwners (hierarchyKey varchar(500), id int, [text] nvarchar(250), ResourceID int)
+	create nonclustered index IX_TempGroupedOwners_hierarchyKey on #GroupedOwners (hierarchyKey asc);
+	
+	if @includeOwnershipBadges = 1 
+	begin
+		insert into #GroupedOwners
+			select		IH.hierarchyKey,
+						R.ResponsibilityTypeID as id,
+						R.ResponsibilityTypeName as [text],
+						R.ResourceID
+			from		#nodes IH
+						inner join Asset A on A.ID = IH.assetId
+						inner join ResponsibilityDetail R on (R.ApplyToType = 0 and R.AssetID = IH.assetId) 
+			group by	IH.hierarchyKey,
+						R.ResponsibilityTypeID,
+						R.ResponsibilityTypeName,
+						R.ResourceID
+	
+		insert into #GroupedOwners
+			select		IH.hierarchyKey,
+						R.ResponsibilityTypeID as id,
+						R.ResponsibilityTypeName as [text],
+						R.ResourceID
+			from		#nodes IH
+						inner join Asset A on A.ID = IH.assetId
+						inner join ResponsibilityDetail R on (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID)
+						left join #GroupedOwners G on G.hierarchyKey = IH.hierarchyKey and G.id = R.ResponsibilityTypeID and G.ResourceID = R.ResourceID
+			where		G.id is null
+			group by	IH.hierarchyKey,
+						R.ResponsibilityTypeID,
+						R.ResponsibilityTypeName,
+						R.ResourceID
+	end;
+
+	-- Return data to client.
+	select * from #nodes order by hop, hierarchyKey, [group];	-- 1. Asset nodes
+	select * from #edges;										-- 2. Edges
+
+	-- 3. Predicate/Owner badges for root assets.
+	select	H.hierarchyKey,
+			H.hierarchyKey as predictableId,
+			(
+			select	id, 
+					[text], 
+					count(1) as [count] 
+			from	#GroupedOwners 
+			where	hierarchyKey = H.hierarchyKey 
+			group by id, [text] 
+			for json path
+			) as ownersJson,
+			(
+			select	case @includeRelationBadges
+						when 1 then	(
+									select	*
+									from	(
+											select		I.PredicateID as predicateId,
+														I.PredicateUid as predicateUid,
+														I.PredicateName as [predicate],
+														1 as direction,
+														count(1) as [count]
+											from		#nodes IH
+														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
+														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
+											group by	I.PredicateID,
+														I.PredicateUid,
+														I.PredicateName
+											union
+											select		I.PredicateID as predicateId,
+														I.PredicateUid as predicateUid,
+														I.PredicateInverse as [predicate],
+														2 as direction,
+														count(1) as [count]
+											from		#nodes IH
+														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
+														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
+											group by	I.PredicateID,
+														I.PredicateUid,
+														I.PredicateInverse
+											) OO
+									for json path
+									)
+						else null
+					end
+			) as relationsJson
+	from	#nodes H
+	where	H.[group] is null
+
+	-- 4. Reveals
+	select	distinct
+			N.hierarchyKey + '_Reveal' as hierarchyKey,
+			iif(R.Direction = 1, N.hierarchyKey, N.hierarchyKey + '_Reveal') as [from],
+			iif(R.Direction <> 1, N.hierarchyKey, N.hierarchyKey + '_Reveal') as [to],
+			R.direction
+	from	#revealIntersect R
+			inner join #nodes N on N.assetId = R.ID and N.hop = R.Hop
+
+	-- 5. Are we over max node limit?
+	select cast(0 as bit)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [graph].[AssetBrowser_Lineage]
 	@ancestry int -- 1 = all, 2 = direct-parent
 	,@descendancy int -- 1 = None, 2 = Direct, 3 = All
@@ -649,11 +1308,6 @@ begin
 	-- 5. Are we over max node limit?
 	select cast(0 as bit)
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

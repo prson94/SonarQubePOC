@@ -1,8 +1,8 @@
-﻿import {Component, Input, OnInit, SimpleChange} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {ApiUri, ApiVersion} from '../../../models/custom-api.model';
-import {CustomAPIService} from '../../../services/custom-api.service';
-import {BaseComponent} from '../../shared/base.component';
+﻿import { Component, Input, OnInit, SimpleChange } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ApiUri, ApiVersion } from '../../../models/custom-api.model';
+import { CustomAPIService } from '../../../services/custom-api.service';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -19,6 +19,8 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
     public selected: ApiUri = null;
     public showDelete: boolean = false;
     theDeleteCallback: Function;
+
+    searchText = $localize`Search...`;
 
     constructor(
         protected customAPIService: CustomAPIService,
@@ -68,5 +70,9 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
                 this.load();
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the uri [${this.selected?.Format}]?`;
     }
 }

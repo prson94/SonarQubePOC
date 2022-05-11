@@ -60,13 +60,17 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
     secondarySidePanel: string = "detail";
     resourceUid: string;
 
+    get assetEditorTitle(): string {
+        return this.selection ? $localize`Edit Asset` : $localize`Create New Asset`;
+    }
+
     public extraButtons: SidePanelButton[] = [new SidePanelButton({
-        label: 'Filters',
-        tooltip: 'Filters',
+        label: $localize`Filters`,
+        tooltip: $localize`Filters`,
         disabledTooltip: null,
-        nothingSelectedMessage: 'Filters not available',
-        notApplicableMessage: 'Filters not available',
-        multipleSelectedMessage: 'Filters not available',
+        nothingSelectedMessage: $localize`Filters not available`,
+        notApplicableMessage: $localize`Filters not available`,
+        multipleSelectedMessage: $localize`Filters not available`,
         key: 'filters',
         icon: 'fa-filter',
         disabled: false,
@@ -74,11 +78,11 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         needsSelection: false,
         panelMenu: [
             new PopupMenuItem({
-                title: "Expand All",
+                title: $localize`Expand All`,
                 callback: () => this.filterExpandAll()
             }),
             new PopupMenuItem({
-                title: "Collapse All",
+                title: $localize`Collapse All`,
                 callback: () => this.filterCollapseAll()
             })
         ]
@@ -108,15 +112,15 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
         this.advancedFiltersLoaded = false;
         this.setFieldsObsservable();
 
-        this.setBrowserTitle(this.titleService, 'Search Results');
+        this.setBrowserTitle(this.titleService, $localize`Search Results`);
 
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search Results'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Search Results`));
 
         this.secondaryNavService.clearItems();
         this.secondaryNavService.clearButtons();
         this.secondaryNavService.clearCurrentObject();
-        this.secondaryNavService.setCurrentArea('Search Results', 'fa-search', null);
+        this.secondaryNavService.setCurrentArea($localize`Search Results`, 'fa-search', null);
         this.secondaryNavService.showHeader(false);
         this.searchStateService.advancedFilters = [];
 
@@ -137,7 +141,7 @@ export class SearchComponent extends BaseComponent implements OnInit, OnDestroy 
 
         this.PageNumberSub = this.searchStateService.resultCount.subscribe((pageCount) => {
             this.canExport = pageCount > 0 && pageCount <= this.exportLimit;
-            this.searchExportTooltip = (pageCount <= this.exportLimit) ? "Export to Excel" : `No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
+            this.searchExportTooltip = (pageCount <= this.exportLimit) ? $localize`Export to Excel` : $localize`No more than ${this.exportLimit} items can be exported.\nPlease refine your search.`;
         });
     }
 

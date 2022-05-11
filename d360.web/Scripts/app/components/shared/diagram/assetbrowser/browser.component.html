@@ -18,15 +18,15 @@
                         <ng-container *ngIf="displayConfiguration.DiagramType == 3">
                             <ng-container *ngIf="!canEditProcessDiagram()">
                                 <ng-container *ngIf="!isProcessDiagramEmpty()">
-                                    <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
-                                    <button pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
+                                    <button i18n-pTooltip pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                                    <button i18n-pTooltip pTooltip="Export to Excel" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" (click)="processDiagramRef.doControlledAction('export')"></button>
                                 </ng-container>
                             </ng-container>
                             <ng-container *ngIf="canEditProcessDiagram()">
-                                <button pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" (click)="editProcess()"></button>
+                                <button i18n-pTooltip pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" (click)="editProcess()"></button>
                                 <ng-container *ngIf="!isProcessDiagramEmpty()">
                                     <div class="button-spacer"></div>
-                                    <button pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                                    <button i18n-pTooltip pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
                                     <div class="menu-wrapper" *ngIf="processDiagramRef">
                                         <button type="button" igButton icon="fa-ellipsis-v" (click)="menu.toggle($event)" pTooltip="More actions" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                                         <ig-popup-menu [items]="processDiagramRef.popupMenuItems" #menu [tabIndex]="10"></ig-popup-menu>
@@ -42,10 +42,10 @@
                 </div>
                 <div class="controls-right">
                     <ng-container *ngIf="displayConfiguration.DiagramType == 3 && !isProcessDiagramEmpty()">
-                        <button pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'diagram') ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="processDiagramRef.changeViewType('diagram')"></button>&nbsp;
-                        <button pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'list') ? 'ig-state-active' : ''}}" icon="fa-list" (click)="processDiagramRef.changeViewType('list')"></button>
+                        <button i18n-pTooltip pTooltip="Diagram View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'diagram') ? 'ig-state-active' : ''}}" icon="fa-sitemap" (click)="processDiagramRef.changeViewType('diagram')"></button>&nbsp;
+                        <button i18n-pTooltip pTooltip="List View" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton class="ig-button ig-button-icon-only {{(getProcessDiagramViewType() == 'list') ? 'ig-state-active' : ''}}" icon="fa-list" (click)="processDiagramRef.changeViewType('list')"></button>
                         <div class="button-spacer"></div>
-                        <button pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{(processDiagramRef && processDiagramRef.isInfoPanelOpened) ? 'ig-state-active' : ''}}" (click)="openProcessDiagramInfo()"></button>
+                        <button i18n-pTooltip pTooltip="Information Panel" tooltipPosition="left" tooltipStyleClass="ig-tooltip" igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{(processDiagramRef && processDiagramRef.isInfoPanelOpened) ? 'ig-state-active' : ''}}" (click)="openProcessDiagramInfo()"></button>
                     </ng-container>
                     <div class="asset-browser-button-group">
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"
@@ -124,19 +124,19 @@
 
                                 <div class="info">
                                     <div class="asset-name">
-                                        <span *ngIf="panelModel.FiltersVisible">Apply Filters</span>
-                                        <span *ngIf="panelModel.AlertVisible">Active Alerts</span>
-                                        <span *ngIf="panelModel.AddVisible">Add Lineage</span>
-                                        <span *ngIf="panelModel.SettingsVisible">Settings</span>
+                                        <span *ngIf="panelModel.FiltersVisible" i18n>Apply Filters</span>
+                                        <span *ngIf="panelModel.AlertVisible" i18n>Active Alerts</span>
+                                        <span *ngIf="panelModel.AddVisible" i18n>Add Lineage</span>
+                                        <span *ngIf="panelModel.SettingsVisible" i18n>Settings</span>
                                     </div>
                                 </div>
                                 <div class="clearfix"></div>
                                 <div class="windowtabs" *ngIf="!panelModel.AddVisible">
                                     <d3s-assetbrowser-savedfilter *ngIf="panelModel.FiltersVisible" [diagramType]="displayConfiguration.DiagramType" [options]="filter_AvailableOptions" [filterModel]="displayConfiguration" (applySavedFilter)="savedfilter_Apply($event)"></d3s-assetbrowser-savedfilter>
 
-                                    <button *ngIf="panelModel.AlertVisible" class="tab-selected">Alerts</button>
+                                    <button *ngIf="panelModel.AlertVisible" class="tab-selected" i18n>Alerts</button>
 
-                                    <button *ngIf="panelModel.SettingsVisible" class="tab-selected">General</button>
+                                    <button *ngIf="panelModel.SettingsVisible" class="tab-selected" i18n>General</button>
                                 </div>
                             </div>
                             <div class="asset-browser-window-content">
@@ -224,7 +224,7 @@
                                                         <div class="icon-holder">
                                                             <i class="fa fa-ban"></i>
                                                         </div>
-                                                        <span>You do not have permission to view the details of the selected item</span>
+                                                        <span i18n>You do not have permission to view the details of the selected item</span>
                                                     </div>
                                                 </div>
                                             </ng-container>
@@ -235,7 +235,7 @@
                                                     <div class="icon-holder">
                                                         <i class="fa fa-info-circle"></i>
                                                     </div>
-                                                    <span>Select an item from the diagram to display its properties</span>
+                                                    <span i18n>Select an item from the diagram to display its properties</span>
                                                 </div>
                                             </div>
                                         </ng-container>

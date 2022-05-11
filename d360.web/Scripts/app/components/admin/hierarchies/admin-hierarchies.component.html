@@ -1,7 +1,7 @@
 ﻿<div *ngIf="showEditor || showDelete && !isLoading" class="row">
     <div class="tile tile-detail">
         <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID" [assetTypeUid]="selected?.uid" [useUid]="true"
-                               [title]="(selected == null ? 'New' : 'Edit') + ' ' + ( assetTypeClass == AssetTypeClass.Model ? 'Model':'Policy') + ' Type'"
+                               [title]="typeEditorModalTitle"
                                (onCancel)="closeEditor()"
                                (onComplete)="save($event)"></d3s-asset-type-editor>
         <d3s-delete-form *ngIf="showDelete"
@@ -10,7 +10,7 @@
                          [assetTypeUid]="selected?.uid"
                          [useUid]="true"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to delete the ' + ( assetTypeClass == AssetTypeClass.Model ? 'model':'policy') +' [' + [selected?.Name] + ']?'"
+                         [prompt]="deleteModalTitle"
                          (onCancel)="showDelete=false;"></d3s-delete-form>
     </div>
 </div>
@@ -26,7 +26,7 @@
             <span *ngIf="!isLoading">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
                        (input)="dt.filterGlobal($event.target.value, 'contains')"
-                       placeholder="Search..." class="grid-simple-filter">
+                       placeholder="{{searchText}}" class="grid-simple-filter">
                 <p-table #dt [value]="types" selectionMode="single" [metaKeySelection]="true"
                          [globalFilterFields]="['Name','MaximumDepth']" sortField="Name" [sortOrder]="1"
                          [pageLinks]="3" [paginator]="true" [rows]="10"
@@ -34,11 +34,11 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'">
-                                Name
+                                <ng-container i18n>Name</ng-container>
                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'MaximumDepth'" style="width: 100px">
-                                Max Depth
+                                <ng-container i18n>Max Depth</ng-container>
                                 <d3s-sortIcon [field]="'MaximumDepth'"></d3s-sortIcon>
                             </th>
                             <th style="width: 40px"></th>

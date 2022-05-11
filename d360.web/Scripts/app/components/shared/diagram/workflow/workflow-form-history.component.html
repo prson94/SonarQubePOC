@@ -2,15 +2,15 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div class="col s6" *ngIf="settings != null">
-            <div class="FieldName">Form Response Type</div>
+            <div class="FieldName" i18n>Form Response Type</div>
             <div>{{settings.FormResponseType}}</div>
         </div>
         <div class="col s6" *ngIf="fields != null">
-            <div class="FieldName">Total Resources</div>
+            <div class="FieldName" i18n>Total Resources</div>
             <div>{{fields['@TotalResources']}}</div>
         </div>
         <div class="col s6" *ngIf="fields != null && fields.form != null">
-            <div class="FieldName">Completed Forms</div>
+            <div class="FieldName" i18n>Completed Forms</div>
             <div>
                 <select [ngModel]="selectedFormIndex" (ngModelChange)="selectedFormIndex = $event; selectForm($event)" style="width: 95%">
                     <option value="-1"></option>
@@ -19,21 +19,21 @@
             </div>
         </div>
         <div class="col s6" *ngIf="fields != null">
-            <div class="FieldName">Number of Responses</div>
+            <div class="FieldName" i18n>Number of Responses</div>
             <div>{{fields['@NumberOfResponses'] || '0'}}</div>
         </div>
     </div>
     <div class="row"><div class="col s12">&nbsp;</div></div>
     <div *ngIf="selectedForm != null && selectedForm.field != null">
-        <header>
+        <header i18n>
             Form Details - {{selectedForm.ResourceName}}
         </header>
         <div *ngFor="let f of selectedForm.field; let i = index" class="row">
             <div class="col s12">
                 <div class="FieldName">{{f['@label']}}</div>
                 <div *ngIf="f['@fieldtype'] == 'boolean'">
-                    <input type="radio" [name]="'boolGroup' + i" [checked]="f['@value'] != null && f['@value'].toString().toLowerCase() == 'true'" disabled /> Yes 
-                    <input type="radio" [name]="'boolGroup' + i" [checked]="f['@value'] != null && f['@value'].toString().toLowerCase() == 'false'" disabled /> No 
+                    <input type="radio" [name]="'boolGroup' + i" [checked]="f['@value'] != null && f['@value'].toString().toLowerCase() == 'true'" disabled />  <ng-container i18n>Yes</ng-container>
+                    <input type="radio" [name]="'boolGroup' + i" [checked]="f['@value'] != null && f['@value'].toString().toLowerCase() == 'false'" disabled /> <ng-container i18n>No</ng-container>
                 </div>
                 <div *ngIf="f['@fieldtype'] == 'textarea'">
                     <textarea style="width: 100%;" [ngModel]="f['@value']" readonly></textarea>
@@ -49,6 +49,10 @@
                 <div class="FieldName">{{f['@label']}}</div>
                 <div>{{f['@value']}}</div>
             </div>-->
+            
+
         </div>
+        
+
     </div>
 </div>

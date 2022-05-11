@@ -8,7 +8,7 @@
         <d3s-loading [isLoading]="loading"></d3s-loading>
         <table>
             <tr class="panel-row" *ngIf="data?.Levels">
-                <td class="panel-row-label">Path:</td>
+                <td class="panel-row-label" i18n>Path:</td>
                 <td class="panel-row-control">
                     <div *ngFor="let field of data?.Levels; let ii = index">
                         <span *ngIf="ii == 0"></span>
@@ -19,7 +19,7 @@
                 </td>
             </tr>
             <tr class="panel-row" *ngIf="data?.AssetID && data?.AssetID > 0">
-                <td class="panel-row-label">Asset ID</td>
+                <td class="panel-row-label" i18n>Asset ID</td>
                 <td class="panel-row-control">
                     {{data.AssetID}}
                 </td>
@@ -31,7 +31,7 @@
                 </td>
             </tr>
             <tr class="panel-row" *ngIf="data?.WorkflowTypeUID">
-                <td class="panel-row-label">Workflow Type UID</td>
+                <td class="panel-row-label" i18n>Workflow Type UID</td>
                 <td class="panel-row-control" [innerHtml]="data.WorkflowTypeUID"></td>
             </tr>
 
@@ -52,7 +52,7 @@
                                     <span>{{i != 0 ? ',' : ''}}<a style="margin:0px;" href="tag/{{tag.uid}}">{{tag.Value}}</a></span>
                                 </ng-container>
                             </ng-container>
-                            <ng-container *ngIf="field.Type == 'Color'" >
+                            <ng-container *ngIf="field.Type == 'Color'">
                                 <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
                             </ng-container>
                             <span *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON' && field.Type != 'Tag' && field.Type != 'Color'" [innerText]="field.Value"></span>
@@ -63,6 +63,6 @@
         </table>
     </div>
     <p-footer>
-        <button igButton type="button" (click)="closeDialog()" label="Close"></button>
+        <button igButton type="button" (click)="closeDialog()" i18n-label label="Close"></button>
     </p-footer>
 </p-dialog>

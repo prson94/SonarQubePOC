@@ -34,7 +34,7 @@ export class AdminHomeComponent  {
 
         if (files[0] != null) {
             if (files[0].size > (1024 * 1000)) {
-                this.messagesService.showError('File too large.', `Background image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+                this.messagesService.showError($localize`File too large.`, $localize`Background image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
                 return;
             }
         }

@@ -2,7 +2,7 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Title
             </div>
             <div>
@@ -12,7 +12,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Description
             </div>
             <div style="width: 95%">
@@ -32,7 +32,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Response Type
             </div>
             <div>
@@ -45,7 +45,7 @@
     </div>
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Recipient Type
             </div>
             <div>
@@ -56,7 +56,7 @@
             </div>
         </div>
         <div *ngIf="step.settings.MessageRecipientType == 'SpecificUser'" class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Recipient
             </div>
             <div>
@@ -71,7 +71,7 @@
             </d3s-workflow-responsibility-selector>
         </div>
         <div *ngIf="step.settings.MessageRecipientType == 'Group'" class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Recipient Group
             </div>
             <div>
@@ -86,25 +86,25 @@
         <div class="col s12">
             <ng-container *ngIf="objectType == 'IssueType'">
                 <div>
-                    <p-checkbox igCheckbox binary="true" label="Allow resource reassignment?" [ngModel]="allowReassignResource" (ngModelChange)="allowReassignResource = $event; step.fields.form['@allowReassignResource'] = $event; stepChange.emit(step);"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Allow resource reassignment?" [ngModel]="allowReassignResource" (ngModelChange)="allowReassignResource = $event; step.fields.form['@allowReassignResource'] = $event; stepChange.emit(step);"></p-checkbox>
                 </div>
                 <div>
-                    <p-checkbox igCheckbox binary="true" label="Allow object reassignment?" [ngModel]="allowReassignObject" (ngModelChange)="allowReassignObject = $event; step.fields.form['@allowReassignObject'] = $event; stepChange.emit(step);"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Allow object reassignment?" [ngModel]="allowReassignObject" (ngModelChange)="allowReassignObject = $event; step.fields.form['@allowReassignObject'] = $event; stepChange.emit(step);"></p-checkbox>
                 </div>
             </ng-container>
             <div>
-                <p-checkbox igCheckbox binary="true" label="Send form email?" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);"></p-checkbox>
+                <p-checkbox igCheckbox binary="true" i18n-label label="Send form email?" [ngModel]="step.settings.SendFormEmail" (ngModelChange)="step.settings.SendFormEmail = $event; stepChange.emit(step);"></p-checkbox>
             </div>
             <div>
                 <div>
-                    <p-checkbox igCheckbox binary="true" label="Include previous form responses" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" i18n-label label="Include previous form responses" [ngModel]="step.settings.IncludePreviousFormResponses" (ngModelChange)="step.settings.IncludePreviousFormResponses = $event; stepChange.emit(step)"></p-checkbox>
                 </div>
             </div>
         </div>
     </div>
     <div class="row" style="padding-top: 8px" *ngIf="step.settings.SendFormEmail == true">
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Subject
             </div>
             <div>
@@ -112,7 +112,7 @@
             </div>
         </div>
         <div class="col s12">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Body
             </div>
             <div style="width: 95%">
@@ -149,9 +149,9 @@
                      (onRowSelect)="select($event.index)">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>Label</th>
-                        <th>Type</th>
-                        <th>Required?</th>
+                        <th i18n>Label</th>
+                        <th i18n>Type</th>
+                        <th i18n>Required?</th>
                         <th style="width: 40px"></th>
                     </tr>
                 </ng-template>
@@ -183,7 +183,7 @@
     <div *ngIf="formMode == FormMode.Adding">
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Field Type
                 </div>
                 <div>
@@ -211,7 +211,7 @@
         </div>
         <div *ngIf="newField['@type'] == 'relationshipType' && !isListLoading" class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Relationship Type
                 </div>
                 <div>
@@ -224,7 +224,7 @@
         </div>
         <div *ngIf="newField['@type'] == 'list' && !isListLoading" class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     List
                 </div>
                 <div>
@@ -238,21 +238,21 @@
         <div class="row">
             <div class="col s12">
                 <div class="FieldName">
-                    <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" i18n-label label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
                 </div>
             </div>
         </div>
         <div class="row" style="padding-top: 8px;">
             <div class="col s12">
-                <button pButton type="button" label="Add" (click)="save()" [disabled]="!validateField()"></button>
-                <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                <button pButton type="button" i18n-label label="Add" (click)="save()" [disabled]="!validateField()"></button>
+                <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
             </div>
         </div>
     </div>
     <div *ngIf="formMode == FormMode.Editing">
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Label
                 </div>
                 <div>
@@ -262,14 +262,14 @@
         </div>
         <div *ngIf="usedIn?.length > 0" class="row">
             <div class="col s12">
-                <div>
+                <div i18n>
                     The type cannot be changed because this field is used in a condition on the workflow
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Field Type
                 </div>
                 <div>
@@ -287,7 +287,7 @@
         </div>
         <div *ngIf="newField['@type'] == 'relationshipType' && !isListLoading" class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Relationship Type
                 </div>
                 <div>
@@ -300,7 +300,7 @@
         </div>
         <div *ngIf="newField['@type'] == 'list' && !isListLoading" class="row">
             <div class="col s12">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     List
                 </div>
                 <div>
@@ -314,39 +314,39 @@
         <div class="row">
             <div class="col s12">
                 <div class="FieldName">
-                    <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
+                    <p-checkbox igCheckbox binary="true" [disabled]="newField['@type'] =='boolean'" i18n-label label="Is Required?" [(ngModel)]="newField['@required']"></p-checkbox>
                 </div>
             </div>
         </div>
         <div class="row" style="padding-top: 8px;">
             <div class="col s12">
-                <button pButton type="button" label="Save" (click)="save()" [disabled]="!validateField()"></button>
-                <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                <button pButton type="button" i18n-label label="Save" (click)="save()" [disabled]="!validateField()"></button>
+                <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
             </div>
         </div>
     </div>
     <div *ngIf="formMode == FormMode.Deleting">
         <div class="row" *ngIf="usedIn.length < 1">
             <div class="col s12">
-                <div>
+                <div i18n>
                     Are you sure you want to delete the {{deletingField['@id']}} field?
                 </div>
                 <div>
-                    <button pButton type="button" label="Delete" (click)="confirmDelete()"></button>
-                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                    <button pButton type="button" i18n-label label="Delete" (click)="confirmDelete()"></button>
+                    <button pButton type="button" i18n-label label="Cancel" (click)="formMode = FormMode.Default"></button>
                 </div>
             </div>
         </div>
         <div class="row" *ngIf="usedIn.length > 0">
             <div class="col s12">
-                <div>
+                <div i18n>
                     The field {{deletingField['@id']}} cannot be deleted because it is used in the following transition conditions:
                 </div>
                 <div *ngFor="let u of usedIn" style="margin-left: 8px;">
                     &bull; {{(u.transitionName == '' || u.transitionName == null) ? '[No name]' : u.transitionName }}
                 </div>
                 <div style="padding-top: 8px">
-                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                    <button pButton type="button" i18n-label label="Cancel" (click)="formMode = FormMode.Default"></button>
                 </div>
             </div>
         </div>

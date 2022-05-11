@@ -13,7 +13,7 @@ import { Subject } from 'rxjs';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <input type="text" [hidden]="!simpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
     <p-table #dt
              [value]="items"
              selectionMode="single"
@@ -27,15 +27,15 @@ import { Subject } from 'rxjs';
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'ObjectName'">
-                    Name
+                    <ng-container i18n>Name</ng-container>
                     <d3s-sortIcon [field]="'ObjectName'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'ResponsibilityTypeName'">
-                    Role
+                    <ng-container i18n>Role</ng-container>
                     <d3s-sortIcon [field]="'ResponsibilityTypeName'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'SecurityAssetName'">
-                    Via
+                    <ng-container i18n>Via</ng-container>
                     <d3s-sortIcon [field]="'SecurityAssetName'"></d3s-sortIcon>
                 </th>
             </tr>
@@ -72,7 +72,7 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
     @Input() simpleFilter: boolean = false;
     isLoading = false;
     rowsPerPage: number = this.defaultInitialItemsPerPage;
-    title: string = 'Resource Responsibility'
+    title: string = $localize`Resource Responsibility`;
     private items: ResponsibilityDetailForResource[] = new Array<ResponsibilityDetailForResource>();
     private destroy = new Subject<void>();
 
@@ -96,7 +96,7 @@ export class ResourceResponsibilityGridComponent extends BaseComponent implement
             this.rowsPerPage = rowsPerPage[this.title] || this.defaultInitialItemsPerPage;
         });
     }
-    
+
     ngOnChanges() {
         this.load();
     }

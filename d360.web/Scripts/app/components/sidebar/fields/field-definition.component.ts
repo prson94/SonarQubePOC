@@ -71,7 +71,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
                         this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
                             res => {
                                 if (res) {
-                                    this.objectName = 'Field Definitions for ' + (res.Name ? res.Name : res.DisplayValue);
+                                    this.objectName = $localize`Field Definitions for` + " " + (res.Name ? res.Name : res.DisplayValue);
                                     if (this.objectType.toLowerCase() === 'intersecttype') {
                                         this.relationshipTypeUid = res.UID;
                                     }

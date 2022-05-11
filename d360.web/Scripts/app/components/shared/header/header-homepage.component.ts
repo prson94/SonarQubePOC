@@ -10,18 +10,18 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-header-homepage',
     template:
-    `
+        `
         <div *ngIf="visible" class="show-on-medium-and-down hide-on-med-and-up" (click)="handleClick()">
             <div class="mini-menu-line">
                 <div class="check-gutter">
                     <i *ngIf="isHomePageItem && !isLoading" class="fa fa-check"></i>
                     <i *ngIf="isLoading" style="color: #000;" class="fa fa-spinner fa-spin"></i>
                 </div>
-                <div class="text">Set as Home Page</div>
+                <div class="text" i18n>Set as Home Page</div>
                 <div class="expand-gutter"></div>            
             </div>
         </div>
-        <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isHomePageItem }"  [title]="isHomePageItem ? 'Remove home page' : 'Make this my home page'" >
+        <div *ngIf="visible" (click)="handleClick()" class="header-button hide-on-med-and-down" [ngClass]="{'active' : isHomePageItem }"  [title]="title" >
             <i *ngIf="!isLoading" class="fa fa-home"></i><i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>    
         </div>
     `,
@@ -36,6 +36,8 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     public isLoading = false;
 
     private name: string;
+
+    get title(): string { return this.isHomePageItem ? $localize`Remove home page` : $localize`Make this my home page` };
 
     constructor(
         private favoritesService: FavoritesService,
@@ -80,7 +82,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         this.isLoading = true;
         let f = new FavoriteApiModel();
         f.Name = this.name;
-        f.Route = this.currentUri;   
+        f.Route = this.currentUri;
         this.favoritesService.toggleHomePageV2(f).subscribe(
             fav => {
                 this.headerActionsService.emitFavoritesChange();

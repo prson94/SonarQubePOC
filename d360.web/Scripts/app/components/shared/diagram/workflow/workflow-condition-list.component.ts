@@ -20,7 +20,7 @@ import { BaseComponent } from '../../../shared/base.component';
                                (ngModelChange)="connectorChange.emit($event)"
                                [value]="false"
                                style="width: 15px;height:20px;" />
-                        <div class="FieldName" style="display:inline-block;">
+                        <div class="FieldName" style="display:inline-block;" i18n>
                             Satisfy any
                         </div>
                     </div>
@@ -29,9 +29,9 @@ import { BaseComponent } from '../../../shared/base.component';
     <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
-                <th>Field Name</th>
-                <th>Operator</th>
-                <th>Value</th>
+                <th i18n>Field Name</th>
+                <th i18n>Operator</th>
+                <th i18n>Value</th>
                 <th *ngIf="!readonly"></th>
             </tr>
         </ng-template>

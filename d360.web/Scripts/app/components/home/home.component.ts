@@ -1,19 +1,19 @@
-﻿import {Component, OnDestroy, OnInit} from "@angular/core";
-import {NavigationEnd, Router} from "@angular/router";
-import {Title} from "@angular/platform-browser";
+﻿import { Component, OnDestroy, OnInit } from "@angular/core";
+import { NavigationEnd, Router } from "@angular/router";
+import { Title } from "@angular/platform-browser";
 
-import {Breadcrumb} from "../../models/breadcrumb.model";
-import {WorkflowType} from "../../models/workflow.model";
-import {Dashboard} from "../../models/dashboard.model";
+import { Breadcrumb } from "../../models/breadcrumb.model";
+import { WorkflowType } from "../../models/workflow.model";
+import { Dashboard } from "../../models/dashboard.model";
 
-import {HeaderBreadcrumbService} from "../../services/header-breadcrumb.service";
-import {SecondaryNavService} from "../../services/right-sidebar.service";
-import {WebAnalyticsService} from "../../services/web-analytics.service";
-import {DashboardService} from "../../services/dashboard.service";
+import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
+import { SecondaryNavService } from "../../services/right-sidebar.service";
+import { WebAnalyticsService } from "../../services/web-analytics.service";
+import { DashboardService } from "../../services/dashboard.service";
 
-import {SiteUrlHelpers} from "../../static/site-url-helpers";
+import { SiteUrlHelpers } from "../../static/site-url-helpers";
 
-import {BaseComponent} from "../shared/base.component";
+import { BaseComponent } from "../shared/base.component";
 import { CommentType } from "../../models/social.model";
 import { CompanySettingsService } from "../../services/settings.service";
 import { CompanySettingEnum } from "../../models/settings.model";
@@ -51,7 +51,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public numTiles: number = 3;
     private colSize = 4;
     public hasResults = false;
-    public dashboard: Dashboard = null;    
+    public dashboard: Dashboard = null;
     private sub;
 
     constructor(
@@ -79,7 +79,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Home"));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Home`));
 
         this.clearSidebar();
 
@@ -97,7 +97,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         if (bgImage !== null && bgImage !== "") {
             this.backgroundImage = bgImage;
         }
-        
+
         this.numTiles = (this.showAssignmentTile ? 1 : 0)
             + (this.showBoardTile ? 1 : 0)
             + (this.showActivityTile ? 1 : 0);

@@ -14,27 +14,27 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="allowSort">
-                    Step Name
+                    <ng-container i18n>Step Name</ng-container>
                     <d3s-sortIcon *ngIf="allowSort" [field]="'Name'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="allowSort" style="width:  90px">
-                    Complete
+                    <ng-container i18n>Complete</ng-container>
                     <d3s-sortIcon *ngIf="allowSort" [field]="'Complete'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="allowSort">
-                    Activity Type
+                    <ng-container i18n>Activity Type</ng-container>
                     <d3s-sortIcon *ngIf="allowSort" [field]="'ActivityType'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="allowSort" [hidden]="!showAssigneeColumn">
-                    Assignee
+                    <ng-container i18n>Assignee</ng-container>
                     <d3s-sortIcon *ngIf="allowSort" [field]="'Assignee'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="allowSort">
-                    Date Started
+                    <ng-container i18n>Date Started</ng-container>
                     <d3s-sortIcon *ngIf="allowSort" [field]="'StartedOn'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="allowSort">
-                    Date Completed
+                    <ng-container i18n>Date Completed</ng-container>
                     <d3s-sortIcon *ngIf="allowSort" [field]="'CompletedOn'"></d3s-sortIcon>
                 </th>
             </tr>

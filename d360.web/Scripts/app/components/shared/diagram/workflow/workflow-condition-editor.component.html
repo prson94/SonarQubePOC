@@ -1,20 +1,20 @@
 ﻿<div class="row">
     <div class="col s12">
-        <div class="FieldName">
+        <div class="FieldName" i18n>
             Field
         </div>
         <div>
-            <select style="width:95%;" placeholder="Choose a value" [ngModel]="selectedField" (ngModelChange)="selectField($event);">
+            <select style="width:95%;" i18n-placeholder placeholder="Choose a value" [ngModel]="selectedField" (ngModelChange)="selectField($event);">
                 <option></option>
                 <option *ngFor="let i of fieldList" [value]="i.value">{{i.label}}</option>
             </select>
         </div>
         <div *ngIf="selectedType != 'control'">
-            <div class="FieldName">
+            <div class="FieldName" i18n>
                 Operator
             </div>
             <div>
-                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] != '')">
+                <select style="width:95%;" i18n-placeholder placeholder="Choose a value" [(ngModel)]="condition['@Operator']" [disabled]="!(condition['@FieldTypeID'] != '')">
                     <option></option>
                     <option *ngFor="let i of operators" [value]="i.value">{{i.label}}</option>
                 </select>
@@ -22,11 +22,11 @@
         </div>
         <div *ngIf="condition['@FieldTypeID'] != '' && ['C','P','NP'].indexOf(condition['@Operator']) == -1">
             <div *ngIf="selectedType == 'boolean' || selectedType == 'bool'">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Value
                 </div>
                 <div>
-                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)">
+                    <select style="width:95%;" i18n-placeholder placeholder="Choose a value" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)">
                         <option></option>
                         <option *ngFor="let b of bool" [value]="b.value">{{b.label}}</option>
                     </select>
@@ -34,7 +34,7 @@
             </div>
 
             <div *ngIf="selectedType == 'date' || selectedType == 'datetime'">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Days Since
                 </div>
                 <div>
@@ -43,11 +43,11 @@
             </div>
 
             <div *ngIf="selectedType == 'lookup' || selectedType == 'list' || selectedType == 'relationshiptype'">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Value
                 </div>
                 <div>
-                    <select style="width:95%;" placeholder="Choose a value" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)">
+                    <select style="width:95%;" i18n-placeholder placeholder="Choose a value" [ngModel]="condition['@Value']" (ngModelChange)="changeValue($event)">
                         <option></option>
                         <option *ngFor="let l of lookups" [value]="l.value">{{l.label}}</option>
                     </select>
@@ -55,7 +55,7 @@
             </div>
 
             <div *ngIf="selectedType == 'decimal' || selectedType == 'number' || selectedType == 'integer'">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Value
                 </div>
                 <div>
@@ -64,7 +64,7 @@
             </div>
 
             <div *ngIf="selectedType == 'text'">
-                <div class="FieldName">
+                <div class="FieldName" i18n>
                     Value
                 </div>
                 <div>
@@ -81,7 +81,7 @@
 </div>
 <div class="row">
     <div class="col s12" style="float: right">
-        <button type="button" pButton label="Cancel" (click)="close()"></button>
-        <button type="button" pButton label="Add" (click)="save()" [disabled]="!valid()"></button>
+        <button type="button" pButton i18n-label label="Cancel" (click)="close()"></button>
+        <button type="button" pButton i18n-label label="Add" (click)="save()" [disabled]="!valid()"></button>
     </div>
 </div>

@@ -152,8 +152,8 @@ export class SidePanelComponent extends BaseComponent {
 
         if (this.hasFilter) {
             this.buttons.push(new SidePanelButton({
-                label: 'Filters',
-                tooltip: 'Filters',
+                label: $localize`Filters`,
+                tooltip: $localize`Filters`,
                 disabledTooltip: '',
                 nothingSelectedMessage: '',
                 notApplicableMessage: '',
@@ -166,12 +166,12 @@ export class SidePanelComponent extends BaseComponent {
 
         if (this.hasDetail) {
             this.buttons.push(new SidePanelButton({
-                label: 'Information',
-                tooltip: 'Information',
+                label: $localize`Information`,
+                tooltip: $localize`Information`,
                 disabledTooltip: null,
-                nothingSelectedMessage: 'Select an item from the list to display its properties',
-                notApplicableMessage: 'Information data is not available for the selected item',
-                multipleSelectedMessage: 'Select a single item to display it’s properties',
+                nothingSelectedMessage: $localize`Select an item from the list to display its properties`,
+                notApplicableMessage: $localize`Information data is not available for the selected item`,
+                multipleSelectedMessage: $localize`Select a single item to display it’s properties`,
                 key: 'detail',
                 icon: 'fa-info-circle',
                 disabled: false,
@@ -181,12 +181,12 @@ export class SidePanelComponent extends BaseComponent {
 
         if (this.hasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             this.buttons.push(new SidePanelButton({
-                label: 'Profiling',
-                tooltip: 'Profiling',
-                disabledTooltip: 'Profiling data is not available for the selected item',
-                nothingSelectedMessage: 'Select an item from the list to display its profiling data',
-                notApplicableMessage: 'Profiling data is not available for the selected item',
-                multipleSelectedMessage: 'Select a single item to display it’s profiling information',
+                label: $localize`Profiling`,
+                tooltip: $localize`Profiling`,
+                disabledTooltip: $localize`Profiling data is not available for the selected item`,
+                nothingSelectedMessage: $localize`Select an item from the list to display its profiling data`,
+                notApplicableMessage: $localize`Profiling data is not available for the selected item`,
+                multipleSelectedMessage: $localize`Select a single item to display it’s profiling information`,
                 key: 'dataprofile',
                 icon: 'fa-bar-chart',
                 disabled: this.disableProfiling,

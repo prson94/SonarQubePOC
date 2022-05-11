@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, OnChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import {  WorkflowStepDetail } from '../../../models/workflow.model';
+import { WorkflowStepDetail } from '../../../models/workflow.model';
 import * as _ from 'lodash';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -13,12 +13,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
     <div class="row">
         <div class="col s12">
             <div>
-                Completed Forms ({{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}/{{step.ItemFields['@TotalResources']}}):
+                <ng-container i18n>Completed Forms </ng-container> ({{step.ItemFields['@NumberOfResponses'] ? step.ItemFields['@NumberOfResponses'] : 0 }}/{{step.ItemFields['@TotalResources']}}):
             </div>
             <ng-container *ngFor="let form of step.ItemFields.form">
                 <div class="panel-section">        
                     <div *ngIf="form.resourceName != null">
-                        Form completed by {{form.resourceName}}
+                       <ng-container i18n>Form completed by</ng-container> {{form.resourceName}}
                     </div>
                     <div *ngFor="let f of form.field">
                         <ng-container [ngSwitch]="f['@fieldtype']">
@@ -41,7 +41,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <ng-container *ngIf="step.ItemSettings.hasPendingForms == true && pendingFormList !=''">
                <div class="row panel-section warning">
                         <div class="col s11">
-                                    Awaiting forms from: {{pendingFormList}}
+                                    <ng-container i18n>Awaiting forms from</ng-container>: {{pendingFormList}}
                         </div>   
 			            <div class="col s1" style="align:right;">
                              <a  *ngIf="step.IsAssignedLoginUser" style="cursor:pointer;color:#000000;" (click)="doSelect()"><i class="fa fa-edit"></i></a>
@@ -94,7 +94,7 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     }
 
     getDate(val: string): string {
-       if (!isNaN(Date.parse(val)))
+        if (!isNaN(Date.parse(val)))
             return new Date(val).toLocaleDateString();
         else
             return "";
@@ -113,5 +113,5 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     doSelect() {
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_FORM}/${this.step.TypeID}/${this.step.ItemStepID}/${this.step.ItemID}`);
 
-  }
+    }
 }

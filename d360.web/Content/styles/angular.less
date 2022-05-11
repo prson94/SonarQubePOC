@@ -19,6 +19,15 @@
 
 @import "./infogix-ui/infogix-ui.less";
 
+.logo-img {
+  content: var(--headerLogoUri);
+}
+
+//hide button spinner after element to avoid having double backgrounds
+.ig-button-spinner::after {
+  content: none !important;
+}
+
 .link-context-menu {
   background-color: white;
   padding: 4px 0;
@@ -37,7 +46,7 @@
   top: 0;
   left: 0;
   background: white;
-  background-image: url(../../Content/images/HomeBG.png);
+  background-image: var(--homeBackgroundUri);
   background-position: bottom;
   background-repeat: no-repeat;
   background-size: cover;
@@ -49,7 +58,7 @@
     position: absolute;
     left: 0px;
     right: 0px;
-    background-image: url(/Content/images/PreciselyLogo@2x.png);
+    background-image: var(--headerLogoUri);
     background-repeat: no-repeat;
     background-position: left top;
     background-size: auto 40px;
@@ -61,7 +70,7 @@
       width: 100%;
       height: 42px;
       z-index: -1;
-      background: linear-gradient(to right, rgb(52, 7, 118), rgb(40, 0, 87));
+      background: var(--headerBackColor);
     }
   }
 
@@ -124,7 +133,7 @@
 }
 
 .ng-loading-image {
-  background-image: url('/content/images/PreciselyLogo@2x.png');
+  background-image: var(--headerLogoUri);
   background-size: auto 60px;
   background-repeat: no-repeat;
   height: 60px;
@@ -137,7 +146,7 @@
 }
 
 a {
-  color: @ig-purple;
+  color: var(--tabLinkColor);
 
   &.disabled {
     color: @ig-black;
@@ -170,12 +179,16 @@ body {
   font-family: 'Precisely', sans-serif;
   font-size: 14px;
   overflow: hidden;
-  background-color: @ig-grey-t5;
-  background-image: url('../../Content/images/HomeBG.png');
-  background-position: bottom;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-attachment: fixed;
+  background-color: var(--backColor);
+  background-image: none;
+
+  &.show-image {
+    background-image: var(--homeBackgroundUri);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+  }
 }
 
 .background-image:before {
@@ -203,9 +216,9 @@ input {
 
 nav.top {
   line-height: 40px;
-  color: @ig-white;
+  color: var(--calculatedHeaderTextColor);
   height: 40px;
-  background: linear-gradient(to right, #340776, #280057);
+  background: var(--headerBackColor);
   display: inline-flex;
   flex-wrap: nowrap;
   min-width: 800px;
@@ -651,7 +664,8 @@ div.powerbi iframe {
 /* raise issue*/
 
 .issue-button {
-  background: @ig-pink-t1;
+  background: var(--buttonBackColor);
+  color: var(--calculatedButtonTextColor);
   border-radius: 4px;
   border: none;
   line-height: 25px;
@@ -660,11 +674,35 @@ div.powerbi iframe {
   white-space: nowrap;
 
   &:hover {
-    background: @ig-pink;
+    background: var(--buttonBackColor);
+
+    ::after {
+      content: "";
+      position: absolute;
+      border-radius: 4px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0.3;
+    }
   }
 
   &:active {
-    background: @ig-pink-s3;
+    background: var(--buttonBackColor);
+
+    ::after {
+      content: "";
+      position: absolute;
+      border-radius: 4px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      opacity: 0.3;
+    }
   }
 }
 
@@ -998,6 +1036,8 @@ div.breadcrumbs {
         }
 
         &.breadcrumb-link {
+          color: var(--breadcrumbLinkColor);
+
           &:hover, &.hover {
             cursor: pointer;
             text-decoration: none;
@@ -1030,6 +1070,8 @@ div.breadcrumbs {
       color: white;
 
       &.breadcrumb-link {
+        color: var(--breadcrumbLinkColor);
+
         &:hover, &.hover {
           cursor: pointer;
         }
@@ -1059,7 +1101,7 @@ div.breadcrumbs {
 }
 
 a.breadcrumb {
-  color: white;
+  color: var(--breadcrumbLinkColor);
   display: inline-block;
 
   .parent {
@@ -1105,6 +1147,8 @@ a.breadcrumb {
     }
 
     &.breadcrumb-link {
+      color: var(--breadcrumbLinkColor);
+
       &:hover, &.hover {
         cursor: pointer;
         text-decoration: underline;
@@ -1122,6 +1166,7 @@ a.breadcrumb {
 
   i {
     padding: 0 8px;
+    color: var(--breadcrumbLinkColor);
   }
 }
 
@@ -1336,7 +1381,7 @@ a.breadcrumb {
       line-height: 26px;
       border-radius: 13px !important;
       font-size: 14px !important;
-      background: @ig-purple-s3;
+      background: var(--headerBackColor);
       margin-right: 4px;
       color: white;
       border-radius: 3px;
@@ -2010,7 +2055,6 @@ div.home-image-title-text {
 }
 
 .tooltip-child a {
-  color: @ig-purple !important;
   text-decoration: underline;
 }
 
@@ -2724,7 +2768,7 @@ div.home-image-title-text {
         a {
           display: inline;
           font-size: 14px;
-          color: @ig-purple;
+          color: var(--tabLinkColor);
         }
 
         p {
@@ -2813,16 +2857,55 @@ modal-overlay .modal-dialog .content {
     }
 
     button.button {
-      background: @ig-purple-t1;
-      color: @ig-white;
-      border-radius: 4px;
+      background: var(--primaryButtonBackColor);
+      color: var(--calculatedPrimaryButtonTextColor);
 
-      &:hover {
-        background: @ig-purple;
+      &:not(:disabled):hover, &.hover {
+        background: var(--primaryButtonBackColor);
+
+        ::after {
+          content: "";
+          position: absolute;
+          border-radius: @ig-field-border-radius;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: white;
+          opacity: 0.3;
+        }
       }
 
-      &:active {
-        background: @ig-purple-s3;
+      &:not(:disabled):active, &.active {
+        background: var(--primaryButtonBackColor);
+
+        ::after {
+          content: "";
+          position: absolute;
+          border-radius: @ig-field-border-radius;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: black;
+          opacity: 0.3;
+        }
+      }
+
+      &:disabled {
+        background: var(--primaryButtonBackColor);
+
+        ::after {
+          content: "";
+          position: absolute;
+          border-radius: @ig-field-border-radius;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: white;
+          opacity: 0.6;
+        }
       }
     }
   }
@@ -2899,19 +2982,55 @@ button.button, a.link-button {
   }
 
   &.primary {
-    background: @ig-purple;
-    color: @ig-white;
+    background: var(--primaryButtonBackColor);
+    color: var(--calculatedPrimaryButtonTextColor);
 
     &:not(:disabled):hover, &.hover {
-      background: @ig-purple;
+      background: var(--primaryButtonBackColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        border-radius: @ig-field-border-radius;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        opacity: 0.3;
+      }
     }
 
     &:not(:disabled):active, &.active {
-      background: @ig-purple-s3;
+      background: var(--primaryButtonBackColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        border-radius: @ig-field-border-radius;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: black;
+        opacity: 0.3;
+      }
     }
 
-    &:disabled, &.hover {
-      background: @ig-purple;
+    &:disabled {
+      background: var(--primaryButtonBackColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        border-radius: @ig-field-border-radius;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        opacity: 0.6;
+      }
     }
   }
 
@@ -3113,7 +3232,7 @@ button.tab, button.tab-scroller {
   background: none;
   border: none;
   border-radius: 0;
-  color: @ig-purple;
+  color: var(--tabLinkColor);
   border-bottom: 3px solid transparent;
   border-top: 3px solid transparent;
 
@@ -3209,7 +3328,7 @@ button.tab-scroller {
   text-align: center;
   white-space: nowrap;
   line-height: 1;
-  background: @ig-purple;
+  background: var(--tabLinkColor);
   color: white;
   border: none;
   border-radius: 3px;
@@ -3275,7 +3394,7 @@ button.tab-scroller {
     min-width: 32px;
     max-width: 32px;
     border-radius: 16px;
-    background: @ig-purple-s3;
+    background: var(--headerBackColor);
 
     img {
       max-height: 20px;
@@ -4183,7 +4302,7 @@ button.tab-scroller {
 .action-tile-span {
   padding-right: 5px;
   cursor: pointer;
-  color: @ig-purple;
+  color: var(--tabLinkColor);
   font-weight: normal;
   font-size: 14px;
 }
@@ -4471,7 +4590,7 @@ d3s-header-typeahead-search {
 
 .hero-search-input {
   display: flex;
-  background: @ig-purple-s3;
+  background: var(--headerBackColor);
   border-radius: 8px;
   padding: 42px;
   white-space: nowrap;
@@ -5609,12 +5728,10 @@ d3s-header-typeahead-search {
 
   .value {
     font-size: 14px;
-    color: @ig-purple;
+    color: var(--tabLinkColor);
     text-decoration: underline;
     font-weight: normal;
   }
-
-
 
   &:hover {
     .tooltip-content {
@@ -6191,7 +6308,7 @@ table {
         position: relative;
         font-size: 14px;
         width: initial;
-        color: @ig-purple;
+        color: var(--tabLinkColor);
         line-height: 11px;
         background: none;
       }
@@ -6715,7 +6832,6 @@ table {
       background: none;
       border: none;
       border-radius: 0;
-      color: @ig-purple;
       border-bottom: 3px solid transparent;
       outline: none;
 
@@ -6777,7 +6893,7 @@ table {
 }
 
 .cell-link {
-  color: @ig-purple;
+  color: var(--tabLinkColor);
 
   &:hover {
     text-decoration: underline;

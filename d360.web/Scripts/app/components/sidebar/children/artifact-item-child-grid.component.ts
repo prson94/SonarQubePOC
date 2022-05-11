@@ -10,8 +10,6 @@ import { SortOrder } from '../../../models/enums.model';
 import { Artifacts } from '../../../models/artifacts.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { StringConstants } from '../../../static/string-constants';
 import { debounceTime } from 'rxjs/operators';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
@@ -40,7 +38,10 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
     private totalRecords: number = 10000;
+
     private useGraph: boolean = true;
+
+    exportMsg: string = $localize`Export not available for over ${this.maxExportRows} rows`;
 
     numberOfRows: number = this.defaultInitialItemsPerPage;
     currentPage: number = 1;
@@ -221,7 +222,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             .downloadAssetsExcel(
                 this.subjectUid,
                 this.getParams(),
-                'Filtered ' + FileName + ' list',
+                $localize`Filtered ${FileName} list`,
                 () => { this.isLoading = false; }
             );
     }

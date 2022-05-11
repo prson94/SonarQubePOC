@@ -51,10 +51,11 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
     }
 
     examples = [
-        { title: "Email", value: "^.+@.+..+$" },
+        { title: "Email", value: "^$|\\b([A-Za-z0-9'_\\.-]+)@([\\dA-Za-z\\.-]+)\\.([A-Za-z\\.]{2,6})\\b$" },
         { title: "IP Address", value: "^(?:\\d{1,3}.){3}\\d{1,3}$" },
         { title: "North American Phone Number", value: "^\\(?([0-9]{3})\\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$" },
-        { title: "URL", value: "^(https?:(//))?(\\S+.\\w{2,}\\b)((/)(\\S*))?$" },
+        { title: "Public URL", value: "^$|\\b(http(s)?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?\\b$" },
+        { title: "Internal URL", value: "^$|\\b(http(s)?:\\/\\/){1}([\\da-z\\.-]+)([\\/\\w \\.-]*)*\\/?\\b$" },
         { title: "US Zip Code", value: "^[0-9]{5}(?:-[0-9]{4})?$" }
     ]
 
@@ -102,7 +103,7 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
         if (value == null || value.trim() === '') {
             if (this.required !== false) {
                 return {
-                    required: "Value required"
+                    required: $localize`Value required`
                 };
             }
 
@@ -111,13 +112,13 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
 
         if (!this.isValidRegex(value)) {
             return {
-                regexp: "You have provided an invalid regular expression"
+                regexp: $localize`You have provided an invalid regular expression`
             };
         }
 
         if (!value.startsWith("^") || !value.endsWith("$")) {
             return {
-                regexp: "Regular expression should start with ^ anchor and end with $ anchor"
+                regexp: $localize`Regular expression should start with ^ anchor and end with $ anchor`
             };
         }
 

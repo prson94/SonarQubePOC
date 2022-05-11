@@ -117,8 +117,8 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
         let message = "";
         if (this.totalRecords) {
             message = (this.totalRecords > 500) ?
-                "Download is limited to 500 rows or less. Please filter this list and try your download again." :
-                "Download these rule results";
+                $localize`Download is limited to 500 rows or less. Please filter this list and try your download again.` :
+                $localize`Download these rule results`;
         }
         return message;
     }
@@ -141,19 +141,22 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
     getMissingRuleResultMessage() {
         let message = "";
         if (this.selected && !this.selected.EffectiveDate) {
-            let operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation+""];
+            let operation = MetricRuleResultOperation[this.definition?.DataQuality?.ResultOperation + ""];
             if (operation) {
-                message = "For this scoring date, no rule results were found for this asset and rule. "
-                    + "A pass fraction of 0 will therefore be used in place of this missing result. As this measure uses the ";
+                let messagePart = ``;
                 if (operation === MetricRuleResultOperation.Maximum) {
-                    message += "maximum pass fraction, the measure score will most likely be unaffected by this.";
+                    messagePart += $localize`maximum pass fraction, the measure score will most likely be unaffected by this.`;
                 }
                 else if (operation === MetricRuleResultOperation.Minimum) {
-                    message += "minimum pass fraction, the measure score will be 0.";
+                    messagePart += $localize`minimum pass fraction, the measure score will be 0.`;
                 }
                 else { // (operation === MetricRuleResultOperation.Average)
-                    message += "average pass fraction, the measure score may be lower than expected.";
+                    messagePart += $localize`average pass fraction, the measure score may be lower than expected.`;
                 }
+
+                message = $localize`For this scoring date, no rule results were found for this asset and rule.
+                           A pass fraction of 0 will therefore be used in place of this missing result. As this measure uses the ${messagePart}`;
+
             }
         }
 

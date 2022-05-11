@@ -353,14 +353,14 @@ namespace igx.functions.databasetaskprocessor
                                                 case "QueueRebuild":
                                                     if (!string.IsNullOrEmpty(q.Custom))
                                                     {
-                                                        var queue = new AzureQueueSource();
+                                                        var queue = new AzureQueueSource(config);
                                                         switch (q.Custom)
                                                         {
                                                             case "AssetGraph":
-                                                                queue.CreateMessage(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = company.CompanyID });
+                                                                queue.CreateMessage(config["AssetGraphQueue"], new RebuildAssetGraphModel { CompanyID = company.CompanyID });
                                                                 break;
                                                             case "DisplayValue":
-                                                                queue.CreateMessage(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
+                                                                queue.CreateMessage(config["DisplayValueQueue"], new DisplayUpdateInfo { CompanyID = company.CompanyID, RebuildAll = true });
                                                                 break;
                                                             case "SearchIndex":
                                                                 ReindexModel model = new ReindexModel { CompanyID = company.CompanyID };
@@ -368,7 +368,7 @@ namespace igx.functions.databasetaskprocessor
                                                                 {
                                                                     model.Category = q.Object;
                                                                 }
-                                                                queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+                                                                queue.CreateMessage(config["SearchIndexQueue"], model);
                                                                 break;
                                                         }
                                                     }

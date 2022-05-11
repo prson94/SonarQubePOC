@@ -4,7 +4,7 @@ import { Location } from '@angular/common';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { WorkflowService } from '../../services/workflow.service';
-import { HeaderBreadcrumbService}  from '../../services/header-breadcrumb.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ObjectDetailService } from '../../services/object-detail.service';
@@ -13,7 +13,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowIssueType, ActionEditorModel } from '../../models/workflow.model';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { ObjectDetail } from '../../models/object-detail.model';
-import {Tag } from '../../models/tag.model';
+import { Tag } from '../../models/tag.model';
 import { D3SObjectHelpers } from '../../static/d3s-object-helpers';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { HeaderActions } from '../../models/header.model';
@@ -33,11 +33,11 @@ declare var CurrentResourceID;
              *ngIf="!isLoading">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <header>Take Action on {{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</header>
+                    <header i18n>Take Action on {{objectDetail.DisplayValue ? objectDetail.DisplayValue : objectDetail.Name}}</header>
                     <div class="row">
                         <div class="col s12"
                              *ngIf="selectedObjectId != null && selectedObjectType != null">
-                            <div class="FieldName">What action would you like to take?</div>
+                            <div class="FieldName" i18n>What action would you like to take?</div>
                         </div>
                         <div class="col s12"
                              *ngIf="selectedObjectId != null && selectedObjectType != null">
@@ -45,6 +45,7 @@ declare var CurrentResourceID;
                                 <select required
                                         name="availableTypes"
                                         style="width:100%"
+                                        i18n-placeholder
                                         placeholder="Choose a type"
                                         [(ngModel)]="issueType">
                                     <option></option>
@@ -112,7 +113,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Take Action');
+        this.setBrowserTitle(this.titleService, $localize`Take Action`);
         this.showHideFollow(false);
         if (this.headerBreadcrumbService.currentObject && this.headerBreadcrumbService.currentObject.id)
             this.objectID = this.headerBreadcrumbService.currentObject.id;
@@ -121,13 +122,13 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
             this.objectType = this.headerBreadcrumbService.currentObject.type;
 
         this.loadDetails(this.objectID, this.objectType);
-        
+
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Take Action`));
         this.clearSidebar();
-        this.secondaryNavService.setCurrentArea('Take Action', 'fa-paper-plane-o', null);
-        this.secondaryNavService.showHeader(true);                
+        this.secondaryNavService.setCurrentArea($localize`Take Action`, 'fa-paper-plane-o', null);
+        this.secondaryNavService.showHeader(true);
     }
 
     ngOnDestroy(): void {
@@ -147,27 +148,27 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         }
 
         this.isLoading = true;
-            this.resourcesService.getResource(this.resourceId)
-                .subscribe(res => {
-                    this.resourceUid = res.items[0].uid;      
-                    this.objectDetailService.getObject(objectId, objectType).subscribe(
-                        res => {
-                            this.objectDetail = res;
-                            this.selectedOption = 'current';
-                            this.selectedObjectId = this.objectID;
-                            this.selectedObjectType = this.objectType;
-                            if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
-                                this.selectedAssetUid = res.UID ?? res['Uid'];
-                            }              
-                            if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
-                                this.selectedAssetTypeUid = res.UID ?? res['Uid'];
-                            } 
-
-                            this.isLoading = false;
-                            this.loadIssueTypes()   
+        this.resourcesService.getResource(this.resourceId)
+            .subscribe(res => {
+                this.resourceUid = res.items[0].uid;
+                this.objectDetailService.getObject(objectId, objectType).subscribe(
+                    res => {
+                        this.objectDetail = res;
+                        this.selectedOption = 'current';
+                        this.selectedObjectId = this.objectID;
+                        this.selectedObjectType = this.objectType;
+                        if (this.selectedObjectType == StringConstants.ObjectArtifact || this.selectedObjectType == StringConstants.ObjectTaxonomy || this.selectedObjectType == StringConstants.ObjectRule || this.selectedObjectType == StringConstants.ObjectPolicy) {
+                            this.selectedAssetUid = res.UID ?? res['Uid'];
                         }
-                    );
-                });
+                        if (this.selectedObjectType == StringConstants.ObjectArtifactType || this.selectedObjectType == StringConstants.ObjectTaxonomyType || this.selectedObjectType == StringConstants.ObjectRuleType || this.selectedObjectType == StringConstants.ObjectPolicyType) {
+                            this.selectedAssetTypeUid = res.UID ?? res['Uid'];
+                        }
+
+                        this.isLoading = false;
+                        this.loadIssueTypes()
+                    }
+                );
+            });
     }
 
     private loadIssueTypes() {
@@ -175,12 +176,12 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         let params = { _assetUid: "", _assetTypeUid: "", _resourceUid: "", _limitToActiveWorkflows: "true" };
         if (this.selectedAssetUid) {
             params._assetUid = this.selectedAssetUid;
-            params._resourceUid = this.resourceUid;    
+            params._resourceUid = this.resourceUid;
 
-        }      
+        }
         if (this.selectedAssetTypeUid) {
-            params._assetTypeUid = this.selectedAssetTypeUid; 
-            params._resourceUid = this.resourceUid;   
+            params._assetTypeUid = this.selectedAssetTypeUid;
+            params._resourceUid = this.resourceUid;
         }
 
         this.workflowService.getWorkflowIssueTypes(this.selectedObjectType, this.selectedObjectId, params)
@@ -192,7 +193,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
     }
 
     private save(data) {
-        this.isLoading = true;        
+        this.isLoading = true;
         let values: any = {};
         let action: ActionEditorModel = new ActionEditorModel();
         action.Fields = {};
@@ -218,7 +219,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         for (var p in values) {
             if (p.toUpperCase() == "ISSUETYPEID") {
                 //ignore
-            }            
+            }
             else {
                 action.Fields[p] = values[p];
             }

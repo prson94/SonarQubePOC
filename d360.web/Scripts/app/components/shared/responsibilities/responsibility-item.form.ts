@@ -32,10 +32,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-responsibility-item-form',
     templateUrl: './responsibility-item.form.html',
-    providers: [ResponsibilityService,ResourcesService],
+    providers: [ResponsibilityService, ResourcesService],
 })
 
-export class ResponsibilityItemForm extends BaseComponent implements OnInit {    
+export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     @Input() item: ResponsibilityItemDetailV2;
     @Input() assetUid: string;
     @Input() assetID: number;
@@ -46,7 +46,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     private model: ResponsibilityEditorModel;
     field: EditorField;
     private resourceGrid: boolean = false;
-    private message: FormMessage = new FormMessage();  
+    private message: FormMessage = new FormMessage();
     private itemToSave = new ResponsibilityItemV2();
     private checkD: ResponsibilityItemDetailV2[] = [];
     private showVisible: boolean = false;
@@ -62,7 +62,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-       
+
 
         this.itemToSave = new ResponsibilityItemV2();
         this.itemToSave.ResponsibilityUid = this.item.ResponsibilityUid;
@@ -115,7 +115,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.showResourceGrid();
     }
 
-    private getAssetType(resource): string{
+    private getAssetType(resource): string {
         let atype;
         switch (resource) {
             case "Group":
@@ -146,7 +146,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
             var selectedResourceType = "R";
             var selectedResourceID = this.model.selectedResource.split('|')[1];
-            
+
             switch (this.model.selectedResource.split('|')[0]) {
                 case "Group":
                 case "G":
@@ -157,14 +157,14 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 case "O":
                     selectedResourceType = "O";
                     break;
-            }            
+            }
 
             selectedResourceUid = this.model.resources.find(x => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
             this.itemToSave.ResourceUid = selectedResourceUid;
             this.itemToSave.Description = this.model.responsibility.Context
         }
         catch (exception) {
-            this.message.Error("An error occurred while parsing the select item values.");
+            this.message.Error($localize`An error occurred while parsing the select item values.`);
             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
             return;
         }
@@ -195,11 +195,11 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                         if (this.checkD[i].ResourceUid == this.itemToSave.ResourceUid &&
                             this.checkD[i].ResponsibilityUid == this.itemToSave.ResponsibilityUid) {
 
-                            this.message.Error("There is already a responsibility assigned for this role and " + this.checkD[i].ResourceType + ".");
+                            this.message.Error($localize`There is already a responsibility assigned for this role and ${this.checkD[i].ResourceType}.`);
                             this.onSaveComplete.emit({ item: this.item, message: this.message, initialItem: this.item });
                             return;
                         }
-                                             
+
                     }
 
                     if ((this.item.ResponsibilityUid && this.item.ResponsibilityUid != this.itemToSave.ResponsibilityUid)
@@ -208,7 +208,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                         this.responsibilityService.deleteResponsibility(this.assetUid, this.item.ResponsibilityUid, this.item.ResourceUid).subscribe(() => { this.postRequest(); });
                     } else {
                         this.postRequest();
-                    }  
+                    }
                 }
             });
     }
@@ -219,9 +219,9 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         responsibilityOverridePostModel.Description = this.itemToSave.Description;
 
         this.responsibilityService.postResponsibility(this.itemToSave.AssetUid, this.itemToSave.ResponsibilityUid, responsibilityOverridePostModel)
-            .subscribe(data => {                
+            .subscribe(data => {
                 this.isLoading = false;
-                data.message = this.item.ResponsibilityUid ? "Responsibility successfully updated" : "Responsibility successfully created";
+                data.message = this.item.ResponsibilityUid ? $localize`Responsibility successfully updated` : $localize`Responsibility successfully created`;
                 this.showMessageForResult(this.messagesService, data);
                 this.onSaveComplete.emit({ item: this.itemToSave, message: this.message, initialItem: this.item });
             });
@@ -249,7 +249,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
                 resTypeUid = this.model.selectedResponsibilityType;
                 resTypeId = 0;
             }
-            
+
         }
 
         if (StringHelpers.isNullOrEmpty(selectedResource)) {
@@ -269,12 +269,12 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.resourceGrid = true
     }
 
-    private set fieldValue(value){
+    private set fieldValue(value) {
         this.field.Value = value;
 
         if (this.field.Value != null && this.field.Value.length > 0) {
             let x = this.field.Value[0];
-            this.resouceAssigned = x.split('|')[2];            
+            this.resouceAssigned = x.split('|')[2];
             this.resourceGrid = false;
             this.model.selectedResource = x;
         }

@@ -5,7 +5,7 @@
     <form #responsibilityForm="ngForm" (ngSubmit)="save()">
         <div class="row">
             <div class="col l6 m6 s12">
-                <label id='ResponsibilityTypeTip' class="FieldNameRequired">Responsibility</label>
+                <label id='ResponsibilityTypeTip' class="FieldNameRequired" i18n>Responsibility</label>
                 <p-dropdown [options]="model.responsibilityTypes" [(ngModel)]="model.selectedResponsibilityType" [disabled]="IsResponsibilityDisabled" (onChange)="getResponsibilityTypes();" [style]="{'width':'90%', 'display':'block'}" name="responsibilityType" required></p-dropdown>
                 <div>&nbsp;</div>
                 <div>
@@ -55,23 +55,23 @@
                 </div>
             </div>
             <div class="col l6 m6 s12">
-                <label id='ResponsibleObjectTip' class="FieldNameRequired">Resource</label>
-                
+                <label id='ResponsibleObjectTip' class="FieldNameRequired" i18n>Resource</label>
+
                 <p *ngIf="!resourceGrid">{{resouceAssigned}} <a style="cursor:pointer;" (click)="showResourceGrid()"><i class="fa fa-pencil"></i></a></p>
                 <div *ngIf="resourceGrid">
                     <d3s-resource-multiselect-grid [multiple]="false" [(ngModel)]="fieldValue" [showSelectedSummary]="false" showToolTip="true" ngDefaultControl [field]="field" [ngModelOptions]="{standalone: true}" [showResourceType]="true"></d3s-resource-multiselect-grid>
                 </div>
-               
+
 
             </div>
         </div>
-      
+
         <div class="row">
             <div class="col s12">&nbsp;</div>
         </div>
         <div class="row">
             <div class="col s12">
-                <button pButton [disabled]="!isValid()" label="Save" type="submit"></button> <button pButton (click)="cancel()" label="Cancel" type="button"></button>  <form-message [message]="message" [inline]="true"></form-message>
+                <button pButton [disabled]="!isValid()" i18n-label label="Save" type="submit"></button> <button pButton (click)="cancel()" i18n-label label="Cancel" type="button"></button>  <form-message [message]="message" [inline]="true"></form-message>
             </div>
         </div>
     </form>

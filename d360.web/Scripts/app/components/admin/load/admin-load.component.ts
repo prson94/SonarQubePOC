@@ -32,7 +32,7 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
 
         this.areaName = StringConstants.Section_Bulk;
-        this.adminHeading = 'Integration';
+        this.adminHeading = $localize`Integration`;
         this.setCommonItems();
     }
 

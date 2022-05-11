@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
+import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { FieldType } from '../../../models/fieldtype-api.model';
 import { Observable, of } from 'rxjs';
 import { Table } from 'primeng/table';
@@ -40,8 +40,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     advancedFilter: string = '';
     sort: any;
 
-    deletePopupTitle: string = 'Delete Tag';
-    editPopupTitle: string = 'Edit Tag';
+    deletePopupTitle: string = $localize`Delete Tag`;
+    editPopupTitle: string = $localize`Edit Tag`;
 
 
     public theDeleteCallback: Function;
@@ -53,29 +53,29 @@ export class AdminTagsComponent extends AdminBaseComponent {
     filterFieldList$: Observable<AdvancedFilterFieldType[]> = of([
         {
             Name: 'Value',
-            FriendlyName: 'Name',
+            FriendlyName: $localize`Name`,
             Type: new FieldType("Text"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'UseCount',
-            FriendlyName: 'Use Count',
+            FriendlyName: $localize`Use Count`,
             Type: new FieldType("Number"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedOn',
-            FriendlyName: 'Date Created',
-            Type: new FieldType("DateTime"),
+            FriendlyName: $localize`Date Created`,
+            Type: new FieldType("Date"),
             Category: "",
             RemovePopulatedOperator: true
         },
         {
             Name: 'CreatedBy',
-            FriendlyName: 'Created By',
             Type: new FieldType("Lookup"),
+            FriendlyName: $localize`Created By`,
             Category: "",
             ValueLoader: this.getFilterValuesForCreatedBy.bind(this),
             RemovePopulatedOperator: true
@@ -115,11 +115,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.clearSidebar();
     }
 
-    getFilterValuesForCreatedBy(): Observable<LookupValuesAPIModel> {
+    getFilterValuesForCreatedBy(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         const createdBy: string[] = this.readOnlyFullListOfTags.map((tag: TagType) => {
             return tag.CreatedBy;
         });
-        const uniqCreatedBy = _uniqWith(createdBy, _isEqual);
+        const uniqCreatedBy = _uniqWith(createdBy, _isEqual)
+            .filter((s: string) => s.toLowerCase().includes(params.filter?.toLowerCase() ?? ""));
+
         if(uniqCreatedBy.length === 1 && uniqCreatedBy[0].name === '') {
             return of({
                 items: [],
@@ -186,8 +188,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
-        this.editPopupTitle = 'Edit Tag';
-
+        this.editPopupTitle = $localize`Edit Tag`;
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
@@ -260,7 +261,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     add() {
         this.selected = [];
-        this.editPopupTitle = 'Add Tag';
+        this.editPopupTitle = $localize`Add Tag`;
         this.showEditor = true;
 
     }
@@ -277,10 +278,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
+                    msg = $localize`${result.Value} succesfully created`;
                 }
                 else {
-                    msg = `${result.Value} succesfully updated`;
+                    msg = $localize`${result.Value} succesfully updated`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
@@ -318,7 +319,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     openDeleteModal() {
         window.setTimeout(() => {
-            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
+            this.deletePopupTitle = this.selected.length == 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
         }, 100)
 
@@ -334,7 +335,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
                 if (result) {
 
-                    this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+                    this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
 
                     result.forEach(t => {
                         if (t.UseCount != 0)

@@ -95,11 +95,11 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.relationshipTypesResolvedNames.forEach((item) => {
             if (params.filter) {
                 if (item["name"].toLowerCase().indexOf(params.filter.toLowerCase()) !== -1) {
-                    data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+                    data.items.push({ value: item["uid"] + "|" + item["perspective"], name: item["name"], count: item.count });
                 }
             }
             else {
-                data.items.push({ value: item["uid"], name: item["name"], count: item.count });
+                data.items.push({ value: item["uid"] + "|" + item["perspective"], name: item["name"], count: item.count });
             }
         });
         return of(data);
@@ -131,7 +131,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     selectedTag: any;
 
     public rowsPerPage: number;
-    public title: string = 'Relationships Grid'
+    public title: string = 'Relationships Grid';
     private destroy = new Subject<void>();
 
     constructor(
@@ -292,7 +292,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                         uid: rc.IntersectTypeUid,
                         name,
                         count: rc.Count,
-                        isSelected: false
+                        isSelected: false,
+                        perspective: rc.IsSubject ? "Subject" : "Object"
                     });
             }
         });
@@ -356,12 +357,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                     i["isHierarchy"] = type[0].Predicate.Type === "InterTypeHierarchy" || type[0].Predicate.Type === "IntraTypeHierarchy";
 
                     if ((this.assetPermissions.EditRelationships || this.assetPermissions.AddRelationships) && type[0].HasFieldTypes) {
-                        i[this.menuKey].push({ title: 'Edit Relationship' });
+                        i[this.menuKey].push({ title: $localize`Edit Relationship` });
                     }
                 }
 
                 if (this.assetPermissions.DeleteRelationships) {
-                    i[this.menuKey].push({ title: 'Delete Relationship' });
+                    i[this.menuKey].push({ title: $localize`Delete Relationship` });
                 }
             });
         }
@@ -424,6 +425,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
         if (this.singleSelectedRelationship) {
             params["RelationshipTypeUid"] = this.singleSelectedRelationship.uid;
+            let sideUid = this.singleSelectedRelationship.perspective === "Subject" ? "SubjectUid" : "ObjectUid";
+            params[sideUid] = this.assetUid;
         }
 
         if (!isExport) {
@@ -446,7 +449,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         var relFilter = this.advancedFilterData.filter((x) => x.field === "relationshiptype");
         if (relFilter && relFilter.length !== 0 && relFilter[0]["value"] && relFilter[0]["value"].length === 1) {
             var value = relFilter[0]["value"][0]["value"];
-            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === value.toLowerCase())[0];
+            let splitValue = value.split("|");
+            return this.relationshipTypesResolvedNames.filter((x) => x["uid"].toLowerCase() === splitValue[0].toLowerCase() && x.perspective === splitValue[1])[0];
         }
         return null;
     }
@@ -479,9 +483,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key === 'edit relationship') {
+        if (key === $localize`Edit Relationship`.toLowerCase()) {
             this.showEditor = true;
-        } else if (key === 'delete relationship') {
+        } else if (key === $localize`Delete Relationship`.toLowerCase()) {
             this.showDelete = true;
         }
     }
@@ -500,7 +504,11 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             typeFilters.forEach((f) => {
                 if (f.value) {
                     f.value.forEach((item) => {
-                        var names = this.relationshipTypesResolvedNames.filter((x) => x.uid.toLowerCase() === item.value.toLowerCase());
+                        if ((item.value as string).indexOf("undefined") > -1) {
+                            item.value.replace("|undefined", "|Subject");
+                        }
+                        let splitValue = item.value.split("|");
+                        var names = this.relationshipTypesResolvedNames.filter((x) => x.uid.toLowerCase() === splitValue[0].toLowerCase() && x.perspective === splitValue[1]);
                         names.forEach((sel) => sel.isSelected = true);
                     });
                 }
@@ -566,7 +574,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
         this.relationshipService.deleteRelationshipV2(this.selectedRelationship.RelationshipTypeUid, [item])
             .subscribe((res) => {
-                let msg = 'Relationship Successfully deleted';
+                let msg = $localize`Relationship Successfully deleted`;
                 this.showMessageForApiResult(this.messagesService, res[0], msg);
                 this.deleteInProgress = false;
                 this.showDelete = false;
@@ -581,13 +589,13 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         this.relationshipService
             .getRelationshipsForAssetExcel(
                 this.assetUid, this.getParams(true),
-                'Filtered ' + this.assetDetail.DisplayValue + ' Relationships',
+                $localize`Filtered ${this.assetDetail?.DisplayValue} Relationships`,
                 () => { this.isExportInProgress = false; }
             );
     }
 
     get fullRelationshipNameAsHTML(): string {
-        return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp;</strong> - ${this.selectedRelAsset.target}`;
+        return `${this.assetDetail.DisplayValue} - <strong>& nbsp;${this.selectedRelAsset.name}& nbsp; </strong> - ${this.selectedRelAsset.target}`;
 
     }
     get selectionScrollHeight(): string {

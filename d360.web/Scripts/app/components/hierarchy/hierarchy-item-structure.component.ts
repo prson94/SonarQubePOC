@@ -119,10 +119,12 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     readonly menuKey: string = '~menu';
     baseMenuItems: any[] = [
-        { title: "Open" },
-        { title: "Open in New Tab" },
+        { title: $localize`Open` },
+        { title: $localize`Open in New Tab` },
     ];
     secondarySidePanel: string = "detail";
+
+    exportTooltip: string;
     resourceUid: string;
 
     constructor(
@@ -145,12 +147,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     ) {
         super(settingsService);
 
+        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
 
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
             this.linkClickInterceptor.handleEvent(this, ev);
         });
+    }
+
+    get assetEditorTitle(): string {
+        return this.selected ? $localize`Edit Asset` : $localize`Create New Asset`;
     }
 
     ngOnInit() {
@@ -277,17 +284,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key === 'open') {
+        if (key === $localize`Open`.toLowerCase()) {
             this.showHierarchy(item.data);
-        } else if (key === 'open in new tab') {
+        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
             this.showHierarchy(item.data, true);
-        } else if (key === 'edit') {
+        } else if (key === $localize`Edit`.toLowerCase()) {
             this.selectAsset(item);
             this.showEditor = true;
-        } else if (key === 'delete') {
+        } else if (key === $localize`Delete`.toLowerCase()) {
             this.selectAsset(item);
             this.showDelete = true;
-        } else if (key === 'add child') {
+        } else if (key === $localize`Add Child`.toLowerCase()) {
             this.showAdd(item.data.Level, item.data.AssetUid);
 
         }
@@ -320,7 +327,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName
                  ? currentAreaName 
                  : res, 
-                 `${this.type}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
+                 `${this.type} /${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
                  ));
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.objectType, this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
@@ -328,7 +335,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 .subscribe((icon) => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
                     this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
-                    this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership:false, hasDashboard: this.assetType.HasDashboards });
+                    this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
                     if (this.showDiagram) {
                         this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
@@ -379,22 +386,22 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             root.Level = levelNumber;
 
             root[this.menuKey] = [
-                { title: 'Open' },
-                { title: 'Open in New Tab' },
+                { title: $localize`Open` },
+                { title: $localize`Open in New Tab` },
             ];
 
             if (this.displayChildAdd(levelNumber) && this.hasAddAssetPermissions()) {
-                root[this.menuKey].push({ title: 'Add Child' });
+                root[this.menuKey].push({ title: $localize`Add Child` });
             }
 
             if (root.Permissions.ModifyAsset) {
-                root[this.menuKey].push({ title: 'Edit' });
+                root[this.menuKey].push({ title: $localize`Edit` });
             }
 
             let children = (this.buildTreeNodeArray(hierarchies, levelNumber + 1, root.AssetUid));
 
             if (root.Permissions.DeleteAsset && (!children || children?.length === 0)) {
-                root[this.menuKey].push({ title: 'Delete' });
+                root[this.menuKey].push({ title: $localize`Delete` });
             }
 
             res.push({
@@ -567,7 +574,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     get assetTypeTitle(): string {
         if (this.levels == null) {
-            return '(Level Unknown Item)';
+            return $localize`(Level Unknown Item)`;
         }
 
         if (!this.selected) {
@@ -576,13 +583,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             if (thisLevel && thisLevel.length > 0)
                 return thisLevel[0].Name;
             else
-                return `(Level ${this.selectedLevel + 1}) Item`;
+                return $localize`(Level ${this.selectedLevel + 1}) Item`;
         }
 
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
 
         if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return `(Level ${this.selected.data.Level}) Item`;
+        return $localize`(Level ${this.selected.data.Level}) Item`;
     }
 
     getThreshold(value: string, lower: number, upper: number): string {
@@ -813,5 +820,5 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         } else {
             this.secondarySidePanel = "status";
         }
-    }    
+    }
 }

@@ -7,12 +7,12 @@
                       [hasExport]="true"
                       (exportClick)="export()"
                       [isExportDisabled]="!canExportRecords()"
-                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"></d3s-tile-actions>
+                      [exportDisabledMessage]="exportMessage"></d3s-tile-actions>
 </header>
 <d3s-loading [isLoading]="isLoading && showDelete && showEditor"></d3s-loading>
 <span *ngIf="!showDelete && !showEditor">
     <input type="text" [hidden]="!showSimpleFilter || isForAssetDetailPage" pInputText size="100"
-           (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
+           (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..."
            class="grid-simple-filter">
 
     <ng-container *ngIf="isForAssetDetailPage">
@@ -22,7 +22,9 @@
                              [infoTooltip]="simpleSearchTooltipHTML"
                              (onSearch)="dt.filterGlobal($event, 'contains')">
             </ig-search-field>
-            <div *ngIf="canExportRecords()" pTooltip="'Export to Excel'"
+            <div *ngIf="canExportRecords()" 
+                 pTooltip="'Export to Excel'"
+                 i18n-pTooltip
                  tooltipPosition="left"
                  tooltipStyleClass="ig-tooltip">
                 <button igButton

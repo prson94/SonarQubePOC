@@ -135,7 +135,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                 this.dateShowType = null;
                 switch (<any>gov.Check) {
                     case 'External':
-                        this.formattedCheck = (gov.External.Instructions) ? ('External: Instruction string: ' + gov.External.Instructions) : 'External';
+                        this.formattedCheck = (gov.External.Instructions) ? ($localize`External: Instruction string` + `: ` + gov.External.Instructions) : $localize`External`;
                         break;
                     case 'Field':
                         let formattedoperator = this.screenReferences.operators.find(x => x.ID == gov.Field.Operator);
@@ -158,28 +158,28 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                             }
                             this.formattedCheck = fieldType.Name + " " + formattedoperator.Name + " " + formattedValue;
                         } else {
-                            this.formattedCheck = "field not found";
+                            this.formattedCheck = $localize`field not found`;
                         }
 
 
                         break;
                     case 'Owner':
                         let responsibilitytype = this.screenReferences.responsibilities.find(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() });
-                        let operatorString = "is assigned";
+                        let operatorString = $localize`is assigned`;
                         if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
-                            operatorString = "is not assigned";
+                            operatorString = $localize`is not assigned`;
                         }
                         if (responsibilitytype) {
                             this.formattedCheck = responsibilitytype.Name + " " + operatorString;
                         } else {
-                            this.formattedCheck = "responsibility type not found";
+                            this.formattedCheck = $localize`responsibility type not found`;
                         }
                         break;
                     case 'Predicate':
                         let predicate = this.screenReferences.predicates.find(x => { return x.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() });
-                        let existsOperatorP = "exists";
+                        let existsOperatorP = $localize`exists`;
                         if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
-                            existsOperatorP = "does not exist";
+                            existsOperatorP = $localize`does not exist`;
                         }
                         if (predicate)
                             this.formattedCheck = predicate.Name + "/" + predicate.Inverse + " " + existsOperatorP;
@@ -188,9 +188,9 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                         break;
                     case 'Relation':
                         let relationshipType = this.screenReferences.relationships.find(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() });
-                        let existsOperator = "exists";
+                        let existsOperator = $localize`exists`;
                         if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
-                            existsOperator = "does not exist";
+                            existsOperator = $localize`does not exist`;
                         }
 
                         if (relationshipType) {
@@ -209,7 +209,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
                             label = labelName + " " + assetName;
                             this.formattedCheck = label + " " + existsOperator;
                         } else {
-                            this.formattedCheck = "Relationship not found";
+                            this.formattedCheck = $localize`Relationship not found`;
                         }
                         break;
                     default:
@@ -237,10 +237,10 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
         switch (check) {
             case 'External': prefix = ''; break;
-            case 'Field': prefix = 'Field: '; break;
-            case 'Owner': prefix = 'Ownership: '; break;
-            case 'Predicate': prefix = 'Predicate: '; break;
-            case 'Relation': prefix = 'Relationship: '; break;
+            case 'Field': prefix = $localize`Field` + ': '; break;
+            case 'Owner': prefix = $localize`Ownership` + ': '; break;
+            case 'Predicate': prefix = $localize`Predicate` + ': '; break;
+            case 'Relation': prefix = $localize`Relationship` + ': '; break;
             default: ' default';
         }
         return prefix + this.formattedCheck;

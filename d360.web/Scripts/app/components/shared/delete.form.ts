@@ -16,8 +16,8 @@ import { SharedFormMessageModule } from './form-message.part';
 export class DeleteForm implements OnChanges {
     @Input() model: any;
     @Input() uri: string;
-    @Input() deleteButtonText: string;
-    @Input() cancelButtonText: string;
+    @Input() deleteButtonText: string = $localize`Delete`;
+    @Input() cancelButtonText: string = $localize`Cancel`;
     @Input() method: string = 'post';
     @Input() prompt: string;
     @Input() callback: Function;

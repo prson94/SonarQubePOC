@@ -97,7 +97,7 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         if (num) {
             return (num * 100).toFixed(2).replace(/[.,]00$/, "") + "%";
         } else {
-            return "(default)";
+            return $localize`(default)`;
         }
     }
 
@@ -105,16 +105,16 @@ export class ScoreCalculationComponent extends BaseComponent implements OnChange
         if (num) {
             return (num * 100).toFixed(3).replace(/[.,]00$/, "") + "%";
         } else {
-            return "(default)";
+            return $localize`(default)`;
         }
     }
 
     formulaMultiplierLabel() {
-        return (!this.selected.IsGroup && this.selected._groupDisplayMaxWeight) ? "group weight" : "100%";
+        return (!this.selected.IsGroup && this.selected._groupDisplayMaxWeight) ? $localize`group weight` : "100%";
     }
 
     weightLabel() {
-        return (this.matchedCondition && !this.selected.IsGroup) ? "condition group weight" : "measure weight";
+        return (this.matchedCondition && !this.selected.IsGroup) ? $localize`condition group weight` : $localize`measure weight`;
     }
 
     getOtherMatchedGroups(): string {

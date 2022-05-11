@@ -6,7 +6,6 @@ import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { Subject, Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
-import { filter } from 'lodash';
 import { Table } from 'primeng/table';
 import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
@@ -59,9 +58,11 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         this.showEditor = true;
     }
 
+    exportMessage: string = '';
     private title: string = 'Items';
 
     ngOnInit() {
+        this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
         this.setRowsPerPage();
         this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
     }

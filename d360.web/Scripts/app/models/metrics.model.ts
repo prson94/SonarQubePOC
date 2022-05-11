@@ -267,9 +267,9 @@ export enum ScoreType {
 }
 
 export const ScoreTypeInfo = new Map<string, string>([
-    ["Governance", "Governance Score"],
-    ["DataQuality", "Data Quality Score"],
-    ["Perceptional", "Perception Score"]
+    ["Governance", $localize`Governance Score`],
+    ["DataQuality", $localize`Data Quality Score`],
+    ["Perceptional", $localize`Perception Score`]
 ]);
 
 export enum MetricUpdateFrequency {

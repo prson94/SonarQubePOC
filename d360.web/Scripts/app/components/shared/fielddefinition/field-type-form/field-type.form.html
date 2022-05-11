@@ -7,11 +7,14 @@
           #fieldEditor="ngForm">
         <div class="row">
             <div class="col l9 m8 s12">
-                <simple-accordion [header]="actionName + ' Field Type'"
+                <simple-accordion i18n-header
+                                  header="{{actionName}} Field Type"
                                   active="true">
                     <div class="form-instructions">
-                        Modify your field using the form below. There are many types of fields from Simple Text and HTML
-                        to Lookups and Dates.
+                        <ng-container i18n>
+                            Modify your field using the form below. There are many types of fields from Simple Text and HTML
+                            to Lookups and Dates.
+                        </ng-container>
                         <div class="form-instructions-error"
                              data-bind="visible: FormInvalid, text: FormValidationMessage">
                         </div>
@@ -19,7 +22,7 @@
                     <div style="float: left; width: 49%">
                         <div>
                             <div id='FriendlyNameTip'
-                                 class="FieldNameRequired">
+                                 class="FieldNameRequired" i18n>
                                 Name
                             </div>
                             <input required
@@ -32,11 +35,11 @@
                                    (keyup)="syncApiNameWithName && updateApiName($event)"
                                    [igDataCy]="'FieldType_Field_Name'"
                                    #friendlyName="ngModel" />
-                            <div [hidden]="friendlyName.valid || friendlyName.pristine">Friendly name is required</div>
+                            <div [hidden]="friendlyName.valid || friendlyName.pristine" i18n>Friendly name is required</div>
                         </div>
                         <div>
                             <div id='TypeTip'
-                                 class="FieldNameRequired">
+                                 class="FieldNameRequired" i18n>
                                 Input Type
                             </div>
                             <p-dropdown required
@@ -50,10 +53,10 @@
                                         [disabled]="disableFieldTypeSelection"
                                         [igDataCy]="'FieldType_Field_Type'"
                                         ngDefaultControl></p-dropdown>
-                            <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
+                            <div [hidden]="dataType.valid || dataType.pristine" i18n>Field data type is required</div>
                         </div>
                         <div *ngIf="model.FieldType.Type[currentType].IsListable">
-                            <div class="FieldNameRequired">Column Width (pixels)</div>
+                            <div class="FieldNameRequired" i18n>Column Width (pixels)</div>
                             <input name="columnwidth"
                                    pInputText
                                    type="number"
@@ -65,7 +68,7 @@
                     <div style="float: left; width: 49%">
                         <div>
                             <div id='NameTip'
-                                 class="FieldNameRequired">
+                                 class="FieldNameRequired" i18n>
                                 API Name
                             </div>
                             <input required
@@ -80,11 +83,11 @@
                                    [ngStyle]="{'background':( actionName=='Edit' ? '#EFEFEF': '')}"
                                    [igDataCy]="'FieldType_Field_API Name'"
                                    [disabled]="actionName=='Edit'" />
-                            <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
+                            <div [hidden]="apiName.valid || apiName.pristine" i18n>API name is required</div>
                         </div>
                         <div>
                             <div id='CategoryTip'
-                                 class="FieldName">
+                                 class="FieldName" i18n>
                                 Category
                             </div>
                             <input name="category"
@@ -96,7 +99,7 @@
                                    style="width: 98%; display: block;" />
                         </div>
                         <div>
-                            <div class="FieldNameRequired">Sort Order</div>
+                            <div class="FieldNameRequired" i18n>Sort Order</div>
                             <div class="sort-container">
                                 <input name="sortorder"
                                        pInputText
@@ -112,6 +115,7 @@
                                                [(ngModel)]="model.FieldType.Type[currentType].SortByAscending"
                                                [disabled]="!model.FieldType.Type[currentType].IsListable"
                                                [value]="true"
+                                               i18n-label
                                                label="Ascending">
                                 </p-radioButton>
 
@@ -120,6 +124,7 @@
                                                [(ngModel)]="model.FieldType.Type[currentType].SortByAscending"
                                                [disabled]="!model.FieldType.Type[currentType].IsListable"
                                                [value]="false"
+                                               i18n-label
                                                label="Descending">
                                 </p-radioButton>
                             </div>
@@ -129,13 +134,15 @@
                 </simple-accordion>
             </div>
             <div class="col l3 m4 s12">
-                <simple-accordion header="Settings"
+                <simple-accordion i18n-header
+                                  header="Settings"
                                   active="true">
                     <div *ngIf="showAddToSearch">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.Type[currentType].Search.AddToResult"
                                     [igDataCy]="'FieldType_Field_AddToResult'"
                                     label="Add To Search Results"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="onAddToSearchChange($event);"
                                     [disabled]="isSettingDisabled('SearchAddToResult')"></p-checkbox>
@@ -146,6 +153,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].IsDisplayable"
                                     [igDataCy]="'FieldType_Field_IsDisplayable'"
                                     label="Show In Detail Tile?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="model.FieldType.Type[currentType].IsDisplayable=$event;onShowDetailChange($event);"
                                     [disabled]="isSettingDisabled('IsDisplayable')">
@@ -157,6 +165,8 @@
                                         tooltipPosition="left"
                                         tooltipStyleClass="ig-tooltip"
                                         binary="true"
+                                        i18n-label
+                                        i18n-pTooltip
                                         [(ngModel)]="model.FieldType.Type[currentType].DisplayInColumn"
                                         label="Display In Column"
                                         [ngModelOptions]="{standalone: true}"
@@ -171,6 +181,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].IsEditable"
                                     [igDataCy]="'FieldType_Field_IsEditable'"
                                     label="Is Editable?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="model.FieldType.Type[currentType].IsEditable=$event;onShowEditableChange($event);"
                                     [disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
@@ -180,6 +191,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].IsListable"
                                     [igDataCy]="'FieldType_Field_IsListable'"
                                     label="Is Listable?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     (ngModelChange)="!$event ? model.FieldType.Type[currentType].SortOrder=0:model.FieldType.Type[currentType].SortOrder=model.FieldType.Type[currentType].SortOrder"
                                     [disabled]="isSettingDisabled('IsListable')"></p-checkbox>
@@ -189,6 +201,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].Validation.IsRequired"
                                     [igDataCy]="'FieldType_Field_IsRequired'"
                                     label="Is Required?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsRequired')"
                                     (onChange)="model.FieldType.Type[currentType].MinimumLength=0"></p-checkbox>
@@ -198,6 +211,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].IsPartOfKey"
                                     [igDataCy]="'FieldType_Field_IsPartOfKey'"
                                     label="Part Of Key?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
                     </div>
@@ -206,6 +220,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].IsPrimaryFilter"
                                     [igDataCy]="'FieldType_Field_IsPrimaryFilter'"
                                     label="Persist in filters?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
                     </div>
@@ -215,6 +230,7 @@
                                     [igDataCy]="'FieldType_Field_AllowMultipleValues'"
                                     (ngModelChange)="model.FieldType.Type[currentType].AllowMultipleValues=$event;model.FieldType.Type[currentType].IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
                     </div>
@@ -223,6 +239,7 @@
                                     [(ngModel)]="model.FieldType.Type[currentType].ShowIfEmpty"
                                     [igDataCy]="'FieldType_Field_ShowIfEmpty'"
                                     label="Show if Empty?"
+                                    i18n-label
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
                     </div>
@@ -230,12 +247,13 @@
             </div>
         </div>
 
-        <simple-accordion header="List Configuration"
+        <simple-accordion i18n-header
+                          header="List Configuration"
                           active="true"
                           *ngIf="currentType == 'Lookup'">
             <div class="row">
                 <div class="col s6">
-                    <div class="FieldNameRequired">Type of List</div>
+                    <div class="FieldNameRequired" i18n>Type of List</div>
                     <p-dropdown filter="true"
                                 name="lookup"
                                 [options]="lookups.Lookups"
@@ -246,7 +264,7 @@
                                 ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col s3">
-                    <div class="FieldNameRequired">List Display Format</div>
+                    <div class="FieldNameRequired" i18n>List Display Format</div>
                     <input name="lookupDisplayFormat"
                            pInputText
                            type="text"
@@ -272,7 +290,7 @@
                 </div>
                 <div class="col s6"
                      *ngIf="listParentFields.length > 0; else noParentContent">
-                    <div class="FieldNameRequired">Parent List</div>
+                    <div class="FieldNameRequired" i18n>Parent List</div>
                     <p-dropdown name="lookupparent"
                                 [options]="listParentFields"
                                 [(ngModel)]="model.FieldType.Type[currentType].ParentFieldTypeName"
@@ -284,7 +302,7 @@
                     <div class="col s6">&nbsp;</div>
                 </ng-template>
                 <div class="col s3">
-                    <div class="FieldNameRequired">List Edit Format</div>
+                    <div class="FieldNameRequired" i18n>List Edit Format</div>
                     <input name="lookupEditFormat"
                            pInputText
                            type="text"
@@ -311,17 +329,18 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Filter Configuration"
+        <simple-accordion i18n-header
+                          header="Filter Configuration"
                           [active]="expandFilterConfiguration"
                           *ngIf="currentType == 'Lookup' && listFilterable">
-            <div class="form-instructions">
+            <div class="form-instructions" i18n>
                 You can optionally filter a list of artifacts or models based on a relationship with another artifact or
                 model, by choosing the predicate of the relationship you wish to filter by.
                 <span *ngIf="actionTypeUid != null">For example, choose 'stores' and 'Action Subject' to filter a list of applications to include only those which store the subject asset of a form.</span>
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="FieldName">Filter Relationship Predicate</div>
+                    <div class="FieldName" i18n>Filter Relationship Predicate</div>
                     <p-dropdown name="filterpredicate"
                                 (ngModelChange)="selectPredicate($event)"
                                 [options]="listFilterPredicates"
@@ -332,7 +351,7 @@
             </div>
             <div class="row">
                 <div class=" col s12">
-                    <div class="FieldName">Filter by Relationships in Field</div>
+                    <div class="FieldName" i18n>Filter by Relationships in Field</div>
                     <p-dropdown name="filterassetfield"
                                 [options]="listFilterRelatedFields"
                                 [(ngModel)]="model.FieldType.Type[currentType].Filter.FieldTypeName"
@@ -348,14 +367,15 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Validation"
+        <simple-accordion i18n-header
+                          header="Validation"
                           active="true"
                           *ngIf="['Text','Number','Decimal'].indexOf(currentType) > -1">
             <div class="row">
                 <div *ngIf="currentType == 'Text'"
                      class="col s6">
                     <div id='PatternTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Validation Pattern
                     </div>
                     <input name="validationPattern"
@@ -387,7 +407,7 @@
                  *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0">
                 <div *ngIf="currentType == 'Text'"
                      class="col s6">
-                    <div class="FieldNameRequired">Test Pattern</div>
+                    <div class="FieldNameRequired" i18n>Test Pattern</div>
                     <input name="testPattern"
                            pInputText
                            type="text"
@@ -403,7 +423,7 @@
             <div class="row">
                 <div class="col s3">
                     <div id='MinimumLengthTip'
-                         class="FieldName">Minimum{{currentType == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName" i18n>Minimum{{currentType == 'Text' ? "Length" : "Value"}}</div>
                     <input *ngIf="currentType == 'Text'; else minNumberinput" name="minLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}} "
@@ -427,7 +447,10 @@
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip'
-                         class="FieldName">Maximum{{currentType == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName">
+                        <ng-container i18n *ngIf="currentType === 'Text'">Maximum Length</ng-container>
+                        <ng-container i18n *ngIf="currentType !== 'Text'">Maximum Value</ng-container>
+                    </div>
                     <input *ngIf="currentType == 'Text'; else maxNumberinput" name="maxLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}}"
@@ -450,7 +473,7 @@
                 <div *ngIf="currentType == 'Decimal'"
                      class="col s3">
                     <div id='decimalPlaces'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Decimal Places
                     </div>
                     <input name="Precision"
@@ -467,7 +490,7 @@
                 <div *ngIf="['Number', 'Decimal'].indexOf(currentType) == -1"
                      class="col s12">
                     <div id='ValidationDescriptionTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Validation Message
                     </div>
                     <textarea pInputTextarea
@@ -478,26 +501,27 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection"
+        <simple-accordion i18n-header
+                          header="Value Selection"
                           active="true"
                           *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal','Score'].indexOf(currentType) > -1">
             <div class="row">
                 <div class="col l6 m6 s12"
                      *ngIf="currentType != 'Score'">
-                    <div class="FieldName">Default Value (if any)</div>
+                    <div class="FieldName" i18n>Default Value (if any)</div>
                 </div>
                 <div class="col l6 m6 s12"
                      *ngIf="currentType == 'Score'">
-                    <div class="FieldName">Score</div>
+                    <div class="FieldName" i18n>Score</div>
                 </div>
                 <div class="col l6 m6 s12"
                      *ngIf="currentType == 'Lookup'">
-                    <div class="FieldName">Allow ALL Value Selection</div>
+                    <div class="FieldName" i18n>Allow ALL Value Selection</div>
                 </div>
                 <div class="col l6 m6 s12"
                      *ngIf="['Number','Decimal'].indexOf(currentType) > -1">
                     <div class="FieldName"
-                         style="display:block">
+                         style="display:block" i18n>
                         Increment
                     </div>
                 </div>
@@ -518,7 +542,7 @@
                                     ngDefaultControl
                                     [ngModelOptions]="{standalone: true}"></p-dropdown>
                         <div *ngIf="scoreTypeOptions?.length == 1"
-                             class="form-instructions">
+                             class="form-instructions" i18n>
                             No scores are currently defined for this asset type
                         </div>
                     </ng-container>
@@ -552,12 +576,12 @@
                                style="width: 100%;"
                                type="string"
                                [ngModelOptions]="{standalone: true}">
-                        <div>(Link Name)</div>
+                        <div i18n>(Link Name)</div>
                         <input [(ngModel)]="defaultLinkAdress"
                                style="width: 100%;"
                                type="string"
                                [ngModelOptions]="{standalone: true}">
-                        <div>
+                        <div i18n>
                             (Link Url: Your Url should start with a protocol prefix. For example 'http://' or
                             'https://')
                         </div>
@@ -601,7 +625,8 @@
         </simple-accordion>
 
         <!-- complex relation lookup -->
-        <simple-accordion header="Relation Lookup"
+        <simple-accordion i18n-header
+                          header="Relation Lookup"
                           active="true"
                           *ngIf="currentType == 'ComplexRelationLookup'">
             <div class="row">
@@ -612,9 +637,9 @@
                         <thead>
                             <tr>
                                 <th>&nbsp;</th>
-                                <th>Relation</th>
-                                <th>Relationship Type</th>
-                                <th>Table Settings</th>
+                                <th i18n>Relation</th>
+                                <th i18n>Relationship Type</th>
+                                <th i18n>Table Settings</th>
                             </tr>
                         </thead>
                         <tbody *ngFor="let i of model.RelationItems; let x=index;">
@@ -662,18 +687,21 @@
                                         <div>
                                             <p-checkbox binary="true"
                                                         [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
+                                                        i18n-label
                                                         label="Hide Footer?"
                                                         [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
                                             <p-checkbox binary="true"
                                                         [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
+                                                        i18n-label
                                                         label="Hide Header?"
                                                         [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
                                         <div>
                                             <p-checkbox binary="true"
                                                         [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
+                                                        i18n-label
                                                         label="Hide Search?"
                                                         [ngModelOptions]="{standalone: true}"></p-checkbox>
                                         </div>
@@ -690,7 +718,7 @@
                             </tr>
                             <tr [style.background-color]="x%2 == 1 ? '#fff' : '#fff'">
                                 <td colspan="3"
-                                    class="display-table-title">
+                                    class="display-table-title" i18n>
                                     Reference Columns
                                 </td>
                             </tr>
@@ -699,13 +727,13 @@
                                     <table class="striped highlight display-table">
                                         <thead>
                                             <tr>
-                                                <th>Name</th>
-                                                <th>Display Name Override</th>
-                                                <th>Show?</th>
-                                                <th>Column Width (px)</th>
-                                                <th>Column Order</th>
-                                                <th>Sort Order</th>
-                                                <th>Filter</th>
+                                                <th i18n>Name</th>
+                                                <th i18n>Display Name Override</th>
+                                                <th i18n>Show?</th>
+                                                <th i18n>Column Width (px)</th>
+                                                <th i18n>Column Order</th>
+                                                <th i18n>Sort Order</th>
+                                                <th i18n>Filter</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -773,32 +801,35 @@
         </simple-accordion>
 
         <!-- relation -->
-        <simple-accordion header="Relationship"
+        <simple-accordion i18n-header
+                          header="Relationship"
                           active="true"
                           *ngIf="currentType == 'Relationship'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Relationship</div>
+                    <div class="FieldName" i18n>Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_Relationships"
                                 [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
                                 (ngModelChange)="model.FieldType.Type[currentType].IntersectTypeUid=$event;cardinalRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
-                                [placeholder]="'Select relationship'"
+                                i18n-placeholder
+                                placeholder="'Select relationship'"
                                 ngDefaultControl></p-dropdown>
                 </div>
             </div>
         </simple-accordion>
 
         <!-- field from relation -->
-        <simple-accordion header="Field from Relationship"
+        <simple-accordion i18n-header
+                          header="Field from Relationship"
                           active="true"
                           *ngIf="currentType == 'FieldFromRelationship'">
             <div class="row">
                 <div class="col l6 m6 s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Many-to-One Relationship</div>
+                    <div class="FieldName" i18n>Many-to-One Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_FieldFromRelRelationships"
                                 [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
@@ -808,7 +839,7 @@
                 </div>
                 <div class="col l6 m6 s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldName">Selected Field</div>
+                    <div class="FieldName" i18n>Selected Field</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="fieldsFromRelation"
                                 [ngModel]="model.FieldType.Type[currentType].FieldTypeName"
@@ -820,13 +851,14 @@
         </simple-accordion>
 
         <!-- reference list from relation -->
-        <simple-accordion header="Reference Item List from Relationship"
+        <simple-accordion i18n-header
+                          header="Reference Item List from Relationship"
                           active="true"
                           *ngIf="currentType == 'RefListRelationship'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">One-to-Many Relationship</div>
+                    <div class="FieldNameRequired" i18n>One-to-Many Relationship</div>
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_CardinalReferenceRelationships"
@@ -841,13 +873,15 @@
                                 name="showRefListFromRelDescription"
                                 [(ngModel)]="model.FieldType.Type[currentType].DisplayRefListDescription"
                                 [ngModelOptions]="{standalone: true}"
+                                i18n-label
                                 label="Show Reference List Description"></p-checkbox>
                 </div>
             </div>
         </simple-accordion>
 
         <!-- ownership lookup -->
-        <simple-accordion header="Ownership Lookup"
+        <simple-accordion i18n-header
+                          header="Ownership Lookup"
                           active="true"
                           *ngIf="currentType == 'OwnershipLookup'">
             <div class="row">
@@ -857,6 +891,7 @@
                                 name="enableListSingleResponsibilityType"
                                 [ngModel]="enableListSingleResponsibilityType"
                                 (ngModelChange)="onEnableListSingleResponsibilityType($event);"
+                                i18n-label
                                 label="List Single Responsibility Type"></p-checkbox>
                     <p-dropdown name="selectResponsibilityType"
                                 [required]="enableListSingleResponsibilityType"
@@ -879,8 +914,10 @@
                                         [ngModel]="model.FieldType.Type[currentType].Definition.DisplayAsList"
                                         (ngModelChange)="model.FieldType.Type[currentType].Definition.DisplayAsList=$event;onDisplayAsList($event);"
                                         [ngModelOptions]="{standalone: true}"
+                                        i18n-label
                                         label="Display as List"></p-checkbox>
                             <div class="FieldInstructionsTooltip"
+                                 i18n-pTooltip
                                  pTooltip="Display the Ownership Lookup field as a list rather than a grid in the Definition panel. Please note that a listable Ownership Lookup field is always shown as a list in grids."
                                  [escape]="false"
                                  tooltipPosition="top"
@@ -893,16 +930,19 @@
                                         name="expandGroupMembership"
                                         [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership"
                                         [ngModelOptions]="{standalone: true}"
+                                        i18n-label
                                         label="Expand Group Membership?"></p-checkbox>
                         </li>
                         <li>
                             <p-checkbox binary="true"
                                         name="displayAssignmentSource"
+                                        i18n-label
                                         [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource"
                                         [ngModelOptions]="{standalone: true}"
                                         [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
                                         label="Display Assignment Source?"></p-checkbox>
                             <div class="FieldInstructionsTooltip"
+                                 i18n-pTooltip
                                  pTooltip="If you have chosen to expand group membership, choosing this option will display the Via column in grids, to identify the group or organization responsible for the addition of users to the list."
                                  [escape]="false"
                                  [tooltipDisabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
@@ -918,6 +958,7 @@
                                         [(ngModel)]="model.FieldType.Type[currentType].HideFilter"
                                         [ngModelOptions]="{standalone: true}"
                                         [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        i18n-label
                                         label="Hide Grid Filter?"></p-checkbox>
                         </li>
                         <li>
@@ -926,6 +967,7 @@
                                         [(ngModel)]="model.FieldType.Type[currentType].HideFooter"
                                         [ngModelOptions]="{standalone: true}"
                                         [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        i18n-label
                                         label="Hide Grid Footer?"></p-checkbox>
                         </li>
                         <li>
@@ -934,6 +976,7 @@
                                         [(ngModel)]="model.FieldType.Type[currentType].HideHeader"
                                         [ngModelOptions]="{standalone: true}"
                                         [disabled]="model.FieldType.Type[currentType].Definition.DisplayAsList"
+                                        i18n-label
                                         label="Hide Grid Column Headers?"></p-checkbox>
                         </li>
                     </ul>
@@ -943,10 +986,10 @@
         </simple-accordion>
 
         <!-- json property -->
-        <simple-accordion header="JSON Attribute" active="true" *ngIf="currentType == 'JsonElement'">
+        <simple-accordion i18n-header header="JSON Attribute" active="true" *ngIf="currentType == 'JsonElement'">
             <div class="row">
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">JSON Field</div>
+                    <div class="FieldNameRequired" i18n>JSON Field</div>
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_JsonFields"
@@ -955,7 +998,7 @@
                                 ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">JSON Attribute Path</div>
+                    <div class="FieldNameRequired" i18n>JSON Attribute Path</div>
                     <p-autoComplete [ngModelOptions]="{standalone: true}"
                                     [(ngModel)]="model.FieldType.Type[currentType].JsonAttribute.Path"
                                     [suggestions]="TypeaheadJsonPropertyOptionsForJsonFieldResults"
@@ -963,7 +1006,7 @@
                     </p-autoComplete>
                 </div>
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
-                    <div class="FieldNameRequired">JSON Attribute Data Type</div>
+                    <div class="FieldNameRequired" i18n>JSON Attribute Data Type</div>
                     <p-dropdown required
                                 [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_JsonDataTypes"
@@ -974,12 +1017,13 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Value Selection"
+        <simple-accordion i18n-header
+                          header="Value Selection"
                           active="false"
                           *ngIf="currentType === 'Counter'">
             <div class="row">
                 <div class="col s6">
-                    <div class="FieldName">
+                    <div class="FieldName" i18n>
                         Counter Prefix
                     </div>
                     <input pInputText
@@ -989,12 +1033,12 @@
                            [ngModelOptions]="{standalone: true}"
                            (change)="validate('CounterPrefix')" />
 
-                    <div class="form-instructions">
+                    <div class="form-instructions" i18n>
                         You can provide a prefix to be displayed in front of the counter. For example, with a prefix 'DQ-' the counter would display as DQ-1, DQ-2, etc.
                     </div>
                 </div>
                 <div class="col s6">
-                    <div class="FieldName">
+                    <div class="FieldName" i18n>
                         Counter Initial Value
                     </div>
                     <input pInputText
@@ -1003,7 +1047,7 @@
                            style="width: 98%; display: block;"
                            [ngModelOptions]="{standalone: true}"
                            (change)="validate('CounterInitialIndex')" />
-                    <div class="form-instructions">
+                    <div class="form-instructions" i18n>
                         The initial value will be the value of the counter for the first added asset after the counter field type is defined. It must be greater than the number of existing assets.
                     </div>
                 </div>
@@ -1012,6 +1056,7 @@
 
         <!-- asset path -->
         <simple-accordion *ngIf="currentType == 'Path' && allowSingleSegmentPath"
+                          i18n-header
                           header="Asset Path"
                           active="false">
             <div class="row">
@@ -1020,6 +1065,7 @@
                                 name="listSingleSegmentCheckbox"
                                 [ngModel]="listSingleSegmentCheckbox"
                                 (ngModelChange)="onListSingleSegment($event);"
+                                i18n-label
                                 label="List Single Segment"></p-checkbox>
                     <p-dropdown name="selectListSegment"
                                 [required]="listSingleSegmentCheckbox"
@@ -1037,12 +1083,13 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Descriptions"
+        <simple-accordion i18n-header
+                          header="Descriptions"
                           active="false">
             <div class="row">
                 <div class="col s6">
                     <div id='DisplayDescriptionTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Display Description
                     </div>
                     <textarea pInputTextarea
@@ -1053,7 +1100,7 @@
                 </div>
                 <div *ngIf="showDescription" class="col s6">
                     <div id='FormDescriptionTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Form Description
                     </div>
                     <textarea pInputTextarea
@@ -1065,13 +1112,14 @@
             </div>
         </simple-accordion>
 
-        <simple-accordion header="Search Results"
+        <simple-accordion i18n-header
+                          header="Search Results"
                           active="false"
                           *ngIf="showAddToSearch && model?.FieldType?.Type[currentType]?.Search?.AddToResult">
             <div class="row">
                 <div class="col s3">
                     <div id='SearchPrefixTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Prefix
                     </div>
                     <input pInputText
@@ -1083,7 +1131,7 @@
                 </div>
                 <div class="col s3">
                     <div id='SearchSuffixTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Suffix
                     </div>
                     <input pInputText
@@ -1096,7 +1144,7 @@
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="form-instructions">
+                    <div class="form-instructions" i18n>
                         You can provide a prefix and/or a suffix to be displayed in place of the field label. For example, a suffix 'accurate' could be used to display '96% accurate' instead of '<b>Accuracy</b>: 96%'.
                     </div>
                 </div>
@@ -1104,7 +1152,7 @@
             <div class="row">
                 <div class="col s3">
                     <div id='SearchDisplayOrderTip'
-                         class="FieldName">
+                         class="FieldName" i18n>
                         Display Order
                     </div>
                     <input pInputText
@@ -1118,7 +1166,7 @@
             </div>
             <div class="row">
                 <div class="col s12">
-                    <div class="form-instructions">
+                    <div class="form-instructions" i18n>
                         By default, display order is based on the order of field definitions. This can be overridden by setting the display order here.
                     </div>
                 </div>
@@ -1139,10 +1187,12 @@
                             type="submit"
                             [igDataCy]="'FieldType_Button_Save'"
                             [disabled]="!fieldEditor.form.valid || !displayFieldSelected ||  !valid() || errorMessage != ''"
+                            i18n-label
                             label="Save"></button>
                     <button pButton
                             type="button"
                             [igDataCy]="'FieldType_Button_Cancel'"
+                            i18n-label
                             label="Cancel"
                             (click)="cancel()"></button>
                 </div>

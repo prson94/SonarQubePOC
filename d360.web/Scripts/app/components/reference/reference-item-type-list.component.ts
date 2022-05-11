@@ -26,7 +26,8 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     @Input() initialSelectedListUid: string;
     public rowsPerPage: number;
-    public title: string = 'Reference Lists'
+    public title: string = $localize`Reference Lists`;
+    deleteTitle: string = $localize`Are you sure you want to delete the selected item?`;
 
     private destroy = new Subject<void>();
     private referenceTypes: ReferenceItemType[];
@@ -39,6 +40,10 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
 
     get showEditor(): boolean {
         return this._showEditor;
+    }
+
+    get assetTypEditorTitle(): string {
+        return this.selected != null ? $localize`Edit Reference List` : $localize`Add Reference List`;
     }
 
     set showEditor(value: boolean) {

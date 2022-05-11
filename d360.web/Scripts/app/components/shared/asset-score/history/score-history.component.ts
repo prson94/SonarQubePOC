@@ -37,7 +37,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
     private lastScorePoint: Date;
     private chartInstance: Highcharts.Chart;
-    calculatedScoreText: string = 'Calculating...';
+    calculatedScoreText: string = $localize`Calculating...`;
     scoreHistory: Highcharts.Options;
 
     private allLoadedPoints: any[];
@@ -348,7 +348,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
         var days = Math.floor(milliseconds / day);
         var months = Math.floor(days / 31);
         var years = Math.floor(months / 12);
-        let type = this.scoreType == ScoreType.Governance ? 'Governance ' : ' Data Quality';
+        let type = this.scoreType == ScoreType.Governance ? $localize`Governance` : $localize`Data Quality`;
         let latestScore = score;
         let hasEndDate: boolean = false;
 
@@ -358,22 +358,23 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
         let scorePercentage = this.getAsPrecentage(latestScore);
 
-        let verb: string = hasEndDate ? 'was' : 'has been';
+        let verb: string = hasEndDate ? $localize`was` : $localize`has been`;
         if (days == 0 || days == 1) {
-            this.calculatedScoreText = "Your " + type + " Score changed to  <strong> " + scorePercentage + " </strong> today</strong>";
+            this.calculatedScoreText = $localize`Your ${type} Score changed to <strong> ${scorePercentage} </strong> today</strong>`;
         }
         else if (days > 0 && days <= 90) {
-            this.calculatedScoreText = "Your " + type + " Score " + verb + " <strong> " + scorePercentage + " </strong> for <strong>" + days + " days</strong>";
+            this.calculatedScoreText = $localize`Your ${type} Score ${verb} <strong> ${scorePercentage} </strong> for <strong>${days} days</strong>`;
         }
         else if (days > 90 && days <= 780) {
-            this.calculatedScoreText = "Your " + type + " Score " + verb + " <strong> " + scorePercentage + " </strong> for <strong>" + months + " months</strong>";
+            this.calculatedScoreText = $localize`Your ${type} Score ${verb} <strong> ${scorePercentage} </strong> for <strong>${months} months</strong>`;
         }
         else if (days > 780) {
-            this.calculatedScoreText = "Your " + type + " Score " + verb + " <strong> " + scorePercentage + " </strong> for <strong>" + years + " years</strong>";
+            this.calculatedScoreText = $localize`Your ${type} Score ${verb} <strong> ${scorePercentage} </strong> for <strong>${years} years</strong>`;
         }
 
         if (hasEndDate) {
-            this.calculatedScoreText += " <span class='inactive'>(latest score is no longer active)</span>";
+            var subText = $localize`latest score is no longer active`;
+            this.calculatedScoreText += " <span class='inactive'>(" + subText + ")</span>";
         }
     }
 
@@ -384,7 +385,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
             this.formatCalculatedScoreText(milliseconds, this.scoresPoints[0].Score);
         }
         else {
-            return "Calculating...";
+            return $localize`Calculating...`;
         }
 
     }
@@ -392,9 +393,9 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
     getScoreType() {
         switch (this.scoreType) {
             case ScoreType.Governance:
-                return "Governance";
+                return $localize`Governance`;
             case ScoreType.DataQuality:
-                return "Data Quality";
+                return $localize`Data Quality`;
             default:
                 return "";
         }

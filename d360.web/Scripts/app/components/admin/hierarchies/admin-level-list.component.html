@@ -1,5 +1,5 @@
 ﻿<header *ngIf="!showEditor && !showDelete">
-    Levels
+    <ng-container i18n>Levels</ng-container>
     <d3s-tile-actions [hasAdd]="true"
                       (addClick)="add()"
                       [hasFilterMode]="true"
@@ -12,7 +12,7 @@
            pInputText
            size="100"
            (input)="dt.filterGlobal($event.target.value, 'contains')"
-           placeholder="Search..."
+           placeholder="searchText"
            class="grid-simple-filter">
     <p-table #dt
              [value]="levels"
@@ -25,15 +25,15 @@
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'Level'">
-                    Level
+                    <ng-container i18n>Level</ng-container>
                     <d3s-sortIcon [field]="'Level'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'Name'">
-                    Name
+                    <ng-container i18n>Name</ng-container>
                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'Description'">
-                    Description
+                    <ng-container i18n>Description</ng-container>
                     <d3s-sortIcon [field]="'Description'"></d3s-sortIcon>
                 </th>
                 <th style="width: 40px"></th>
@@ -92,7 +92,7 @@
                  [callback]="theDeleteCallback"
                  [itemId]="selectedLevel?.Level"
                  [method]="'callback'"
-                 [prompt]="'Are you sure you want to delete the level [' + [selectedLevel?.Name] + ']?'"
+                 [prompt]="deleteModalTitle"
                  (onCancel)="showDelete=false;"></d3s-delete-form>
 <d3s-admin-level-editor *ngIf="showEditor"
                         [maxDepth]="maxDepth"

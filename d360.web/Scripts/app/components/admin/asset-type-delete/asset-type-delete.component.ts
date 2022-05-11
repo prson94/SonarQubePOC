@@ -18,13 +18,16 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
     @Input() artifactTypeUid: string;
     @Input() assetTypeId: number;
     @Input() assetTypeClass: AssetTypeClass;
-    @Input() assetTypeName: string = "Unknown";
+    @Input() assetTypeName: string = $localize`Unknown`;
     @Input() count: number = 0;
     @Output() onCancel = new EventEmitter();
 
     signoff: boolean = false;
     className: string;
     private sub: any;
+
+    labelDelete = $localize`Delete`;
+    labelCancel = $localize`Cancel`;
 
     constructor(
         protected settingsService: CompanySettingsService,
@@ -49,21 +52,21 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
             let name: string = "";
             switch (this.assetTypeClass) {
                 case AssetTypeClass.BusinessAsset:
-                    name = "Business Asset";
+                    name = $localize`Business Asset`;
                     break;
                 case AssetTypeClass.TechnicalAsset:
-                    name = "Technical Asset";
+                    name = $localize`Technical Asset`;
                     break;
                 case AssetTypeClass.DiagramAsset:
-                    name = "Diagram Asset";
+                    name = $localize`Diagram Asset`;
                     break;
                 case AssetTypeClass.Rule:
-                    name = "Rule";
+                    name = $localize`Rule`;
                     break;
                 case AssetTypeClass.Model:
-                    name = "Model";
+                    name = $localize`Model`;
                     break;
-                default: name = "Business Asset";
+                default: name = $localize`Business Asset`;
                     break;
 
             }

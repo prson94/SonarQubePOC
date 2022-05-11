@@ -11,14 +11,14 @@ import { CompanySettingsService } from "../../../services/settings.service";
 @Component({
     selector: 'd3s-admin-export-template-style-form',
     template: `
-    <header>{{mode}} Styling Rules</header>
+    <header>{{mode}} <ng-container i18n>Styling Rules</ng-container></header>
     <div class="clear"></div>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <form #styleForm="ngForm" (ngSubmit)="save()">
             <div class="row">
                 <div class="col l6 m6 s12">
-                    <div class="FieldName">Selection</div>
+                    <div class="FieldName" i18n>Selection</div>
                     <div class="row">
                         <div class="col s12">
                             <p-dropdown [options]="selections" [(ngModel)]="model.SelectionType" (onChange)="selectionChange();" [ngModelOptions]="{standalone: true}" [style]="{ 'width' : '50%' }"></p-dropdown>
@@ -26,7 +26,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
                     </div>
                 </div>
                 <div class="col l6 m6 s12">
-                    <div class="FieldName">Background Color</div>
+                    <div class="FieldName" i18n>Background Color</div>
                     <div class="row">
                         <div class="col s12">
                             <p-colorPicker [(ngModel)]="model.BgColor"  name="backcolor"></p-colorPicker>
@@ -37,7 +37,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
             </div>
             <div class="row">
                 <div class="col l6 m6 s12">
-                    <div class="FieldName">{{model.SelectionType}} Number</div>
+                    <div class="FieldName">{{model.SelectionType}} <ng-container i18n>Number</ng-container></div>
                     <div class="row">
                         <div class="col s12">
                             <input *ngIf="model.SelectionType == 'Column'" min="1" max="99999"  name="displayColumn" style="height:25px;width:50%;display:block;" type="number" [(ngModel)]="model.Column" required />
@@ -47,7 +47,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
                     </div>
                 </div>
                 <div class="col l6 m6 s12">
-                    <div class="FieldName">Text Color</div>
+                    <div class="FieldName" i18n>Text Color</div>
                     <div class="row">
                         <div class="col s12">
                             <p-colorPicker [(ngModel)]="model.TextColor" name="textcolor"></p-colorPicker>
@@ -58,7 +58,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
             </div>
             <div class="row">
                 <div class="col l6 offset-l6 m6 offset-m6 s12">
-                    <div class="FieldName">Bold Text</div>
+                    <div class="FieldName" i18n>Bold Text</div>
                     <div class="row">
                         <div class="col s12">
                             <input pCheckbox type="checkbox" name="boldText" [(ngModel)]="model.IsBold" />
@@ -68,8 +68,8 @@ import { CompanySettingsService } from "../../../services/settings.service";
             </div>
             <div class="row">
                 <div class="col s12 buttons">
-                    <button pButton type="submit" style="width: '150px';" label="Save" [disabled]="!styleForm.form.valid"></button>
-                    <button pButton type="button" style="width: '150px';" label="Cancel" (click)="onCancel.emit(null)"></button>
+                    <button pButton type="submit" style="width: '150px';" label="{{labelSave}}" [disabled]="!styleForm.form.valid"></button>
+                    <button pButton type="button" style="width: '150px';" label="{{labelCancel}}" (click)="onCancel.emit(null)"></button>
                 </div>
             </div>
         </form>
@@ -77,7 +77,7 @@ import { CompanySettingsService } from "../../../services/settings.service";
 
 `
 })
-export class AdminExportTemplateStyleFormComponent extends BaseComponent implements OnChanges, FormEvents  {
+export class AdminExportTemplateStyleFormComponent extends BaseComponent implements OnChanges, FormEvents {
     @Input() mode: string;
     @Input() exportViewType: ExportViewType;
     @Input() selectedStyle: ExportTemplateStyle;
@@ -88,8 +88,11 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
     @Output() onLoadComplete = new EventEmitter();
     @Input() templateId: number;
 
-    private model: ExportTemplateStyle ;
-    selections: SelectItem[] = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
+    labelSave = $localize`Save`;
+    labelCancel = $localize`Cancel`;
+
+    private model: ExportTemplateStyle;
+    selections: SelectItem[] = [{ label: $localize`Column`, value: "Column" }, { label: "Row", value: "Row" }];
 
     constructor(
         private exportTemplateService: ExportTemplateService,
@@ -111,15 +114,17 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
 
     ngOnChanges(changes: SimpleChanges): void {
         this.model.AssetTypeExportTemplateID = changes["templateId"].currentValue;
-        if (changes["mode"].currentValue == 'Edit' && changes["selectedStyle"].currentValue) {
+        if (changes["mode"].currentValue == $localize`Edit` && changes["selectedStyle"].currentValue) {
             this.model = _.clone(changes["selectedStyle"].currentValue);
         }
-        this.model.SelectionType = this.exportViewType.toString() != ExportViewType[ExportViewType.Pivot] ? "Header" : this.model.Column == -1 ? "Row" : "Column";          
+        this.model.SelectionType = this.exportViewType.toString() != ExportViewType[ExportViewType.Pivot] ? "Header" : this.model.Column == -1 ? "Row" : "Column";
 
-        if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])        
-            this.selections = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
+        if (this.exportViewType.toString() == ExportViewType[ExportViewType.Pivot])
+            this.selections = [
+                { label: $localize`Column`, value: "Column" },
+                { label: $localize`Row`, value: "Row" }];
         else
-            this.selections = [{ label: "Header", value: "Header" }];
+            this.selections = [{ label: $localize`Header`, value: "Header" }];
 
     }
     selectionChange() {
@@ -134,10 +139,10 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
     save() {
         this.exportTemplateService.saveExportTemplateStyle(this.model).subscribe(result => {
             if (this.model.ID) {
-                this.messagesService.showInfoMessage('Success', 'Style updated successfully');
+                this.messagesService.showInfoMessage($localize`Success`, $localize`Style updated successfully`);
             } else {
-                this.messagesService.showInfoMessage('Success', 'Style added successfully');
-            }            
+                this.messagesService.showInfoMessage($localize`Success`, $localize`Style added successfully`);
+            }
             //default
             this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: null, Row: null, ID: 0, AssetTypeExportTemplateID: 0, IsBold: false };
             this.onSuccess.emit(null);

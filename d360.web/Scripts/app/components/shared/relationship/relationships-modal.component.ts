@@ -24,7 +24,7 @@ export class RelationshipsModalComponent extends BaseComponent implements OnDest
     @Input() subtitle: string;
     @Output() onClose = new EventEmitter;
 
-    componentTitle: string = 'Relationships';
+    componentTitle: string = $localize`Relationships`;
 
 
     constructor(

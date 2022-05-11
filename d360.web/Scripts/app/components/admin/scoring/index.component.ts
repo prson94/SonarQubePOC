@@ -31,8 +31,9 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     public theDeleteCallback: Function;
 
     showEdit = false;
-    editTitle = 'Create Scoring Definition';
-    submitLabel = 'Create';
+    editTitle = $localize`Create Scoring Definition`;
+    submitLabel = $localize`Create`;
+    searchText = $localize`Search...`;
 
     @ViewChild('dt', { static: false }) dt: Table;
 
@@ -120,7 +121,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     getScoreTypeFriendlyName(sct: ScoreType): string {
         switch (sct.toString()) {
             case 'DataQuality':
-                return 'Data Quality';
+                return $localize`Data Quality`;
             default:
                 return sct.toString();
         }
@@ -131,7 +132,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     }
 
     add() {
-        this.editTitle = 'Create Scoring Definition';
+        this.editTitle = $localize`Create Scoring Definition`;
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = null;
         this.selection.isExternallyCalculated = false;
@@ -146,7 +147,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     }
 
     doEdit(item: ScoreTypeAllocationFormatted) {
-        this.editTitle = 'Edit Scoring Definition';
+        this.editTitle = $localize`Edit Scoring Definition`;
         this.showEdit = true;
         this.selection = this.getAllocationByUid(item.uid);
     }
@@ -158,7 +159,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     private deleteAllocation($event) {
         this.allocationService.deleteAllocationByUid($event.uid).
             subscribe(result => {
-                result.message = "Score successfully deleted";
+                result.message = $localize`Score successfully deleted`;
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
                 this.showDelete = false;
@@ -187,6 +188,6 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     }
 
     get deletePopupTitle(): string {
-        return (this.selection.hasField || this.selection.hasMeasure) ? 'Cannot Delete Scoring Definition' : 'Delete Scoring Definition';
+        return (this.selection.hasField || this.selection.hasMeasure) ? $localize`Cannot Delete Scoring Definition` : $localize`Delete Scoring Definition`;
     }
 }

@@ -5,7 +5,7 @@
 <div *ngIf="!isLoading">
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">Asset Type</div>
+            <div class="FieldName" i18n>Asset Type</div>
             <div>
                 <p-dropdown igDropdown
                             required
@@ -14,7 +14,7 @@
                             (onChange)="assetTypeChanged()"
                             [(ngModel)]="selection.AssetTypeUid"
                             [appendTo]="'body'"
-                            placeholder="Value required"
+                            placeholder="{{labelRequired}}"
                             [options]="assetTypes"></p-dropdown>
             </div>
         </div>
@@ -22,15 +22,15 @@
     <br />
     <div class="row">
         <div class="col s12">
-            <div class="FieldName">Responsibilities</div>
+            <div class="FieldName" i18n>Responsibilities</div>
             <div>
                 <p-multiSelect [options]="responsibilityList"
-                                placeholder="Optional"
-                                [(ngModel)]="selection.ResponsibilityTypeUid"
-                                [disabled]="!selection?.AssetTypeUid"
-                                class="d3s-color-picker multi fullWidth"
-                                name="responsibilities"
-                                selectedItemsLabel="{0} items selected">
+                               placeholder="Optional"
+                               [(ngModel)]="selection.ResponsibilityTypeUid"
+                               [disabled]="!selection?.AssetTypeUid"
+                               class="d3s-color-picker multi fullWidth"
+                               name="responsibilities"
+                               selectedItemsLabel="{0} items selected">
                 </p-multiSelect>
             </div>
         </div>
@@ -38,8 +38,8 @@
     <br />
     <div class="row">
         <div class="col s12">
-            <button pButton type="submit" [disabled]="!selection?.AssetTypeUid" (click)="save()" style="width: '150px';" label="Save"></button>
-            <button pButton type="button" (click)="closeClick.emit();" label="Close" style="width: '150px';"></button>
+            <button pButton type="submit" [disabled]="!selection?.AssetTypeUid" (click)="save()" style="width: 150px;" label="{{labelSave}}"></button>
+            <button pButton type="button" (click)="closeClick.emit();" label="{{labelClose}}" style="width: 150px;"></button>
         </div>
     </div>
 </div>

@@ -38,8 +38,8 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     @Input() multiSelectStyle: CommonComponentSelectStyle = CommonComponentSelectStyle.Button;
 
     // What should be the label on the button if multi-select is enabled and the    style is set appropriately.
-    @Input() multiSelectButtonLabel: string = 'No Label';
-    @Input() placeholder: string = 'No placeholder';
+    @Input() multiSelectButtonLabel: string = $localize`No Label`;
+    @Input() placeholder: string = $localize`No placeholder`;
 
     //If true, search results wont be cleared after selection
     @Input() clearResultsAfterSelection: boolean = false;

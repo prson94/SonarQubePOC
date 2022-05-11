@@ -1,13 +1,13 @@
-﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 
-import {Organization, OrganizationResource} from '../../../models/organization.model';
+import { Organization, OrganizationResource } from '../../../models/organization.model';
 
-import {OrganizationsService} from '../../../services/organizations.service';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -15,7 +15,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     selector: 'd3s-admin-organization-resources',
     providers: [OrganizationsService],
     template: `
-        <header *ngIf="!showHistory">Users for this organization
+        <header *ngIf="!showHistory"><ng-container i18n>Users for this organization</ng-container>
             <d3s-tile-actions [hasFilterMode]="true"
                               [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
@@ -26,7 +26,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                    pInputText
                    size="100"
                    (input)="dt.filterGlobal($event.target.value, 'contains')"
-                   placeholder="Search..."
+                   placeholder="{{searchText}}"
                    class="grid-simple-filter">
             <p-table #dt
                      [value]="resources"
@@ -42,27 +42,27 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     <tr>
                         <th style="max-width: 140px">Name</th>
                         <th [pSortableColumn]="'Email'">
-                            Email
+                            <ng-container i18n>Email</ng-container>
                             <d3s-sortIcon [field]="'Email'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'Status'"
                             style="max-width: 100px">
-                            Status
+                            <ng-container i18n>Status</ng-container>
                             <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'Accepted'"
                             style="max-width: 100px">
-                            Accepted
+                            <ng-container i18n>Accepted</ng-container>
                             <d3s-sortIcon [field]="'Accepted'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'DateAccepted'"
                             style="max-width: 150px">
-                            Accepted On
+                            <ng-container i18n>Accepted On</ng-container>
                             <d3s-sortIcon [field]="'DateAccepted'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'DateLastLoggedIn'"
                             style="max-width: 120px">
-                            Last Logon
+                            <ng-container i18n>Last Logon</ng-container>
                             <d3s-sortIcon [field]="'DateLastLoggedIn'"></d3s-sortIcon>
                         </th>
                         <th style="width: 40px"></th>
@@ -144,6 +144,8 @@ export class AdminOrganizationResourcesComponent extends BaseComponent implement
     resources: OrganizationResource[] = [];
     selected: OrganizationResource;
 
+    searchText = $localize`Search...`;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -173,7 +175,7 @@ export class AdminOrganizationResourcesComponent extends BaseComponent implement
                     this.isLoading = false;
                 }
             )
-        ;
+            ;
     }
 
     private openResource(event) {

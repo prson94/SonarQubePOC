@@ -29,8 +29,8 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     @Input() maxWidth: number;
     @Input() maxSize: number;
 
-    @Input() chooseFileTooltip: string = 'Choose file';
-    @Input() restoreFileTooltip: string = 'Restore the file';
+    @Input() chooseFileTooltip: string = $localize`Choose file`;
+    @Input() restoreFileTooltip: string = $localize`Restore the file`;
 
     value = "";
 
@@ -44,8 +44,8 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
     previewHeight: number = 0;
     previewWidth: number = 0;
 
-    invalidFormatMessage: string = 'File type not supported. Please choose a PNG, JPG or GIF image.';
-    invalidDimensionMessage: string = 'File exceeds height [or width] limit. Please upload a file that has max file height of [40px].';
+    invalidFormatMessage: string = $localize`File type not supported. Please choose a PNG, JPG or GIF image.`;
+    invalidDimensionMessage: string = $localize`File exceeds height [or width] limit. Please upload a file that has max file height of [40px].`;
 
     private file: any = {};
     private image: any = {};
@@ -66,7 +66,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
                 this.previewHeight = 40;
                 this.previewWidth = 40;
                 this.allowedExtensions = "image/ico,image/x-icon,image/vnd.microsoft.icon";
-                this.invalidFormatMessage = 'File type not supported. Please choose a ICO image.';
+                this.invalidFormatMessage = $localize`File type not supported. Please choose a ICO image.`;
                 break;
             case 'LOGO':
                 this.previewHeight = 40;
@@ -81,13 +81,13 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
 
     setInvalidMessages() {
         if (this.maxHeight) {
-            this.invalidDimensionMessage = `File exceeds height limit. Please upload a file that has max file height of [${this.maxHeight}px].`;
+            this.invalidDimensionMessage = $localize`File exceeds height limit. Please upload a file that has max file height of [${this.maxHeight}px].`;
         }
         if (this.maxWidth) {
-            this.invalidDimensionMessage = `File exceeds width limit. Please upload a file that has max file width of [${this.maxWidth}px].`;
+            this.invalidDimensionMessage = $localize`File exceeds width limit. Please upload a file that has max file width of [${this.maxWidth}px].`;
         }
         if (this.maxHeight && this.maxWidth) {
-            this.invalidDimensionMessage = `File exceeds height or width limit. Please upload a file that has max file dimensions of ${this.maxWidth}px X ${this.maxHeight}px.`;
+            this.invalidDimensionMessage = $localize`File exceeds height or width limit. Please upload a file that has max file dimensions of ${this.maxWidth}px X ${this.maxHeight}px.`;
         }
     }
 
@@ -180,7 +180,7 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
                     else {
                         sizeStr = parseInt(maxSizeKB.toFixed(0)) + "kB";
                     }
-                    return `File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
+                    return $localize`File exceeds size limit. Please upload a file that has max file size of [${sizeStr}]`;
                 }
             }
         }

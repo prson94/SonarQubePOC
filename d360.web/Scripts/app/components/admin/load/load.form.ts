@@ -12,7 +12,7 @@ import * as _ from 'lodash';
 })
 
 export class LoadForm implements OnInit, OnChanges {
-    @Input() title: string = "Upload a Spreadsheet Job";
+    @Input() title: string = $localize`Upload a Spreadsheet Job`;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onError = new EventEmitter();
@@ -31,6 +31,9 @@ export class LoadForm implements OnInit, OnChanges {
     columns: LoadColumn[];
     file: File;
     errorMessage = "";
+
+    saveLabel = $localize`Save`;
+    cancelLabel = $localize`Cancel`;
 
     constructor(private loadService: LoadService) {
     }
@@ -154,19 +157,19 @@ export class LoadForm implements OnInit, OnChanges {
                     }
                 )
                 .then(() => {
-                        this.loadService.postLoad(model).subscribe(
-                            data => {
-                                if (data["type"] == 'error') {
-                                    this.onError.emit(null);
-                                    this.errorMessage = data["message"];
-                                } else {
-                                    this.onSuccess.emit(null);
-                                }
-                                this.isSaving = false;
-                                this.onComplete.emit(null);
+                    this.loadService.postLoad(model).subscribe(
+                        data => {
+                            if (data["type"] == 'error') {
+                                this.onError.emit(null);
+                                this.errorMessage = data["message"];
+                            } else {
+                                this.onSuccess.emit(null);
                             }
-                        )
-                    }
+                            this.isSaving = false;
+                            this.onComplete.emit(null);
+                        }
+                    )
+                }
                 );
         }
     }

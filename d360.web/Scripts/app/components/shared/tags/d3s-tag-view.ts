@@ -33,7 +33,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     @Input() assetUID: string;
     @Input() assetUIDList: string[];
     @Input() ignoreResizing: boolean = false;
-    @Input() placeHolder: string = "Click to add...";
+    @Input() placeHolder: string = $localize`Click to add...`;
     @Output() tagsChanged = new EventEmitter();
     @Input() interceptLinkClick: boolean = false;
 
@@ -77,7 +77,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         private datePipe: DatePipe,
         private router: Router,
         private linkClickInterceptor: LinkClickInterceptor,
-        private genericMessageService: GenericMessageService ) {
+        private genericMessageService: GenericMessageService) {
         super(settingsService);
     }
 

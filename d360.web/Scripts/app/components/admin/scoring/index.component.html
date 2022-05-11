@@ -6,28 +6,28 @@
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!isLoading">
-                <input type="text" pInputText [hidden]="!showSimpleFilter" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter" [ngModel]="dt.filters['global']?.value">
+                <input type="text" pInputText [hidden]="!showSimpleFilter" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{searchText}}" class="grid-simple-filter" [ngModel]="dt.filters['global']?.value">
                 <p-table #dt [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType','isExternallyCalculated']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'assetClassName'" style="width: 200px">
-                                Asset Class
+                                <ng-container i18n>Asset Class</ng-container>
                                 <d3s-sortIcon [field]="'assetClassName'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'assetTypePath'">
-                                Asset Type
+                                <ng-container i18n>Asset Type</ng-container>
                                 <d3s-sortIcon [field]="'assetTypePath'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'scoreType'">
-                                Score Type
+                                <ng-container i18n>Score Type</ng-container>
                                 <d3s-sortIcon [field]="'scoreType'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'isExternallyCalculated'">
-                                Score Calculation
+                                <ng-container i18n>Score Calculation</ng-container>
                                 <d3s-sortIcon [field]="'isExternallyCalculated'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'formattedThreshold'">
-                                Scoring Bands
+                                <ng-container i18n>Scoring Bands</ng-container>
                                 <d3s-sortIcon [field]="'formattedThreshold'"></d3s-sortIcon>
                             </th>
                             <th></th>
@@ -101,14 +101,14 @@
                              [cancelButtonText]="(selection.hasMeasure || selection.hasField) ? 'Close' : 'Cancel'">
                 <div prompt>
                     <ng-container *ngIf="selection.hasMeasure || selection.hasField">
-                        <ng-container *ngIf="selection.hasMeasure">
+                        <ng-container *ngIf="selection.hasMeasure" i18n>
                             Sorry, you are unable to delete a score definition with measures defined.
                         </ng-container>
-                        <ng-container *ngIf="!selection.hasMeasure && selection.hasField">
+                        <ng-container *ngIf="!selection.hasMeasure && selection.hasField" i18n>
                             Sorry, you cannot delete a scoring definition when it is referenced by a Score field on an Asset Type. Please remove the field from the Asset Type and try again.
                         </ng-container>
                     </ng-container>
-                    <ng-container *ngIf="!selection.hasMeasure && !selection.hasField">
+                    <ng-container *ngIf="!selection.hasMeasure && !selection.hasField" i18n>
                         Are you sure you want to permanently delete this score?
                     </ng-container>
                 </div>

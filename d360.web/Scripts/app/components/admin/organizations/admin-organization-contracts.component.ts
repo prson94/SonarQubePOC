@@ -5,11 +5,11 @@
     SimpleChange
 } from '@angular/core';
 
-import {Organization, ContractDetail} from '../../../models/organization.model';
+import { Organization, ContractDetail } from '../../../models/organization.model';
 
-import {OrganizationsService} from '../../../services/organizations.service';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     selector: 'd3s-admin-organization-contracts',
     providers: [OrganizationsService],
     template: `
-        <header *ngIf="!showEditor && !showDelete && !showHistory">Contracts for this organization
+        <header *ngIf="!showEditor && !showDelete && !showHistory"><ng-container i18n>Contracts for this organization</ng-container>
             <d3s-tile-actions [hasAdd]="true"
                               (addClick)="add()"
                               [hasFilterMode]="true"
@@ -30,7 +30,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                    pInputText
                    size="100"
                    (input)="dt.filterGlobal($event.target.value, 'contains')"
-                   placeholder="Search..."
+                   placeholder="{{searchText}}"
                    class="grid-simple-filter">
             <p-table #dt
                      [value]="contracts"
@@ -45,16 +45,16 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Title'">
-                            Title
+                            <ng-container i18n>Title</ng-container>
                             <d3s-sortIcon [field]="'Title'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'ContractTypeName'"
                             style="width: 220px">
-                            Type
+                            <ng-container i18n>Type</ng-container>
                             <d3s-sortIcon [field]="'ContractTypeName'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'PublishedOn'">
-                            Published On
+                            <ng-container i18n>Published On</ng-container>
                             <d3s-sortIcon [field]="'PublishedOn'"></d3s-sortIcon>
                         </th>
                         <th style="width: 40px"></th>
@@ -86,7 +86,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <td>{{ item.Title }}</td>
                         <td>{{ item.ContractTypeName }}</td>
                         <td>
-                            {{ item.PublishedOn == null ? 'Never' : (item.PublishedOn | date : 'short') }}
+                            {{ item.PublishedOn == null ? labelNever : (item.PublishedOn | date : 'short') }}
                         </td>
                         <td>
                             <div class="RowTools">
@@ -128,7 +128,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.ID"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to delete the contract [' + [selected?.Title] + ']?'"
+                         [prompt]="deletePrompt"
                          (onCancel)="showDelete=false;"
         ></d3s-delete-form>
         <div *ngIf="showHistory">
@@ -154,6 +154,10 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
     selected: ContractDetail;
 
     theDeleteCallback: Function;
+
+    searchText = $localize`Search...`;
+    labelNever = $localize`Never`;
+
 
     constructor(
         private organizationsService: OrganizationsService,
@@ -190,7 +194,7 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
                     this.isLoading = false;
                 }
             )
-        ;
+            ;
     }
 
     delete(id: number) {
@@ -218,5 +222,9 @@ export class AdminOrganizationContractsComponent extends BaseComponent implement
         if (this.selected == null && this.contracts.length > 0) {
             this.selected = this.contracts[0];
         }
+    }
+
+    get deletePrompt(): string {
+        return $localize`Are you sure you want to delete the contract [${this.selected?.Title}]?`;
     }
 }

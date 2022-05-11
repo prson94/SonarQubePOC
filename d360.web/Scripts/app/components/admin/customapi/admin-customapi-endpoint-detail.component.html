@@ -1,26 +1,28 @@
 <div class="row">
     <div class="col s12">
         <div class="tile tile-detail">
-            <header>Endpoint: {{endpoint?.Name}}</header>
+            <header>
+                <ng-container i18n>Endpoint</ng-container>: {{endpoint?.Name}}
+            </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div *ngIf="!isLoading"
                  class="row">
                 <div class="col l6 s12">
                     <div class="row">
                         <div class="col l6 s12">
-                            <div class="FieldName">URI Segment</div>
+                            <div class="FieldName"><ng-container i18n>URI Segment</ng-container></div>
                             <div>{{endpoint?.UriPrefix}}</div>
                         </div>
                         <div class="col l6 s12">
-                            <div class="FieldName"># Versions</div>
+                            <div class="FieldName">#<ng-container i18n>Versions</ng-container></div>
                             <div>{{numberOfVersions}}</div>
                         </div>
                         <div class="col l6 s12">
-                            <div class="FieldName">Service</div>
+                            <div class="FieldName"><ng-container i18n>Service</ng-container></div>
                             <div>{{service?.Name}}</div>
                         </div>
                         <div class="col l6 s12">
-                            <div class="FieldName">Path so far</div>
+                            <div class="FieldName"><ng-container i18n>Path so far</ng-container></div>
                             <div>{{service?.UriPrefix}}/{{endpoint?.UriPrefix}}</div>
                         </div>
                         <div class="col s12">

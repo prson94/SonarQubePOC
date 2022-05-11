@@ -779,7 +779,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                 event.Success = res.Success;
 
                 if (res.Success) {
-                    let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';
+                    let msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.assetUid = res.uid;
@@ -845,7 +845,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             event.Success = res.Success;
 
             if (res.Success) {
-                let msg = group.Uid ? 'Successfully updated' : 'Successfully added';
+                let msg = group.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
                 this.showMessageForApiResult(this.messagesService, res, msg);
                 if (res.uid) {
                     event.assetUid = res.uid;
@@ -900,7 +900,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             .subscribe((result) => {
                 var res = result[0];
                 if (res.Success) {
-                    let msg = 'Successfully updated';
+                    let msg = $localize`Successfully updated`;
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.relationshipUid = res.uid;
@@ -972,5 +972,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             return false;
         }
         return this.form.valid;
+    }
+
+    get cancelButtonLabel(): string {
+        return this.hasUpdateFormChanged ? $localize`Discard Changes` : $localize`Cancel`;
+    }
+
+    get saveButtonLabel(): string {
+        return this.selection ? $localize`Save Changes` : $localize`Create`;
     }
 }

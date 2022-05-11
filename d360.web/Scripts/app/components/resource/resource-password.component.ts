@@ -9,12 +9,12 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 @Component({
     selector: 'd3s-resource-password',
-    template: 
-    `
+    template:
+        `
 <header>Edit Your Password</header>
 <div class="row">
     <div class="col s12 m6">
-        <div class="FieldNameRequired">Current Password</div>
+        <div class="FieldNameRequired" i18n>Current Password</div>
         <div>
             <input [(ngModel)]="currentPassword" type="password" style="width:98%" />
         </div>
@@ -22,38 +22,38 @@ import { CompanySettingsService } from '../../services/settings.service';
 </div>
 <div class="row">
     <div class="col s12 m6">
-        <div class="FieldNameRequired">New Password</div>
+        <div class="FieldNameRequired" i18n>New Password</div>
         <div>
             <input [ngModel]="newPassword" (ngModelChange)="newPassword = $event; validate();" type="password" style="width:98%" />
         </div>
-        <div class="errorMessage" *ngIf="newPassword.length > 0 && !newPasswordValid">
+        <div class="errorMessage" *ngIf="newPassword.length > 0 && !newPasswordValid" i18n>
             New password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number; at least 1 special character
         </div>
-        <div class="errorMessage" *ngIf="newPassword.length > 0 && newPasswordValid && SamePasswordMatch">
+        <div class="errorMessage" *ngIf="newPassword.length > 0 && newPasswordValid && SamePasswordMatch" i18n>
             New password may not be the same as old password.
         </div>
     </div>
     <div class="col s12 m6">
-        <div class="FieldNameRequired">Confirm New Password</div>
+        <div class="FieldNameRequired" i18n>Confirm New Password</div>
         <div>
             <input [ngModel]="newPassword2" (ngModelChange)="newPassword2 = $event; validate();" type="password" style="width:98%" />
         </div>
-        <div class="errorMessage" *ngIf="newPassword2.length > 0 && !newPassword2Match">
+        <div class="errorMessage" *ngIf="newPassword2.length > 0 && !newPassword2Match" i18n>
            The passwords you entered do not match
         </div>
     </div>
 </div>
 <div class="row" style="padding-top:15px;">
     <div class="col s12">
-        <button pButton label="Cancel" type="button" (click)="onClose.emit()"></button>
-        <button pButton label="Save" type="button" (click)="save()" [disabled]="isLoading || newPassword.length == 0 || newPassword2.length == 0 || !newPassword2Match || SamePasswordMatch || currentPassword.length == 0 || !newPasswordValid"></button>
+        <button pButton i18n-label label="Cancel" type="button" (click)="onClose.emit()"></button>
+        <button pButton i18n-label label="Save" type="button" (click)="save()" [disabled]="isLoading || newPassword.length == 0 || newPassword2.length == 0 || !newPassword2Match || SamePasswordMatch || currentPassword.length == 0 || !newPasswordValid"></button>
     </div>
 </div>
 `,
     providers: [ResourcesService, UriBasedService]
 })
 
-export class ResourcePasswordComponent extends BaseComponent{
+export class ResourcePasswordComponent extends BaseComponent {
     @Output() onSave = new EventEmitter();
     @Output() onClose = new EventEmitter();
 
@@ -98,25 +98,25 @@ export class ResourcePasswordComponent extends BaseComponent{
                         user.Username = this.resource.Email;
                         user.IsAdministrator = this.resource.IsAdministrator;
 
-                        user.Fields = new Object(); 
+                        user.Fields = new Object();
 
                         user.Fields['NewPassword'] = this.newPassword;
                         user.Fields['CurrentPassword'] = this.currentPassword;
 
                         this.isLoading = true;
                         this.resourcesService.saveResource(user, false, true)
-                        .subscribe(
-                            result => {
-                                this.isLoading = false;
-                                if (result.Message == "" && result.Success) {
-                                    result.Message = 'Password successfully updated..';
+                            .subscribe(
+                                result => {
+                                    this.isLoading = false;
+                                    if (result.Message == "" && result.Success) {
+                                        result.Message = $localize`Password successfully updated...`;
+                                    }
+                                    this.showMessageForApiResult(this.messagesService, result, $localize`Password successfully updated...`);
+                                    if (result.Success) {
+                                        this.onSave.emit();
+                                    }
                                 }
-                                this.showMessageForApiResult(this.messagesService, result, 'Password successfully updated..');
-                                if (result.Success) {
-                                    this.onSave.emit();
-                                }
-                            }
-                        );
+                            );
                     }
                 });
         });

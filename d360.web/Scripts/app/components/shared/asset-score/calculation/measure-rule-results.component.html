@@ -1,5 +1,5 @@
 ﻿<div class="content">
-    <div class="description">Showing rule results for the measure <strong>{{scoreItem?.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
+    <div class="description" i18n>Showing rule results for the measure <strong>{{scoreItem?.Name}}</strong> on the asset <strong>{{assetName}}</strong> (<strong>{{assetTypeName}}</strong>):</div>
     <div class="scoring-v2">
         <div class="score-left-content">
             <div class="score-definition-container">
@@ -34,19 +34,19 @@
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'OwningAssetDisplayPath'" style="width: 25%">
-                                    Rule
+                                    <ng-container i18n>Rule</ng-container>
                                     <d3s-sortIcon [field]="'OwningAssetDisplayPath'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'EvaluatedAssetDisplayPath'">
-                                    Asset
+                                    <ng-container i18n>Asset</ng-container>
                                     <d3s-sortIcon [field]="'EvaluatedAssetDisplayPath'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'EffectiveDate'" style="width: 150px">
-                                    Effective Date
+                                    <ng-container i18n>Effective Date</ng-container>
                                     <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'PassFraction'" style="width: 150px">
-                                    Pass Fraction
+                                    <ng-container i18n>Pass Fraction</ng-container>
                                     <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
                                 </th>
                             </tr>
@@ -58,7 +58,7 @@
                                 <td style="width: 150px">
                                     <span *ngIf="item.EffectiveDate">{{ item.EffectiveDate | date:'shortDate':'GMT'}}</span>
                                     <span *ngIf="!item.EffectiveDate" class="fa fa-exclamation-triangle" style="margin-right: 6px"></span>
-                                    <span *ngIf="!item.EffectiveDate">No result found</span>
+                                    <span *ngIf="!item.EffectiveDate" i18n>No result found</span>
                                 </td>
                                 <td style="width: 150px">{{item.PassFraction}}</td>
                             </tr>
@@ -79,15 +79,15 @@
                     </div>
 
                     <div class="measure-details-item">
-                        <div class="details-header">Rule</div>
+                        <div class="details-header" i18n>Rule</div>
                         <div class="details-content"><a [routerLink]="'/asset/' + selected.OwningAssetUid" target="MeasureEvidenceRuleResult" [innerHtml]="selected.OwningAssetDisplayPath | safeHtml"></a></div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Asset</div>
+                        <div class="details-header" i18n>Asset</div>
                         <div class="details-content"><a [routerLink]="'/asset/' + selected.EvaluatedAssetUid" target="MeasureEvidenceRuleResult" [innerHtml]="selected.EvaluatedAssetDisplayPath | safeHtml"></a></div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Rule Selection</div>
+                        <div class="details-header" i18n>Rule Selection</div>
                         <div class="details-content">
                             <div *ngFor="let item of selected.RollupPath; index as i">
                                 <a [routerLink]="'/asset/' + item.Uid" target="MeasureEvidenceRuleResult" [innerHtml]="item.AssetPath | safeHtml"></a> (<span [innerHtml]="item.AssetTypePath | safeHtml"></span>){{getFormattedPredicate(i)}}
@@ -95,31 +95,31 @@
                         </div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Run Date</div>
+                        <div class="details-header" i18n>Run Date</div>
                         <div *ngIf="selected.RunDate" class="details-content" [innerText]="selected.RunDate | date:'short':'GMT'"></div>
                         <div *ngIf="!selected.RunDate" class="details-content">---</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Effective Date</div>
+                        <div class="details-header" i18n>Effective Date</div>
                         <div *ngIf="selected.EffectiveDate" class="details-content" [innerText]="selected.EffectiveDate | date:'shortDate':'GMT'"></div>
                         <div *ngIf="!selected.EffectiveDate" class="details-content">---</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Pass Fraction</div>
+                        <div class="details-header" i18n>Pass Fraction</div>
                         <div class="details-content"><span [innerText]="selected.PassFraction"></span><span *ngIf="!selected.TotalCount">&#160;[No result found]</span></div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Total Rows</div>
+                        <div class="details-header" i18n>Total Rows</div>
                         <div *ngIf="selected.TotalCount" class="details-content" [innerText]="selected.TotalCount"></div>
                         <div *ngIf="!selected.TotalCount" class="details-content">---</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Rows Passed</div>
+                        <div class="details-header" i18n>Rows Passed</div>
                         <div *ngIf="selected.PassCount" class="details-content" [innerText]="selected.PassCount"></div>
                         <div *ngIf="!selected.PassCount" class="details-content">---</div>
                     </div>
                     <div class="measure-details-item">
-                        <div class="details-header">Rows Failed</div>
+                        <div class="details-header" i18n>Rows Failed</div>
                         <div *ngIf="selected.FailCount" class="details-content" [innerText]="selected.FailCount"></div>
                         <div *ngIf="!selected.FailCount" class="details-content">---</div>
                     </div>
@@ -127,7 +127,7 @@
             </div>
         </div>
         <div class="score-result-button-bar">
-            <button igButton class="ig-button-primary" type="button" (click)="cancel()" label="Close"></button>
+            <button igButton class="ig-button-primary" type="button" (click)="cancel()" i18n-label label="Close"></button>
         </div>
     </div>
         </div>

@@ -5,7 +5,7 @@
 <div class="row"  [hidden]="showConfirmDelete">
     <div class="col s12">
         <d3s-workflowmonitor-list-filter [showExport]="!showHeader" [usePredefinedFilters]="usePredefinedFilters" (exportClick)="export()" [(columnFilters)]="stateService.workflowItemFilters.columFilters" [(workflowTypeFilters)]="stateService.workflowItemFilters.workflowTypeFilters"
-                                         (filterChange)="OnFilterChange()" (exportToExcel)="export()" [selectAll]="true" [isExportDisabled]="!canExportRecords()" [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'">
+                                         (filterChange)="OnFilterChange()" (exportToExcel)="export()" [selectAll]="true" [isExportDisabled]="!canExportRecords()" [exportDisabledMessage]="exportMessage">
         </d3s-workflowmonitor-list-filter>
     </div>
     <div class="col s12">

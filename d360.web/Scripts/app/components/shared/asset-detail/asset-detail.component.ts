@@ -23,7 +23,7 @@ declare var CurrentResourceID;
     providers: [ObjectDetailService, AssetService, ProcessService],
     host: {
         "(document:click)": "clickedOutside($event)",
-    }, 
+    },
 })
 
 
@@ -68,9 +68,9 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     isLoading = false;
     DetailFieldType = DetailFieldType;
 
-    readonly systemProperties: string = "System Fields";
-    readonly noCategory: string = "None";
-    readonly defaultCategory: string = "General";
+    readonly systemProperties: string = $localize`System Fields`;
+    readonly noCategory: string = $localize`None`;
+    readonly defaultCategory: string = $localize`General`;
 
     subtitle: string = "";
 
@@ -253,7 +253,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 FirstColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.FirstColumnFields),
                 SecondColumnFields: getOnlyFilteredFields(this.showOnlyFields, row.SecondColumnFields)
             }))
-            .filter((row) => 
+            .filter((row) =>
                 ((row.FirstColumnFields?.length ?? 0) > 0)
                 || ((row.SecondColumnFields?.length ?? 0) > 0)
             );

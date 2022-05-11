@@ -1,5 +1,5 @@
 ﻿<header>
-    <span *ngIf="showTitle; else noTitle">Results</span>
+    <span *ngIf="showTitle; else noTitle" i18n>Results</span>
     <ng-template #noTitle></ng-template>
 </header>
 
@@ -67,39 +67,39 @@
     <ng-template pTemplate="header">
         <tr>
             <th [pSortableColumn]="'EvaluatedAssetClass'">
-                Asset Class
+                <ng-container i18n>Asset Class</ng-container>
                 <d3s-sortIcon [field]="'EvaluatedAssetClass'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'EvaluatedAssetTypePath'">
-                Asset Type
+                <ng-container i18n>Asset Type</ng-container>
                 <d3s-sortIcon [field]="'EvaluatedAssetTypePath'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'EvaluatedAssetPath'">
-                Asset
+                <ng-container i18n>Asset</ng-container>
                 <d3s-sortIcon [field]="'EvaluatedAssetPath'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'RunDate'">
-                Run Date
+                <ng-container i18n>Run Date</ng-container>
                 <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'EffectiveDate'">
-                Effective Date
+                <ng-container i18n>Effective Date</ng-container>
                 <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'PassFraction'">
-                Pass Fraction
+                <ng-container i18n>Pass Fraction</ng-container>
                 <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'TotalCount'" style="text-align:center;">
-                Total Rows
+                <ng-container i18n>Total Rows</ng-container>
                 <d3s-sortIcon [field]="'TotalCount'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'PassCount'" style="text-align:center;">
-                Rows Passed
+                <ng-container i18n>Rows Passed</ng-container>
                 <d3s-sortIcon [field]="'PassCount'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="'FailCount'" style="text-align:center;">
-                Rows Failed
+                <ng-container i18n>Rows Failed</ng-container>
                 <d3s-sortIcon [field]="'FailCount'"></d3s-sortIcon>
             </th>
             <th [pSortableColumn]="''"></th>
@@ -157,7 +157,7 @@
                 <div class="RowTools">
                     <div class="duplicate-message" *ngIf="item.IsDuplicate">
                         <i class="fa fa-exclamation-triangle"></i>
-                        <div class="message">
+                        <div class="message" i18n>
                             <strong>Outdated Rule Result</strong> - This rule result will not be used in the calculation of the data quality score because another rule result for the same effective date has been posted.
                         </div>
                     </div>

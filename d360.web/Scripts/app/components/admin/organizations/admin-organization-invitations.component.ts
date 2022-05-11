@@ -1,13 +1,13 @@
-﻿import {Component, Input, OnChanges, SimpleChange} from '@angular/core';
-import {Router} from '@angular/router';
+﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
+import { Router } from '@angular/router';
 
-import {Organization, OrganizationInvitation} from '../../../models/organization.model';
+import { Organization, OrganizationInvitation } from '../../../models/organization.model';
 
-import {OrganizationsService} from '../../../services/organizations.service';
+import { OrganizationsService } from '../../../services/organizations.service';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -15,7 +15,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
     selector: 'd3s-admin-organization-invitations',
     providers: [OrganizationsService],
     template: `
-        <header *ngIf="!showEditor && !showDelete">Invitations for this organization
+        <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Invitations for this organization</ng-container>
             <d3s-tile-actions [hasAdd]="true"
                               (addClick)="add()"
                               [hasFilterMode]="true"
@@ -28,7 +28,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                            pInputText
                            size="100"
                            (input)="dt.filterGlobal($event.target.value, 'contains')"
-                           placeholder="Search..."
+                           placeholder="{{searchText}}"
                            class="grid-simple-filter">
                     <p-table #dt
                              [value]="invitations"
@@ -43,7 +43,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Email'">
-                                    Email
+                                    <ng-container i18n>Email</ng-container>
                                     <d3s-sortIcon [field]="'Email'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 40px"></th>
@@ -91,7 +91,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <d3s-dynamic-editor *ngIf="showEditor"
                             [objectID]="organization?.ID"
                             [objectType]="'OrganizationInvitation'"
-                            [title]="'Organization Invitation'"
+                            [title]="editorTitle"
                             [selection]="selected"
                             (saveClick)="save($event)"
                             (closeClick)="closeEditor()"></d3s-dynamic-editor>
@@ -100,7 +100,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                              [callback]="theDeleteCallback"
                              [itemId]="selected?.ID"
                              [method]="'callback'"
-                             [prompt]="'Are you sure you want to delete the invitation [' + selected?.Email + ']?'"
+                             [prompt]="deletePromptText"
                              (onCancel)="showDelete=false;"
             ></d3s-delete-form>
         </div>
@@ -121,6 +121,9 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
     selected: OrganizationInvitation;
 
     theDeleteCallback: Function;
+
+    searchText = $localize`Search...`;
+    editorTitle = $localize`Organization Invitation`;
 
     constructor(
         private router: Router,
@@ -150,7 +153,7 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
                     this.isLoading = false;
                 }
             )
-        ;
+            ;
     }
 
     delete(id: number) {
@@ -198,5 +201,9 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
                 this.isLoading = false;
             }
         );
+    }
+
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the invitation [${this.selected?.Email}]?`;
     }
 }

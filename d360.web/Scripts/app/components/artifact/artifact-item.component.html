@@ -32,7 +32,7 @@
                                     <div class="icon-holder">
                                         <i class="fa fa-info-circle"></i>
                                     </div>
-                                    <span>Click a link or a tag to display the properties of a referenced item</span>
+                                    <span i18n>Click a link or a tag to display the properties of a referenced item</span>
                                 </div>
                             </div>
                             <ng-container *ngIf="selectedAsset">
@@ -63,7 +63,7 @@
                         <ng-container *ngIf="secondarySidePanelOpen">
                             <div #semanticTile class="secondary-side-panel">
                                 <div class="panel-header">
-                                    <span class="header-label">Information</span>
+                                    <span class="header-label" i18n>Information</span>
                                     <div class="button-container">
                                         <button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>
                                     </div>

@@ -57,7 +57,8 @@
                     </span>
                 </ng-template>
                 <div *ngIf="hasIconFields && fore.Value == back.Value"
-                     class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+                     class="col s12 errorMessage">* <ng-container i18n>Foreground and background color cannot be the same</ng-container>
+                </div>
                 <div class="col s12">&nbsp;</div>
                 <div *ngIf="showActions && !useModelBinding" class="col s12">
                     <button pButton
@@ -132,11 +133,11 @@
                         </span>
                     </ng-template>
                     <div *ngIf="hasIconFields && fore.Value == back.Value"
-                         class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+                         class="col s12 errorMessage">* <ng-container i18n>Foreground and background color cannot be the same</ng-container></div>
 
                     <div *ngIf="this.consolidateToTag && editedItem && !adding" class="warningMessage">
-                        <h4>Consolidate Tags?</h4>
-                        <p>
+                        <h4 i18n>Consolidate Tags?</h4>
+                        <p i18n>
                             A tag with the name '{{consolidateToTag.name}}' already exists<ng-container *ngIf="consolidateToTag.count > 0">, used to tag <d3s-tag-usage [uid]="consolidateToTag.code">{{consolidateToTag.count}} items</d3s-tag-usage>.</ng-container> <br />
                             Choose <strong>Consolidate</strong> to replace the tag '{{editedItem.Value}}' with '{{consolidateToTag.name}}'
                             <ng-container *ngIf="editedItem.UseCount > 0">
@@ -147,8 +148,8 @@
                         </p>
                     </div>
                     <div *ngIf="adding && !selectedTagID" class="warningMessage">
-                        <h4>No Tag Selected</h4>
-                        <p>
+                        <h4 i18n>No Tag Selected</h4>
+                        <p i18n>
                             Start typing to see list of tags.
                         </p>
                     </div>

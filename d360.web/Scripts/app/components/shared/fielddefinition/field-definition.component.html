@@ -35,10 +35,11 @@
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.Name"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
+                     i18n-prompt
+                     prompt="Are you sure you want to delete the field type [{{selectedRow?.Name}}]?"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isEditing && !isDeleting">
-        <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
+        <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error" i18n>Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt [value]="fieldDisplayModel" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder']"
                  [(selection)]="selectedRow" [scrollable]="objectType == 'GroupType' ? false : true" scrollHeight="200px">
@@ -63,42 +64,42 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'FriendlyName'" style="width: 20%">
-                        Field
+                        <ng-container i18n>Field</ng-container>
                         <d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'FieldType'" style="width: 15%">
-                        Type
+                        <ng-container i18n>Type</ng-container>
                     </th>
                     <th [pSortableColumn]="'Category'" style="width: 15%">
-                        Category
+                        <ng-container i18n>Category</ng-container>
                         <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'DisplayInColumn'" style="width: 12%" *ngIf="showDisplayInColumn">
-                        Display in Column?
+                        <ng-container i18n>Display in Column?</ng-container>
                         <d3s-sortIcon [field]="'DisplayInColumn'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsListable'" style="width: 12%" *ngIf="showIsListable">
-                        Listable?
+                        <ng-container i18n>Listable?</ng-container>
                         <d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsRequired'" style="width: 12%">
-                        Required?
+                        <ng-container i18n>Required?</ng-container>
                         <d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'IsPartOfKey'" style="width: 9%" *ngIf="showIsPartOfKey">
-                        Key?
+                        <ng-container i18n>Key?</ng-container>
                         <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'ShowIfEmpty'" style="width: 12%">
-                        Show if Empty?
+                        <ng-container i18n>Show if Empty?</ng-container>
                         <d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'SortOrder'" style="width: 12%">
-                        Sort
+                        <ng-container i18n>Sort</ng-container>
                         <d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'SortByAscending'" style="width: 21%">
-                        Sort by Ascending/&#8203;Descending
+                        <ng-container i18n>Sort by Ascending/&#8203;Descending</ng-container>
                         <d3s-sortIcon [field]="'SortByAscending'"></d3s-sortIcon>
                     </th>
                     <th style="width: 30px"></th>
@@ -147,8 +148,8 @@
                         <span><i *ngIf="item?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
                     </td>
-                    <td>{{item.SortOrder}}</td>
-                    <td>{{item.SortByAscending ? 'Ascending' : 'Descending'}}</td>
+                    <td><ng-container *ngIf="item.IsListable">{{item.SortOrder}}</ng-container></td>
+                    <td><ng-container *ngIf="item.IsListable">{{item.SortByAscending ? 'Ascending' : 'Descending'}}</ng-container></td>
                     <td>
                         <div class="RowTools">
                             <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Button_MoveUp'">

@@ -13,7 +13,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     providers: [ResourcesService, AssetService],
     template: `                 
                 <div class="tile tile-detail">
-                   <header>Member Groups
+                   <header><ng-container i18n>Member Groups</ng-container>
                     <d3s-tile-actions [hasAdd]="false"></d3s-tile-actions>                            
                    </header>                   
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -23,7 +23,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'Name'">
-                                        Name
+                                        <ng-container i18n>Name</ng-container>
                                         <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                     </th>
                                     <th style="width:   30px "></th>

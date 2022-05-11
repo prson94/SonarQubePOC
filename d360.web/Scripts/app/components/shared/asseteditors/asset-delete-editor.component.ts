@@ -43,9 +43,9 @@ export class AssetDeleteEditorComponent extends BaseComponent {
                     let descendantsCount = result.total;
                     this.descendantsMessage = '';
                     if (descendantsCount > 0) {
-                        this.descendantsMessage = `The selected asset contains <b>${descendantsCount}</b> descendants that will be deleted. This action cannot be undone. Please check the box to continue.`;
+                        this.descendantsMessage = $localize`The selected asset contains <b>${descendantsCount}</b> descendants that will be deleted. This action cannot be undone. Please check the box to continue.`;
                         if (descendantsCount > 200) {
-                            this.descendantsMessage = `${this.descendantsMessage} <br/>For assets with a large number of descendants, greater than 200, it is recommended that the batch API endpoint is used.`;
+                            this.descendantsMessage = $localize`${this.descendantsMessage} <br/>For assets with a large number of descendants, greater than 200, it is recommended that the batch API endpoint is used.`;
                         }
                     }
                     this.isFormLoading = false;
@@ -62,15 +62,15 @@ export class AssetDeleteEditorComponent extends BaseComponent {
     }
 
     public getPrompt(): string {
-        const value = this.getDisplayValue() ?? "the selected item";
-        return `Are you sure you want to delete ${value} ?`;
+        const value = this.getDisplayValue() ?? $localize`the selected item`;
+        return $localize`Are you sure you want to delete ${value} ?`;
     }
 
     public deleteAsset(id: number): void {
         this.assetService.deleteAsset(this.assetTypeUid, this.uid)
             .subscribe(
                 (result) => {
-                    this.showMessageForApiResults(this.messagesService, result, `${this.displayValue} successfully deleted`, true);
+                    this.showMessageForApiResults(this.messagesService, result, $localize`${this.displayValue} successfully deleted`, true);
                     this.onDeleted.emit();
                     this.changeDetectorRef.markForCheck();
                 }

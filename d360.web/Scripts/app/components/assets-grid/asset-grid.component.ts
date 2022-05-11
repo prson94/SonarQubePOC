@@ -113,8 +113,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     readonly menuKey = '~menu';
     baseMenuItems: any[] = [
-        { title: "Open" },
-        { title: "Open in New Tab" },
+        { title: $localize`Open` },
+        { title: $localize`Open in New Tab` },
     ];
 
     public simpleSearch = new Subject<any>();
@@ -127,8 +127,16 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     initialLoadInterval: any;
     destroy = new Subject<void>();
 
+    get exportTooltip(): string {
+        return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
+    }
+
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
+    }
+
+    get assetEditorTitle(): string {
+        return this.selected ? $localize`Edit Asset` : $localize`Create New Asset`;
     }
 
     constructor(
@@ -210,13 +218,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
 
-        if (key === 'open') {
+        if (key === $localize`Open`.toLowerCase()) {
             this.selectArtifact(item);
-        } else if (key === 'open in new tab') {
+        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
             this.selectArtifact(item, true);
-        } else if (key === 'edit') {
+        } else if (key === $localize`Edit`.toLowerCase()) {
             this.onEdit(item);
-        } else if (key === 'delete') {
+        } else if (key === $localize`Delete`.toLowerCase()) {
             this.onDelete(item);
         }
     }
@@ -425,16 +433,16 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.items.forEach((i) => {
 
                     i[this.menuKey] = [
-                        { title: 'Open' },
-                        { title: 'Open in New Tab' },
+                        { title: $localize`Open` },
+                        { title: $localize`Open in New Tab` },
                     ];
 
                     if (i.Permissions.ModifyAsset) {
-                        i[this.menuKey].push({ title: 'Edit' });
+                        i[this.menuKey].push({ title: $localize`Edit` });
                     }
 
                     if (i.Permissions.DeleteAsset) {
-                        i[this.menuKey].push({ title: 'Delete' });
+                        i[this.menuKey].push({ title: $localize`Delete` });
                     }
 
                     if (hasScoring) {
@@ -566,7 +574,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .downloadAssetsExcel(
                 this.gridObject.AssetTypeUID,
                 this.getParams(),
-                'Filtered ' + this.gridObject.Name + ' List',
+                $localize`Filtered ${this.gridObject.Name} List`,
                 () => { this.isExportInProgress = false; }
             );
     }
@@ -575,7 +583,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         var params = JSON.parse(JSON.stringify(this.getParams()));
         params['_exporttemplateuid'] = option.Uid;
 
-        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, params, 'Filtered ' + this.gridObject.Name + ' List');
+        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, params, $localize`Filtered ${this.gridObject.Name} List`);
     }
 
     customExport() {

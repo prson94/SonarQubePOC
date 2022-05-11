@@ -1,9 +1,9 @@
-﻿<div class="match-info" *ngIf="matchAll">Apply only to assets which match a condition group</div>
-<div class="match-info" *ngIf="!matchAll">Apply to all assets: condition group match determines weight</div>
+﻿<div class="match-info" *ngIf="matchAll" i18n>Apply only to assets which match a condition group</div>
+<div class="match-info" *ngIf="!matchAll" i18n>Apply to all assets: condition group match determines weight</div>
 <div class="details-condition" *ngFor="let conditionGroup of conditionGroups">
     <div class="condition-content">
         <div class="condition-items">
-            <div>Condition Group {{conditionGroup.Position}} <span *ngIf="conditionGroup.DisplayWeight"> - Weight: {{conditionGroup.DisplayWeight}}% </span>- Match: {{conditionGroup.MatchType}}</div>
+            <div i18n>Condition Group {{conditionGroup.Position}} <span *ngIf="conditionGroup.DisplayWeight"> - Weight: {{conditionGroup.DisplayWeight}}% </span>- Match: {{conditionGroup.MatchType}}</div>
             <div *ngFor="let condition of conditionGroup.ConditionItems; let i=index" class="inline">
                 <span *ngIf="i > 0">,&nbsp;</span>{{condition.FieldTypeName}} {{condition.OperatorText}} {{condition.ValuesText}}
             </div>

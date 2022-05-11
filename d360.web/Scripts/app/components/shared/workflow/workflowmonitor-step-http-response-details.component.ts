@@ -8,21 +8,21 @@ import { BaseComponent } from "../../shared/base.component";
         `
                 <div class="row">
                     <div class="col s12">  
-                        <div class="FieldName">Outputs</div>
+                        <div class="FieldName" i18n>Outputs</div>
                         <div>
                             <p-table #dt [value]="outputs" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10">
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th [pSortableColumn]="'FieldName'">
-                                            Name
+                                            <ng-container i18n>Name</ng-container>
                                             <d3s-sortIcon [field]="'FieldName'"></d3s-sortIcon>
                                         </th>
                                         <th [pSortableColumn]="'Value'">
-                                            Path
+                                            <ng-container i18n>Path</ng-container>
                                             <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
                                         </th>
                                         <th [pSortableColumn]="'FormValue'">
-                                            Value
+                                            <ng-container i18n>Value</ng-container>
                                             <d3s-sortIcon [field]="'FormValue'"></d3s-sortIcon>
                                         </th>
                                     </tr>

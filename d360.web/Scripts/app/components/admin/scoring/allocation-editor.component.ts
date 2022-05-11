@@ -30,8 +30,14 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
     ddlScoreTypes: any[] = [];
     ddlAssetTypes: any[] = [];
-    saveLabel: string = "Create";
-    closeLabel: string = "Cancel";
+    saveLabel: string = $localize`Create`;
+    closeLabel: string = $localize`Cancel`;
+    requiredLabel = $localize`Value required`;
+    internallyCaluclatedLabel = $localize`Internally calculated`;
+    externallyCaluclatedLabel = $localize`Externally calculated`;
+
+    howDoesItWorkTitle = $localize`How does this work?`;
+
     isEdit: boolean = false;
     modelChanged: boolean = false;
 
@@ -62,31 +68,31 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
     ngOnInit() {
         this.initialData();
-    }    
+    }
 
-    ngOnChanges(change: SimpleChanges) {       
+    ngOnChanges(change: SimpleChanges) {
         this.populateAssetTypesDDL();
         this.updateRanges();
 
         if (this.selection.uid) {
-            this.closeLabel = "Close";
-            this.saveLabel = "Save Changes";
+            this.closeLabel = $localize`Close`;
+            this.saveLabel = $localize`Save Changes`;
             this.isEdit = true;
             this.originalSelection = _.cloneDeep(this.selection);
         } else {
             this.isEdit = false;
-            this.closeLabel = "Cancel";
-            this.saveLabel = "Create";
+            this.closeLabel = $localize`Cancel`;
+            this.saveLabel = $localize`Create`;
         }
     }
-   
+
     updateRanges() {
         this.rangeValues[0] = this.selection.lowerThreshold;
         this.rangeValues[1] = this.selection.upperThreshold;
 
         this.rangeValues = JSON.parse(JSON.stringify(this.rangeValues));
 
-        this.hasModelChanged();        
+        this.hasModelChanged();
     }
 
     scoreTypeChange($event) {
@@ -127,44 +133,44 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
 
     private initialData() {
-        this.ddlScoreTypes.push({ value: 'Governance', label: 'Governance Score' });
-        this.ddlScoreTypes.push({ value: 'DataQuality', label: 'Data Quality Score' });
+        this.ddlScoreTypes.push({ value: 'Governance', label: $localize`Governance Score` });
+        this.ddlScoreTypes.push({ value: 'DataQuality', label: $localize`Data Quality Score` });
     }
 
-    hasModelChanged() {  
+    hasModelChanged() {
         if (this.originalSelection) {
             this.modelChanged = (JSON.stringify(this.originalSelection, (k, v) => v === undefined || v === null ? "" : v) !== JSON.stringify(this.selection, (k, v) => v === undefined || v === null ? "" : v));
             if (this.isEdit) {
                 if (this.modelChanged) {
-                    this.closeLabel = "Discard Changes"
+                    this.closeLabel = $localize`Discard Changes`;
                 } else {
-                    this.closeLabel = "Close"
+                    this.closeLabel = $localize`Close`;
                 }
             }
             this.cdRef.detectChanges();
         }
-       
+
         return this.modelChanged;
     }
 
     getClassFriendlyName(atc: AssetTypeClass): string {
         switch (atc.toString()) {
             case 'BusinessAsset':
-                return 'Business Asset';
+                return $localize`Business Asset`;
             case 'TechnicalAsset':
-                return 'Technical Asset';
+                return $localize`Technical Asset`;
             default:
                 return atc.toString();
         }
     }
 
-    cancel() {        
+    cancel() {
         //Set selection back to original
         if (this.isEdit) {
             this.selection = _.cloneDeep(this.originalSelection);
             this.updateRanges();
         }
-        this.onCancel.emit();        
+        this.onCancel.emit();
     }
 
     save() {
@@ -187,14 +193,14 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
                 let msg: string = '';
                 if (this.selection.uid == undefined) {
-                    msg = `Your score has been added`;
+                    msg = $localize`Your score has been added`;
                     openItem = true;
                 }
                 else {
-                    msg = `Your score has been updated`;
-                }               
-                this.messagesService.showInfoMessage('Success', msg);
-                this.onSave.emit({ item: res,  openItem: openItem});
+                    msg = $localize`Your score has been updated`;
+                }
+                this.messagesService.showInfoMessage($localize`Success`, msg);
+                this.onSave.emit({ item: res, openItem: openItem });
             });
     }
 
@@ -261,7 +267,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         }, 500);
 
     }
-    
+
     ngAfterViewChecked() {
 
         //Dynamically load good, average and score css styles from computed style object so branding is possible

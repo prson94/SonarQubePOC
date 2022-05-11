@@ -2,7 +2,7 @@
     <div class="col s6">
         <div>
             <span class="FieldName">
-                Email Recipient Type:
+                <ng-container i18n>Email Recipient Type</ng-container>:
             </span>
             <span>
                 {{helper.recipientTypeName(emailSettings.MessageRecipientType)}}
@@ -10,13 +10,13 @@
         </div>
         <div *ngIf="emailSettings.MessageRecipientType == 'Responsibility'">
             <div class="FieldName">
-                Email Responsibilities:
+                <ng-container i18n>Email Responsibilities</ng-container>:
             </div>
             <div *ngFor="let res of step.ItemSettings.Responsibilities">
                 {{res.name}}
             </div>
             <div class="FieldName">
-                Send To Default Users:
+                <ng-container i18n>Send To Default Users</ng-container>:
             </div>
             <div>
                 {{emailSettings.SendToDefaultUsers == 'false' ? 'No' : 'Yes'}}
@@ -25,7 +25,9 @@
     </div>
     <div class="col s6"
          *ngIf="step.ItemSettings.hasEmails == true">
-        <span class="FieldName">Recipients:</span>
+        <span class="FieldName">
+            <ng-container i18n>Recipients</ng-container>:
+        </span>
         <div *ngFor="let e of displayEmails; let i = index">
             <ng-container *ngIf="showAll == true || (showAll == false && i < 5)">
                 {{e['@address']}} <span *ngIf="e.name != null">
@@ -37,27 +39,27 @@
         </div>
         <div *ngIf="displayEmails.length > 5 && showAll == false">
             <a (click)="toggleShowAll()"
-               style="cursor: pointer">Show All</a>
+               style="cursor: pointer" i18n>Show All</a>
         </div>
         <div *ngIf="displayEmails.length > 5 && showAll == true">
             <a (click)="toggleShowAll()"
-               style="cursor: pointer">Show Less</a>
+               style="cursor: pointer" i18n>Show Less</a>
         </div>
     </div>
     <div class="col s6"
          *ngIf="step.ItemSettings.hasEmails == false">
-        <span class="FieldName">Recipients:</span>
+        <span class="FieldName"><ng-container i18n>Recipients</ng-container>:</span>
         <div>
-            <span>None</span>
+            <span i18n>None</span>
         </div>
     </div>
 </div>
 <div *ngIf="!isAggregate"
-    class="row">
+     class="row">
     <div class="col s12">
         <div>
             <span class="FieldName">
-                Include Previous Form Responses:
+                <ng-container i18n>Include Previous Form Responses</ng-container>:
             </span>
             <span>
                 {{emailSettings.IncludePreviousFormResponses == 'true' ? 'Yes' : 'No'}}
@@ -68,7 +70,7 @@
 <div class="row">
     <div class="col s12">
         <div class="FieldName">
-            Email Subject:
+            <ng-container i18n>Email Subject</ng-container>:
         </div>
         <div [innerHtml]="emailSettings.MessageSubjectTemplate | safeHtml">
         </div>
@@ -77,10 +79,10 @@
 <div class="row">
     <div class="col s12">
         <div class="FieldName">
-            Email Body:
+            <ng-container i18n>Email Body</ng-container>:
         </div>
         <div class="panel-section"
-            [innerHtml]="emailSettings.MessageBodyTemplate | safeHtml">
+             [innerHtml]="emailSettings.MessageBodyTemplate | safeHtml">
         </div>
     </div>
 </div>

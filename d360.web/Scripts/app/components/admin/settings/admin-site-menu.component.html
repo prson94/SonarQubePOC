@@ -2,13 +2,13 @@
 <div [ngSwitch]="formMode" *ngIf="!isLoading">
     <div *ngSwitchDefault>
         <header>
-            Site Navigation
+            <ng-container i18n>Site Navigation</ng-container>
             <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
         </header>
         <p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection">
             <ng-template pTemplate="header">
                 <tr>
-                    <th>Name</th>
+                    <th i18n>Name</th>
                     <th></th>
                 </tr>
             </ng-template>
@@ -38,21 +38,21 @@
     </div>
 
     <div *ngSwitchCase="FormMode.Editing">
-        <header>
+        <header i18n>
             Edit {{selection.Title}}
         </header>
         <div *ngIf="!formIsLoading">
             <div class="col s12">
-                <div class="FieldName" style="display:block;">Folder Name</div>
+                <div class="FieldName" style="display:block;" i18n>Folder Name</div>
                 <input maxlength="250" type="text" [(ngModel)]="selection.Title" style="width:100%" />
             </div>
             <div class="row" style="margin-bottom:15px;">
                 <div class="row" style="padding-top:12px">
                     <div class="col s12 m6">
-                        <div class="FieldName">Icon</div>
+                        <div class="FieldName" i18n>Icon</div>
                         <div>
                             <div>
-                                <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                                <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> <ng-container i18n>Use a predefined icon</ng-container>
                             </div>
                             <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
                                 <ig-icon-picker [showGovIcons]="true" [(ngModel)]="selection.Icon" ngDefaultControl></ig-icon-picker>
@@ -66,7 +66,7 @@
                         </div>
                     </div>
                     <div class="col s12 m6">
-                        <div class="FieldName">Preview</div>
+                        <div class="FieldName" i18n>Preview</div>
                         <div *ngIf="iconType == 'icon'" style="padding:10px">
                             <span style="font-size: 15px">
                                 <i *ngIf="!checkIfImg(selection.Icon)" [class]="'fa ' + selection.Icon"></i>
@@ -88,7 +88,7 @@
                     <p-table #dt1 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Title']" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Available Folder Items</th>
+                                <th i18n>Available Folder Items</th>
                                 <th></th>
                             </tr>
                         </ng-template>
@@ -111,7 +111,7 @@
                     <p-table #dt2 [value]="folderItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Existing Folder Items</th>
+                                <th i18n>Existing Folder Items</th>
                                 <th></th>
                             </tr>
                         </ng-template>
@@ -139,48 +139,48 @@
             </div>
             <div class="row" style="margin-top:15px;">
                 <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
-                    <button pButton type="button" label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default || (selection.IsCustom && (folderItems == null || folderItems.length < 1))"></button>
-                    <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+                    <button pButton type="button" i18n-label label="Save" (click)="save()" [disabled]="selection == null || selection.Title == null || selection.Title == '' || permissionMode != FormMode.Default || (selection.IsCustom && (folderItems == null || folderItems.length < 1))"></button>
+                    <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>
         </div>
     </div>
 
     <div *ngSwitchCase="FormMode.Deleting">
-        <header>
+        <header i18n>
             Delete Folder
         </header>
         <div clas="row">
-            <div class="col s12" style="padding-bottom:10px">
+            <div class="col s12" style="padding-bottom:10px" i18n>
                 Are you sure you want to delete the {{selection.Name}} folder?
             </div>
         </div>
-        <button pButton type="button" label="Delete" (click)="save()"></button>
-        <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+        <button pButton type="button" i18n-label label="Delete" (click)="save()"></button>
+        <button pButton type="button" i18n-label label="Cancel" (click)="formMode = FormMode.Default"></button>
     </div>
 
     <div *ngSwitchCase="FormMode.Adding">
-        <header>
+        <header i18n>
             Add Navigation Folder
         </header>
         <div *ngIf="!formIsLoading">
             <div class="col s12">
-                <div class="FieldName" style="display:block;">Folder Name</div>
+                <div class="FieldName" style="display:block;" i18n>Folder Name</div>
                 <input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
             </div>
             <div class="row" style="margin-bottom:15px;">
                 <div class="row" style="padding-top:12px">
                     <div class="col s12 m6">
-                        <div class="FieldName">Icon</div>
+                        <div class="FieldName" i18n>Icon</div>
                         <div>
                             <div>
-                                <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                                <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> <ng-container i18n>Use a predefined icon</ng-container>
                             </div>
                             <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
                                 <ig-icon-picker [showGovIcons]="true" [(ngModel)]="newFolder.Icon" ngDefaultControl></ig-icon-picker>
                             </div>
                             <div>
-                                <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
+                                <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> <ng-container i18n>Upload your own icon</ng-container>
                             </div>
                             <div *ngIf="iconType == 'image'">
                                 <input #imageUpload type="file" (change)="onFileChange($event)" accept="image/gif,image/jpeg,image/png" />
@@ -188,11 +188,11 @@
                         </div>
                     </div>
                     <div class="col s12 m6">
-                        <div class="FieldName">Preview</div>
+                        <div class="FieldName" i18n>Preview</div>
                         <div *ngIf="iconType == 'icon'" style="padding:10px">
                             <span style="font-size: 15px">
                                 <img class="d3s-gov-icon" *ngIf="checkIfImg(newFolder.Icon)" [src]="newFolder.Icon" />
-                                <i *ngIf="!checkIfImg(newFolder.Icon)"  [class]="'fa ' + newFolder.Icon"></i>
+                                <i *ngIf="!checkIfImg(newFolder.Icon)" [class]="'fa ' + newFolder.Icon"></i>
                             </span>
                         </div>
                         <div *ngIf="iconType == 'image'" style="padding:10px">
@@ -209,7 +209,7 @@
                     <p-table #dt3 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Available Folder Items</th>
+                                <th i18n>Available Folder Items</th>
                                 <th></th>
                             </tr>
                         </ng-template>
@@ -232,7 +232,7 @@
                     <p-table #dt4 [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Existing Folder Items</th>
+                                <th i18n>Existing Folder Items</th>
                                 <th></th>
                             </tr>
 
@@ -259,8 +259,8 @@
             </div>
             <div class="row">
                 <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
-                    <button pButton type="button" label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
-                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
+                    <button pButton type="button" i18n-label label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
+                    <button pButton type="button" i18n-label label="Cancel" (click)="formMode = FormMode.Default"></button>
                 </div>
             </div>
         </div>

@@ -46,7 +46,7 @@
             <tr>
                 <th [pSortableColumn]="'Status'"
                     style="width: 125px">
-                    Status
+                    <ng-container i18n>Status</ng-container>
                     <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
                 </th>
                 <th *ngFor="let column of columns"
@@ -58,12 +58,12 @@
                 </th>
                 <th [pSortableColumn]="'RowIndex'"
                     style="width: 100px">
-                    Row
+                    <ng-container i18n>Row</ng-container>
                     <d3s-sortIcon [field]="'RowIndex'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'StatusMessage'"
                     style="width: 250px">
-                    Message
+                    <ng-container i18n>Message</ng-container>
                     <d3s-sortIcon [field]="'StatusMessage'"></d3s-sortIcon>
                 </th>
             </tr>

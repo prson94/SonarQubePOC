@@ -1541,28 +1541,28 @@ button.p-button.p-highlight, .p-button.p-highlight {
 .p-checkbox-box.p-highlight,
 .p-checkbox-box.p-state-active {
   border: 1px solid @ig-black;
-  background: @ig-purple-t1;
-  color: @ig-white;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
   line-height: 1px;
 }
 
 .p-checkbox-box.p-checkbox-checked .pi-check,
 .p-checkbox-box.p-focus.p-checkbox-checked .pi-check,
 .p-checkbox-box.p-highlight .pi-check {
-  color: @ig-white;
-  background: @ig-purple-t1;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
 }
 
 
 .p-radiobutton-box.p-highlight,
 .p-radiobutton-box.p-focus.p-highlight {
-  border: 1px solid @ig-purple-t1;
+  border: 1px solid var(--primaryButtonBackColor);
   background: white;
-  color: @ig-purple-t1;
+  color: var(--primaryButtonBackColor);
   line-height: 1px;
 
   .p-radiobutton-icon {
-    background: @ig-purple-t1;
+    background: var(--primaryButtonBackColor);
   }
 }
 
@@ -2304,12 +2304,12 @@ p-table .p-datatable-tfoot > tr > td {
   font-weight: bold;
   text-transform: capitalize;
   border-radius: 0;
-  background-color: @ig-grey-t5;
+  background-color: var(--tableHeaderBackColor);
 }
 
 p-table thead th {
   text-align: left;
-  color: @ig-black;
+  color: var(--calculatedTableHeaderTextColor);
 }
 
 .p-sort-icon .fa {
@@ -2419,11 +2419,37 @@ tr.p-highlight,
 .p-component-content .p-highlight,
 .p-component-header .p-highlight,
 p-table tbody.p-datatable-tbody > tr.p-highlight {
-  background: @ig-purple-t4;
+  background-color: var(--tableRowBackColor);
+  cursor: default !important;
+
+  td,
+  .RowTools,
+  .RowTools a {
+    color: var(--calculatedTableRowTextColor);
+  }
 }
 
 p-table tbody.p-datatable-tbody > tr:hover:not(.p-highlight) {
-  background: @ig-purple-t5;
+  background-color: var(--tableRowBackColor);
+  color: var(--calculatedTableRowTextColor);
+  position: relative;
+
+  ::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.02;
+  }
+
+  td,
+  .RowTools,
+  .RowTools a {
+    color: var(--calculatedTableRowTextColor);
+  }
 }
 
 p-table td {
@@ -2465,15 +2491,42 @@ p-table .p-column-filter {
 }
 /* Buttons */
 .p-button, button.p-button.p-state-default, .p-button.p-state-default, .p-button:focus {
-  background: @ig-purple-t1;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
 }
 
 .p-button:hover, button.p-button.p-state-default:hover, .p-button.p-state-default:hover, .p-selectbutton .p-button:hover {
-  background: @ig-purple-t1;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
+
+  ::after {
+    content: "";
+    position: absolute;
+    border-radius: @ig-field-border-radius;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.3;
+  }
 }
 
 .p-button:active, button.p-button.p-state-default:active, .p-button.p-state-default:active {
-  background: @ig-purple-s3;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
+
+  ::after {
+    content: "";
+    position: absolute;
+    border-radius: @ig-field-border-radius;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    opacity: 0.3;
+  }
 }
 
 .p-button .p-button-label {
@@ -2483,7 +2536,20 @@ p-table .p-column-filter {
 }
 
 .p-button:hover, button.p-button.p-state-hover {
-  background: @ig-purple;
+  background: var(--primaryButtonBackColor);
+  color: var(--calculatedPrimaryButtonTextColor);
+
+  ::after {
+    content: "";
+    position: absolute;
+    border-radius: @ig-field-border-radius;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    opacity: 0.3;
+  }
 }
 
  
@@ -2514,17 +2580,44 @@ th.p-state-default, .p-treetable th.p-state-default {
 
   .p-treetable-thead > tr > th,
   .p-treetable-tfoot > tr > td {
-    background-color: @ig-grey-t5;
+    background-color: var(--tableHeaderBackColor);
+    color: var(--calculatedTableHeaderTextColor);
   }
 
   tr {
+    position: relative;
+
     &.p-highlight {
-      background-color: @ig-purple-t4;
+      background-color: var(--tableRowBackColor);
       cursor: default !important;
+
+      td,
+      .RowTools,
+      .RowTools a {
+        color: var(--calculatedTableRowTextColor);
+      }
     }
 
     &:hover:not(.p-highlight) {
-      background-color: @ig-purple-t5;
+      background-color: var(--tableRowBackColor);
+      color: var(--calculatedTableRowTextColor);
+
+      ::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        opacity: 0.02;
+      }
+
+      td,
+      .RowTools,
+      .RowTools a {
+        color: var(--calculatedTableRowTextColor);
+      }
     }
   }
 }
@@ -2717,11 +2810,6 @@ p-radiobutton .p-radiobutton-label.p-label-disabled {
 
 .p-datatable-scrollable-header {
   background-color: @ig-grey-t5;
-}
-
-.p-tabview .p-tabview-nav > li .p-tabview-title {
-  font-weight: normal;
-  color: @ig-purple;
 }
 
  

@@ -78,9 +78,16 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     @ViewChild('dt', { static: false }) datatable;
 
+    get exportTooltip(): string {
+        return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
+    }
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the user [${this.selected?.FirstName} ${this.selected?.LastName}']?`;
+    }
+
     constructor(
         public numberOfRowsByCategoryService: NumberOfRowsByCategoryService,
-        private router: Router,        
+        private router: Router,
         private gridDefinitionService: GridDefinitionService,
         private fieldsService: FieldsObservableService,
         protected messagesService: MessagesObservableService,
@@ -324,14 +331,14 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.showEditor = true;
     }
 
-    saveUser(event) {        
+    saveUser(event) {
         const user = new ResourceApiModel;
-                
+
         user.FirstName = event.item.FirstName;
         user.LastName = event.item.LastName;
         user.IsAdministrator = event.item.IsAdministrator;
         user.Username = event.item.Email;
-        
+
         if (event.item.ID > 0) {
             user.uid = this.selected.uid;
             user.State = event.item.State;
@@ -344,8 +351,8 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
         // handle dynamic fields
         for (let key in event.item) {
-            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password') {                
-                user.Fields[key] = event.item[key];                
+            if (key != 'Email' && key != 'FirstName' && key != 'LastName' && key != 'IsAdministrator' && key != 'State' && key != 'ID' && key != 'Password') {
+                user.Fields[key] = event.item[key];
             }
         }
 
@@ -364,7 +371,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     }
                     this.showMessageForApiResult(this.messagesService, result, `User(s) successfully ${event.item.ID > 0 ? 'updated' : 'added'}`);
                 }
-            )        
+            )
     }
 
 

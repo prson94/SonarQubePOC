@@ -14,6 +14,7 @@
                    size="100"
                    (input)="dt.filterGlobal($event.target.value, 'contains')"
                    placeholder="Search..."
+                   i18n-placeholder
                    class="grid-simple-filter">
             <p-table #dt
                      [value]="types"
@@ -31,12 +32,12 @@
                     <tr>
                         <th [pSortableColumn]="'Name'"
                             style="width: 200px">
-                            Name
+                            <ng-container i18n>Name</ng-container>
                             <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'Description'"
                             style="width: 500px">
-                            Description
+                            <ng-container i18n>Description</ng-container>
                             <d3s-sortIcon [field]="'Description'"></d3s-sortIcon>
                         </th>
                     </tr>

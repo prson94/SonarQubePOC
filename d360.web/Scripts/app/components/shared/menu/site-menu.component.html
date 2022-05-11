@@ -5,13 +5,13 @@
             [class.left-side-nav-open]="menuOpen"
             [class.left-side-nav]='!menuOpen'>
             <d3s-site-menu-category [expanded]="menuOpen"
-                                    [title]="'Home'"
+                                    i18n-title
+                                    title="Home"
                                     [url]="'home'"
                                     [rootIconName]="'fa-home'"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
-            <d3s-site-menu-favorites 
-                [expanded]="menuOpen"
-                (activeItemChanged)="changeActiveMenu($event)">
+            <d3s-site-menu-favorites [expanded]="menuOpen"
+                                     (activeItemChanged)="changeActiveMenu($event)">
             </d3s-site-menu-favorites>
             <ng-template ngFor
                          let-menu

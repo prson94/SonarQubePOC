@@ -13,7 +13,7 @@ import { Subject } from 'rxjs';
 <div>
     <d3s-loading *ngIf="isLoading" isLoading="true"></d3s-loading>
     <div *ngIf="!isLoading">
-        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
         <p-table #dt
                  [value]="workflowItems"
                  selectionMode="single"
@@ -29,19 +29,19 @@ import { Subject } from 'rxjs';
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Name'">
-                        Workflow Name
+                        <ng-container i18n>Workflow Name</ng-container>
                         <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'ObjectTypeName'">
-                        Type Name
+                        <ng-container i18n>Type Name</ng-container>
                         <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Status'">
-                        Status
+                        <ng-container i18n>Status</ng-container>
                         <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Version'">
-                        Version
+                        <ng-container i18n>Version</ng-container>
                         <d3s-sortIcon [field]="'Version'"></d3s-sortIcon>
                     </th>
                      <th style="width: 30px"></th>

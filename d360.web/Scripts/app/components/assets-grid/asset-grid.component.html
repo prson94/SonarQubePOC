@@ -7,6 +7,7 @@
         <span *ngIf="gridObject && gridObject.Description"
               aria-hidden="true"
               title="Details"
+              i18n-title
               class="action-tile-span"
               (click)="toggleArtifactDetail()">
             {{showArtifactDetails ? 'Hide Description':'Show Description'}}
@@ -29,6 +30,7 @@
                 igButton
                 [attr.data-cy]="'Assets_Add'"
                 pTooltip="Create new asset"
+                i18n-pTooltip
                 tooltipPosition="top"
                 tooltipStyleClass="ig-tooltip"
                 class="ig-button-primary"
@@ -37,7 +39,7 @@
                 (click)="add()">
         </button>
 
-        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+        <div pTooltip="{{exportTooltip}}"
              tooltipPosition="left"
              tooltipStyleClass="ig-tooltip">
             <button igButton
@@ -60,7 +62,7 @@
 <div class="row asset-grid-wrapper" *ngIf="!showDelete && !isEditing && !hasNoListableColumns">
     <div #rightMenu
          [ngClass]="{ 'artifact-context-menu': isMenuOpen, 'artifact-context-menu-closed': !isMenuOpen }">
-        <a [href]="itemUrl" target="_blank">Open in new window</a>
+        <a [href]="itemUrl" target="_blank" i18n>Open in new window</a>
     </div>
     <d3s-asset-grid-custom-export *ngIf="showCustomExport && canExportRecords()"
                                   (closeClick)="showCustomExport = false"
@@ -179,7 +181,7 @@
                   *ngIf="showEditor"
                   [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
                   [objectType]="gridObject.Object"
-                  [title]="selected ? 'Edit Asset' : 'Create New Asset'"
+                  [title]="assetEditorTitle"
                   [selection]="selected"
                   [rowID]="rowID"
                   [objectTypeUid]="gridObject?.AssetTypeUID"
@@ -198,6 +200,6 @@
                          (onCancel)="showDelete = false"
                          (onDeleted)="onDeleted()">
 </d3s-asset-delete-editor>
-<div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;">
+<div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;" i18n>
     The current artifact type has no listable fields types configured.  Please configure at least one field type as listable in order to see data on the artifact list page.  For further information how to configure a field type as listable see the product guide.
 </div>

@@ -19,21 +19,22 @@
                     {{subtitle}}
                 </div>
                 <div *ngIf="!hideLinks">
-                    <a *ngIf="hasOpenLink" (click)="open();">Open</a> <span *ngIf="hasOpenLink" class="grey-delimiter">|</span> 
-                    <a (click)="open(true);">Open in New Tab</a>
-                    <ng-container *ngIf="isEditLinkVisible()"> | 
-                        <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})">Edit</a>
+                    <a *ngIf="hasOpenLink" (click)="open();" i18n>Open</a> <span *ngIf="hasOpenLink" class="grey-delimiter">|</span>
+                    <a (click)="open(true);" i18n>Open in New Tab</a>
+                    <ng-container *ngIf="isEditLinkVisible()">
+                        |
+                        <a (click)="onEditClick.emit({assetTypeUid:assetTypeUID})" i18n>Edit</a>
                     </ng-container>
                 </div>
             </div>
         </ng-container>
         <ng-container *ngIf="isSidePanel && showTabs">
             <div class="windowtabs">
-                <button *ngIf="relationshipUid" [class]="(tab == 'relationship') ? 'tab-selected' : 'tab'" (click)="clickTab('relationship')">Relationship</button>
+                <button *ngIf="relationshipUid" [class]="(tab == 'relationship') ? 'tab-selected' : 'tab'" (click)="clickTab('relationship')" i18n>Relationship</button>
                 <button [class]="(tab == 'detail') ? 'tab-selected' : 'tab'" (click)="clickTab('detail')">{{relationshipUid ? 'Asset' : 'Details'}}</button>
-                <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading">Ownership</button>
-                <button *ngIf="showGroupTab" [class]="(tab == 'groups') ? 'tab-selected' : 'tab'" (click)="clickTab('groups')">Groups</button>
-                <button *ngIf="showMemberTab" [class]="(tab == 'members') ? 'tab-selected' : 'tab'" (click)="clickTab('members')">Members</button>
+                <button *ngIf="showOwnershipTab" [class]="(tab == 'ownership') ? 'tab-selected' : 'tab'" (click)="clickTab('ownership')" [disabled]="model.HasOwnership || isLoading" i18n>Ownership</button>
+                <button *ngIf="showGroupTab" [class]="(tab == 'groups') ? 'tab-selected' : 'tab'" (click)="clickTab('groups')" i18n>Groups</button>
+                <button *ngIf="showMemberTab" [class]="(tab == 'members') ? 'tab-selected' : 'tab'" (click)="clickTab('members')" i18n>Members</button>
             </div>
         </ng-container>
         <div class="asset-detail-tabs">
@@ -113,7 +114,7 @@
 
                     <div class="user-assignments" *ngIf="objectType === 'Resource'">
                         <label nclass="ig-label">
-                            <span>{{model?.ResourceFirstName}}'s Assignments</span>
+                            <span i18n>{{model?.ResourceFirstName}}'s Assignments</span>
                         </label>
                         <d3s-assignments [resourceId]="objectID" [isSidePanel]="true"></d3s-assignments>
                     </div>
@@ -134,7 +135,7 @@
                                 <div class="icon-holder">
                                     <i class="fa fa-ban"></i>
                                 </div>
-                                <span>You do not have permission to view ownership information for the selected item</span>
+                                <span i18n>You do not have permission to view ownership information for the selected item</span>
                             </div>
                         </div>
                     </ng-container>
@@ -170,7 +171,7 @@
                             </ng-template>
                             <ng-template pTemplate="emptymessage" let-columns>
                                 <tr>
-                                    <td [attr.colspan]="1">
+                                    <td [attr.colspan]="1" i18n>
                                         No results match your search criteria
                                     </td>
                                 </tr>

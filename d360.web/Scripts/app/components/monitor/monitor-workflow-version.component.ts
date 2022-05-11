@@ -2,7 +2,6 @@
 import { CompanySettingsService } from "../../services/settings.service";
 import { BaseComponent } from "../shared/base.component";
 
-
 @Component({
     selector: `d3s-monitor-workflow-version`,
     template: `
@@ -44,7 +43,7 @@ export class MonitorWorkflowVersionComponent extends BaseComponent {
     @Input() showHeader: boolean = true;
 
     @Input() selectedWorkflowTypes: any[];
-    title: string = 'Workflow Versions'
+    title: string = $localize`Workflow Versions`;
     selectedWorkflowType: any = null;
     showSimpleFilter: boolean = true;
 

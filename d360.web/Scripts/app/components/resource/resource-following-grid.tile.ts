@@ -9,13 +9,13 @@ import { Router } from '@angular/router';
     template: `
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
     <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','CurrentScore']" [paginator]="true" [rows]="10" >
         <ng-template pTemplate="header">
             <tr>
-                <th [pSortableColumn]="'Name'">Name
+                <th [pSortableColumn]="'Name'"><ng-container i18n>Name</ng-container>
     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon></th>
-    <th [pSortableColumn]="'CurrentScore'">Governance Score
+    <th [pSortableColumn]="'CurrentScore'"><ng-container i18n>Governance Score</ng-container>
     <d3s-sortIcon [field]="'CurrentScore'"></d3s-sortIcon></th>
             </tr>
 		    <tr [hidden]="showSimpleFilter">

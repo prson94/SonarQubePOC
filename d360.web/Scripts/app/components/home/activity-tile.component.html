@@ -1,43 +1,44 @@
 <div class="tile tile-detail">
-    <header>Activity <span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
+    <header>
+        <ng-container i18n>Activity </ng-container> <span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
         <d3s-tile-actions [hasAdd]="false"
-            [hasDate]="true"
-            (dateClick)="changeDates($event);"></d3s-tile-actions>
+                          [hasDate]="true"
+                          (dateClick)="changeDates($event);"></d3s-tile-actions>
     </header>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <p-table #dt
-        *ngIf="!isLoading && counts.length > 0"
-        [value]="counts"
-        selectionMode="single"
-        [metaKeySelection]="true"
-        [globalFilterFields]="['Name','New','Total']"
-        sortField="Name"
-        [pageLinks]="3"
-        [paginator]="true"
-        [rows]="defaultInitialItemsPerPage"
-        [rowsPerPageOptions]="defaultPagingOptions"
-        [(selection)]="selected">
+             *ngIf="!isLoading && counts.length > 0"
+             [value]="counts"
+             selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="['Name','New','Total']"
+             sortField="Name"
+             [pageLinks]="3"
+             [paginator]="true"
+             [rows]="defaultInitialItemsPerPage"
+             [rowsPerPageOptions]="defaultPagingOptions"
+             [(selection)]="selected">
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'Name'">
-                    Name
+                    <ng-container i18n>Name</ng-container>
                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'New'"
                     style="text-align:center">
-                    New
+                    <ng-container i18n>New</ng-container>
                     <d3s-sortIcon [field]="'New'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'Total'"
                     style="text-align:center">
-                    Modified
+                    <ng-container i18n>Modified</ng-container>
                     <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
                 </th>
             </tr>
 
         </ng-template>
         <ng-template pTemplate="body"
-            let-item>
+                     let-item>
             <tr (dblclick)="selected=item;doSelect(selected)"
                 [pSelectableRow]="item">
                 <td>
@@ -48,13 +49,13 @@
             </tr>
         </ng-template>
         <ng-template *ngIf="dt.totalRecords"
-            pTemplate="summary">
+                     pTemplate="summary">
             <d3s-grid-paging-info [first]="dt.first"
-                [rows]="dt.rows"
-                [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                                  [rows]="dt.rows"
+                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
         </ng-template>
     </p-table>
 
     <div *ngIf="counts.length == 0 && !isLoading"
-        style="padding:10px">No activity for this timeframe</div>
+         style="padding:10px" i18n>No activity for this timeframe</div>
 </div>

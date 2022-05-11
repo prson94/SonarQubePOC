@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-
+using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.extensions;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -30,10 +31,10 @@ namespace d360.web.Controllers
         #endregion
 
         [ValidateContracts(Ignore = true), AllowAnonymous, Route("unsupported")]
-        public ActionResult Unsupported()
+        public async Task<ActionResult> Unsupported()
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-
+            await this.AppendSettingsToViewData();
             return View("Unsupported");
         }
 
@@ -52,7 +53,9 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+
+            await this.AppendSettingsToViewData();
+
             ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", await IsSingleSignOn());
 
@@ -70,15 +73,14 @@ namespace d360.web.Controllers
                 ViewData.Add("ResourceEmail", "");
                 ViewData.Add("ResourceUid", "");
             }
-
             return View("App");
         }
 
         [ValidateContracts(Ignore = true), Authorize, Route("terms")]
-        public ActionResult Terms(string redirectUri = null)
+        public async Task<ActionResult> Terms(string redirectUri = null)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", SettingsRepository.GetSettingsAsDictionary());
+            await this.AppendSettingsToViewData();
 
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
             validations = validations.Where(v => !v.Accepted && ((v.IsFirstUser && v.ContractType == ContractType.OrganizationTermsOfUse) || v.ContractType == ContractType.ResourceTermsOfUse || v.OrganizationID == null));
@@ -197,7 +199,7 @@ namespace d360.web.Controllers
                         if (res != null)
                         {
                             var oRes = Company.OrganizationResources.FirstOrDefault(o => i.OrganizationID == o.OrganizationID && o.ResourceID == res.ResourceID);
-                            
+
                             if (oRes == null)
                             {
                                 Company.OrganizationResources.Add(new OrganizationResource

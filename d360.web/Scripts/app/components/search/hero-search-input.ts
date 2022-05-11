@@ -50,13 +50,13 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
             .getElementsByClassName('p-multiselect-label-container')[0]
             .getElementsByClassName('p-multiselect-label')[0]);
         if (this.searchTypes.length == 0) {
-            label.textContent = 'Search All Categories';
+            label.textContent = $localize`Search All Categories`;
         } else if (this.searchTypes.length == 1) {
-            label.textContent = 'Search ' + this.searchObjectTypes.filter((x) => this.searchTypes.indexOf(x.value) >= 0).map((x) => x.label).join(', ');
+            label.textContent = $localize`Search` + ' ' + this.searchObjectTypes.filter((x) => this.searchTypes.indexOf(x.value) >= 0).map((x) => x.label).join(', ');
         } else if (this.searchTypes.length == this.searchObjectTypes.length) {
-            label.textContent = 'Search All Categories';
+            label.textContent = $localize`Search All Categories`;
         } else {
-            label.textContent = 'Search ' + this.searchTypes.length + ' Categories';
+            label.textContent = $localize`Search ${this.searchTypes.length} Categories`;
         }
     }
 }

@@ -4,15 +4,15 @@
            [isVisible]="isVisible">
     <div class="theme-editor">
         <div class="form-header">
-            {{theme ? 'Edit Theme' : 'Create New Theme'}}
-            <div class="sub-header">
+            <ng-container i18n>{{theme ? 'Edit Theme' : 'Create New Theme'}}</ng-container>
+            <div class="sub-header" i18n>
                 Branding
             </div>
         </div>
         <div class="theme-form" [style.max-height.px]="themeEditorHeight" *ngIf="formGroup">
             <div class="gov-info-message" *ngIf="isCurrentTheme">
                 <i class="fa fa-info-circle"></i>
-                <span class="text-valu">
+                <span class="text-valu" i18n>
                     Applying changes to the current theme will affect current uses. Users will see the changes upon refreshing their screen once these changes are applied.
                 </span>
             </div>
@@ -21,7 +21,7 @@
                     <ig-property-group [igformGroup]="formGroup" [title]="''" [shouldBePadded]="false" [showHeaderLine]="false">
                         <div inputs>
                             <div class="row">
-                                <label for="headerLogo" class="ig-label">Theme Name</label>
+                                <label for="headerLogo" class="ig-label" i18n>Theme Name</label>
                                 <input igInput type="text" formControlName="name" required igSize="full" />
                             </div>
                         </div>
@@ -30,16 +30,16 @@
                 <ig-property-group [igformGroup]="formGroup" [title]="'Header Bar'" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
-                            <label for="headerLogo">Header logo image</label>
+                            <label for="headerLogo" i18n>Header logo image</label>
                             <image-picker [defaultImage]="getDefaultImage('headerLogo')" formControlName="headerLogo" [imageType]="'LOGO'" [maxHeight]="40" [message]="'Choose a PNG,JPG or GIF image (maximum display height: 40 pixels)'"></image-picker>
                         </div>
                         <div class="input-row">
-                            <label for="icon">Browser logo ico</label>
+                            <label for="icon" i18n>Browser logo ico</label>
                             <image-picker [defaultImage]="getDefaultImage('icon')" formControlName="icon" [imageType]="'ICO'" [message]="'Choose an ICO file to display in the browser tab/taskbar'"></image-picker>
                         </div>
                         <div class="input-row">
                             <label for="headerBackColor">
-                                Background color
+                                <ng-container i18n>Background color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('headerBackColor')"
@@ -52,7 +52,7 @@
                         </div>
                         <div class="input-row">
                             <label for="breadcrumbLinkColor">
-                                Breadcrumb link color
+                                <ng-container i18n>Breadcrumb link color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('breadcrumbLinkColor')"
@@ -65,7 +65,7 @@
                         </div>
                         <div class="input-row">
                             <label for="buttonBackColor">
-                                Button color
+                                <ng-container i18n>Button color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('buttonBackColor')"
@@ -83,7 +83,7 @@
                     <div inputs>
                         <div class="input-row">
                             <label for="navbarBackColor">
-                                Side menu color
+                                <ng-container i18n>Side menu color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('navbarBackColor')"
@@ -96,7 +96,7 @@
                         </div>
                         <div class="input-row">
                             <label for="navbarBackColorSelected">
-                                Side menu selection color
+                                <ng-container i18n>Side menu selection color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('navbarBackColorSelected')"
@@ -110,11 +110,11 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group [igformGroup]="formGroup" [title]="'Home Page'" [shouldBePadded]="false" [showHeaderLine]="false">
+                <ig-property-group [igformGroup]="formGroup" i18n-title title="Home Page" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
                             <label for="homeBackground">
-                                Background image
+                                <ng-container i18n>Background image</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('homeBackground')"
@@ -131,7 +131,7 @@
                     <div inputs>
                         <div class="input-row">
                             <label for="primaryButtonBackColor">
-                                Primary button color
+                                <ng-container i18n>Primary button color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('primaryButtonBackColor')"
@@ -144,7 +144,7 @@
                         </div>
                         <div class="input-row">
                             <label for="backColor">
-                                Background color
+                                <ng-container i18n>Background color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('backColor')"
@@ -157,7 +157,7 @@
                         </div>
                         <div class="input-row">
                             <label for="tabLinkColor">
-                                Tab/link color
+                                <ng-container i18n>Tab/link color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('tabLinkColor')"
@@ -170,7 +170,7 @@
                         </div>
                         <div class="input-row">
                             <label for="tableHeaderBackColor">
-                                Table header color
+                                <ng-container i18n>Table header color</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('tableHeaderBackColor')"
@@ -183,7 +183,7 @@
                         </div>
                         <div class="input-row">
                             <label for="tableRowBackColor">
-                                Table row selection
+                                <ng-container i18n>Table row selection</ng-container>
                                 <i class="fa fa-question-circle help-icon"
                                    [escape]="false"
                                    [pTooltip]="getTooltip('tableRowBackColor')"
@@ -198,13 +198,13 @@
                 </ig-property-group>
 
 
-                <ig-property-group *ngIf="hasCustomCss" [igformGroup]="formGroup" [title]="'CSS Customization'" [shouldBePadded]="false" [showHeaderLine]="false">
+                <ig-property-group *ngIf="hasCustomCss" [igformGroup]="formGroup" i18n-title title="CSS Customization" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
-                            <div class="css-warning">
-                                <i class="fa fa-exclamation-triangle"></i>
-                                You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Infogix to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.
-                            </div>
-                            <codearea formControlName="customCss" [codeType]="'css'"></codearea>
+                        <div class="css-warning">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <ng-container i18n>You can write CSS overrides to customize the branding of Data360 Govern. You should write the minimal number of rules and CSS properties necessary to achieve your desired results. Software updates are released every month, which could potentially break your CSS overrides. In some cases, CSS overrides could break updates or new features added to Govern. If you use a lot of CSS overrides, you will need to perform UI regression testing every time an update is released to your environments. Because of this, we strongly recommend that you reach out to Infogix to raise enhancement requests, instead of using CSS to remove or alter features and screen layouts.</ng-container>
+                        </div>
+                        <codearea formControlName="customCss" [codeType]="'css'"></codearea>
                     </div>
                 </ig-property-group>
 
@@ -213,8 +213,8 @@
         <div class="action-bar">
             <button igButton igAutoFocus label="{{theme ? 'Discard Changes' : 'Cancel'}}" (click)="cancel()"></button>
             <span class="grow"></span>
-            <button *ngIf="!isCurrentTheme" igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid || !changesMade"></button>
-            <button *ngIf="isCurrentTheme" igButton class="ig-button-primary" label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="confirmCurrentThemeSaveVisible = true" [disabled]="!formGroup.valid || !changesMade"></button>
+            <button *ngIf="!isCurrentTheme" igButton class="ig-button-primary" i18n-label label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid || !changesMade"></button>
+            <button *ngIf="isCurrentTheme" igButton class="ig-button-primary" i18n-label label=" {{theme ? 'Save Changes' : 'Create'}}" (click)="confirmCurrentThemeSaveVisible = true" [disabled]="!formGroup.valid || !changesMade"></button>
         </div>
     </div>
 </d3s-modal>
@@ -223,12 +223,12 @@
            (onClose)="confirmCurrentThemeSaveVisible=false"
            [title]="'Change Current Theme'"
            [isVisible]="confirmCurrentThemeSaveVisible">
-    <div class="content">
+    <div class="content" i18n>
         Are you sure you want to make changes to the current theme, which will cause the app to look different the next time users refresh or log in?
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="confirmCurrentThemeSaveVisible = false" [disabled]="savingInProgress"></button>
+        <button igButton igAutoFocus i18n-label label="Cancel" (click)="confirmCurrentThemeSaveVisible = false" [disabled]="savingInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label=" {{theme ? 'Apply Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
+        <button igButton class="ig-button-primary" i18n-label label=" {{theme ? 'Apply Changes' : 'Create'}}" (click)="save();" [loading]="savingInProgress" [disabled]="savingInProgress || !formGroup.valid"></button>
     </div>
 </d3s-modal>

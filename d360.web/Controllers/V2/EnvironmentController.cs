@@ -156,7 +156,8 @@ namespace d360.web.Controllers.V2
             {
                 await _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
             }
-            catch {
+            catch
+            {
                 //no handling of this case
             }
 
@@ -172,7 +173,8 @@ namespace d360.web.Controllers.V2
                     SettingsRepository.DeleteSetting(Setting.CustomCSSLocation);
                 }
             }
-            catch {
+            catch
+            {
                 //no handling of this case
             }
 
@@ -1390,6 +1392,16 @@ namespace d360.web.Controllers.V2
             {
                 var theme = await ThemeRepository.GetCurrentThemeByUserAsync();
 
+                string textColorFromBackground(string backgroundColor)
+                {
+                    Color col = ColorTranslator.FromHtml(backgroundColor);
+                    if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
+                    {
+                        return "white";
+                    }
+                    return "black";
+                }
+
                 if (theme == null)
                 {
                     throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoActiveThemeExists);
@@ -1407,6 +1419,23 @@ namespace d360.web.Controllers.V2
                 css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
+                css.AppendLine("");
+                css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
+                css.AppendCssVariable("calculatedButtonTextColor", textColorFromBackground(theme.ButtonBackColor));
+                css.AppendCssVariable("calculatedHeaderTextColor", textColorFromBackground(theme.HeaderBackColor));
+                css.AppendCssVariable("calculatedNavbarTextColor", textColorFromBackground(theme.NavBarBackColor));
+                css.AppendCssVariable("calculatedNavbarSelectedTextColor", textColorFromBackground(theme.NavBarBackSelectedColor));
+                css.AppendCssVariable("calculatedPrimaryButtonTextColor", textColorFromBackground(theme.PrimaryButtonBackColor));
+                css.AppendCssVariable("calculatedTableHeaderTextColor", textColorFromBackground(theme.TableHeaderBackColor));
+                css.AppendCssVariable("calculatedTableRowTextColor", textColorFromBackground(theme.TableRowBackSelectedColor));
+                css.AppendLine("");
+
+                var headerLogoUri = !string.IsNullOrEmpty(theme.HeaderLogoUri) ? theme.HeaderLogoUri : "/Content/images/PreciselyLogo@2x.png";
+                css.AppendCssVariable("headerLogoUri", $"url({headerLogoUri})");
+
+                var backgroundUri = !string.IsNullOrEmpty(theme.HomeBackgroundUri) ? theme.HomeBackgroundUri : "/Content/images/HomeBG.png";
+                css.AppendCssVariable("homeBackgroundUri", $"url({backgroundUri})");
+
                 css.AppendLine("}");
 
                 var customCss = ThemeRepository.GetCurrentThemeCustomCssByUser();

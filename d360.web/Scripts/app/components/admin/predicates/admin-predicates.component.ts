@@ -21,20 +21,20 @@ import { CompanySettingsService } from '../../../services/settings.service';
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{searchText}}" class="grid-simple-filter">
                     <p-table #dt [value]="predicates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Inverse','FriendlyTypeName']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Inverse'">
-                                    Inverse
+                                    <ng-container i18n>Inverse</ng-container>
                                     <d3s-sortIcon [field]="'Inverse'"></d3s-sortIcon>
                                 </th>                                
                                 <th [pSortableColumn]="'FriendlyTypeName'">
-                                    Functional Type
+                                    <ng-container i18n>Functional Type</ng-container>
                                     <d3s-sortIcon [field]="'FriendlyTypeName'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 30px"></th>
@@ -83,7 +83,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.Uid"
                     [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the predicate [' + [selected?.Name] + ']?'"                                         
+                    [prompt]="deletePromptText"                                         
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form> 
                 </div>
@@ -100,6 +100,11 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     selected: Predicate = null;
     theDeleteCallback: Function;
 
+    searchText = $localize`Search...`;
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the predicate [${this.selected?.Name}]?`;
+    }
+
     constructor(
         private predicatesService: PredicatesService,
         private messagesService: MessagesObservableService,
@@ -109,9 +114,9 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-        this.theDeleteCallback = this.deletePredicate.bind(this);        
+        this.theDeleteCallback = this.deletePredicate.bind(this);
         this.areaName = StringConstants.Section_Predicates;
-        this.setCommonItems();        
+        this.setCommonItems();
         this.buildSecondaryNavigationForObject(0, 'Predicate');
     }
 
@@ -137,7 +142,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     deletePredicate(uid: string) {
         this.predicatesService.deletePredicate(uid)
             .subscribe(result => {
-                this.showMessageForApiResults(this.messagesService, result, "Predicate deleted", true);
+                this.showMessageForApiResults(this.messagesService, result, $localize`Predicate deleted`, true);
                 this.showDelete = false;
                 if (!result.some(x => x.Success == false)) {
                     this.predicates = this.predicates.filter(x => x.Uid != uid);
@@ -165,15 +170,15 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
                 predicate.Type = this.selected.Type;
             }
         }
-        
+
         this.predicatesService.savePredicate(event.item)
             .subscribe(result => {
 
                 if (event.action == 'new') {
-                    this.showMessageForApiResults(this.messagesService, result, 'Predicate succesfully added!', true);
+                    this.showMessageForApiResults(this.messagesService, result, $localize`Predicate succesfully added!`, true);
                 }
                 else {
-                    this.showMessageForApiResults(this.messagesService, result, 'Predicate succesfully updated!', true);
+                    this.showMessageForApiResults(this.messagesService, result, $localize`Predicate succesfully updated!`, true);
                 }
                 this.getPredicates();
                 this.showEditor = false;
@@ -183,5 +188,5 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     private showPredicateEditor() {
         if (this.selected.IsSystem) return; //dont allow edit of system predicates
         this.showEditor = true;
-    }    
+    }
 }

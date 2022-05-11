@@ -1,5 +1,5 @@
 ﻿import { Component } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -47,6 +47,6 @@ export class ResourceListComponent extends BaseComponent {
         this.secondaryNavService.showHeader(false);
         this.setBrowserTitle(this.titleService, 'Resource');
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Resource"))
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Resource`));
     }
 }

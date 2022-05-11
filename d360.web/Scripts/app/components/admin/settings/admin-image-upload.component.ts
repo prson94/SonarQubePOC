@@ -12,21 +12,21 @@ import { CompanySettingsService } from '../../../services/settings.service';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>
-            Custom Images
+            <ng-container i18n>Custom Images</ng-container>
             <div class="TileTools"></div>
         </header>
         <div class="row">
-            <div class="col s6"><div class="FieldName">Company Logo</div></div>
-            <div class="col s6"><div class="FieldName">Company Web Icon</div></div>
+            <div class="col s6"><div class="FieldName" i18n>Company Logo</div></div>
+            <div class="col s6"><div class="FieldName" i18n>Company Web Icon</div></div>
         </div>
         <div class="row">
             <div class="col s6">
-                <div class="directions">
+                <div class="directions" i18n>
                     You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The image will be scaled to 40px high as necessary and up to a maximum file size of 1MB.
                 </div>
             </div>
             <div class="col s6">
-                <div class="directions">
+                <div class="directions" i18n>
                     You may upload a custom web icon (.ICO file) for your company, up to a maximum file size of 1MB.
                 </div>
             </div>
@@ -34,14 +34,14 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <div class="row">
             <div class="col s6">
                 <div *ngIf="companySettings.CurrentLogoPath">
-                    Current Logo: <br />
+                    <ng-container i18n>Current Logo</ng-container>: <br />
                     <img [src]="companySettings.CurrentLogoPath" class="company-logo-canvas" />
                 </div>
                 &nbsp;
             </div>
             <div class="col s6">
                 <div *ngIf="companySettings.CurrentIconPath">
-                    Current Icon: <br />
+                    <ng-container i18n>Current Icon</ng-container>: <br />
                     <img [src]="companySettings.CurrentIconPath" />
                 </div>
             </div>
@@ -51,6 +51,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <p-checkbox igCheckbox
                             [(ngModel)]="companySettings.SetLogoToDefault"
                             label="Reset to default"
+                            i18n-label
                             (ngModelChange)="companySettings.SetLogoToDefault = $event; companySettingsChange.emit(companySettings)"
                             binary="true">
                 </p-checkbox>
@@ -59,6 +60,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <p-checkbox igCheckbox
                             [(ngModel)]="companySettings.SetIconToDefault"
                             label="Reset to default"
+                            i18n-label
                             (ngModelChange)="companySettings.SetIconToDefault = $event; companySettingsChange.emit(companySettings)"
                             binary="true">
                 </p-checkbox>
@@ -125,10 +127,9 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
         let target = event.target || event.srcElement;
         let files = target.files;
 
-        if (files[0] != null)
-        {
+        if (files[0] != null) {
             if (files[0].size > (1024 * 1024)) {
-                this.messagesService.showError('File too large.', `Company logo image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+                this.messagesService.showError($localize`File too large.`, $localize`Company logo image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
                 target.value = null;
                 return;
             }
@@ -155,7 +156,7 @@ export class AdminImageUploadComponent extends AdminBaseComponent {
 
         if (files[0] != null) {
             if (files[0].size > (1024 * 1024)) {
-                this.messagesService.showError('File too large.', `Company icon image upload failed - the file is too large. Please choose an image file no bigger than 1MB. `);
+                this.messagesService.showError($localize`File too large.`, $localize`Company icon image upload failed - the file is too large. Please choose an image file no bigger than 1MB. `);
                 target.value = null;
                 return;
             }

@@ -16,6 +16,8 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
     @Input() objectType: string;
     @Input() maxDepth: number;
 
+    searchText = $localize`Search...`;
+
     error: any;
     levels: HierarchyTypeLevel[] = [];
     showEditor: boolean = false;
@@ -78,5 +80,9 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
                 this.getLevels();
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the level [${this.selectedLevel?.Name}]?`;
     }
 }

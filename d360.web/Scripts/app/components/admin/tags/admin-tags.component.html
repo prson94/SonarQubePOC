@@ -54,19 +54,19 @@
                                 <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                             </th>
                             <th [pSortableColumn]="'Value'" style="width: 30%">
-                                Name
+                                <ng-container i18n>Name</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'UseCount'" style="width: 13%">
-                                Use count
+                                <ng-container i18n>Use count</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'CreatedOn'" style="width: 20%">
-                                Date Created
+                                <ng-container i18n>Date Created</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedOn'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'CreatedBy'" style="width: 20%">
-                                Created By
+                                <ng-container i18n>Created By</ng-container>
                                 <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'CreatedBy'"></d3s-sortIcon>
                             </th>
                             <th style="width: 110px"></th>
@@ -129,13 +129,15 @@
                              (onCancel)="showDelete=false;">
                 <div prompt>
                     <div *ngIf="selected.length == 1">
-                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'
+                        <ng-container i18n>
+                            Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'
+                        </ng-container>
                         <ng-container *ngIf="this.selected[0].UseCount > 0">
-                            (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
+                            (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} <ng-container i18n>assets</ng-container> </d3s-tag-usage> <ng-container i18n>tagged</ng-container>)
                         </ng-container>
                     </div>
                     <div *ngIf="selected.length > 1">
-                        Please confirm that you wish to delete following tags:
+                        <ng-container i18n>Please confirm that you wish to delete following tags</ng-container>:
                         <div style="max-height: 75vh; overflow-y: auto;">
                             <table class="table-borderless table">
                                 <tr *ngFor="let t of selected">

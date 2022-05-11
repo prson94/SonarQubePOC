@@ -23,25 +23,26 @@
 			[disabled]="disabled || !isValidRegexp || isEmptyRegexp || isEmptyTestString"
 			(click)="validate()"
 			igButton
+		    i18n-label
 			label="Validate">
 		</button>
 
-		<div class="validate-status">
-			<ng-container [ngSwitch]="isValid">
-				<ng-container *ngSwitchCase="true">
-					<span class="pass">
-						<i class="icon fa fa-check"></i>
-						Pass
-					</span>
-				</ng-container>
-				<ng-container *ngSwitchCase="false">
-					<span class="fail">
-						<i class="icon fa fa-remove"></i>
-						Fail
-					</span>
-				</ng-container>
-				<ng-container *ngSwitchCase="null"></ng-container>
-			</ng-container>
-		</div>
-	</form> 
+        <div class="validate-status">
+            <ng-container [ngSwitch]="isValid">
+                <ng-container *ngSwitchCase="true">
+                    <span class="pass">
+                        <i class="icon fa fa-check"></i>
+                        <ng-container i18n>Pass</ng-container>
+                    </span>
+                </ng-container>
+                <ng-container *ngSwitchCase="false">
+                    <span class="fail">
+                        <i class="icon fa fa-remove"></i>
+                        <ng-container i18n>Fail</ng-container>
+                    </span>
+                </ng-container>
+                <ng-container *ngSwitchCase="null"></ng-container>
+            </ng-container>
+        </div>
+    </form>
 </div>

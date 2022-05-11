@@ -3,7 +3,7 @@
         <div class="tile tile-detail">
             <header>
                 {{tabTitle}}
-                <div *ngIf="disableAdd" class="warningMessage">
+                <div *ngIf="disableAdd" class="warningMessage" i18n>
                     Cannot add new Diagram Asset Type before Governance Role is set.
                 </div>
                 <d3s-tile-actions *ngIf="!disableAdd" [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
@@ -12,7 +12,7 @@
             <p-table #dt [value]="artifactTypes" [globalFilterFields]="['name']" selectionMode="single" filterMode="strict" (onRowSelect)="selectedItemChange()" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 60%">Name</th>
+                        <th style="width: 60%" i18n>Name</th>
                         <th style="width: 30px; overflow:visible"></th>
                         <th style="width: 30px"></th>
                         <th style="width: 30px"></th>
@@ -46,9 +46,7 @@
                 </ng-template>
                 <ng-template pTemplate="emptymessage" let-columns>
                     <tr>
-                        <td colspan="4">
-                            No asset types found.
-                        </td>
+                        <td colspan="4" i18n>No asset types found.</td>
                     </tr>
                 </ng-template>
             </p-table>

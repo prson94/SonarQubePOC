@@ -72,7 +72,6 @@ export class ProcessDiagramTemplates {
         }
 
         function getGovernanceRoleValue(data: any) {
-            debugger;
             var val = data.governanceDisplayValue as string;
             if (val && val.length > maxHeaderTextLength) {
                 return val.substring(0, maxHeaderTextLength) + '...';

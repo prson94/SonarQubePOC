@@ -13,8 +13,8 @@
                             (onChange)="advancedFiltersChanged($event)">
         </advanced-filtering>
         <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
-            <span *ngIf="selectedItems && selectedItems.length === 1">1 item selected</span>
-            <span *ngIf="selectedItems && selectedItems.length > 1">{{selectedItems.length}} items selected</span>
+            <span *ngIf="selectedItems && selectedItems.length === 1" i18n>1 item selected</span>
+            <span *ngIf="selectedItems && selectedItems.length > 1" i18n>{{selectedItems.length}} items selected</span>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
                 <th style="width: 38px;">
                     <p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox>
                 </th>
-                <th>Available Assets</th>
+                <th i18n>Available Assets</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
@@ -64,7 +64,7 @@
         </ng-template>
         <ng-template pTemplate="emptymessage" let-columns>
             <tr>
-                <td colspan="2">
+                <td colspan="2" i18n>
                     No assets found
                 </td>
             </tr>

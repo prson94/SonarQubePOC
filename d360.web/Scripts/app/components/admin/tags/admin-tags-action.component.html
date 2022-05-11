@@ -2,7 +2,7 @@
 
     <div>
         <div class="multiselect-action" *ngIf="selectedTags.length > 1">
-            <div class="item-selection">
+            <div class="item-selection" i18n>
                 {{selectedTags.length}} items selected
             </div>
             <div class="hamburger-menu">
@@ -11,8 +11,8 @@
                 <div class="layer"></div>
                 <div class="popup-menu place-left">
                     <ul>
-                        <li (click)="onDeleteClick()"><span>Delete</span></li>
-                        <li (click)="onConsolidateClick()"><span>Consolidate</span></li>
+                        <li (click)="onDeleteClick()"><span i18n>Delete</span></li>
+                        <li (click)="onConsolidateClick()"><span i18n>Consolidate</span></li>
                     </ul>
                 </div>
             </div>

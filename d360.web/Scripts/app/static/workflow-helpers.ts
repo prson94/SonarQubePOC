@@ -4,15 +4,15 @@ export class WorkflowHelpers {
     static activityTypeName(workflowActivityType: WorkflowActivityType): string {
         switch (workflowActivityType) {
             case WorkflowActivityType.EmailNotification:
-                return 'Email Notification';
+                return $localize`Email Notification`;
             case WorkflowActivityType.FieldChange:
-                return 'Field Change';
+                return $localize`Field Change`;
             case WorkflowActivityType.RelationshipUpdate:
-                return 'Relationship Update';
+                return $localize`Relationship Update`;
             case WorkflowActivityType.StateChange:
-                return 'State Change';
+                return $localize`State Change`;
             case WorkflowActivityType.StatusChange:
-                return 'Status Change';
+                return $localize`Status Change`;
             default:
                 return WorkflowActivityType[workflowActivityType];
 

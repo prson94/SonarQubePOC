@@ -16,6 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             [suggestions]="tags" 
                             (completeMethod)="search($event)" 
                             field="TextPath"  
+                            i18n-placeholder
                             placeholder="Tag an item"
                             (onSelect)="selectItem()">   
                             <ng-template let-item pTemplate="item">

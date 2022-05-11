@@ -3,8 +3,6 @@ import { Routes, RouterModule } from '@angular/router';
 import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceComponent } from './reference.component';
 
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-
 const routes: Routes = [
     {
         path: '',

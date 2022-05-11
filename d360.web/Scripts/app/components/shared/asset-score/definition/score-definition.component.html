@@ -4,35 +4,35 @@
             {{selectedMetric?.Name}}
         </div>
         <div *ngIf="!isAdminPage" class="measure-details-item">
-            <div class="details-header">Name</div>
+            <div class="details-header" i18n>Name</div>
             <div class="details-content">{{selectedMetric?.Name ? selectedMetric?.Name :'---'}}</div>
         </div>
         <div class="measure-details-item">
-            <div class="details-header">Description</div>
+            <div class="details-header" i18n>Description</div>
             <div class="details-content">{{selectedMetric?.Description ? selectedMetric?.Description :'---'}}</div>
         </div>
         <div class="measure-details-item">
-            <div class="details-header">Effective Dates</div>
+            <div class="details-header" i18n>Effective Dates</div>
             <div class="details-content">
                 {{selectedMetric?.EffectiveDate | utcDate  | date:'shortDate'}} -
-                <span *ngIf="selectedMetric.State == 1">Present</span>
+                <span *ngIf="selectedMetric.State == 1" i18n>Present</span>
                 <span *ngIf="selectedMetric.State == 3">{{selectedMetric?.EffectiveEndDate | utcDate  | date:'shortDate'}}</span>
             </div>
         </div>
         <div *ngIf="!isExternallyCalculated" class="measure-details-item">
-            <div class="details-header">Weight</div>
+            <div class="details-header" i18n>Weight</div>
             <div class="details-content">{{getAsPrecentage(selectedMetric?.Weight)}} <span *ngIf="!isAdminPage && selectedMetric?.AdjustedWeight != selectedMetric?.Weight">(adjusted to {{getAsPrecentage(selectedMetric?.AdjustedWeight)}})</span></div>
         </div>
         <div *ngIf="!isExternallyCalculated" class="measure-details-item">
-            <div class="details-header">Grouping Measure</div>
+            <div class="details-header" i18n>Grouping Measure</div>
             <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
         </div>
         <div *ngIf="!isExternallyCalculated && selectedMetric?.Threshold" class="measure-details-item">
-            <div class="details-header">Use Pass Threshold</div>
-            <div class="details-content">Yes</div>
+            <div class="details-header" i18n>Use Pass Threshold</div>
+            <div class="details-content" i18n>Yes</div>
         </div>
         <div *ngIf="!isExternallyCalculated && selectedMetric?.Threshold" class="measure-details-item">
-            <div class="details-header">Pass Threshold</div>
+            <div class="details-header" i18n>Pass Threshold</div>
             <div class="details-content">{{getAsRawPrecentage(selectedMetric?.Threshold, 3)}}</div>
         </div>
         <div *ngIf="!data?.isExternallyCalculated && !selectedMetric.IsGroup" class="measure-details-item">
@@ -42,7 +42,7 @@
             </d3s-admin-metric-pass-test-details>
         </div>
         <div *ngIf="showConditions" class="measure-details-item">
-            <div class="details-header">Asset Conditions and Weighting</div>
+            <div class="details-header" i18n>Asset Conditions and Weighting</div>
             <measure-conditions-details [screenReferences]="screenReferences" [conditionGroups]="selectedMetric?.ConditionGroups" [matchAll]="selectedMetric?.MatchConditionsOnly"></measure-conditions-details>
         </div>
         <div class="measure-details-item">

@@ -3,7 +3,7 @@
         <div class="row">
             <div class="col s12 no-padding">
                 <div class="FieldName">
-                    <span>Score Type&nbsp;</span>
+                    <span i18n>Score Type</span>
                 </div>
                 <p-dropdown 
                             igDropdown 
@@ -25,7 +25,7 @@
         <div class="row">
             <div class="col s12 no-padding">
                 <div class="FieldName">
-                    <span>Asset Type&nbsp;</span>
+                    <span i18n>Asset Type</span>
                 </div>
                 <p-dropdown 
                             igDropdown 
@@ -36,7 +36,7 @@
                             filter="true" 
                             appendTo="body" 
                             [required]="true"  
-                            placeholder="Value required"
+                            placeholder="{{requiredLabel}}"
                             [showClear]="false" 
                             (onChange)="hasModelChanged()">
                     <ng-template let-item pTemplate="selectedItem">
@@ -60,13 +60,13 @@
                 <span>&nbsp;</span>
             </div>
             <div class="col s12 no-padding">
-                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>
+                <p-radioButton name="calc-group" [value]="false" label="{{internallyCaluclatedLabel}}" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <p-radioButton name="calc-group" [value]="true" label="{{externallyCaluclatedLabel}}" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled" (onClick)="hasModelChanged()"></p-radioButton>
             </div>
-            <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated">
+            <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated" i18n>
                 Externally calculated scores require the score itself and measure results be passed in from an external provider. Measures for externally calculated scores are intended to provide context and information about the external score.
             </div>
-            <div class="col s12 light-text" *ngIf="!selection.isExternallyCalculated">
+            <div class="col s12 light-text" *ngIf="!selection.isExternallyCalculated" i18n>
                 Internally calculated scores use measure results to determine the score.
             </div>
         </div>
@@ -74,12 +74,13 @@
         <br />
         <div class="row">
             <div class="FieldName title-name">
-                <span>Scoring Bands</span>
-                <d3s-info-tooltip [titleValue]="'How does this work?'">
-                    <h2>About your Score Bands</h2>
-                    Scoring Bands determine the color of scoring badges, allowing you to quickly identify a score as a negative, allowable or positive scoring outcome, based on where the score value sits within the defined ranges.<br />
+                <span i18n>Scoring Bands</span>
+                <d3s-info-tooltip [titleValue]="howDoesItWorkTitle">
+                    <h2 i18n>About your Score Bands</h2>
+                    <ng-container i18n>Scoring Bands determine the color of scoring badges, allowing you to quickly identify a score as a negative, allowable or positive scoring outcome, based on where the score value sits within the defined ranges.</ng-container>
+                    <br />
                     <a [href]="scoringHelpPage" target="_blank">
-                        Read more about scoring&nbsp;&nbsp;<i class="fa fa-external-link" aria-hidden="true"></i>
+                        <ng-container i18n>Read more about scoring</ng-container>&nbsp;&nbsp;<i class="fa fa-external-link" aria-hidden="true"></i>
                     </a>
                 </d3s-info-tooltip>
             </div>
@@ -93,19 +94,19 @@
             <div class="gov-hr"></div>
             <div class="col s12 no-padding">
                 <div class="score-range-manual">
-                    <div class="d3s-score-pill editor score-poor"><span class="text">Poor</span></div>
+                    <div class="d3s-score-pill editor score-poor"><span class="text" i18n>Poor</span></div>
                     <div class="value-box">0%&nbsp;-&nbsp;</div>
                     <div class="input-box">
                         <input #lt type="number" [value]="selection.lowerThreshold" (change)="onLowerThresholdChange($event,lt)" (blur)="onLowerThresholdChange($event,lt)" (keyup)="onLowerThresholdChange($event,lt)" />
                         <div class="input-overlay">%</div>
                     </div>
-                    <div class="d3s-score-pill editor score-average"><span class="text">Average</span></div>
+                    <div class="d3s-score-pill editor score-average"><span class="text" i18n>Average</span></div>
                     <div class="value-box">{{selection.lowerThreshold}}.%&nbsp;-&nbsp;</div>
                     <div class="input-box">
                         <input #ut type="number" [value]="selection.upperThreshold" (change)="onUpperThresholdChange($event,ut)" (blur)="onUpperThresholdChange($event,ut)" (keyup)="onUpperThresholdChange($event,ut)" />
                         <div class="input-overlay">%</div>
                     </div>
-                    <div class="d3s-score-pill editor score-good"><span class="text">Good</span></div>
+                    <div class="d3s-score-pill editor score-good"><span class="text" i18n>Good</span></div>
                     <div class="value-box">{{selection.upperThreshold}}%.&nbsp;-&nbsp;100%</div>
                 </div>
             </div>

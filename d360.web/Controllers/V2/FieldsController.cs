@@ -12,6 +12,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
+using d360.core.resources;
 using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
@@ -822,13 +823,13 @@ namespace d360.web.Controllers.V2
 
 				var patterns = new Dictionary<string, string>
 				{
-					{ "Choose sample...", "" },
-					{ "Email", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
-					{ "IP Address", @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
-					{ "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
-					{ "Internal Url", @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
-					{ "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
-					{ "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
+					{ Fields.RegexPatternChoose, "" },
+					{ Fields.RegexPatternEmail, @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
+					{ Fields.RegexPatternIP, @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
+					{ Fields.RegexPatternNorthAmericanPhone, @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
+					{ Fields.RegexPatternInternalUrl, @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
+					{ Fields.RegexPatternPublicUrl, @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
+					{ Fields.RegexPatternUSZipCode, @"^(\d{5}(?:\-\d{4})?)$" }
 				};
 
 				var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)

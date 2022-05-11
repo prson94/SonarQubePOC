@@ -6,7 +6,7 @@
         [ngModel]="selected"
         (ngModelChange)="clickItem($event)">
         <option value="none"
-            disabled>Append field value...</option>
+            disabled i18n>Append field value...</option>
         <option *ngFor="let f of fields"
             [value]="f.value"
             style="color:#000;">{{f.label}}</option>

@@ -84,7 +84,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     private isValid(): boolean {
         this.errorMessage = '';
         if (this.currentQuestion.Value == undefined) {
-            this.errorMessage = 'You must select at least one answer';
+            this.errorMessage = $localize`You must select at least one answer`;
         }
 
         return this.errorMessage.length > 0 ? false : true;
