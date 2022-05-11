@@ -80,6 +80,8 @@ import { GalleryComponentPropertiesComponent } from './shared/gallery.component-
 import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
 import { ColorSelectorModule } from '../shared/controls/color-selector/color-selector.component';
 import { GalleryColorSelectorComponent } from './gallery.color-selector.component';
+import { GalleryDropdownBadgeComponent } from './gallery.dropdown-badge.component';
+import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-badge.component';
 
 @NgModule({
     imports: [
@@ -124,7 +126,8 @@ import { GalleryColorSelectorComponent } from './gallery.color-selector.componen
         CodemirrorModule,
         ImagePickerModule,
         ColorSelectorModule,
-        RegexpInputModule
+        RegexpInputModule,
+        DropdownBadgeModule
     ],
     declarations: [
         GalleryComponent,
@@ -166,7 +169,8 @@ import { GalleryColorSelectorComponent } from './gallery.color-selector.componen
         GalleryLocaleComponent,
         GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
-        GalleryColorSelectorComponent
+        GalleryColorSelectorComponent,
+        GalleryDropdownBadgeComponent
     ],
     providers: [
         GalleryGuard,
