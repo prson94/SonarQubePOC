@@ -20,7 +20,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             </header>  
                             <d3s-loading [isLoading]="isLoading && !showDelete"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete">
-                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
                                 <p-table #dt [value]="issueTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Description']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange()">
                                     <ng-template pTemplate="header">
                                         <tr>

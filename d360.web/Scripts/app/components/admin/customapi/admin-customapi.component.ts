@@ -23,7 +23,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
     public showEditor: boolean = false;
     public showDelete: boolean = false;
 
-    searchText = "Search...";
+    searchText = $localize`Search...`;
     theDeleteCallback: Function;
 
     constructor(

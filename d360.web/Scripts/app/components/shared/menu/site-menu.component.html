@@ -29,14 +29,16 @@
             </ng-template>
             <d3s-site-menu-category *ngIf="isAdmin"
                                     [expanded]="menuOpen"
-                                    [title]="'Configuration'"
+                                    i18n-title
+                                    title="Configuration"
                                     rootIconName="fa-sliders"
                                     [menu]="configMenu"
                                     [isActive]="configMenu.isActiveItem"
                                     (activeItemChanged)="changeActiveMenu($event);"></d3s-site-menu-category>
             <d3s-site-menu-category *ngIf="isAdmin"
                                     [expanded]="menuOpen"
-                                    [title]="'Administration'"
+                                    i18n-title
+                                    title="Administration"
                                     rootIconName="fa-cog"
                                     [menu]="adminMenu"
                                     [isActive]="adminMenu.isActiveItem"
@@ -46,6 +48,7 @@
         <div class="toggle-container" [ngClass]="{'open ': menuOpen}">
             <div [ngClass]="{'open ': menuOpen}"
                  class="menu-toggle"
+                 i18n-title
                  title="Toggle full width navigation"
                  (click)="toggleMenu();">
                 <i class="fa fa-arrow-circle-left"
