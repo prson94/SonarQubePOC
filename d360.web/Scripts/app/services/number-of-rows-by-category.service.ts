@@ -29,7 +29,7 @@ type PendingChange
 interface State {
   pageToListToNumberOfRows: PageCategoryToListToNumberOfRows;
 
-  currentPageCategory: string | undefined;
+  currentPageCategory: string | null;
   latestUrl: string;
 
   /**
@@ -39,13 +39,17 @@ interface State {
   pendingChanges: PendingChange[];
 }
 
+interface OldPageCategoryToListToNumberOfRows {
+  [pageCategory: string]: number | ListToNumberOfRows;
+} 
+
 @Injectable({
   providedIn: 'root'
 })
 export class NumberOfRowsByCategoryService {
   private state$ = new BehaviorSubject<State>({
     pageToListToNumberOfRows: this.defineNumberOfRowsByCategories(),
-    currentPageCategory: undefined,
+    currentPageCategory: null,
     latestUrl: '',
     pendingChanges: []
   });
@@ -109,7 +113,7 @@ export class NumberOfRowsByCategoryService {
       }
 
       this.mutateState((nextState) => {
-        nextState.currentPageCategory = undefined;
+        nextState.currentPageCategory = null;
         nextState.pendingChanges = [];
         nextState.latestUrl = event.urlAfterRedirects;
       });
@@ -124,7 +128,7 @@ export class NumberOfRowsByCategoryService {
     });
 
     this.state$.subscribe((state) => {
-      if (!state.currentPageCategory || state.pendingChanges.length == 0) {
+      if (!state.currentPageCategory || state.pendingChanges.length === 0) {
         return;
       }
 
@@ -222,7 +226,3 @@ export const NumberOfRowsByCategoryServiceInitializer = {
   useFactory: numberOfRowsByCategoryServiceInitializer,
   deps: [NumberOfRowsByCategoryService]
 }
-
-interface OldPageCategoryToListToNumberOfRows {
-  [pageCategory: string]: number | ListToNumberOfRows;
-} 
