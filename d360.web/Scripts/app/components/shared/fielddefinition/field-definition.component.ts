@@ -58,6 +58,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     private theDeleteCallback: Function;
     public hasKeyFields: boolean = false;
 
+    ascendingLabel: string = $localize`Ascending`;
+    descendingLabel: string = $localize`Descending`;
+
     constructor(
         private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
@@ -161,26 +164,30 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
     getDisplayTypeName(name: string): string {
         switch (name) {
-            case "ComputedRelationshipField":
-                return "Field from Relationship";
-            case "ComputedRelationshipReferenceList":
-                return "Reference Item List from Relationship";
-            case "DateTime":
-                return "Date Time";
-            case "ComputedOwnershipLookup":
-                return "Ownership Lookup";
+            case "Boolean": return $localize`True/False`;
             case "ComputedRelationshipLookup":
-                return "Relation Lookup";
-            case "Path":
-                return "Asset Path";
-            case "Text":
-                return "Simple Text";
-            case "Lookup":
-                return "List";
-            case "Boolean":
-                return "True/False";
-            default:
-                return name;
+            case "ComplexRelationLookup": return $localize`Relation Lookup`;
+            case "Counter": return $localize`Counter`;
+            case "Date": return $localize`Date`;
+            case "DateTime": return $localize`Date Time`;
+            case "Decimal": return $localize`Decimal`;
+            case "ComputedRelationshipField":
+            case "FieldFromRelationship": return $localize`Field from Relationship`;
+            case "Html": return $localize`Html`;
+            case "JSON": return $localize`JSON`;
+            case "JsonElement": return $localize`JsonElement`;
+            case "Link": return $localize`Link`;
+            case "Lookup": return $localize`List`;
+            case "Number": return $localize`Number`;
+            case "ComputedOwnershipLookup":
+            case "OwnershipLookup": return $localize`Ownership Lookup`;
+            case "Path": return $localize`Asset Path`;
+            case "ComputedRelationshipReferenceList":
+            case "RefListRelationship": return $localize`Reference Item List from Relationship`;
+            case "Relationship": return $localize`Relationship`;
+            case "Score": return $localize`Score`;
+            case "Tag": return $localize`Tag`;
+            case "Text": return $localize`Simple Text`;
         }
     }
     edit(name: string): void {
