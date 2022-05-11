@@ -27,7 +27,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                                                   [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
                             </header>
                             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
-                                   (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
+                                   (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..."
                                    class="grid-simple-filter">
                             <p-table #dt [value]="groups" selectionMode="single" [metaKeySelection]="true"
                                      [globalFilterFields]="['Name','ID','NumberOfMembers']" sortField="Name"

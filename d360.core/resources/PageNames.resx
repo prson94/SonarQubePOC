@@ -210,6 +210,9 @@
   <data name="ProfileTab" xml:space="preserve">
     <value>Profile</value>
   </data>
+  <data name="ReferenceListsPage" xml:space="preserve">
+    <value>Reference Lists</value>
+  </data>
   <data name="ReferenceTypesPage" xml:space="preserve">
     <value>Reference Types</value>
   </data>

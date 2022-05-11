@@ -340,6 +340,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reference Lists.
+        /// </summary>
+        public static string ReferenceListsPage {
+            get {
+                return ResourceManager.GetString("ReferenceListsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reference Types.
         /// </summary>
         public static string ReferenceTypesPage {
