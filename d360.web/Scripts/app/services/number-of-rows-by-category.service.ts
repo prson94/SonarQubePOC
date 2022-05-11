@@ -77,7 +77,7 @@ export class NumberOfRowsByCategoryService {
    * If list already have number of rows defined, we don't apply it
    */
   public defineNumberOfRows(numberOfRows?: number, list = 'Main'): void {
-    this.mutateState(nextState => {
+    this.mutateState((nextState) => {
       nextState.pendingChanges.push({
         type: 'setDefaultRowsPerPage',
         list,
@@ -90,7 +90,7 @@ export class NumberOfRowsByCategoryService {
    * Asks to set number of rows for given list
    */
   public onPage(event: OnPageEvent, list: string = 'Main'): void {
-    this.mutateState(nextState => {
+    this.mutateState((nextState) => {
       nextState.pendingChanges.push({ type: 'setNumberOfRows', list, numberOfRows: event.rows });
     });
   }
