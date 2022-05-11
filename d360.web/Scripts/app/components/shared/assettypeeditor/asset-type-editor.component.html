@@ -107,15 +107,6 @@
             </div>
             <div class="col l4 m12 s12">
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetArtifactSettings">
-                    <div class="FieldName" i18n>Auto Display Description?</div>
-                    <div class="row">
-                        <div class="col l1 m2 s12">
-                            <p-checkbox name="AutoDisplayDescription" [attr.data-cy]="'AssetType_Field_AutoDisplayDescription'" [(ngModel)]="model.AssetType.AutoDisplayDescription" binary="true"></p-checkbox>
-                        </div>
-                        <div class="col l11 m10 s12">
-                            <div class="FieldInstructions" i18n>If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
-                        </div>
-                    </div>
                     <d3s-asset-type-editor-use-as-transformation [assetTypeId]="id" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
                     <ng-container *ngIf="ShowAutoDisplayOption()">
                         <div class="FieldName" i18n>Auto Display Owner/Parent?</div>
