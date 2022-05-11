@@ -41,7 +41,7 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
             let search = url.search;
             let params = new URLSearchParams(search);
             if (params.has('showbackbutton')) {
-                this.showBackButton = params.get('showbackbutton').toLowerCase() === 'true'
+                this.showBackButton = params.get('showbackbutton').toLowerCase() === 'true';
             }
         });
     }   
