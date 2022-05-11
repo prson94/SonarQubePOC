@@ -128,11 +128,18 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     ngOnInit(): void {
         this.paramsSub = this.route.queryParams.subscribe(() => {
+            let markForCheck = false;
             let url = new URL(window.location.href);
             let search = url.search;
             let params = new URLSearchParams(search);
+
             if (params.has('nonavigation')) {
                 this.showNav = params.get('nonavigation').toLowerCase() !== 'true';
+                markForCheck = true;
+            }
+
+            if (markForCheck) {
+                this.ref.markForCheck();
             }
         });
     }
