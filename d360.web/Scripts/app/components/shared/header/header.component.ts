@@ -1,5 +1,5 @@
 ﻿import { Component, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
@@ -32,9 +32,12 @@ export class HeaderComponent extends BaseComponent implements OnInit, OnDestroy 
     ngOnInit(): void {
         let logoSetting = this.settingsService.getSettingById(CompanySettingEnum.CompanyLogo);
 
-        this.subParams = this.route.queryParams.subscribe((params) => {
-            if (params['showbackbutton'] != null) {
-                this.showBackButton = params['showbackbutton'].toLocaleLowerCase() === 'true';
+        this.subParams = this.route.queryParams.subscribe(() => {
+            let url = new URL(window.location.href);
+            let search = url.search;
+            let params = new URLSearchParams(search);
+            if (params.has('showbackbutton')) {
+                this.showBackButton = params.get('showbackbutton').toLowerCase() === 'true';
             }
         });
     }   

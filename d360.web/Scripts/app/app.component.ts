@@ -80,9 +80,12 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             });
         this.aiService.setUserId(String(CurrentResourceID));
 
-        this.paramSub = this.route.queryParams.subscribe((params) => {
-            if (params['nonavigation'] != null) {
-                this.hideNav = params['nonavigation'].toLocaleLowerCase() === 'true';
+        this.paramSub = this.route.queryParams.subscribe(() => {
+            let url = new URL(window.location.href);
+            let search = url.search;
+            let params = new URLSearchParams(search);
+            if (params.has('nonavigation')) {
+                this.hideNav = params.get('nonavigation').toLowerCase() === 'true';
             }
         });
 
