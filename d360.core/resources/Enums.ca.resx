@@ -135,4 +135,70 @@
   <data name="CompanyRebuildJobToken_SearchIndex_Desc" xml:space="preserve">
     <value>Rèβúïℓδƨ ƭλè ƒúℓℓ-ƭèжƭ ïñδèж ƒôř áℓℓ áƨƨèƭƨ ωïƭλïñ ¥ôúř èñƲïřôñ₥èñƭ, áñδ çáñ ƭáƙè úƥ ƭô ƨïжƭ¥ ₥ïñúƭèƨ ƭô ƒúℓℓ¥ řèβúïℓδ.</value>
   </data>
+  <data name="OperatorAfter" xml:space="preserve">
+    <value>ïƨ áƒƭèř</value>
+  </data>
+  <data name="OperatorBefore" xml:space="preserve">
+    <value>ïƨ βèƒôřè</value>
+  </data>
+  <data name="OperatorBetween" xml:space="preserve">
+    <value>ïƨ βèƭωèèñ</value>
+  </data>
+  <data name="OperatorContains" xml:space="preserve">
+    <value>çôñƭáïñƨ</value>
+  </data>
+  <data name="OperatorEndsWith" xml:space="preserve">
+    <value>èñδƨ ωïƭλ</value>
+  </data>
+  <data name="OperatorEquals" xml:space="preserve">
+    <value>ïƨ</value>
+  </data>
+  <data name="OperatorGreaterThan" xml:space="preserve">
+    <value>ïƨ ϱřèáƭèř ƭλáñ</value>
+  </data>
+  <data name="OperatorGreaterThanOrEquals" xml:space="preserve">
+    <value>ïƨ ϱřèáƭèř ƭλáñ ôř è9úáℓ ƭô</value>
+  </data>
+  <data name="OperatorIn" xml:space="preserve">
+    <value>ïñ</value>
+  </data>
+  <data name="OperatorIsFalse" xml:space="preserve">
+    <value>ïƨ ƒáℓƨè</value>
+  </data>
+  <data name="OperatorIsInBand" xml:space="preserve">
+    <value>ïƨ ïñ βáñδ</value>
+  </data>
+  <data name="OperatorIsTrue" xml:space="preserve">
+    <value>ïƨ ƭřúè</value>
+  </data>
+  <data name="OperatorLessThan" xml:space="preserve">
+    <value>ïƨ ℓèƨƨ ƭλáñ</value>
+  </data>
+  <data name="OperatorLessThanOrEquals" xml:space="preserve">
+    <value>ïƨ ℓèƨƨ ƭλáñ ôř è9úáℓ ƭô</value>
+  </data>
+  <data name="OperatorNotContains" xml:space="preserve">
+    <value>δôèƨ ñôƭ çôñƭáïñ</value>
+  </data>
+  <data name="OperatorNotEquals" xml:space="preserve">
+    <value>ïƨ ñôƭ</value>
+  </data>
+  <data name="OperatorNotIn" xml:space="preserve">
+    <value>ñôƭ ïñ</value>
+  </data>
+  <data name="OperatorNotPopulated" xml:space="preserve">
+    <value>ïƨ ñôƭ ƥôƥúℓáƭèδ</value>
+  </data>
+  <data name="OperatorOnOrAfter" xml:space="preserve">
+    <value>ïƨ ôñ ôř áƒƭèř</value>
+  </data>
+  <data name="OperatorOnOrBefore" xml:space="preserve">
+    <value>ïƨ ôñ ôř βèƒôřè</value>
+  </data>
+  <data name="OperatorPopulated" xml:space="preserve">
+    <value>ïƨ ƥôƥúℓáƭèδ</value>
+  </data>
+  <data name="OperatorStartsWith" xml:space="preserve">
+    <value>ƨƭářƭƨ ωïƭλ</value>
+  </data>
 </root>

@@ -1151,7 +1151,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/rightsidebar/right-sidebar.component.ts</context>
-          <context context-type="linenumber">168,174</context>
+          <context context-type="linenumber">169,176</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/shortcuts/shortcut-list.component.html</context>
@@ -1443,7 +1443,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/rightsidebar/right-sidebar.component.ts</context>
-          <context context-type="linenumber">149,157</context>
+          <context context-type="linenumber">148,157</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/tiles/tile-actions.component.ts</context>
@@ -4673,7 +4673,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.html</context>
-          <context context-type="linenumber">152,154</context>
+          <context context-type="linenumber">160,164</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c6ae4b32df16327958d2c4e260936c062f900618" datatype="html">
@@ -8085,11 +8085,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">345</context>
+          <context context-type="linenumber">348</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">365</context>
+          <context context-type="linenumber">368</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8085117969946491537" datatype="html">
@@ -8125,11 +8125,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">346</context>
+          <context context-type="linenumber">349</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">366</context>
+          <context context-type="linenumber">369</context>
         </context-group>
       </trans-unit>
       <trans-unit id="224137347956771298" datatype="html">
@@ -8431,7 +8431,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">119</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1ab4d2c97fce0d166e2260c2971ad98482fb8cbc" datatype="html">
@@ -8459,7 +8459,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.html</context>
-          <context context-type="linenumber">135,137</context>
+          <context context-type="linenumber">143,146</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ee4ae0403cb8cc3231c3014f10c8d4dadef1dccd" datatype="html">
@@ -8471,7 +8471,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.html</context>
-          <context context-type="linenumber">143,147</context>
+          <context context-type="linenumber">152,154</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="22e7d58d82893cbfd060ab3976e3ad0f76102826" datatype="html">
+        <source>Search list</source>
+        <target xmlns="">§èářçλ ℓïƨƭ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.html</context>
+          <context context-type="linenumber">135,136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4391894793177859799" datatype="html">
@@ -8490,12 +8498,28 @@
           <context context-type="linenumber">54,64</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="8252592942228061506" datatype="html">
+        <source>Reset filter</source>
+        <target xmlns="">Rèƨèƭ ƒïℓƭèř</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
+          <context context-type="linenumber">82,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="989488558392421224" datatype="html">
+        <source>Remove filter</source>
+        <target xmlns="">Rè₥ôƲè ƒïℓƭèř</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
+          <context context-type="linenumber">83,84</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="942fb1b4cca227f5f25ea6754b4fc9ac77c26bcc" datatype="html">
         <source>This is used for matching exact phrased. E.g. a "bank account" search with this method will only return results like "bank account", "basic bank account". It won't return results like "bank savings account" or "account, bank".</source>
         <target xmlns="">Tλïƨ ïƨ úƨèδ ƒôř ₥áƭçλïñϱ èжáçƭ ƥλřáƨèδ. É.ϱ. á "βáñƙ áççôúñƭ" ƨèářçλ ωïƭλ ƭλïƨ ₥èƭλôδ ωïℓℓ ôñℓ¥ řèƭúřñ řèƨúℓƭƨ ℓïƙè "βáñƙ áççôúñƭ", "βáƨïç βáñƙ áççôúñƭ". Ìƭ ωôñ'ƭ řèƭúřñ řèƨúℓƭƨ ℓïƙè "βáñƙ ƨáƲïñϱƨ áççôúñƭ" ôř "áççôúñƭ, βáñƙ".</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">84,105</context>
+          <context context-type="linenumber">86,105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2913134362123307233" datatype="html">
@@ -8503,7 +8527,7 @@
         <target xmlns="">Âƨƨèƭ Fïèℓδƨ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">144</context>
+          <context context-type="linenumber">147</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8445904743957852917" datatype="html">
@@ -8511,7 +8535,7 @@
         <target xmlns="">§¥ƨƭè₥ Fïèℓδƨ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">155</context>
+          <context context-type="linenumber">158</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-detail/asset-detail-category.component.ts</context>
@@ -8531,7 +8555,7 @@
         <target xmlns="">Rèℓáƭïôñƨλïƥƨ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">164</context>
+          <context context-type="linenumber">167</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/base.component.ts</context>
@@ -8559,23 +8583,23 @@
         <target xmlns="">çôñƭáïñƨ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">325</context>
+          <context context-type="linenumber">328</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">329</context>
+          <context context-type="linenumber">332</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">351,352</context>
+          <context context-type="linenumber">354,355</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">371,372</context>
+          <context context-type="linenumber">374,375</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">378,379</context>
+          <context context-type="linenumber">381,382</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6353362142589022681" datatype="html">
@@ -8583,23 +8607,23 @@
         <target xmlns="">δôèƨ ñôƭ çôñƭáïñ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">326</context>
+          <context context-type="linenumber">329</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">330</context>
+          <context context-type="linenumber">333</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">352,353</context>
+          <context context-type="linenumber">355,356</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">372,373</context>
+          <context context-type="linenumber">375,376</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">379,380</context>
+          <context context-type="linenumber">382,383</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5833541161016500233" datatype="html">
@@ -8607,11 +8631,11 @@
         <target xmlns=""> èжïƨƭƨ </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">347</context>
+          <context context-type="linenumber">350</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">367</context>
+          <context context-type="linenumber">370</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6344411797623442808" datatype="html">
@@ -8619,11 +8643,11 @@
         <target xmlns=""> δôèƨ ñôƭ èжïƨƭ </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">348</context>
+          <context context-type="linenumber">351</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/advanced-filtering/filter-item.component.ts</context>
-          <context context-type="linenumber">368</context>
+          <context context-type="linenumber">371</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1e126500e5b9d1af1373b294a48f2a0caad413e7" datatype="html">
@@ -10972,6 +10996,18 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-definition.component.ts</context>
           <context context-type="linenumber">114</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">252</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">283</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">318</context>
         </context-group>
       </trans-unit>
       <trans-unit id="07b85afd22aec80d7259423310153f0003e4f69e" datatype="html">
@@ -19141,7 +19177,107 @@ Click to investigate and add tags.</source>
         </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
-          <context context-type="linenumber">115</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2823636124506051601" datatype="html">
+        <source>Tag already assigned to </source>
+        <target xmlns="">Táϱ áℓřèáδ¥ áƨƨïϱñèδ ƭô </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">252</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5789324810191427840" datatype="html">
+        <source>Asset</source>
+        <target xmlns="">Âƨƨèƭ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">252</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">283</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">318</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
+          <context context-type="linenumber">78,79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6228118825780906502" datatype="html">
+        <source>Tag can't contain | character</source>
+        <target xmlns="">Táϱ çáñ'ƭ çôñƭáïñ | çλářáçƭèř</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">259</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6523573082865065014" datatype="html">
+        <source>Tag must be as least 1 character long in length</source>
+        <target xmlns="">Táϱ ₥úƨƭ βè áƨ ℓèáƨƭ 1 çλářáçƭèř ℓôñϱ ïñ ℓèñϱƭλ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">265</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7233113381135704983" datatype="html">
+        <source>Tag must be less then 100 characters in length</source>
+        <target xmlns="">Táϱ ₥úƨƭ βè ℓèƨƨ ƭλèñ 100 çλářáçƭèřƨ ïñ ℓèñϱƭλ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">270</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1019563733523744312" datatype="html">
+        <source>
+          <x id="PH" equiv-text="event.Value" /> successfully added to </source>
+        <target xmlns="">
+          <x id="PH" equiv-text="event.Value" xmlns="urn:oasis:names:tc:xliff:document:1.2" /> ƨúççèƨƨƒúℓℓ¥ áδδèδ ƭô </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">283</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">318</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6625766065091572192" datatype="html">
+        <source>
+          <x id="PH" equiv-text="event.Value" /> successfully created</source>
+        <target xmlns="">
+          <x id="PH" equiv-text="event.Value" xmlns="urn:oasis:names:tc:xliff:document:1.2" /> ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">311</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4813051632789266975" datatype="html">
+        <source>Tag successfully removed</source>
+        <target xmlns="">Táϱ ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">379,380</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6522572124006323930" datatype="html">
+        <source>Tag added by <x id="PH" equiv-text="this.tagTooltip.CreatedBy" /> on</source>
+        <target xmlns="">Táϱ áδδèδ β¥ <x id="PH" equiv-text="this.tagTooltip.CreatedBy" xmlns="urn:oasis:names:tc:xliff:document:1.2" /> ôñ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">553</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8637294213945710724" datatype="html">
+        <source>Added by <x id="PH" equiv-text="this.tagTooltip.CreatedBy" /> on</source>
+        <target xmlns="">Âδδèδ β¥ <x id="PH" equiv-text="this.tagTooltip.CreatedBy" xmlns="urn:oasis:names:tc:xliff:document:1.2" /> ôñ</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">558</context>
         </context-group>
       </trans-unit>
       <trans-unit id="dd0b5fe9948fe6bc55c0f06e93b2115e0811fb1c" datatype="html">
@@ -20164,14 +20300,6 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.html</context>
           <context context-type="linenumber">74,67</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5789324810191427840" datatype="html">
-        <source>Asset</source>
-        <target xmlns="">Âƨƨèƭ</target>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
-          <context context-type="linenumber">78,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6198915087721295150" datatype="html">

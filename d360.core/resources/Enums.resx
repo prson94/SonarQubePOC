@@ -135,4 +135,70 @@
   <data name="CompanyRebuildJobToken_SearchIndex_Desc" xml:space="preserve">
     <value>Rebuilds the full-text index for all assets within your environment, and can take up to sixty minutes to fully rebuild.</value>
   </data>
+  <data name="OperatorAfter" xml:space="preserve">
+    <value>is after</value>
+  </data>
+  <data name="OperatorBefore" xml:space="preserve">
+    <value>is before</value>
+  </data>
+  <data name="OperatorBetween" xml:space="preserve">
+    <value>is between</value>
+  </data>
+  <data name="OperatorContains" xml:space="preserve">
+    <value>contains</value>
+  </data>
+  <data name="OperatorEndsWith" xml:space="preserve">
+    <value>ends with</value>
+  </data>
+  <data name="OperatorEquals" xml:space="preserve">
+    <value>is</value>
+  </data>
+  <data name="OperatorGreaterThan" xml:space="preserve">
+    <value>is greater than</value>
+  </data>
+  <data name="OperatorGreaterThanOrEquals" xml:space="preserve">
+    <value>is greater than or equal to</value>
+  </data>
+  <data name="OperatorIn" xml:space="preserve">
+    <value>in</value>
+  </data>
+  <data name="OperatorIsFalse" xml:space="preserve">
+    <value>is false</value>
+  </data>
+  <data name="OperatorIsInBand" xml:space="preserve">
+    <value>is in band</value>
+  </data>
+  <data name="OperatorIsTrue" xml:space="preserve">
+    <value>is true</value>
+  </data>
+  <data name="OperatorLessThan" xml:space="preserve">
+    <value>is less than</value>
+  </data>
+  <data name="OperatorLessThanOrEquals" xml:space="preserve">
+    <value>is less than or equal to</value>
+  </data>
+  <data name="OperatorNotContains" xml:space="preserve">
+    <value>does not contain</value>
+  </data>
+  <data name="OperatorNotEquals" xml:space="preserve">
+    <value>is not</value>
+  </data>
+  <data name="OperatorNotIn" xml:space="preserve">
+    <value>not in</value>
+  </data>
+  <data name="OperatorNotPopulated" xml:space="preserve">
+    <value>is not populated</value>
+  </data>
+  <data name="OperatorOnOrAfter" xml:space="preserve">
+    <value>is on or after</value>
+  </data>
+  <data name="OperatorOnOrBefore" xml:space="preserve">
+    <value>is on or before</value>
+  </data>
+  <data name="OperatorPopulated" xml:space="preserve">
+    <value>is populated</value>
+  </data>
+  <data name="OperatorStartsWith" xml:space="preserve">
+    <value>starts with</value>
+  </data>
 </root>
