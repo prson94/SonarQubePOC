@@ -145,9 +145,6 @@ namespace d360.core.entities
         public string Notes { get; set; }
         
         [DataMember]
-        public bool AutoDisplayDescription { get; set; }
-        
-        [DataMember]
         public bool UseAsTransformation { get; set; }
 
         [DataMember]

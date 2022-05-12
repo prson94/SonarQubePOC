@@ -1323,7 +1323,6 @@ namespace d360.web.Controllers
 				model.Add("Description", assetType.Description);
 				model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
-				model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
