@@ -113,5 +113,257 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("CompanyRebuildJobToken_SearchIndex_Desc", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Path.
+        /// </summary>
+        public static string FieldType_AssetPath {
+            get {
+                return ResourceManager.GetString("FieldType_AssetPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to True/False.
+        /// </summary>
+        public static string FieldType_Boolean {
+            get {
+                return ResourceManager.GetString("FieldType_Boolean", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color Picker.
+        /// </summary>
+        public static string FieldType_ColorPicker {
+            get {
+                return ResourceManager.GetString("FieldType_ColorPicker", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Counter.
+        /// </summary>
+        public static string FieldType_Counter {
+            get {
+                return ResourceManager.GetString("FieldType_Counter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DataTableSelect.
+        /// </summary>
+        public static string FieldType_DataTableSelect {
+            get {
+                return ResourceManager.GetString("FieldType_DataTableSelect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date.
+        /// </summary>
+        public static string FieldType_Date {
+            get {
+                return ResourceManager.GetString("FieldType_Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Date With Time.
+        /// </summary>
+        public static string FieldType_DateTime {
+            get {
+                return ResourceManager.GetString("FieldType_DateTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decimal Number.
+        /// </summary>
+        public static string FieldType_Decimal {
+            get {
+                return ResourceManager.GetString("FieldType_Decimal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field from Relationship.
+        /// </summary>
+        public static string FieldType_FieldFromRel {
+            get {
+                return ResourceManager.GetString("FieldType_FieldFromRel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File.
+        /// </summary>
+        public static string FieldType_File {
+            get {
+                return ResourceManager.GetString("FieldType_File", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden.
+        /// </summary>
+        public static string FieldType_Hidden {
+            get {
+                return ResourceManager.GetString("FieldType_Hidden", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Html/Richtext.
+        /// </summary>
+        public static string FieldType_Html {
+            get {
+                return ResourceManager.GetString("FieldType_Html", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to JSON.
+        /// </summary>
+        public static string FieldType_JSON {
+            get {
+                return ResourceManager.GetString("FieldType_JSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to JSON Attribute.
+        /// </summary>
+        public static string FieldType_JSONAttribute {
+            get {
+                return ResourceManager.GetString("FieldType_JSONAttribute", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Link.
+        /// </summary>
+        public static string FieldType_Link {
+            get {
+                return ResourceManager.GetString("FieldType_Link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List.
+        /// </summary>
+        public static string FieldType_List {
+            get {
+                return ResourceManager.GetString("FieldType_List", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        public static string FieldType_None {
+            get {
+                return ResourceManager.GetString("FieldType_None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Number.
+        /// </summary>
+        public static string FieldType_Number {
+            get {
+                return ResourceManager.GetString("FieldType_Number", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ownership Lookup.
+        /// </summary>
+        public static string FieldType_OwnershipLookup {
+            get {
+                return ResourceManager.GetString("FieldType_OwnershipLookup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        public static string FieldType_Password {
+            get {
+                return ResourceManager.GetString("FieldType_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Percentage.
+        /// </summary>
+        public static string FieldType_Percentage {
+            get {
+                return ResourceManager.GetString("FieldType_Percentage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference Item List from Relationship.
+        /// </summary>
+        public static string FieldType_ReferenceItemListFromRel {
+            get {
+                return ResourceManager.GetString("FieldType_ReferenceItemListFromRel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relation Lookup.
+        /// </summary>
+        public static string FieldType_RelationLookup {
+            get {
+                return ResourceManager.GetString("FieldType_RelationLookup", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship.
+        /// </summary>
+        public static string FieldType_Relationship {
+            get {
+                return ResourceManager.GetString("FieldType_Relationship", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Score.
+        /// </summary>
+        public static string FieldType_Score {
+            get {
+                return ResourceManager.GetString("FieldType_Score", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Simple Text.
+        /// </summary>
+        public static string FieldType_SimpleText {
+            get {
+                return ResourceManager.GetString("FieldType_SimpleText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag.
+        /// </summary>
+        public static string FieldType_Tag {
+            get {
+                return ResourceManager.GetString("FieldType_Tag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UNC/File Link.
+        /// </summary>
+        public static string FieldType_UNCLink {
+            get {
+                return ResourceManager.GetString("FieldType_UNCLink", resourceCulture);
+            }
+        }
     }
 }
