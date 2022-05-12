@@ -1044,7 +1044,7 @@ export class BaseComponent {
 
                     this.breadcrumbsService.clearBreadcrumbs();
                     this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
-                        this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
+                        this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
                         let areaName: string = currentAreaName ? currentAreaName : folderTitle;
                         let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
                         if (area == "Technical Assets") {
@@ -1204,7 +1204,7 @@ export class BaseComponent {
                         true));
 
                     this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe((icon) => {
-                        this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, $localize`Definition`);
 
                     });
 

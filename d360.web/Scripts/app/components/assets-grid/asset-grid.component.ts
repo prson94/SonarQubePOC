@@ -117,6 +117,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         { title: $localize`Open in New Tab` },
     ];
 
+    hideDescLabel = $localize`Hide Description`;
+    showDescLabel = $localize`Show Description`;
+
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
 

@@ -238,7 +238,7 @@
                         igButton
                         icon="{{(condition.isDefaultFilter ? 'fa-undo' : 'fa-trash')}}"
                         style="margin-left:0px;"
-                        pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
+                        pTooltip="{{(condition.isDefaultFilter ? resetFilterText : removeFilterText)}}"
                         tooltipPosition="top"
                         tooltipStyleClass="ig-tooltip"
                         (click)="remove()">
