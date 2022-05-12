@@ -9,13 +9,16 @@
 
 <div class="tile tile-detail">
     <header>Basic Usage</header>
-        <pre>
-            &lt;ig-dropdown-badge&gt;
-                &lt;ig-dropdown-badge-option [value]="1" label="One"&gt;&lt;/ig-dropdown-badge-option&gt;
-                &lt;ig-dropdown-badge-option [value]="2" label="Two"&gt;&lt;/ig-dropdown-badge-option&gt;
-                &lt;ig-dropdown-badge-option [value]="3" label="Three"&gt;&lt;/ig-dropdown-badge-option&gt;
-            &lt;/ig-dropdown-badge&gt;
-        </pre>
+    <pre>
+        &lt;ig-dropdown-badge [options]=&#34;options&#34;&gt;&lt;/ig-dropdown-badge&gt;
+    </pre>
+    <header>Advanced Usage</header>
+    <pre>
+        &lt;ig-dropdown-badge [options]=&#34;options&#34;&gt;
+            &lt;ng-template let-option&gt;
+            &lt;/ng-template&gt;
+        &lt;/ig-dropdown-badge&gt;
+    </pre>
 </div>
 
 <div class="tile tile-detail">
@@ -23,71 +26,49 @@
     <div class="gallery-section">
         <h4>Basic</h4>
         <div class="component-container">
-            <ig-dropdown-badge>
-                <ig-dropdown-badge-option [value]="1" label="One"></ig-dropdown-badge-option>
-                <ig-dropdown-badge-option [value]="2" label="Two"></ig-dropdown-badge-option>
-                <ig-dropdown-badge-option [value]="3" label="Three"></ig-dropdown-badge-option>
+            <ig-dropdown-badge [options]="numberOptions">
             </ig-dropdown-badge>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Binding - Chosen: {{ basicValue }}</h4>
         <div class="component-container">
-            <ig-dropdown-badge [(ngModel)]="basicValue">
-                <ig-dropdown-badge-option [value]="1" label="One"></ig-dropdown-badge-option>
-                <ig-dropdown-badge-option [value]="2" label="Two"></ig-dropdown-badge-option>
-                <ig-dropdown-badge-option [value]="3" label="Three"></ig-dropdown-badge-option>
+            <ig-dropdown-badge [options]="numberOptions" [(ngModel)]="basicValue">
             </ig-dropdown-badge>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Uneditable</h4>
         <div class="component-container">
-            <ig-dropdown-badge [editable]="false" [(ngModel)]="basicValue">
-                <ig-dropdown-badge-option [value]="1" label="One"></ig-dropdown-badge-option>
-                <ig-dropdown-badge-option [value]="2" label="Two"></ig-dropdown-badge-option>
-                <ig-dropdown-badge-option [value]="3" label="Three"></ig-dropdown-badge-option>
+            <ig-dropdown-badge [disabled]="true" [(ngModel)]="basicValue" [options]="numberOptions">
             </ig-dropdown-badge>
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Status Selector - Chosen: {{ statusValue }}</h4>
+        <h4>Status Selector - Chosen: {{ statusValue?.status }}</h4>
         <div class="component-container">
-            <ig-dropdown-badge [(ngModel)]="statusValue">
-                <ig-dropdown-badge-option value="PENDING" label="Pending" [custom]="true">
-                    <span class="status-circle" [style.backgroundColor]="'#ffcc00'"></span>
-                    Pending
-                </ig-dropdown-badge-option>
-                <ig-dropdown-badge-option value="IN PROGRESS" label="In Progress" [custom]="true">
-                    <span class="status-circle" [style.backgroundColor]="'#049649'"></span>
-                    In Progress
-                </ig-dropdown-badge-option>
-                <ig-dropdown-badge-option value="ON HOLD" label="On Hold" [custom]="true">
-                    <span class="status-circle" [style.backgroundColor]="'#962470'"></span>
-                    On Hold
-                </ig-dropdown-badge-option>
-                <ig-dropdown-badge-option value="BLOCKED" label="Blocked" [custom]="true">
-                    <span class="status-circle" [style.backgroundColor]="'#d11947'"></span>
-                    Blocked
-                </ig-dropdown-badge-option>
+            <ig-dropdown-badge [options]="statusOptions" [(ngModel)]="statusValue">
+                <ng-template let-option>
+                    <span class="status-circle" [style.backgroundColor]="option.value.color"></span>
+                    {{option.label}}
+                </ng-template>
             </ig-dropdown-badge>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Custom - Chosen: {{ customValue }}</h4>
         <div class="component-container">
-            <ig-dropdown-badge [(ngModel)]="customValue">
-                 <ig-dropdown-badge-option *ngFor="let label of ['One', 'Two', 'Three']; let i = index"
-                 [value]="i + 1" [label]="label" [custom]="true">
-                     <span *ngFor="let _ of [].constructor(i + 1)">I</span>
-                 </ig-dropdown-badge-option>
+            <ig-dropdown-badge [options]="numberOptions" [(ngModel)]="customValue">
+                <ng-template let-option>
+                    <span *ngFor="let _ of [].constructor(option.value)">I</span>
+                </ng-template>
             </ig-dropdown-badge>
         </div>
     </div>
 </div>
 
 <div class="tile tile-detail">
-    <header>Dropdown Properties</header>
+    <header>Dropdown Badge Properties</header>
     <p-table [value]="dropdownProperties">
         <ng-template pTemplate="header">
             <tr>
@@ -106,7 +87,7 @@
             </tr>
         </ng-template>
     </p-table>
-    <header>Option Properties</header>
+    <header>DropdownBadgeOption Properties</header>
     <p-table [value]="optionProperties">
         <ng-template pTemplate="header">
             <tr>

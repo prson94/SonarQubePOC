@@ -1,21 +1,14 @@
-import { forwardRef, NgModule } from '@angular/core';
+import { ContentChild, forwardRef, NgModule, OnChanges, SimpleChanges, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessor } from '@angular/forms';
-import { Subject, merge } from 'rxjs';
-import { switchMap, takeUntil, startWith } from 'rxjs/operators';
-import { DropdownBadgeOptionComponent } from './components/dropdown-badge-option.component';
 import { DropdownBadgeOption } from './types/dropdown-bage-option.type';
 import { CommonModule } from '@angular/common';
 import { FilterDropdownBadgeOptionsPipe } from './pipes/filter-dropdown-bage-options.pipe';
 import {
-  AfterContentInit,
   ChangeDetectorRef,
   Component,
-  ContentChildren,
   ElementRef, HostListener,
-  Input,
-  OnDestroy,
-  QueryList
+  Input
 } from '@angular/core';
 
 export const DROPDOWNBADGE_VALUE_ACCESSOR: any = {
@@ -28,22 +21,22 @@ export const DROPDOWNBADGE_VALUE_ACCESSOR: any = {
   selector: 'ig-dropdown-badge',
   templateUrl: './dropdown-badge.component.html',
   styleUrls: ['./dropdown-badge.component.less'],
+  encapsulation: ViewEncapsulation.None,
   providers: [DROPDOWNBADGE_VALUE_ACCESSOR]
 })
-export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, AfterContentInit, OnDestroy {
-  private destroy$: Subject<boolean> = new Subject<boolean>();
-  options: DropdownBadgeOption<T>[] = [];
+export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, OnChanges {
   active: boolean = false;
+  selected?: DropdownBadgeOption<T> | null;
+  disabled: boolean = false;
 
   onModelChange: Function = () => { };
   onModelTouched: Function = () => { };
 
   @Input() placeholder: string = "Select an item...";
-  @Input() editable: boolean = true;
-  selected?: DropdownBadgeOption<T> | null;
+  @Input() options: DropdownBadgeOption<T>[] = [];
 
-  @ContentChildren(DropdownBadgeOptionComponent, { descendants: true })
-  optionsComponents!: QueryList<DropdownBadgeOptionComponent>;
+  @ContentChild(TemplateRef, { static: false })
+  optionTemplate: TemplateRef<any>;
 
   @HostListener('document:click', ['$event'])
   onClick(event: MouseEvent) {
@@ -55,7 +48,7 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, Af
   constructor(private element: ElementRef, private cdr: ChangeDetectorRef) { }
 
   private setActive(state: boolean) {
-    if (this.editable) {
+    if (!this.disabled) {
       this.active = state;
     }
   }
@@ -79,7 +72,7 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, Af
   }
 
   setDisabledState(isDisabled: boolean): void {
-    this.editable = !isDisabled;
+    this.disabled = isDisabled;
   }
 
   onSelectOption(option: DropdownBadgeOption<T>): void {
@@ -89,36 +82,10 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, Af
     }
   }
 
-  ngAfterContentInit(): void {
-    this.optionsComponents.changes
-      .pipe(
-        startWith(true),
-        switchMap(() => {
-          return merge(
-            this.optionsComponents.changes,
-            ...this.optionsComponents.map((option) => option.changes$)
-          ).pipe(startWith(true));
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(() => {
-        this.options = this.optionsComponents.toArray().map((item) => {
-          return {
-            template: item.template,
-            label: item.label,
-            value: item.value,
-            disabled: item.disabled,
-            custom: item.custom
-          };
-        });
-        this.selected = this.options.find(option => option.value === this.selected?.value);
-        this.cdr.markForCheck();
-      });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next(true);
-    this.destroy$.unsubscribe();
+  ngOnChanges(changes: SimpleChanges): void {
+    if(changes.options) {
+      this.selected = this.options.find(option => option.value === this.selected?.value);
+    }
   }
 
 }
@@ -126,12 +93,10 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, Af
 @NgModule({
   declarations: [
       DropdownBadgeComponent,
-      DropdownBadgeOptionComponent,
       FilterDropdownBadgeOptionsPipe
   ],
   exports: [
-      DropdownBadgeComponent,
-      DropdownBadgeOptionComponent
+      DropdownBadgeComponent
   ],
   imports: [
       CommonModule,

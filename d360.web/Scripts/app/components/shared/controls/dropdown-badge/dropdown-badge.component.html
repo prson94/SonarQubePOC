@@ -1,15 +1,17 @@
-<div class="select-ui" [class.select-ui--uneditable]="!editable">
-  <button type="button" class="select-ui__toggle" (click)="onActiveStateSwitch();">
+<div class="ig-dropdown-badge" [class.ig-dropdown-badge--uneditable]="disabled">
+  <button type="button" class="ig-dropdown-badge__toggle" (click)="onActiveStateSwitch();">
     <span *ngIf="selected; else placeholderTemplate">
       {{ selected.label }}
     </span>
-    <span class="fa-angle-down select-ui__caret" *ngIf="editable"></span>
+    <span class="fa-angle-down ig-dropdown-badge__caret" *ngIf="!disabled"></span>
   </button>
-  <ul class="select-ui__menu" *ngIf="active">
+  <ul class="ig-dropdown-badge__menu" *ngIf="active">
     <li *ngFor="let option of options | filterDropdownBadgeOptions: selected"
-      class="select-ui__option" (click)="onModelTouched(); onSelectOption(option);"
-      [class.select-ui__option--disabled]="option.disabled">
-      <ng-container *ngIf="option.custom; else optionLabel" [ngTemplateOutlet]="option.template"></ng-container>
+      class="ig-dropdown-badge__option" (click)="onModelTouched(); onSelectOption(option);"
+      [class.ig-dropdown-badge__option--disabled]="option.disabled">
+      <ng-container *ngIf="optionTemplate; else optionLabel" 
+        [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: option }">
+      </ng-container>
       <ng-template #optionLabel>
         {{ option.label }}
       </ng-template>
