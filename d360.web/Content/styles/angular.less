@@ -1036,7 +1036,7 @@ div.breadcrumbs {
         }
 
         &.breadcrumb-link {
-          color: var(--breadcrumbLinkColor);
+          color: black;
 
           &:hover, &.hover {
             cursor: pointer;
@@ -1070,7 +1070,7 @@ div.breadcrumbs {
       color: white;
 
       &.breadcrumb-link {
-        color: var(--breadcrumbLinkColor);
+        color: var(--calculatedHeaderTextColor);
 
         &:hover, &.hover {
           cursor: pointer;
@@ -1101,11 +1101,11 @@ div.breadcrumbs {
 }
 
 a.breadcrumb {
-  color: var(--breadcrumbLinkColor);
+  color: var(--calculatedHeaderTextColor);
   display: inline-block;
 
   .parent {
-    color: @igx-header-breadcrumb-color;
+    color: var(--breadcrumbLinkColor);
 
     &:before {
       content: '(';
@@ -1143,11 +1143,11 @@ a.breadcrumb {
     text-overflow: ellipsis;
 
     &.highlight {
-      color: @igx-header-breadcrumb-color;
+      color: var(--breadcrumbLinkColor);
     }
 
     &.breadcrumb-link {
-      color: var(--breadcrumbLinkColor);
+      color: var(--calculatedHeaderTextColor);
 
       &:hover, &.hover {
         cursor: pointer;
@@ -1166,7 +1166,7 @@ a.breadcrumb {
 
   i {
     padding: 0 8px;
-    color: var(--breadcrumbLinkColor);
+    color: var(--calculatedHeaderTextColor);
   }
 }
 
