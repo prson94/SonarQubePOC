@@ -118,51 +118,51 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetUidNotFound" xml:space="preserve">
-    <value>Âƨƨèƭ ωïƭλ ƥřôƲïδèδ Ûïδ δôèƨ ñôƭ èжïƨƭ.</value>
+    <value>Âƨƨèƭ ωïƭλ ƥřôƲïδèδ Ûïδ δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="BodyNotEmpty" xml:space="preserve">
-    <value>Ýôú ₥úƨƭ ƥřôƲïδè á Ʋáℓúè ƒôř ƭλè ßôδ¥ ƥřôƥèřƭ¥.</value>
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á Ʋáℓúè ƒôř ƭλè ßôδ¥ ƥřôƥèřƭ¥.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="comment" xml:space="preserve">
-    <value>çô₥₥èñƭ</value>
+    <value>çô₥₥èñƭ£ô</value>
   </data>
   <data name="CommentAddPermission" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô áδδ á çô₥₥èñƭ ƭô ƭλïƨ áƨƨèƭ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô áδδ á çô₥₥èñƭ ƭô ƭλïƨ áƨƨèƭ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
   <data name="CommentNotRemoved" xml:space="preserve">
-    <value>Çô₥₥èñƭ ωáƨ ñôƭ ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.</value>
+    <value>Çô₥₥èñƭ ωáƨ ñôƭ ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="CommentNotUpdated" xml:space="preserve">
-    <value>Çô₥₥èñƭ ωáƨ ñôƭ ƨúççèƨƨƒúℓℓ¥ úƥδáƭèδ.</value>
+    <value>Çô₥₥èñƭ ωáƨ ñôƭ ƨúççèƨƨƒúℓℓ¥ úƥδáƭèδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="CommentTagMaxLimit" xml:space="preserve">
-    <value>Ýôú ₥á¥ ñôƭ ƥřôƲïδè ₥ôřè ƭλáñ 50 ƭáϱƨ ôñ ƭλïƨ çô₥₥èñƭ.</value>
+    <value>Ýôú ₥á¥ ñôƭ ƥřôƲïδè ₥ôřè ƭλáñ 50 ƭáϱƨ ôñ ƭλïƨ çô₥₥èñƭ.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="CommentUpdatePermission" xml:space="preserve">
-    <value>Ýôú ářè ñôƭ ƭλè çřèáƭôř ôƒ ƭλïƨ çô₥₥èñƭ áñδ ₥á¥ ñôƭ úƥδáƭè ïƭ.</value>
+    <value>Ýôú ářè ñôƭ ƭλè çřèáƭôř ôƒ ƭλïƨ çô₥₥èñƭ áñδ ₥á¥ ñôƭ úƥδáƭè ïƭ.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="CommentUpdatePermissionAdmin" xml:space="preserve">
-    <value>Ýôú ářè ñôƭ ƭλè çřèáƭôř ôƒ ƭλïƨ çô₥₥èñƭ ôř áδ₥ïñïƨƭřáƭôř áñδ ₥á¥ ñôƭ úƥδáƭè ïƭ.</value>
+    <value>Ýôú ářè ñôƭ ƭλè çřèáƭôř ôƒ ƭλïƨ çô₥₥èñƭ ôř áδ₥ïñïƨƭřáƭôř áñδ ₥á¥ ñôƭ úƥδáƭè ïƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>Ýôú ₥úƨƭ ƥřôƲïδè á Ʋáℓïδ Ûïδ ƒôř ƭλè ÂƨƨèƭÛïδ ƥřôƥèřƭ¥.</value>
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á Ʋáℓïδ Ûïδ ƒôř ƭλè ÂƨƨèƭÛïδ ƥřôƥèřƭ¥.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="NoContentProvided" xml:space="preserve">
-    <value>Nô çôñƭèñƭ ƥřôƲïδèδ ƭô çřèáƭè á çô₥₥èñƭ ωïƭλ.</value>
+    <value>Nô çôñƭèñƭ ƥřôƲïδèδ ƭô çřèáƭè á çô₥₥èñƭ ωïƭλ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ParentCommentNotFound" xml:space="preserve">
-    <value>Þářèñƭ çô₥₥èñƭ ñôƭ ƒôúñδ</value>
+    <value>Þářèñƭ çô₥₥èñƭ ñôƭ ƒôúñδ£ôřè₥ ï</value>
   </data>
   <data name="RestrictedAssetUid" xml:space="preserve">
-    <value>Çô₥₥èñƭƨ ₥á¥ ñôƭ βè çřèáƭèδ ôñ áƨƨèƭ ωïƭλ ƥřôƲïδèδ Ûïδ.</value>
+    <value>Çô₥₥èñƭƨ ₥á¥ ñôƭ βè çřèáƭèδ ôñ áƨƨèƭ ωïƭλ ƥřôƲïδèδ Ûïδ.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="RestrictReadAssettype" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řèáδ ƭλè ƨƥèçïƒïèδ áƨƨèƭ ƭ¥ƥè.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řèáδ ƭλè ƨƥèçïƒïèδ áƨƨèƭ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="UnableCreateComment" xml:space="preserve">
-    <value>Çô₥₥èñƭ ωáƨ ñôƭ ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ.</value>
+    <value>Çô₥₥èñƭ ωáƨ ñôƭ ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
-    <value>Ûƨèř ωïƭλ ƥřôƲïδèδ Ûïδ δôèƨ ñôƭ èжïƨƭ.</value>
+    <value>Ûƨèř ωïƭλ ƥřôƲïδèδ Ûïδ δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú₥</value>
   </data>
 </root>

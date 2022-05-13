@@ -118,96 +118,96 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetId_Description" xml:space="preserve">
-    <value>Tλè Âƨƨèƭ ÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ áƨƨèƭ áçřôƨƨ áℓℓ Ðáƭá360 áƨƨèƭƨ.</value>
+    <value>Tλè Âƨƨèƭ ÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ áƨƨèƭ áçřôƨƨ áℓℓ Ðáƭá360 áƨƨèƭƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á</value>
   </data>
   <data name="AssetId_Name" xml:space="preserve">
-    <value>Âƨƨèƭ ÌÐ</value>
+    <value>Âƨƨèƭ ÌÐ£ô</value>
   </data>
   <data name="CreatedOn_Description" xml:space="preserve">
-    <value>Tλè δáƭè ƭλáƭ ƭλïƨ ïƭè₥ ωáƨ çřèáƭèδ ïñ Ðáƭá360.</value>
+    <value>Tλè δáƭè ƭλáƭ ƭλïƨ ïƭè₥ ωáƨ çřèáƭèδ ïñ Ðáƭá360.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="CreatedOn_Name" xml:space="preserve">
-    <value>Ðáƭè Çřèáƭèδ</value>
+    <value>Ðáƭè Çřèáƭèδ£ôř</value>
   </data>
   <data name="Description_Name" xml:space="preserve">
-    <value>Ðèƨçřïƥƭïôñ</value>
+    <value>Ðèƨçřïƥƭïôñ£ôř</value>
   </data>
   <data name="DisplayFormat_Description" xml:space="preserve">
-    <value>Tλè δïƨƥℓá¥ ƒôř₥áƭ ₥úƨƭ βè ƥřôƲïδèδ ƭô ƥřôƥèřℓ¥ řèñδèř ƭλè ƭèжƭ-βáƨèδ δïƨƥℓá¥ Ʋáℓúè ôƒ ƭλè ïƭè₥.</value>
+    <value>Tλè δïƨƥℓá¥ ƒôř₥áƭ ₥úƨƭ βè ƥřôƲïδèδ ƭô ƥřôƥèřℓ¥ řèñδèř ƭλè ƭèжƭ-βáƨèδ δïƨƥℓá¥ Ʋáℓúè ôƒ ƭλè ïƭè₥.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, </value>
   </data>
   <data name="DisplayFormat_Name" xml:space="preserve">
-    <value>Ðïƨƥℓá¥ Fôř₥áƭ</value>
+    <value>Ðïƨƥℓá¥ Fôř₥áƭ£ôřè</value>
   </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ÌÐ</value>
   </data>
   <data name="Name_Name" xml:space="preserve">
-    <value>Ná₥è</value>
+    <value>Ná₥è£</value>
   </data>
   <data name="Parent_Description" xml:space="preserve">
-    <value>Tλè ôωñèř ƒôř ƭλïƨ ïƭè₥.</value>
+    <value>Tλè ôωñèř ƒôř ƭλïƨ ïƭè₥.£ôřè₥ ï</value>
   </data>
   <data name="Parent_Name" xml:space="preserve">
-    <value>Óωñèř/Þářèñƭ</value>
+    <value>Óωñèř/Þářèñƭ£ôř</value>
   </data>
   <data name="RuleType_Description" xml:space="preserve">
-    <value>Tλè řúℓè'ƨ ƭ¥ƥè çáƭèϱôřïƺèƨ ƭλè řúℓè áççôřδïñϱ ƭô ïƭƨ ƥúřƥôƨè.</value>
+    <value>Tλè řúℓè'ƨ ƭ¥ƥè çáƭèϱôřïƺèƨ ƭλè řúℓè áççôřδïñϱ ƭô ïƭƨ ƥúřƥôƨè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="RuleType_Name" xml:space="preserve">
-    <value>T¥ƥè</value>
+    <value>T¥ƥè£</value>
   </data>
   <data name="SystemFieldCategory" xml:space="preserve">
-    <value>§¥ƨƭè₥ Fïèℓδƨ</value>
+    <value>§¥ƨƭè₥ Fïèℓδƨ£ôř</value>
   </data>
   <data name="SystemNoCategory" xml:space="preserve">
-    <value>Nôñè</value>
+    <value>Nôñè£</value>
   </data>
   <data name="UID_Description" xml:space="preserve">
-    <value>Tλè ÛÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥ áçřôƨƨ áℓℓ ôƒ Ðáƭá360.</value>
+    <value>Tλè ÛÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥ áçřôƨƨ áℓℓ ôƒ Ðáƭá360.£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
   </data>
   <data name="Asset_UID_Description" xml:space="preserve">
-    <value>Tλè Âƨƨèƭ ÛÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥ áçřôƨƨ áℓℓ ôƒ Ðáƭá360.</value>
+    <value>Tλè Âƨƨèƭ ÛÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥ áçřôƨƨ áℓℓ ôƒ Ðáƭá360.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
   <data name="AssetType_UID_Description" xml:space="preserve">
-    <value>Tλè Âƨƨèƭ T¥ƥè ÛÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλè Âƨƨèƭ T¥ƥè áçřôƨƨ áℓℓ ôƒ Ðáƭá360.</value>
+    <value>Tλè Âƨƨèƭ T¥ƥè ÛÌÐ ïƨ ƭλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλè Âƨƨèƭ T¥ƥè áçřôƨƨ áℓℓ ôƒ Ðáƭá360.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥è</value>
   </data>
   <data name="UID_Name" xml:space="preserve">
     <value>ÛÌÐ</value>
   </data>
   <data name="Asset_UID_Name" xml:space="preserve">
-    <value>Âƨƨèƭ ÛÌÐ</value>
+    <value>Âƨƨèƭ ÛÌÐ£ô</value>
   </data>
   <data name="AssetType_UID_Name" xml:space="preserve">
-    <value>Âƨƨèƭ T¥ƥè ÛÌÐ</value>
+    <value>Âƨƨèƭ T¥ƥè ÛÌÐ£ôřè</value>
   </data>
   <data name="UpdatedOn_Description" xml:space="preserve">
-    <value>Tλè δáƭè ƭλáƭ ƭλïƨ ïƭè₥ ωáƨ ℓáƨƭ ₥ôδïƒïèδ ïñ Ðáƭá360.</value>
+    <value>Tλè δáƭè ƭλáƭ ƭλïƨ ïƭè₥ ωáƨ ℓáƨƭ ₥ôδïƒïèδ ïñ Ðáƭá360.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="UpdatedOn_Name" xml:space="preserve">
-    <value>Ðáƭè £áƨƭ Môδïƒïèδ</value>
+    <value>Ðáƭè £áƨƭ Môδïƒïèδ£ôřè₥</value>
   </data>
   <data name="RuleID_Name" xml:space="preserve">
-    <value>Rúℓè ÌÐ</value>
+    <value>Rúℓè ÌÐ£ô</value>
   </data>
   <data name="CreatedBy_Name" xml:space="preserve">
-    <value>Çřèáƭèδ ß¥</value>
+    <value>Çřèáƭèδ ß¥£ôř</value>
   </data>
   <data name="IsActiveDirectoryGroup_Name" xml:space="preserve">
-    <value>Ìƨ ÂçƭïƲè Ðïřèçƭôř¥ Gřôúƥ</value>
+    <value>Ìƨ ÂçƭïƲè Ðïřèçƭôř¥ Gřôúƥ£ôřè₥ ï</value>
   </data>
   <data name="PrimaryOwner_Name" xml:space="preserve">
-    <value>Þřï₥ář¥ Óωñèř</value>
+    <value>Þřï₥ář¥ Óωñèř£ôř</value>
   </data>
   <data name="SecondaryOwner_Name" xml:space="preserve">
-    <value>§èçôñδář¥ Óωñèř</value>
+    <value>§èçôñδář¥ Óωñèř£ôřè</value>
   </data>
   <data name="UpdatedBy_Name" xml:space="preserve">
-    <value>£áƨƭ Môδïƒïèδ ß¥</value>
+    <value>£áƨƭ Môδïƒïèδ ß¥£ôřè</value>
   </data>
   <data name="Relationship_Type_Name" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ T¥ƥè</value>
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè£ôřè₥</value>
   </data>
   <data name="Relationship_UID_Name" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ ÛÌÐ</value>
+    <value>Rèℓáƭïôñƨλïƥ ÛÌÐ£ôřè</value>
   </data>
 </root>

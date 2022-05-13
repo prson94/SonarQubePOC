@@ -118,21 +118,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AggregationFilterUnsupported" xml:space="preserve">
-    <value>Tλè áϱϱřèϱáƭïôñ ƒïℓƭèřƨ '{0}' ářè ñôƭ ƨúƥƥôřƭèδ</value>
+    <value>Tλè áϱϱřèϱáƭïôñ ƒïℓƭèřƨ '{0}' ářè ñôƭ ƨúƥƥôřƭèδ£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="AggregationUnsupported" xml:space="preserve">
-    <value>Tλè áϱϱřèϱáƭïôñƨ '{0}' ářè ñôƭ ƨúƥƥôřƭèδ</value>
+    <value>Tλè áϱϱřèϱáƭïôñƨ '{0}' ářè ñôƭ ƨúƥƥôřƭèδ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="CategoryNotAvailable" xml:space="preserve">
-    <value>Tλè Ʋáℓúèƨ '{0}' ářè ñôƭ Ʋáℓïδ ƒôř Çáƭèϱôř¥.</value>
+    <value>Tλè Ʋáℓúèƨ '{0}' ářè ñôƭ Ʋáℓïδ ƒôř Çáƭèϱôř¥.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="FieldUnsupported" xml:space="preserve">
-    <value>Tλè ƒïèℓδ ƒïℓƭèřƨ '{0}' ářè ñôƭ ƨúƥƥôřƭèδ</value>
+    <value>Tλè ƒïèℓδ ƒïℓƭèřƨ '{0}' ářè ñôƭ ƨúƥƥôřƭèδ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="NoSearchServerConnection" xml:space="preserve">
-    <value>Çáññôƭ çôññèçƭ ƭô ƭλè ƨèářçλ ƨèřƲèř</value>
+    <value>Çáññôƭ çôññèçƭ ƭô ƭλè ƨèářçλ ƨèřƲèř£ôřè₥ ïƥƨú</value>
   </data>
   <data name="SizeTooBig" xml:space="preserve">
-    <value>Tλè ₥áжï₥ú₥ Ʋáℓúè ƒôř ƨïƺè ïƨ {0}</value>
+    <value>Tλè ₥áжï₥ú₥ Ʋáℓúè ƒôř ƨïƺè ïƨ {0}£ôřè₥ ïƥƨ</value>
   </data>
 </root>

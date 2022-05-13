@@ -118,48 +118,48 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ConsolidateSucessfully" xml:space="preserve">
-    <value>Çôññèçƭôř ℓáβèℓƨ çôñƨôℓïδáƭèδ ƨúççèƨƨƒúℓℓ¥</value>
+    <value>Çôññèçƭôř ℓáβèℓƨ çôñƨôℓïδáƭèδ ƨúççèƨƨƒúℓℓ¥£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="ErrorConsolidateLabel" xml:space="preserve">
-    <value>Éřřôř ωλïℓè çôñƨôℓïδáƭïñϱ çôññèçƭôř ℓáβèℓƨ</value>
+    <value>Éřřôř ωλïℓè çôñƨôℓïδáƭïñϱ çôññèçƭôř ℓáβèℓƨ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="ErrorCreateLabel" xml:space="preserve">
-    <value>Éřřôř ωλïℓè çřèáƭïñϱ çôññèçƭôř ℓáβèℓ</value>
+    <value>Éřřôř ωλïℓè çřèáƭïñϱ çôññèçƭôř ℓáβèℓ£ôřè₥ ïƥƨú</value>
   </data>
   <data name="ErrorDeleteLabel" xml:space="preserve">
-    <value>Éřřôř řè₥ôƲïñϱ çôññèçƭôř ℓáβèℓ, </value>
+    <value>Éřřôř řè₥ôƲïñϱ çôññèçƭôř ℓáβèℓ, £ôřè₥ ïƥƨ</value>
   </data>
   <data name="ErrorGetLabels" xml:space="preserve">
-    <value>Éřřôř ωλïℓè ƒèƭçλïñϱ çôññèçƭôř ℓáβèℓƨ</value>
+    <value>Éřřôř ωλïℓè ƒèƭçλïñϱ çôññèçƭôř ℓáβèℓƨ£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="ErrorUpdateLabel" xml:space="preserve">
-    <value>Éřřôř úƥδáƭïñϱ çôññèçƭôř ℓáβèℓ</value>
+    <value>Éřřôř úƥδáƭïñϱ çôññèçƭôř ℓáβèℓ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="LabelAlreadyExists" xml:space="preserve">
-    <value>ÌñƲáℓïδ çôññèçƭôř ℓáβèℓ ƨƥèçïƒïèδ [ƨá₥è çôññèçƭôř ℓáβèℓ áℓřèáδ¥ èжïƨƭƨ].</value>
+    <value>ÌñƲáℓïδ çôññèçƭôř ℓáβèℓ ƨƥèçïƒïèδ [ƨá₥è çôññèçƭôř ℓáβèℓ áℓřèáδ¥ èжïƨƭƨ].£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="LabelMax40Char" xml:space="preserve">
-    <value>Máжï₥ú₥ ℓèñϱƭλ ôƒ ℓáβèℓ ïƨ 40 çλářáçƭèřƨ.</value>
+    <value>Máжï₥ú₥ ℓèñϱƭλ ôƒ ℓáβèℓ ïƨ 40 çλářáçƭèřƨ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="LabelNotFound" xml:space="preserve">
-    <value>Çôññèçƭôř ℓáβèℓ ñôƭ ƒôúñδ.</value>
+    <value>Çôññèçƭôř ℓáβèℓ ñôƭ ƒôúñδ.£ôřè₥ ï</value>
   </data>
   <data name="LabelRemoved" xml:space="preserve">
-    <value>Çôññèçƭôř ℓáβèℓ řè₥ôƲèδ.</value>
+    <value>Çôññèçƭôř ℓáβèℓ řè₥ôƲèδ.£ôřè₥ ï</value>
   </data>
   <data name="LabelRemoveSucess" xml:space="preserve">
-    <value>Çôññèçƭôř ℓáβèℓ ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.</value>
+    <value>Çôññèçƭôř ℓáβèℓ ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="LabelValieNotEmpty" xml:space="preserve">
-    <value>£áβèℓ Ʋáℓúè çáññôƭ βè è₥ƥƭ¥.</value>
+    <value>£áβèℓ Ʋáℓúè çáññôƭ βè è₥ƥƭ¥.£ôřè₥ ïƥ</value>
   </data>
   <data name="UidNotFound" xml:space="preserve">
-    <value>Çôññèçƭôř ℓáβèℓ ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ!</value>
+    <value>Çôññèçƭôř ℓáβèℓ ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ!£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="UidNotValid" xml:space="preserve">
-    <value>ÌñƲáℓïδ çôññèçƭôř ℓáβèℓ ÛÌÐ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+    <value>ÌñƲáℓïδ çôññèçƭôř ℓáβèℓ ÛÌÐ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="UnableIncludeParentinChildLabels" xml:space="preserve">
-    <value>Þářèñƭ çôññèçƭôř ℓáβèℓ ƨλôúℓδ ñôƭ βè ïñçℓúδèδ ïñ çλïℓδřèñ çôññèçƭôř ℓáβèℓƨ!</value>
+    <value>Þářèñƭ çôññèçƭôř ℓáβèℓ ƨλôúℓδ ñôƭ βè ïñçℓúδèδ ïñ çλïℓδřèñ çôññèçƭôř ℓáβèℓƨ!£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
 </root>

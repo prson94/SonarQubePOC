@@ -118,105 +118,108 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="BackColorFormat" xml:space="preserve">
-    <value>βáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>βáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="BackgroundSize" xml:space="preserve">
-    <value>λô₥èßáçƙϱřôúñδ ₥á¥ ñôƭ βè ϱřèáƭèř ƭλáñ 2048K.</value>
+    <value>λô₥èßáçƙϱřôúñδ ₥á¥ ñôƭ βè ϱřèáƭèř ƭλáñ 2048K.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="BackgroundType" xml:space="preserve">
-    <value>λô₥èßáçƙϱřôúñδ ₥úƨƭ βè èïƭλèř á *.ϱïƒ, *Jƥϱ ôř *.ƥñϱ ƒïℓè.</value>
+    <value>λô₥èßáçƙϱřôúñδ ₥úƨƭ βè èïƭλèř á *.ϱïƒ, *Jƥϱ ôř *.ƥñϱ ƒïℓè.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
   <data name="BreadcrumbColorFormat" xml:space="preserve">
-    <value>βřèáδçřú₥β£ïñƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>βřèáδçřú₥β£ïñƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ButtonColorFormat" xml:space="preserve">
-    <value>βúƭƭôñßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>βúƭƭôñßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="CustomCssNotAllowed" xml:space="preserve">
-    <value>Ýôúř èñƲïřôñ₥èñƭ δôèƨ ñôƭ áℓℓôω çúƨƭô₥ çƨƨ ƭô βè δèƒïñèδ ωïƭλïñ á ƭλè₥è.</value>
+    <value>Ýôúř èñƲïřôñ₥èñƭ δôèƨ ñôƭ áℓℓôω çúƨƭô₥ çƨƨ ƭô βè δèƒïñèδ ωïƭλïñ á ƭλè₥è.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="CustomCssNotFound" xml:space="preserve">
-    <value>Çúƨƭô₥ Çƨƨ δôèƨ ñôƭ èжïƨƭƨ ƒôř ƭλè ƭλè₥è ωïƭλ ƭλè Ûïδ ƥřôƲïδèδ.</value>
+    <value>Çúƨƭô₥ Çƨƨ δôèƨ ñôƭ èжïƨƭƨ ƒôř ƭλè ƭλè₥è ωïƭλ ƭλè Ûïδ ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="ErrorOnCreate" xml:space="preserve">
-    <value>Éřřôř áδδïñϱ ƭλè₥è</value>
+    <value>Éřřôř áδδïñϱ ƭλè₥è£ôřè₥</value>
   </data>
   <data name="ErrorOnDelete" xml:space="preserve">
-    <value>Éřřôř δèℓèƭïñϱ ƭλè₥è</value>
+    <value>Éřřôř δèℓèƭïñϱ ƭλè₥è£ôřè₥ </value>
   </data>
   <data name="ErrorOnGet" xml:space="preserve">
-    <value>Éřřôř řèƭřïèƲïñϱ ƭλè₥è</value>
+    <value>Éřřôř řèƭřïèƲïñϱ ƭλè₥è£ôřè₥ </value>
   </data>
   <data name="ErrorOnGetMany" xml:space="preserve">
-    <value>Éřřôř řèƭřïèƲïñϱ ƭλè₥èƨ</value>
+    <value>Éřřôř řèƭřïèƲïñϱ ƭλè₥èƨ£ôřè₥ </value>
   </data>
   <data name="ErrorOnUpdate" xml:space="preserve">
-    <value>Éřřôř úƥδáƭïñϱ ƭλè₥è</value>
+    <value>Éřřôř úƥδáƭïñϱ ƭλè₥è£ôřè₥ </value>
   </data>
   <data name="HeaderColorFormat" xml:space="preserve">
-    <value>λèáδèřßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>λèáδèřßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="IconSize" xml:space="preserve">
-    <value>ïçôñ ₥á¥ ñôƭ βè ϱřèáƭèř ƭλáñ 512K.</value>
+    <value>ïçôñ ₥á¥ ñôƭ βè ϱřèáƭèř ƭλáñ 512K.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="IconType" xml:space="preserve">
-    <value>ïçôñ ₥úƨƭ βè èïƭλèř á *.ïçô ôř *.ƥñϱ ƒïℓè.</value>
+    <value>ïçôñ ₥úƨƭ βè èïƭλèř á *.ïçô ôř *.ƥñϱ ƒïℓè.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidUidParameter" xml:space="preserve">
-    <value>Ýôú λáƲè ñôƭ ƥřôƲïδèδ á Ʋáℓïδ úïδ ƥářá₥èƭèř Ʋáℓúè.</value>
+    <value>Ýôú λáƲè ñôƭ ƥřôƲïδèδ á Ʋáℓïδ úïδ ƥářá₥èƭèř Ʋáℓúè.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="LogoSize" xml:space="preserve">
-    <value>λèáδèř£ôϱô ₥á¥ ñôƭ βè ϱřèáƭèř ƭλáñ 1024K.</value>
+    <value>λèáδèř£ôϱô ₥á¥ ñôƭ βè ϱřèáƭèř ƭλáñ 1024K.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="LogoType" xml:space="preserve">
-    <value>λèáδèř£ôϱô ₥úƨƭ βè èïƭλèř á *.ϱïƒ, *.Jƥϱ ôř *.ƥñϱ ƒïℓè.</value>
+    <value>λèáδèř£ôϱô ₥úƨƭ βè èïƭλèř á *.ϱïƒ, *.Jƥϱ ôř *.ƥñϱ ƒïℓè.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="NameNotEmpty" xml:space="preserve">
-    <value>ñá₥è ₥á¥ ñôƭ βè è₥ƥƭ¥.</value>
+    <value>ñá₥è ₥á¥ ñôƭ βè è₥ƥƭ¥.£ôřè₥ </value>
   </data>
   <data name="NavbarColorFormat" xml:space="preserve">
-    <value>ñáƲβářßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>ñáƲβářßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="NavbarSelectedColorFormat" xml:space="preserve">
-    <value>ñáƲβářßáçƙÇôℓôř§èℓèçƭèδ ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>ñáƲβářßáçƙÇôℓôř§èℓèçƭèδ ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="NoActiveThemeExists" xml:space="preserve">
-    <value>Nô ƭλè₥è çúřřèñƭℓ¥ áçƭïƲè ƭλè₥è èжïƨƭƨ.</value>
+    <value>Nô ƭλè₥è çúřřèñƭℓ¥ áçƭïƲè ƭλè₥è èжïƨƭƨ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="NoCurrentThemes" xml:space="preserve">
-    <value>Nô ƭλè₥èƨ èжïƨƭ ôř ářè ₥ářƙèδ áƨ Çúřřèñƭ.</value>
+    <value>Nô ƭλè₥èƨ èжïƨƭ ôř ářè ₥ářƙèδ áƨ Çúřřèñƭ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="NotValidBase64Value" xml:space="preserve">
-    <value>Þřôƥèřƭ¥ {0} δôèƨ ñôƭ λáƲè Ʋáℓïδ ßáƨè64 Ʋáℓúè.</value>
+    <value>Þřôƥèřƭ¥ {0} δôèƨ ñôƭ λáƲè Ʋáℓïδ ßáƨè64 Ʋáℓúè.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="PrimaryButtonColorFormat" xml:space="preserve">
-    <value>ƥřï₥ář¥ßúƭƭôñßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>ƥřï₥ář¥ßúƭƭôñßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="TableHeaderColorFormat" xml:space="preserve">
-    <value>ƭáβℓèHèáδèřßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>ƭáβℓèHèáδèřßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="TableRowColorFormat" xml:space="preserve">
-    <value>ƭáβℓèRôωßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>ƭáβℓèRôωßáçƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="TabLinkColorFormat" xml:space="preserve">
-    <value>ƭáβ£ïñƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.</value>
+    <value>ƭáβ£ïñƙÇôℓôř ïƨ ñôƭ á Ʋáℓïδ RGß çôℓôř.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
+    <value>Tλïƨ ƭλè₥è ïƨ ƨèƭ áƨ ƭλè çúřřèñƭℓ¥ úƨèδ ƭλè₥è ïñ ƭλïƨ èñƲïřôñ₥èñƭ áñδ ÌƨÇúřřèñƭ ƥřôƥèřƭ¥ çáññôƭ βè ƨèƭ ƭô ƒáℓƨè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨè</value>
   </data>
   <data name="ThemeInUseForRemoval" xml:space="preserve">
-    <value>Tλïƨ ƭλè₥è ïƨ ƨèƭ áƨ ƭλè çúřřèñƭℓ¥ úƨèδ ƭλè₥è ïñ ƭλïƨ èñƲïřôñ₥èñƭ áñδ ₥á¥ ñôƭ βè řè₥ôƲèδ.</value>
+    <value>Tλïƨ ƭλè₥è ïƨ ƨèƭ áƨ ƭλè çúřřèñƭℓ¥ úƨèδ ƭλè₥è ïñ ƭλïƨ èñƲïřôñ₥èñƭ áñδ ₥á¥ ñôƭ βè řè₥ôƲèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ</value>
   </data>
   <data name="ThemeInvalid" xml:space="preserve">
-    <value>Tλïƨ ƭλè₥è ïƨ ïñƲáℓïδ.</value>
+    <value>Tλïƨ ƭλè₥è ïƨ ïñƲáℓïδ.£ôřè₥ </value>
   </data>
   <data name="ThemeIsLocked" xml:space="preserve">
-    <value>Tλïƨ ƭλè₥è ïƨ ℓôçƙèδ áñδ ₥á¥ ñôƭ βè úƥδáƭèδ.</value>
+    <value>Tλïƨ ƭλè₥è ïƨ ℓôçƙèδ áñδ ₥á¥ ñôƭ βè úƥδáƭèδ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ThemeIsLockedForRemoval" xml:space="preserve">
-    <value>Tλïƨ ƭλè₥è ïƨ ℓôçƙèδ áñδ ₥á¥ ñôƭ βè řè₥ôƲèδ.</value>
+    <value>Tλïƨ ƭλè₥è ïƨ ℓôçƙèδ áñδ ₥á¥ ñôƭ βè řè₥ôƲèδ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ThemeNameMustBeUnique" xml:space="preserve">
-    <value>Âñ èжïƨƭïñϱ ƭλè₥è ωïƭλ ƭλïƨ ñá₥è áℓřèáδ¥ èжïƨƭƨ. Tλè₥è ñá₥èƨ ₥úƨƭ βè úñï9úè.</value>
+    <value>Âñ èжïƨƭïñϱ ƭλè₥è ωïƭλ ƭλïƨ ñá₥è áℓřèáδ¥ èжïƨƭƨ. Tλè₥è ñá₥èƨ ₥úƨƭ βè úñï9úè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
   <data name="ThemeWithUidNotFound" xml:space="preserve">
-    <value>Nô ƭλè₥è èжïƨƭƨ ωïƭλ ƭλè ƥřôƲïδèδ Ûïδ.</value>
+    <value>Nô ƭλè₥è èжïƨƭƨ ωïƭλ ƭλè ƥřôƲïδèδ Ûïδ.£ôřè₥ ïƥƨú₥</value>
   </data>
 </root>

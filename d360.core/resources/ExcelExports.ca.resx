@@ -118,138 +118,138 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Common_ApiInfoSheetName" xml:space="preserve">
-    <value>Âƥï Ìñƒô</value>
+    <value>Âƥï Ìñƒô£ô</value>
   </data>
   <data name="Common_ExcelDateFormat" xml:space="preserve">
-    <value>₥₥/δδ/¥¥¥¥</value>
+    <value>₥₥/δδ/¥¥¥¥£ôř</value>
   </data>
   <data name="Common_ItemsSheetName" xml:space="preserve">
-    <value>Ìƭè₥ƨ</value>
+    <value>Ìƭè₥ƨ£</value>
   </data>
   <data name="Common_PageNum" xml:space="preserve">
-    <value>ƥáϱèNú₥</value>
+    <value>ƥáϱèNú₥£ô</value>
   </data>
   <data name="Common_PageSize" xml:space="preserve">
-    <value>ƥáϱè§ïƺè</value>
+    <value>ƥáϱè§ïƺè£ô</value>
   </data>
   <data name="Common_Total" xml:space="preserve">
-    <value>ƭôƭáℓ</value>
+    <value>ƭôƭáℓ£</value>
   </data>
   <data name="FollowedResources_AssetID" xml:space="preserve">
-    <value>Âƨƨèƭ ÌÐ</value>
+    <value>Âƨƨèƭ ÌÐ£ô</value>
   </data>
   <data name="FollowedResources_AssetPath" xml:space="preserve">
-    <value>Âƨƨèƭ Þáƭλ</value>
+    <value>Âƨƨèƭ Þáƭλ£ôř</value>
   </data>
   <data name="FollowedResources_DocumentName" xml:space="preserve">
-    <value>Fôℓℓôωèδ Ìƭè₥ƨ áƨ ôƒ {Nôω:δ}</value>
+    <value>Fôℓℓôωèδ Ìƭè₥ƨ áƨ ôƒ {Nôω:δ}£ôřè₥ ïƥ</value>
   </data>
   <data name="OwnedResources_AssetID" xml:space="preserve">
-    <value>Âƨƨèƭ ÌÐ</value>
+    <value>Âƨƨèƭ ÌÐ£ô</value>
   </data>
   <data name="OwnedResources_AssetUID" xml:space="preserve">
-    <value>Âƨƨèƭ ÛÌÐ</value>
+    <value>Âƨƨèƭ ÛÌÐ£ô</value>
   </data>
   <data name="OwnedResources_DocumentName" xml:space="preserve">
-    <value>Óωñèδ Ìƭè₥ƨ áƨ ôƒ {Nôω:δ}</value>
+    <value>Óωñèδ Ìƭè₥ƨ áƨ ôƒ {Nôω:δ}£ôřè₥ ï</value>
   </data>
   <data name="OwnedResources_Name" xml:space="preserve">
-    <value>Ná₥è</value>
+    <value>Ná₥è£</value>
   </data>
   <data name="OwnedResources_Role" xml:space="preserve">
-    <value>Rôℓè</value>
+    <value>Rôℓè£</value>
   </data>
   <data name="OwnedResources_Via" xml:space="preserve">
     <value>Vïá</value>
   </data>
   <data name="OwnedResources_ViaType" xml:space="preserve">
-    <value>Vïá T¥ƥè</value>
+    <value>Vïá T¥ƥè£ô</value>
   </data>
   <data name="Relationships_DocumentName" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥƨ {0}</value>
+    <value>Rèℓáƭïôñƨλïƥƨ {0}£ôřè₥</value>
   </data>
   <data name="Relationships_Object_Asset_Path" xml:space="preserve">
-    <value>ÓβJèçƭ Âƨƨèƭ Þáƭλ</value>
+    <value>ÓβJèçƭ Âƨƨèƭ Þáƭλ£ôřè₥</value>
   </data>
   <data name="Relationships_Object_Asset_Type_Path" xml:space="preserve">
-    <value>ÓβJèçƭ Âƨƨèƭ T¥ƥè Þáƭλ</value>
+    <value>ÓβJèçƭ Âƨƨèƭ T¥ƥè Þáƭλ£ôřè₥ </value>
   </data>
   <data name="Relationships_Object_Asset_Type_UID" xml:space="preserve">
-    <value>ÓβJèçƭ Âƨƨèƭ T¥ƥè ÛÌÐ</value>
+    <value>ÓβJèçƭ Âƨƨèƭ T¥ƥè ÛÌÐ£ôřè₥ </value>
   </data>
   <data name="Relationships_Object_Display_Name" xml:space="preserve">
-    <value>ÓβJèçƭ Ðïƨƥℓá¥ Ná₥è</value>
+    <value>ÓβJèçƭ Ðïƨƥℓá¥ Ná₥è£ôřè₥</value>
   </data>
   <data name="Relationships_Object_UID" xml:space="preserve">
-    <value>ÓβJèçƭ ÛÌÐ</value>
+    <value>ÓβJèçƭ ÛÌÐ£ôř</value>
   </data>
   <data name="Relationships_Predicate_Inverse" xml:space="preserve">
-    <value>Þřèδïçáƭè ÌñƲèřƨè</value>
+    <value>Þřèδïçáƭè ÌñƲèřƨè£ôřè₥</value>
   </data>
   <data name="Relationships_Predicate_Name" xml:space="preserve">
-    <value>Þřèδïçáƭè Ná₥è</value>
+    <value>Þřèδïçáƭè Ná₥è£ôřè</value>
   </data>
   <data name="Relationships_Predicate_Type" xml:space="preserve">
-    <value>Þřèδïçáƭè T¥ƥè</value>
+    <value>Þřèδïçáƭè T¥ƥè£ôřè</value>
   </data>
   <data name="Relationships_Predicate_UID" xml:space="preserve">
-    <value>Þřèδïçáƭè ÛÌÐ</value>
+    <value>Þřèδïçáƭè ÛÌÐ£ôř</value>
   </data>
   <data name="Relationships_Relationship_Type_UID" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ÛÌÐ</value>
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ÛÌÐ£ôřè₥ </value>
   </data>
   <data name="Relationships_Relationship_UID" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ ÛÌÐ</value>
+    <value>Rèℓáƭïôñƨλïƥ ÛÌÐ£ôřè</value>
   </data>
   <data name="Relationships_SheetName" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥƨ</value>
+    <value>Rèℓáƭïôñƨλïƥƨ£ôř</value>
   </data>
   <data name="Relationships_Subject_Asset_Path" xml:space="preserve">
-    <value>§úβJèçƭ Âƨƨèƭ Þáƭλ</value>
+    <value>§úβJèçƭ Âƨƨèƭ Þáƭλ£ôřè₥</value>
   </data>
   <data name="Relationships_Subject_Asset_Type_Path" xml:space="preserve">
-    <value>§úβJèçƭ Âƨƨèƭ T¥ƥè Þáƭλ</value>
+    <value>§úβJèçƭ Âƨƨèƭ T¥ƥè Þáƭλ£ôřè₥ </value>
   </data>
   <data name="Relationships_Subject_Asset_Type_UID" xml:space="preserve">
-    <value>§úβJèçƭ Âƨƨèƭ T¥ƥè ÛÌÐ</value>
+    <value>§úβJèçƭ Âƨƨèƭ T¥ƥè ÛÌÐ£ôřè₥ </value>
   </data>
   <data name="Relationships_Subject_Display_Name" xml:space="preserve">
-    <value>§úβJèçƭ Ðïƨƥℓá¥ Ná₥è</value>
+    <value>§úβJèçƭ Ðïƨƥℓá¥ Ná₥è£ôřè₥ </value>
   </data>
   <data name="Relationships_Subject_UID" xml:space="preserve">
-    <value>§úβJèçƭ ÛÌÐ</value>
+    <value>§úβJèçƭ ÛÌÐ£ôř</value>
   </data>
   <data name="WorkflowMonitor_Asset" xml:space="preserve">
-    <value>Âƨƨèƭ</value>
+    <value>Âƨƨèƭ£</value>
   </data>
   <data name="WorkflowMonitor_Completed" xml:space="preserve">
-    <value>Çô₥ƥℓèƭèδ</value>
+    <value>Çô₥ƥℓèƭèδ£ô</value>
   </data>
   <data name="WorkflowMonitor_DocumentName" xml:space="preserve">
-    <value>Wôřƙƒℓôω ïƭè₥ƨ áƨ ôƒ {Nôω:δ}</value>
+    <value>Wôřƙƒℓôω ïƭè₥ƨ áƨ ôƒ {Nôω:δ}£ôřè₥ ïƥ</value>
   </data>
   <data name="WorkflowMonitor_Initiator" xml:space="preserve">
-    <value>Ìñïƭïáƭôř</value>
+    <value>Ìñïƭïáƭôř£ô</value>
   </data>
   <data name="WorkflowMonitor_Started" xml:space="preserve">
-    <value>§ƭářƭèδ</value>
+    <value>§ƭářƭèδ£ô</value>
   </data>
   <data name="WorkflowMonitor_Status" xml:space="preserve">
-    <value>§ƭáƭúƨ</value>
+    <value>§ƭáƭúƨ£</value>
   </data>
   <data name="WorkflowMonitor_Type" xml:space="preserve">
-    <value>T¥ƥè</value>
+    <value>T¥ƥè£</value>
   </data>
   <data name="WorkflowMonitor_TypeName" xml:space="preserve">
-    <value>T¥ƥè Ná₥è</value>
+    <value>T¥ƥè Ná₥è£ô</value>
   </data>
   <data name="WorkflowMonitor_Url" xml:space="preserve">
     <value>Ûřℓ</value>
   </data>
   <data name="WorkflowMonitor_WorkflowInstanceUID" xml:space="preserve">
-    <value>Wôřƙƒℓôω Ìñƨƭáñçè ÛÌÐ</value>
+    <value>Wôřƙƒℓôω Ìñƨƭáñçè ÛÌÐ£ôřè₥ </value>
   </data>
   <data name="WorkflowMonitor_WorkflowName" xml:space="preserve">
-    <value>Wôřƙƒℓôω Ná₥è</value>
+    <value>Wôřƙƒℓôω Ná₥è£ôř</value>
   </data>
 </root>

@@ -118,165 +118,165 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetAssetTypeNotFound" xml:space="preserve">
-    <value>Nô Âƨƨèƭ ôř ÂƨƨƨèƭT¥ƥè ƒôúñδ ƒôř Gúïδ [{0}]</value>
+    <value>Nô Âƨƨèƭ ôř ÂƨƨƨèƭT¥ƥè ƒôúñδ ƒôř Gúïδ [{0}]£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="AssetCount" xml:space="preserve">
-    <value>ÂƨƨèƭÇôúñƭ</value>
+    <value>ÂƨƨèƭÇôúñƭ£ôř</value>
   </data>
   <data name="AssetTagAssociationFailed" xml:space="preserve">
-    <value>Âƨƨèƭ/Táϱ Âƨƨôçïáƭïôñ ƒáïℓèδ. Táϱ ƒïèℓδ ₥á¥ ñôƭ βè áƨƨïϱñèδ ƭô Âƨƨèƭ.</value>
+    <value>Âƨƨèƭ/Táϱ Âƨƨôçïáƭïôñ ƒáïℓèδ. Táϱ ƒïèℓδ ₥á¥ ñôƭ βè áƨƨïϱñèδ ƭô Âƨƨèƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
   </data>
   <data name="AssetTypeAddAssetPermissionsDenied" xml:space="preserve">
-    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áƨƨèƭƨ ôƒ ƭλïƨ ƭ¥ƥè.</value>
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áƨƨèƭƨ ôƒ ƭλïƨ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="AssetTypeCreatedMessage" xml:space="preserve">
-    <value>Âƨƨèƭ T¥ƥè ïƨ çřèáƭèδ</value>
+    <value>Âƨƨèƭ T¥ƥè ïƨ çřèáƭèδ£ôřè₥ </value>
   </data>
   <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
-    <value>Ðèℓèƭïôñ ôƒ Âƨƨèƭ T¥ƥè ωïƭλ ÛÌÐ {0} áℓřèáδ¥ ïñ ƥřôϱřèƨƨ.</value>
+    <value>Ðèℓèƭïôñ ôƒ Âƨƨèƭ T¥ƥè ωïƭλ ÛÌÐ {0} áℓřèáδ¥ ïñ ƥřôϱřèƨƨ.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="AssetTypeUid" xml:space="preserve">
-    <value>ÂƨƨèƭT¥ƥèÛïδ</value>
+    <value>ÂƨƨèƭT¥ƥèÛïδ£ôř</value>
   </data>
   <data name="AutoDisplayParent" xml:space="preserve">
-    <value>Âúƭô Ðïƨƥℓá¥ Þářèñƭ</value>
+    <value>Âúƭô Ðïƨƥℓá¥ Þářèñƭ£ôřè₥</value>
   </data>
   <data name="CanEditParent" xml:space="preserve">
-    <value>Çáñ Éδïƭ Þářèñƭ</value>
+    <value>Çáñ Éδïƭ Þářèñƭ£ôřè</value>
   </data>
   <data name="ClassNotSupport" xml:space="preserve">
-    <value>Çℓáƨƨ '{0}' ïƨ ñôƭ ƨúƥƥôřƭèδ. Âℓℓôωèδ Ʋáℓúèƨ ářè ßúƨïñèƨƨÂƨƨèƭ, TèçλñïçáℓÂƨƨèƭ, Môδèℓ, Þôℓïç¥, Rúℓè.</value>
+    <value>Çℓáƨƨ '{0}' ïƨ ñôƭ ƨúƥƥôřƭèδ. Âℓℓôωèδ Ʋáℓúèƨ ářè ßúƨïñèƨƨÂƨƨèƭ, TèçλñïçáℓÂƨƨèƭ, Môδèℓ, Þôℓïç¥, Rúℓè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çô</value>
   </data>
   <data name="CorrectEndpoint" xml:space="preserve">
-    <value>Tλè çôřřèçƭ èñδƥôïñƭ ƒôř {0}ƨ ïƨ {1}://{2}{3}</value>
+    <value>Tλè çôřřèçƭ èñδƥôïñƭ ƒôř {0}ƨ ïƨ {1}://{2}{3}£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="EnvironmentLevelAssetCountNotAllowed" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ℓôáδ èñƲïřôñ₥èñƭ ℓèƲèℓ áƨƨèƭ çôúñƭƨ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ℓôáδ èñƲïřôñ₥èñƭ ℓèƲèℓ áƨƨèƭ çôúñƭƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="ExecutionID" xml:space="preserve">
-    <value>ÉжèçúƭïôñÌÐ</value>
+    <value>ÉжèçúƭïôñÌÐ£ôř</value>
   </data>
   <data name="ExecutionUid" xml:space="preserve">
-    <value>ÉжèçúƭïôñÛïδ</value>
+    <value>ÉжèçúƭïôñÛïδ£ôř</value>
   </data>
   <data name="ExportTemplateMessage" xml:space="preserve">
-    <value>Éжƥôřƭ Tè₥ƥℓáƭè ÛÌÐ ƥářá₥èƭèř ₥úƨƭ βè úƨèδ ωïƭλ 'Âççèƥƭ' λèáδèř ƨèƭ ƭô 'áƥƥℓïçáƭïôñ/ôçƭèƭ-ƨƭřèá₥'.</value>
+    <value>Éжƥôřƭ Tè₥ƥℓáƭè ÛÌÐ ƥářá₥èƭèř ₥úƨƭ βè úƨèδ ωïƭλ 'Âççèƥƭ' λèáδèř ƨèƭ ƭô 'áƥƥℓïçáƭïôñ/ôçƭèƭ-ƨƭřèá₥'.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, ç</value>
   </data>
   <data name="ExportTemplateUidNotExist" xml:space="preserve">
-    <value>Éжƥôřƭ Tè₥ƥℓáƭè ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ.</value>
+    <value>Éжƥôřƭ Tè₥ƥℓáƭè ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="FieldTypeAssetNotFound" xml:space="preserve">
-    <value>Fïèℓδ T¥ƥè '{0}' ñôƭ ƒôúñδ ƒôř áƨƨèƭ.</value>
+    <value>Fïèℓδ T¥ƥè '{0}' ñôƭ ƒôúñδ ƒôř áƨƨèƭ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="FieldTypeNotSupport" xml:space="preserve">
-    <value>Fïèℓδ T¥ƥè '{0}' ïƨ ñôƭ ƨúƥƥôřƭèδ. Âℓℓôωèδ ƒïèℓδ ƭ¥ƥèƨ ářè Çô₥ƥℓèжRèℓáƭïôñ£ôôƙúƥ, Rèƒ£ïƨƭRèℓáƭïôñƨλïƥ áñδ Óωñèřƨλïƥ£ôôƙúƥ</value>
+    <value>Fïèℓδ T¥ƥè '{0}' ïƨ ñôƭ ƨúƥƥôřƭèδ. Âℓℓôωèδ ƒïèℓδ ƭ¥ƥèƨ ářè Çô₥ƥℓèжRèℓáƭïôñ£ôôƙúƥ, Rèƒ£ïƨƭRèℓáƭïôñƨλïƥ áñδ Óωñèřƨλïƥ£ôôƙúƥ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭè</value>
   </data>
   <data name="FilterResrictPredicateUid" xml:space="preserve">
-    <value>Fïℓƭèřïñϱ úƨïñϱ _řèℓáƭïôñFïℓƭèř çáññôƭ βè úƨèδ ωïƭλ _ƥřèδïçáƭèÛïδ ƥářá₥èƭèř</value>
+    <value>Fïℓƭèřïñϱ úƨïñϱ _řèℓáƭïôñFïℓƭèř çáññôƭ βè úƨèδ ωïƭλ _ƥřèδïçáƭèÛïδ ƥářá₥èƭèř£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
   <data name="GovernRoleReferListNotExists" xml:space="preserve">
-    <value>GôƲèřñáñçè Rôℓè Rèƒèřèñçè £ïƨƭ ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ</value>
+    <value>GôƲèřñáñçè Rôℓè Rèƒèřèñçè £ïƨƭ ωïƭλ ÛÌÐ '{0}' δôèƨ ñôƭ èжïƨƭ£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="InvalidAsset" xml:space="preserve">
-    <value>ÌñƲáℓïδ Âƨƨèƭ</value>
+    <value>ÌñƲáℓïδ Âƨƨèƭ£ôř</value>
   </data>
   <data name="InvalidAssetTypeClass" xml:space="preserve">
-    <value>ÌñƲáℓïδ Âƨƨèƭ ƭ¥ƥè çℓáƨƨ '{0}'</value>
+    <value>ÌñƲáℓïδ Âƨƨèƭ ƭ¥ƥè çℓáƨƨ '{0}'£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidExportTemplateCurrent" xml:space="preserve">
-    <value>ÌñƲáℓïδ Éжƥôřƭ Tè₥ƥℓáƭè ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè.</value>
+    <value>ÌñƲáℓïδ Éжƥôřƭ Tè₥ƥℓáƭè ƒôř çúřřèñƭ Âƨƨèƭ T¥ƥè.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="InvalidExportTemplatedUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ èжƥôřƭTè₥ƥℓáƭèÛÌÐ Ʋáℓúè.</value>
+    <value>ÌñƲáℓïδ èжƥôřƭTè₥ƥℓáƭèÛÌÐ Ʋáℓúè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidExportViewType" xml:space="preserve">
-    <value>ÌNVÂ£ÌÐ ÉXÞÓRT VÌÉW TÝÞÉ §ÞÉÇÌFÌÉÐ</value>
+    <value>ÌNVÂ£ÌÐ ÉXÞÓRT VÌÉW TÝÞÉ §ÞÉÇÌFÌÉÐ£ôřè₥ ïƥƨú</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>{0} ïƨ ñôƭ á Ʋáℓïδ _ôřδèř ƒïèℓδ</value>
+    <value>{0} ïƨ ñôƭ á Ʋáℓïδ _ôřδèř ƒïèℓδ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
-    <value>Þáϱè ñú₥ ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř.</value>
+    <value>Þáϱè ñú₥ ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidPageNumberGT0" xml:space="preserve">
-    <value>Þáϱè ñú₥ ïƨ ïñƲáℓïδ, ₥úƨƭ βè ϱřèáƭèř ƭλáñ 0.</value>
+    <value>Þáϱè ñú₥ ïƨ ïñƲáℓïδ, ₥úƨƭ βè ϱřèáƭèř ƭλáñ 0.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="InvalidParameteforUI" xml:space="preserve">
-    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'ƒôřÛÌ'</value>
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'ƒôřÛÌ'£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidParameterIncludeTotal" xml:space="preserve">
-    <value>Ìñçℓúδè ƭôƭáℓ ïƨ ñôƭ á Ʋáℓïδ βôôℓèáñ.</value>
+    <value>Ìñçℓúδè ƭôƭáℓ ïƨ ñôƭ á Ʋáℓïδ βôôℓèáñ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="InvalidParameteruseUidUrls" xml:space="preserve">
-    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèÛïδÛřℓƨ'</value>
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèÛïδÛřℓƨ'£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
-    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèÛñƒℓáƭƭèδ§ƭřúçƭúřè'</value>
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèÛñƒℓáƭƭèδ§ƭřúçƭúřè'£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
   <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
-    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèFřïèñδℓ¥Ná₥èƨ'</value>
+    <value>ÌñƲáℓïδ βôôℓèáñ Ʋáℓúè ƒôř ƥářá₥èƭèř 'úƨèFřïèñδℓ¥Ná₥èƨ'£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="InvalidParameter_order" xml:space="preserve">
-    <value>ÌñƲáℓïδ ƒïèℓδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'.</value>
+    <value>ÌñƲáℓïδ ƒïèℓδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidParameter_pageNum" xml:space="preserve">
-    <value>ÌñƲáℓïδ ïñƭèϱèř Ʋáℓúè ƒôř ƥářá₥èƭèř '_ƥáϱèNú₥'</value>
+    <value>ÌñƲáℓïδ ïñƭèϱèř Ʋáℓúè ƒôř ƥářá₥èƭèř '_ƥáϱèNú₥'£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="InvalidParameter_pageSize" xml:space="preserve">
-    <value>ÌñƲáℓïδ ïñƭèϱèř Ʋáℓúè ƒôř ƥářá₥èƭèř '_ƥáϱè§ïƺè'</value>
+    <value>ÌñƲáℓïδ ïñƭèϱèř Ʋáℓúè ƒôř ƥářá₥èƭèř '_ƥáϱè§ïƺè'£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="InvalidParentAssetUid" xml:space="preserve">
-    <value>ÞářèñƭÂƨƨèƭÛïδ {0} ïƨ ïñƲáℓïδ</value>
+    <value>ÞářèñƭÂƨƨèƭÛïδ {0} ïƨ ïñƲáℓïδ£ôřè₥ ïƥ</value>
   </data>
   <data name="InvalidResourceUID" xml:space="preserve">
-    <value>ÌñƲáℓïδ řèƨôúřçèÛïδ ƥřôƲïδèδ</value>
+    <value>ÌñƲáℓïδ řèƨôúřçèÛïδ ƥřôƲïδèδ£ôřè₥ ïƥ</value>
   </data>
   <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
-    <value>ÌñƲáℓïδ úƨèř ôř ϱřôúƥ úïδ áƨ ñôñ ôωñèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+    <value>ÌñƲáℓïδ úƨèř ôř ϱřôúƥ úïδ áƨ ñôñ ôωñèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="InvalidUserGroupRequestAsOwner" xml:space="preserve">
-    <value>ÌñƲáℓïδ úƨèř ôř ϱřôúƥ úïδ áƨ ôωñèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+    <value>ÌñƲáℓïδ úƨèř ôř ϱřôúƥ úïδ áƨ ôωñèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="model" xml:space="preserve">
-    <value>₥ôδèℓ</value>
+    <value>₥ôδèℓ£</value>
   </data>
   <data name="PageSizeNotNumber" xml:space="preserve">
-    <value>Þáϱè ƨïƺè ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř.</value>
+    <value>Þáϱè ƨïƺè ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="PageSizeRange" xml:space="preserve">
-    <value>Þáϱè ƨïƺè ₥úƨƭ βè βèƭωèèñ 1 áñδ 100,000.</value>
+    <value>Þáϱè ƨïƺè ₥úƨƭ βè βèƭωèèñ 1 áñδ 100,000.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="ProvidePreFilterCriteria" xml:space="preserve">
-    <value>Ýôú λáƲè ƥřôƲïδèδ ƥřè-ƒïℓƭèř çřïƭèřïá, βúƭ ñôñè áƥƥèář ƭô βè Ʋáℓïδ. Ýôú ₥úƨƭ ƥřôƲïδè áƭ ℓèáƨƭ ôñè çôñδïƭïôñ.</value>
+    <value>Ýôú λáƲè ƥřôƲïδèδ ƥřè-ƒïℓƭèř çřïƭèřïá, βúƭ ñôñè áƥƥèář ƭô βè Ʋáℓïδ. Ýôú ₥úƨƭ ƥřôƲïδè áƭ ℓèáƨƭ ôñè çôñδïƭïôñ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨ</value>
   </data>
   <data name="ProvideSearchPhrase" xml:space="preserve">
-    <value>Ýôú ₥úƨƭ ƥřôƲïδè á ƨèářçλ ƥλřáƨè.</value>
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè á ƨèářçλ ƥλřáƨè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="ReachedTransformationlimit" xml:space="preserve">
-    <value>Rèáçλèδ Třáñƨƒôř₥áƭïôñ ℓï₥ïƭ</value>
+    <value>Rèáçλèδ Třáñƨƒôř₥áƭïôñ ℓï₥ïƭ£ôřè₥ ïƥ</value>
   </data>
   <data name="ReferenceUIDConfigureAsGovernRole" xml:space="preserve">
-    <value>ÛÌÐ {0} ïƨ á řèƒèřèñçè ℓïƨƭ áñδ ïƨ çôñƒïϱúřèδ áƨ ƭλè GôƲèřñáñçè Rôℓè áñδ çáññôƭ βè δèℓèƭèδ.</value>
+    <value>ÛÌÐ {0} ïƨ á řèƒèřèñçè ℓïƨƭ áñδ ïƨ çôñƒïϱúřèδ áƨ ƭλè GôƲèřñáñçè Rôℓè áñδ çáññôƭ βè δèℓèƭèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ,</value>
   </data>
   <data name="RemoveAssetTypeNotAllowed" xml:space="preserve">
-    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô řè₥ôƲè áƨƨèƭ ƭ¥ƥèƨ.</value>
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô řè₥ôƲè áƨƨèƭ ƭ¥ƥèƨ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="RequestCreatedMsg" xml:space="preserve">
-    <value>Rè9úèƨƭ ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ</value>
+    <value>Rè9úèƨƭ ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ£ôřè₥ ïƥ</value>
   </data>
   <data name="RequestMaxAsset" xml:space="preserve">
-    <value>Ýôú ₥á¥ ôñℓ¥ ƥřôƲïδè á ₥áжï₥ú₥ ôƒ {0} áƨƨèƭƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè çáℓℓ ƭλè ßÂTÇH ÂÞÌ ƭô ƨúβ₥ïƭ ₥ôřè ƭλáñ {1} ïƭè₥ƨ.</value>
+    <value>Ýôú ₥á¥ ôñℓ¥ ƥřôƲïδè á ₥áжï₥ú₥ ôƒ {0} áƨƨèƭƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè çáℓℓ ƭλè ßÂTÇH ÂÞÌ ƭô ƨúβ₥ïƭ ₥ôřè ƭλáñ {1} ïƭè₥ƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭ</value>
   </data>
   <data name="RestrictReadAssettype" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řèáδ ƭλè ƨƥèçïƒïèδ áƨƨèƭ ƭ¥ƥè.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řèáδ ƭλè ƨƥèçïƒïèδ áƨƨèƭ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="TagUIDAssetUIDNotExists" xml:space="preserve">
-    <value>TáϱÛÌÐ {0} áñδ ÂƨƨèƭÛÌÐ {1} áƨƨôçïáƭïôñ  δôèƨ ñôƭ èжïƨƭƨ</value>
+    <value>TáϱÛÌÐ {0} áñδ ÂƨƨèƭÛÌÐ {1} áƨƨôçïáƭïôñ  δôèƨ ñôƭ èжïƨƭƨ£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="TransormationReationExists" xml:space="preserve">
-    <value>Třáñƨƒôř₥áƭïôñ Rèℓáƭïôñƨλïƥ Éжïƨƭƨ Fôř ÂƨƨèƭT¥ƥè</value>
+    <value>Třáñƨƒôř₥áƭïôñ Rèℓáƭïôñƨλïƥ Éжïƨƭƨ Fôř ÂƨƨèƭT¥ƥè£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="UseAsTransformation" xml:space="preserve">
-    <value>Ûƨè Âƨ Třáñƨƒôř₥áƭïôñ</value>
+    <value>Ûƨè Âƨ Třáñƨƒôř₥áƭïôñ£ôřè₥ </value>
   </data>
 </root>

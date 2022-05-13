@@ -118,126 +118,126 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ActionAssetCommentBody" xml:space="preserve">
-    <value>Nèω {0} Ráïƨèδ.</value>
+    <value>Nèω {0} Ráïƨèδ.£ôřè</value>
   </data>
   <data name="ActionCreatedMsg" xml:space="preserve">
-    <value>Âçƭïôñ Çřèáƭèδ</value>
+    <value>Âçƭïôñ Çřèáƭèδ£ôřè</value>
   </data>
   <data name="ActionTypeNotFound" xml:space="preserve">
-    <value>Âçƭïôñ T¥ƥè Nôƭ Fôúñδ</value>
+    <value>Âçƭïôñ T¥ƥè Nôƭ Fôúñδ£ôřè₥ </value>
   </data>
   <data name="ActionTypeUidIsNotValid" xml:space="preserve">
-    <value>Âçƭïôñ T¥ƥè ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Âçƭïôñ T¥ƥè ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ActionUidNotFound" xml:space="preserve">
-    <value>Âçƭïôñ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Âçƭïôñ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="AddAllocationsSuccessful" xml:space="preserve">
-    <value>Âℓℓôçáƭïôñƨ áδδèδ ƨúççèƨƨƒúℓℓ¥</value>
+    <value>Âℓℓôçáƭïôñƨ áδδèδ ƨúççèƨƨƒúℓℓ¥£ôřè₥ ïƥƨ</value>
   </data>
   <data name="AddSingleAllocationSuccessful" xml:space="preserve">
-    <value>Âℓℓôçáƭïôñ áδδèδ ƨúççèƨƨƒúℓℓ¥</value>
+    <value>Âℓℓôçáƭïôñ áδδèδ ƨúççèƨƨƒúℓℓ¥£ôřè₥ ïƥ</value>
   </data>
   <data name="AssetAddActionPermissionsDenied" xml:space="preserve">
-    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áçƭïôñƨ ôñ ƭλïƨ áƨƨèƭ.</value>
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áçƭïôñƨ ôñ ƭλïƨ áƨƨèƭ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="AssetNotFound" xml:space="preserve">
-    <value>Âƨƨèƭ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Âƨƨèƭ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="AssetTypeAddActionPermissionsDenied" xml:space="preserve">
-    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áçƭïôñƨ ôñ ƭλïƨ áƨƨèƭ ƭ¥ƥè.</value>
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô áδδ áçƭïôñƨ ôñ ƭλïƨ áƨƨèƭ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="AssettypeInvalidClass" xml:space="preserve">
-    <value>Âƨƨèƭ ƭ¥ƥè λáƨ ïñƲáℓïδ çℓáƨƨ.</value>
+    <value>Âƨƨèƭ ƭ¥ƥè λáƨ ïñƲáℓïδ çℓáƨƨ.£ôřè₥ ïƥ</value>
   </data>
   <data name="AssetTypeNotFound" xml:space="preserve">
-    <value>Âƨƨèƭ T¥ƥè ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Âƨƨèƭ T¥ƥè ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="AssetTypeOrAssetRequired" xml:space="preserve">
-    <value>Éïƭλèř ÂƨƨèƭT¥ƥèÛïδ ôř ÂƨƨèƭÛïδ ₥úƨƭ βè ƥřôƲïδèδ.</value>
+    <value>Éïƭλèř ÂƨƨèƭT¥ƥèÛïδ ôř ÂƨƨèƭÛïδ ₥úƨƭ βè ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="AssetTypeUidIsNotValid" xml:space="preserve">
-    <value>{0} ïƨ ñôƭ á Ʋáℓïδ Âƨƨèƭ T¥ƥè Ûïδ.</value>
+    <value>{0} ïƨ ñôƭ á Ʋáℓïδ Âƨƨèƭ T¥ƥè Ûïδ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="AssetUidIsNotValid" xml:space="preserve">
-    <value>{0} ïƨ ñôƭ á Ʋáℓïδ Âƨƨèƭ Ûïδ.</value>
+    <value>{0} ïƨ ñôƭ á Ʋáℓïδ Âƨƨèƭ Ûïδ.£ôřè₥ ïƥ</value>
   </data>
   <data name="CascadeDeleteActionType" xml:space="preserve">
-    <value>Âçƭïôñ T¥ƥè λáƨ áƨƨôçïáƭèδ áçƭïôñƨ. Éñáβℓè ôñ çáƨçáδè řè9úèƨƭ ƭô δèℓèƭè.</value>
+    <value>Âçƭïôñ T¥ƥè λáƨ áƨƨôçïáƭèδ áçƭïôñƨ. Éñáβℓè ôñ çáƨçáδè řè9úèƨƭ ƭô δèℓèƭè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="ChildRecordExistsIssueType" xml:space="preserve">
-    <value>Tλè ƨèℓèçƭèδ áçƭïôñ ƭ¥ƥè ({0}) λáƨ áƨƨôçïáƭèδ áçƭïôñƨ, áñδ ƭλèřèƒôřè çáññôƭ βè δèℓèƭèδ.</value>
+    <value>Tλè ƨèℓèçƭèδ áçƭïôñ ƭ¥ƥè ({0}) λáƨ áƨƨôçïáƭèδ áçƭïôñƨ, áñδ ƭλèřèƒôřè çáññôƭ βè δèℓèƭèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ</value>
   </data>
   <data name="DeleteAllocationSuccessful" xml:space="preserve">
-    <value>Âℓℓôçáƭïôñ Ðèℓèƭèδ §úççèƨƨƒúℓℓ¥.</value>
+    <value>Âℓℓôçáƭïôñ Ðèℓèƭèδ §úççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="EmptyAllocationRequest" xml:space="preserve">
-    <value>Nô Âƨƨèƭ T¥ƥè Ûïδƨ λáƲè βèèñ ƥřôƲïδèδ.</value>
+    <value>Nô Âƨƨèƭ T¥ƥè Ûïδƨ λáƲè βèèñ ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="InvalidActionTypeUid" xml:space="preserve">
-    <value>Â Ʋáℓïδ Âçƭïôñ T¥ƥè Ûïδ ïƨ řè9úïřèδ.</value>
+    <value>Â Ʋáℓïδ Âçƭïôñ T¥ƥè Ûïδ ïƨ řè9úïřèδ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ ÂƨƨèƭT¥ƥèÛïδ ƥřôƲïδèδ.</value>
+    <value>ÌñƲáℓïδ ÂƨƨèƭT¥ƥèÛïδ ƥřôƲïδèδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidAssetUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ ÂƨƨèƭÛïδ ƥřôƲïδèδ.</value>
+    <value>ÌñƲáℓïδ ÂƨƨèƭÛïδ ƥřôƲïδèδ.£ôřè₥ ï</value>
   </data>
   <data name="InvalidDirectionPassed" xml:space="preserve">
-    <value>ÌñƲáℓïδ δïřèçƭïôñ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ δïřèçƭïôñ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidLimitActiveWorkflow" xml:space="preserve">
-    <value>£ï₥ïƭ Tô ÂçƭïƲè Wôřƙƒℓôωƨ Ʋáℓúè ƥřôƲïδèδ ïƨ ñôƭ Ʋáℓïδ.</value>
+    <value>£ï₥ïƭ Tô ÂçƭïƲè Wôřƙƒℓôωƨ Ʋáℓúè ƥřôƲïδèδ ïƨ ñôƭ Ʋáℓïδ.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="InvalidReponsibilityTypeUid" xml:space="preserve">
-    <value>{0} ïƨ áñ ïñƲáℓïδ řèƨƥôñƨïβïℓïƭ¥T¥ƥèÛïδ ƒôř {1}.</value>
+    <value>{0} ïƨ áñ ïñƲáℓïδ řèƨƥôñƨïβïℓïƭ¥T¥ƥèÛïδ ƒôř {1}.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="NameMaxLength250Char" xml:space="preserve">
-    <value>Ná₥è ƥřôƲïδèδ ₥úƨƭ βè ℓèƨƨ ƭλáñ 250 çλářáçƭèřƨ ïñ ℓèñϱƭλ.</value>
+    <value>Ná₥è ƥřôƲïδèδ ₥úƨƭ βè ℓèƨƨ ƭλáñ 250 çλářáçƭèřƨ ïñ ℓèñϱƭλ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
   <data name="NameNotEmptyAndRequired" xml:space="preserve">
-    <value>É₥ƥƭ¥ ƨƭřïñϱ ƥřôƲïδèδ ƒôř Ná₥è. Çáññôƭ βè è₥ƥƭ¥.</value>
+    <value>É₥ƥƭ¥ ƨƭřïñϱ ƥřôƲïδèδ ƒôř Ná₥è. Çáññôƭ βè è₥ƥƭ¥.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="NameNotNull" xml:space="preserve">
-    <value>Ná₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>Ná₥è ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ï</value>
   </data>
   <data name="NoMatchingAllocation" xml:space="preserve">
-    <value>Nô Máƭçλïñϱ Âℓℓôçáƭïôñ ƒôř '{0}' ôñ Âçƭïôñ T¥ƥè '{1}'</value>
+    <value>Nô Máƭçλïñϱ Âℓℓôçáƭïôñ ƒôř '{0}' ôñ Âçƭïôñ T¥ƥè '{1}'£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="OrderByFieldNotFound" xml:space="preserve">
-    <value>Óřδèř ß¥ Fïèℓδ Nôƭ Fôúñδ</value>
+    <value>Óřδèř ß¥ Fïèℓδ Nôƭ Fôúñδ£ôřè₥ ï</value>
   </data>
   <data name="OrderByFieldNotFoundMessage" xml:space="preserve">
-    <value>Tλè ƒïèℓδ ¥ôú ƨƥèçïƒïèδ ƒôř ƨôřƭïñϱ ({0}) çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Tλè ƒïèℓδ ¥ôú ƨƥèçïƒïèδ ƒôř ƨôřƭïñϱ ({0}) çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="RelationShipTypeUidNotFound" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Rèℓáƭïôñƨλïƥ T¥ƥè ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Rèƨôúřçè Ûïδ ƥřôƲïδèδ δôèƨ ñôƭ èжïƨƭ.</value>
+    <value>Rèƨôúřçè Ûïδ ƥřôƲïδèδ δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="ResourceUidNotValid" xml:space="preserve">
-    <value>Rèƨôúřçè Ûïδ ƥřôƲïδèδ ïƨ ïñƲáℓïδ.</value>
+    <value>Rèƨôúřçè Ûïδ ƥřôƲïδèδ ïƨ ïñƲáℓïδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="UidNotEmptyAndRequired" xml:space="preserve">
-    <value>Â Váℓïδ Ûïδ ïƨ řè9úïřèδ.</value>
+    <value>Â Váℓïδ Ûïδ ïƨ řè9úïřèδ.£ôřè₥ ï</value>
   </data>
   <data name="UidNotValid" xml:space="preserve">
-    <value>Tλè Ûïδ ƥřôƲïδèδ ïƨ ïñƲáℓïδ.</value>
+    <value>Tλè Ûïδ ƥřôƲïδèδ ïƨ ïñƲáℓïδ.£ôřè₥ ïƥ</value>
   </data>
   <data name="UniqueAllocation" xml:space="preserve">
-    <value>Âℓℓôçáƭïôñ áℓřèáδ¥ èжïƨƭƨ.</value>
+    <value>Âℓℓôçáƭïôñ áℓřèáδ¥ èжïƨƭƨ.£ôřè₥ ï</value>
   </data>
   <data name="UniqueNameWorkflowAction" xml:space="preserve">
-    <value>Ná₥è ₥úƨƭ βè úñï9úè. Wôřƙƒℓôω áçƭïôñ áℓřèáδ¥ èжïƨƭƨ ωïƭλ ƭλïƨ ñá₥è</value>
+    <value>Ná₥è ₥úƨƭ βè úñï9úè. Wôřƙƒℓôω áçƭïôñ áℓřèáδ¥ èжïƨƭƨ ωïƭλ ƭλïƨ ñá₥è£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="UniqueUid" xml:space="preserve">
-    <value>Ûïδ ƥřôƲïδèδ áℓřèáδ¥ ïñ úƨè.</value>
+    <value>Ûïδ ƥřôƲïδèδ áℓřèáδ¥ ïñ úƨè.£ôřè₥ ïƥ</value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
-    <value>Ûƨèř ωïƭλ Ûïδ {0} ñôƭ ƒôúñδ</value>
+    <value>Ûƨèř ωïƭλ Ûïδ {0} ñôƭ ƒôúñδ£ôřè₥ ïƥ</value>
   </data>
 </root>

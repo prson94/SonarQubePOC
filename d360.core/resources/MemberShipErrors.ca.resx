@@ -118,60 +118,60 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CanNotProvideStateOfNewUser" xml:space="preserve">
-    <value>Çáññôƭ ƥřôƲïδè §ƭáƭè ƒôř á ñèω úƨèř</value>
+    <value>Çáññôƭ ƥřôƲïδè §ƭáƭè ƒôř á ñèω úƨèř£ôřè₥ ïƥƨú</value>
   </data>
   <data name="CurrentPasswordWrong" xml:space="preserve">
-    <value>Ýôúř ƥáƨƨωôřδ ωáƨ ñôƭ úƥδáƭèδ, ƨïñçè ƭλè ƥřôƲïδèδ çúřřèñƭ ƥáƨƨωôřδ δôèƨ ñôƭ ₥áƭçλ.</value>
+    <value>Ýôúř ƥáƨƨωôřδ ωáƨ ñôƭ úƥδáƭèδ, ƨïñçè ƭλè ƥřôƲïδèδ çúřřèñƭ ƥáƨƨωôřδ δôèƨ ñôƭ ₥áƭçλ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
   </data>
   <data name="FieldTypeKeyNotFound" xml:space="preserve">
-    <value>Fïèℓδ ƭ¥ƥè ƒôř ƙè¥ [{0}] ñôƭ ƒôúñδ ôñ ƭλïƨ áƨƨèƭ</value>
+    <value>Fïèℓδ ƭ¥ƥè ƒôř ƙè¥ [{0}] ñôƭ ƒôúñδ ôñ ƭλïƨ áƨƨèƭ£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="FirstNameMissing" xml:space="preserve">
-    <value>Múƨƭ ƥřôƲïδè á Fïřƨƭ Ná₥è</value>
+    <value>Múƨƭ ƥřôƲïδè á Fïřƨƭ Ná₥è£ôřè₥ ï</value>
   </data>
   <data name="FirstNameTooLong" xml:space="preserve">
-    <value>Fïřƨƭ Ná₥è ₥úƨƭ βè ℓèƨƨ ôř è9úáℓ ƭô 250 çλářáçƭèřƨ ïñ ℓèñϱƭλ</value>
+    <value>Fïřƨƭ Ná₥è ₥úƨƭ βè ℓèƨƨ ôř è9úáℓ ƭô 250 çλářáçƭèřƨ ïñ ℓèñϱƭλ£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="InternalServerErrorMsg" xml:space="preserve">
-    <value>Âñ ïñƭèřñáℓ ƨèřƲèř èřřôř ôççúřřèδ</value>
+    <value>Âñ ïñƭèřñáℓ ƨèřƲèř èřřôř ôççúřřèδ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidEmail" xml:space="preserve">
-    <value>Ûƨèřñá₥è ïƨ ñôƭ ïñ á Ʋáℓïδ è₥áïℓ ƒôř₥áƭ</value>
+    <value>Ûƨèřñá₥è ïƨ ñôƭ ïñ á Ʋáℓïδ è₥áïℓ ƒôř₥áƭ£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="LastNameMissing" xml:space="preserve">
-    <value>Múƨƭ ƥřôƲïδè á £áƨƭ Ná₥è</value>
+    <value>Múƨƭ ƥřôƲïδè á £áƨƭ Ná₥è£ôřè₥ ï</value>
   </data>
   <data name="LastNameTooLong" xml:space="preserve">
-    <value>£áƨƭ Ná₥è ₥úƨƭ βè ℓèƨƨ ôř è9úáℓ ƭô 250 çλářáçƭèřƨ ïñ ℓèñϱƭλ</value>
+    <value>£áƨƭ Ná₥è ₥úƨƭ βè ℓèƨƨ ôř è9úáℓ ƭô 250 çλářáçƭèřƨ ïñ ℓèñϱƭλ£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
   <data name="MissingCurrentPasswordParameter" xml:space="preserve">
-    <value>ÇúřřèñƭÞáƨƨωôřδ ƥářá₥èƭèř Ʋáℓúè ₥ïƨƨïñϱ.</value>
+    <value>ÇúřřèñƭÞáƨƨωôřδ ƥářá₥èƭèř Ʋáℓúè ₥ïƨƨïñϱ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="NewAndCurrentNotSame" xml:space="preserve">
-    <value>Nèω ƥáƨƨωôřδ ₥á¥ ñôƭ βè ƭλè ƨá₥è áƨ çúřřèñƭ ƥáƨƨωôřδ</value>
+    <value>Nèω ƥáƨƨωôřδ ₥á¥ ñôƭ βè ƭλè ƨá₥è áƨ çúřřèñƭ ƥáƨƨωôřδ£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="PasswordRule" xml:space="preserve">
-    <value>Þáƨƨωôřδ ₥úƨƭ βè βèƭωèèñ 7 áñδ 25 çλářáçƭèřƨ ïñ ℓèñϱƭλ; áƭ ℓèáƨƭ 1 úƥƥèřçáƨè çλářáçƭèř; áƭ ℓèáƨƭ 1 ℓôωèřçáƨè çλářáçƭèř; áƭ ℓèáƨƭ 1 ñú₥βèř</value>
+    <value>Þáƨƨωôřδ ₥úƨƭ βè βèƭωèèñ 7 áñδ 25 çλářáçƭèřƨ ïñ ℓèñϱƭλ; áƭ ℓèáƨƭ 1 úƥƥèřçáƨè çλářáçƭèř; áƭ ℓèáƨƭ 1 ℓôωèřçáƨè çλářáçƭèř; áƭ ℓèáƨƭ 1 ñú₥βèř£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř á</value>
   </data>
   <data name="ProvideUserUid" xml:space="preserve">
-    <value>Múƨƭ ƥřôƲïδè Ûïδ ƒôř úƥδáƭèδ úƨèř</value>
+    <value>Múƨƭ ƥřôƲïδè Ûïδ ƒôř úƥδáƭèδ úƨèř£ôřè₥ ïƥƨ</value>
   </data>
   <data name="ResourceUidNotFound" xml:space="preserve">
-    <value>Rèƨôúřçè ñôƭ ƒôúñδ ƒôř ƭλïƨ Ûïδ</value>
+    <value>Rèƨôúřçè ñôƭ ƒôúñδ ƒôř ƭλïƨ Ûïδ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="ResourceUserNameExists" xml:space="preserve">
-    <value>Rèƨôúřçè ƒôř ƭλïƨ Ûƨèřñá₥è áℓřèáδ¥ èжïƨƭƨ</value>
+    <value>Rèƨôúřçè ƒôř ƭλïƨ Ûƨèřñá₥è áℓřèáδ¥ èжïƨƭƨ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="UserDeletedMessage" xml:space="preserve">
-    <value>Ûƨèř(ƨ) ƨúççèƨƨƒúℓℓ¥ δèℓèƭèδ</value>
+    <value>Ûƨèř(ƨ) ƨúççèƨƨƒúℓℓ¥ δèℓèƭèδ£ôřè₥ ïƥ</value>
   </data>
   <data name="UsernameDuplicate" xml:space="preserve">
-    <value>Ûƨèřñá₥è ₥úƨƭ βè úñï9úè ωïƭλïñ ƭλè řè9úèƨƭ</value>
+    <value>Ûƨèřñá₥è ₥úƨƭ βè úñï9úè ωïƭλïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="UserUidNotFound" xml:space="preserve">
-    <value>Ûƨèř ƒôř úïδ [{0}] ñôƭ ƒôúñδ.</value>
+    <value>Ûƨèř ƒôř úïδ [{0}] ñôƭ ƒôúñδ.£ôřè₥ ïƥ</value>
   </data>
   <data name="UserUidSystemUser" xml:space="preserve">
-    <value>Ûƨèř ƒôř úïδ [{0}] ïƨ á ƨ¥ƨƭè₥ úƨèř áñδ çáññôƭ βè δèℓèƭèδ.</value>
+    <value>Ûƨèř ƒôř úïδ [{0}] ïƨ á ƨ¥ƨƭè₥ úƨèř áñδ çáññôƭ βè δèℓèƭèδ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
 </root>
