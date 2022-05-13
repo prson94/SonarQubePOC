@@ -62,7 +62,7 @@ export class ColorSelector implements ControlValueAccessor {
         this.writeValue($event.value);
     }
 
-    onEnter($event) {
+    onEnter($event: Event) {
         var hexCode = "";
         if (!this.textBoxValue.startsWith("#")) {
             this.textBoxValue = this.value;
