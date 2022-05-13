@@ -15,41 +15,45 @@
     </div>
 </div>
 
-<div class="grid-actions-header {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
-    <div class="simple-search">
-        <ig-search-field mode="Keypress"
-                         [debounce]="600"
-                         (onSearch)="onSimpleSearch($event)"
-                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
-                         [infoTooltip]="simpleSearchTooltipHTML">
-        </ig-search-field>
-    </div>
-    <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-    <div class="grid-action-buttons">
-        <button *ngIf="showAddButton && hasAddAssetPermissions()"
-                igButton
-                [attr.data-cy]="'Assets_Add'"
-                pTooltip="Create new asset"
-                i18n-pTooltip
-                tooltipPosition="top"
-                tooltipStyleClass="ig-tooltip"
-                class="ig-button-primary"
-                icon="fa-plus"
-                [igDataCy]="'Assets_Add'"
-                (click)="add()">
-        </button>
-
-        <div pTooltip="{{exportTooltip}}"
-             tooltipPosition="left"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    [disabled]="!canExportRecords() || isExportInProgress"
-                    [igDataCy]="'Assets_Export'"
-                    icon="fa-download"
-                    [loading]="isExportInProgress"
-                    (click)="export(false)">
-            </button>
+<div class="grid-actions-header column-layout {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
+    <div class="grid-actions-header-row">
+        <div class="simple-search">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="onSimpleSearch($event)"
+                             [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
         </div>
+        <div class="grid-action-buttons">
+            <button *ngIf="showAddButton && hasAddAssetPermissions()"
+                    igButton
+                    [attr.data-cy]="'Assets_Add'"
+                    pTooltip="Create new asset"
+                    i18n-pTooltip
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    [igDataCy]="'Assets_Add'"
+                    (click)="add()">
+            </button>
+    
+            <div pTooltip="{{exportTooltip}}"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        [disabled]="!canExportRecords() || isExportInProgress"
+                        [igDataCy]="'Assets_Export'"
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export(false)">
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="grid-actions-header-row">
+        <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     </div>
 </div>
 

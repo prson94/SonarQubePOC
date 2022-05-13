@@ -2,26 +2,30 @@
 <div class="row" *ngIf="!isLoading">
     <div class="col s12" style="display: flex">
         <div class="tag-item-tile tile tile-detail main-panel">
-            <div class="grid-actions-header">
-                <div class="simple-search">
+            <div class="grid-actions-header column-layout">
+                <div class="grid-actions-header-row">
+                    <div class="simple-search">
                         <ig-search-field mode="Keypress"
                                          [debounce]="600"
                                          (onSearch)="onSearch($event)"
                                          [(ngModel)]="filters.globalSearch"
                                          [infoTooltip]="simpleSearchTooltipHTML">
                         </ig-search-field>
-                </div>
-                <advanced-filtering  [loadIdentifier]="'TaggedAssets'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-                <div class="grid-action-buttons">
-                    <div pTooltip="Export to Excel"
-                         tooltipPosition="left"
-                         tooltipStyleClass="ig-tooltip">
-                        <button igButton
-                                [igDataCy]="'Button_Export'"
-                                icon="fa-download"
-                                (click)="export()">
-                        </button>
                     </div>
+                    <div class="grid-action-buttons">
+                        <div pTooltip="Export to Excel"
+                             tooltipPosition="left"
+                             tooltipStyleClass="ig-tooltip">
+                            <button igButton
+                                    [igDataCy]="'Button_Export'"
+                                    icon="fa-download"
+                                    (click)="export()">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-actions-header-row">
+                    <advanced-filtering  [loadIdentifier]="'TaggedAssets'" [fieldsObserver]="filterFieldList$" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 </div>
             </div>
             <p-table #dt

@@ -1,40 +1,44 @@
 <div class="row">
     <div class="col s12" style="display: flex">
         <div class="tile tile-detail main-panel">
-            <div class="grid-actions-header">
-                <div class="simple-search">
-                    <ig-search-field mode="Keypress"
-                                     [debounce]="600"
-                                     (onSearch)="onSimpleSearch($event)"
-                                     [(ngModel)]="simpleFilter"
-                                     [infoTooltip]="simpleSearchTooltipHTML">
-                    </ig-search-field>
-                </div>
-                <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-                <div class="grid-action-buttons">
-                    <button *ngIf="showAddButton"
-                            igButton
-                            [attr.data-cy]="'Semantics_Add'"
-                            i18n-pTooltip
-                            pTooltip="Create New Semantic Type"
-                            tooltipPosition="top"
-                            tooltipStyleClass="ig-tooltip"
-                            class="ig-button-primary"
-                            icon="fa-plus"
-                            [igDataCy]="'Semantics_Add'"
-                            (click)="addSemantic()">
-                    </button>
-                    <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-                         tooltipPosition="left"
-                         tooltipStyleClass="ig-tooltip">
-                        <button igButton
-                                [disabled]="!canExportRecords() || isExportInProgress"
-                                [igDataCy]="'Assets_Export'"
-                                icon="fa-download"
-                                [loading]="isExportInProgress"
-                                (click)="export()">
-                        </button>
+            <div class="grid-actions-header column-layout">
+                <div class="grid-actions-header-row">
+                    <div class="simple-search">
+                        <ig-search-field mode="Keypress"
+                                         [debounce]="600"
+                                         (onSearch)="onSimpleSearch($event)"
+                                         [(ngModel)]="simpleFilter"
+                                         [infoTooltip]="simpleSearchTooltipHTML">
+                        </ig-search-field>
                     </div>
+                    <div class="grid-action-buttons">
+                        <button *ngIf="showAddButton"
+                                igButton
+                                [attr.data-cy]="'Semantics_Add'"
+                                i18n-pTooltip
+                                pTooltip="Create New Semantic Type"
+                                tooltipPosition="top"
+                                tooltipStyleClass="ig-tooltip"
+                                class="ig-button-primary"
+                                icon="fa-plus"
+                                [igDataCy]="'Semantics_Add'"
+                                (click)="addSemantic()">
+                        </button>
+                        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
+                             tooltipPosition="left"
+                             tooltipStyleClass="ig-tooltip">
+                            <button igButton
+                                    [disabled]="!canExportRecords() || isExportInProgress"
+                                    [igDataCy]="'Assets_Export'"
+                                    icon="fa-download"
+                                    [loading]="isExportInProgress"
+                                    (click)="export()">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-actions-header-row">
+                    <advanced-filtering [loadIdentifier]="'SemanticTypes'" [fieldsObserver]="filterFields$" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 </div>
             </div>
             <div class="row asset-grid-wrapper">
