@@ -1,4 +1,10 @@
 {
   "defaultSeverity": "warning",
-  "extends": [ "tslint-angular" ]
+  "extends": [ "tslint-angular" ],
+  "no-import-side-effect": [
+    true,
+    {
+      "ignore-module": "(@angular/localize/init)$"
+    }
+  ]
 }
