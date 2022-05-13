@@ -1402,6 +1402,16 @@ namespace d360.web.Controllers.V2
                     return "black";
                 }
 
+                string hexToRGBA(string backgroundColor, float opacity)
+                {
+                    Color col = ColorTranslator.FromHtml(backgroundColor);
+                    if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
+                    {
+                        return "white";
+                    }
+                    return $"rgba({col.R},{col.G},{col.B},{opacity})";
+                }
+
                 if (theme == null)
                 {
                     throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoActiveThemeExists);
@@ -1415,9 +1425,11 @@ namespace d360.web.Controllers.V2
                 css.AppendCssVariable("headerBackColor", theme.HeaderBackColor);
                 css.AppendCssVariable("navbarBackColor", theme.NavBarBackColor);
                 css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
+                css.AppendCssVariable("navbarBackColorSelectedHover", hexToRGBA(theme.NavBarBackSelectedColor, 0.35f));
                 css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
                 css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
+                css.AppendCssVariable("tableRowBackColorHover", hexToRGBA(theme.TableRowBackSelectedColor, 0.35f));
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);
                 css.AppendLine("");
                 css.AppendCssVariable("calculatedBackTextColor", textColorFromBackground(theme.BackColor));
