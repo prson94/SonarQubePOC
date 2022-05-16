@@ -118,30 +118,30 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DuplicateExecutionItem" xml:space="preserve">
-    <value>Ðúƥℓïçáƭè èжèçúƭïôñ ïƭè₥ ïδèñƭïƒïèřƨ: {0}. Ìδèñƭïƒïèřƨ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.</value>
+    <value>Ðúƥℓïçáƭè èжèçúƭïôñ ïƭè₥ ïδèñƭïƒïèřƨ: {0}. Ìδèñƭïƒïèřƨ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥è</value>
   </data>
   <data name="FieldNotAllowedMultipleValies" xml:space="preserve">
-    <value>{0} δôèƨ ñôƭ áℓℓôω ƨèℓèçƭïôñ ôƒ ₥úℓƭïƥℓè Ʋáℓúèƨ</value>
+    <value>{0} δôèƨ ñôƭ áℓℓôω ƨèℓèçƭïôñ ôƒ ₥úℓƭïƥℓè Ʋáℓúèƨ£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="NotPermissionModifyRelationobjectAsset" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ₥ôδïƒ¥ řèℓáƭïôñƨλïƥƨ ôñ ƭλè ôβJèçƭ áƨƨèƭ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ₥ôδïƒ¥ řèℓáƭïôñƨλïƥƨ ôñ ƭλè ôβJèçƭ áƨƨèƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="NotPermissionModifyRelationSubjectAsset" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ₥ôδïƒ¥ řèℓáƭïôñƨλïƥƨ ôñ ƭλè ƨúβJèçƭ áƨƨèƭ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô ₥ôδïƒ¥ řèℓáƭïôñƨλïƥƨ ôñ ƭλè ƨúβJèçƭ áƨƨèƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="OwnerValueMaxLength" xml:space="preserve">
-    <value>Óωñèř Ʋáℓúè ₥áж ℓèñϱƭλ èжçèèδèδ : {0}. Máж ℓèñϱƭλ ôƒ Óωñèř ƒïèℓδ ïƨ 100 çλářáçƭèřƨ.</value>
+    <value>Óωñèř Ʋáℓúè ₥áж ℓèñϱƭλ èжçèèδèδ : {0}. Máж ℓèñϱƭλ ôƒ Óωñèř ƒïèℓδ ïƨ 100 çλářáçƭèřƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
   </data>
   <data name="RelationshipInvalidUid" xml:space="preserve">
-    <value>ÛÌÐ ôƒ ƭλè řèℓáƭïôñƨλïƥ ïƨ ïñƲáℓïδ.</value>
+    <value>ÛÌÐ ôƒ ƭλè řèℓáƭïôñƨλïƥ ïƨ ïñƲáℓïδ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="RelationshipUidNotFound" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ ωïƭλ ƭλïƨ ÛÌÐ ñôƭ ƒôúñδ.</value>
+    <value>Rèℓáƭïôñƨλïƥ ωïƭλ ƭλïƨ ÛÌÐ ñôƭ ƒôúñδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="RelatioshipSpecifiedMoreThanOnce" xml:space="preserve">
-    <value>Tλïƨ řèℓáƭïôñƨλïƥ ïƨ ƨƥèçïƒïèδ ₥ôřè ƭλáñ ôñçè. Éáçλ řèℓáƭïôñƨλïƥ ₥úƨƭ βè úñï9úè ωïƭλïñ á ϱïƲèñ řè9úèƨƭ.</value>
+    <value>Tλïƨ řèℓáƭïôñƨλïƥ ïƨ ƨƥèçïƒïèδ ₥ôřè ƭλáñ ôñçè. Éáçλ řèℓáƭïôñƨλïƥ ₥úƨƭ βè úñï9úè ωïƭλïñ á ϱïƲèñ řè9úèƨƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çô</value>
   </data>
   <data name="RelatioshipUidExistWithDifferentType" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ ÛÌÐ ƨƥèçïƒïèδ ïƨ ôƒ á δïƒƒèřèñƭ řèℓáƭïôñƨλïƥ ƭ¥ƥè.</value>
+    <value>Rèℓáƭïôñƨλïƥ ÛÌÐ ƨƥèçïƒïèδ ïƨ ôƒ á δïƒƒèřèñƭ řèℓáƭïôñƨλïƥ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
 </root>

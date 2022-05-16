@@ -716,7 +716,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 			{
 				items.Add(new
 				{
-					label = "Lineage Diagram",
+					label = core.resources.PageNames.LineageDiagramTab,
 					value = (int)AssetBrowserDiagramType.Lineage
 				});
 			}
@@ -729,7 +729,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 				{
 					items.Add(new
 					{
-						label = "Process Diagram",
+						label = core.resources.PageNames.ProcessDiagramTab,
 						value = (int)AssetBrowserDiagramType.Process,
 						canEdit
 					});
@@ -740,7 +740,7 @@ order by R.ResourceName", new { assetUids = criteria.assets.Select(i => i.Uid).T
 			{
 				items.Add(new
 				{
-					label = "Impact Diagram",
+					label = core.resources.PageNames.ImpactDiagramTab,
 					value = (int)AssetBrowserDiagramType.Impact
 				});
 			}

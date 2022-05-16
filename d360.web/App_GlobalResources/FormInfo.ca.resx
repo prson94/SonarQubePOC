@@ -118,60 +118,60 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Add_Asset_Type_Directions" xml:space="preserve">
-    <value>Môδïƒ¥ ƭλïƨ {0} ƭ¥ƥè úƨïñϱ ƭλè ƒôř₥ βèℓôω.</value>
+    <value>Môδïƒ¥ ƭλïƨ {0} ƭ¥ƥè úƨïñϱ ƭλè ƒôř₥ βèℓôω.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="Add_Asset_Type_Title" xml:space="preserve">
-    <value>Âδδ {0} T¥ƥè</value>
+    <value>Âδδ {0} T¥ƥè£ôř</value>
   </data>
   <data name="ArtifactType" xml:space="preserve">
-    <value>ßúƨïñèƨƨ</value>
+    <value>ßúƨïñèƨƨ£ô</value>
   </data>
   <data name="Edit_Asset_Type_Title" xml:space="preserve">
-    <value>Môδïƒ¥ {0} T¥ƥè</value>
+    <value>Môδïƒ¥ {0} T¥ƥè£ôřè</value>
   </data>
   <data name="InUse_Error_Delete" xml:space="preserve">
-    <value>Tλè řèℓáƭïôñƨλïƥ ƭ¥ƥè ¥ôú ářè ƭř¥ïñϱ ƭô δèℓèƭè λáƨ èƨƭáβℓïƨλèδ řèℓáƭïôñƨλïƥƨ.  Þℓèáƨè δèℓèƭè ƭλèƨè ƥřïôř ƭô δèℓèƭïñϱ ƭλè řèℓáƭïôñƨλïƥ ƭ¥ƥè.</value>
+    <value>Tλè řèℓáƭïôñƨλïƥ ƭ¥ƥè ¥ôú ářè ƭř¥ïñϱ ƭô δèℓèƭè λáƨ èƨƭáβℓïƨλèδ řèℓáƭïôñƨλïƥƨ.  Þℓèáƨè δèℓèƭè ƭλèƨè ƥřïôř ƭô δèℓèƭïñϱ ƭλè řèℓáƭïôñƨλïƥ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř á</value>
   </data>
   <data name="InUse_RelationShipType_Error_Delete" xml:space="preserve">
-    <value>Tλè řèℓáƭïôñƨλïƥ ƭ¥ƥè ïƨ řèƒèřèñçèδ β¥ ôñè ôř ₥ôřè ƒïèℓδ ƭ¥ƥè δèƒïñïƭïôñƨ. Þℓèáƨè úƥδáƭè ôř δèℓèƭè ƭλèƨè ƥřïôř ƭô δèℓèƭïñϱ ƭλïƨ řèℓáƭïôñƨλïƥ ƭ¥ƥè.</value>
+    <value>Tλè řèℓáƭïôñƨλïƥ ƭ¥ƥè ïƨ řèƒèřèñçèδ β¥ ôñè ôř ₥ôřè ƒïèℓδ ƭ¥ƥè δèƒïñïƭïôñƨ. Þℓèáƨè úƥδáƭè ôř δèℓèƭè ƭλèƨè ƥřïôř ƭô δèℓèƭïñϱ ƭλïƨ řèℓáƭïôñƨλïƥ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδï</value>
   </data>
   <data name="NoFormData_FieldType" xml:space="preserve">
-    <value>ƒïèℓδ ƭ¥ƥè</value>
+    <value>ƒïèℓδ ƭ¥ƥè£ôř</value>
   </data>
   <data name="OrganizationType" xml:space="preserve">
-    <value>Óřϱáñïƺáƭïôñ T¥ƥè</value>
+    <value>Óřϱáñïƺáƭïôñ T¥ƥè£ôřè₥</value>
   </data>
   <data name="Permisions_Error_Add" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô áδδ ƭλïƨ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô áδδ ƭλïƨ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="Permisions_Error_Delete" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řè₥ôƲè ƭλïƨ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řè₥ôƲè ƭλïƨ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="Permisions_Error_Edit" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô úƥδáƭè ƭλïƨ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô úƥδáƭè ƭλïƨ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="PolicyType" xml:space="preserve">
-    <value>Þôℓïç¥</value>
+    <value>Þôℓïç¥£</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>Tλè Rèƨƥôñƨïβïℓïƭ¥ Tλèñ Fïℓƭèř Ʋáℓúè ïƨ řè9úïřèδ</value>
+    <value>Tλè Rèƨƥôñƨïβïℓïƭ¥ Tλèñ Fïℓƭèř Ʋáℓúè ïƨ řè9úïřèδ£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>ÌñƲáℓïδ Fïèℓδ ƭ¥ƥè ïñ Wλèñ ƒïℓƭèřƨ ƒôř ƭλïƨ áƨƨèƭ ƭ¥ƥè.</value>
+    <value>ÌñƲáℓïδ Fïèℓδ ƭ¥ƥè ïñ Wλèñ ƒïℓƭèřƨ ƒôř ƭλïƨ áƨƨèƭ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>Âƭ ℓèáƨƭ ôñè Wλèñ ƒïℓƭèř řè9úïřèδ ïƒ Âƥƥℓïèƨ Tô Éñƭïřè T¥ƥè ïƨ úñçλèçƙèδ.</value>
+    <value>Âƭ ℓèáƨƭ ôñè Wλèñ ƒïℓƭèř řè9úïřèδ ïƒ Âƥƥℓïèƨ Tô Éñƭïřè T¥ƥè ïƨ úñçλèçƙèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>Tλè Rèƨƥôñƨïβïℓïƭ¥ Wλèñ Fïℓƭèř Ʋáℓúè ïƨ řè9úïřèδ.</value>
+    <value>Tλè Rèƨƥôñƨïβïℓïƭ¥ Wλèñ Fïℓƭèř Ʋáℓúè ïƨ řè9úïřèδ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="RuleType" xml:space="preserve">
-    <value>Rúℓè</value>
+    <value>Rúℓè£</value>
   </data>
   <data name="TaxonomyType" xml:space="preserve">
-    <value>Môδèℓ</value>
+    <value>Môδèℓ£</value>
   </data>
   <data name="Taxonomy_ChangeParent_Warning" xml:space="preserve">
-    <value>Âℓƭèřïñϱ á ₥ôδèℓ'ƨ ƥářèñƭ çôúℓδ ƥôƭèñƭïáℓℓ¥ λáƲè á ƨïϱñïƒïçáñƭ ï₥ƥáçƭ ôñ ôωñèřƨλïƥ ƭλřôúϱλôúƭ ƭλè ƨ¥ƨƭè₥.</value>
+    <value>Âℓƭèřïñϱ á ₥ôδèℓ'ƨ ƥářèñƭ çôúℓδ ƥôƭèñƭïáℓℓ¥ λáƲè á ƨïϱñïƒïçáñƭ ï₥ƥáçƭ ôñ ôωñèřƨλïƥ ƭλřôúϱλôúƭ ƭλè ƨ¥ƨƭè₥.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñ</value>
   </data>
 </root>

@@ -335,7 +335,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
                     if (this.showDiagram) {
-                        this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
+                        this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
                     }
 
                     if (this.auditSidebar) {

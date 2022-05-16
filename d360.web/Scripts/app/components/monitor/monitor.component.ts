@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     <div class="col s12 m6">
         <div class="tile tile-detail">
             <p-tabView (onChange)="tabClick($event)" [activeIndex]="activeIndex">
-                <p-tabPanel header="Workflow Items">
+                <p-tabPanel i18n-header header="Workflow Items">
                     <ng-template pTemplate="content">
                         <div class="row">
                             <div *ngIf="!isLoading">
@@ -31,7 +31,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                         </div>
                     </ng-template>
                 </p-tabPanel>
-                <p-tabPanel header="Workflow Versions">
+                <p-tabPanel i18n-header header="Workflow Versions">
                     <ng-template pTemplate="content">
                         <div class="row">
                             <d3s-monitor-workflow-version 
@@ -209,7 +209,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                 this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                     this.secondaryNavService.clearItems();
                     this.secondaryNavService.clearCurrentObject();
-                    this.secondaryNavService.setCurrentArea(res, icon, 'Definition');
+                    this.secondaryNavService.setCurrentArea(res, icon, $localize`Definition`);
                     this.secondaryNavService.showHeader(true);
                 });
 

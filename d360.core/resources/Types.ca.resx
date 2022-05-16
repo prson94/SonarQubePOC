@@ -118,36 +118,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Taxonomy" xml:space="preserve">
-    <value>Ìñƒôř₥áƭïôñ Môδèℓ</value>
+    <value>Ìñƒôř₥áƭïôñ Môδèℓ£ôřè₥</value>
   </data>
   <data name="TaxonomyType" xml:space="preserve">
-    <value>Ìñƒôř₥áƭïôñ Môδèℓ</value>
+    <value>Ìñƒôř₥áƭïôñ Môδèℓ£ôřè₥</value>
   </data>
   <data name="Group" xml:space="preserve">
-    <value>Gřôúƥ</value>
+    <value>Gřôúƥ£</value>
   </data>
   <data name="Resource" xml:space="preserve">
-    <value>Ûƨèř</value>
+    <value>Ûƨèř£</value>
   </data>
   <data name="ResourceType" xml:space="preserve">
-    <value>Ûƨèř T¥ƥè</value>
+    <value>Ûƨèř T¥ƥè£ô</value>
   </data>
   <data name="Role" xml:space="preserve">
-    <value>Rôℓè</value>
+    <value>Rôℓè£</value>
   </data>
   <data name="Ownership" xml:space="preserve">
-    <value>Óωñèřƨλïƥ</value>
+    <value>Óωñèřƨλïƥ£ô</value>
   </data>
   <data name="Company" xml:space="preserve">
-    <value>Çô₥ƥáñ¥</value>
+    <value>Çô₥ƥáñ¥£ô</value>
   </data>
   <data name="TaxonomyTypeLevel" xml:space="preserve">
-    <value>Ìñƒôř₥áƭïôñ Môδèℓ £èƲèℓ</value>
+    <value>Ìñƒôř₥áƭïôñ Môδèℓ £èƲèℓ£ôřè₥ </value>
   </data>
   <data name="Artifact" xml:space="preserve">
-    <value>Âřƭïƒáçƭ</value>
+    <value>Âřƭïƒáçƭ£ô</value>
   </data>
   <data name="ReferenceList" xml:space="preserve">
-    <value>Rèƒèřèñçè £ïƨƭ</value>
+    <value>Rèƒèřèñçè £ïƨƭ£ôřè</value>
   </data>
 </root>

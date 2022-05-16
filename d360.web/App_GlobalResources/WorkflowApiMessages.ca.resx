@@ -118,111 +118,111 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InvalidFormSetting" xml:space="preserve">
-    <value>Fôř₥ ƨèƭƭïñϱƨ ïƨ ₥ïƨƨïñϱ ôř ïñƲáℓïδ</value>
+    <value>Fôř₥ ƨèƭƭïñϱƨ ïƨ ₥ïƨƨïñϱ ôř ïñƲáℓïδ£ôřè₥ ïƥƨú</value>
   </data>
   <data name="InvalidModelNoFieldPassed" xml:space="preserve">
-    <value>ÌNVÂ£ÌÐ MÓÐÉ£ NÓ FÌÉ£Ð§ ÞÂ§§ÉÐ</value>
+    <value>ÌNVÂ£ÌÐ MÓÐÉ£ NÓ FÌÉ£Ð§ ÞÂ§§ÉÐ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidOrderParameterPassed" xml:space="preserve">
-    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ. Váℓïδ Ʋáℓúèƨ ářè: §ƭářƭèδÓñ áñδ Çô₥ƥℓèƭèδÓñ</value>
+    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ. Váℓïδ Ʋáℓúèƨ ářè: §ƭářƭèδÓñ áñδ Çô₥ƥℓèƭèδÓñ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
   </data>
   <data name="InvalidParameterWorkflowVersion" xml:space="preserve">
-    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ. Váℓïδ Ʋáℓúèƨ ářè: VèřƨïôñNú₥βèř, §ƭáƭè, ÇřèáƭèδÓñ, áñδ ÛƥδáƭèδÓñ</value>
+    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ. Váℓïδ Ʋáℓúèƨ ářè: VèřƨïôñNú₥βèř, §ƭáƭè, ÇřèáƭèδÓñ, áñδ ÛƥδáƭèδÓñ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çô</value>
   </data>
   <data name="InvalidResourceID" xml:space="preserve">
-    <value>ÌñƲáℓïδ řèƨôúřçè ïδ</value>
+    <value>ÌñƲáℓïδ řèƨôúřçè ïδ£ôřè₥</value>
   </data>
   <data name="InvalidSpecificID" xml:space="preserve">
-    <value>ÌNVÂ£ÌÐ WÓRKF£ÓW ÌTÉM ÌÐ,  ÇÂNNÓT FÌNÐ WÓRKF£ÓWÌTÉM§TÉÞ WÌTH §ÞÉÇÌFÌÉÐ ÌÐ.</value>
+    <value>ÌNVÂ£ÌÐ WÓRKF£ÓW ÌTÉM ÌÐ,  ÇÂNNÓT FÌNÐ WÓRKF£ÓWÌTÉM§TÉÞ WÌTH §ÞÉÇÌFÌÉÐ ÌÐ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
   <data name="InvalidTypeWorkflowVersionRequest" xml:space="preserve">
-    <value>Ýôúř řè9úèƨƭ ƭô řèƭřïèƲè ƭλïƨ ωôřƙƒℓôω Ʋèřƨïôñ ïƨ ïñƲáℓïδ, ƥôƨƨïβℓ¥ δúè ƭô áñ ïñçôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř ÂçƭïôñT¥ƥèÛïδ/ÂƨƨèƭT¥ƥèÛïδ/RèℓáƭïôñƨλïƥT¥ƥèÛïδ</value>
+    <value>Ýôúř řè9úèƨƭ ƭô řèƭřïèƲè ƭλïƨ ωôřƙƒℓôω Ʋèřƨïôñ ïƨ ïñƲáℓïδ, ƥôƨƨïβℓ¥ δúè ƭô áñ ïñçôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř ÂçƭïôñT¥ƥèÛïδ/ÂƨƨèƭT¥ƥèÛïδ/RèℓáƭïôñƨλïƥT¥ƥèÛïδ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδïƥïƨç</value>
   </data>
   <data name="InvalidTypeWorkflowVersionRequestIncWF" xml:space="preserve">
-    <value>Ýôúř řè9úèƨƭ ƭô řèƭřïèƲè ƭλïƨ ωôřƙƒℓôω Ʋèřƨïôñ ïƨ ïñƲáℓïδ, ƥôƨƨïβℓ¥ δúè ƭô áñ ïñçôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř ÂçƭïôñT¥ƥèÛïδ/ÂƨƨèƭT¥ƥèÛïδ/RèℓáƭïôñƨλïƥT¥ƥèÛïδ/WôřƙƒℓôωT¥ƥèÛïδ</value>
+    <value>Ýôúř řè9úèƨƭ ƭô řèƭřïèƲè ƭλïƨ ωôřƙƒℓôω Ʋèřƨïôñ ïƨ ïñƲáℓïδ, ƥôƨƨïβℓ¥ δúè ƭô áñ ïñçôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř ÂçƭïôñT¥ƥèÛïδ/ÂƨƨèƭT¥ƥèÛïδ/RèℓáƭïôñƨλïƥT¥ƥèÛïδ/WôřƙƒℓôωT¥ƥèÛïδ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδïƥïƨçïñϱ </value>
   </data>
   <data name="InvalidUidWorkflowVersionRequest" xml:space="preserve">
-    <value>Ýôúř řè9úèƨƭ ƭô řèƭřïèƲè ƭλïƨ ωôřƙƒℓôω Ʋèřƨïôñ ïƨ ïñƲáℓïδ, ƥôƨƨïβℓ¥ δúè ƭô áñ ïñçôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř ÂçƭïôñÛïδ / ÂƨƨèƭÛïδ / RèℓáƭïôñƨλïƥÛïδ / WôřƙƒℓôωT¥ƥèÛïδ / WôřƙƒℓôωVèřïôñÛïδ</value>
+    <value>Ýôúř řè9úèƨƭ ƭô řèƭřïèƲè ƭλïƨ ωôřƙƒℓôω Ʋèřƨïôñ ïƨ ïñƲáℓïδ, ƥôƨƨïβℓ¥ δúè ƭô áñ ïñçôřřèçƭℓ¥ ƒôř₥áƭƭèδ ïδèñƭïƒïèř ÂçƭïôñÛïδ / ÂƨƨèƭÛïδ / RèℓáƭïôñƨλïƥÛïδ / WôřƙƒℓôωT¥ƥèÛïδ / WôřƙƒℓôωVèřïôñÛïδ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδïƥïƨçïñϱ èℓïƭ,</value>
   </data>
   <data name="InvalidWorkflowID" xml:space="preserve">
-    <value>ÌñƲáℓïδ Wôřƙƒℓôω ïƭè₥ ïδ.</value>
+    <value>ÌñƲáℓïδ Wôřƙƒℓôω ïƭè₥ ïδ.£ôřè₥ ï</value>
   </data>
   <data name="InvalidWorkflowRegistration" xml:space="preserve">
-    <value>Wôřƙƒℓôω řèϱïƨƭřáƭïôñ ïƨ ₥ïƨƨïñϱ ôř ïñƲáℓïδ</value>
+    <value>Wôřƙƒℓôω řèϱïƨƭřáƭïôñ ïƨ ₥ïƨƨïñϱ ôř ïñƲáℓïδ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidWorkflowStepID" xml:space="preserve">
-    <value>ÌñƲáℓïδ Wôřƙƒℓôω ïƭè₥ ƨƭèƥ ïδ.</value>
+    <value>ÌñƲáℓïδ Wôřƙƒℓôω ïƭè₥ ƨƭèƥ ïδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="ItemNotFound" xml:space="preserve">
-    <value>Ìƭè₥ ñôƭ ƒôúñδ</value>
+    <value>Ìƭè₥ ñôƭ ƒôúñδ£ôřè</value>
   </data>
   <data name="ItemStepNotFound" xml:space="preserve">
-    <value>ÇÂNNÓT FÌNÐ THÉ ÌTÉM §TÉÞ FÓR THÉ §ÞÉÇÌFÌÉÐ ÞÂRÂMÉTÉR§</value>
+    <value>ÇÂNNÓT FÌNÐ THÉ ÌTÉM §TÉÞ FÓR THÉ §ÞÉÇÌFÌÉÐ ÞÂRÂMÉTÉR§£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="ItemStepUnableFound" xml:space="preserve">
-    <value>Ûñáβℓè ƭô ƒïñδ ïƭè₥ ƨƭèƥ</value>
+    <value>Ûñáβℓè ƭô ƒïñδ ïƭè₥ ƨƭèƥ£ôřè₥ ï</value>
   </data>
   <data name="MoreThanOneTypeUidPassed" xml:space="preserve">
-    <value>Môřè ƭλáñ ôñè úïδ ïƨ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ, èïƭλèř  ÂçƭïôñT¥ƥèÛïδ ÓR ÂƨƨèƭT¥ƥèÛïδ ÓR RèℓáƭïôñƨλïƥT¥ƥèÛïδ</value>
+    <value>Môřè ƭλáñ ôñè úïδ ïƨ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ, èïƭλèř  ÂçƭïôñT¥ƥèÛïδ ÓR ÂƨƨèƭT¥ƥèÛïδ ÓR RèℓáƭïôñƨλïƥT¥ƥèÛïδ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñ</value>
   </data>
   <data name="MoreThanOneTypeUidPassedInclWorkflow" xml:space="preserve">
-    <value>Môřè ƭλáñ ôñè úïδ ïƨ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ , èïƭλèř  ÂçƭïôñT¥ƥèÛïδ ÓR ÂƨƨèƭT¥ƥèÛïδ ÓR RèℓáƭïôñƨλïƥT¥ƥèÛïδ ôř WôřƙƒℓôωT¥ƥèÛïδ</value>
+    <value>Môřè ƭλáñ ôñè úïδ ïƨ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ , èïƭλèř  ÂçƭïôñT¥ƥèÛïδ ÓR ÂƨƨèƭT¥ƥèÛïδ ÓR RèℓáƭïôñƨλïƥT¥ƥèÛïδ ôř WôřƙƒℓôωT¥ƥèÛïδ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭ</value>
   </data>
   <data name="MoreThanOneUidPassed" xml:space="preserve">
-    <value>Môřè ƭλáñ ôñè úïδ ïƨ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ, èïƭλèř ÂçƭïôñÛïδ ÓR ÂƨƨèƭÛïδ ÓR RèℓáƭïôñƨλïƥÛïδ</value>
+    <value>Môřè ƭλáñ ôñè úïδ ïƨ ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ, èïƭλèř ÂçƭïôñÛïδ ÓR ÂƨƨèƭÛïδ ÓR RèℓáƭïôñƨλïƥÛïδ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ,</value>
   </data>
   <data name="MultiVersionFound" xml:space="preserve">
-    <value>MÛ£TÌÞ£É VÉRÌÓN §TÉÞ§ §ÞÉÇÌFÌÉÐ</value>
+    <value>MÛ£TÌÞ£É VÉRÌÓN §TÉÞ§ §ÞÉÇÌFÌÉÐ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="NoPermissionBulkReassign" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô βúℓƙ řèáƨƨïϱñ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñ ƭô βúℓƙ řèáƨƨïϱñ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="NoValidItemStep" xml:space="preserve">
-    <value>NÓ VÂ£ÌÐ ÌTÉM §TÉÞ§ FÓÛNÐ</value>
+    <value>NÓ VÂ£ÌÐ ÌTÉM §TÉÞ§ FÓÛNÐ£ôřè₥ ï</value>
   </data>
   <data name="RelationNotFoundIntersectType" xml:space="preserve">
-    <value>"RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT ÇÂNNÓT FÌNÐ THÉ §ÞÉÇÌFÌÉÐ ÌNTÉR§ÉÇT TÝÞÉ</value>
+    <value>"RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT ÇÂNNÓT FÌNÐ THÉ §ÞÉÇÌFÌÉÐ ÌNTÉR§ÉÇT TÝÞÉ£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="RelationNotFoundIssueObject" xml:space="preserve">
-    <value>RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT ÇÂNNÓT ÌÐÉNTÌFÝ Ì§§ÛÉ ÓßJÉÇT</value>
+    <value>RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT ÇÂNNÓT ÌÐÉNTÌFÝ Ì§§ÛÉ ÓßJÉÇT£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="RelationNotFoundRegistration" xml:space="preserve">
-    <value>RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT ÇÂNNÓT ÌÐÉNTÌFÝ WÓRKF£ÓW ÉVÉNT RÉGÌ§TRÂTÌÓN</value>
+    <value>RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT ÇÂNNÓT ÌÐÉNTÌFÝ WÓRKF£ÓW ÉVÉNT RÉGÌ§TRÂTÌÓN£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="RelatioshipInvalid" xml:space="preserve">
-    <value>RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT HÂ§ ÂN ÌNVÂ£ÌÐ ÌNTÉR§ÉÇTTÝÞÉ ÌÐ VÂ£ÛÉ</value>
+    <value>RÉ£ÂTÌÓN§HÌÞ ÌNÞÛT HÂ§ ÂN ÌNVÂ£ÌÐ ÌNTÉR§ÉÇTTÝÞÉ ÌÐ VÂ£ÛÉ£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="StepNotFound" xml:space="preserve">
-    <value>ƨƭèƥ ñôƭ ƒôúñδ</value>
+    <value>ƨƭèƥ ñôƭ ƒôúñδ£ôřè</value>
   </data>
   <data name="VersionStepIDNotFound" xml:space="preserve">
-    <value>Wôřƙƒℓôω ωïƭλ ƨƥèçïƒïèδ Ʋèřƨïôñ ƨƭèƥ ïδ ñôƭ ƒôúñδ</value>
+    <value>Wôřƙƒℓôω ωïƭλ ƨƥèçïƒïèδ Ʋèřƨïôñ ƨƭèƥ ïδ ñôƭ ƒôúñδ£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="WofkFlowXMLNull" xml:space="preserve">
-    <value>ÌNVÂ£ÌÐ WÓRKF£ÓW FÓRM ÐÉFÌNÌTÌÓN,  FÓRM XM£ Ì§ NÛ££.</value>
+    <value>ÌNVÂ£ÌÐ WÓRKF£ÓW FÓRM ÐÉFÌNÌTÌÓN,  FÓRM XM£ Ì§ NÛ££.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="WorkflowIDAlreadyDeleted" xml:space="preserve">
-    <value>Wôřƙƒℓôω ƭ¥ƥè ÌÐ {0} ïƨ áℓřèáδ¥ δèℓèƭèδ</value>
+    <value>Wôřƙƒℓôω ƭ¥ƥè ÌÐ {0} ïƨ áℓřèáδ¥ δèℓèƭèδ£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="WorkflowInstanceNotFound" xml:space="preserve">
-    <value>Çáññôƭ ƒïñδ ƭλè ƨƥèçïƒïèδ ωôřƙƒℓôω ïñƨƭáñçè.</value>
+    <value>Çáññôƭ ƒïñδ ƭλè ƨƥèçïƒïèδ ωôřƙƒℓôω ïñƨƭáñçè.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="WorkflowItemDeleted" xml:space="preserve">
-    <value>Wôřƙƒℓôω ïƭè₥ λáƨ βèèñ δèℓèƭèδ.</value>
+    <value>Wôřƙƒℓôω ïƭè₥ λáƨ βèèñ δèℓèƭèδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="WorkflowReassignSuccess" xml:space="preserve">
-    <value>Wôřƙƒℓôω ƒôř₥ƨ řèáƨƨïϱñèδ ƨúççèƨƨƒúℓℓ¥</value>
+    <value>Wôřƙƒℓôω ƒôř₥ƨ řèáƨƨïϱñèδ ƨúççèƨƨƒúℓℓ¥£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="WorkflowtypeidNotFound" xml:space="preserve">
-    <value>Wôřƙƒℓôω ƭ¥ƥè ïδ {0} çôúℓδ ñôƭ βè ƒôúñδ</value>
+    <value>Wôřƙƒℓôω ƭ¥ƥè ïδ {0} çôúℓδ ñôƭ βè ƒôúñδ£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="WorkflowtypeUIDNotFound" xml:space="preserve">
-    <value>Wôřƙƒℓôω ƭ¥ƥè Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ</value>
+    <value>Wôřƙƒℓôω ƭ¥ƥè Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="WorkflowUIDNotFound" xml:space="preserve">
-    <value>Wôřƙƒℓôω Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Wôřƙƒℓôω Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="WorkflowVersionUIDNotFound" xml:space="preserve">
-    <value>Wôřƙƒℓôω Vèřƨïôñ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Wôřƙƒℓôω Vèřƨïôñ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
 </root>

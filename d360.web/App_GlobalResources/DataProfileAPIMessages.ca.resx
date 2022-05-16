@@ -118,277 +118,277 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ApiSheetName" xml:space="preserve">
-    <value>Âƥï Ìñƒô</value>
+    <value>Âƥï Ìñƒô£ô</value>
   </data>
   <data name="AssetIdColumn" xml:space="preserve">
-    <value>Âƨƨèƭ ÌÐ</value>
+    <value>Âƨƨèƭ ÌÐ£ô</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetPathColumn" xml:space="preserve">
-    <value>Âƨƨèƭ Þáƭλ</value>
+    <value>Âƨƨèƭ Þáƭλ£ôř</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetSheetName" xml:space="preserve">
-    <value>Âƨƨèƭƨ</value>
+    <value>Âƨƨèƭƨ£</value>
   </data>
   <data name="AssetTypePathColumn" xml:space="preserve">
-    <value>Âƨƨèƭ T¥ƥè Þáƭλ</value>
+    <value>Âƨƨèƭ T¥ƥè Þáƭλ£ôřè</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetTypeUidColumn" xml:space="preserve">
-    <value>Âƨƨèƭ T¥ƥè Ûïδ</value>
+    <value>Âƨƨèƭ T¥ƥè Ûïδ£ôřè</value>
     <comment>Used for semantic type asset list export</comment>
   </data>
   <data name="AssetUidColumn" xml:space="preserve">
-    <value>Âƨƨèƭ ÛÌÐ</value>
+    <value>Âƨƨèƭ ÛÌÐ£ô</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="AssetUidProfileSetDateRecordNotfound" xml:space="preserve">
-    <value>Rèçôřδ δôèƨ ñôƭ èжïƨƭ ƒôř ÂƨƨèƭÛïδ {0} áñδ Þřôƒïℓè§èƭÐáƭè {1}</value>
+    <value>Rèçôřδ δôèƨ ñôƭ èжïƨƭ ƒôř ÂƨƨèƭÛïδ {0} áñδ Þřôƒïℓè§èƭÐáƭè {1}£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="UrlColumn" xml:space="preserve">
     <value>Ûřℓ</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="BaseTypeColumn" xml:space="preserve">
-    <value>ßáƨè T¥ƥè</value>
+    <value>ßáƨè T¥ƥè£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="DataProfileDeleteMaxLimit" xml:space="preserve">
-    <value>Ýôú ₥á¥ ôñℓ¥ δèℓèƭè á ₥áжï₥ú₥ ôƒ {0} δáƭáƥřôƒïℓè řèçôřδƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè úƨè ƭλè ßÂTÇH ÂÞÌ èñδƥôïñƭ.</value>
+    <value>Ýôú ₥á¥ ôñℓ¥ δèℓèƭè á ₥áжï₥ú₥ ôƒ {0} δáƭáƥřôƒïℓè řèçôřδƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè úƨè ƭλè ßÂTÇH ÂÞÌ èñδƥôïñƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨ</value>
   </data>
   <data name="DataProfileRecordsLimit" xml:space="preserve">
-    <value>Ýôú ₥á¥ ôñℓ¥ ƥřôƲïδè á ₥áжï₥ú₥ ôƒ {0} Ðáƭá Þřôƒïℓè řèçôřδƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè çáℓℓ ƭλè ßÂTÇH ÂÞÌ ƭô ƨúβ₥ïƭ ₥ôřè ƭλáñ {1} ïƭè₥ƨ.</value>
+    <value>Ýôú ₥á¥ ôñℓ¥ ƥřôƲïδè á ₥áжï₥ú₥ ôƒ {0} Ðáƭá Þřôƒïℓè řèçôřδƨ ïñ ƭλïƨ řè9úèƨƭ. Þℓèáƨè çáℓℓ ƭλè ßÂTÇH ÂÞÌ ƭô ƨúβ₥ïƭ ₥ôřè ƭλáñ {1} ïƭè₥ƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř</value>
   </data>
   <data name="DescriptionColumn" xml:space="preserve">
-    <value>Ðèƨçřïƥƭïôñ</value>
+    <value>Ðèƨçřïƥƭïôñ£ôř</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="DisabledColumn" xml:space="preserve">
-    <value>Ðïƨáβℓèδ</value>
+    <value>Ðïƨáβℓèδ£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="Duplicate" xml:space="preserve">
-    <value>Ðúƥℓïçáƭè</value>
+    <value>Ðúƥℓïçáƭè£ô</value>
   </data>
   <data name="DuplicateRecordBatchProfile" xml:space="preserve">
-    <value>Ðúƥℓïçáƭè Rèçôřδƨ: {0}. ÂƨƨèƭÛïδ áñδ Þřôƒïℓè§èƭÐáƭè ƥáïřƨ ářè úƨèδ áƨ řèçôřδ ïδèñƭïƒïèřƨ áñδ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.</value>
+    <value>Ðúƥℓïçáƭè Rèçôřδƨ: {0}. ÂƨƨèƭÛïδ áñδ Þřôƒïℓè§èƭÐáƭè ƥáïřƨ ářè úƨèδ áƨ řèçôřδ ïδèñƭïƒïèřƨ áñδ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭè</value>
   </data>
   <data name="EffectiveFromColumn" xml:space="preserve">
-    <value>ÉƒƒèçƭïƲè Fřô₥</value>
+    <value>ÉƒƒèçƭïƲè Fřô₥£ôřè</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="EffectiveThroughColumn" xml:space="preserve">
-    <value>ÉƒƒèçƭïƲè Tλřôúϱλ</value>
+    <value>ÉƒƒèçƭïƲè Tλřôúϱλ£ôřè₥</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="ElementBottomKNotEmpty" xml:space="preserve">
-    <value>Éℓè₥èñƭƨ ïñ βôƭƭô₥K çáññôƭ βè É₥ƥƭ¥ ƨƭřïñϱƨ</value>
+    <value>Éℓè₥èñƭƨ ïñ βôƭƭô₥K çáññôƭ βè É₥ƥƭ¥ ƨƭřïñϱƨ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="ElementTopKNotEmpty" xml:space="preserve">
-    <value>Éℓè₥èñƭƨ ïñ ƭôƥK çáññôƭ βè É₥ƥƭ¥ ƨƭřïñϱ</value>
+    <value>Éℓè₥èñƭƨ ïñ ƭôƥK çáññôƭ βè É₥ƥƭ¥ ƨƭřïñϱ£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="HeaderFilterColumn" xml:space="preserve">
-    <value>Hèáδèř Fïℓƭèř</value>
+    <value>Hèáδèř Fïℓƭèř£ôř</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="HeaderFilterConfidenceColumn" xml:space="preserve">
-    <value>Hèáδèř Fïℓƭèř Çôñƒïδèñçè</value>
+    <value>Hèáδèř Fïℓƭèř Çôñƒïδèñçè£ôřè₥ ï</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="InvalidOrder" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'ƥáƭλ' áñδ 'ƭáϱƨ'.</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'ƥáƭλ' áñδ 'ƭáϱƨ'.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
   <data name="InvalidSimilarType" xml:space="preserve">
-    <value>'{0}' ïƨ áñ ïñƲáℓïδ ƨï₥ïℓář ƭ¥ƥè.</value>
+    <value>'{0}' ïƨ áñ ïñƲáℓïδ ƨï₥ïℓář ƭ¥ƥè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidValuesColumn" xml:space="preserve">
-    <value>ÌñƲáℓïδ Váℓúèƨ</value>
+    <value>ÌñƲáℓïδ Váℓúèƨ£ôřè</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="JsonColumn" xml:space="preserve">
-    <value>J§ÓN</value>
+    <value>J§ÓN£</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="MatchedAssetExportFileName" xml:space="preserve">
-    <value>Fïℓƭèřèδ {0} {1} Fïèℓδƨ £ïƨƭ _{2}_.жℓƨж</value>
+    <value>Fïℓƭèřèδ {0} {1} Fïèℓδƨ £ïƨƭ _{2}_.жℓƨж£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="MatchedAssetIdColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Âƨƨèƭ ÌÐ</value>
+    <value>{0} Fïèℓδ Âƨƨèƭ ÌÐ£ôřè₥</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetNameColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Ná₥è</value>
+    <value>{0} Fïèℓδ Ná₥è£ôřè</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetPathColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Âƨƨèƭ Þáƭλ</value>
+    <value>{0} Fïèℓδ Âƨƨèƭ Þáƭλ£ôřè₥ </value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetTagsColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Táϱƨ</value>
+    <value>{0} Fïèℓδ Táϱƨ£ôřè</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetTypePathColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Âƨƨèƭ T¥ƥè Þáƭλ</value>
+    <value>{0} Fïèℓδ Âƨƨèƭ T¥ƥè Þáƭλ£ôřè₥ ï</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetUidColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Âƨƨèƭ ÛÌÐ</value>
+    <value>{0} Fïèℓδ Âƨƨèƭ ÛÌÐ£ôřè₥</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchedAssetUrlColumn" xml:space="preserve">
-    <value>{0} Fïèℓδ Ûřℓ</value>
+    <value>{0} Fïèℓδ Ûřℓ£ôř</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="MatchTypeColumn" xml:space="preserve">
-    <value>Máƭçλ T¥ƥè</value>
+    <value>Máƭçλ T¥ƥè£ôř</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="MaximumColumn" xml:space="preserve">
-    <value>Máжï₥ú₥</value>
+    <value>Máжï₥ú₥£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="MinConfidenceInvalid" xml:space="preserve">
-    <value>Mïñ Çôñƒïδèñçè Þářá₥èƭèř ïƨ ïñƲáℓïδ</value>
+    <value>Mïñ Çôñƒïδèñçè Þářá₥èƭèř ïƨ ïñƲáℓïδ£ôřè₥ ïƥƨú</value>
   </data>
   <data name="MinimumColumn" xml:space="preserve">
-    <value>Mïñï₥ú₥</value>
+    <value>Mïñï₥ú₥£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="MinimumMaximumPresentColumn" xml:space="preserve">
-    <value>Mïñï₥ú₥ Máжï₥ú₥ Þřèƨèñƭ</value>
+    <value>Mïñï₥ú₥ Máжï₥ú₥ Þřèƨèñƭ£ôřè₥ </value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="MinimumSamplesColumn" xml:space="preserve">
-    <value>Mïñï₥ú₥ §á₥ƥℓèƨ</value>
+    <value>Mïñï₥ú₥ §á₥ƥℓèƨ£ôřè</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="NameColumn" xml:space="preserve">
-    <value>Ná₥è</value>
+    <value>Ná₥è£</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="NoSimilarTypeForAssetUid" xml:space="preserve">
-    <value>{0} ƨïϱñáƭúřè ñôƭ ƒôúñδ ƒôř ÂƨƨèƭÛïδ {1}</value>
+    <value>{0} ƨïϱñáƭúřè ñôƭ ƒôúñδ ƒôř ÂƨƨèƭÛïδ {1}£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="OrderInvalid" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'çôñƒïδèñçè', 'ƥáƭλ' ôř 'áƨƨèƭƭ¥ƥèƥáƭλ'.</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_ôřδèř'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'çôñƒïδèñçè', 'ƥáƭλ' ôř 'áƨƨèƭƭ¥ƥèƥáƭλ'.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, ç</value>
   </data>
   <data name="PriorityColumn" xml:space="preserve">
-    <value>Þřïôřïƭ¥</value>
+    <value>Þřïôřïƭ¥£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="ProfileRecordAlreadyExists" xml:space="preserve">
-    <value>Rèçôřδ áℓřèáδ¥ èжïƨƭƨ ƒôř ÂƨƨèƭÛïδ {0} áñδ Þřôƒïℓè§èƭÐáƭè {1}</value>
+    <value>Rèçôřδ áℓřèáδ¥ èжïƨƭƨ ƒôř ÂƨƨèƭÛïδ {0} áñδ Þřôƒïℓè§èƭÐáƭè {1}£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="ProfilingNotSupportAssetClass" xml:space="preserve">
-    <value>Tλè áƨƨèƭ çℓáƨƨ {0} δôèƨ ñôƭ ƨúƥƥôřƭ δáƭá ƥřôƒïℓïñϱ. Þřôƒïℓïñϱ δáƭá çáñ ôñℓ¥ βè áƨƨôçïáƭèδ ωïƭλ ßúƨïñèƨƨ ôř Tèçλñïçáℓ Âƨƨèƭ ƭ¥ƥèƨ.</value>
+    <value>Tλè áƨƨèƭ çℓáƨƨ {0} δôèƨ ñôƭ ƨúƥƥôřƭ δáƭá ƥřôƒïℓïñϱ. Þřôƒïℓïñϱ δáƭá çáñ ôñℓ¥ βè áƨƨôçïáƭèδ ωïƭλ ßúƨïñèƨƨ ôř Tèçλñïçáℓ Âƨƨèƭ ƭ¥ƥèƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř</value>
   </data>
   <data name="QualifierColumn" xml:space="preserve">
-    <value>Qúáℓïƒïèř</value>
+    <value>Qúáℓïƒïèř£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="RegularExpressionColumn" xml:space="preserve">
-    <value>Rèϱúℓář Éжƥřèƨƨïôñ</value>
+    <value>Rèϱúℓář Éжƥřèƨƨïôñ£ôřè₥</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="RequiredSimilarType" xml:space="preserve">
-    <value>ƨï₥ïℓářT¥ƥè ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>ƨï₥ïℓářT¥ƥè ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="SemanticBaseTypeBoolean" xml:space="preserve">
-    <value>Třúè/Fáℓƨè (ßôôℓèáñ)</value>
+    <value>Třúè/Fáℓƨè (ßôôℓèáñ)£ôřè₥ </value>
   </data>
   <data name="SemanticBaseTypeNumber" xml:space="preserve">
-    <value>Nú₥βèř ({0})</value>
+    <value>Nú₥βèř ({0})£ôř</value>
   </data>
   <data name="SemanticMatchTypeAdvanced" xml:space="preserve">
-    <value>ÂδƲáñçèδ (J§ÓN)</value>
+    <value>ÂδƲáñçèδ (J§ÓN)£ôřè</value>
   </data>
   <data name="SemanticMatchTypeList" xml:space="preserve">
-    <value>£ïƨƭ ôƒ Váℓúèƨ</value>
+    <value>£ïƨƭ ôƒ Váℓúèƨ£ôřè</value>
   </data>
   <data name="SemanticMatchTypePattern" xml:space="preserve">
-    <value>Þáƭƭèřñ ïñ Ðáƭá</value>
+    <value>Þáƭƭèřñ ïñ Ðáƭá£ôřè</value>
   </data>
   <data name="SemanticSourceBuiltIn" xml:space="preserve">
-    <value>ßúïℓƭ-Ìñ</value>
+    <value>ßúïℓƭ-Ìñ£ô</value>
   </data>
   <data name="SemanticSourceUserDefined" xml:space="preserve">
-    <value>Ûƨèř-Ðèƒïñèδ</value>
+    <value>Ûƨèř-Ðèƒïñèδ£ôř</value>
   </data>
   <data name="SemanticStatusUnderReview" xml:space="preserve">
-    <value>Ûñδèř RèƲïèω</value>
+    <value>Ûñδèř RèƲïèω£ôř</value>
   </data>
   <data name="SemanticTypeExportFilename" xml:space="preserve">
-    <value>Fïℓƭèřèδ §è₥áñƭïç T¥ƥèƨ £ïƨƭ {0}.жℓƨж</value>
+    <value>Fïℓƭèřèδ §è₥áñƭïç T¥ƥèƨ £ïƨƭ {0}.жℓƨж£ôřè₥ ïƥƨú₥</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="SemanticTypeUidColumn" xml:space="preserve">
-    <value>§è₥áñƭïç T¥ƥè Ûïδ</value>
+    <value>§è₥áñƭïç T¥ƥè Ûïδ£ôřè₥</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="SemanticTypeURLColumn" xml:space="preserve">
-    <value>§è₥áñƭïç T¥ƥè ÛR£</value>
+    <value>§è₥áñƭïç T¥ƥè ÛR££ôřè₥</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="SemanticTypeAssetExportFilename" xml:space="preserve">
-    <value>Fïℓƭèřèδ Âƨƨèƭ ℓïƨƭ ƒôř {0} {1}.жℓƨж</value>
+    <value>Fïℓƭèřèδ Âƨƨèƭ ℓïƨƭ ƒôř {0} {1}.жℓƨж£ôřè₥ ïƥƨú</value>
     <comment>Used for semantic type asset list export</comment>
   </data>
   <data name="Similar" xml:space="preserve">
-    <value>§ï₥ïℓář</value>
+    <value>§ï₥ïℓář£ô</value>
   </data>
   <data name="SourceColumn" xml:space="preserve">
-    <value>§è₥áñƭïç §ôúřçè</value>
+    <value>§è₥áñƭïç §ôúřçè£ôřè</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="StatusColumn" xml:space="preserve">
-    <value>§ƭáƭúƨ</value>
+    <value>§ƭáƭúƨ£</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="TagFieldNotFound" xml:space="preserve">
-    <value>Táϱ ƒïèℓδ ñôƭ ƒôúñδ</value>
+    <value>Táϱ ƒïèℓδ ñôƭ ƒôúñδ£ôřè₥</value>
     <comment>Tag field not found</comment>
   </data>
   <data name="TagsColumn" xml:space="preserve">
-    <value>Táϱƨ</value>
+    <value>Táϱƨ£</value>
     <comment>Used for data profile match export</comment>
   </data>
   <data name="ThresholdColumn" xml:space="preserve">
-    <value>Tλřèƨλôℓδ</value>
+    <value>Tλřèƨλôℓδ£ô</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="TypeQualifierInvalid" xml:space="preserve">
-    <value>T¥ƥè Qúáℓïƒïèř Þářá₥èƭèř ïƨ ïñƲáℓïδ</value>
+    <value>T¥ƥè Qúáℓïƒïèř Þářá₥èƭèř ïƨ ïñƲáℓïδ£ôřè₥ ïƥƨú</value>
   </data>
   <data name="ValidLocalesColumn" xml:space="preserve">
-    <value>Váℓïδ £ôçáℓèƨ</value>
+    <value>Váℓïδ £ôçáℓèƨ£ôř</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="ValidValuesColumn" xml:space="preserve">
-    <value>Váℓïδ Váℓúèƨ</value>
+    <value>Váℓïδ Váℓúèƨ£ôř</value>
     <comment>Used for Semantic Types exports</comment>
   </data>
   <data name="SemanticTypeStatusExportFilename" xml:space="preserve">
-    <value>§è₥áñƭïç T¥ƥè §ƭáƭúƨ £ïƨƭ {0}.жℓƨж</value>
+    <value>§è₥áñƭïç T¥ƥè §ƭáƭúƨ £ïƨƭ {0}.жℓƨж£ôřè₥ ïƥƨú</value>
   </data>
   <data name="ColorColumn" xml:space="preserve">
-    <value>Çôℓôř</value>
+    <value>Çôℓôř£</value>
     <comment>User for Semantic Type Status export</comment>
   </data>
   <data name="AssetUrlColumn" xml:space="preserve">
-    <value>Âƨƨèƭ ÛR£</value>
+    <value>Âƨƨèƭ ÛR££ô</value>
     <comment>Used for Semantic Types Assets Export</comment>
   </data>
   <data name="EndpointNotAccessible" xml:space="preserve">
-    <value>Tλïƨ èñδƥôïñƭ ïƨ ñôƭ áççèƨƨïβℓè.</value>
+    <value>Tλïƨ èñδƥôïñƭ ïƨ ñôƭ áççèƨƨïβℓè.£ôřè₥ ïƥƨ</value>
     <comment>Used for LD Flags</comment>
   </data>
   <data name="ErrorOnRequest" xml:space="preserve">
-    <value>Éřřôř ôñ řè9úèƨƭ.</value>
+    <value>Éřřôř ôñ řè9úèƨƭ.£ôřè₥</value>
     <comment>Used for LD Flags</comment>
   </data>
   <data name="TypeQualifierNotFound" xml:space="preserve">
-    <value>T¥ƥè Qúáℓïƒïèř '{0}' δôèƨ ñôƭ èжïƨƭ</value>
+    <value>T¥ƥè Qúáℓïƒïèř '{0}' δôèƨ ñôƭ èжïƨƭ£ôřè₥ ïƥƨú</value>
   </data>
 </root>

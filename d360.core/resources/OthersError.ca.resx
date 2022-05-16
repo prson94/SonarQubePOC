@@ -118,63 +118,63 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AddIndexIndividualErrors" xml:space="preserve">
-    <value>Âδδ ƭô ïñδèж ïñδïƲïδúáℓ èřřôřƨ: </value>
+    <value>Âδδ ƭô ïñδèж ïñδïƲïδúáℓ èřřôřƨ: £ôřè₥ ïƥƨ</value>
   </data>
   <data name="CannotUseSearch" xml:space="preserve">
-    <value>Çáññôƭ úƨè á ƨèářçλ ƨƭřáƭèϱ¥ ôƒ ñôñè</value>
+    <value>Çáññôƭ úƨè á ƨèářçλ ƨƭřáƭèϱ¥ ôƒ ñôñè£ôřè₥ ïƥƨú</value>
   </data>
   <data name="DuplicateCombination" xml:space="preserve">
-    <value>Tλè řè9úèƨƭ çôñƭáïñƨ δúƥℓïçáƭè çô₥βïñáƭïôñƨ ôƒ áƨƨèƭÛïδ, ₥èƭřïçÂƨƨèƭÛïδ, áñδ èƒƒèçƭïƲèÐáƭè. Ýôú ₥úƨƭ ƨèñδ ïñ úñï9úè çô₥βïñáƭïôñƨ ƒôř ƭλôƨè ƭλřèè ƒïèℓδƨ.</value>
+    <value>Tλè řè9úèƨƭ çôñƭáïñƨ δúƥℓïçáƭè çô₥βïñáƭïôñƨ ôƒ áƨƨèƭÛïδ, ₥èƭřïçÂƨƨèƭÛïδ, áñδ èƒƒèçƭïƲèÐáƭè. Ýôú ₥úƨƭ ƨèñδ ïñ úñï9úè çô₥βïñáƭïôñƨ ƒôř ƭλôƨè ƭλřèè ƒïèℓδƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδïƥï</value>
   </data>
   <data name="InvalidAssetTypeUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř áƨƨèƭT¥ƥèÛïδ ƥářá₥èƭèř</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř áƨƨèƭT¥ƥèÛïδ ƥářá₥èƭèř£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidMeasureFound" xml:space="preserve">
-    <value>ÌñƲáℓïδ Mèáƨúřè Fôúñδ</value>
+    <value>ÌñƲáℓïδ Mèáƨúřè Fôúñδ£ôřè₥ </value>
   </data>
   <data name="InvalidOrderSurvey" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ôřδèř ƥářá₥èƭèř. Ûƨè Ná₥è|VáℓïδFôřÐá¥ƨ|ÇřèáƭèδÓñ|ÛƥδáƭèδÓñ|Nú₥βèřÓƒRèƨƥôñƨèƨ</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ôřδèř ƥářá₥èƭèř. Ûƨè Ná₥è|VáℓïδFôřÐá¥ƨ|ÇřèáƭèδÓñ|ÛƥδáƭèδÓñ|Nú₥βèřÓƒRèƨƥôñƨèƨ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, </value>
   </data>
   <data name="InvalidPageNum" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ñú₥ ƥářá₥èƭèř</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ñú₥ ƥářá₥èƭèř£ôřè₥ ïƥƨú</value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ƨïƺè ƥářá₥èƭèř</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ƨïƺè ƥářá₥èƭèř£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="InvalidResponseData" xml:space="preserve">
-    <value>ÌñƲáℓïδ řèƨƥôñƨè ñô δáƭá</value>
+    <value>ÌñƲáℓïδ řèƨƥôñƨè ñô δáƭá£ôřè₥ ï</value>
   </data>
   <data name="InvalidSurveyTypeUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƨúřƲè¥T¥ƥèÛïδ ƥářá₥èƭèř</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƨúřƲè¥T¥ƥèÛïδ ƥářá₥èƭèř£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="JobinActiveState" xml:space="preserve">
-    <value>Tλïƨ Jôβ ïƨ çúřřèñƭℓ¥ ïñ áñ ÂçƭïƲè ƨƭáƭè áñδ çáññôƭ βè ƨçλèδúℓèδ áϱáïñ úñƭïℓ çô₥ƥℓèƭè.</value>
+    <value>Tλïƨ Jôβ ïƨ çúřřèñƭℓ¥ ïñ áñ ÂçƭïƲè ƨƭáƭè áñδ çáññôƭ βè ƨçλèδúℓèδ áϱáïñ úñƭïℓ çô₥ƥℓèƭè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥è</value>
   </data>
   <data name="JobIsNotRunning" xml:space="preserve">
-    <value>Tλïƨ Jôβ ïƨ ñôƭ çúřřèñƭℓ¥ řúññïñϱ áñδ çáññôƭ βè ₥ářƙèδ áƨ çô₥ƥℓèƭè.</value>
+    <value>Tλïƨ Jôβ ïƨ ñôƭ çúřřèñƭℓ¥ řúññïñϱ áñδ çáññôƭ βè ₥ářƙèδ áƨ çô₥ƥℓèƭè.£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
   </data>
   <data name="JobIsRunning" xml:space="preserve">
-    <value>Jôβ ïƨ çúřřèñƭℓ¥ řúññïñϱ</value>
+    <value>Jôβ ïƨ çúřřèñƭℓ¥ řúññïñϱ£ôřè₥ ï</value>
   </data>
   <data name="NoSearchUrlError" xml:space="preserve">
-    <value>ÐÉV ÉRRÓR - NÓ §ÉÂRÇH ßÂ§É ÛR£ §ÞÉÇÌFÌÉÐ.</value>
+    <value>ÐÉV ÉRRÓR - NÓ §ÉÂRÇH ßÂ§É ÛR£ §ÞÉÇÌFÌÉÐ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="NotDetermineServerVersion" xml:space="preserve">
-    <value>Çôúℓδ ñôƭ δèƭèř₥ïñè ƨèřƲèř Ʋèřƨïôñ</value>
+    <value>Çôúℓδ ñôƭ δèƭèř₥ïñè ƨèřƲèř Ʋèřƨïôñ£ôřè₥ ïƥƨú</value>
   </data>
   <data name="ProfileRecordNotExists" xml:space="preserve">
-    <value>Þřôƒïℓè řèçôřδ δôèƨ ñôƭ èжïƨƭ ƒôř ƥřôƲïδèδ Ûïδ.</value>
+    <value>Þřôƒïℓè řèçôřδ δôèƨ ñôƭ èжïƨƭ ƒôř ƥřôƲïδèδ Ûïδ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="SignatureTypeInvalid" xml:space="preserve">
-    <value>§ïϱñáƭúřè T¥ƥè ïƨ ïñƲáℓïδ.</value>
+    <value>§ïϱñáƭúřè T¥ƥè ïƨ ïñƲáℓïδ.£ôřè₥ ï</value>
   </data>
   <data name="SignatureTypeRequired" xml:space="preserve">
-    <value>§ïϱñáƭúřè T¥ƥè ïƨ řè9úïřèδ.</value>
+    <value>§ïϱñáƭúřè T¥ƥè ïƨ řè9úïřèδ.£ôřè₥ ïƥ</value>
   </data>
   <data name="UnknownSearchStrategy" xml:space="preserve">
-    <value>Ûñƙñôωñ ƨèářçλ ƨƭřáƭèϱ¥: </value>
+    <value>Ûñƙñôωñ ƨèářçλ ƨƭřáƭèϱ¥: £ôřè₥ ï</value>
   </data>
   <data name="UpdateIndexIndividualErrors" xml:space="preserve">
-    <value>Ûƥδáƭè ïñδèж ïñδïƲïδúáℓ èřřôřƨ:</value>
+    <value>Ûƥδáƭè ïñδèж ïñδïƲïδúáℓ èřřôřƨ:£ôřè₥ ïƥƨ</value>
   </data>
 </root>

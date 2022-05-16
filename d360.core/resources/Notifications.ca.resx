@@ -118,18 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TaggedCommentMailBody" xml:space="preserve">
-    <value>{0} ƭáϱϱèδ ¥ôú ïñ á çô₥₥èñƭ ôñ &lt;á λřèƒ='{1}{2}' çℓáƨƨ='ℓïñƙ'&gt;{3}&lt;/á&gt; áƭ {4}</value>
+    <value>{0} ƭáϱϱèδ ¥ôú ïñ á çô₥₥èñƭ ôñ &lt;á λřèƒ='{1}{2}' çℓáƨƨ='ℓïñƙ'&gt;{3}&lt;/á&gt; áƭ {4}£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
   </data>
   <data name="TaggedCommentMailCommentLink" xml:space="preserve">
-    <value>Vïèω Çô₥₥èñƭ</value>
+    <value>Vïèω Çô₥₥èñƭ£ôř</value>
   </data>
   <data name="TaggedCommentMailHeader" xml:space="preserve">
-    <value>{0} ƭáϱϱèδ ¥ôú ïñ á çô₥₥èñƭ</value>
+    <value>{0} ƭáϱϱèδ ¥ôú ïñ á çô₥₥èñƭ£ôřè₥ ïƥ</value>
   </data>
   <data name="TaggedCommentMailSender" xml:space="preserve">
-    <value>Ð360 GôƲèřñ</value>
+    <value>Ð360 GôƲèřñ£ôř</value>
   </data>
   <data name="TaggedCommentMailSubject" xml:space="preserve">
-    <value>{0} ƭáϱϱèδ ¥ôú ïñ á çô₥₥èñƭ ôñ {1}</value>
+    <value>{0} ƭáϱϱèδ ¥ôú ïñ á çô₥₥èñƭ ôñ {1}£ôřè₥ ïƥƨú</value>
   </data>
 </root>

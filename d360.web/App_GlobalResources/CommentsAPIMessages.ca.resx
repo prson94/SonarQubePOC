@@ -118,45 +118,45 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CommentCreatePermission" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô çřèáƭè ƭλïƨ çô₥₥èñƭ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô çřèáƭè ƭλïƨ çô₥₥èñƭ.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="CommentNotFound" xml:space="preserve">
-    <value>Çô₥₥èñƭ ωïƭλ Ûïδ {0} δôèƨ ñôƭ èжïƨƭ.</value>
+    <value>Çô₥₥èñƭ ωïƭλ Ûïδ {0} δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="CommentRetryRemove" xml:space="preserve">
-    <value>Nôƭ áβℓè ƭô ƨúççèƨƨƒúℓℓ¥ řè₥ôƲè çô₥₥èñƭ. Þℓèáƨè ƭř¥ áϱáïñ ℓáƭèř.</value>
+    <value>Nôƭ áβℓè ƭô ƨúççèƨƨƒúℓℓ¥ řè₥ôƲè çô₥₥èñƭ. Þℓèáƨè ƭř¥ áϱáïñ ℓáƭèř.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="CommentViewPermission" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô Ʋïèω çô₥₥èñƭƨ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô Ʋïèω çô₥₥èñƭƨ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ErrorDeletingComment" xml:space="preserve">
-    <value>Éřřôř δèℓèƭïñϱ ƭλïƨ çô₥₥èñƭ</value>
+    <value>Éřřôř δèℓèƭïñϱ ƭλïƨ çô₥₥èñƭ£ôřè₥ ïƥ</value>
   </data>
   <data name="ErrorGetComment" xml:space="preserve">
-    <value>Éřřôř řèƭřïèƲïñϱ çô₥₥èñƭƨ</value>
+    <value>Éřřôř řèƭřïèƲïñϱ çô₥₥èñƭƨ£ôřè₥ ï</value>
   </data>
   <data name="ErrorGetRollupCount" xml:space="preserve">
-    <value>Éřřôř řèƭřïèƲïñϱ řôℓℓèδ úƥ çôúñƭƨ β¥ çô₥₥èñƭ ƭ¥ƥè</value>
+    <value>Éřřôř řèƭřïèƲïñϱ řôℓℓèδ úƥ çôúñƭƨ β¥ çô₥₥èñƭ ƭ¥ƥè£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="ErrorGetVoterBasedOnComment" xml:space="preserve">
-    <value>Éřřôř řèƭřïèƲïñϱ Ʋôƭèřƨ βáƨèδ ôñ ƭλè çô₥₥èñƭ</value>
+    <value>Éřřôř řèƭřïèƲïñϱ Ʋôƭèřƨ βáƨèδ ôñ ƭλè çô₥₥èñƭ£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="ErrorGetVoterBasedOnCommentEmoji" xml:space="preserve">
-    <value>Éřřôř řèƭřïèƲïñϱ Ʋôƭèřƨ βáƨèδ ôñ ƭλè çô₥₥èñƭ áñδ è₥ôJï</value>
+    <value>Éřřôř řèƭřïèƲïñϱ Ʋôƭèřƨ βáƨèδ ôñ ƭλè çô₥₥èñƭ áñδ è₥ôJï£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="ErrorUpdateComment" xml:space="preserve">
-    <value>Éřřôř úƥδáƭïñϱ çô₥₥èñƭ</value>
+    <value>Éřřôř úƥδáƭïñϱ çô₥₥èñƭ£ôřè₥ </value>
   </data>
   <data name="RestrictVoteRemove" xml:space="preserve">
-    <value>Éřřôř ωλïℓè řè₥ôƲïñϱ ¥ôúř Ʋôƭè ôñ ƭλè çô₥₥èñƭ úƨïñϱ ƭλïƨ è₥ôJï</value>
+    <value>Éřřôř ωλïℓè řè₥ôƲïñϱ ¥ôúř Ʋôƭè ôñ ƭλè çô₥₥èñƭ úƨïñϱ ƭλïƨ è₥ôJï£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="RollupCountPermission" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô ƨèè řôℓℓèδ úƥ çôúñƭƨ β¥ çô₥₥èñƭ ƭ¥ƥè.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô ƨèè řôℓℓèδ úƥ çôúñƭƨ β¥ çô₥₥èñƭ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
   </data>
   <data name="VotePermission" xml:space="preserve">
-    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô ƨèè Ʋôƭèřƨ ƒôř ƭλïƨ çô₥₥èñƭ.</value>
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô ƨèè Ʋôƭèřƨ ƒôř ƭλïƨ çô₥₥èñƭ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
   <data name="VotingOnCommentUsingEmoji" xml:space="preserve">
-    <value>Éřřôř ωλïℓè Ʋôƭïñϱ ôñ ƭλè çô₥₥èñƭ úƨïñϱ ƭλïƨ è₥ôJï</value>
+    <value>Éřřôř ωλïℓè Ʋôƭïñϱ ôñ ƭλè çô₥₥èñƭ úƨïñϱ ƭλïƨ è₥ôJï£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
 </root>

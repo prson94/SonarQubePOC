@@ -118,30 +118,30 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetNotFoundError" xml:space="preserve">
-    <value>Âƨƨèƭ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.</value>
+    <value>Âƨƨèƭ ωïƭλ Ûïδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="AssetNotValidError" xml:space="preserve">
-    <value>{0} {1} ïƨ ñôƭ Ʋáℓïδ</value>
+    <value>{0} {1} ïƨ ñôƭ Ʋáℓïδ£ôřè₥ </value>
   </data>
   <data name="GenericInvalidFieldValueError" xml:space="preserve">
-    <value>{0} ïƨ áñ ïñƲáℓïδ {1} Ʋáℓúè.</value>
+    <value>{0} ïƨ áñ ïñƲáℓïδ {1} Ʋáℓúè.£ôřè₥ ïƥ</value>
   </data>
   <data name="GreaterThanError" xml:space="preserve">
-    <value>{0} ₥úƨƭ ñôƭ βè ϱřèáƭèř ƭλáñ {1}.</value>
+    <value>{0} ₥úƨƭ ñôƭ βè ϱřèáƭèř ƭλáñ {1}.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="GreaterThanTodayError" xml:space="preserve">
-    <value>{0} ₥úƨƭ ñôƭ βè ϱřèáƭèř ƭλáñ ƭôδá¥'ƨ δáƭè.</value>
+    <value>{0} ₥úƨƭ ñôƭ βè ϱřèáƭèř ƭλáñ ƭôδá¥'ƨ δáƭè.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidFormatError" xml:space="preserve">
-    <value>{0} ƒôř₥áƭ ïñƲáℓïδ. Tλè çôřřèçƭ ƒôř₥áƭ ïƨ: {1}</value>
+    <value>{0} ƒôř₥áƭ ïñƲáℓïδ. Tλè çôřřèçƭ ƒôř₥áƭ ïƨ: {1}£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="InvalidUpdateError" xml:space="preserve">
-    <value>Ýôú ₥úƨƭ ƥřôƲïδè áƭ ℓèáƨƭ ôñè ôƒ ƭλè ƒôℓℓôωïñϱ: ÉƲáℓúáƭèδÂƨƨèƭÛïδ, RúñÐáƭè, ÞáƨƨÇôúñƭ, FáïℓÇôúñƭ.</value>
+    <value>Ýôú ₥úƨƭ ƥřôƲïδè áƭ ℓèáƨƭ ôñè ôƒ ƭλè ƒôℓℓôωïñϱ: ÉƲáℓúáƭèδÂƨƨèƭÛïδ, RúñÐáƭè, ÞáƨƨÇôúñƭ, FáïℓÇôúñƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, ç</value>
   </data>
   <data name="RequiredFieldError" xml:space="preserve">
-    <value>{0} ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>{0} ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ï</value>
   </data>
   <data name="ValueBetweenError" xml:space="preserve">
-    <value>Váℓúè ƒôř {0} ₥úƨƭ βè βèƭωèèñ {1} áñδ {2}.</value>
+    <value>Váℓúè ƒôř {0} ₥úƨƭ βè βèƭωèèñ {1} áñδ {2}.£ôřè₥ ïƥƨú₥ </value>
   </data>
 </root>

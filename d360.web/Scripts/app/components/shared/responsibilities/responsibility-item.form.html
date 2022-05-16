@@ -9,7 +9,7 @@
                 <p-dropdown [options]="model.responsibilityTypes" [(ngModel)]="model.selectedResponsibilityType" [disabled]="IsResponsibilityDisabled" (onChange)="getResponsibilityTypes();" [style]="{'width':'90%', 'display':'block'}" name="responsibilityType" required></p-dropdown>
                 <div>&nbsp;</div>
                 <div>
-                    <label id='ResponsibilityContextTip' class="FieldNameRequired">Context</label>
+                    <label id='ResponsibilityContextTip' class="FieldNameRequired" i18n>Context</label>
                     <p-editor [ngModelOptions]="{standalone: true}" [(ngModel)]="model.responsibility.Context" name="Context" [style]="{'height':'150px','width':'100%'}">
                         <header style="padding-bottom:0px !important">
                             <span class="ql-formats">

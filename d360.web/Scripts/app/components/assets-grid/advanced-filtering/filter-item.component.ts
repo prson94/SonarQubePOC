@@ -79,6 +79,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     private previousFilter: string = "";
 
+    resetFilterText = $localize`Reset filter`;
+    removeFilterText = $localize`Remove filter`;
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;

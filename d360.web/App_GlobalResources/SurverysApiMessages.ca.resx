@@ -118,36 +118,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetTypeNotSurvey" xml:space="preserve">
-    <value>Âƨƨèƭ ƭ¥ƥè δôèƨ ñôƭ ₥áƭçλ ωïƭλ áñ¥ ƨúřƲè¥.</value>
+    <value>Âƨƨèƭ ƭ¥ƥè δôèƨ ñôƭ ₥áƭçλ ωïƭλ áñ¥ ƨúřƲè¥.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidFormatSurveyTypeUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ ƒôř₥áƭ ƒôř ƨúřƲè¥T¥ƥèÛïδ</value>
+    <value>ÌñƲáℓïδ ƒôř₥áƭ ƒôř ƨúřƲè¥T¥ƥèÛïδ£ôřè₥ ïƥƨ</value>
   </data>
   <data name="InvalidValueAsOfDate" xml:space="preserve">
-    <value>ÌñƲáℓïδ δáƭè Ʋáℓúè ƒôř ÂƨÓƒÐáƭè ƥářá₥èƭèř!</value>
+    <value>ÌñƲáℓïδ δáƭè Ʋáℓúè ƒôř ÂƨÓƒÐáƭè ƥářá₥èƭèř!£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="NotavalidEndDateRange" xml:space="preserve">
-    <value>Nôƭ á Ʋáℓïδ ÉñδÐáƭèRáñϱè</value>
+    <value>Nôƭ á Ʋáℓïδ ÉñδÐáƭèRáñϱè£ôřè₥ ï</value>
   </data>
   <data name="NotvalidStartDateRange" xml:space="preserve">
-    <value>Nôƭ á Ʋáℓïδ §ƭářƭÐáƭèRáñϱè</value>
+    <value>Nôƭ á Ʋáℓïδ §ƭářƭÐáƭèRáñϱè£ôřè₥ ï</value>
   </data>
   <data name="ResultRemoved" xml:space="preserve">
-    <value>{0} řèƨúℓƭƨ řè₥ôƲèδ.</value>
+    <value>{0} řèƨúℓƭƨ řè₥ôƲèδ.£ôřè₥ </value>
   </data>
   <data name="SurveyInvalidForAssetType" xml:space="preserve">
-    <value>§úřƲè¥ ñôƭ Ʋáℓïδ ƒôř ƭλïƨ áƨƨèƭ ƭ¥ƥè</value>
+    <value>§úřƲè¥ ñôƭ Ʋáℓïδ ƒôř ƭλïƨ áƨƨèƭ ƭ¥ƥè£ôřè₥ ïƥƨú</value>
   </data>
   <data name="SurveyQuestionTypeUidInvalid" xml:space="preserve">
-    <value>§úřƲè¥ Qúèƨƭïôñ T¥ƥè ƒôř úïδ {0} çôñƭáïñƨ ïñƲáℓïδ řèƨƥôñƨèƨ: [{1}]</value>
+    <value>§úřƲè¥ Qúèƨƭïôñ T¥ƥè ƒôř úïδ {0} çôñƭáïñƨ ïñƲáℓïδ řèƨƥôñƨèƨ: [{1}]£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="SurveyQuestionTypeUidNotFound" xml:space="preserve">
-    <value>§úřƲè¥ Qúèƨƭïôñ T¥ƥè ƒôř úïδ {0} ñôƭ ƒôúñδ</value>
+    <value>§úřƲè¥ Qúèƨƭïôñ T¥ƥè ƒôř úïδ {0} ñôƭ ƒôúñδ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="SurveyResourceAssetUidPopulated" xml:space="preserve">
-    <value>Éïƭλèř §úřƲè¥T¥ƥèÛïδ ôř RèƨôúřçèÛïδ ôř ÂƨƨèƭÛïδ ƨλôúℓδ ƥôƥúℓáƭè</value>
+    <value>Éïƭλèř §úřƲè¥T¥ƥèÛïδ ôř RèƨôúřçèÛïδ ôř ÂƨƨèƭÛïδ ƨλôúℓδ ƥôƥúℓáƭè£ôřè₥ ïƥƨú₥ δôℓôř </value>
   </data>
   <data name="SurveyUidNotFound" xml:space="preserve">
-    <value>§úřƲè¥ T¥ƥè ωïƭλ Ûïδ {0} ñôƭ ƒôúñδ.</value>
+    <value>§úřƲè¥ T¥ƥè ωïƭλ Ûïδ {0} ñôƭ ƒôúñδ.£ôřè₥ ïƥƨú</value>
   </data>
 </root>

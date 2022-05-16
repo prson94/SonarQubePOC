@@ -57,6 +57,9 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     previewAssetUid: string = "";
     previewAssetType: string = "";
 
+    addRelationshipsSingular = $localize`Add Relationship`;
+    addRelationshipsPlural = $localize`Add Relationships`;
+
     simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
 
     constructor(private cdRef: ChangeDetectorRef,

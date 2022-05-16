@@ -50,5 +50,5 @@ export class AdminAllocationComponent extends BaseComponent {
 
     public rows = [0];
 
-    public allocations: any[] = [{ Name: 'Grammatic Type Allocation' }];
+    public allocations: any[] = [{ Name: $localize`Grammatic Type Allocation` }];
 }

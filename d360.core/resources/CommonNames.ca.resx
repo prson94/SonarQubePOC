@@ -118,21 +118,21 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>ßúƨïñèƨƨ Âƨƨèƭ</value>
+    <value>ßúƨïñèƨƨ Âƨƨèƭ£ôřè</value>
   </data>
   <data name="AssetTypeClass_Model" xml:space="preserve">
-    <value>Môδèℓ</value>
+    <value>Môδèℓ£</value>
   </data>
   <data name="AssetTypeClass_Policy" xml:space="preserve">
-    <value>Þôℓïç¥</value>
+    <value>Þôℓïç¥£</value>
   </data>
   <data name="AssetTypeClass_Rule" xml:space="preserve">
-    <value>Rúℓè</value>
+    <value>Rúℓè£</value>
   </data>
   <data name="AssetTypeClass_Task" xml:space="preserve">
-    <value>Ðïáϱřá₥</value>
+    <value>Ðïáϱřá₥£ô</value>
   </data>
   <data name="AssetTypeClass_Technical" xml:space="preserve">
-    <value>Tèçλñïçáℓ Âƨƨèƭ</value>
+    <value>Tèçλñïçáℓ Âƨƨèƭ£ôřè</value>
   </data>
 </root>

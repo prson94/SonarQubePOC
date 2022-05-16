@@ -61,11 +61,56 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Administrator?.
+        /// </summary>
+        public static string Administrator_Name {
+            get {
+                return ResourceManager.GetString("Administrator_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Path.
+        /// </summary>
+        public static string AssetPath_Name {
+            get {
+                return ResourceManager.GetString("AssetPath_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assigned User/Group.
+        /// </summary>
+        public static string AssignedUserGroup_Name {
+            get {
+                return ResourceManager.GetString("AssignedUserGroup_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Code.
         /// </summary>
         public static string Code_Name {
             get {
                 return ResourceManager.GetString("Code_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color.
+        /// </summary>
+        public static string Color_Name {
+            get {
+                return ResourceManager.GetString("Color_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Context.
+        /// </summary>
+        public static string Context_Name {
+            get {
+                return ResourceManager.GetString("Context_Name", resourceCulture);
             }
         }
         
@@ -538,6 +583,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owned items.
+        /// </summary>
+        public static string OwnedItems_Name {
+            get {
+                return ResourceManager.GetString("OwnedItems_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Owner/Parent.
         /// </summary>
         public static string Parent_Name {
@@ -682,6 +736,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Responsibility.
+        /// </summary>
+        public static string Responsibility_Name {
+            get {
+                return ResourceManager.GetString("Responsibility_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Defines information regarding the source or originator of this reference list..
         /// </summary>
         public static string SourceNotes_Description {
@@ -786,6 +849,15 @@ namespace d360.core.resources {
         public static string ValidationDescription_Name {
             get {
                 return ResourceManager.GetString("ValidationDescription_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Via.
+        /// </summary>
+        public static string Via_Name {
+            get {
+                return ResourceManager.GetString("Via_Name", resourceCulture);
             }
         }
     }

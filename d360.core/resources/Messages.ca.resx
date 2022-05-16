@@ -118,33 +118,33 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Error_NameTaken" xml:space="preserve">
-    <value>Tλè ñá₥è ïƨ ƭáƙèñ. Þℓèáƨè ƭř¥ áñôƭλèř ñá₥è.</value>
+    <value>Tλè ñá₥è ïƨ ƭáƙèñ. Þℓèáƨè ƭř¥ áñôƭλèř ñá₥è.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="Error_NotRemoved_Tokenized" xml:space="preserve">
-    <value>{0} çôúℓδ ñôƭ βè řè₥ôƲèδ.</value>
+    <value>{0} çôúℓδ ñôƭ βè řè₥ôƲèδ.£ôřè₥ ï</value>
   </data>
   <data name="Error_ResponsibilitiesAssignedToGroup" xml:space="preserve">
-    <value>Óñè ôř ₥ôřè řèƨƥôñƨïβïℓïƭïèƨ ářè áƨƨïϱñèδ ƭô ƭλè ϱřôúƥ ¥ôúř ářè ƭř¥ïñϱ ƭô řè₥ôƲè. Ýôú ₥úƨƭ ƒïřƨƭ řè₥ôƲè ƭλèƨè řèƨƥôñƨïβïℓïƭïèƨ βèƒôřè çôñƭïñúïñϱ.</value>
+    <value>Óñè ôř ₥ôřè řèƨƥôñƨïβïℓïƭïèƨ ářè áƨƨïϱñèδ ƭô ƭλè ϱřôúƥ ¥ôúř ářè ƭř¥ïñϱ ƭô řè₥ôƲè. Ýôú ₥úƨƭ ƒïřƨƭ řè₥ôƲè ƭλèƨè řèƨƥôñƨïβïℓïƭïèƨ βèƒôřè çôñƭïñúïñϱ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδï</value>
   </data>
   <data name="Error_ResponsibilityType_ExistingResponsibilities" xml:space="preserve">
-    <value>Tλèřè ářè èжïƨƭïñϱ áƨƨïϱñ₥èñƭƨ βáƨèδ ôñ ƭλïƨ řèƨƥôñƨïβïℓïƭ¥ ƭ¥ƥè. Þℓèáƨè řè₥ôƲè ƭλôƨè áƨƨïϱñ₥èñƭƨ ƒïřƨƭ βèƒôřè çôñƭïñúïñϱ.</value>
+    <value>Tλèřè ářè èжïƨƭïñϱ áƨƨïϱñ₥èñƭƨ βáƨèδ ôñ ƭλïƨ řèƨƥôñƨïβïℓïƭ¥ ƭ¥ƥè. Þℓèáƨè řè₥ôƲè ƭλôƨè áƨƨïϱñ₥èñƭƨ ƒïřƨƭ βèƒôřè çôñƭïñúïñϱ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭè</value>
   </data>
   <data name="Error_Name_Required" xml:space="preserve">
-    <value>Tλè ñá₥è ïƨ řè9úïřèδ.</value>
+    <value>Tλè ñá₥è ïƨ řè9úïřèδ.£ôřè₥ </value>
   </data>
   <data name="Error_Item_FieldJsonAttributeReferences" xml:space="preserve">
-    <value>Óñè ôř ₥ôřè J§ÓN Âƭƭřïβúƭè ƒïèℓδƨ řèƒèřèñçè ƭλè ƒïèℓδ ¥ôú ářè áƭƭè₥ƥƭïñϱ ƭô řè₥ôƲè.</value>
+    <value>Óñè ôř ₥ôřè J§ÓN Âƭƭřïβúƭè ƒïèℓδƨ řèƒèřèñçè ƭλè ƒïèℓδ ¥ôú ářè áƭƭè₥ƥƭïñϱ ƭô řè₥ôƲè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
   </data>
   <data name="Error_Duplicate_Relationship_Uid" xml:space="preserve">
-    <value>Ðúƥℓïçáƭè Rèℓáƭïôñƨλïƥ Ûïδ ïδèñƭïƒïèřƨ : {0}. Ìδèñƭïƒïèřƨ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.</value>
+    <value>Ðúƥℓïçáƭè Rèℓáƭïôñƨλïƥ Ûïδ ïδèñƭïƒïèřƨ : {0}. Ìδèñƭïƒïèřƨ ₥úƨƭ βè úñï9úè ωïƭλïñ á βáƭçλ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ</value>
   </data>
   <data name="Error_Responsibility_ApplyToType_False" xml:space="preserve">
-    <value>Múƨƭ úƨè Wλèñ çôñδïƭïôñƨ ωλèñ Âƥƥℓ¥TôT¥ƥè Ʋáℓúè ïƨ ƨèƭ ƭô ƒáℓƨè.</value>
+    <value>Múƨƭ úƨè Wλèñ çôñδïƭïôñƨ ωλèñ Âƥƥℓ¥TôT¥ƥè Ʋáℓúè ïƨ ƨèƭ ƭô ƒáℓƨè.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="Error_Parameter_InvalidUidValue" xml:space="preserve">
-    <value>Þářá₥èƭèř '{0}' λáƨ ïñƲáℓïδ GÛÌÐ Ʋáℓúè</value>
+    <value>Þářá₥èƭèř '{0}' λáƨ ïñƲáℓïδ GÛÌÐ Ʋáℓúè£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="ItemNotFound" xml:space="preserve">
-    <value>Ìƭè₥ Nôƭ Fôúñδ</value>
+    <value>Ìƭè₥ Nôƭ Fôúñδ£ôřè</value>
   </data>
 </root>

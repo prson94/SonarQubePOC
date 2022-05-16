@@ -365,5 +365,293 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("FieldType_UNCLink", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is after.
+        /// </summary>
+        public static string OperatorAfter {
+            get {
+                return ResourceManager.GetString("OperatorAfter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is before.
+        /// </summary>
+        public static string OperatorBefore {
+            get {
+                return ResourceManager.GetString("OperatorBefore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is between.
+        /// </summary>
+        public static string OperatorBetween {
+            get {
+                return ResourceManager.GetString("OperatorBetween", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to contains.
+        /// </summary>
+        public static string OperatorContains {
+            get {
+                return ResourceManager.GetString("OperatorContains", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ends with.
+        /// </summary>
+        public static string OperatorEndsWith {
+            get {
+                return ResourceManager.GetString("OperatorEndsWith", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is.
+        /// </summary>
+        public static string OperatorEquals {
+            get {
+                return ResourceManager.GetString("OperatorEquals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is greater than.
+        /// </summary>
+        public static string OperatorGreaterThan {
+            get {
+                return ResourceManager.GetString("OperatorGreaterThan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is greater than or equal to.
+        /// </summary>
+        public static string OperatorGreaterThanOrEquals {
+            get {
+                return ResourceManager.GetString("OperatorGreaterThanOrEquals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to in.
+        /// </summary>
+        public static string OperatorIn {
+            get {
+                return ResourceManager.GetString("OperatorIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is false.
+        /// </summary>
+        public static string OperatorIsFalse {
+            get {
+                return ResourceManager.GetString("OperatorIsFalse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is in band.
+        /// </summary>
+        public static string OperatorIsInBand {
+            get {
+                return ResourceManager.GetString("OperatorIsInBand", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is true.
+        /// </summary>
+        public static string OperatorIsTrue {
+            get {
+                return ResourceManager.GetString("OperatorIsTrue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is less than.
+        /// </summary>
+        public static string OperatorLessThan {
+            get {
+                return ResourceManager.GetString("OperatorLessThan", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is less than or equal to.
+        /// </summary>
+        public static string OperatorLessThanOrEquals {
+            get {
+                return ResourceManager.GetString("OperatorLessThanOrEquals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to does not contain.
+        /// </summary>
+        public static string OperatorNotContains {
+            get {
+                return ResourceManager.GetString("OperatorNotContains", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is not.
+        /// </summary>
+        public static string OperatorNotEquals {
+            get {
+                return ResourceManager.GetString("OperatorNotEquals", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to not in.
+        /// </summary>
+        public static string OperatorNotIn {
+            get {
+                return ResourceManager.GetString("OperatorNotIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is not populated.
+        /// </summary>
+        public static string OperatorNotPopulated {
+            get {
+                return ResourceManager.GetString("OperatorNotPopulated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is on or after.
+        /// </summary>
+        public static string OperatorOnOrAfter {
+            get {
+                return ResourceManager.GetString("OperatorOnOrAfter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is on or before.
+        /// </summary>
+        public static string OperatorOnOrBefore {
+            get {
+                return ResourceManager.GetString("OperatorOnOrBefore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to is populated.
+        /// </summary>
+        public static string OperatorPopulated {
+            get {
+                return ResourceManager.GetString("OperatorPopulated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to starts with.
+        /// </summary>
+        public static string OperatorStartsWith {
+            get {
+                return ResourceManager.GetString("OperatorStartsWith", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string WorkflowActivityType_Delete {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email Notification.
+        /// </summary>
+        public static string WorkflowActivityType_EmailNotif {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_EmailNotif", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field Change.
+        /// </summary>
+        public static string WorkflowActivityType_FieldChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_FieldChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Form.
+        /// </summary>
+        public static string WorkflowActivityType_Form {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_Form", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP Request.
+        /// </summary>
+        public static string WorkflowActivityType_HTTPRequest {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_HTTPRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP Response.
+        /// </summary>
+        public static string WorkflowActivityType_HTTPResponse {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_HTTPResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship Change.
+        /// </summary>
+        public static string WorkflowActivityType_RelationshipChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_RelationshipChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sql Procedure.
+        /// </summary>
+        public static string WorkflowActivityType_SqlProcedure {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_SqlProcedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State Chang.
+        /// </summary>
+        public static string WorkflowActivityType_StateChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_StateChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status Change.
+        /// </summary>
+        public static string WorkflowActivityType_StatusChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_StatusChange", resourceCulture);
+            }
+        }
     }
 }

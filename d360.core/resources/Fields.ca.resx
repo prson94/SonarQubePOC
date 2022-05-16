@@ -118,247 +118,271 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Code_Name" xml:space="preserve">
-    <value>Çôδè</value>
+    <value>Çôδè£</value>
   </data>
   <data name="LastLoggedInOn_Description" xml:space="preserve">
-    <value>Tλè δáƭè ƭλïƨ řèƨôúřçè ℓáƨƭ ℓôϱϱèδ ïñ.</value>
+    <value>Tλè δáƭè ƭλïƨ řèƨôúřçè ℓáƨƭ ℓôϱϱèδ ïñ.£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="LastLoggedInOn_Name" xml:space="preserve">
-    <value>£áƨƭ ℓôϱϱèδ ïñ ôñ</value>
+    <value>£áƨƭ ℓôϱϱèδ ïñ ôñ£ôřè₥</value>
   </data>
   <data name="Description_Description" xml:space="preserve">
-    <value>Tλè δèƨçřïƥƭïôñ ƒôř ƭλïƨ ïƭè₥.</value>
+    <value>Tλè δèƨçřïƥƭïôñ ƒôř ƭλïƨ ïƭè₥.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="Description_ErrorRequired" xml:space="preserve">
-    <value>Ðèƨçřïƥƭïôñ ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>Ðèƨçřïƥƭïôñ ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="Description_Name" xml:space="preserve">
-    <value>Ðèƨçřïƥƭïôñ</value>
+    <value>Ðèƨçřïƥƭïôñ£ôř</value>
   </data>
   <data name="Email_Description" xml:space="preserve">
-    <value>Tλè è₥áïℓ ƒôř ƭλïƨ řèƨôúřçè.</value>
+    <value>Tλè è₥áïℓ ƒôř ƭλïƨ řèƨôúřçè.£ôřè₥ ïƥ</value>
   </data>
   <data name="Email_ErrorRegex" xml:space="preserve">
-    <value>É₥áïℓ çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+    <value>É₥áïℓ çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="Email_ErrorRequired" xml:space="preserve">
-    <value>É₥áïℓ ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>É₥áïℓ ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ï</value>
   </data>
   <data name="Email_Name" xml:space="preserve">
-    <value>É₥áïℓ</value>
+    <value>É₥áïℓ£</value>
   </data>
   <data name="FirstName_Description" xml:space="preserve">
-    <value>Tλè ƒïřƨƭ ñá₥è ƒôř ƭλïƨ řèƨôúřçè.</value>
+    <value>Tλè ƒïřƨƭ ñá₥è ƒôř ƭλïƨ řèƨôúřçè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="FirstName_ErrorRegex" xml:space="preserve">
-    <value>Fïřƨƭ ñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+    <value>Fïřƨƭ ñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="FirstName_ErrorRequired" xml:space="preserve">
-    <value>Fïřƨƭ ñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>Fïřƨƭ ñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="FirstName_Name" xml:space="preserve">
-    <value>Fïřƨƭ ñá₥è</value>
+    <value>Fïřƨƭ ñá₥è£ôř</value>
   </data>
   <data name="FriendlyName_Description" xml:space="preserve">
-    <value>Tλè ñá₥è úƨèδ ωλèñ δïƨƥℓá¥ïñϱ ƭλïƨ ƒïèℓδ Ʋáℓúè ƭô ¥ôúř áúδïèñçè.</value>
+    <value>Tλè ñá₥è úƨèδ ωλèñ δïƨƥℓá¥ïñϱ ƭλïƨ ƒïèℓδ Ʋáℓúè ƭô ¥ôúř áúδïèñçè.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="FriendlyName_ErrorRequired" xml:space="preserve">
-    <value>Fřïèñδℓ¥ Ná₥è ïƨ řè9úïřèδ.</value>
+    <value>Fřïèñδℓ¥ Ná₥è ïƨ řè9úïřèδ.£ôřè₥ ï</value>
   </data>
   <data name="FriendlyName_Name" xml:space="preserve">
-    <value>Fřïèñδℓ¥ Ná₥è</value>
+    <value>Fřïèñδℓ¥ Ná₥è£ôř</value>
   </data>
   <data name="ID_Description" xml:space="preserve">
-    <value>Tλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥.</value>
+    <value>Tλè úñï9úè ïδèñƭïƒïèř ƒôř ƭλïƨ ïƭè₥.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="ID_Name" xml:space="preserve">
     <value>ÌÐ</value>
     <comment>u</comment>
   </data>
   <data name="LastName_Description" xml:space="preserve">
-    <value>Tλè ℓáƨƭ ñá₥è ƒôř ƭλïƨ řèƨôúřçè.</value>
+    <value>Tλè ℓáƨƭ ñá₥è ƒôř ƭλïƨ řèƨôúřçè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="LastName_ErrorRegex" xml:space="preserve">
-    <value>£áƨƭ ñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+    <value>£áƨƭ ñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="LastName_ErrorRequired" xml:space="preserve">
-    <value>£áƨƭ ñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>£áƨƭ ñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="LastName_Name" xml:space="preserve">
-    <value>£áƨƭ ñá₥è</value>
+    <value>£áƨƭ ñá₥è£ô</value>
   </data>
   <data name="Length_Description" xml:space="preserve">
-    <value>Tλè èжáçƭℓ ℓèñϱƭλ ƭλáƭ ƭλïƨ ƒïèℓδ řè9úïřèƨ ƒôř á Ʋáℓúè.</value>
+    <value>Tλè èжáçƭℓ ℓèñϱƭλ ƭλáƭ ƭλïƨ ƒïèℓδ řè9úïřèƨ ƒôř á Ʋáℓúè.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="Length_Name" xml:space="preserve">
-    <value>£èñϱƭλ</value>
+    <value>£èñϱƭλ£</value>
   </data>
   <data name="LookupObjectID_Description" xml:space="preserve">
     <value></value>
   </data>
   <data name="LookupObjectID_Name" xml:space="preserve">
-    <value>£ôôƙúƥ ÓβJèçƭ ÌÐ</value>
+    <value>£ôôƙúƥ ÓβJèçƭ ÌÐ£ôřè</value>
   </data>
   <data name="LookupObjectType_Description" xml:space="preserve">
-    <value>Tλè ƭ¥ƥè ôƒ ℓôôƙúƥ ƭλïƨ ƒïèℓδ úƨèƨ.</value>
+    <value>Tλè ƭ¥ƥè ôƒ ℓôôƙúƥ ƭλïƨ ƒïèℓδ úƨèƨ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="LookupObjectType_Name" xml:space="preserve">
-    <value>£ôôƙúƥ ÓβJèçƭ T¥ƥè</value>
+    <value>£ôôƙúƥ ÓβJèçƭ T¥ƥè£ôřè₥</value>
   </data>
   <data name="MaximumLength_Description" xml:space="preserve">
-    <value>Tλè ₥áжï₥ú₥ áℓℓôωèδ ℓèñϱƭλ ƒôř ƭλïƨ ƒïèℓδ'ƨ Ʋáℓúè.</value>
+    <value>Tλè ₥áжï₥ú₥ áℓℓôωèδ ℓèñϱƭλ ƒôř ƭλïƨ ƒïèℓδ'ƨ Ʋáℓúè.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="MaximumLength_Name" xml:space="preserve">
-    <value>Máжï₥ú₥ £èñϱƭλ</value>
+    <value>Máжï₥ú₥ £èñϱƭλ£ôřè</value>
   </data>
   <data name="MinimumLength_Description" xml:space="preserve">
-    <value>Tλè ₥ïñï₥ú₥ áℓℓôωèδ ℓèñϱƭλ ƒôř ƭλïƨ ƒïèℓδ'ƨ Ʋáℓúè.</value>
+    <value>Tλè ₥ïñï₥ú₥ áℓℓôωèδ ℓèñϱƭλ ƒôř ƭλïƨ ƒïèℓδ'ƨ Ʋáℓúè.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="MinimumLength_Name" xml:space="preserve">
-    <value>Mïñï₥ú₥ £èñϱƭλ</value>
+    <value>Mïñï₥ú₥ £èñϱƭλ£ôřè</value>
   </data>
   <data name="Name_Description" xml:space="preserve">
-    <value>Tλè ñá₥è ƒôř ƭλïƨ ïƭè₥.</value>
+    <value>Tλè ñá₥è ƒôř ƭλïƨ ïƭè₥.£ôřè₥ </value>
   </data>
   <data name="Name_ErrorRegex" xml:space="preserve">
-    <value>Ná₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+    <value>Ná₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="Name_ErrorRequired" xml:space="preserve">
-    <value>Ná₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>Ná₥è ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ï</value>
   </data>
   <data name="Name_Name" xml:space="preserve">
-    <value>Ná₥è</value>
+    <value>Ná₥è£</value>
   </data>
   <data name="Path_Description" xml:space="preserve">
-    <value>Tλè ƥáƭλ ωïƭλïñ ƭλè λïèřáçλ¥.</value>
+    <value>Tλè ƥáƭλ ωïƭλïñ ƭλè λïèřáçλ¥.£ôřè₥ ïƥ</value>
   </data>
   <data name="Path_Name" xml:space="preserve">
-    <value>Þáƭλ</value>
+    <value>Þáƭλ£</value>
   </data>
   <data name="Pattern_Description" xml:space="preserve">
-    <value>Tλè Ʋáℓïδáƭïôñ ƥáƭƭèřñ úƨèδ ωλèñ ƥřôƲïδïñϱ á Ʋáℓúè ƒôř ƭλïƨ ƒïèℓδ.</value>
+    <value>Tλè Ʋáℓïδáƭïôñ ƥáƭƭèřñ úƨèδ ωλèñ ƥřôƲïδïñϱ á Ʋáℓúè ƒôř ƭλïƨ ƒïèℓδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
   <data name="Pattern_Name" xml:space="preserve">
-    <value>Váℓïδáƭïôñ Þáƭƭèřñ</value>
+    <value>Váℓïδáƭïôñ Þáƭƭèřñ£ôřè₥</value>
   </data>
   <data name="Status_Name" xml:space="preserve">
-    <value>§ƭáƭúƨ</value>
+    <value>§ƭáƭúƨ£</value>
   </data>
   <data name="Type_Description" xml:space="preserve">
-    <value>Tλè ƭ¥ƥè ƒôř ƭλïƨ ïƭè₥.</value>
+    <value>Tλè ƭ¥ƥè ƒôř ƭλïƨ ïƭè₥.£ôřè₥ </value>
   </data>
   <data name="Type_ErrorRequired" xml:space="preserve">
-    <value>T¥ƥè ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>T¥ƥè ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ï</value>
   </data>
   <data name="Type_Name" xml:space="preserve">
-    <value>T¥ƥè</value>
+    <value>T¥ƥè£</value>
   </data>
   <data name="Username_Description" xml:space="preserve">
-    <value>Tλè úƨèřñá₥è ƒôř ƭλïƨ řèƨôúřçè.</value>
+    <value>Tλè úƨèřñá₥è ƒôř ƭλïƨ řèƨôúřçè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="Username_ErrorRegex" xml:space="preserve">
-    <value>Ûƨèřñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.</value>
+    <value>Ûƨèřñá₥è çôñƭáïñƨ çλářáçƭèřƨ ƭλáƭ ářè ñôƭ áℓℓôωèδ.£ôřè₥ ïƥƨú₥ δôℓ</value>
   </data>
   <data name="Username_ErrorRequired" xml:space="preserve">
-    <value>Ûƨèřñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.</value>
+    <value>Ûƨèřñá₥è ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ïƥ</value>
   </data>
   <data name="Username_Name" xml:space="preserve">
-    <value>Ûƨèřñá₥è</value>
+    <value>Ûƨèřñá₥è£ô</value>
   </data>
   <data name="Level_Description" xml:space="preserve">
-    <value>Tλè ℓèƲèℓ ôƒ ƭλïƨ ïñƒôř₥áƭïôñ ₥ôδèℓ ωïƭλïñ ƭλè ôƲèřáℓℓ çáƭáℓôϱ ƭřèè.</value>
+    <value>Tλè ℓèƲèℓ ôƒ ƭλïƨ ïñƒôř₥áƭïôñ ₥ôδèℓ ωïƭλïñ ƭλè ôƲèřáℓℓ çáƭáℓôϱ ƭřèè.£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
   </data>
   <data name="Level_Name" xml:space="preserve">
-    <value>£èƲèℓ</value>
+    <value>£èƲèℓ£</value>
   </data>
   <data name="DisplayDescription_Description" xml:space="preserve">
-    <value>Tλè δèƨçřïƥƭïôñ ƭλáƭ ωïℓℓ βè Ʋïƨïβℓè ωλèñ á úƨèř řèáδƨ ƭλè ïñƒôř₥áƭïôñ ïñ ƭλïƨ ƒïèℓδ.</value>
+    <value>Tλè δèƨçřïƥƭïôñ ƭλáƭ ωïℓℓ βè Ʋïƨïβℓè ωλèñ á úƨèř řèáδƨ ƭλè ïñƒôř₥áƭïôñ ïñ ƭλïƨ ƒïèℓδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥è</value>
   </data>
   <data name="DisplayDescription_Name" xml:space="preserve">
-    <value>Ðïƨƥℓá¥ Ðèƨçřïƥƭïôñ</value>
+    <value>Ðïƨƥℓá¥ Ðèƨçřïƥƭïôñ£ôřè₥</value>
   </data>
   <data name="FormDescription_Description" xml:space="preserve">
-    <value>Tλè δèƨçřïƥƭïôñ ƭλáƭ ωïℓℓ βè Ʋïƨïβℓè ωλèñ á úƨèř úƥδáƭèƨ ƭλè ïñƒôř₥áƭïôñ ïñ ƭλïƨ ƒïèℓδ.</value>
+    <value>Tλè δèƨçřïƥƭïôñ ƭλáƭ ωïℓℓ βè Ʋïƨïβℓè ωλèñ á úƨèř úƥδáƭèƨ ƭλè ïñƒôř₥áƭïôñ ïñ ƭλïƨ ƒïèℓδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ</value>
   </data>
   <data name="FormDescription_Name" xml:space="preserve">
-    <value>Fôř₥ Ðèƨçřïƥƭïôñ</value>
+    <value>Fôř₥ Ðèƨçřïƥƭïôñ£ôřè</value>
   </data>
   <data name="MaximumDepth_Description" xml:space="preserve">
-    <value>Tλè ₥áжï₥ú₥ δèƥƭλ ôƒ ƭλè ïñƒôř₥áƭïôñ ₥ôδèℓ.</value>
+    <value>Tλè ₥áжï₥ú₥ δèƥƭλ ôƒ ƭλè ïñƒôř₥áƭïôñ ₥ôδèℓ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="MaximumDepth_Name" xml:space="preserve">
-    <value>Máжï₥ú₥ Ðèƥƭλ</value>
+    <value>Máжï₥ú₥ Ðèƥƭλ£ôř</value>
   </data>
   <data name="GroupPrimaryOwner_Description" xml:space="preserve">
-    <value>Tλè ƥřï₥ář¥ ôωñèř ôƒ ƭλè ϱřôúƥ.  Tλïƨ ƥèřƨôñ ïƨ řèƨƥôñƨïβℓè ƒôř ƭλè δá¥ ƭô δá¥ ₥áñáϱè₥èñƭ ôƒ ƭλè ϱřôúƥ, ïñçℓúδïñϱ áƨƨïϱñïñϱ áñ¥ ƭáƨƙƨ ƭô ₥è₥βèřƨ.</value>
+    <value>Tλè ƥřï₥ář¥ ôωñèř ôƒ ƭλè ϱřôúƥ.  Tλïƨ ƥèřƨôñ ïƨ řèƨƥôñƨïβℓè ƒôř ƭλè δá¥ ƭô δá¥ ₥áñáϱè₥èñƭ ôƒ ƭλè ϱřôúƥ, ïñçℓúδïñϱ áƨƨïϱñïñϱ áñ¥ ƭáƨƙƨ ƭô ₥è₥βèřƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδï</value>
   </data>
   <data name="GroupPrimaryOwner_Name" xml:space="preserve">
-    <value>Þřï₥ář¥ Óωñèř</value>
+    <value>Þřï₥ář¥ Óωñèř£ôř</value>
   </data>
   <data name="GroupSecondaryOwner_Description" xml:space="preserve">
-    <value>Tλè ƨèôñδář¥ ôωñèř ôƒ ƭλè ϱřôúƥ.  Tλïƨ ƥèřƨôñ ïƨ ƭλè βáçƙúƥ ôωñèř ôƒ ƭλè ϱřôúƥ ïƒ ƭλè ƥřï₥ář¥ ôωñèř ïƨ ñôƭ áƲáïℓáβℓè.</value>
+    <value>Tλè ƨèôñδář¥ ôωñèř ôƒ ƭλè ϱřôúƥ.  Tλïƨ ƥèřƨôñ ïƨ ƭλè βáçƙúƥ ôωñèř ôƒ ƭλè ϱřôúƥ ïƒ ƭλè ƥřï₥ář¥ ôωñèř ïƨ ñôƭ áƲáïℓáβℓè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭ</value>
   </data>
   <data name="GroupSecondaryOwner_Name" xml:space="preserve">
-    <value>§èçôñδář¥ Óωñèř</value>
+    <value>§èçôñδář¥ Óωñèř£ôřè</value>
   </data>
   <data name="ReportDescription_Description" xml:space="preserve">
-    <value>Â δèƨçřïƥƭïôñ ôƒ ƭλè ₥èáñïñϱ ƒôř ƭλïƨ řèƥôřƭ; ωλáƭ ƭλïƨ řèƥôřƭ ƭř¥ïñϱ ƭô èжƥℓáïñ.</value>
+    <value>Â δèƨçřïƥƭïôñ ôƒ ƭλè ₥èáñïñϱ ƒôř ƭλïƨ řèƥôřƭ; ωλáƭ ƭλïƨ řèƥôřƭ ƭř¥ïñϱ ƭô èжƥℓáïñ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
   </data>
   <data name="ValidationDescription_Description" xml:space="preserve">
-    <value>Tλïƨ ₥èƨƨáϱè ωïℓℓ áƥƥèář ƭô ƭλè úƨèř ïƒ ƭλè¥ ƥřôƲïδè ïñƲáℓïδ ôř ₥ïƨƨïñϱ ïñƒôř₥áƭïôñ ôñ ƭλïƨ ƒïèℓδ.  Ýôú ₥úƨƭ èñáβℓè ƨô₥è ƒôř₥ ôƒ řèϱúℓář èжƥřèƨƨïôñ ƥáƭƭèřñ Ʋáℓïδáƭïôñ ôñ ƭλïƨ ƒïèℓδ ïñ ôřδèř ƒôř ƭλè ₥èƨƨáϱè ƭô áƥƥèář.</value>
+    <value>Tλïƨ ₥èƨƨáϱè ωïℓℓ áƥƥèář ƭô ƭλè úƨèř ïƒ ƭλè¥ ƥřôƲïδè ïñƲáℓïδ ôř ₥ïƨƨïñϱ ïñƒôř₥áƭïôñ ôñ ƭλïƨ ƒïèℓδ.  Ýôú ₥úƨƭ èñáβℓè ƨô₥è ƒôř₥ ôƒ řèϱúℓář èжƥřèƨƨïôñ ƥáƭƭèřñ Ʋáℓïδáƭïôñ ôñ ƭλïƨ ƒïèℓδ ïñ ôřδèř ƒôř ƭλè ₥èƨƨáϱè ƭô áƥƥèář.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδïƥïƨçïñϱ èℓïƭ, ƨèδ δô </value>
   </data>
   <data name="ValidationDescription_Name" xml:space="preserve">
-    <value>Váℓïδáƭïôñ Mèƨƨáϱè</value>
+    <value>Váℓïδáƭïôñ Mèƨƨáϱè£ôřè₥</value>
   </data>
   <data name="DisplayFormat_Description" xml:space="preserve">
-    <value>Tλè ƒôř₥áƭ ôƒ ƭλè δïƨƥℓá¥ Ʋáℓúè.</value>
+    <value>Tλè ƒôř₥áƭ ôƒ ƭλè δïƨƥℓá¥ Ʋáℓúè.£ôřè₥ ïƥƨ</value>
   </data>
   <data name="DisplayFormat_Name" xml:space="preserve">
-    <value>Ðïƨƥℓá¥ Fôř₥áƭ</value>
+    <value>Ðïƨƥℓá¥ Fôř₥áƭ£ôřè</value>
   </data>
   <data name="ReportName_Description" xml:space="preserve">
-    <value>Tλè ñá₥è ƒôř ƭλïƨ řèƥôřƭ.  Tλïƨ ñá₥è ωïℓℓ βè úƨèδ ωλèřèƲèř ƭλè řèƥôřƭ ïƨ áƲáïℓáβℓè ƒôř δïƨƥℓá¥.</value>
+    <value>Tλè ñá₥è ƒôř ƭλïƨ řèƥôřƭ.  Tλïƨ ñá₥è ωïℓℓ βè úƨèδ ωλèřèƲèř ƭλè řèƥôřƭ ïƨ áƲáïℓáβℓè ƒôř δïƨƥℓá¥.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, </value>
   </data>
   <data name="ReportObjectType_Description" xml:space="preserve">
-    <value>Tλè ƭ¥ƥè ôƒ ôβJèçƭ ωλèřè ƭλïƨ řèƥôřƭ ωïℓℓ βè áƲáïℓáβℓè.</value>
+    <value>Tλè ƭ¥ƥè ôƒ ôβJèçƭ ωλèřè ƭλïƨ řèƥôřƭ ωïℓℓ βè áƲáïℓáβℓè.£ôřè₥ ïƥƨú₥ δôℓô</value>
   </data>
   <data name="ReportObjectType_Name" xml:space="preserve">
-    <value>Tářϱèƭ T¥ƥè</value>
+    <value>Tářϱèƭ T¥ƥè£ôř</value>
   </data>
   <data name="SourceNotes_Description" xml:space="preserve">
-    <value>Ðèƒïñèƨ ïñƒôř₥áƭïôñ řèϱářδïñϱ ƭλè ƨôúřçè ôř ôřïϱïñáƭôř ôƒ ƭλïƨ řèƒèřèñçè ℓïƨƭ.</value>
+    <value>Ðèƒïñèƨ ïñƒôř₥áƭïôñ řèϱářδïñϱ ƭλè ƨôúřçè ôř ôřïϱïñáƭôř ôƒ ƭλïƨ řèƒèřèñçè ℓïƨƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á</value>
   </data>
   <data name="SourceNotes_Name" xml:space="preserve">
-    <value>§ôúřçè Nôƭèƨ</value>
+    <value>§ôúřçè Nôƭèƨ£ôř</value>
   </data>
   <data name="GroupIsActiveDirectory_Description" xml:space="preserve">
-    <value>Wλèƭλèř ôř ñôƭ ƭλïƨ ϱřôúƥ ƨλôúℓδ βè ₥áñáϱèδ áúƭô₥áƭïçáℓℓ¥ ƭλřôúϱλ §ÂM£ Gřôúƥ çℓáï₥ƨ</value>
+    <value>Wλèƭλèř ôř ñôƭ ƭλïƨ ϱřôúƥ ƨλôúℓδ βè ₥áñáϱèδ áúƭô₥áƭïçáℓℓ¥ ƭλřôúϱλ §ÂM£ Gřôúƥ çℓáï₥ƨ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
   </data>
   <data name="GroupIsActiveDirectory_Name" xml:space="preserve">
-    <value>Ìƨ ÂçƭïƲè Ðïřèçƭôř¥</value>
+    <value>Ìƨ ÂçƭïƲè Ðïřèçƭôř¥£ôřè₥</value>
   </data>
   <data name="Parent_Name" xml:space="preserve">
-    <value>Óωñèř/Þářèñƭ</value>
+    <value>Óωñèř/Þářèñƭ£ôř</value>
   </data>
   <data name="RegexPatternChoose" xml:space="preserve">
-    <value>Çλôôƨè ƨá₥ƥℓè...</value>
+    <value>Çλôôƨè ƨá₥ƥℓè...£ôřè</value>
   </data>
   <data name="RegexPatternEmail" xml:space="preserve">
-    <value>É₥áïℓ</value>
+    <value>É₥áïℓ£</value>
   </data>
   <data name="RegexPatternInternalUrl" xml:space="preserve">
-    <value>Ìñƭèřñáℓ Ûřℓ</value>
+    <value>Ìñƭèřñáℓ Ûřℓ£ôř</value>
   </data>
   <data name="RegexPatternIP" xml:space="preserve">
-    <value>ÌÞ Âδδřèƨƨ</value>
+    <value>ÌÞ Âδδřèƨƨ£ôř</value>
   </data>
   <data name="RegexPatternNorthAmericanPhone" xml:space="preserve">
-    <value>Nôřƭλ Â₥èřïçáñ Þλôñè</value>
+    <value>Nôřƭλ Â₥èřïçáñ Þλôñè£ôřè₥ </value>
   </data>
   <data name="RegexPatternPublicUrl" xml:space="preserve">
-    <value>Þúβℓïç Ûřℓ</value>
+    <value>Þúβℓïç Ûřℓ£ôř</value>
   </data>
   <data name="RegexPatternUSZipCode" xml:space="preserve">
-    <value>Û§ Zïƥ Çôδè</value>
+    <value>Û§ Zïƥ Çôδè£ôř</value>
+  </data>
+  <data name="Administrator_Name" xml:space="preserve">
+    <value>Âδ₥ïñïƨƭřáƭôř?£ôřè</value>
+  </data>
+  <data name="AssetPath_Name" xml:space="preserve">
+    <value>Âƨƨèƭ Þáƭλ£ôř</value>
+  </data>
+  <data name="AssignedUserGroup_Name" xml:space="preserve">
+    <value>Âƨƨïϱñèδ Ûƨèř/Gřôúƥ£ôřè₥</value>
+  </data>
+  <data name="Color_Name" xml:space="preserve">
+    <value>Çôℓôř£</value>
+  </data>
+  <data name="Context_Name" xml:space="preserve">
+    <value>Çôñƭèжƭ£ô</value>
+  </data>
+  <data name="OwnedItems_Name" xml:space="preserve">
+    <value>Óωñèδ ïƭè₥ƨ£ôř</value>
+  </data>
+  <data name="Responsibility_Name" xml:space="preserve">
+    <value>Rèƨƥôñƨïβïℓïƭ¥£ôřè</value>
+  </data>
+  <data name="Via_Name" xml:space="preserve">
+    <value>Vïá</value>
   </data>
 </root>

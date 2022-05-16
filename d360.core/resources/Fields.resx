@@ -361,4 +361,28 @@
   <data name="RegexPatternUSZipCode" xml:space="preserve">
     <value>US Zip Code</value>
   </data>
+  <data name="Administrator_Name" xml:space="preserve">
+    <value>Administrator?</value>
+  </data>
+  <data name="AssetPath_Name" xml:space="preserve">
+    <value>Asset Path</value>
+  </data>
+  <data name="AssignedUserGroup_Name" xml:space="preserve">
+    <value>Assigned User/Group</value>
+  </data>
+  <data name="Color_Name" xml:space="preserve">
+    <value>Color</value>
+  </data>
+  <data name="Context_Name" xml:space="preserve">
+    <value>Context</value>
+  </data>
+  <data name="OwnedItems_Name" xml:space="preserve">
+    <value>Owned items</value>
+  </data>
+  <data name="Responsibility_Name" xml:space="preserve">
+    <value>Responsibility</value>
+  </data>
+  <data name="Via_Name" xml:space="preserve">
+    <value>Via</value>
+  </data>
 </root>

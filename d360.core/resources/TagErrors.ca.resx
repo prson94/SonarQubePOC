@@ -118,39 +118,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteCascadeTagRelateAsset" xml:space="preserve">
-    <value>Táϱ ωïƭλ úïδ '{0}' λáƲè řèℓáƭèδ áƨƨèƭƨ. Ûƨè çáƨçáδè='ƭřúè' ƭô δèℓèƭè ƭλïƨ ƭáϱ!</value>
+    <value>Táϱ ωïƭλ úïδ '{0}' λáƲè řèℓáƭèδ áƨƨèƭƨ. Ûƨè çáƨçáδè='ƭřúè' ƭô δèℓèƭè ƭλïƨ ƭáϱ!£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á</value>
   </data>
   <data name="InvalidDirection" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidOrderBy" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidPageNumber" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ñú₥βèř ƥářá₥èƭář!</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ñú₥βèř ƥářá₥èƭář!£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="InvalidPageSize" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ƨïƺè ƥářá₥èƭář!</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥáϱè ƨïƺè ƥářá₥èƭář!£ôřè₥ ïƥƨú₥</value>
   </data>
   <data name="InvalidParaMeter" xml:space="preserve">
-    <value>ÌñƲáℓïδ ƥářá₥èƭèřƨ ƨúƥƥℓïèδ. Þářá₥èƭèř Ðïƨƥℓá¥Váℓúè, ÂƨƨèƭT¥ƥè, Táϱƨáƨ§ƭřïñϱ ñôƭ áℓℓôωèδ ƭô úƨèδ ωλèñ ϱℓôβáℓ§èářçλ ƥářá₥èƭèř ïƨ ƥřèƨèñƭ.</value>
+    <value>ÌñƲáℓïδ ƥářá₥èƭèřƨ ƨúƥƥℓïèδ. Þářá₥èƭèř Ðïƨƥℓá¥Váℓúè, ÂƨƨèƭT¥ƥè, Táϱƨáƨ§ƭřïñϱ ñôƭ áℓℓôωèδ ƭô úƨèδ ωλèñ ϱℓôβáℓ§èářçλ ƥářá₥èƭèř ïƨ ƥřèƨèñƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř </value>
   </data>
   <data name="InvalidSortBy" xml:space="preserve">
-    <value>ÌñƲáℓïδ ƨôřƭβ¥ Ʋáℓúè ƥřôƲïδèδ ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ ƨôřƭβ¥ Ʋáℓúè ƥřôƲïδèδ ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú₥ δ</value>
   </data>
   <data name="InvalidSortOrder" xml:space="preserve">
-    <value>ÌñƲáℓïδ ƨôřƭ ôřδèř Ʋáℓúè ƥřôƲïδèδ ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ ƨôřƭ ôřδèř Ʋáℓúè ƥřôƲïδèδ ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú₥ δô</value>
   </data>
   <data name="InvalidTagUid" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="Invalid_IncludeTotal" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥřôƲïδèδ ƒôř _ïñçℓúδèƭôƭáℓ ƥářá₥èƭèř ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥřôƲïδèδ ƒôř _ïñçℓúδèƭôƭáℓ ƥářá₥èƭèř ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</value>
   </data>
   <data name="InvalueTotalValue" xml:space="preserve">
-    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.</value>
+    <value>ÌñƲáℓïδ Ʋáℓúè [{0}] ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ.£ôřè₥ ïƥƨú₥ </value>
   </data>
   <data name="TagUidNotExists" xml:space="preserve">
-    <value>Táϱ ωïƭλ úïδ '{0}' δôèƨ ñôƭ èжïƨƭƨ!</value>
+    <value>Táϱ ωïƭλ úïδ '{0}' δôèƨ ñôƭ èжïƨƭƨ!£ôřè₥ ïƥƨú</value>
   </data>
 </root>

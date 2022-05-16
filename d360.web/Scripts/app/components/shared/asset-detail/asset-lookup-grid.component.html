@@ -14,7 +14,7 @@
             <div *ngIf="data?.description" class="FieldDisplayContent">
                 <div *ngIf="showDescription" [innerHtml]="data.description | safeHtml"></div>
                 <div>
-                    <a (click)="toggleShowDescription()">{{showDescription ? "Hide Description" : "Show Description"}}</a>
+                    <a (click)="toggleShowDescription()">{{showDescription ? hideDescLabel : showDescLabel}}</a>
                 </div>
             </div>
         </div>
