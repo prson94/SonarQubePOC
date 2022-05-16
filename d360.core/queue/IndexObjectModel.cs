@@ -97,6 +97,7 @@ namespace d360.core.queue
         public List<Guid> BatchUids { get; set; }
         
         public ReindexBatchOperation BatchOperation { get; set; } = ReindexBatchOperation.Update;
+        public string Origin { get; set; }
     }
 
     public class RebuildAssetGraphModel : QueueObject

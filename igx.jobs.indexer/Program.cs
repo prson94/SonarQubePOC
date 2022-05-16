@@ -103,7 +103,10 @@ namespace igx.jobs.indexer
             {
                 Guid assetTypeUid = reindex.AssetTypeUid ?? Guid.Empty;
                 if (assetTypeUid != Guid.Empty)
+                {
+                    CoreFunction.AITrackTrace(functionName, $"Indexing asset type {assetTypeUid} for company {reindex.CompanyID}, origin: {reindex.Origin}", companyId: reindex.CompanyID);
                     indexer.IndexAssetType(assetTypeUid);
+                }
             }
             else if (!string.IsNullOrEmpty(reindex.Category))
             {

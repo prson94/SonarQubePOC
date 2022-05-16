@@ -590,7 +590,8 @@ namespace d360.model
 						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
-							AssetTypeUid = assetType.uid
+							AssetTypeUid = assetType.uid,
+							Origin = "ProcessRuleForAsset, rule: " + rule.ID.ToString() + ", " + rule.Name
 						});
 					}
 
@@ -707,7 +708,8 @@ namespace d360.model
 						Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
 						{
 							CompanyID = CurrentCompanyID,
-							AssetTypeUid = assetType.uid
+							AssetTypeUid = assetType.uid,
+							Origin = "ProcessRuleForAssetType, rule: " + rule.ID.ToString() + ", " + rule.Name
 						});
 					}
 
