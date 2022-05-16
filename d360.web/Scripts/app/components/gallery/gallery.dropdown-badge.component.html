@@ -24,14 +24,7 @@
 <div class="tile tile-detail">
     <header>Examples</header>
     <div class="gallery-section">
-        <h4>Basic</h4>
-        <div class="component-container">
-            <ig-dropdown-badge [options]="numberOptions">
-            </ig-dropdown-badge>
-        </div>
-    </div>
-    <div class="gallery-section">
-        <h4>Binding - Chosen: {{ basicValue }}</h4>
+        <h4>Basic - Chosen: {{ basicValue }}</h4>
         <div class="component-container">
             <ig-dropdown-badge [options]="numberOptions" [(ngModel)]="basicValue">
             </ig-dropdown-badge>
@@ -40,27 +33,17 @@
     <div class="gallery-section">
         <h4>Uneditable</h4>
         <div class="component-container">
-            <ig-dropdown-badge [disabled]="true" [(ngModel)]="basicValue" [options]="numberOptions">
+            <ig-dropdown-badge [disabled]="true" [(ngModel)]="disabledValue" [options]="statusOptions">
             </ig-dropdown-badge>
         </div>
     </div>
     <div class="gallery-section">
-        <h4>Status Selector - Chosen: {{ statusValue?.status }}</h4>
+        <h4>Status Selector - Chosen: {{ statusValue }}</h4>
         <div class="component-container">
             <ig-dropdown-badge [options]="statusOptions" [(ngModel)]="statusValue">
                 <ng-template let-option>
-                    <span class="status-circle" [style.backgroundColor]="option.value.color"></span>
+                    <span class="status-circle" [style.backgroundColor]="option.color"></span>
                     {{option.label}}
-                </ng-template>
-            </ig-dropdown-badge>
-        </div>
-    </div>
-    <div class="gallery-section">
-        <h4>Custom - Chosen: {{ customValue }}</h4>
-        <div class="component-container">
-            <ig-dropdown-badge [options]="numberOptions" [(ngModel)]="customValue">
-                <ng-template let-option>
-                    <span *ngFor="let _ of [].constructor(option.value)">I</span>
                 </ng-template>
             </ig-dropdown-badge>
         </div>

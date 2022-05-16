@@ -8,12 +8,30 @@
     &--uneditable > button {
         cursor: default;
     }
+    
+    &:hover > button > &__overlay {
+        opacity: .2;
+    }
+
+    &:active > button > &__overlay {
+        opacity: .4;
+    }
+    
+    &__overlay {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        pointer-events: none;
+        background-color: #000000;
+        opacity: 0;
+        transition: opacity .3s ease-in-out;
+        left: 0;
+    }
 
     &__toggle {
         outline: 0;
         width: 100%;
         border: none;
-        background-color: @igx-blue-color;
         color: #FFFFFF;   
         padding: 0 12px;
         border-radius: 4px;
@@ -24,13 +42,11 @@
         align-items: center;
         white-space: nowrap;
         overflow: hidden;
-
-        &:hover {
-            background-color: darken(@rgba-primary-0, 10%);
-        }
-
-        &:active {
-            background-color: darken(@rgba-primary-0, 20%);
+        position: relative;
+        
+        & > span {
+            position: relative;
+            z-index: 1;
         }
     }
 
@@ -40,7 +56,7 @@
         color: #FFFFFF;
         display: inline-block;
         margin-left: 8px;
-        font-family: 'FontAwesome';
+        font-family: 'FontAwesome', serif;
     }
 
     &__menu {

@@ -1,4 +1,4 @@
-import { ContentChild, forwardRef, NgModule, OnChanges, SimpleChanges, TemplateRef, ViewEncapsulation } from '@angular/core';
+import { ContentChild, forwardRef, NgModule, TemplateRef, ViewEncapsulation } from '@angular/core';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessor } from '@angular/forms';
 import { DropdownBadgeOption } from './types/dropdown-bage-option.type';
@@ -24,15 +24,14 @@ export const DROPDOWNBADGE_VALUE_ACCESSOR: any = {
   encapsulation: ViewEncapsulation.None,
   providers: [DROPDOWNBADGE_VALUE_ACCESSOR]
 })
-export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, OnChanges {
+export class DropdownBadgeComponent<T = any> implements ControlValueAccessor {
   active: boolean = false;
-  selected?: DropdownBadgeOption<T> | null;
+  selected!: DropdownBadgeOption<T>;
   disabled: boolean = false;
 
   onModelChange: Function = () => { };
   onModelTouched: Function = () => { };
 
-  @Input() placeholder: string = "Select an item...";
   @Input() options: DropdownBadgeOption<T>[] = [];
 
   @ContentChild(TemplateRef, { static: false })
@@ -53,7 +52,7 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, On
     }
   }
 
-  writeValue(value: T | null): void {
+  writeValue(value: T): void {
     this.selected = this.options.find(option => option.value === value);
     this.onModelChange(value);
     this.cdr.markForCheck();
@@ -79,12 +78,6 @@ export class DropdownBadgeComponent<T = any> implements ControlValueAccessor, On
     if (!option.disabled) {
       this.writeValue(option.value);
       this.setActive(false);
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if(changes.options) {
-      this.selected = this.options.find(option => option.value === this.selected?.value);
     }
   }
 

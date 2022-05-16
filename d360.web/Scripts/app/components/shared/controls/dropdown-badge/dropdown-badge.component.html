@@ -1,9 +1,9 @@
 <div class="ig-dropdown-badge" [class.ig-dropdown-badge--uneditable]="disabled">
-  <button type="button" class="ig-dropdown-badge__toggle" (click)="onActiveStateSwitch();">
-    <span *ngIf="selected; else placeholderTemplate">
-      {{ selected.label }}
-    </span>
+  <button type="button" class="ig-dropdown-badge__toggle" *ngIf="selected; else nothingSelected"
+    [style.backgroundColor]="selected.color" (click)="onActiveStateSwitch();">
+    <span>{{ selected.label }}</span>
     <span class="fa-angle-down ig-dropdown-badge__caret" *ngIf="!disabled"></span>
+    <div class="ig-dropdown-badge__overlay"></div>
   </button>
   <ul class="ig-dropdown-badge__menu" *ngIf="active">
     <li *ngFor="let option of options | filterDropdownBadgeOptions: selected"
@@ -19,6 +19,6 @@
   </ul>
 </div>
 
-<ng-template #placeholderTemplate>
-  <span>{{ placeholder }}</span>
+<ng-template #nothingSelected>
+  There must be an initial value
 </ng-template>
