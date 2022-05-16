@@ -316,6 +316,13 @@
           <context context-type="linenumber">153</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="4839413223359896590" datatype="html">
+        <source>Grammatic Type Allocation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/admin-allocation.component.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="5041354590769758251" datatype="html">
         <source>Admin</source>
         <context-group purpose="location">
@@ -3964,11 +3971,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">24,27</context>
+          <context context-type="linenumber">31,36</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">69,75</context>
+          <context context-type="linenumber">83,86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8883018182451531602" datatype="html">
@@ -4238,6 +4245,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/responsibilities/responsibility-rules.component.ts</context>
           <context context-type="linenumber">92,100</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">62,70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5990684594412436335" datatype="html">
@@ -5276,11 +5287,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">41,45</context>
+          <context context-type="linenumber">51,55</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">109,112</context>
+          <context context-type="linenumber">118,122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="911b23c3afb1a59be4e4364499dcdbd02672eb6c" datatype="html">
@@ -9347,11 +9358,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">31,36</context>
+          <context context-type="linenumber">42,45</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">83,85</context>
+          <context context-type="linenumber">91,93</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/process-diagram/process-diagram.component.html</context>
@@ -9386,7 +9397,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">100,103</context>
+          <context context-type="linenumber">109,112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="bae4b79512fe791e9c63cce2fe26e0f91b4e2fa1" datatype="html">
@@ -9397,11 +9408,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">51,55</context>
+          <context context-type="linenumber">59,61</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">118,122</context>
+          <context context-type="linenumber">130,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="ca494f9911c34b9f00b64a56c69ec6cc3b642530" datatype="html">
@@ -9412,7 +9423,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">130,134</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d94d297cde59d9eae05244b8faa5db2d3bce1906" datatype="html">
@@ -10736,7 +10747,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
-          <context context-type="linenumber">80,92</context>
+          <context context-type="linenumber">98,106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3ab9adc42f2c87e33d7c2adfbff8086da08f7c6f" datatype="html">
@@ -10806,18 +10817,25 @@ Please refine your search.</source>
           <context context-type="linenumber">607</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="e2e25be7ae464b64f2e06a2d8e90421e7665e719" datatype="html">
+        <source>Search rule results</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
+          <context context-type="linenumber">24,27</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="2497b26e79f5c435b02af06faa450a617c1ba718" datatype="html">
         <source>No result found</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">59,61</context>
+          <context context-type="linenumber">69,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d229c34a8c36c39d0392d0f6d23e70350dcd6d00" datatype="html">
         <source>Rule Selection</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/calculation/measure-rule-results.component.html</context>
-          <context context-type="linenumber">91,93</context>
+          <context context-type="linenumber">100,104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="89e1f881a2a3c0b850ace37912aa5d41a285758a" datatype="html">
@@ -11025,15 +11043,11 @@ Please refine your search.</source>
           <context context-type="linenumber">81,86</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="380e20a1e13d9489c69f6dbea7da19025ab6eb25" datatype="html">
-        <source>Score</source>
+      <trans-unit id="394d7c6128e4ceaf079f0953aa5a9726401ffe44" datatype="html">
+        <source>Show scoring history of selected measure</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
-          <context context-type="linenumber">33,40</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.html</context>
-          <context context-type="linenumber">510,514</context>
+          <context context-type="linenumber">34,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8001583765052354416" datatype="html">
@@ -11047,11 +11061,22 @@ Please refine your search.</source>
           <context context-type="linenumber">388,389</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="380e20a1e13d9489c69f6dbea7da19025ab6eb25" datatype="html">
+        <source>Score</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
+          <context context-type="linenumber">57,64</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/fielddefinition/field-type-form/field-type.form.html</context>
+          <context context-type="linenumber">510,514</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="9310eb7d161a1cd56607033f696ab6039337e609" datatype="html">
         <source>Measure</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
-          <context context-type="linenumber">55,63</context>
+          <context context-type="linenumber">79,85</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4263526691227932547" datatype="html">
@@ -16001,6 +16026,31 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/header/header-follow.component.ts</context>
           <context context-type="linenumber">53,58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4866908001435867234" datatype="html">
+        <source>Stop following</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/header/header-follow.component.ts</context>
+          <context context-type="linenumber">160,161</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/header/header-follow.component.ts</context>
+          <context context-type="linenumber">164,165</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6300607543943128077" datatype="html">
+        <source>Follow this item</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/header/header-follow.component.ts</context>
+          <context context-type="linenumber">162,163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2672145314981344324" datatype="html">
+        <source>Following parent item</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/header/header-follow.component.ts</context>
+          <context context-type="linenumber">166,167</context>
         </context-group>
       </trans-unit>
       <trans-unit id="708890f544f937bdec6a2e50b068d1dbf9b72495" datatype="html">
