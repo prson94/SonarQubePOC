@@ -69,10 +69,10 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
         // Update component title.
         if (this.queryType === 'A') {
-            this.title = 'Responsibility Type Assignment';
+            this.title = $localize`Responsibility Type Assignment`;
         }
         else {
-            this.title = 'Asset Assignment';
+            this.title = $localize`Asset Assignment`;
         }
 
         this.isLoading = true;

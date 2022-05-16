@@ -74,9 +74,11 @@ namespace d360.core.enums.Workflow
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
+                var enumValue = (WorkflowActivityType)Enum.Parse(typeof(WorkflowActivityType), tm.Name);
+
                 var info = new ActivityTypeInfo
                 {
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    Description = DescriptionAsDisplayString(enumValue),
                     ID = (WorkflowActivityType)Enum.Parse(typeof(WorkflowActivityType), tm.Name),
                     Name = tm.Name,
                     BackColor = ((BackColorAttribute)tm.GetCustomAttribute(typeof(BackColorAttribute))).Color,
@@ -87,6 +89,25 @@ namespace d360.core.enums.Workflow
                 list.Add(info);
             }
             return list;
+        }
+        private static string DescriptionAsDisplayString(WorkflowActivityType type)
+        {
+            switch (type)
+            {
+                case WorkflowActivityType.Form: return resources.Enums.WorkflowActivityType_Form;
+                case WorkflowActivityType.Delete: return resources.Enums.WorkflowActivityType_Delete;
+                case WorkflowActivityType.EmailNotification: return resources.Enums.WorkflowActivityType_EmailNotif;
+                case WorkflowActivityType.FieldChange: return resources.Enums.WorkflowActivityType_FieldChange;
+                case WorkflowActivityType.HTTPRequest: return resources.Enums.WorkflowActivityType_HTTPRequest;
+                case WorkflowActivityType.HTTPResponse: return resources.Enums.WorkflowActivityType_HTTPResponse;
+                case WorkflowActivityType.Procedure: return resources.Enums.WorkflowActivityType_SqlProcedure;
+                case WorkflowActivityType.RelationshipChange: return resources.Enums.WorkflowActivityType_RelationshipChange;
+                case WorkflowActivityType.StateChange: return resources.Enums.WorkflowActivityType_StateChange;
+                case WorkflowActivityType.StatusChange: return resources.Enums.WorkflowActivityType_StatusChange;
+                case WorkflowActivityType.None: return "None";
+
+                default: throw new ArgumentOutOfRangeException("WorkflowActivityType");
+            }
         }
     }
 }

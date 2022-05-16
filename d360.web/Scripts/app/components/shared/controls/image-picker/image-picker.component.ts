@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, OnInit, OnChanges, SimpleChanges } from "@angular/core";
+﻿import { Component, NgModule, ViewEncapsulation, ChangeDetectionStrategy, Input, ChangeDetectorRef, forwardRef, ElementRef, OnInit, OnChanges, SimpleChanges, HostListener } from "@angular/core";
 import { FormsModule, ControlValueAccessor, ReactiveFormsModule, NG_VALUE_ACCESSOR, Validator, AbstractControl, ValidationErrors } from "@angular/forms";
 import { CommonModule } from "@angular/common";
 import { DirectivesModule } from "../../../../directives/directives.module";
@@ -208,6 +208,11 @@ export class ImagePicker implements ControlValueAccessor, OnInit, Validator {
         }
 
         return null;
+    }
+
+    @HostListener('document:keydown.enter', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        //file input should open on space
+        return false;
     }
 }
 

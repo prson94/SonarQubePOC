@@ -25,7 +25,7 @@
                         <ng-template pTemplate="caption">
                             <div style="margin-bottom: 8px; display: flex; flex-direction: row;">
                                 <span style="width: 300px; padding: 2px 0px 0px 2px">
-                                    <ig-search-field maxLength="100" placeholder="Search rule results" mode="Keypress" debounce="1000" (onSearch)="performSimpleSearch($event)"></ig-search-field>
+                                    <ig-search-field maxLength="100" i18n-placeholder placeholder="Search rule results" mode="Keypress" debounce="1000" (onSearch)="performSimpleSearch($event)"></ig-search-field>
                                 </span>
                                 <span class="grow"></span>
                                 <button igButton icon="fa-download" (click)="performDownload()" [disabled]="downloadDisabled()" [title]="downloadTooltip()"></button>

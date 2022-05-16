@@ -1,0 +1,753 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>ßáδ Rè9úèƨƭ£ôř</value>
+  </data>
+  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
+    <value>Éřřôř ϱèƭƭïñϱ ₥èáƨúřè λïƨƭôř¥£ôřè₥ ïƥ</value>
+  </data>
+  <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
+    <value>Nôƭ áúƭλôřïƺèδ£ôřè</value>
+  </data>
+  <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áúƭλôřïƺèδ ƭô ƥèřƒôř₥ ƭλïƨ áçƭïôñ.£ôřè₥ ïƥƨú₥ δ</value>
+  </data>
+  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
+    <value>Éřřôř řèçáℓçúℓáƭïñϱ ₥èáƨúřè ƨçôřè ïƭè₥ƨ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
+    <value>Éřřôř áδδïñϱ ƨçôřè řèƨúℓƭƨ£ôřè₥ ï</value>
+  </data>
+  <data name="ErrorDeletingDefaultHelpItem" xml:space="preserve">
+    <value>Çáññôƭ δèℓèƭè á δèƒáúℓƭ λèℓƥ èñƭř¥£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="ErrorInvalidDatasetMessage" xml:space="preserve">
+    <value>Ýôú λáƲè ƨúβ₥ïƭƭèδ áñ ïñƲáℓïδ ôř è₥ƥƭ¥ δáƭá ƨèƭ. Þℓèáƨè çλèçƙ ¥ôúř řè9úèƨƭ áñδ ƨúβ₥ïƭ áϱáïñ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ,</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Fôřβïδδèñ£ô</value>
+  </data>
+  <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
+    <value>Fôřβïδδèñ úƨèř ïƨ ñôƭ áñ áδ₥ïñïƨƭřáƭôř.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>ÂƨƨèƭÛïδ {0} ïƨ ïñƲáℓïδ£ôřè₥ </value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƥářá₥èƭèř '_δïřèçƭïôñ'. Âℓℓôωèδ Ʋáℓúèƨ ářè 'δèƨç' áñδ 'áƨç'.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á</value>
+  </data>
+  <data name="InvalidIncludeTotal" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ïñçℓúδèTôƭáℓ ƥřôƲïδèδ£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="InvalidHelpName" xml:space="preserve">
+    <value>Ná₥è çáññôƭ βè è₥ƥƭ¥.£ôřè₥ </value>
+  </data>
+  <data name="InvalidHelpNameLength" xml:space="preserve">
+    <value>Ná₥è çáññôƭ βè ₥ôřè ƭλáñ 500 çλářáçƭèřƨ.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="InvalidHelpUrl" xml:space="preserve">
+    <value>Ûřℓ çáññôƭ βè è₥ƥƭ¥.£ôřè₥ </value>
+  </data>
+  <data name="InvalidHelpUrlLength" xml:space="preserve">
+    <value>Ûřℓ çáññôƭ βè ₥ôřè ƭλáñ 2000 çλářáçƭèřƨ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>ÌñƲáℓïδ Rè9úèƨƭ£ôřè</value>
+  </data>
+  <data name="InvalidScoreType" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƨçôřè ƭ¥ƥè ƥřôƲïδèδ, ƥℓèáƨè ƥřôƲïδè á Ʋáℓïδ ƨçôřè ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Nôƭ Fôúñδ£ô</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>§úççèƨƨ£ô</value>
+  </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>Ûñƙñôωñ Éřřôř£ôř</value>
+  </data>
+  <data name="InvalidFilterExpression" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƒïℓƭèř èжƥřèƨƨïôñ:£ôřè₥ ï</value>
+  </data>
+  <data name="InvalidFilterExpressionUsed" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƒïℓƭèř èжƥřèƨƨïôñ úƨèδ.£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="InvalidFilterExpressionUsedMessage" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƒïℓƭèř èжƥřèƨƨïôñ úƨèδ. Þℓèáƨè çλèçƙ ¥ôúř ƒïℓƭèř Ʋáℓúèƨ áñδ ƭλèïř δáƭá ƭ¥ƥèƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥è</value>
+  </data>
+  <data name="AssetNotfound" xml:space="preserve">
+    <value>Âƨƨèƭ Nôƭ ƒôúñδ£ôřè</value>
+  </data>
+  <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
+    <value>Tλè áƨƨèƭ ƭ¥ƥè ƒôř ƭλïƨ áƨƨèƭ çôúℓδ ñôƭ βè ƒôúñδ£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="AssetValidateWithAssetType" xml:space="preserve">
+    <value>Âƨƨèƭ Ûïδ δôèƨ ñôƭ ₥áƭçλ ƭλè Âƨƨèƭ T¥ƥè ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="EmptyInvalidParameterSet" xml:space="preserve">
+    <value>Ýôú λáƲè ƥáƨƨèδ áñ è₥ƥƭ¥ ôř ïñƲáℓïδ ƨèƭ ôƒ çřïƭèřïá.£ôřè₥ ïƥƨú₥ δôℓ</value>
+  </data>
+  <data name="FilterNotFound" xml:space="preserve">
+    <value>Fïℓƭèř ñôƭ ƒôúñδ.£ôřè₥</value>
+  </data>
+  <data name="FilterNotOwned" xml:space="preserve">
+    <value>Fïℓƭèř ñôƭ ôωñèδ β¥ úƨèř.£ôřè₥ ï</value>
+  </data>
+  <data name="FilterRemove" xml:space="preserve">
+    <value>Fïℓƭèř řè₥ôƲèδ.£ôřè</value>
+  </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>ÌñƲáℓïδ GÛÌÐ {0}.£ôřè₥</value>
+  </data>
+  <data name="InvalidNumberTooLarge" xml:space="preserve">
+    <value>ÌñƲáℓïδ {0} Ʋáℓúè ƥřôƲïδèδ. Nú₥βèř ïƨ ƭôô ℓářϱè.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="InvalidValueMessage" xml:space="preserve">
+    <value>ÌñƲáℓïδ {0} Ʋáℓúè ƥřôƲïδèδ.£ôřè₥ ïƥ</value>
+  </data>
+  <data name="MinLengthCheckGTZero" xml:space="preserve">
+    <value>ÌñƲáℓïδ {0} Ʋáℓúè ƥřôƲïδèδ. Váℓúè ₥úƨƭ βè ϱřèáƭèř ƭλáñ 0.£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="NumberValueMessage" xml:space="preserve">
+    <value>ÌñƲáℓïδ {0} Ʋáℓúè ƥřôƲïδèδ. Múƨƭ βè á ñú₥èřïç Ʋáℓúè.£ôřè₥ ïƥƨú₥ δôℓ</value>
+  </data>
+  <data name="PageNumString" xml:space="preserve">
+    <value>ƥáϱèNú₥£ô</value>
+  </data>
+  <data name="PageSizeString" xml:space="preserve">
+    <value>ƥáϱè§ïƺè£ô</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>§áƲè ƒáïℓèδ£ôř</value>
+  </data>
+  <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
+    <value>Âƨƨèƭ, Âƨƨèƭ T¥ƥè, Táϱ, Wôřƙƒℓôω T¥ƥè, RèℓáƭïôñƨλïƥT¥ƥè ôř Rèƨƥôñƨïβïℓïƭ¥ T¥ƥè ñôƭ ƒôúñδ ƒôř ÛÌÐ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, </value>
+  </data>
+  <data name="ApiEntryNotFound" xml:space="preserve">
+    <value>ÂÞÌ Éñƭïƭ¥ Nôƭ Fôúñδ£ôřè₥ </value>
+  </data>
+  <data name="ExecutionIDNotFound" xml:space="preserve">
+    <value>Éжèçúƭïôñ úñï9úè ïδèñƭïƒïèř ñôƭ ƒôúñδ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ExecutionIDStatus" xml:space="preserve">
+    <value>Nôω ƥřôçèƨƨïñϱ řè9úèƨƭ. Þℓèáƨè çλèçƙ βáçƙ ωïƭλ ƭλïƨ ÉжèçúƭïôñÌÐ ƒôř ƨƭáƭúƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>Fïèℓδ T¥ƥè Nôƭ Fôúñδ£ôřè₥ </value>
+  </data>
+  <data name="RuleIDNotFound" xml:space="preserve">
+    <value>Rúℓè ÌÐ ñôƭ ƒôúñδ£ôřè₥</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Ìñƭèřñáℓ §èřƲèř Éřřôř£ôřè₥ </value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Âççèƨƨ Ðèñïèδ£ôř</value>
+  </data>
+  <data name="AssetNotFoundForAssetType" xml:space="preserve">
+    <value>Nô áƨƨèƭ ƒôúñδ ƒôř áƨƨèƭ ƭ¥ƥè {0}£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="AssetTypeNotSupportExport" xml:space="preserve">
+    <value>ÂƨƨèƭT¥ƥè δôèƨ ñôƭ ƨúƥƥôřƭ Éжƥôřƭ Tè₥ƥℓáƭè.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="ChangeFieldNotAllowed" xml:space="preserve">
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô çλáñϱè ƒïèℓδƨ ôñ ƭλïƨ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="ComponentMaxSize250" xml:space="preserve">
+    <value>Çô₥ƥôñèñƭ çáññôƭ èжçèèδ 250 çλářáçƭèřƨ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ComponentNotValid" xml:space="preserve">
+    <value>Çô₥ƥôñèñƭ ïƨ ñôƭ Ʋáℓïδ.£ôřè₥ </value>
+  </data>
+  <data name="Conflict" xml:space="preserve">
+    <value>Çôñƒℓïçƭ£ô</value>
+  </data>
+  <data name="ConnectorStatusNotFound" xml:space="preserve">
+    <value>Çôññèƭôř ƨƭáƭúƨ ωïƭλ èжƭèřñáℓÌδ {0} çôúℓδ ñôƭ βè ƒôúñδ.£ôřè₥ ïƥƨú₥ δôℓô</value>
+  </data>
+  <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
+    <value>Çôúñƭèř Ìñïƭïáℓ Váℓúè ₥úƨƭ βè λïϱλèř ƭλáƭ áƨƨèƭ çôúñƭ ({0})£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="DataTypeValueNotMatched" xml:space="preserve">
+    <value>ÞřôƲïδèδ Ʋáℓúè δôèƨ ñôƭ ₥áƭçλ ƭλè èжƥèçƭèδ δáƭá ƭ¥ƥè ƒôř ƭλïƨ ƨèƭƭïñϱ£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
+  </data>
+  <data name="DiagramAssetTypeSystemFieldValidation" xml:space="preserve">
+    <value>Fïèℓδƨ Ná₥è, GôƲèřñáñçèRôℓè áñδ §ƭèƥNô çáññôƭ βè δèℓèƭè ƒřô₥ Ðïáϱřá₥ Âƨƨèƭ T¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
+  </data>
+  <data name="DuplicateUserUidProvided" xml:space="preserve">
+    <value>§á₥è Ûƨèř ÛÌÐ áƥƥèářƨ ₥úℓƭïƥℓè ƭï₥èƨ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="EndIPAddressNotValid" xml:space="preserve">
+    <value>Éñδ Ʋáℓúè {0} ïƨ ñôƭ á Ʋáℓïδ ÌÞ Âδδřèƨƨ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ErrorConnectorStatus" xml:space="preserve">
+    <value>Éřřôř ωλïℓè áδδ ƨƭáƭúƨ ôƒ á çôññèçƭôř èñδƥôïñƭ£ôřè₥ ïƥƨú₥ δ</value>
+  </data>
+  <data name="ErrorCreateTemplate" xml:space="preserve">
+    <value>Éřřôř Çřèáƭïñϱ Tè₥ƥℓáƭè£ôřè₥ </value>
+  </data>
+  <data name="ErrorFileOpen" xml:space="preserve">
+    <value>Éřřôř ωλïℓè ôƥèñïñϱ ƒïℓè.£ôřè₥ ï</value>
+  </data>
+  <data name="ErrorFilterExpressionParse" xml:space="preserve">
+    <value>Fïℓƭèř èжƥřèƨƨïôñ ƥářƨè èřřôř£ôřè₥ ïƥ</value>
+  </data>
+  <data name="ErrorScoreCasting" xml:space="preserve">
+    <value>Çôúℓδ ñôƭ çáƨƭ ƨçôřè ƭ¥ƥè Ʋáℓúè {0} ƭô á Ʋáℓïδ ƨçôřè ƭ¥ƥè£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="ErrorUpdateTemplate" xml:space="preserve">
+    <value>Éřřôř Ûƥδáƭïñϱ Tè₥ƥℓáƭè£ôřè₥ </value>
+  </data>
+  <data name="ExecutionCancel" xml:space="preserve">
+    <value>Éжèçúƭïôñ ωïƭλ ÛÌÐ {0} λáƨ βèèñ çáñçèℓℓèδ ƨúççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨú₥ δôℓô</value>
+  </data>
+  <data name="ExecutionCancelByUser" xml:space="preserve">
+    <value>Éжèçúƭïôñ Jôβ ωáƨ çáñçèℓèδ β¥ úƨèř.£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="ExecutionUIDCancelled" xml:space="preserve">
+    <value>Éжèçúƭïôñ ωïƭλ ÛÌÐ {0} λáƨ βèèñ áℓřèáδ¥ çáñçèℓèδ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="ExecutionUIDFinishedCanNotCancel" xml:space="preserve">
+    <value>Éжèçúƭïôñ ωïƭλ ÛÌÐ {0} λáƨ ƒïñïƨλèδ áñδ çáññôƭ βè çáñçèℓèδ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="ExecutionUIDNotBatchJobCanNotCancel" xml:space="preserve">
+    <value>Éжèçúƭïôñ ωïƭλ ÛÌÐ {0} ïƨ ñôƭ á βáƭçλ Jôβ áñδ çáññôƭ βè çáñçèℓèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
+  </data>
+  <data name="ExecutionUIDNotExist" xml:space="preserve">
+    <value>Éжèçúƭïôñ ωïƭλ ÛÌÐ {0} δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>Éжèçúƭïôñ úñï9úè ïδèñƭïƒïèř ñôƭ ƒôúñδ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="ExecutionUIDStartedCanNotCancel" xml:space="preserve">
+    <value>Éжèçúƭïôñ ωïƭλ ÛÌÐ {0} λáƨ ƨƭářƭèδ áñδ çáññôƭ βè çáñçèℓèδ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="ExecutionWrongWhenCancel" xml:space="preserve">
+    <value>§ô₥èƭλïñϱ ωèñƭ ωřôñϱ ωλïℓè çáñçèℓïñϱ Éжèçúƭïôñ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>Éжïƨƭïñϱ ïƭè₥ƨ ïñ ƨ¥ƨƭè₥£ôřè₥ ï</value>
+  </data>
+  <data name="ExportViewMessage" xml:space="preserve">
+    <value>Â Ʋáℓïδ ÉжƥôřƭVïèωT¥ƥè ïƨ řè9úïřèδ.£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="FieldMovedSuccessfully" xml:space="preserve">
+    <value>Fïèℓδ ₥ôƲèδ ƨúççèƨƨƒúℓℓ¥.£ôřè₥ ï</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>Fïèℓδ ƭ¥ƥè èřřôř£ôřè</value>
+  </data>
+  <data name="FieldUseInResponsibilityRule" xml:space="preserve">
+    <value>Tλïƨ ƒïèℓδ ƭ¥ƥè ïƨ ïñ úƨè ïñ á řèƨƥôñƨïβïℓïƭ¥ řúℓè áñδ ƭλè řúℓè ñèèδƨ ƭô βè δèℓèƭèδ ƒïřƨƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ,</value>
+  </data>
+  <data name="FieldValidateWithAssetType" xml:space="preserve">
+    <value>Fïèℓδ '{0}' ïƨ ñôƭ Ʋáℓïδ ƒôř Âƨƨèƭ T¥ƥè ƨƥèçïƒïèδ.£ôřè₥ ïƥƨú₥ δôℓ</value>
+  </data>
+  <data name="FileUploadMessage" xml:space="preserve">
+    <value>Fïℓè §úççèƨƨƒúℓℓ¥ úƥℓôáδèδ£ôřè₥ ï</value>
+  </data>
+  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
+    <value>Gřôúƥ ÛÌÐ ƥřôƲïδèδ ïƨ áñ áçƭïƲè δïřèçƭôř¥ ϱřôúƥ áñδ çáññôƭ βè ₥áñáϱèδ ₥áñúáℓℓ¥.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á</value>
+  </data>
+  <data name="GroupUidNotExists" xml:space="preserve">
+    <value>Gřôúƥ ÛÌÐ ƥřôƲïδèδ ïƨ ñôƭ á Ʋáℓïδ ϱřôúƥ ÛÌÐ. Gřôúƥ δôèƨ ñôƭ èжïƨƭ.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
+  </data>
+  <data name="InvalidAssetTypeID" xml:space="preserve">
+    <value>ÌñƲáℓïδ Âƨƨèƭ T¥ƥè ÌÐ.ÞřôƲïδè Váℓïδ Âƨƨèƭ T¥ƥè ÌÐ.£ôřè₥ ïƥƨú₥ δôℓ</value>
+  </data>
+  <data name="InvalidBoolean" xml:space="preserve">
+    <value>ÞřôƲïδèδ Ʋáℓúè ïƨ ñôƭ á Ʋáℓïδ βôôℓèáñ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="InvalidExternalID" xml:space="preserve">
+    <value>èжƭèřñáℓÌδ {0} ïƨ ñôƭ á Ʋáℓïδ Ûïδ£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="InvalidNumber" xml:space="preserve">
+    <value>ÞřôƲïδèδ Ʋáℓúè ïƨ ñôƭ á Ʋáℓïδ ñú₥βèř£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>ÌñƲáℓïδ Þářá₥èƭèř£ôřè₥</value>
+  </data>
+  <data name="InvalidResourceuid" xml:space="preserve">
+    <value>ÌñƲáℓïδ _řèƨôúřçèúïδ ƥřôƲïδèδ!£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="InvalidUserUids" xml:space="preserve">
+    <value>Óñè ôř ₥ôřè úƨèř ÛÌÐƨ ƥáƨƨèδ ïñ ářè ñôƭ á úƨèř.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="Invalid_Order" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ôřδèř ƥřôƲïδèδ!£ôřè₥ ï</value>
+  </data>
+  <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
+    <value>Tλèřè ářè èжïƨƭïñϱ ïƭè₥ƨ ïñ ¥ôúř èñƲïřôñ₥èñƭ. Ýôú ₥á¥ ñôƭ ƥèřƒôř₥ á Rèƥℓáçè áçƭïôñ úñƭïℓ ƭλôƨè ïƭè₥ƨ ářè řè₥ôƲèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨè</value>
+  </data>
+  <data name="JSONValidMessage" xml:space="preserve">
+    <value>Ýôú λáƲè ñôƭ ƥřôƲïδèδ á Ʋáℓïδ J§ÓN ƨƭřúçƭúřè ƒôř ƭλïƨ řè9úèƨƭ.£ôřè₥ ïƥƨú₥ δôℓôř </value>
+  </data>
+  <data name="MissingIPAddressValue" xml:space="preserve">
+    <value>Óñè ôř ₥ôřè ÌÞ Âδδřèƨƨèƨ ïƨ ₥ïƨƨïñϱ á Ʋáℓúè£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="ModelExportTemplateStyleNotFound" xml:space="preserve">
+    <value>Môδèℓ δôèƨ ñôƭ çôñƭáïñ á Ʋáℓïδ èжïƨƭïñϱ èжƥôřƭ ƭè₥ƥℓáƭè ƨƭ¥ℓè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
+  </data>
+  <data name="NotValidAssetActionRelationTypeProvided" xml:space="preserve">
+    <value>Nô áƨƨèƭT¥ƥèÛïδ ôř áçƭïôñT¥ƥèÛïδ ôř řèℓáƭïôñƨλïƥT¥ƥèÛïδ ƥřôƲïδèδ£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
+  </data>
+  <data name="NoUserUIDProvided" xml:space="preserve">
+    <value>Nô úƨèř ÛÌÐƨ ƥřôƲïδèδ.£ôřè₥ </value>
+  </data>
+  <data name="RemoveFieldNotAllowed" xml:space="preserve">
+    <value>Ýôú δô ñôƭ λáƲè ƥèř₥ïƨƨïôñƨ ƭô řè₥ôƲè ƒïèℓδƨ ôñ ƭλïƨ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="SettingIDNotFound" xml:space="preserve">
+    <value>§èƭƭïñϱ ωïƭλ ƭλïƨ ïδ ñôƭ ƒôúñδ£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="SettingIDNotValid" xml:space="preserve">
+    <value>Váℓúè ƥáƨƨèδ ƒôř _ƨèƭƭïñϱÌδ ïƨ ñôƭ Ʋáℓïδ£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="SettingLocked" xml:space="preserve">
+    <value>Tλïƨ ƨèƭƭïñϱ ïƨ ℓôçƙèδ áñδ çáññôƭ βè úƥδáƭèδ£ôřè₥ ïƥƨú₥ δ</value>
+  </data>
+  <data name="SettingValueProvided" xml:space="preserve">
+    <value>Éжáçƭℓ¥ ôñè Ʋáℓúè ₥úƨƭ βè ƥřôƲïδèδ βáƨèδ ôñ ƭλè ƨèƭƭïñϱ'ƨ δáƭá ƭ¥ƥè£ôřè₥ ïƥƨú₥ δôℓôř ƨï</value>
+  </data>
+  <data name="StartIPAddressNotValid" xml:space="preserve">
+    <value>§ƭářƭ Ʋáℓúè {0} ïƨ ñôƭ á Ʋáℓïδ ÌÞ Âδδřèƨƨ£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="StatusInvalid" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř §ƭáƭúƨ. Âℓℓôωèδ Ʋáℓúèƨ ářè: §TÂRT, ÇÓMÞ£ÉTÉ_§ÛÇÇÉ§§, ÇÓMÞ£ÉTÉ_FÂÌ£ÛRÉ, ÌNFÓRMÂTÌÓN£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çô</value>
+  </data>
+  <data name="StatusRequied" xml:space="preserve">
+    <value>§ƭáƭúƨ ƥářá₥èƭèř Ʋáℓúè ïƨ řè9úïřèδ.£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="StyleUpdated" xml:space="preserve">
+    <value>§¥ℓèƨ ƨúççèƨƨƒúℓℓ¥ úƥδáƭèδ.£ôřè₥ ïƥ</value>
+  </data>
+  <data name="SuccessfullyAdded" xml:space="preserve">
+    <value>{0} ƨúççèƨƨƒúℓℓ¥ áδδèδ.£ôřè₥ </value>
+  </data>
+  <data name="SucessfullyUpdated" xml:space="preserve">
+    <value>{0} ƨúççèƨƨƒúℓℓ¥ úƥδáƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="TemplateCreatingError" xml:space="preserve">
+    <value>Éřřôř Çřèáƭïñϱ Tè₥ƥℓáƭè£ôřè₥ </value>
+  </data>
+  <data name="TemplateDeleted" xml:space="preserve">
+    <value>Tè₥ƥℓáƭè Ðèℓèƭèδ.£ôřè₥</value>
+  </data>
+  <data name="TemplateDeletedError" xml:space="preserve">
+    <value>Éřřôř Ðèℓèƭïñϱ Tè₥ƥℓáƭè£ôřè₥ </value>
+  </data>
+  <data name="TemplateDeletedMessage" xml:space="preserve">
+    <value>Tè₥ƥℓáƭè Ðèℓèƭèδ §úççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="TemplateFileTypeValidate" xml:space="preserve">
+    <value>Â Tè₥ƥℓáƭè ƒïℓè ƭ¥ƥè ₥úƨƭ βè .жℓƨ ôř .жℓƨж.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="TemplateNameDuplicate" xml:space="preserve">
+    <value>Tè₥ƥℓáƭè ñá₥èδ '{0}' áℓřèáδ¥ èжïƨƭƨ ƒôř Âƨƨèƭ T¥ƥè '{1}'.£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="TemplateNotFound" xml:space="preserve">
+    <value>Tè₥ƥℓáƭè ñôƭ ƒôúñδ.£ôřè₥</value>
+  </data>
+  <data name="TemplateNotFoundMessage" xml:space="preserve">
+    <value>Nô Tè₥ƥℓáƭèƨ ƒôúñδ ƒôř ƭλè ÛÌÐ ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="TemplateNotFoundUpdate" xml:space="preserve">
+    <value>Éжƥôřƭ Tè₥ƥℓáƭè §ƭ¥ℓè ñôƭ ƒôúñδ ƭô úƥδáƭè.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="UsedinResponsibilityRules" xml:space="preserve">
+    <value>Ûƨèδ ïñ Rèƨƥôñƨïβïℓïƭ¥ Rúℓèƨ£ôřè₥ ïƥ</value>
+  </data>
+  <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
+    <value>Ûƨèř {0} ïƨ áℓřèáδ¥ á ₥è₥βèř ôƒ ƭλïƨ ϱřôúƥ£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="AlreadyWatch" xml:space="preserve">
+    <value>Ýôú ářè áℓřèáδ¥ ωáƭçλïñϱ {0}£ôřè₥ ïƥ</value>
+  </data>
+  <data name="CurrentWatch" xml:space="preserve">
+    <value>Ýôú ářè çúřřèñƭℓ¥ ωáƭçλïñϱ '{0}' Ʋïá ïƭ'ƨ ƥářèñƭ, '{1}'.£ôřè₥ ïƥƨú₥ δôℓô</value>
+  </data>
+  <data name="CurrentWatchNotUnwatchIndividually" xml:space="preserve">
+    <value>Ýôú ářè çúřřèñƭℓ¥ ωáƭçλïñϱ ƭλïƨ ïƭè₥'ƨ ƥářèñƭ, '{0}'.  Ýôú çáñ ñôƭ úñωáƭçλ ƭλïƨ ïƭè₥ ïñδïƲïδúáℓℓ¥.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, ç</value>
+  </data>
+  <data name="ImageSize2048" xml:space="preserve">
+    <value>ÌñƲáℓïδ řè9úèƨƭ, ïñƲáℓïδ ƨïƺè ƨƥèçïƒïèδ ƒôř ï₥áϱè. Váℓúè ₥úƨƭ βè ℓèƨƨ ƭλèñ 2048 ôř ϱřèáƭèř ƭλáñ 0£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, ç</value>
+  </data>
+  <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
+    <value>ÌñƲáℓïδ áƥïKè¥ ôř áƥï§èçřèƭ ƒôř çúřřèñƭÛƨèř£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="InvalidOrgTypeUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ ôřϱáñïƺáƭïôñT¥ƥèÛïδ ƥřôƲïδèδ£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="InvalidOrgUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ Óřϱáñïƺáƭïôñ Ûïδ ƥřôƲïδèδ£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>ÌñƲáℓïδ úƨèř ïñƒôř₥áƭïôñ£ôřè₥ ï</value>
+  </data>
+  <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
+    <value>ÌƨÇλáñϱèÞáƨƨωôřδRè9èúƨƭ ƨèƭ ƭô ƭřúè, Nôƭ áℓℓôωèδ ƒôř áúƭλèñƭïçáƭïôñ ƭ¥ƥè ôƭλèř ƭλáñ Fôř₥ƨ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ</value>
+  </data>
+  <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
+    <value>ÌƨÇλáñϱèÞáƨƨωôřδRè9èúƨƭ ƨèƭ ƭô ƭřúè ôñℓ¥ ƒôř çúřřèñƭ úƨèř£ôřè₥ ïƥƨú₥ δôℓôř</value>
+  </data>
+  <data name="IsChangePwdReqOneReq" xml:space="preserve">
+    <value>Óñℓ¥ ôñè řè9úèƨƭ áççèƥƭèδ ƒôř ÌƨÇλáñϱèÞáƨƨωôřδRè9èúƨƭ ƨèƭ ƭô ƭřúè.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
+  </data>
+  <data name="NameMissingInGroupPayload" xml:space="preserve">
+    <value>Ná₥è ïƨ ₥ïƨƨïñϱ ïñ ôñè ôř ₥ôřè ôƒ ƭλè ϱřôúƥƨ ïñ ƭλè ƥá¥ℓôáδ. Ná₥è ₥úƨƭ βè ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥</value>
+  </data>
+  <data name="NoGroupRequest" xml:space="preserve">
+    <value>Nô Gřôúƥƨ ƥřôƲïδèδ ïñ řè9úèƨƭ£ôřè₥ ïƥ</value>
+  </data>
+  <data name="NotCurrentWatch" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ çúřřèñƭℓ¥ ωáƭçλïñϱ '{0}'.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="NoUserRequest" xml:space="preserve">
+    <value>Nô úƨèřƨ ƥřôƲïδèδ ïñ řè9úèƨƭ.£ôřè₥ ïƥ</value>
+  </data>
+  <data name="OneMoreUidExists" xml:space="preserve">
+    <value>Óñè ôř ₥ôřè ôƒ ƭλè Ûïδƨ ƨƥèçïƒïèδ áℓřèáδ¥ èжïƨƭƨ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="PrimayOwnerOfGroupNotDelete" xml:space="preserve">
+    <value>Çáññôƭ δèℓèƭè Þřï₥ář¥ Óωñèř ôƒ ϱřôúƥ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="RequiredFieldError" xml:space="preserve">
+    <value>{0} ïƨ á řè9úïřèδ ƒïèℓδ.£ôřè₥ ï</value>
+  </data>
+  <data name="ResourceGroupNotExists" xml:space="preserve">
+    <value>Rèƨôúřçè / Gřôúƥ δôèƨñ'ƭ èжïƨƭ£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="Userremoved" xml:space="preserve">
+    <value>Ûƨèř řè₥ôƲèδ.£ôř</value>
+  </data>
+  <data name="UserremovedMessage" xml:space="preserve">
+    <value>Ûƨèř řè₥ôƲèδ ƒřô₥ ϱřôúƥ.£ôřè₥ ï</value>
+  </data>
+  <data name="YouAreWatching" xml:space="preserve">
+    <value>Ýôú ářè {0} ωáƭçλïñϱ {1}.£ôřè₥ ï</value>
+  </data>
+  <data name="FieldNotAllowedForAssetType" xml:space="preserve">
+    <value>Ýôú ářè ñôƭ áℓℓôωèδ ƭô řèƭřïèƲè ƭλè ƒïèℓδƨ ƒôř ƭλïƨ áƨƨèƭ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř </value>
+  </data>
+  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
+    <value>Âñ úñƙñôωñ èřřôř ôççúřřèδ áñδ λáƨ βèèñ ℓôϱϱèδ ƒôř ƒúřƭλèř ïñƲèƨƭïϱáƭïôñ. Þℓèáƨè ƭř¥ ¥ôúř řè9úèƨƭ áϱáïñ ℓáƭèř.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨ</value>
+  </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>ÌñƲáℓïδ _èñδÐáƭè ƥřôƲïδèδ£ôřè₥ ï</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ƨƭářƭÐáƭè ƥřôƲïδèδ£ôřè₥ ïƥ</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>§ƭářƭ Ðáƭè ₥úƨƭ βè βèƒôřè ƭλè èñδ δáƭè£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="FilterExpressionParseError" xml:space="preserve">
+    <value>Fïℓƭèř èжƥřèƨƨïôñ ƥářƨè èřřôř£ôřè₥ ïƥ</value>
+  </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ƥáϱèNú₥ ƥářá₥èƭèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ƥáϱè§ïƺè ƥářá₥èƭèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ƥáϱè§ïƺè ƥářá₥èƭèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ Ʋáℓúè ïƨ ϱřèáƭèř ƭλáñ ƭλè ₥áжï₥ú₥ ƨúƥƥôřƭèδ Ʋáℓúè ôƒ 100,000.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨè</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ƥáϱè§ïƺè ƥářá₥èƭèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ Ʋáℓúè ïƨ ℓèƨƨ ƭλáñ ôř è9úáℓ ƭô ƺèřô.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥è</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>Éñδƥôïñƭ Mèƭλôδ£ôřè</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>ÌñƲáℓïδ£ô</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} ïƨ ñôƭ Ʋáℓïδ úïδ!£ôřè₥ </value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>Ûïδ</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>ÌñƲáℓïδ ôřδèř ƥáƨƨèδ ïñ ƭλè řè9úèƨƭ£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>ÌñƲáℓïδ T¥ƥè£ôř</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>Fáïℓèδ ƭô áúƭλèñƭïçáƭè. Óïδç §ƭáƭè ñôƭ ƒôúñδ ïñ .£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>Fáïℓèδ ƭô áúƭλèñƭïçáƭè. Nôñçèƨ δô ñôƭ ₥áƭçλ.£ôřè₥ ïƥƨú₥ δ</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƨôřƭ ƒïèℓδ ƨƥèçïƒïèδ£ôřè₥ ïƥ</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƨôřƭ ôřδèř ƨƥèçïƒïèδ£ôřè₥ ïƥ</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>GôƲèřñ ïƨ ₥ïƨƨïñϱ çôñƒïϱúřáƭïôñ ïñƒôř₥áƭïôñ řèℓáƭèδ ƭô ƭλè ÓƥèñÌÐ ÌδÞ, ƨúçλ áƨ ÇℓïèñƭÌÐ áñδ/ôř Âúƭλôřïƭ¥.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñ</value>
+  </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>Tλèřè ářè èжïƨƭïñϱ áƨƨèƭƨ ïñ ¥ôúř èñƲïřôñ₥èñƭ ωïƭλ Ʋáℓúèƨ ôñ ƒïèℓδ '{0}'. Ýôú ₥á¥ ñôƭ çλáñϱè 'T¥ƥè ôƒ £ïƨƭ' ƥřôƥèřƭ¥ úñƭïℓ ƭλôƨè ƒïèℓδ Ʋáℓúèƨ ářè řè₥ôƲèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř áδïƥïƨ</value>
+  </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>ÌñƲáℓïδ ïñƭèřƨèçƭ ƭ¥ƥè ïδ£ôřè₥ ï</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>ÌñƲáℓïδ ₥ôδèℓ£ôř</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>ƭářϱèƭ áƨƨèƭ ƭ¥ƥè£ôřè₥</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>Âƨƨèƭ çřôƨƨ řèƒèřèñçè áℓřèáδ¥ èжïƨƭƨ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>Âƨƨèƭ çřôƨƨ řèƒèřèñçè ₥ôδèℓ δôèƨ ñôƭ çôñƭáïñ řè9úïřèδ ƒïèℓδƨ.£ôřè₥ ïƥƨú₥ δôℓôř </value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>ÌñƲáℓïδ _ïñçℓúδèÇλïℓδÂƨƨèƭƨ ƥřôƲïδèδ£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>Môδèℓ δôèƨ ñôƭ çôñƭáïñ řè9úïřèδ ƒïèℓδƨ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>Rè9úèƨƭ δôèƨ ñôƭ çôñƭáïñ řè9úïřèδ ƥářá₥èƭèř δáƭá§ôúřçè.£ôřè₥ ïƥƨú₥ δôℓô</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>Rè9úèƨƭ δôèƨ ñôƭ çôñƭáïñ řè9úïřèδ ƥářá₥èƭèřƨ δáƭáƨôúřçè áñδ ƭ¥ƥè.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>Rè9úèƨƭ δôèƨ ñôƭ çôñƭáïñ řè9úïřèδ ƥářá₥èƭèř ƭ¥ƥè£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="add" xml:space="preserve">
+    <value>áδδ</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>çôñƒïř₥£ô</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>Rèβúïℓδ řè9úèƨƭ řèçèïƲèδ áñδ áççèƥƭèδ.£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>Çô₥ƥáñ¥ ÌñáçƭïƲè£ôřè</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>ÌñƲáℓïδ Éñú₥èřáƭïôñ Váℓúè ïñ J§ÓN£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>ÌñƲáℓïδ J§ÓN Mèƨƨáϱè£ôřè₥ </value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>FáƲôřïƭèƨ ôƒ ƭ¥ƥè Þáϱè çáññôƭ λáƲè áñ è₥ƥƭ¥ řôúƭè.£ôřè₥ ïƥƨú₥ δôℓ</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Éřřôř£</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>ôωñèřƨλïƥ ƭ¥ƥè£ôřè</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>Þřèδïçáƭè£ô</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} ƨúççèƨƨƒúℓℓ¥ δèℓèƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} ƨúççèƨƨƒúℓℓ¥ èδïƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>Hèℓƥ Mèñú ïƭè₥ƨ λáƲè βèèñ ƨúççèƨƨƒúℓℓ¥ úƥδáƭèδ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>Hèℓƥ Mèñú Ìƭè₥ƨ Ûƥδáƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>Ìƭè₥ Ʋïƨïβïℓïƭ¥ ₥úƨƭ βè ƨèƭ ƭô 1, 2 ôř 3.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="ExecutionStatusInvalid" xml:space="preserve">
+    <value>ÌñƲáℓïδ Ʋáℓúè ƒôř ƨƭáƭúƨ. Váℓïδ Ʋáℓúèƨ ářè Þèñδïñϱ, Rúññïñϱ áñδ Çô₥ƥℓèƭèδ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ </value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>Hèℓƥ ₥èñú ïƭè₥ƨ λáƲè βèèñ ƨúççèƨƨƒúℓℓ¥ çřèáƭèδ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>Hèℓƥ ₥èñú ïƭè₥ƨ λáƲè βèèñ ƨúççèƨƨƒúℓℓ¥ řè₥ôƲèδ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>Hèℓƥ Mèñú Ìƭè₥ƨ Çřèáƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>Hèℓƥ Mèñú Ìƭè₥ƨ Ðèℓèƭèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>ÂƥƥℓïçáƭïôñÌδ ℓèñϱƭλ çáññôƭ èжçèèδ 200 çλářáçƭèřƨ£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>§úççèƨƨƒúℓℓ¥ δèℓèƭèδ ƨƥèçïƒïèδ ƒáƲôřïƭèƨ£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>FáƲôřïƭèƨ £ïƨƭ Çℓèářèδ.£ôřè₥ </value>
+  </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>Nô Ʋáℓïδ úïδ ƥřôƲïδèδ ƭô βè δèℓèƭèδ.£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>Nô Ʋáℓïδ úïδ ƥřôƲïδèδ ƭô βè úƥδáƭèδ.£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>Óřδèř çáññôƭ βè á ñèϱáƭïƲè ñú₥βèř.£ôřè₥ ïƥƨú</value>
+  </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>ÌñƲáℓïδ £ôáδÛïδ ƥřôƲïδèδ.£ôřè₥ ï</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>Âřƭïƒáçƭ ñôƭ ƒôúñδ.£ôřè₥</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>Tλè ÓƥèñÌÐ ƥřôƲïδèř řèƨƥôñƨè ïƨ ₥ïƨƨïñϱ çôδè áñδ/ôř ƨƭáƭè. Ýôúř áδ₥ïñïƨƭřáƭôř ₥á¥ λáƲè ₥ïƨçôñƒïϱúřèδ ¥ôúř ïδèñƭïƭ¥ ƥřôƲïδèř ƨèƭƭïñϱƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çôñƨèçƭèƭúř</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'{0}' ïƨ áñ ïñƲáℓïδ Ʋáℓúè ƒôř {1}£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="FavoriteUnknownObject" xml:space="preserve">
+    <value>Rôúƭè {Rôúƭè} ƥôïñƭƨ ƭô úñƙñôωñ ôβJèçƭ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="FavoriteUnknownRoute" xml:space="preserve">
+    <value>Rôúƭè {Rôúƭè} ïƨ úñƙñôωñ ôř δèƥřèçáƭèδ£ôřè₥ ïƥƨú₥</value>
+  </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>Nô áƨƨèƭ ƭ¥ƥè ƒôúñδ ωïƭλ áƨƨèƭT¥ƥèÛïδ ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ δô</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>Nô ïñƭèřƨèçƭ ƭ¥ƥè ƒôúñδ ωïƭλ ïñƭèřƨèçƭT¥ƥèÛïδ ƥřôƲïδèδ.£ôřè₥ ïƥƨú₥ δôℓô</value>
+  </data>
+  <data name="InvalidProfileIdentifier" xml:space="preserve">
+    <value>ÌñƲáℓïδ ƥřôƒïℓè ïδèñƭïƒïèř.£ôřè₥ ïƥ</value>
+  </data>
+</root>

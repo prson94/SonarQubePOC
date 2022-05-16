@@ -98,7 +98,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         {
             Name: 'CreatedOn',
             FriendlyName: $localize`Date Added`,
-            Type: new FieldType("DateTime"),
+            Type: new FieldType("Date"),
             Category: "",
             RemovePopulatedOperator: true
         },

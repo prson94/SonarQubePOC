@@ -185,7 +185,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private readonly badgeFont: string = "14px 'Precisely'";
     private readonly badgeStrokeColor = "#d6d5d5";
-    private readonly badgeTextColor = "#6d18dd";
+    private badgeTextColor = "#6d18dd";
     private readonly ignoredPanelFieldTypes = [
         "Tag",
         "Relationship",
@@ -235,6 +235,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.selectedDiagramAsset = null;
             this.linkClickInterceptor.handleEvent(this, ev);
         });
+
+        this.badgeTextColor = getComputedStyle(document.documentElement).getPropertyValue('--tabLinkColor');
 
         this.maxLinkCountToAvoidNodesTemplate = settingsService.getSettingById(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount).NumberSetting.Value;
     }
@@ -3897,7 +3899,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             stroke: this.badgeTextColor,
                         },
                         new go.Binding("text", "", (obj) => {
-                            return propertyName === "relations" ? "Relationships" : "Responsibilities";
+                            return propertyName === "relations" ? $localize`Relationships` : $localize`Responsibilities`;
                         }),
                         new go.Binding("width", "", (obj: go.GraphObject, target: go.GraphObject) => {
                             if (obj.part.data["predicateWidth"]) {
@@ -4099,18 +4101,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (!rel.consolidated) {
             if (dataCount > 1) {
-                return `Items in this collection have '${title}' relationships to ${rel.count} other items.<br/>Click to toggle the display of related items.`
+                return $localize`Items in this collection have '${title}' relationships to ${rel.count} other items.<br/>Click to toggle the display of related items.`
             }
             else {
-                return `The item in this collection has '${title}' relationships to ${rel.count} other item.<br/>Click to toggle the display of related item.`
+                return $localize`The item in this collection has '${title}' relationships to ${rel.count} other item.<br/>Click to toggle the display of related item.`
             }
         }
         else {
             if (dataCount > 1) {
-                return `Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+                return $localize`Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
             }
             else {
-                return `The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+                return $localize`The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
             }
         }
     }

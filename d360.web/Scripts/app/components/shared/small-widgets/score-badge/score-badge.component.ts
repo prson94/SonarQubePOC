@@ -45,7 +45,7 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
     }
 
     getType(): string {
-        return this._type;
+        return this._type === "Data Quality" ? $localize`Data Quality` : $localize`Governance`;
     }
 
     getBadgeText(): string {
@@ -86,31 +86,31 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
 
     private lastCalculatedMessage() {
         if (!this.score.EffectiveDate) {
-            return this.getType() + " not yet calculated";
+            return this.getType() + $localize` not yet calculated`;
         }
         var diff = new Date(Date.now() - Date.parse(this.score.EffectiveDate));
 
         var years = diff.getUTCFullYear() - 1970;
 
-        if (years > 0) return this.getType() + " last calculated " + years + " years ago.";
+        if (years > 0) return this.getType() + $localize` last calculated ${years} years ago.`;
 
         var months = diff.getUTCMonth();
 
-        if (months > 0) return this.getType() + " last calculated " + months + " months ago.";
+        if (months > 0) return this.getType() + $localize` last calculated ${months} months ago.`;
 
         var days = diff.getUTCDate() - 1;
 
-        if (days > 0) return this.getType() + " last calculated " + days + " days ago.";
+        if (days > 0) return this.getType() + $localize` last calculated ${days} days ago.`;
 
         var hours = diff.getUTCHours();
 
-        if (hours > 0) return this.getType() + " last calculated " + hours + " hours ago.";
+        if (hours > 0) return this.getType() + $localize` last calculated ${hours} hours ago.`;
 
         var minutes = diff.getUTCMinutes();
 
-        if (minutes > 0) return this.getType() + " last calculated " + minutes + " minutes ago.";
+        if (minutes > 0) return this.getType() + $localize` last calculated ${minutes} minutes ago.`;
 
-        return this.getType() + " last calculated a few seconds ago.";
+        return this.getType() + $localize` last calculated a few seconds ago.`;
     }
 
     get lastRunDate(): string {

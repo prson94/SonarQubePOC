@@ -185,5 +185,35 @@ namespace igx.functions
                 throw;
             }
         }
+
+        public List<string> GetSearchServersByCurrentSlot()
+        {
+            try
+            {
+                var lvl = GetEnvironmentLevelCurrentSlot();
+                return CompanyConnectionUtils
+                    .GetCompaniesWithDatabaseServerSettings(GetConnectionString("CommunityContext"))
+                    .Where(i => i.EnvironmentLevel == lvl)
+                    .Select(s => s.SearchServer)
+                    .Distinct()
+                    .ToList();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public List<CompanyWithDatabaseServerSettings> GetCompaniesBySearchServer(string searchServer)
+        {
+            try
+            {
+                return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(GetConnectionString("CommunityContext")).Where(i => i.SearchServer == searchServer).ToList();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

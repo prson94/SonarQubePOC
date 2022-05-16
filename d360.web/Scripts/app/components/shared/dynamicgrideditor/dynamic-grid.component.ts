@@ -19,7 +19,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
-                           (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
+                           (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..."
                            class="grid-simple-filter">
                     <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true"
                              [globalFilterFields]="globalFilterFields" [sortField]="sortField" [pageLinks]="3"

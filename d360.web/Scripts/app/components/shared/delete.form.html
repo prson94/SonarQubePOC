@@ -11,8 +11,8 @@
         </div>
         <div class="row">
             <form-message [message]="message"></form-message>
-            <button pButton (click)="delete()" label="{{deleteButtonText ? deleteButtonText : 'Delete'}}" [disabled]="isLoading || (warningMessage.length>0 && !confirmDelete)"></button>
-            <button pButton (click)="cancel()" label="{{cancelButtonText ? cancelButtonText : 'Cancel'}}" [disabled]="isLoading"></button>
+            <button pButton (click)="delete()" label="{{deleteButtonText}}" [disabled]="isLoading || (warningMessage.length>0 && !confirmDelete)"></button>
+            <button pButton (click)="cancel()" label="{{cancelButtonText}}" [disabled]="isLoading"></button>
         </div>
     </div>
 </ng-template>
@@ -46,18 +46,18 @@
         </ng-container>
         <div class="action-bar">
             <ng-container *ngIf="!hideDeleteButton && !isUsageLoading">
-                <button *ngIf="!confirmationText" igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
-                <button *ngIf="confirmationText" class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
-                <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button">Download Where Used Report{{(items && items.length > 1) ? 's' :''}}</button>
+                <button *ngIf="!confirmationText" igAutoFocus class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
+                <button *ngIf="confirmationText" class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
+                <button *ngIf="showDownloadWhereUsed" (click)="onUsageExport.emit()" class="button" i18n>Download Where Used {items?.length, plural, =0 {Report} =1 {Report} other {Reports}}</button>
                 <span class="grow"></span>
                 <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading || (confirmationText && !isConfirmed)">
-                    {{deleteButtonText ? deleteButtonText : 'Delete'}}
+                    {{deleteButtonText}}
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>
             </ng-container>
             <ng-container *ngIf="hideDeleteButton">
                 <span class="grow"></span>
-                <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
+                <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText}}</button>
             </ng-container>
         </div>
 

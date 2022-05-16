@@ -1,4 +1,4 @@
-﻿<header>{{action}} Relationship Type</header>
+﻿<header>{{action}} <ng-container i18n>Relationship Type</ng-container></header>
 <d3s-loading [isLoading]="isLoading || isLoadingItem"></d3s-loading>
 <div *ngIf="!isLoading && !isLoadingItem">
     <div class="form-instructions" i18n>When creating a relationship type, Subject should always be the higher-level item in the relationship, while Object is the lower-level, or atomic, item in the relationship.  For example, when defining a relationships between Application and Business Term you would set Application as Subject and Business Term as Object.  This will impact how sourcing and synonym inheritance works, as Object is what you are sourcing as well as where synonyms defined on the relationship will also appear.</div>
@@ -6,7 +6,7 @@
 
         <div class="row">
             <div class="col l4 m4 s12">
-                <div class="FieldName">Subject</div>
+                <div class="FieldName" i18n>Subject</div>
                 <p-dropdown igDropdown
                             igSize="full"
                             [ellipsisDirection]="'rtl'"
@@ -23,7 +23,7 @@
                             (ngModelChange)="relationshipType.Subject.Uid=$event;subjectChanged($event);"></p-dropdown>
             </div>
             <div class="col l4 m4 s12">
-                <div class="FieldName">Predicate</div>
+                <div class="FieldName" i18n>Predicate</div>
                 <p-dropdown igDropdown
                             igSize="full"
                             i18n-placeholder
@@ -75,7 +75,7 @@
                             [(ngModel)]="relationshipType.Subject.Cardinality"
                             [disabled]="!canChangeCardinality" required></p-dropdown>
             </div>
-            <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br />to</div>
+            <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br /><ng-container i18n>to</ng-container></div>
             <div class="col l4 m4 s12">
                 <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
                 <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Object Cardinality</div>

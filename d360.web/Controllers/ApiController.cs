@@ -1011,7 +1011,7 @@ namespace d360.web.Controllers
 					var targetTypeID = Request.GetQueryString("targetID");
 
 					columns.Add(
-							new GridColumn { text = "Asset Path", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
+							new GridColumn { text = Fields.AssetPath_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
 					);
 
 					remainingWidth = 80;
@@ -1051,7 +1051,7 @@ namespace d360.web.Controllers
 					dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
 					columns.Add(new GridColumn { text = Fields.Code_Name, datafield = "Code" });
-					columns.Add(new GridColumn { text = "Color", datafield = "Color" });
+					columns.Add(new GridColumn { text = Fields.Color_Name, datafield = "Color" });
 					var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
 					var loopCount = 0;
 
@@ -1141,7 +1141,7 @@ namespace d360.web.Controllers
 						columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = DataType.Text.ToString() });
 						parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 						columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = DataType.DateTime.ToString() });
-						columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = DataType.Boolean.ToString() });
+						columns.Add(new GridColumn { text = Fields.Administrator_Name, datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = DataType.Boolean.ToString() });
 						columns.Add(new GridColumn
 						{
 							text = Fields.Status_Name,
@@ -1165,8 +1165,8 @@ namespace d360.web.Controllers
 					{
 						remainingWidth = 27;
 						dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-						columns.Add(new GridColumn { text = "Name", datafield = "FirstName", fieldType = DataType.Text.ToString() });
-						columns.Add(new GridColumn { text = "Owned items", datafield = "OwnedItemCount", fieldType = DataType.Number.ToString() });
+						columns.Add(new GridColumn { text = Fields.Name_Name, datafield = "FirstName", fieldType = DataType.Text.ToString() });
+						columns.Add(new GridColumn { text = Fields.OwnedItems_Name, datafield = "OwnedItemCount", fieldType = DataType.Number.ToString() });
 						parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth);
 
 						fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
@@ -4829,7 +4829,7 @@ where v.id = {0}", id)).FirstOrDefault();
 				i.IsListable
 			).OrderBy(i => i.SortOrder).ToList();
 
-			columns.Add(new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
+			columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING });
 
 			fieldTypes.ForEach(f =>
 			{

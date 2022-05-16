@@ -130,7 +130,7 @@
                 <button igButton igAutoFocus i18n-label label="Cancel" (click)="close()"></button>
                 <span class="grow"></span>
                 <button igButton class="back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetAssets'"></button>
-                <button igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="savingInProgress || !dynamicEditor.isFormValid()" [loading]="savingInProgress"></button>
+                <button igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? addRelationshipsPlural : addRelationshipsSingular}}" (click)="saveRelationships();" [disabled]="savingInProgress || !dynamicEditor.isFormValid()" [loading]="savingInProgress"></button>
             </div>
         </ng-container>
     </div>
