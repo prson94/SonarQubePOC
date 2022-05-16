@@ -8,8 +8,14 @@
             </div>
         </div>
         <div class="badge-containers">
-            <span class="badge-feedback inv noselect" tabindex="1" (keypress)="onInputKeyUp($event)" pTooltip="Click to focus invalid fields" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-small" (click)="focusInvalid($event)" *ngIf="invalidCount > 0" i18n>{{invalidCount}} invalid</span>
-            <span class="badge-feedback req noselect" tabindex="1" (keypress)="onInputKeyUp($event)" pTooltip="Click to focus required fields" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-small" (click)="focusRequired($event)" *ngIf="requiredCount > 0" i18n>{{requiredCount}} required</span>
+            <ig-form-feedback-badges 
+                [igformGroup]="igformGroup"
+                [inputContainer]="inputContainer" 
+                [title]="title" 
+                [expanded]="expanded"
+                (expandedChange)="this.expanded = $event; this.expandedChange.emit($event)"
+            >
+            </ig-form-feedback-badges>
         </div>
     </div>
     <div class="pg-collapsable-content" [ngClass]="{'close': !expanded, 'no-padding': !shouldBePadded}" #pgcontainer>
