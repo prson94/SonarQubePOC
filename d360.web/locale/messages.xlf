@@ -4849,6 +4849,10 @@
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
           <context context-type="linenumber">398,399</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="236360fcb765c4f4027346b56c7ebd740a88f0f8" datatype="html">
         <source> Sorry, you are unable to delete a score definition with measures defined. </source>
@@ -6550,7 +6554,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/relationship-grid.component.ts</context>
-          <context context-type="linenumber">148,153</context>
+          <context context-type="linenumber">147,153</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationshipeditor/admin-relationships-editor.component.ts</context>
@@ -7885,6 +7889,10 @@
           <context context-type="linenumber">350,351</context>
         </context-group>
         <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
+          <context context-type="linenumber">3902</context>
+        </context-group>
+        <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/model-diagram.component.ts</context>
           <context context-type="linenumber">180,181</context>
         </context-group>
@@ -9019,6 +9027,10 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/base.component.ts</context>
           <context context-type="linenumber">328</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
+          <context context-type="linenumber">3902,3903</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/model-diagram.component.ts</context>
@@ -11052,6 +11064,10 @@ Please refine your search.</source>
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
           <context context-type="linenumber">396,397</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">48,49</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="3676772470424387510" datatype="html">
         <source>was</source>
@@ -12446,7 +12462,7 @@ Click to investigate and add tags.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
-          <context context-type="linenumber">149,158</context>
+          <context context-type="linenumber">149,159</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9288b1817dec1b85ea38c61db7c99ed51860bc16" datatype="html">
@@ -12522,7 +12538,7 @@ Click to investigate and add tags.</source>
         <source>Apply Filters</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
-          <context context-type="linenumber">235,241</context>
+          <context context-type="linenumber">236,241</context>
         </context-group>
       </trans-unit>
       <trans-unit id="880ad4df5a2051a437321443d69c9a866699e5ad" datatype="html">
@@ -12579,7 +12595,7 @@ Click to investigate and add tags.</source>
         <source>Select an item from the diagram to display its properties</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
-          <context context-type="linenumber">358,371</context>
+          <context context-type="linenumber">359,371</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7022221141392363973" datatype="html">
@@ -12608,6 +12624,34 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
           <context context-type="linenumber">1499</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7830453593305328340" datatype="html">
+        <source>Items in this collection have &apos;<x id="PH" equiv-text="title"/>&apos; relationships to <x id="PH_1" equiv-text="rel.count"/> other items.&lt;br/&gt;Click to toggle the display of related items.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
+          <context context-type="linenumber">4104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4906240958915149686" datatype="html">
+        <source>The item in this collection has &apos;<x id="PH" equiv-text="title"/>&apos; relationships to <x id="PH_1" equiv-text="rel.count"/> other item.&lt;br/&gt;Click to toggle the display of related item.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
+          <context context-type="linenumber">4107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3331807675594807579" datatype="html">
+        <source>Items in this collection have relationships to <x id="PH" equiv-text="rel.count"/> other items.&lt;br/&gt;Click to toggle the display of relationships.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
+          <context context-type="linenumber">4112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4332323785635954738" datatype="html">
+        <source>The item in this collection has relationships to <x id="PH" equiv-text="rel.count"/> other items.&lt;br/&gt;Click to toggle the display of relationships.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/diagram/assetbrowser/browser.component.ts</context>
+          <context context-type="linenumber">4115</context>
         </context-group>
       </trans-unit>
       <trans-unit id="01a0872477b5e1792b040c12f502986b649acfaa" datatype="html">
@@ -15390,7 +15434,7 @@ Click to investigate and add tags.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/relationship-grid.component.ts</context>
-          <context context-type="linenumber">133,140</context>
+          <context context-type="linenumber">131,140</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationshipeditor/admin-relationships-editor.component.ts</context>
@@ -16688,14 +16732,44 @@ Click to investigate and add tags.</source>
         <source>No matches found</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/relationship-grid.component.ts</context>
-          <context context-type="linenumber">108,114</context>
+          <context context-type="linenumber">109,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5336061650208234290" datatype="html">
+        <source>Relationship Type</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/relationship-grid.component.ts</context>
+          <context context-type="linenumber">110,111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5789324810191427840" datatype="html">
+        <source>Asset</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/relationship-grid.component.ts</context>
+          <context context-type="linenumber">119,120</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">252</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">283</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
+          <context context-type="linenumber">318</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
+          <context context-type="linenumber">78,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d043ea39766e7c2d30216b5165159d3562cc7077" datatype="html">
         <source> Please confirm that you wish to remove the relationship:<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br /&gt;"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span [innerHTML]=&quot;fullRelationshipNameAsHTML&quot;&gt;"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/><x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br /&gt;"/><x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br /&gt;"/> Please note that this operation cannot be undone. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/relationship-grid.component.ts</context>
-          <context context-type="linenumber">170</context>
+          <context context-type="linenumber">169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6159307621881624554" datatype="html">
@@ -17386,6 +17460,62 @@ Click to investigate and add tags.</source>
           <context context-type="linenumber">39,49</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="5bc223576c69e4c3cd92d2b576a8ef714b67ed76" datatype="html">
+        <source>Score Threshold</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">40,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7964002500492704444" datatype="html">
+        <source> not yet calculated</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">89,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8602470912413980559" datatype="html">
+        <source> last calculated <x id="PH" equiv-text="years"/> years ago.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="442517841651762627" datatype="html">
+        <source> last calculated <x id="PH" equiv-text="months"/> months ago.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6661140879268859718" datatype="html">
+        <source> last calculated <x id="PH" equiv-text="days"/> days ago.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="292004782171755329" datatype="html">
+        <source> last calculated <x id="PH" equiv-text="hours"/> hours ago.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3845179338832803478" datatype="html">
+        <source> last calculated <x id="PH" equiv-text="minutes"/> minutes ago.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5301189075649794475" datatype="html">
+        <source> last calculated a few seconds ago.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">113,114</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="6916719713404137187" datatype="html">
         <source>Item edited successfully</source>
         <context-group purpose="location">
@@ -17567,25 +17697,6 @@ Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
           <context context-type="linenumber">252</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5789324810191427840" datatype="html">
-        <source>Asset</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
-          <context context-type="linenumber">252</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
-          <context context-type="linenumber">283</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/tags/d3s-tag-view.ts</context>
-          <context context-type="linenumber">318</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
-          <context context-type="linenumber">78,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6228118825780906502" datatype="html">

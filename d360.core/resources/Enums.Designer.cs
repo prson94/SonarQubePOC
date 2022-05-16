@@ -563,5 +563,95 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("OperatorStartsWith", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Delete.
+        /// </summary>
+        public static string WorkflowActivityType_Delete {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_Delete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email Notification.
+        /// </summary>
+        public static string WorkflowActivityType_EmailNotif {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_EmailNotif", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Field Change.
+        /// </summary>
+        public static string WorkflowActivityType_FieldChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_FieldChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Form.
+        /// </summary>
+        public static string WorkflowActivityType_Form {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_Form", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP Request.
+        /// </summary>
+        public static string WorkflowActivityType_HTTPRequest {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_HTTPRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP Response.
+        /// </summary>
+        public static string WorkflowActivityType_HTTPResponse {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_HTTPResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship Change.
+        /// </summary>
+        public static string WorkflowActivityType_RelationshipChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_RelationshipChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sql Procedure.
+        /// </summary>
+        public static string WorkflowActivityType_SqlProcedure {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_SqlProcedure", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to State Chang.
+        /// </summary>
+        public static string WorkflowActivityType_StateChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_StateChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status Change.
+        /// </summary>
+        public static string WorkflowActivityType_StatusChange {
+            get {
+                return ResourceManager.GetString("WorkflowActivityType_StatusChange", resourceCulture);
+            }
+        }
     }
 }

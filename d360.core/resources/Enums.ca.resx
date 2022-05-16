@@ -285,4 +285,34 @@
   <data name="OperatorStartsWith" xml:space="preserve">
     <value>ƨƭářƭƨ ωïƭλ£ôř</value>
   </data>
+  <data name="WorkflowActivityType_Delete" xml:space="preserve">
+    <value>Ðèℓèƭè£</value>
+  </data>
+  <data name="WorkflowActivityType_EmailNotif" xml:space="preserve">
+    <value>É₥áïℓ Nôƭïƒïçáƭïôñ£ôřè₥</value>
+  </data>
+  <data name="WorkflowActivityType_FieldChange" xml:space="preserve">
+    <value>Fïèℓδ Çλáñϱè£ôř</value>
+  </data>
+  <data name="WorkflowActivityType_Form" xml:space="preserve">
+    <value>Fôř₥£</value>
+  </data>
+  <data name="WorkflowActivityType_HTTPRequest" xml:space="preserve">
+    <value>HTTÞ Rè9úèƨƭ£ôř</value>
+  </data>
+  <data name="WorkflowActivityType_HTTPResponse" xml:space="preserve">
+    <value>HTTÞ Rèƨƥôñƨè£ôř</value>
+  </data>
+  <data name="WorkflowActivityType_RelationshipChange" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ Çλáñϱè£ôřè₥</value>
+  </data>
+  <data name="WorkflowActivityType_SqlProcedure" xml:space="preserve">
+    <value>§9ℓ Þřôçèδúřè£ôř</value>
+  </data>
+  <data name="WorkflowActivityType_StateChange" xml:space="preserve">
+    <value>§ƭáƭè Çλáñϱ£ôř</value>
+  </data>
+  <data name="WorkflowActivityType_StatusChange" xml:space="preserve">
+    <value>§ƭáƭúƨ Çλáñϱè£ôř</value>
+  </data>
 </root>

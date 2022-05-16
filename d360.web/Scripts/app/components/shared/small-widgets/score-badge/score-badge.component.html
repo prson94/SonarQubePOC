@@ -5,7 +5,7 @@
         </span>
 
         <span class="item">
-            <span class="item-name"><strong class="gov-bold">Score Threshold</strong></span> {{getCurrentScoreThreshold()}}
+            <span class="item-name"><strong class="gov-bold" i18n>Score Threshold</strong></span> {{getCurrentScoreThreshold()}}
         </span>
         <div class="score-ranges">
             <div class="score-range">
@@ -23,7 +23,7 @@
         </div>
 
         <span class="item">
-            <strong class="gov-bold">Last Run Date</strong> {{lastRunDate | date:'shortDate'}}
+            <strong class="gov-bold" i18n>Last Run Date</strong> {{lastRunDate | date:'shortDate'}}
         </span>
     </div>
     <ig-badge *ngIf="!useMiniBadge" [text]="getBadgeText()" [variant]="getScoreVariantColor()"></ig-badge>

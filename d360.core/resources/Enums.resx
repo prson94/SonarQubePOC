@@ -285,4 +285,34 @@
   <data name="OperatorStartsWith" xml:space="preserve">
     <value>starts with</value>
   </data>
+  <data name="WorkflowActivityType_Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="WorkflowActivityType_EmailNotif" xml:space="preserve">
+    <value>Email Notification</value>
+  </data>
+  <data name="WorkflowActivityType_FieldChange" xml:space="preserve">
+    <value>Field Change</value>
+  </data>
+  <data name="WorkflowActivityType_Form" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="WorkflowActivityType_HTTPRequest" xml:space="preserve">
+    <value>HTTP Request</value>
+  </data>
+  <data name="WorkflowActivityType_HTTPResponse" xml:space="preserve">
+    <value>HTTP Response</value>
+  </data>
+  <data name="WorkflowActivityType_RelationshipChange" xml:space="preserve">
+    <value>Relationship Change</value>
+  </data>
+  <data name="WorkflowActivityType_SqlProcedure" xml:space="preserve">
+    <value>Sql Procedure</value>
+  </data>
+  <data name="WorkflowActivityType_StateChange" xml:space="preserve">
+    <value>State Chang</value>
+  </data>
+  <data name="WorkflowActivityType_StatusChange" xml:space="preserve">
+    <value>Status Change</value>
+  </data>
 </root>
