@@ -493,7 +493,10 @@ namespace d360.web.Controllers
 						Color.ColorJson, 
 						flv.DisplayText, 
 						refAsset.uid,
-						refType.uid as assetTypeUid
+						case when flv.LookupObjectType = 'ReferenceItemType' and flv.LookupObjectID = 0
+							then flv.AssetUid
+							else refType.uid
+						end as assetTypeUid
 					{lookupDataSelectSQL}
 					cross apply (
 						select * from STRING_SPLIT(f.Value,',')
