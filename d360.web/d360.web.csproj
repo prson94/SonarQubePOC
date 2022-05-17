@@ -26,7 +26,7 @@
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
     <IISExpressSSLPort>
-	</IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -751,7 +751,6 @@
     <Compile Include="Services\Exceptions\BusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\ForbiddenBusinessLayerException.cs" />
     <Compile Include="Services\IAssetService.cs" />
-    <Compile Include="Services\Models\ResponsibilityGetTypeBreakdownRequest.cs" />
     <Compile Include="Services\Exceptions\NotFoundBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\RecoverableBusinessLayerException.cs" />
     <Compile Include="Services\Models\ResponsibilityDeleteRulesRequest.cs" />
@@ -763,8 +762,6 @@
     <Compile Include="Services\Models\ResponsibilityGetBreakdownByResourceModel.cs" />
     <Compile Include="Services\ResponsibilityGetBreakdownByResourceRequestHandler.cs" />
     <Compile Include="Services\Models\ResponsibilityGetBreakdownByResourceResponse.cs" />
-    <Compile Include="Services\ResponsibilityGetTypeBreakdownRequestHandler.cs" />
-    <Compile Include="Services\Models\ResponsibilityGetTypeBreakdownResponse.cs" />
     <Compile Include="Services\Exceptions\UnauthorizedBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\UnrecoverableBusinessLayerException.cs" />
     <Compile Include="Services\ResponsibilityTypeIsExistsRequestHandler.cs" />
