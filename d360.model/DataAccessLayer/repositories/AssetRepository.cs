@@ -3682,7 +3682,8 @@ namespace d360.model.DataAccessLayer
 			var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
 
 			List<DatabaseBulkAssetResult> results = null;
-			bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
+			bool finished = ((dbExecutionItem.Processed + dbExecutionItem.Error) >= dbExecutionItem.Total) 
+				|| (dbExecutionItem.CompletedOn.HasValue);
 
 			if (includeResults && finished)
 			{
