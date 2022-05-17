@@ -93,7 +93,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     ngOnInit() {
         this.load();
         this.setRowsPerPage();
-        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage, this.title);
     }
 
     setRowsPerPage(): void {
