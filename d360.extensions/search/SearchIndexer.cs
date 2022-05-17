@@ -407,11 +407,14 @@ namespace d360.extensions.search
             }
 
             var queue = new AzureQueueSource();
+            var origin = "QueueRebuildRequest, class: " + assetClass.ToString();
             ReindexModel model = new ReindexModel { CompanyID = _companyID, Category = assetClass.ToString() };
             if (assetTypeUid != null)
             {
                 model.AssetTypeUid = assetTypeUid;
+                origin += ", asset type uid: " + assetTypeUid.ToString();
             }
+            model.Origin = origin;
             CreatePendingDBLog(assetClass, assetTypeUid);
 
             queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
