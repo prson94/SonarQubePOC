@@ -203,7 +203,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">200,202</context>
+          <context context-type="linenumber">204,206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-editor/asset-editor-field.component.ts</context>
@@ -1087,7 +1087,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/user/user-list.component.html</context>
-          <context context-type="linenumber">144,145</context>
+          <context context-type="linenumber">147,148</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shoppingcart/shopping-cart.component.ts</context>
@@ -1199,7 +1199,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
-          <context context-type="linenumber">90,99</context>
+          <context context-type="linenumber">90,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5504280bf1b891f73577a2ba695a3fb4e6d93ef0" datatype="html">
@@ -1394,9 +1394,9 @@
           <context context-type="linenumber">48,53</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7717147807045587763" datatype="html">
-        <source>Background link color</source>
-        <target xmlns="">ßáçƙϱřôúñδ ℓïñƙ çôℓôř£ôřè₥ </target>
+      <trans-unit id="8995580755441018516" datatype="html">
+        <source>Asset type breadcrumb link color</source>
+        <target xmlns="">Âƨƨèƭ ƭ¥ƥè βřèáδçřú₥β ℓïñƙ çôℓôř£ôřè₥ ïƥƨ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
           <context context-type="linenumber">48</context>
@@ -1439,7 +1439,7 @@
         <target xmlns="">Éδïƭ£</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
-          <context context-type="linenumber">62,65</context>
+          <context context-type="linenumber">61,65</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-definition.component.ts</context>
@@ -1575,16 +1575,16 @@
         <target xmlns="">ßáçƙϱřôúñδ çôℓôř£ôřè</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">54,58</context>
+          <context context-type="linenumber">54,57</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">141,146</context>
+          <context context-type="linenumber">142,146</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6f2d460e1cb5d70c9d4869b646289cbe716bd562" datatype="html">
-        <source>Breadcrumb link color</source>
-        <target xmlns="">ßřèáδçřú₥β ℓïñƙ çôℓôř£ôřè₥ </target>
+      <trans-unit id="2b18d08eb551f40825b90c55578e63ba83bddfb6" datatype="html">
+        <source>Asset type breadcrumb link color</source>
+        <target xmlns="">Âƨƨèƭ ƭ¥ƥè βřèáδçřú₥β ℓïñƙ çôℓôř£ôřè₥ ïƥƨ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
           <context context-type="linenumber">64,69</context>
@@ -1595,7 +1595,7 @@
         <target xmlns="">ßúƭƭôñ çôℓôř£ôř</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">76,80</context>
+          <context context-type="linenumber">76,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3a939d10c537b5d32d06b69395e712917bf97e92" datatype="html">
@@ -1603,7 +1603,7 @@
         <target xmlns="">§ïδè ₥èñú çôℓôř£ôřè</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">87,91</context>
+          <context context-type="linenumber">88,91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="491a70a39a3639e0607f918c49b283cbb8387dea" datatype="html">
@@ -1619,7 +1619,7 @@
         <target xmlns="">Hô₥è Þáϱè£ô</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">109,113</context>
+          <context context-type="linenumber">109,114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e329c51a167302994bd1f51912829ba941db04ff" datatype="html">
@@ -1635,7 +1635,7 @@
         <target xmlns="">Þřï₥ář¥ βúƭƭôñ çôℓôř£ôřè₥ </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">130,135</context>
+          <context context-type="linenumber">131,135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8a7aec65ec76d64e09f3bbebbb89a19eac6ee93b" datatype="html">
@@ -1651,7 +1651,7 @@
         <target xmlns="">Táβℓè λèáδèř çôℓôř£ôřè₥</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">163,168</context>
+          <context context-type="linenumber">164,168</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2e0f5f5f7b971affa25be7fface0321a72afa11c" datatype="html">
@@ -1659,7 +1659,7 @@
         <target xmlns="">Táβℓè řôω ƨèℓèçƭïôñ£ôřè₥</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">174,178</context>
+          <context context-type="linenumber">175,178</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6e8f74c62fdfa45ceacd35d55e2483a73f31d5c5" datatype="html">
@@ -3545,7 +3545,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/diagram/workflow/workflow-history.component.ts</context>
@@ -7167,7 +7167,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.html</context>
-          <context context-type="linenumber">78,81</context>
+          <context context-type="linenumber">82,85</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/workflow/workflow-bulk-form.component.html</context>
@@ -7297,7 +7297,7 @@
         <target xmlns="">áƨƨèƭƨ£</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.html</context>
-          <context context-type="linenumber">139,142</context>
+          <context context-type="linenumber">143,146</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c852942a7cc47c7d7feeaef12cd5f0985b8571ff" datatype="html">
@@ -7305,7 +7305,7 @@
         <target xmlns="">ƭáϱϱèδ£</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.html</context>
-          <context context-type="linenumber">147,151</context>
+          <context context-type="linenumber">151,155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7b844a9b06e202025e521aee694f7467c3974950" datatype="html">
@@ -7313,7 +7313,7 @@
         <target xmlns="">Þℓèáƨè çôñƒïř₥ ƭλáƭ ¥ôú ωïƨλ ƭô δèℓèƭè ƒôℓℓôωïñϱ ƭáϱƨ£ôřè₥ ïƥƨú₥ δôℓ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.html</context>
-          <context context-type="linenumber">160,163</context>
+          <context context-type="linenumber">164,167</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8567121476280593410" datatype="html">
@@ -7993,7 +7993,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/add-relationship.component.ts</context>
@@ -8001,7 +8001,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.html</context>
-          <context context-type="linenumber">74,75</context>
+          <context context-type="linenumber">78,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1647750822609779679" datatype="html">
@@ -10915,7 +10915,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/semantic-editor/semantic-editor.component.ts</context>
@@ -10955,7 +10955,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/semantic-editor/semantic-editor.component.ts</context>
@@ -11007,7 +11007,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.html</context>
@@ -11155,7 +11155,7 @@ Please refine your search.</source>
         <target xmlns=""> Nô ƨè₥áñƭïç ƭ¥ƥèƨ ƒôúñδ £ôřè₥ ï</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-list.component.html</context>
-          <context context-type="linenumber">202</context>
+          <context context-type="linenumber">206</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c1227cdc7a540f16ff8ae333a0af8445c5e58c5a" datatype="html">
@@ -19881,7 +19881,7 @@ Click to investigate and add tags.</source>
         <target xmlns="">Rèƨèƭ Þáƨƨωôřδ£ôřè</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/user/user-list.component.html</context>
-          <context context-type="linenumber">133,136</context>
+          <context context-type="linenumber">136,139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6705470b9f40bbe6c5a5793b310cd1c799f33cff" datatype="html">
@@ -20771,7 +20771,7 @@ Click to investigate and add tags.</source>
         <target xmlns="">Ðáƭè Âδδèδ£ôř</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.html</context>
-          <context context-type="linenumber">64,67</context>
+          <context context-type="linenumber">68,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="b0b91b6f4bafaa7e5476ba2275b1b4e6d2b5afa6" datatype="html">
@@ -20779,7 +20779,7 @@ Click to investigate and add tags.</source>
         <target xmlns="">Tλè δáƭè ôñ ωλïçλ ƭλè úƨèř áδδèδ ƭλè &lt;β&gt;£ôřè₥ ïƥƨú₥ <x id="INTERPOLATION" equiv-text="{{tag.Value}}" xmlns="urn:oasis:names:tc:xliff:document:1.2" />&lt;/β&gt; ƭáϱ ƭô ƭλïƨ áƨƨèƭ£ôřè₥ </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.html</context>
-          <context context-type="linenumber">74,67</context>
+          <context context-type="linenumber">78,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6198915087721295150" datatype="html">
