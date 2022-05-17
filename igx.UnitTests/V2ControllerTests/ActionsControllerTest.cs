@@ -18,7 +18,7 @@ namespace igx.UnitTests.V2ControllerTests
         
         public ActionsControllerTest()
         {
-            this.actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepository())
+            this.actionsController = new ActionsController(GetCoreComponentSet(), GetCommentRepository(), GetIssueRepository(), GetAssetRepository(), GetResponsibilityRepositoryMock().Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
