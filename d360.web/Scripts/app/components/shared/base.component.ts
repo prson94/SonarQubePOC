@@ -1194,7 +1194,12 @@ export class BaseComponent {
                 var currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
                     this.breadcrumbsService.clearBreadcrumbs();
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res, undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+                    this.breadcrumbsService.showBreadcrumb(
+                        new Breadcrumb(
+                            currentAreaName ? currentAreaName : res,
+                            `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`
+                        )
+                    );
                     this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${data.ObjectTypeId}`,
                         undefined,
                         'RuleType',

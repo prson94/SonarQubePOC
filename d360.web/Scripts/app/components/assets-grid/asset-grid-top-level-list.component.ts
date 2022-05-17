@@ -72,6 +72,12 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
                     });
 
                     break;
+                case AssetTypeClass.Rule:
+                    const assetType = 'Rules';
+                    this.folderTitle = assetType;
+                    this.setBrowserTitle(this.titleService, assetType);
+                    this.area = assetType;
+                    break;
                 default:
                     let className: string = AssetTypeClass[this.assetTypeClass];
                     this.folderTitle = `${className} Assets`;
@@ -127,7 +133,11 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
     navigate(uid: string) {
         this.assetService.getAssetTypeLegacyData(uid)
             .subscribe(res => {
-                this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
+                if(res.Object === 'RuleType') {
+                    this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_RULE_ROOT}/` + res.ObjectID);
+                } else {
+                    this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
+                }
             })
     }
 }
