@@ -74,5 +74,7 @@ namespace d360.model.DataAccessLayer
         /// <param name="typeUid"></param>
         /// <returns></returns>
         Task DeleteResponsibilityOverridesByTypeAsync(Guid typeUid);
+
+        Task<ICollection<ResponsibilityBreakdownResponse>> GetTypeBreakdownAsync(Guid? responsibilityTypeUid);
     }
 }
