@@ -73,7 +73,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 
                     break;
                 case AssetTypeClass.Rule:
-                    const assetType = 'Rules';
+                    const assetType = $localize`Rules`;
                     this.folderTitle = assetType;
                     this.setBrowserTitle(this.titleService, assetType);
                     this.area = assetType;
