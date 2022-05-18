@@ -73,6 +73,8 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 
                     break;
                 case AssetTypeClass.Rule:
+                    // false alarm from codacy, $localize is declared globaly
+                    // eslint-disable-next-line
                     const assetType = $localize`Rules`;
                     this.folderTitle = assetType;
                     this.setBrowserTitle(this.titleService, assetType);
