@@ -13,7 +13,7 @@ import { BaseComponent } from '../../../shared/base.component';
                                [value]="true"
                                style="width: 15px;height:20px;" />
                         <div class="FieldName" style="display:inline-block;">
-                            Satisfy all&nbsp;&nbsp;&nbsp;&nbsp;
+                            <ng-container>Satisfy all</ng-container>&nbsp;&nbsp;&nbsp;&nbsp;
                         </div>
                         <input type="radio" name="isAll"
                                [(ngModel)]="satisfyAll"
@@ -100,11 +100,11 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
         switch (item['@Operator']) {
             case 'C':
-                return 'value changed';
+                return $localize`value changed`;
             case 'P':
-                return 'is populated';
+                return $localize`is populated`;
             case 'NP':
-                return 'is not populated';
+                return $localize`is not populated`;
             default:
                 return item['@Operator']
         }
@@ -116,11 +116,11 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
 
         switch (item['@Operator']) {
             case 'C':
-                return '[any value change]';
+                return $localize`[any value change]`;
             case 'P':
-                return '[any value]';
+                return $localize`[any value]`;
             case 'NP':
-                return '[no value]';
+                return $localize`[no value]`;
             default:
                 return (item['@ValueLabel'] == null ? item['@Value'] : item['@ValueLabel']);
         }

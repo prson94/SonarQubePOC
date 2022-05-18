@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.resources;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -9,22 +10,11 @@ namespace d360.core.enums.Workflow
     /// </summary>
     public enum ChangeType
     {
-        [Description("Item Added")]
         Add = 1,
-
-        [Description("Item Changed")]
         Update = 2,
-        
-        [Description("Item Removed")]
         Delete = 3,
-        
-        [Description("Schedule")]
         Schedule = 4,
-        
-        [Description("Score Changed")]
         ScoreUpdate = 5,
-        
-        [Description("Request Certification")]
         RequestCertification = 8
     }
 
@@ -45,9 +35,11 @@ namespace d360.core.enums.Workflow
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
+                var enumValue = (ChangeType)Enum.Parse(typeof(ChangeType), tm.Name);
+
                 var info = new ChangeTypeInfo
                 {
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    Description = DescriptionAsDisplayString(enumValue),
                     ID = (ChangeType)Enum.Parse(typeof(ChangeType), tm.Name),
                     Name = tm.Name
                 };
@@ -55,6 +47,19 @@ namespace d360.core.enums.Workflow
             }
 
             return list;
+        }
+        private static string DescriptionAsDisplayString(ChangeType type)
+        {
+            switch (type)
+            {
+                case ChangeType.Add: return Enums.WorkflowChangeType_ItemAdded;
+                case ChangeType.Delete: return Enums.WorkflowChangeType_ItemRemoved;
+                case ChangeType.RequestCertification: return Enums.WorkflowChangeType_RequestCertification;
+                case ChangeType.Schedule: return Enums.WorkflowChangeType_Schedule;
+                case ChangeType.ScoreUpdate: return Enums.WorkflowChangeType_ScoreChange;
+                case ChangeType.Update: return Enums.WorkflowChangeType_ItemChanged;
+                default: throw new ArgumentOutOfRangeException("ChangeType");
+            }
         }
     }
 }

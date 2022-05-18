@@ -187,6 +187,123 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action.
+        /// </summary>
+        public static string Load_Action {
+            get {
+                return ResourceManager.GetString("Load_Action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error Messages.
+        /// </summary>
+        public static string Load_ErrorMessages {
+            get {
+                return ResourceManager.GetString("Load_ErrorMessages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Errors.
+        /// </summary>
+        public static string Load_Errors {
+            get {
+                return ResourceManager.GetString("Load_Errors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Incompletes.
+        /// </summary>
+        public static string Load_Incompletes {
+            get {
+                return ResourceManager.GetString("Load_Incompletes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to less than a minute.
+        /// </summary>
+        public static string Load_MessageLessThanMin {
+            get {
+                return ResourceManager.GetString("Load_MessageLessThanMin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to minute(s).
+        /// </summary>
+        public static string Load_MessageMoreThanMin {
+            get {
+                return ResourceManager.GetString("Load_MessageMoreThanMin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Notes.
+        /// </summary>
+        public static string Load_Notes {
+            get {
+                return ResourceManager.GetString("Load_Notes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string Load_Status {
+            get {
+                return ResourceManager.GetString("Load_Status", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successes.
+        /// </summary>
+        public static string Load_Successes {
+            get {
+                return ResourceManager.GetString("Load_Successes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Target.
+        /// </summary>
+        public static string Load_Target {
+            get {
+                return ResourceManager.GetString("Load_Target", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Took (minutes).
+        /// </summary>
+        public static string Load_TookMinutes {
+            get {
+                return ResourceManager.GetString("Load_TookMinutes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Total.
+        /// </summary>
+        public static string Load_Total {
+            get {
+                return ResourceManager.GetString("Load_Total", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded By.
+        /// </summary>
+        public static string Load_UploadedBy {
+            get {
+                return ResourceManager.GetString("Load_UploadedBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name.
         /// </summary>
         public static string Name_Name {

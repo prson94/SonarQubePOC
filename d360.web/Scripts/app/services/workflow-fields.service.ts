@@ -35,9 +35,9 @@ export class WorkflowFieldsService {
         { value: '<', label: '<' },
         { value: '>=', label: '>=' },
         { value: '<=', label: '<=' },
-        { value: 'C', label: 'value changed' },
-        { value: 'P', label: 'is populated' },
-        { value: 'NP', label: 'is not populated' },
+        { value: 'C', label: $localize`value changed` },
+        { value: 'P', label: $localize`is populated` },
+        { value: 'NP', label: $localize`is not populated` },
     ];
 
     private scoreTypes: any[] = [];
@@ -93,7 +93,7 @@ export class WorkflowFieldsService {
             this.scoreTypes.forEach(s => {
                 this.contextualFields.push({
                     value: 'Contextual|Score|' + s.value,
-                    label: s.label + ' (System Field)',
+                    label: s.label + ' (' + $localize`System Field`+')',
                     type: 'number'
                 });
             });
@@ -192,7 +192,7 @@ export class WorkflowFieldsService {
             f = {};
             f['@stepId'] = step.key;
             f['@id'] = 'statusCode';
-            f['@label'] = 'Status Code';
+            f['@label'] = $localize`Status Code`;
             f['@type'] = 'number';
             this.httpFields.push(f);
         }
@@ -202,7 +202,7 @@ export class WorkflowFieldsService {
             f = {};
             f['@stepId'] = step.key;
             f['@id'] = 'responseBody';
-            f['@label'] = 'Response Body';
+            f['@label'] = $localize`Response Body`;
             f['@type'] = 'text';
             this.httpFields.push(f);
         }

@@ -571,17 +571,17 @@ namespace d360.model
 					objectId as id,
 					[object] as [type],		
 					case when T.[object] = 'ArtifactType' and T.[Class] = 1 then
-						'Business Asset'
+						'{CommonNames.AssetTypeClass_Business}'
 					when T.[object] = 'ArtifactType' and T.[Class] = 8 then
-						'Technical Asset'
+						'{CommonNames.AssetTypeClass_Technical}'
 					when T.[object] = 'RuleType' then
-						'Rule Type'
+						'{CommonNames.AssetTypeClass_RuleType}'
 					when T.[object] = 'PolicyType' then
-						'Policy Type'
+						'{CommonNames.AssetTypeClass_PolicyType}'
 					when T.[object] = 'ReferenceItemType' then
-						'Reference List'
+						'{CommonNames.AssetTypeClass_ReferenceList}'
 					when T.[object] = 'TaxonomyType' then
-						'Model Type'
+						'{CommonNames.AssetTypeClass_ModelType}'
 					when T.[object] = 'ShoppingCartType' then
 						'Shopping Cart'
 					else
@@ -599,13 +599,13 @@ namespace d360.model
 				where
 					T.[object] in ('ArtifactType','TaxonomyType','PolicyType','RuleType','ShoppingCartType','ReferenceItemType')
 				union all
-				select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], 'Relationship :: ' + t_name.Name as [label], 1 as [count] 
+				select 'IntersectType|' + cast(t.id as varchar) as value, t.id, 'IntersectType' as [type], '{CommonNames.AssetTypeClass_Relationship} :: ' + t_name.Name as [label], 1 as [count] 
 				from intersecttype t
 				inner join [Predicate] p on p.ID=t.PredicateID and p.Type not in ({(int)PredicateType.Diagram}, {(int)PredicateType.DiagramUse}, {(int)PredicateType.DiagramReference})
 				cross apply dbo.GetIntersectTypeNames(t.ID) t_name			
 				group by t.id, t_name.name
 				union all
-				select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], 'Action Type :: ' + t.Name as [label], count(*) as [count] 
+				select 'IssueType|' + cast(t.id as varchar) as value, t.id, 'IssueType' as [type], '{CommonNames.AssetTypeClass_ActionType} :: ' + t.Name as [label], count(*) as [count] 
 				from issuetype t
 				left join issue a on a.issuetypeid = t.id
 				group by t.id, t.name
