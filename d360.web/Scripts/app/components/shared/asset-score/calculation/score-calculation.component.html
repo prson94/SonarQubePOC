@@ -47,7 +47,7 @@
     <ng-container *ngIf="selected.DisplayMaxWeight !== selected.Weight">
         <div class="calculation-group">
             <div class="title" i18n>Adjusted Weight</div>
-            <div class="indented-line">= ({{weightLabel()}} &#247; weights total) &#215; {{formulaMultiplierLabel()}}</div>
+            <div class="indented-line">= ({{weightLabel()}} &#247; <ng-container i18n>weights total</ng-container>) &#215; {{formulaMultiplierLabel()}}</div>
             <div class="indented-line">
                 = (
                 <span *ngIf="matchedCondition">{{getAsPrecentage(matchedCondition.Weight !== undefined ? matchedCondition.Weight : selected.Weight)}}</span>
@@ -64,7 +64,7 @@
 
     <div class="calculation-group">
         <div class="title" i18n>Maximum Possible Score</div>
-        <div class="indented-line">= ({{weightLabel()}} &#247; sum of weights) &#215; {{formulaMultiplierLabel()}}</div>
+        <div class="indented-line">= ({{weightLabel()}} &#247; <ng-container i18n>sum of weights</ng-container>) &#215; {{formulaMultiplierLabel()}}</div>
 
         <!--Scores of groups -->
         <div class="indented-line" *ngIf="selected.IsGroup">
@@ -93,7 +93,7 @@
         <div class="title" i18n>Measure Score</div>
 
         <ng-container *ngIf="selected.IsGroup">
-            <div class="indented-line">= sum of sub-measures</div>
+            <div class="indented-line">= <ng-container i18n>sum of sub-measures</ng-container></div>
             <div class="indented-line">
                 =
                 <span *ngFor="let item of selected.Measures;let i = index;">
