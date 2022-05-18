@@ -5842,11 +5842,25 @@
           <context context-type="linenumber">150,155</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="394c00aee0947bca7a131743216dd659df21218a" datatype="html">
+        <source>Only apply this measure to assets that match a condition group</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
+          <context context-type="linenumber">163,168</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="12e73728cbfeef584421a67cc424fad14e8e2957" datatype="html">
+        <source>Apply this measure to all assets, using the first matching condition group to determine measure weight</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
+          <context context-type="linenumber">178,184</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="8cf9727d49e8986568364442472f247e62e18947" datatype="html">
         <source>Condition Group</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">162,166</context>
+          <context context-type="linenumber">189,194</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
@@ -5857,7 +5871,7 @@
         <source>Weight</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">176,178</context>
+          <context context-type="linenumber">200,201</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.ts</context>
@@ -5892,7 +5906,7 @@
         <source>Pass Threshold</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">185,186</context>
+          <context context-type="linenumber">206,209</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-history.component.html</context>
@@ -5907,11 +5921,11 @@
         <source> Please enter a value between 1 and 100 </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">195,200</context>
+          <context context-type="linenumber">213,217</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">210,215</context>
+          <context context-type="linenumber">232,238</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.ts</context>
@@ -5926,7 +5940,7 @@
         <source> Please enter a value with a maximum of 3 decimal places of accuracy. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">203,208</context>
+          <context context-type="linenumber">225,228</context>
         </context-group>
       </trans-unit>
       <trans-unit id="429763935097463241" datatype="html">

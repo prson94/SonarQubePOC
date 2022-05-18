@@ -6348,12 +6348,28 @@
           <context context-type="linenumber">150,155</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="394c00aee0947bca7a131743216dd659df21218a" datatype="html">
+        <source>Only apply this measure to assets that match a condition group</source>
+        <target xmlns="">Óñℓ¥ áƥƥℓ¥ ƭλïƨ ₥èáƨúřè ƭô áƨƨèƭƨ ƭλáƭ ₥áƭçλ á çôñδïƭïôñ ϱřôúƥ£ôřè₥ ïƥƨú₥ δôℓôř </target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
+          <context context-type="linenumber">163,168</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="12e73728cbfeef584421a67cc424fad14e8e2957" datatype="html">
+        <source>Apply this measure to all assets, using the first matching condition group to determine measure weight</source>
+        <target xmlns="">Âƥƥℓ¥ ƭλïƨ ₥èáƨúřè ƭô áℓℓ áƨƨèƭƨ, úƨïñϱ ƭλè ƒïřƨƭ ₥áƭçλïñϱ çôñδïƭïôñ ϱřôúƥ ƭô δèƭèř₥ïñè ₥èáƨúřè ωèïϱλƭ£ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ á₥èƭ, çô</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
+          <context context-type="linenumber">178,184</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="8cf9727d49e8986568364442472f247e62e18947" datatype="html">
         <source>Condition Group</source>
         <target xmlns="">Çôñδïƭïôñ Gřôúƥ£ôřè</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">162,166</context>
+          <context context-type="linenumber">189,194</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-governance.component.html</context>
@@ -6365,7 +6381,7 @@
         <target xmlns="">Wèïϱλƭ£</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">176,178</context>
+          <context context-type="linenumber">200,201</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.ts</context>
@@ -6401,7 +6417,7 @@
         <target xmlns="">Þáƨƨ Tλřèƨλôℓδ£ôřè</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">185,186</context>
+          <context context-type="linenumber">206,209</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-history.component.html</context>
@@ -6417,11 +6433,11 @@
         <target xmlns=""> Þℓèáƨè èñƭèř á Ʋáℓúè βèƭωèèñ 1 áñδ 100 £ôřè₥ ïƥƨú₥ </target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">195,200</context>
+          <context context-type="linenumber">213,217</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">210,215</context>
+          <context context-type="linenumber">232,238</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.ts</context>
@@ -6437,7 +6453,7 @@
         <target xmlns=""> Þℓèáƨè èñƭèř á Ʋáℓúè ωïƭλ á ₥áжï₥ú₥ ôƒ 3 δèçï₥áℓ ƥℓáçèƨ ôƒ áççúřáç¥. £ôřè₥ ïƥƨú₥ δôℓôř ƨïƭ</target>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-dataquality.component.html</context>
-          <context context-type="linenumber">203,208</context>
+          <context context-type="linenumber">225,228</context>
         </context-group>
       </trans-unit>
       <trans-unit id="429763935097463241" datatype="html">
