@@ -210,4 +210,43 @@
   <data name="Relationship_UID_Name" xml:space="preserve">
     <value>Rèℓáƭïôñƨλïƥ ÛÌÐ£ôřè</value>
   </data>
+  <data name="Load_Action" xml:space="preserve">
+    <value>Âçƭïôñ£</value>
+  </data>
+  <data name="Load_ErrorMessages" xml:space="preserve">
+    <value>Éřřôř Mèƨƨáϱèƨ£ôřè</value>
+  </data>
+  <data name="Load_Errors" xml:space="preserve">
+    <value>Éřřôřƨ£</value>
+  </data>
+  <data name="Load_Incompletes" xml:space="preserve">
+    <value>Ìñçô₥ƥℓèƭèƨ£ôř</value>
+  </data>
+  <data name="Load_MessageLessThanMin" xml:space="preserve">
+    <value>ℓèƨƨ ƭλáñ á ₥ïñúƭè£ôřè₥</value>
+  </data>
+  <data name="Load_MessageMoreThanMin" xml:space="preserve">
+    <value>₥ïñúƭè(ƨ)£ô</value>
+  </data>
+  <data name="Load_Notes" xml:space="preserve">
+    <value>Nôƭèƨ£</value>
+  </data>
+  <data name="Load_Status" xml:space="preserve">
+    <value>§ƭáƭúƨ£</value>
+  </data>
+  <data name="Load_Successes" xml:space="preserve">
+    <value>§úççèƨƨèƨ£ô</value>
+  </data>
+  <data name="Load_Target" xml:space="preserve">
+    <value>Tářϱèƭ£</value>
+  </data>
+  <data name="Load_TookMinutes" xml:space="preserve">
+    <value>Tôôƙ (₥ïñúƭèƨ)£ôřè</value>
+  </data>
+  <data name="Load_Total" xml:space="preserve">
+    <value>Tôƭáℓ£</value>
+  </data>
+  <data name="Load_UploadedBy" xml:space="preserve">
+    <value>Ûƥℓôáδèδ ß¥£ôř</value>
+  </data>
 </root>
