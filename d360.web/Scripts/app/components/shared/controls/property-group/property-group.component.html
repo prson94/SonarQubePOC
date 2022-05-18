@@ -7,16 +7,6 @@
                 <i class="fa fa-question-circle" pTooltip="{{moreInfoHtml}}" [escape]="false" [hideDelay]="1000" tooltipPosition="top" tooltipStyleClass="ig-tooltip ig-tooltip-medium" [appendTo]="'body'"></i>
             </div>
         </div>
-        <div class="badge-containers">
-            <ig-form-feedback-badges 
-                [igformGroup]="igformGroup"
-                [inputContainer]="inputContainer" 
-                [title]="title" 
-                [expanded]="expanded"
-                (expandedChange)="this.expanded = $event; this.expandedChange.emit($event)"
-            >
-            </ig-form-feedback-badges>
-        </div>
     </div>
     <div class="pg-collapsable-content" [ngClass]="{'close': !expanded, 'no-padding': !shouldBePadded}" #pgcontainer>
         <ng-content select="[inputs], [readonly]"></ng-content>

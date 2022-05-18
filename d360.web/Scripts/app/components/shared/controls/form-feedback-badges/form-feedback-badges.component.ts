@@ -1,9 +1,11 @@
-import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
+import { Component, NgModule, Input, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, OnChanges, SimpleChanges, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import * as _ from 'lodash';
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
+import { Subject } from 'rxjs';
+import { takeUntil, tap } from 'rxjs/operators';
 
 @Component({
     selector: 'ig-form-feedback-badges',
@@ -11,10 +13,13 @@ import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './f
     styleUrls: ['./form-feedback-badges.component.less'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FormFeedbackBadgesComponent implements OnInit, AfterViewInit {
+export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     @Input() igformGroup: FormGroup;
     @Input() inputContainer: ElementRef;
 
+    $destroy = new Subject();
+
+    // TODO: check if we need this
     @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;
@@ -32,27 +37,25 @@ export class FormFeedbackBadgesComponent implements OnInit, AfterViewInit {
     }, 200);
 
     constructor(private ref: ChangeDetectorRef) {
-
     }
 
-    ngAfterViewInit(): void {
-        if (this.igformGroup) {
-            this.igformGroup.valueChanges.subscribe(x => {
-                this.delayedRefresh();
-            });
+    ngOnChanges(changes: SimpleChanges) {
+        const needReinit = 'igformGroup' in changes;
+        if (!needReinit) {
+            return;
         }
-    }
 
-    ngOnInit(): void {
+        this.$destroy.next();
+        this.delayedRefresh.cancel();
+
         if (this.igformGroup) {
-            this.igformGroup.valueChanges.subscribe(x => {
-                this.delayedRefresh();
-            });
+            this.igformGroup.valueChanges
+                .pipe(
+                    takeUntil(this.$destroy),
+                    tap(() => this.delayedRefresh())
+                )
+                .subscribe();
         }
-    }
-
-    public refreshBadgeCounts() {
-        this.delayedRefresh();
     }
 
     focusInvalid(event) {
@@ -166,6 +169,10 @@ export class FormFeedbackBadgesComponent implements OnInit, AfterViewInit {
                 event.target.click();
                 return false;
         }
+    }
+
+    ngOnDestroy(): void {
+        this.$destroy.next();
     }
 }
 

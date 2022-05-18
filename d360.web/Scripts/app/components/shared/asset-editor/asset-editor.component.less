@@ -3,15 +3,26 @@
 .add-asset-form {
   padding: 24px;
 
-  .form-header {
-    font-size: 16px;
-    font-weight: bold;
-    padding-bottom: 16px;
+  .form-header-wrapper {
+    display: flex;
 
-    .sub-header {
-      color: @igx-gray-color;
-      font-size: 14px;
-      font-weight: normal;
+    @formHeaderBottomPadding: 16px;
+    .form-header {
+      font-size: 16px;
+      font-weight: bold;
+      padding-bottom: @formHeaderBottomPadding;
+
+      .sub-header {
+        color: @igx-gray-color;
+        font-size: 14px;
+        font-weight: normal;
+      }
+    }
+
+    ig-form-feedback-badges {
+      margin-left: auto;
+      align-self: center;
+      padding-bottom: calc(@formHeaderBottomPadding / 2);
     }
   }
 
