@@ -123,6 +123,12 @@
   <data name="AssetTypeClass_Business" xml:space="preserve">
     <value>ßúƨïñèƨƨ Âƨƨèƭ£ôřè</value>
   </data>
+  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
+    <value>Ðïáϱřá₥ Âƨƨèƭ£ôř</value>
+  </data>
+  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
+    <value>Gřá₥₥áƭïç T¥ƥè£ôřè</value>
+  </data>
   <data name="AssetTypeClass_Model" xml:space="preserve">
     <value>Môδèℓ£</value>
   </data>
@@ -135,6 +141,9 @@
   <data name="AssetTypeClass_PolicyType" xml:space="preserve">
     <value>Þôℓïç¥ T¥ƥè£ôř</value>
   </data>
+  <data name="AssetTypeClass_Reference" xml:space="preserve">
+    <value>Rèƒèřèñçè£ô</value>
+  </data>
   <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
     <value>Rèƒèřèñçè £ïƨƭ£ôřè</value>
   </data>
@@ -146,6 +155,9 @@
   </data>
   <data name="AssetTypeClass_RuleType" xml:space="preserve">
     <value>Rúℓè T¥ƥè£ô</value>
+  </data>
+  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
+    <value>§è₥áñƭïç T¥ƥè£ôř</value>
   </data>
   <data name="AssetTypeClass_Task" xml:space="preserve">
     <value>Ðïáϱřá₥£ô</value>

@@ -217,7 +217,7 @@ export class AdvancedFilterFieldCondition {
                 return fieldName + $localize` is False`;
             case "Contains":
                 if (this.field === "CreatedOn" || this.field === "UpdatedOn") {
-                    return `${fieldName} ` + $localize`is` + `${this.getTypedValue(this.value, true)}`;
+                    return `${fieldName} ` + $localize`is` + ` ${this.getTypedValue(this.value, true)}`;
                 }
                 return `${fieldName} : *${this.getTypedValue(this.value, true)}*`;
             case "NotContains":

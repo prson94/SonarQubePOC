@@ -14,6 +14,7 @@ using System.Web.Http.Description;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.resources;
 using d360.extensions;
 using d360.extensions.search;
 using d360.model;
@@ -50,12 +51,25 @@ namespace d360.web.Controllers.V2
 		private readonly ISemanticsRepository SemanticsRepository;
 		private readonly TelemetryClient Telemetry;
 
+		//Icons set based on main Nav item for category
+		private readonly Dictionary<string, string> siteNavMap = null;
+
 		public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository) : base(set)
 		{
 			SearchSource = searchSource;
 			AssetRepository = assetRepository;
 			SemanticsRepository = semanticsRepository;
 			Telemetry = new TelemetryClient();
+
+			this.siteNavMap = new Dictionary<string, string> {
+				{ CommonNames.AssetTypeClass_Business, "#Business" },
+				{ CommonNames.AssetTypeClass_Technical, "#Technical" },
+				{ CommonNames.AssetTypeClass_Model, "#Models" },
+				{ CommonNames.AssetTypeClass_Reference, "#Reference" },
+				{ CommonNames.AssetTypeClass_Rule, "#Data Quality" },
+				{ CommonNames.AssetTypeClass_Policy, "#Policy" },
+				{ CommonNames.AssetTypeClass_SemanticType, "#SemanticTypes" }
+			};
 		}
 
 		/// <summary>
@@ -451,17 +465,6 @@ namespace d360.web.Controllers.V2
 			{ "Grammatic Type", "fa-comments" },
 			{ "Attribute", "fa-pencil-square-o" },
 			{ "Diagram Asset", "fa-share-alt" }
-		};
-
-		//Icons set based on main Nav item for category
-		private static readonly Dictionary<string, string> siteNavMap = new Dictionary<string, string> {
-			{ "Business Asset", "#Business" },
-			{ "Technical Asset", "#Technical" },
-			{ "Model", "#Models" },
-			{ "Reference", "#Reference" },
-			{ "Rule", "#Data Quality" },
-			{ "Policy", "#Policy" },
-			{ "Semantic Type", "#SemanticTypes" }
 		};
 
 		private List<string> GetVisibleCategories()
