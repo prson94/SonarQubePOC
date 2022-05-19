@@ -4,7 +4,6 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetType } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Subscription } from 'rxjs';
-import { CATCH_STACK_VAR } from '@angular/compiler/src/output/output_ast';
 import { DynamicEditorComponent } from '../dynamicgrideditor/dynamic-editor.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 
