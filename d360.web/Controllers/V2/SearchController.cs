@@ -52,7 +52,7 @@ namespace d360.web.Controllers.V2
 		private readonly TelemetryClient Telemetry;
 
 		//Icons set based on main Nav item for category
-		private readonly Dictionary<string, string> siteNavMap = null;
+		private readonly Dictionary<string, string> siteNavMap;
 
 		public SearchController(ICoreComponentSet set, ISearchSource searchSource, IAssetRepository assetRepository, ISemanticsRepository semanticsRepository) : base(set)
 		{
