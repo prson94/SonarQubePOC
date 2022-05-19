@@ -6,6 +6,8 @@ import * as _ from 'lodash';
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject } from 'rxjs';
 import { takeUntil, tap } from 'rxjs/operators';
+import { PropertyGroupsService } from '../property-group/property-groups.service';
+import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
 @Component({
     selector: 'ig-form-feedback-badges',
@@ -23,8 +25,6 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     @Output() isValid = new EventEmitter();
     invalidCount: number = 0;
     requiredCount: number = 0;
-    @Input() expanded: boolean = true;
-    @Output() expandedChange = new EventEmitter();
 
     private requiredPos: number = 0;
     private invalidPos: number = 0;
@@ -36,7 +36,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         this.ref.markForCheck();
     }, 200);
 
-    constructor(private ref: ChangeDetectorRef) {
+    constructor(private ref: ChangeDetectorRef, private propertyGroups: PropertyGroupsService) {
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -61,10 +61,6 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     focusInvalid(event) {
         event.stopPropagation();
         let found = false;
-        if (!this.expanded) {
-            this.expandedChange.next(true);
-        }
-
         let fcCount = this.getFormControlCount("errors");
         let idx = 0;
         Object.keys(this.igformGroup.controls).forEach(x => {
@@ -81,10 +77,9 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                             if (this.invalidPos >= fcCount) {
                                 this.invalidPos = 0;
                             }
-                            if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
-                                elem.querySelector('input').click();
-                            }
-                            elem.focus();
+
+                            this.expandAndActivateInput(elem);
+
                             found = true;
                         }
                     }
@@ -96,10 +91,6 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     focusRequired(event) {
         event.stopPropagation();
         let found = false;
-        if (!this.expanded) {
-            this.expandedChange.next(true);
-        }
-
         let fcCount = this.getFormControlCount("required");
         let idx = 0;
         Object.keys(this.igformGroup.controls).forEach((x) => {
@@ -113,18 +104,48 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                         if (this.requiredPos >= fcCount) {
                             this.requiredPos = 0;
                         }
-                        if (elem.tagName === 'IG-DATE' || elem.tagName === 'IG-NUMBER-INPUT') {
-                            elem.querySelector('input').click();
-                        }
-                        else if (elem.tagName === 'P-DROPDOWN') {
-                            (elem.querySelectorAll('.p-dropdown-trigger')[0] as HTMLElement).click();
-                        }
-                        elem.focus();
+
+                        this.expandAndActivateInput(elem);
+
                         found = true;
                     }
                 }
             }
         });
+    }
+
+    private expandAndActivateInput(inputElement: HTMLElement) {
+        this.expandPropertyGroup(inputElement);
+        this.activateInputOnly(inputElement);
+    }
+
+    private expandPropertyGroup(inputElement: HTMLElement) {
+        const propertyGroupElement = inputElement.closest('ig-property-group');
+        if (propertyGroupElement == null) {
+            return;
+        }
+
+        const propertyGroupInstanceId = propertyGroupElement.attributes.getNamedItem(PropertyGroupInstanceIdAttributeName)?.value;
+        if (propertyGroupInstanceId == null) {
+            throw new Error(`Property group doesn't have attribute ${PropertyGroupInstanceIdAttributeName}`);
+        }
+
+        const propertyGroup = this.propertyGroups.getById(propertyGroupInstanceId);
+        if (propertyGroup == null) {
+            throw new Error(`Failed to find registered property group with id ${propertyGroupInstanceId}`);
+        }
+
+        propertyGroup.forceExpand();
+    }
+
+    private activateInputOnly(inputElement: HTMLElement) {
+        if (inputElement.tagName === 'IG-DATE' || inputElement.tagName === 'IG-NUMBER-INPUT') {
+            inputElement.querySelector('input').click();
+        }
+        else if (inputElement.tagName === 'P-DROPDOWN') {
+            (inputElement.querySelectorAll('.p-dropdown-trigger')[0] as HTMLElement).click();
+        }
+        inputElement.focus();
     }
 
     getFormControlDomElement(controlName: string) {

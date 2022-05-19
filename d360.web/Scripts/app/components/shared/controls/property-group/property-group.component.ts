@@ -1,10 +1,14 @@
-﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter } from '@angular/core';
+﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormFeedbackBadgesModule } from '../form-feedback-badges/form-feedback-badges.component';
 import { isFormContainerValid } from '../form-feedback-badges/form-feedback-utils';
+import { uuidv4 } from '../../../../static/lang';
 import * as _ from 'lodash';
+import { PropertyGroupsService } from './property-groups.service';
+
+export const PropertyGroupInstanceIdAttributeName = 'data-property-group-instance-id';
 
 @Component({
     selector: 'ig-property-group',
@@ -13,6 +17,8 @@ import * as _ from 'lodash';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PropertyGroupComponent implements OnInit, AfterViewInit {
+    @HostBinding(`attr.${PropertyGroupInstanceIdAttributeName}`) instanceId: string;
+
     @Input() igformGroup: FormGroup;
     @Input() title: string = $localize`Property Group`;
     @Input() showMoreInfo: boolean = false;
@@ -31,6 +37,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
 
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
 
+    constructor(private propertyGroups: PropertyGroupsService) {
+    }
+
     ngAfterViewInit(): void {
         if (this.igformGroup) {
             this.igformGroup.valueChanges.subscribe(x => {
@@ -40,11 +49,23 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        this.instanceId = uuidv4();
+        this.propertyGroups.register(this);
+
         if (this.igformGroup) {
             this.igformGroup.valueChanges.subscribe(x => {
                 this.delayedRefresh();
             });
         }
+    }
+
+    public forceExpand() {
+        if (this.expanded) {
+            return;
+        }
+
+        this.expanded = true;
+        this.expandedChange.next(this.expanded);
     }
 
     public refreshBadgeCounts() {
@@ -59,6 +80,10 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
                 event.target.click();
                 return false;
         }
+    }
+
+    ngOnDestroy() {
+        this.propertyGroups.unregister(this);
     }
 }
 
