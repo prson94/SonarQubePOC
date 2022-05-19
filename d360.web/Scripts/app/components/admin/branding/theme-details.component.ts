@@ -45,7 +45,7 @@ export class ThemeDetailComponent implements OnChanges {
         header.rows.push(
             { title: $localize`Background color`, value: this.theme.backColor, type: "color" });
         header.rows.push(
-            { title: $localize`Breadcrumb link color`, value: this.theme.breadcrumbLinkColor, type: "color" });
+            { title: $localize`Asset type breadcrumb link color`, value: this.theme.breadcrumbLinkColor, type: "color" });
         header.rows.push(
             { title: $localize`Button color`, value: this.theme.buttonBackColor, type: "color" }
         );

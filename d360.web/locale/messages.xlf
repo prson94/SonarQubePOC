@@ -1138,7 +1138,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">290</context>
+          <context context-type="linenumber">291</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -1385,7 +1385,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">293</context>
+          <context context-type="linenumber">294</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -1772,7 +1772,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
-          <context context-type="linenumber">90,99</context>
+          <context context-type="linenumber">90,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5504280bf1b891f73577a2ba695a3fb4e6d93ef0" datatype="html">
@@ -1952,8 +1952,8 @@
           <context context-type="linenumber">48,53</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="5039196042121095019" datatype="html">
-        <source>Breadcrumb link color</source>
+      <trans-unit id="8995580755441018516" datatype="html">
+        <source>Asset type breadcrumb link color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
           <context context-type="linenumber">48</context>
@@ -1991,7 +1991,7 @@
         <source>Edit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
-          <context context-type="linenumber">62,66</context>
+          <context context-type="linenumber">61,65</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/semantic/semantic-type-definition.component.ts</context>
@@ -2066,7 +2066,7 @@
         <source>Duplicate</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-details.component.ts</context>
-          <context context-type="linenumber">75,79</context>
+          <context context-type="linenumber">74,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4713054630293020651" datatype="html">
@@ -2115,15 +2115,15 @@
         <source>Background color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">54,58</context>
+          <context context-type="linenumber">54,57</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">141,146</context>
+          <context context-type="linenumber">142,146</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6f2d460e1cb5d70c9d4869b646289cbe716bd562" datatype="html">
-        <source>Breadcrumb link color</source>
+      <trans-unit id="2b18d08eb551f40825b90c55578e63ba83bddfb6" datatype="html">
+        <source>Asset type breadcrumb link color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
           <context context-type="linenumber">64,69</context>
@@ -2133,14 +2133,14 @@
         <source>Button color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">76,80</context>
+          <context context-type="linenumber">76,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3a939d10c537b5d32d06b69395e712917bf97e92" datatype="html">
         <source>Side menu color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">87,91</context>
+          <context context-type="linenumber">88,91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="491a70a39a3639e0607f918c49b283cbb8387dea" datatype="html">
@@ -2154,7 +2154,7 @@
         <source>Home Page</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">109,113</context>
+          <context context-type="linenumber">109,114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="e329c51a167302994bd1f51912829ba941db04ff" datatype="html">
@@ -2168,7 +2168,7 @@
         <source>Primary button color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">130,135</context>
+          <context context-type="linenumber">131,135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8a7aec65ec76d64e09f3bbebbb89a19eac6ee93b" datatype="html">
@@ -2182,14 +2182,14 @@
         <source>Table header color</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">163,168</context>
+          <context context-type="linenumber">164,168</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2e0f5f5f7b971affa25be7fface0321a72afa11c" datatype="html">
         <source>Table row selection</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/branding/theme-editor.component.html</context>
-          <context context-type="linenumber">174,178</context>
+          <context context-type="linenumber">175,178</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6e8f74c62fdfa45ceacd35d55e2483a73f31d5c5" datatype="html">
@@ -8759,7 +8759,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">286</context>
+          <context context-type="linenumber">287</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -8830,7 +8830,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">288</context>
+          <context context-type="linenumber">289</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -9444,7 +9444,7 @@
         <source>Add Child</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">296</context>
+          <context context-type="linenumber">297</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
@@ -11821,6 +11821,21 @@ Please refine your search.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
           <context context-type="linenumber">79,85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4263526691227932547" datatype="html">
+        <source>Governance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
+          <context context-type="linenumber">351</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/asset-score/history/score-history.component.ts</context>
+          <context context-type="linenumber">396,397</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/small-widgets/score-badge/score-badge.component.ts</context>
+          <context context-type="linenumber">48,49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="3676772470424387510" datatype="html">
