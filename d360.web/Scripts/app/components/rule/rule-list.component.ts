@@ -113,7 +113,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));
+                        this.headerBreadcrumbService.showBreadcrumb(
+                            new Breadcrumb(
+                                this.currentAreaName ? this.currentAreaName : res,
+                                `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`
+                            )
+                        );
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`,
                             undefined,
                             'RuleType',
