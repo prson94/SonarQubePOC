@@ -1,0 +1,110 @@
+﻿<div class="tile tile-detail">
+    <header>Dropdown Bagbe Compomnent</header>
+    <p>
+        Functions of the component: <br/>
+        display the status (or other analogical, dynamic piece of information) in the details sidepanel of an item, <br/>
+        enable the user to change the status by selecting another item from the associated list. <br/>
+    </p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Basic Usage</header>
+    <pre>
+        &lt;ig-dropdown-badge [options]=&#34;options&#34;&gt;&lt;/ig-dropdown-badge&gt;
+    </pre>
+    <header>Advanced Usage</header>
+    <pre>
+        &lt;ig-dropdown-badge [options]=&#34;options&#34;&gt;
+            &lt;ng-template let-option&gt;
+            &lt;/ng-template&gt;
+        &lt;/ig-dropdown-badge&gt;
+    </pre>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples</header>
+    <div class="gallery-section">
+        <h4>Basic - Chosen: {{ basicValue }}</h4>
+        <div class="component-container">
+            <ig-dropdown-badge [options]="numberOptions" [(ngModel)]="basicValue">
+            </ig-dropdown-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Uneditable</h4>
+        <div class="component-container">
+            <ig-dropdown-badge [disabled]="true" [(ngModel)]="disabledValue" [options]="statusOptions">
+            </ig-dropdown-badge>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Status Selector - Chosen: {{ statusValue }}</h4>
+        <div class="component-container">
+            <ig-dropdown-badge [options]="statusOptions" [(ngModel)]="statusValue">
+                <ng-template let-option>
+                    <span class="status-circle" [style.backgroundColor]="option.color"></span>
+                    {{option.label}}
+                </ng-template>
+            </ig-dropdown-badge>
+        </div>
+    </div>
+</div>
+
+<div class="tile tile-detail">
+    <header>Dropdown Badge Properties</header>
+    <p-table [value]="dropdownProperties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <header>DropdownBadgeOption Properties</header>
+    <p-table [value]="optionProperties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">
+    <header>Events</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-event>
+            <tr>
+                <td>{{event.Name}}</td>
+                <td>{{event.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

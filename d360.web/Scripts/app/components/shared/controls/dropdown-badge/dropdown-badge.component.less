@@ -1,0 +1,105 @@
+@import "../../../../../../Content/styles/_Variables.less";
+
+.ig-dropdown-badge {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+
+    &--uneditable > button {
+        cursor: default;
+    }
+    
+    &:hover > button > &__overlay {
+        opacity: .2;
+    }
+
+    &:active > button > &__overlay {
+        opacity: .4;
+    }
+    
+    &__overlay {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        pointer-events: none;
+        background-color: #000000;
+        opacity: 0;
+        transition: opacity .3s ease-in-out;
+        left: 0;
+    }
+
+    &__toggle {
+        outline: 0;
+        width: 100%;
+        border: none;
+        color: #FFFFFF;   
+        padding: 0 12px;
+        border-radius: 4px;
+        height: 24px;
+        transition: background-color .3s ease-in-out;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
+        
+        & > span {
+            position: relative;
+            z-index: 1;
+        }
+    }
+
+    &__caret {
+        width: 10px;
+        height: 20px;
+        color: #FFFFFF;
+        display: inline-block;
+        margin-left: 8px;
+        font-family: 'FontAwesome', serif;
+    }
+
+    &__menu {
+        border-radius: 4px;
+        overflow: hidden;
+        padding: 4px 0;
+        min-width: 100%;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+        background-color: #FFFFFF;
+        position: absolute;
+        left: 0;
+        top: 24px;
+        list-style: none;
+        margin: 0;
+        z-index: 1000;
+    }
+
+    &__option {
+        height: 32px;
+        color: #000000;
+        padding: 0 12px;
+        min-width: 100%;
+        line-height: 32px;
+        font-size: 14px;
+        transition: background-color .3s ease-in-out;
+        white-space: nowrap;
+        cursor: pointer;
+
+        &--disabled {
+            cursor: not-allowed;
+        }
+
+        &:hover {
+            background-color: @ig-purple-t5;
+        }
+    }
+
+}
+
+.status-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 100%;
+    display: inline-block;
+    margin-right: 8px;
+}
