@@ -1405,10 +1405,6 @@ namespace d360.web.Controllers.V2
                 string hexToRGBA(string backgroundColor, float opacity)
                 {
                     Color col = ColorTranslator.FromHtml(backgroundColor);
-                    if (col.R * 0.2126 + col.G * 0.7152 + col.B * 0.0722 < 255 / 2)
-                    {
-                        return "white";
-                    }
                     return $"rgba({col.R},{col.G},{col.B},{opacity})";
                 }
 
