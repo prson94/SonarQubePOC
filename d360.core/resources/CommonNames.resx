@@ -123,6 +123,12 @@
   <data name="AssetTypeClass_Business" xml:space="preserve">
     <value>Business Asset</value>
   </data>
+  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
+    <value>Diagram Asset</value>
+  </data>
+  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
+    <value>Grammatic Type</value>
+  </data>
   <data name="AssetTypeClass_Model" xml:space="preserve">
     <value>Model</value>
   </data>
@@ -135,6 +141,9 @@
   <data name="AssetTypeClass_PolicyType" xml:space="preserve">
     <value>Policy Type</value>
   </data>
+  <data name="AssetTypeClass_Reference" xml:space="preserve">
+    <value>Reference</value>
+  </data>
   <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
     <value>Reference List</value>
   </data>
@@ -146,6 +155,9 @@
   </data>
   <data name="AssetTypeClass_RuleType" xml:space="preserve">
     <value>Rule Type</value>
+  </data>
+  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
+    <value>Semantic Type</value>
   </data>
   <data name="AssetTypeClass_Task" xml:space="preserve">
     <value>Diagram</value>

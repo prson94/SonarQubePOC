@@ -79,6 +79,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Diagram Asset.
+        /// </summary>
+        public static string AssetTypeClass_DiagramAsset {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_DiagramAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grammatic Type.
+        /// </summary>
+        public static string AssetTypeClass_GramaticType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_GramaticType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Model.
         /// </summary>
         public static string AssetTypeClass_Model {
@@ -115,6 +133,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reference.
+        /// </summary>
+        public static string AssetTypeClass_Reference {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Reference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reference List.
         /// </summary>
         public static string AssetTypeClass_ReferenceList {
@@ -147,6 +174,15 @@ namespace d360.core.resources {
         public static string AssetTypeClass_RuleType {
             get {
                 return ResourceManager.GetString("AssetTypeClass_RuleType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Type.
+        /// </summary>
+        public static string AssetTypeClass_SemanticType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_SemanticType", resourceCulture);
             }
         }
         
