@@ -985,7 +985,7 @@ namespace d360.web.Controllers
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
                     responseModel.ObjectID = model.ObjectId ?? 0;
-
+                    
                     if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
                     {
                         var assetType = Company.AssetTypes.Where(x => x.Object == model.ObjectType).OrderBy(x => x.Name).FirstOrDefault();

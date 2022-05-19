@@ -46,6 +46,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
     exportTooltip: string = "";
 
+    get isNullAudit(): boolean {
+        return this.uid === "00000000-0000-0000-0000-000000000000";
+    }
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -80,7 +84,9 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.isFiltersReady = false;
-
+        if (this.isNullAudit) {
+            return;
+        }
         this.sub = this
             .route
             .params
@@ -125,12 +131,14 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     getData() {
+        if (this.isNullAudit) {
+            return;
+        }
         this.isLoading = true;
         if (!this.isFiltersReady) {
             return;
         }
-        this
-            .auditService
+        this.auditService
             .getAuditData(this.uid, this.getParams())
             .subscribe(result => {
                 this.isLoading = false;

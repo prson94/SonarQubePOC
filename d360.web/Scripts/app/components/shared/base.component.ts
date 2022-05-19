@@ -548,7 +548,7 @@ export class BaseComponent {
             }
         }
 
-        if (uid && uid != blankUid) {
+        if (uid) {
             return `/${uid}`;
         }
         return '';
