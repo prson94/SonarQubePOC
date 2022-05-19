@@ -1,16 +1,23 @@
 ﻿<div class="add-semantic-form {{savingInProgress ? 'saving-in-progress' : ''}}">
-    <div class="form-header">
-        {{editorTitle}}
-        <div class="sub-header" *ngIf="!isLoading">
-            <ng-container i18n>Semantic Types</ng-container> {{(semanticType?.name ? '> ' + semanticType?.name : '')}}
+    <div class="form-header-wrapper">
+        <div class="form-header">
+            {{editorTitle}}
+            <div class="sub-header" *ngIf="!isLoading">
+                <ng-container i18n>Semantic Types</ng-container> {{(semanticType?.name ? '> ' + semanticType?.name : '')}}
+            </div>
         </div>
+        <ig-form-feedback-badges 
+            [igformGroup]="semanticForm"
+            [inputContainer]="formElement"
+        >
+        </ig-form-feedback-badges>
     </div>
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div class="row" *ngIf="isInError">
         <div class="err-message">{{isInErrorMessage}}</div>
     </div>
     <div class="row" *ngIf="!isLoading">
-        <form [formGroup]="semanticForm">
+        <form [formGroup]="semanticForm" #form>
             <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
                 <div style="margin-bottom: 16px">
                     <div class="row" *ngIf="!semanticType">
