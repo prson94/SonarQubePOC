@@ -119,3 +119,6 @@
 /d360.web/Content/codemirror/eclipse.min.css
 /d360.web/Content/codemirror/codemirror.min.css
 /d360.web/Scripts/dist/ca
+
+# Ignore JetBrains IDEs
+/.idea

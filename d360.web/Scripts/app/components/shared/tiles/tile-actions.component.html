@@ -11,7 +11,7 @@
                 </a>
             </li>
             <li class="left" *ngIf="hasSuggest"><a class="Action" (click)="suggestClick.emit(null)" i18n-pTooltip pTooltip="Suggest"><i class="fa fa-commenting fa-fw"></i></a></li>
-            <li class="left" [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="hasExport"><a class="Action" (click)="isExportDisabled ? return : exportClick.emit(null)" [pTooltip]="hideTooltip ? null : isExportDisabled ? exportDisabledMessage : 'Export to Excel'"><i [class]="IsExportInProgress ? 'fa fa-spinner fa-spin fa' : 'fa fa-download fa-fw'"></i></a></li>
+            <li class="left" [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="hasExport"><a class="Action" (click)="isExportDisabled ? return : exportClick.emit(null)" [pTooltip]="hideTooltip ? null : isExportDisabled ? exportDisabledMessage : exportLabel"><i [class]="IsExportInProgress ? 'fa fa-spinner fa-spin fa' : 'fa fa-download fa-fw'"></i></a></li>
             <li class="left" [ngClass]="{'actions-disabled':isExportDisabled}" *ngIf="hasCustomExport"><a class="Action" (click)="isExportDisabled ? return : customExportClick.emit(null)" i18n-pTooltip pTooltip="Choose export to Excel format"><i class="fa fa-download fa-fw"></i></a></li>
             <li class="left" *ngIf="hasExportErrors"><a class="Action" (click)="exportErrorsClick.emit(null)" i18n-pTooltip pTooltip="Export Errors to Excel"><i class="fa fa-download red-text fa-fw"></i></a></li>
             <li class="left" *ngIf="hasExportOriginal"><a class="Action" (click)="exportOriginalClick.emit(null)" i18n-pTooltip pTooltip="Export Original Spreadsheet"><i class="fa fa-download blue-text fa-fw"></i></a></li>

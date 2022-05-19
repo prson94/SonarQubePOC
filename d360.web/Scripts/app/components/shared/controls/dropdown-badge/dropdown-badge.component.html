@@ -1,0 +1,24 @@
+<div class="ig-dropdown-badge" [class.ig-dropdown-badge--uneditable]="disabled">
+  <button type="button" class="ig-dropdown-badge__toggle" *ngIf="selected; else nothingSelected"
+    [style.backgroundColor]="selected.color" (click)="onActiveStateSwitch();">
+    <span>{{ selected.label }}</span>
+    <span class="fa-angle-down ig-dropdown-badge__caret" *ngIf="!disabled"></span>
+    <div class="ig-dropdown-badge__overlay"></div>
+  </button>
+  <ul class="ig-dropdown-badge__menu" *ngIf="active">
+    <li *ngFor="let option of options | filterDropdownBadgeOptions: selected"
+      class="ig-dropdown-badge__option" (click)="onModelTouched(); onSelectOption(option);"
+      [class.ig-dropdown-badge__option--disabled]="option.disabled">
+      <ng-container *ngIf="optionTemplate; else optionLabel" 
+        [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="{ $implicit: option }">
+      </ng-container>
+      <ng-template #optionLabel>
+        {{ option.label }}
+      </ng-template>
+    </li>
+  </ul>
+</div>
+
+<ng-template #nothingSelected>
+  There must be an initial value
+</ng-template>

@@ -285,6 +285,21 @@
   <data name="OperatorStartsWith" xml:space="preserve">
     <value>starts with</value>
   </data>
+  <data name="QuestionDisplayStyle_Check" xml:space="preserve">
+    <value>Check List</value>
+  </data>
+  <data name="QuestionDisplayStyle_Radio" xml:space="preserve">
+    <value>Radio List</value>
+  </data>
+  <data name="QuestionDisplayStyle_Rating" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="ScoreType_DataQuality" xml:space="preserve">
+    <value>Data Quality Score</value>
+  </data>
+  <data name="ScoreType_Governance" xml:space="preserve">
+    <value>Governance Score</value>
+  </data>
   <data name="WorkflowActivityType_Delete" xml:space="preserve">
     <value>Delete</value>
   </data>
@@ -314,5 +329,23 @@
   </data>
   <data name="WorkflowActivityType_StatusChange" xml:space="preserve">
     <value>Status Change</value>
+  </data>
+  <data name="WorkflowChangeType_ItemAdded" xml:space="preserve">
+    <value>Item Added</value>
+  </data>
+  <data name="WorkflowChangeType_ItemChanged" xml:space="preserve">
+    <value>Item Changed</value>
+  </data>
+  <data name="WorkflowChangeType_ItemRemoved" xml:space="preserve">
+    <value>Item Removed</value>
+  </data>
+  <data name="WorkflowChangeType_RequestCertification" xml:space="preserve">
+    <value>Request Certification</value>
+  </data>
+  <data name="WorkflowChangeType_Schedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="WorkflowChangeType_ScoreChange" xml:space="preserve">
+    <value>Score Changed</value>
   </data>
 </root>

@@ -113,6 +113,7 @@
                 <div style="width: 95%">
                     <d3s-dayofweek-input [ngModel]="model.Event.SettingsObject.Settings.ScheduleDays"
                                          (ngModelChange)="model.Event.SettingsObject.Settings.ScheduleDays = $event; validate();"
+                                         i18n-every
                                          label="Every"></d3s-dayofweek-input>
                 </div>
             </div>

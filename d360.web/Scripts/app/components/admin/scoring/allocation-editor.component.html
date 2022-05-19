@@ -14,6 +14,7 @@
                             [(ngModel)]="selection.scoreType" 
                             appendTo="body" 
                             [required]="true" 
+                            i18n-placeholder
                             placeholder="Value required">
                     <ng-template let-item pTemplate="selectedItem">
                         <span>{{item.label}}</span>

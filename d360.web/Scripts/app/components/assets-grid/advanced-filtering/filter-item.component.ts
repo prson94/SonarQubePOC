@@ -378,8 +378,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
-            options[0].label = $localize`contains`;
-            options[1].label = $localize`does not contain`;
+            ft.Operators[0].label = $localize`contains`;
+            ft.Operators[1].label = $localize`does not contain`;
         }
 
 

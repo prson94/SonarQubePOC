@@ -565,6 +565,51 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Check List.
+        /// </summary>
+        public static string QuestionDisplayStyle_Check {
+            get {
+                return ResourceManager.GetString("QuestionDisplayStyle_Check", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Radio List.
+        /// </summary>
+        public static string QuestionDisplayStyle_Radio {
+            get {
+                return ResourceManager.GetString("QuestionDisplayStyle_Radio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rating.
+        /// </summary>
+        public static string QuestionDisplayStyle_Rating {
+            get {
+                return ResourceManager.GetString("QuestionDisplayStyle_Rating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Data Quality Score.
+        /// </summary>
+        public static string ScoreType_DataQuality {
+            get {
+                return ResourceManager.GetString("ScoreType_DataQuality", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Governance Score.
+        /// </summary>
+        public static string ScoreType_Governance {
+            get {
+                return ResourceManager.GetString("ScoreType_Governance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Delete.
         /// </summary>
         public static string WorkflowActivityType_Delete {
@@ -651,6 +696,60 @@ namespace d360.core.resources {
         public static string WorkflowActivityType_StatusChange {
             get {
                 return ResourceManager.GetString("WorkflowActivityType_StatusChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Added.
+        /// </summary>
+        public static string WorkflowChangeType_ItemAdded {
+            get {
+                return ResourceManager.GetString("WorkflowChangeType_ItemAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Changed.
+        /// </summary>
+        public static string WorkflowChangeType_ItemChanged {
+            get {
+                return ResourceManager.GetString("WorkflowChangeType_ItemChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item Removed.
+        /// </summary>
+        public static string WorkflowChangeType_ItemRemoved {
+            get {
+                return ResourceManager.GetString("WorkflowChangeType_ItemRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Request Certification.
+        /// </summary>
+        public static string WorkflowChangeType_RequestCertification {
+            get {
+                return ResourceManager.GetString("WorkflowChangeType_RequestCertification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Schedule.
+        /// </summary>
+        public static string WorkflowChangeType_Schedule {
+            get {
+                return ResourceManager.GetString("WorkflowChangeType_Schedule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Score Changed.
+        /// </summary>
+        public static string WorkflowChangeType_ScoreChange {
+            get {
+                return ResourceManager.GetString("WorkflowChangeType_ScoreChange", resourceCulture);
             }
         }
     }

@@ -162,20 +162,19 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     ngOnInit() {
         this.type = this.route.parent.snapshot.data.type;
-
         switch (this.type) {
             case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
                 this.assetTypeClass = AssetTypeClass.Model;
                 this.objectType = StringConstants.ObjectTaxonomyType;
                 this.object = StringConstants.ObjectTaxonomy;
-                this.objectName = 'Model';
+                this.objectName = $localize`Model`;
                 this.navFolderName = '#Models';
                 this.showDiagram = true;
                 break;
             case SiteUrlHelpers.SITE_URL_POLICY_ROOT:
                 this.assetTypeClass = AssetTypeClass.Policy;
                 this.objectType = StringConstants.ObjectPolicyType;
-                this.objectName = 'Policy';
+                this.objectName = $localize`Policy`;
                 this.object = StringConstants.ObjectPolicy;
                 this.navFolderName = '#Policy';
                 this.showDiagram = false;
@@ -334,6 +333,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, currentAreaName ? currentAreaName : res)
                 .subscribe((icon) => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
+
                     this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                     this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
