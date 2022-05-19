@@ -1,4 +1,4 @@
-﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, HostBinding } from '@angular/core';
+﻿import { Component, NgModule, Input, ChangeDetectionStrategy, OnInit, ElementRef, ViewChild, AfterViewInit, Output, EventEmitter, HostBinding, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormGroup } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -37,7 +37,9 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
 
     @ViewChild("pgcontainer", { static: false }) inputContainer: ElementRef;
 
-    constructor(private propertyGroups: PropertyGroupsService) {
+    constructor(
+        private propertyGroups: PropertyGroupsService, 
+        private ref: ChangeDetectorRef) {
     }
 
     ngAfterViewInit(): void {
@@ -65,6 +67,7 @@ export class PropertyGroupComponent implements OnInit, AfterViewInit {
         }
 
         this.expanded = true;
+        this.ref.markForCheck();
         this.expandedChange.next(this.expanded);
     }
 
