@@ -27,6 +27,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     @Input() parentUid: string;
     @Input() screenReferences: CommonScreenReferencesModel;
     @Input() maxScoreEffectiveDate: Date;
+    @Input() formFeedbackPortalName: string;
 
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();

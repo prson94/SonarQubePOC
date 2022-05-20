@@ -5,7 +5,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import * as _ from 'lodash';
 import { getFormControlDomElement, getInvalidCount, getRequiredCount } from './form-feedback-utils';
 import { Subject } from 'rxjs';
-import { takeUntil, tap } from 'rxjs/operators';
+import { takeUntil, tap, startWith } from 'rxjs/operators';
 import { PropertyGroupsService } from '../property-group/property-groups.service';
 import { PropertyGroupInstanceIdAttributeName } from '../property-group/property-group.component';
 
@@ -51,6 +51,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         if (this.igformGroup) {
             this.igformGroup.valueChanges
                 .pipe(
+                    startWith(null),
                     takeUntil(this.$destroy),
                     tap(() => this.delayedRefresh())
                 )
