@@ -92,7 +92,7 @@
         <div [hidden]="!isAdmin">
             <div>
                 <button pButton type="button" (click)="selectAll()" i18n-label label="Select All" [disabled]="items.length < 1"></button>
-                <button pButton type="button" (click)="confirmDelete(true)" i18n-label label="Delete {{selectedCount}} workflow items" [disabled]="selectedCount < 1"></button>
+                <button pButton type="button" (click)="confirmDelete(true)" [label]="deleteLabel" [disabled]="selectedCount < 1"></button>
             </div>
             <p i18n>Use the {{getMetaKey()}} key to select multiple items.</p>
         </div>
