@@ -49,6 +49,8 @@
                     </ng-container>
                     <div class="asset-browser-button-group">
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"
+                                                 [assetPermissions]="assetPermissions"
+                                                 [selectedDiagramAsset]="selectedDiagramAsset"
                                                  [diagramType]="displayConfiguration.DiagramType"
                                                  [enableAdd]="helper_LineageDiagramApplies() && panel_InformationHasReadAccess"
                                                  [enableDownload]="!isError"
@@ -270,3 +272,10 @@
         </div>
     </div>
 </div>
+
+<add-relationship-editor [assetUid]="selectedDiagramAsset?.Uid"
+                         [assetTypeUid]="selectedDiagramAsset?.AssetTypeUid"
+                         [isVisible]="isAddRelationshipModalVisible"
+                         (onClose)="isAddRelationshipModalVisible = false"
+                         (onAddComplete)="onAddRelationshipComplete()">
+</add-relationship-editor>
