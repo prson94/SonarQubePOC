@@ -1,0 +1,381 @@
+﻿<div class="add-folder-form {{savingInProgress ? 'saving-in-progress' : ''}}">  
+    <div class="form-header">
+        <header>
+            Add Navigation Folder
+        </header>
+        <div class="sub-header" *ngIf="!isLoading">
+            Site Naviagtion {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
+        </div>
+    </div>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div class="row" *ngIf="isInError">
+        <div class="err-message">{{isInErrorMessage}}</div>
+    </div>
+    <div class="row" *ngIf="!isLoading">
+        <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
+            <div inputs class="inputs-wrapper">
+                <div class="row">
+                    <div class="col s12">
+                        <label for="FieldName" class="ig-label FieldName" style="margin-top: 0">Folder Name</label>
+                        <input maxlength="250" required tabindex="1" type="text" [(ngModel)]="folderModel.Name" style="width:100%" />
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom:15px;">
+                    <div class="row" style="padding-top:12px">
+                        <div class="col s12 m6">
+                            <div class="FieldName">Icon</div>
+                            <div>
+                                <div>
+                                    <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                                </div>
+                                <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
+                                    <ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" ngDefaultControl></ig-icon-picker>
+                                </div>
+                                <div>
+                                    <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
+                                </div>
+                                <div *ngIf="iconType == 'image'">
+                                    <input #imageUpload type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col s12 m6">
+                            <div class="FieldName">Preview</div>
+                            <div *ngIf="iconType == 'icon'" style="padding:10px">
+                                <span style="font-size: 15px">
+                                    <img class="d3s-gov-icon" *ngIf="checkIfImg(folderModel.Icon)" [src]="folderModel.Icon" />
+                                    <i *ngIf="!checkIfImg(folderModel.Icon)" [class]="'fa ' + folderModel.Icon"></i>
+                                </span>
+                            </div>
+                            <div *ngIf="iconType == 'image'" style="padding:10px">
+                                <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 15px; max-height: 15px;" />
+                                <div *ngIf="iconImage.dataUrl != null">
+                                    <button pButton type="button" label="Clear" (click)="clearIcon()"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col s12 m6">
+                        <p-table #dt3 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Available Folder Items</th>
+                                    <th></th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>{{item.Title}}</td>
+                                    <td>
+                                        <div class="RowTools" style="height: initial;">
+                                            <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt3.first" [rows]="dt3.rows" [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                    <div class="col s12 m6">
+                        <p-table #dt4 [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Existing Folder Items</th>
+                                    <th></th>
+                                </tr>
+
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr [pSelectableRow]="item">
+                                    <td>{{item.Name}}</td>
+                                    <td>
+                                        <div class="RowTools" style="height: initial;">
+                                            <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
+                                <d3s-grid-paging-info [first]="dt4.first" [rows]="dt4.rows" [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+                <div class="row" style="padding-bottom:15px;">
+                    <d3s-admin-site-menu-permissions [(siteNav)]="folderModel" (onModeChange)="menuPermissionsOnModeChange($event)">
+                    </d3s-admin-site-menu-permissions>
+                </div>
+                <div class="row">
+                    <div class="col s12" *ngIf="!IsMenuPermissionsAdding">
+                        <button pButton
+                                type="button"
+                                label="Save"
+                                (click)="save()"
+                                [disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
+                        <button pButton type="button" label="Cancel" (click)="closeClick.emit();"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #matchTypeTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label for="matchType" class="ig-label FieldName" style="margin-top: 0">Match Type</label>
+        <p-dropdown igDropdown
+                    igSize="medium"
+                    [options]="matchTypes"
+                    appendTo="body"
+                    (onChange)="onMatchTypeChanged()"
+                    [(ngModel)]="model.matchType"
+                    [showClear]="false"
+                    formControlName="matchType"
+                    placeholder="Value required"
+                    [required]="true"
+                    tabindex="6"
+                    [disabled]="isBuiltIn"
+                    name="matchType">
+            <ng-template let-item pTemplate="item">
+                <div pTooltip="{{item.description}}" [escape]="false" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium">
+                    <span [innerHtml]="item.label"></span>
+                </div>
+            </ng-template>
+            <ng-template let-item pTemplate="selectedItem">
+                <div pTooltip="{{item.description}}" [escape]="false" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium">
+                    <span [innerHtml]="item.label"></span>
+                </div>
+            </ng-template>
+        </p-dropdown>
+    </div>
+    <div class="row" *ngIf="!model.matchType" style="margin-top:16px">
+        <ig-message-box>
+            Choose the asset match type (e.g. list of values or numbers), to be prompted for more information on how to find matching assets.
+        </ig-message-box>
+    </div>
+</ng-template>
+
+<ng-template #baseTypeTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label for="baseType" class="ig-label FieldName">Base Type</label>
+        <p-dropdown igDropdown
+                    [required]="model.matchType=='Number' ? true : false"
+                    igSize="medium"
+                    [options]="baseTypeOptions"
+                    appendTo="body"
+                    [(ngModel)]="model.baseType"
+                    [showClear]="true"
+                    formControlName="baseType"
+                    tabindex="7"
+                    [disabled]="isBuiltIn"
+                    name="baseType"
+                    placeholder="{{model.matchType=='Number' ? 'Value required' : 'Optional'}}">
+            <ng-template let-item pTemplate="item">
+                <span [innerHtml]="item.label"></span>
+            </ng-template>
+            <ng-template let-item pTemplate="selectedItem">
+                <span [innerHtml]="item.label"></span>
+            </ng-template>
+        </p-dropdown>
+    </div>
+</ng-template>
+
+<ng-template #jsonTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            JSON
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="This JSON block contains additional properties for the Semantic Type not otherwise defined in this dialog.  For additional information on defining semantic types please see the <a href='{{semanticHelpURL}}' target='_blank' style='cursor: pointer;'>documentation</a>." [escape]="false" [hideDelay]="3000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <codearea formControlName="advancedJson" required="true" tabindex="8" [(ngModel)]="advancedJson" [disabled]="isBuiltIn" (isValid)="isJsonValid=$event.isvalid"></codearea>
+    </div>
+</ng-template>
+
+<ng-template #validValuesTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Valid Values
+        </label>
+        <ig-multi-input-field formControlName="validValues" [(ngModel)]='model.validList' igSize='full' [disabled]="isBuiltIn" required="true"></ig-multi-input-field>
+    </div>
+</ng-template>
+
+<ng-template #invalidValuesTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Invalid Values
+        </label>
+        <ig-multi-input-field formControlName="invalidValues" [(ngModel)]='model.invalidList' igSize='full' [disabled]="isBuiltIn"></ig-multi-input-field>
+    </div>
+</ng-template>
+
+<ng-template #minSamplesTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Minimum Samples
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="In order for this Semantic Type to be considered the data set must contain at least the number of records specified here." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-number-input [tabindex]="4"
+                         [min]="1"
+                         [max]="2147483647"
+                         [step]="1"
+                         formControlName="minSamples"
+                         [disabled]="isBuiltIn"
+                         [allowDecimal]="false"
+                         [(ngModel)]="model.minSamples"></ig-number-input>
+        <div *ngIf="semanticForm.get('minSamples').invalid && (semanticForm.get('minSamples').dirty || semanticForm.get('minSamples').touched)" class="ig-text-required">
+            <div *ngIf="semanticForm.get('minSamples').errors?.underMin" class="ig-text-required">
+                Please enter a value greater than 0
+            </div>
+            <div *ngIf="semanticForm.get('minSamples').errors?.overMax" class="ig-text-required">
+                Value exceeds maximum allowed.
+            </div>
+        </div>
+        <div *ngIf="semanticForm.get('minSamples').invalid && (semanticForm.get('minSamples').dirty || semanticForm.get('minSamples').touched)">
+            <div *ngIf="semanticForm.get('minSamples').errors?.hasDecimal" class="ig-text-required">
+                Minimum Samples cannot contain any decimal places.
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #validLocalesTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Valid Locales
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="This Semantic Type will be used to classify assets when the language and region is one of the specified Locales entered in this field." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <p-multiSelect [options]="locales"
+                       [(ngModel)]="model.validLocales"
+                       [disabled]="isBuiltIn"
+                       formControlName="validLocales"
+                       class="d3s-color-picker multi fullWidth"
+                       selectedItemsLabel="{0} items selected">
+        </p-multiSelect>
+    </div>
+</ng-template>
+
+<ng-template #headerRegExpTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Header Regular Expression
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="Used to check the heading of the data set in order to classify it with this Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-regexp-input formControlName="headerRegExp" [(ngModel)]="model.headerRegExps" [required]="model.matchType=='Number'" [disabled]="isBuiltIn"></ig-regexp-input>
+    </div>
+</ng-template>
+
+<ng-template #headerConfidenceTemplate>
+    <div class="row" [formGroup]="semanticForm" *ngIf="model.headerRegExps">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Header Confidence(%)
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="Enter the percentage confidence needed to consider the Header Filters in determining the Semantic Type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-number-input [tabindex]="4"
+                         [required]="(model.matchType=='Number' || model.headerRegExps.length>0)? true : false"
+                         [min]="1"
+                         [max]="100"
+                         [step]="1"
+                         formControlName="headerConfidence"
+                         [disabled]="isBuiltIn"
+                         [allowDecimal]="false"
+                         [(ngModel)]="model.headerRegExpConfidence"></ig-number-input>
+        <div *ngIf="(semanticForm.get('headerConfidence').dirty || semanticForm.get('headerConfidence').touched) && (semanticForm.get('headerConfidence').errors?.underMin || semanticForm.get('headerConfidence').errors?.overMax)" class="ig-text-required">
+            Please enter a value between 1 and 100
+        </div>
+        <div *ngIf="semanticForm.get('headerConfidence').errors?.hasDecimal" class="ig-text-required">
+            Header Confidence cannot contain any decimal places.
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #regularExpressionTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Regular Expression
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="Enter the pattern of the data for this semantic type in the form of a regular expression" [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-regexp-input formControlName="regExpReturned" [(ngModel)]="model.regExpReturned" [disabled]="isBuiltIn" required class="ig-input-large"></ig-regexp-input>
+    </div>
+</ng-template>
+
+<ng-template #minimumTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Minimum
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="This is the lowest value that is considered valid for this semantic type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-number-input [tabindex]="4"
+                         [min]="1"
+                         [step]="1"
+                         formControlName="minimum"
+                         [disabled]="isBuiltIn"
+                         [required]="model.minMaxPresent"
+                         [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
+                         [(ngModel)]="model.minimum"></ig-number-input>
+        <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && semanticForm.get('minimum').errors?.underMin" class="ig-text-required">
+            Please enter a value greater than 0
+        </div>
+        <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && !validateMinMax()" class="ig-text-required">
+            Minimum value must be less than maximum
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #maximumTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Maximum
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="This is the highest value that is considered valid for this semantic type." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-number-input [tabindex]="4"
+                         [min]="1"
+                         [step]="1"
+                         formControlName="maximum"
+                         [disabled]="isBuiltIn"
+                         [required]="model.minMaxPresent"
+                         [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
+                         [(ngModel)]="model.maximum"></ig-number-input>
+        <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && semanticForm.get('maximum').errors?.underMin" class="ig-text-required">
+            Please enter a value greater than 0
+        </div>
+        <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && !validateMinMax()" class="ig-text-required">
+            Maximum value must be greater than minimum
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #minMaxPresentTemplate>
+    <div class="row" [formGroup]="semanticForm">
+        <label class="ig-label FieldName" style="margin-right:5px">
+            Minimum Maximum Present
+            <span class="tooltip-icon">
+                <i class="fa fa-question-circle" pTooltip="Indicates that both the minimum and maximum value must be present in the data set in order for the Semantic Type to be recognized." [escape]="false" [hideDelay]="1000" tooltipPosition="right" tooltipStyleClass="ig-tooltip ig-tooltip-medium"></i>
+            </span>
+        </label>
+        <ig-switch [tabindex]="4"
+                   formControlName="minMaxPresent"
+                   [disabled]="isBuiltIn"
+                   [(ngModel)]="model.minMaxPresent"
+                   [optional]="true"></ig-switch>
+    </div>
+</ng-template>

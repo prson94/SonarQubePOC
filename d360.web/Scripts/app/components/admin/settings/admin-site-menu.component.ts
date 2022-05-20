@@ -61,6 +61,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     IsMenuPermissionsAdding: boolean= false;
     permissionMode: FormMode = FormMode.Default;
 
+    showFolderModalDialog: boolean = false;
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -161,6 +162,14 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         } else if (this.formMode == FormMode.Adding) {
             this.newFolder.IconPayload = this.iconImage.dataUrl;
         }
+    }
+
+    addFolderDialog() {
+        this.selection = null;
+        this.newFolder = new SiteNav();
+        this.newFolderItems = new Array<SiteNav>();
+        this.loadFolderItems();
+        this.showFolderModalDialog = true;
     }
 
     add() {

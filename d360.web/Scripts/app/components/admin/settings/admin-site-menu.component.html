@@ -3,14 +3,15 @@
     <div *ngSwitchDefault>
         <header>
             Site Navigation
-            <d3s-tile-actions hasAdd="true" (addClick)="add()"></d3s-tile-actions>
+            <button igButton type="button" label="Add Folder" (click)="addFolderDialog()" style="float: right;"></button>
+            <button igButton type="button" label="Add Asset Type" (click)="add()" style="float: right; margin-right: 8px;"></button>
         </header>
         <p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection"
                  [scrollable]="true" scrollHeight="420px">
             <ng-template pTemplate="header">
                 <tr>
                     <th>Name</th>
-                    <th width="35%" >Type</th>
+                    <th width="35%">Type</th>
                     <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
                 </tr>
             </ng-template>
@@ -195,7 +196,7 @@
                         <div *ngIf="iconType == 'icon'" style="padding:10px">
                             <span style="font-size: 15px">
                                 <img class="d3s-gov-icon" *ngIf="checkIfImg(newFolder.Icon)" [src]="newFolder.Icon" />
-                                <i *ngIf="!checkIfImg(newFolder.Icon)"  [class]="'fa ' + newFolder.Icon"></i>
+                                <i *ngIf="!checkIfImg(newFolder.Icon)" [class]="'fa ' + newFolder.Icon"></i>
                             </span>
                         </div>
                         <div *ngIf="iconType == 'image'" style="padding:10px">
@@ -269,3 +270,14 @@
         </div>
     </div>
 </div>
+
+<d3s-modal additionalClasses="modal-dyn-editor large-dialog modal-extended asset-editor"
+           (onClose)="showFolderModalDialog=false"
+           [showTitle]="false"
+           [isVisible]="showFolderModalDialog">
+    <folder-editor *ngIf="showFolderModalDialog" 
+                   [navigationFolder]="isAdd ? null : selectedFolder" 
+                   (closeClick)="showFolderModalDialog=false" 
+                   (saveClick)="saveNavigationFolder($event)">
+    </folder-editor>
+</d3s-modal>
