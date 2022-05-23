@@ -24,7 +24,7 @@
                 <ng-template pTemplate="body"
                              let-rowNode
                              let-item="rowData">
-                    <tr [ttSelectableRow]="rowNode">
+                    <tr [ttSelectableRow]="rowNode" [igDataCy]="'Asset_Row'+ item.uid">
                         <td style="vertical-align: top">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                             <a (click)="navigate(item.uid)"

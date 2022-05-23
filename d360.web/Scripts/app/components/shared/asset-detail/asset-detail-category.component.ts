@@ -1,4 +1,4 @@
-﻿import { Input, Component } from '@angular/core';
+﻿import { Input, Component, ElementRef } from '@angular/core';
 import { Category } from '../../../models/object-detail.model';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { ObjectIdService } from '../../../services/object-id.service';
@@ -17,11 +17,21 @@ export class AssetDetailCategoryComponent {
     @Input() spacerHeight: string = '32px';
     @Input() isSidePanel: boolean = false;
     @Input() interceptLinkClick: boolean = false;
+    isInSidePanel: boolean = null;
 
     constructor(
+        private elRef: ElementRef,
         protected settingsService: CompanySettingsService,
         public objectIdService: ObjectIdService
     ) { }
+
+    ngOnInit() {
+        this.setAssetDetailLocatedInSidePanel();
+    }
+
+    setAssetDetailLocatedInSidePanel(): void {
+        this.isInSidePanel = this.elRef.nativeElement.closest('side-panel');
+    }
 
     getRowClass(data: any[]): string {
         if (this.showInColumn(data)) {

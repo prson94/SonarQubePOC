@@ -9,6 +9,7 @@
                 <div class="FieldName" i18n>Subject</div>
                 <p-dropdown igDropdown
                             igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Subject'"
                             [ellipsisDirection]="'rtl'"
                             i18n-placeholder
                             placeholder="Select Subject"
@@ -26,6 +27,7 @@
                 <div class="FieldName" i18n>Predicate</div>
                 <p-dropdown igDropdown
                             igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Predicate'"
                             i18n-placeholder
                             placeholder="Select A Predicate"
                             filter="true"
@@ -43,6 +45,7 @@
                 <div *ngIf="!isLoadingObject" class="FieldName" i18n>Object</div>
                 <p-dropdown igDropdown
                             igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Object'"
                             [ellipsisDirection]="'rtl'"
                             i18n-placeholder
                             placeholder="Select Object"
@@ -64,6 +67,7 @@
                 <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Subject Cardinality</div>
                 <p-dropdown igDropdown
                             igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Subject_Cardinality'"
                             i18n-placeholder
                             placeholder="Select Cardinality"
                             *ngIf="!isLoadingCardinality"
@@ -81,6 +85,7 @@
                 <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Object Cardinality</div>
                 <p-dropdown igDropdown
                             igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Object_Cardinality'"
                             i18n-placeholder
                             placeholder="Select Cardinality"
                             *ngIf="!isLoadingCardinality"
