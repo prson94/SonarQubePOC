@@ -8,7 +8,7 @@
             </ng-template>
         </ig-portal-content-provider>
         
-        <form [formGroup]="metricForm" *ngIf="model">
+        <form [formGroup]="metricForm" *ngIf="model" #form>
             <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
                 <div inputs>
                     <div class="row">
