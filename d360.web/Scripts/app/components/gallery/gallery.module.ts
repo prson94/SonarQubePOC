@@ -80,6 +80,8 @@ import { GalleryComponentPropertiesComponent } from './shared/gallery.component-
 import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
 import { ColorSelectorModule } from '../shared/controls/color-selector/color-selector.component';
 import { GalleryColorSelectorComponent } from './gallery.color-selector.component';
+import { GalleryFormFeedbackBadgesComponent } from './gallery.form-feedback-badges.component';
+import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 
 @NgModule({
     imports: [
@@ -124,7 +126,8 @@ import { GalleryColorSelectorComponent } from './gallery.color-selector.componen
         CodemirrorModule,
         ImagePickerModule,
         ColorSelectorModule,
-        RegexpInputModule
+        RegexpInputModule,
+        FormFeedbackBadgesModule
     ],
     declarations: [
         GalleryComponent,
@@ -166,7 +169,8 @@ import { GalleryColorSelectorComponent } from './gallery.color-selector.componen
         GalleryLocaleComponent,
         GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
-        GalleryColorSelectorComponent
+        GalleryColorSelectorComponent,
+        GalleryFormFeedbackBadgesComponent
     ],
     providers: [
         GalleryGuard,

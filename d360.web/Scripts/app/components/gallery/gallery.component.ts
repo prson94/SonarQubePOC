@@ -57,7 +57,8 @@ export class GalleryComponent implements OnInit {
         { label: "Localization", key: "locale", type: "Misc" },
         { label: "Regexp Input", key: "regexp-input", type: "Form" },
         { label: "Image Picker", key: "image-picker", type: "Form" },
-        { label: "Color Selector", key: "color-selector", type: "Form" }
+        { label: "Color Selector", key: "color-selector", type: "Form" },
+        { label: "Form feedback badges", key: "form-feedback-badges", type: "Form" }
     ];
 
     categories: any[] = [];

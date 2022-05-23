@@ -1,0 +1,60 @@
+﻿<div class="tile tile-detail">
+	<header>
+		Form feedback badges
+	</header>
+	<p>
+		A component that enables easy switching over required/invalid controls
+	</p>
+</div>
+
+<div class="tile tile-detail">
+	<header>Basic Usage</header>
+	<pre><code>{{sampleUsage}}</code></pre>
+	<header>Setting up a form (sample)</header>
+	<pre><code>{{configuringUsage}}</code></pre>
+</div>
+
+<div class="tile tile-detail">
+	<header>Examples</header>
+	<div class="gallery-section">
+		<div>
+			<ig-form-feedback-badges [igformGroup]="formGroup"
+				[inputContainer]="formElement">
+			</ig-form-feedback-badges>
+
+			<form #form
+				[formGroup]="formGroup">
+                <div class="row">
+                    Name (required, minLength: 2, maxLength: 10)
+                    <input [formControlName]="'name'"
+                        name="name"
+                        igInput
+                        igSize="full"
+                        type="text">
+                </div>
+                
+                <div class="row">
+                    Count (required, min: 2, max: 10)
+                    <input [formControlName]="'count'"
+                        name="count"
+                        igInput
+                        igSize="full"
+                        type="number">
+                </div>
+
+                <div class="row">
+                    Simple field
+                    <input [formControlName]="'simpleField'"
+                        name="simpleField"
+                        igInput
+                        igSize="full"
+                        type="text">
+                </div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<gallery-component-properties [properties]="properties"
+	header="Properties">
+</gallery-component-properties>
