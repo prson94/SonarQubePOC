@@ -11,7 +11,7 @@
     </div>
     <div class="row" *ngIf="!isLoading">
         <form [formGroup]="semanticForm">
-            <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
+            <div class="form-wrapper form-wrapper--semantic" [style.height.px]="modalFormMaxHeight">
                 <div style="margin-bottom: 16px">
                     <div class="row" *ngIf="!semanticType">
                         <ig-message-box>

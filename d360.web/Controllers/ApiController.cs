@@ -2481,7 +2481,7 @@ namespace d360.web.Controllers
 
 			DynamicParameters dbParams = new DynamicParameters();
 
-			var sql = @"select 
+			var sql = $@"select 
 										c.[Object], 
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
@@ -2489,8 +2489,11 @@ namespace d360.web.Controllers
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor,
-										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
-										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '${CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '${CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'ReferenceItem' then '${CommonNames.AssetTypeClass_Reference}'
+										when c.[Object] = 'Taxonomy' then '${CommonNames.AssetTypeClass_Model}'
+										when c.[Object] = 'Policy' then '${CommonNames.AssetTypeClass_Policy}'
 										else	c.[Object] end [Displayobject],
 										Uid as AssetUid
 										from [dbo].AssetWithType c   
@@ -4251,7 +4254,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Name", Value = resource.FullName },
+								new ReadOnlyField { Name = Fields.Name_Name, Value = resource.FullName },
 							},
 						});
 
@@ -4260,7 +4263,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Email", FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
+								new ReadOnlyField { Name = Fields.Email_Name, FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
 							},
 						});
 
@@ -4273,7 +4276,7 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Last Seen", FieldName = "LastSeen", Value = lastSeen }
+								new ReadOnlyField { Name = Fields.LastSeen_Name , FieldName = "LastSeen", Value = lastSeen }
 							}
 							});
 						}

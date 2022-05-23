@@ -45,9 +45,9 @@
                             </span>
 
                             <div class="flex-grow"></div>
-                            <i *ngIf="item.disabledClass === 'disabled-predicate'" class="fa fa-question-circle" pTooltip="Parent-child relationship type cannot be manually created" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
-                            <i *ngIf="item.disabledClass === 'disabled-cardinality-many'" class="fa fa-question-circle" pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
-                            <i *ngIf="item.disabledClass === 'disabled-cardinality-one'" class="fa fa-question-circle" pTooltip="One-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                            <i *ngIf="item.disabledClass === 'disabled-predicate'" class="fa fa-question-circle" i18n-pTooltip pTooltip="Parent-child relationship type cannot be manually created" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                            <i *ngIf="item.disabledClass === 'disabled-cardinality-many'" class="fa fa-question-circle" i18n-pTooltip pTooltip="Many-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
+                            <i *ngIf="item.disabledClass === 'disabled-cardinality-one'" class="fa fa-question-circle" i18n-pTooltip pTooltip="One-To-One relationship type cannot be related to more than one asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                             <ig-badge *ngIf="item.count !== 0" [text]="item.count"></ig-badge>
                         </td>
                     </tr>
@@ -107,7 +107,7 @@
                 <button igButton class="back-button" igAutoFocus i18n-label label="Back" (click)="currentStep = 'SetRelationshipType';previewAssetUid = '';higlightedItem=null;resetSelectedAssets()"></button>
 
                 <button *ngIf="selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="Set Relationship Properties > " (click)="confirmAssets();" [disabled]="!selectedAssets || selectedAssets.length === 0"></button>
-                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? 'Add Relationships' : 'Add Relationship'}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
+                <button *ngIf="!selectedRelationshipHasCustomFields" igButton class="ig-button-primary" i18n-label label="{{targetTypeCardinality === 2 && selectedAssetCount > 1 ? addRelationshipsPlural : addRelationshipsSingular}}" (click)="saveRelationships();" [disabled]="!selectedAssets || selectedAssets.length === 0 || savingInProgress" [loading]="savingInProgress"></button>
             </div>
         </ng-container>
 
