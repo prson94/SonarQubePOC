@@ -59,9 +59,9 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     focusInvalid(event) {
         event.stopPropagation();
         let found = false;
-        let fcCount = this.getFormControlCount("errors");
+        const fcCount = this.getFormControlCount("errors");
         let idx = 0;
-        Object.keys(this.igformGroup.controls).forEach(x => {
+        for (const x of Object.keys(this.igformGroup.controls)) {
             let control = <FormControl>this.igformGroup.get(x);
             if (control && control.errors && !found) {
                 let invFound = Object.keys(control.errors).filter(x => x != "required").length > 0;
@@ -83,7 +83,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                     }
                 }
             }
-        });
+        }
     }
 
     focusRequired(event) {
@@ -91,7 +91,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         let found = false;
         let fcCount = this.getFormControlCount("required");
         let idx = 0;
-        Object.keys(this.igformGroup.controls).forEach((x) => {
+        for (const x of Object.keys(this.igformGroup.controls)) {
             let control = <FormControl>this.igformGroup.get(x);
             if (control && control.errors && control.errors["required"] == true && !found) {
                 let elem = <HTMLElement>this.getFormControlDomElement(x);
@@ -109,7 +109,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                     }
                 }
             }
-        });
+        };
     }
 
     private expandAndActivateInput(inputElement: HTMLElement) {
@@ -155,7 +155,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         Object.keys(this.igformGroup.controls).forEach(x => {
             let control = <FormControl>this.igformGroup.get(x);
             if (control) {
-                if (type == "required") {
+                if (type === "required") {
                     if (control.errors && control.errors["required"] == true) {
                         let elem = <HTMLElement>this.getFormControlDomElement(x);
                         if (elem) {
@@ -163,9 +163,9 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                         }
                     }
                 }
-                if (type == "errors") {
+                if (type === "errors") {
                     if (control.errors) {
-                        if (Object.keys(control.errors).filter(x => x != "required").length > 0) {
+                        if (Object.keys(control.errors).filter((x) => x != "required").length > 0) {
                             let elem = <HTMLElement>this.getFormControlDomElement(x);
                             if (elem) {
                                 count++;

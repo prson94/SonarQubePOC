@@ -1,1 +1,1 @@
-export * from './uuidv4'
+export * from './uuidv4';
