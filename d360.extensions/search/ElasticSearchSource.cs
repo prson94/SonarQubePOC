@@ -1619,13 +1619,15 @@ namespace d360.extensions.search
                 case "TAXONOMY":
                     return CommonNames.AssetTypeClass_Model;
                 case "DIAGRAM":
-                    return "Diagram Asset";
+                    return CommonNames.AssetTypeClass_DiagramAsset;
                 case "DOMAIN":
-                    return "Reference";
+                    return CommonNames.AssetTypeClass_Reference;
                 case "SYNONYM":
-                    return "Grammatic Type";
+                    return CommonNames.AssetTypeClass_GramaticType;
                 case "SEMANTICTYPE":
-                    return "Semantic Type";
+                    return CommonNames.AssetTypeClass_SemanticType; 
+                case "REFERENCE":
+                    return CommonNames.AssetTypeClass_Reference;
                 default:
                     return key;
             }

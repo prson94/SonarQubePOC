@@ -8,6 +8,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
+using d360.core.resources;
 using d360.web.Filters;
 using d360.web.Models;
 
@@ -49,7 +50,7 @@ namespace d360.web.Controllers
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "Name",
+                                                        friendlyName: FieldInfo.Name_Name,
                                                         required: true,
                                                         pattern: "",
                                                         minLength: 1,
@@ -62,16 +63,16 @@ namespace d360.web.Controllers
                     Column = 2, 
                     Required = true, 
                     FieldName = "URIPrefix", 
-                    Name = "URI Segment", 
+                    Name = CustomAPI.URISegment, 
                     FieldDescription = "",
                     FieldType = DataType.Text.ToString(),
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "URIPrefix",
+                                                        friendlyName: CustomAPI.URISegment,
                                                         required: true,
                                                         pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                         minLength: 1,
                                                         maxLength: 80,
-                                                        validationMessage: "Must be between 1 and 80 alphanumeric characters in length.") 
+                                                        validationMessage: CustomAPI.URISegment_ValidationMessage) 
                 },
 
                 new EditableField 
@@ -79,16 +80,16 @@ namespace d360.web.Controllers
                     Row = 2, 
                     Column = 1, 
                     FieldName = "MaxAge",
-                    Name = "Cache Max-Age (seconds)", 
+                    Name = CustomAPI.CacheMaxAge, 
                     FieldDescription = "", 
                     FieldType = DataType.Number.ToString(),
                     Validations = checkAndAddValidation(fieldType: "Number",
-                                                        friendlyName: "MaxAge",
+                                                        friendlyName: CustomAPI.CacheMaxAge,
                                                         required: true,
                                                         pattern: "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)",
                                                         minLength: null,
                                                         maxLength: null,
-                                                        validationMessage: "Please enter a cache max-age value between 3,200-84,000 seconds.  ") },
+                                                        validationMessage: CustomAPI.CacheMaxAge_ValidationMessage) },
                 
                 new EditableField 
                 { 
@@ -136,7 +137,7 @@ namespace d360.web.Controllers
                 FieldDescription = "", 
                 FieldType = DataType.Text.ToString(), 
                 Validations = checkAndAddValidation(fieldType: "Text",
-                                                    friendlyName: "Name",
+                                                    friendlyName: FieldInfo.Name_Name,
                                                     required: true,
                                                     pattern: "",
                                                     minLength: 1,
@@ -149,24 +150,24 @@ namespace d360.web.Controllers
                 Row = 1,
                 Column = 2,
                 Required = true, 
-                FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") });
+                FieldName = "URIPrefix", Name = CustomAPI.URISegment, FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.UriPrefix, Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, CustomAPI.URISegment_ValidationMessage) });
             
             list.Add(new EditableField 
             { 
                 Row = 2,
                 Column = 1, 
                 FieldName = "MaxAge", 
-                Name = "Cache Max-Age (seconds)",
+                Name = CustomAPI.CacheMaxAge,
                 FieldDescription = "", 
                 FieldType = DataType.Number.ToString(),
                 Value = a.MaximumCacheAge.ToString(),
                 Validations = checkAndAddValidation(fieldType: "Number",
-                                                    friendlyName: "MaxAge",
+                                                    friendlyName: CustomAPI.CacheMaxAge,
                                                     required: true,
                                                     pattern: "(3[2-8][0-9]{2}|39[0-8][0-9]|399[0-9]|[4-9][0-9]{3}|[1-7][0-9]{4}|8[0-3][0-9]{3}|84000)",
                                                     minLength: null,
                                                     maxLength: null,
-                                                    validationMessage: "Please enter a cache max-age value between 3,200-84,000 seconds.  ") 
+                                                    validationMessage: CustomAPI.CacheMaxAge_ValidationMessage) 
             });
             
             list.Add(new EditableField 
@@ -304,11 +305,11 @@ namespace d360.web.Controllers
                     Column = 1,
                     Required = true, 
                     FieldName = "Name", 
-                    Name = "Element Name", 
+                    Name = CustomAPI.ElementName, 
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "Namespace",
+                                                        friendlyName: CustomAPI.ElementName,
                                                         required: true,
                                                         pattern: "",
                                                         minLength: 1,
@@ -321,11 +322,11 @@ namespace d360.web.Controllers
                     Column = 1, 
                     Required = true, 
                     FieldName = "Namespace", 
-                    Name = "Namespace", 
+                    Name = CustomAPI.Namespace, 
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "Namespace",
+                                                        friendlyName: CustomAPI.Namespace,
                                                         required: true,
                                                         pattern: "",
                                                         minLength: 1,
@@ -364,11 +365,11 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true, 
                 FieldName = "Name",
-                Name = "Element Name",
+                Name = FieldInfo.Name_Name,
                 FieldDescription = "", 
                 FieldType = DataType.Text.ToString(), 
                 Validations = checkAndAddValidation(fieldType: "Text",
-                                                    friendlyName: "Name",
+                                                    friendlyName: FieldInfo.Name_Name,
                                                     required: true,
                                                     pattern: "",
                                                     minLength: 1,
@@ -382,11 +383,11 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true, 
                 FieldName = "Namespace", 
-                Name = "Namespace", 
+                Name = CustomAPI.Namespace, 
                 FieldDescription = "",
                 FieldType = DataType.Text.ToString(), 
                 Validations = checkAndAddValidation(fieldType: "Text",
-                                                    friendlyName: "Namespace",
+                                                    friendlyName: CustomAPI.Namespace,
                                                     required: true,
                                                     pattern: "",
                                                     minLength: 1,
@@ -548,7 +549,7 @@ namespace d360.web.Controllers
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "Name",
+                                                        friendlyName: FieldInfo.Name_Name,
                                                         required: true,
                                                         pattern: "",
                                                         minLength: 1,
@@ -561,16 +562,16 @@ namespace d360.web.Controllers
                     Column = 2, 
                     Required = true, 
                     FieldName = "URIPrefix",
-                    Name = "URI Segment",
+                    Name = CustomAPI.URISegment,
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "URIPrefix",
+                                                        friendlyName: CustomAPI.URISegment,
                                                         required: true,
                                                         pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                         minLength: 1,
                                                         maxLength: 80,
-                                                        validationMessage: "Must be between 1 and 80 alphanumeric characters in length.") 
+                                                        validationMessage: CustomAPI.URISegment_ValidationMessage) 
                 },
                 
                 new EditableField 
@@ -579,17 +580,17 @@ namespace d360.web.Controllers
                     Column = 3, 
                     Required = true, 
                     FieldName = "ItemNode", 
-                    Name = "Item Element Name", 
+                    Name = CustomAPI.ItemElementName, 
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Value = "item", 
                     Validations = checkAndAddValidation(fieldType: "Text",
-                                                        friendlyName: "URIPrefix",
+                                                        friendlyName: CustomAPI.ItemElementName,
                                                         required: true,
                                                         pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                         minLength: 1,
                                                         maxLength: 50,
-                                                        validationMessage: "Must be between 1 and 50 alphanumeric characters in length.") 
+                                                        validationMessage: CustomAPI.ItemElementName_ValidationMessage) 
                 },
                 
                 new EditableField { Row = 2, Column = 1, FieldName = "Description", Name = FieldInfo.Description_Name, FieldDescription = "", FieldType = DataType.Html.ToString() }
@@ -630,7 +631,7 @@ namespace d360.web.Controllers
                 FieldDescription = "", 
                 FieldType = DataType.Text.ToString(), 
                 Validations = checkAndAddValidation(fieldType: "Text",
-                                                    friendlyName: "Name",
+                                                    friendlyName: FieldInfo.Name_Name,
                                                     required: true,
                                                     pattern: "",
                                                     minLength: 1,
@@ -644,17 +645,17 @@ namespace d360.web.Controllers
                 Column = 2, 
                 Required = true, 
                 FieldName = "URIPrefix", 
-                Name = "URI Segment",
+                Name = CustomAPI.URISegment,
                 FieldDescription = "", 
                 FieldType = DataType.Text.ToString(),
                 Value = a.UriPrefix, 
                 Validations = checkAndAddValidation(fieldType: "Text",
-                                                    friendlyName: "URIPrefix",
+                                                    friendlyName: CustomAPI.URISegment,
                                                     required: true,
                                                     pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                     minLength: 1,
                                                     maxLength: 80,
-                                                    validationMessage: "Must be between 1 and 80 alphanumeric characters in length.") 
+                                                    validationMessage: CustomAPI.URISegment_ValidationMessage) 
             });
             
             list.Add(new EditableField 
@@ -663,17 +664,17 @@ namespace d360.web.Controllers
                 Column = 3,
                 Required = true,
                 FieldName = "ItemNode", 
-                Name = "Item Element Name", 
+                Name = CustomAPI.ItemElementName, 
                 FieldDescription = "",
                 FieldType = DataType.Text.ToString(), 
                 Value = a.ItemNode ?? "item", 
                 Validations = checkAndAddValidation(fieldType: "Text",
-                                                    friendlyName: "URIPrefix",
+                                                    friendlyName: CustomAPI.ItemElementName,
                                                     required: true,
                                                     pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                     minLength: 1,
                                                     maxLength: 50,
-                                                    validationMessage: "Must be between 1 and 50 alphanumeric characters in length.") 
+                                                    validationMessage: CustomAPI.ItemElementName_ValidationMessage) 
             });
             
             list.Add(new EditableField 
@@ -806,11 +807,11 @@ namespace d360.web.Controllers
             {
                 new EditableField { FieldName = "EndpointID", FieldType = DataType.Hidden.ToString(), Value = endpointId.ToString() },
                 
-                new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = "URI Segment", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, "Must be between 1 and 80 alphanumeric characters in length.") },
+                new EditableField { Row = 1, Column = 1, Required = true, FieldName = "URIPrefix", Name = CustomAPI.URISegment, FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "URIPrefix", true, "([A-Z]*[a-z]*[0-9]*){1,80}", 1, 80, CustomAPI.URISegment_ValidationMessage) },
                 
-                new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MajorVersion", Name = "Major Version", FieldDescription = "", FieldType = DataType.Number.ToString() },
+                new EditableField { Row = 2, Column = 1, Required = true, FieldName = "MajorVersion", Name = CustomAPI.MajorVersion, FieldDescription = "", FieldType = DataType.Number.ToString() },
                 
-                new EditableField { Row = 2, Column = 2, Required = true, FieldName = "MinorVersion", Name = "Minor Version", FieldDescription = "", FieldType = DataType.Number.ToString() },
+                new EditableField { Row = 2, Column = 2, Required = true, FieldName = "MinorVersion", Name = CustomAPI.MinorVersion, FieldDescription = "", FieldType = DataType.Number.ToString() },
 
                 new EditableField
                 {
@@ -818,7 +819,7 @@ namespace d360.web.Controllers
                     Column = 1,
                     Required = true,
                     FieldName = "AssetType",
-                    Name = "Asset Type",
+                    Name = CommonNames.CommonName_AssetType,
                     FieldDescription = "",
                     FieldType = DataType.Lookup.ToString(),
                     Items = Company.AssetTypes.Where(x => allowedVersionClasses.Contains(x.Class)).ToList()
@@ -868,7 +869,7 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true,
                 FieldName = "URIPrefix",
-                Name = "URI Segment", 
+                Name = CustomAPI.URISegment, 
                 FieldDescription = "",
                 FieldType = DataType.Text.ToString(), 
                 Value = a.UriPrefix, 
@@ -878,7 +879,7 @@ namespace d360.web.Controllers
                                                     pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                     minLength: 1,
                                                     maxLength: 80,
-                                                    validationMessage: "Must be between 1 and 80 alphanumeric characters in length.")
+                                                    validationMessage: CustomAPI.URISegment_ValidationMessage)
             });
             
             list.Add(new EditableField 
@@ -887,7 +888,7 @@ namespace d360.web.Controllers
                 Column = 1, 
                 Required = true, 
                 FieldName = "MajorVersion", 
-                Name = "Major Version", 
+                Name = CustomAPI.MajorVersion, 
                 FieldDescription = "", 
                 FieldType = DataType.Number.ToString(), 
                 Value = a.MajorVersion.ToString()
@@ -899,7 +900,7 @@ namespace d360.web.Controllers
                 Column = 2,
                 Required = true,
                 FieldName = "MinorVersion",
-                Name = "Minor Version",
+                Name = CustomAPI.MinorVersion,
                 FieldDescription = "",
                 FieldType = DataType.Number.ToString(), 
                 Value = a.MinorVersion.ToString() 
@@ -911,7 +912,7 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true,
                 FieldName = "AssetType",
-                Name = "Asset Type",
+                Name = CommonNames.CommonName_AssetType,
                 FieldDescription = "",
                 FieldType = DataType.Lookup.ToString(),
                 Items = Company.AssetTypes.Where(x => allowedVersionClasses.Contains(x.Class)).ToList()
@@ -1073,8 +1074,8 @@ namespace d360.web.Controllers
                     FieldType = DataType.Lookup.ToString(),
                     Items =  new List<SelectListItem>
                     {
-                        new SelectListItem{Text = "Singleton", Value = "2"},
-                        new SelectListItem{Text = "Collection", Value = "1"},
+                        new SelectListItem{Text = CustomAPI.Singleton, Value = "2"},
+                        new SelectListItem{Text = CustomAPI.Collection, Value = "1"},
                     }
                 },
                 
@@ -1084,7 +1085,7 @@ namespace d360.web.Controllers
                     Column = 2, 
                     Required = true, 
                     FieldName = "Format", 
-                    Name = "Segment", 
+                    Name = CustomAPI.Segment, 
                     FieldDescription = "", 
                     FieldType = DataType.Text.ToString(), 
                     Validations = checkAndAddValidation(fieldType: "Text",
@@ -1093,7 +1094,7 @@ namespace d360.web.Controllers
                                                         pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                         minLength: 1,
                                                         maxLength: 80,
-                                                        validationMessage: "Must be between 1 and 80 alphanumeric characters in length.") 
+                                                        validationMessage: CustomAPI.URISegment_ValidationMessage) 
                 }
             };
 
@@ -1128,8 +1129,8 @@ namespace d360.web.Controllers
                 FieldType = DataType.Lookup.ToString(),
                 Items = new List<SelectListItem>()
                 {
-                    new SelectListItem{Text = "Singleton", Value = "2", Selected = a.UriType == ApiUriType.Singleton},
-                    new SelectListItem{Text = "Collection", Value = "1", Selected = a.UriType == ApiUriType.Collection},
+                    new SelectListItem{Text = CustomAPI.Singleton, Value = "2", Selected = a.UriType == ApiUriType.Singleton},
+                    new SelectListItem{Text = CustomAPI.Collection, Value = "1", Selected = a.UriType == ApiUriType.Collection},
                 }
             });
 
@@ -1139,7 +1140,7 @@ namespace d360.web.Controllers
                 Column = 2, 
                 Required = true, 
                 FieldName = "Format",
-                Name = "Segment",
+                Name = CustomAPI.Segment,
                 FieldDescription = "",
                 FieldType = DataType.Text.ToString(), 
                 Value = a.Format, 
@@ -1149,7 +1150,7 @@ namespace d360.web.Controllers
                                                     pattern: "([A-Z]*[a-z]*[0-9]*){1,80}",
                                                     minLength: 1,
                                                     maxLength: 80,
-                                                    validationMessage: "Must be between 1 and 80 alphanumeric characters in length.") 
+                                                    validationMessage: CustomAPI.URISegment_ValidationMessage) 
             });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -1274,7 +1275,7 @@ namespace d360.web.Controllers
                     Column = 1,
                     Required = true,
                     FieldName = "FieldTypeID",
-                    Name = "Field",
+                    Name = CustomAPI.Field,
                     FieldDescription = "",
                     FieldType = DataType.Lookup.ToString(),
                     Items = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList()
@@ -1291,7 +1292,7 @@ namespace d360.web.Controllers
                     Column = 2, 
                     Required = true, 
                     FieldName = "AllowSort", 
-                    Name = "Allow Sort", 
+                    Name = CustomAPI.AllowSort, 
                     FieldDescription = "", 
                     FieldType = DataType.Boolean.ToString() 
                 },
@@ -1302,7 +1303,7 @@ namespace d360.web.Controllers
                     Column = 1, 
                     Required = true, 
                     FieldName = "AllowSelect", 
-                    Name = "Allow Select", 
+                    Name = CustomAPI.AllowSelect, 
                     FieldDescription = "", 
                     FieldType = DataType.Boolean.ToString()
                 },
@@ -1313,7 +1314,7 @@ namespace d360.web.Controllers
                     Column = 1, 
                     Required = true, 
                     FieldName = "AllowFilter", 
-                    Name = "Allow Filter", 
+                    Name = CustomAPI.AllowFilter, 
                     FieldDescription = "",
                     FieldType = DataType.Boolean.ToString()
                 },
@@ -1324,7 +1325,7 @@ namespace d360.web.Controllers
                     Column = 1,
                     Required = false,
                     FieldName = "JsonFieldNameOverride",
-                    Name = "Json Field Name Override",
+                    Name = CustomAPI.JsonFieldNameOverride,
                     FieldDescription = "",
                     FieldType = DataType.Text.ToString() 
                 },
@@ -1335,7 +1336,7 @@ namespace d360.web.Controllers
                     Column = 1, 
                     Required = false, 
                     FieldName = "XmlFieldNameOverride", 
-                    Name = "Xml Field Name Override",
+                    Name = CustomAPI.XmlFieldNameOverride,
                     FieldDescription = "",
                     FieldType = DataType.Text.ToString() 
                 }
@@ -1368,7 +1369,7 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true,
                 FieldName = "FieldTypeID",
-                Name = "Field",
+                Name = CustomAPI.Field,
                 FieldDescription = "",
                 FieldType = DataType.Lookup.ToString(),
                 Items = Company.FieldTypes.Where(x => x.AssetTypeID == entity.AssetTypeID).ToList()
@@ -1386,7 +1387,7 @@ namespace d360.web.Controllers
                 Column = 2,
                 Required = true,
                 FieldName = "AllowSort", 
-                Name = "Allow Sort", 
+                Name = CustomAPI.AllowSort, 
                 FieldDescription = "", 
                 FieldType = DataType.Boolean.ToString(), 
                 Value = a.AllowSort.ToString() 
@@ -1398,7 +1399,7 @@ namespace d360.web.Controllers
                 Column = 1,
                 Required = true, 
                 FieldName = "AllowSelect",
-                Name = "Allow Select",
+                Name = CustomAPI.AllowSelect,
                 FieldDescription = "", 
                 FieldType = DataType.Boolean.ToString(),
                 Value = a.AllowSelect.ToString() 
@@ -1410,7 +1411,7 @@ namespace d360.web.Controllers
                 Column = 1, 
                 Required = true,
                 FieldName = "AllowFilter",
-                Name = "Allow Filter",
+                Name = CustomAPI.AllowFilter,
                 FieldDescription = "",
                 FieldType = DataType.Boolean.ToString(),
                 Value = a.AllowFilter.ToString() 
@@ -1422,7 +1423,7 @@ namespace d360.web.Controllers
                 Column = 1, 
                 Required = false,
                 FieldName = "JsonFieldNameOverride", 
-                Name = "Json Field Name Override",
+                Name = CustomAPI.JsonFieldNameOverride,
                 FieldDescription = "", 
                 FieldType = DataType.Text.ToString(),
                 Value = a.JsonFieldNameOverride 
@@ -1434,7 +1435,7 @@ namespace d360.web.Controllers
                 Column = 1, 
                 Required = false,
                 FieldName = "XmlFieldNameOverride",
-                Name = "Xml Field Name Override",
+                Name = CustomAPI.XmlFieldNameOverride,
                 FieldDescription = "", 
                 FieldType = DataType.Text.ToString(),
                 Value = a.XmlFieldNameOverride 

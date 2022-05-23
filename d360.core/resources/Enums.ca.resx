@@ -285,6 +285,21 @@
   <data name="OperatorStartsWith" xml:space="preserve">
     <value>ƨƭářƭƨ ωïƭλ£ôř</value>
   </data>
+  <data name="QuestionDisplayStyle_Check" xml:space="preserve">
+    <value>Çλèçƙ £ïƨƭ£ôř</value>
+  </data>
+  <data name="QuestionDisplayStyle_Radio" xml:space="preserve">
+    <value>Ráδïô £ïƨƭ£ôř</value>
+  </data>
+  <data name="QuestionDisplayStyle_Rating" xml:space="preserve">
+    <value>Ráƭïñϱ£</value>
+  </data>
+  <data name="ScoreType_DataQuality" xml:space="preserve">
+    <value>Ðáƭá Qúáℓïƭ¥ §çôřè£ôřè₥</value>
+  </data>
+  <data name="ScoreType_Governance" xml:space="preserve">
+    <value>GôƲèřñáñçè §çôřè£ôřè</value>
+  </data>
   <data name="WorkflowActivityType_Delete" xml:space="preserve">
     <value>Ðèℓèƭè£</value>
   </data>
@@ -314,5 +329,23 @@
   </data>
   <data name="WorkflowActivityType_StatusChange" xml:space="preserve">
     <value>§ƭáƭúƨ Çλáñϱè£ôř</value>
+  </data>
+  <data name="WorkflowChangeType_ItemAdded" xml:space="preserve">
+    <value>Ìƭè₥ Âδδèδ£ôř</value>
+  </data>
+  <data name="WorkflowChangeType_ItemChanged" xml:space="preserve">
+    <value>Ìƭè₥ Çλáñϱèδ£ôř</value>
+  </data>
+  <data name="WorkflowChangeType_ItemRemoved" xml:space="preserve">
+    <value>Ìƭè₥ Rè₥ôƲèδ£ôř</value>
+  </data>
+  <data name="WorkflowChangeType_RequestCertification" xml:space="preserve">
+    <value>Rè9úèƨƭ Çèřƭïƒïçáƭïôñ£ôřè₥ </value>
+  </data>
+  <data name="WorkflowChangeType_Schedule" xml:space="preserve">
+    <value>§çλèδúℓè£ô</value>
+  </data>
+  <data name="WorkflowChangeType_ScoreChange" xml:space="preserve">
+    <value>§çôřè Çλáñϱèδ£ôř</value>
   </data>
 </root>

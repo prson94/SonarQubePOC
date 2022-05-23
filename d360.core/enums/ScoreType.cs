@@ -30,7 +30,7 @@ namespace d360.core.enums
         {
             try
             {
-                return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+                return GetScoreLocalizedName(type);
             }
             catch
             {
@@ -50,7 +50,7 @@ namespace d360.core.enums
 
                     list.Add(new ScoreTypeInfo
                     {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Name = GetScoreLocalizedName(enumValue),
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                         ID = enumValue
                     });
@@ -58,6 +58,16 @@ namespace d360.core.enums
             }
 
             return list.OrderBy(i => i.Name).ToList();
+        }
+
+        private static string GetScoreLocalizedName(ScoreType type)
+        {
+            switch (type)
+            {
+                case ScoreType.Governance: return resources.Enums.ScoreType_Governance;
+                case ScoreType.DataQuality: return resources.Enums.ScoreType_DataQuality;
+                default: return "Score Type Invalid";
+            }
         }
     }
 }

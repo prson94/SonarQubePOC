@@ -22,6 +22,9 @@ export class CommentFormComponent extends BaseComponent {
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
+    labelUpdate = $localize`Update`;
+    labelPost = $localize`Post`;
+
     originalComment: CommentDetail;
 
     constructor(

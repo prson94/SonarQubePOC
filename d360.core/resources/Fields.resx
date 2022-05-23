@@ -385,4 +385,7 @@
   <data name="Via_Name" xml:space="preserve">
     <value>Via</value>
   </data>
+  <data name="LastSeen_Name" xml:space="preserve">
+    <value>Last Seen</value>
+  </data>
 </root>

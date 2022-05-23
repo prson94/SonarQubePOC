@@ -82,6 +82,8 @@ import { ColorSelectorModule } from '../shared/controls/color-selector/color-sel
 import { GalleryColorSelectorComponent } from './gallery.color-selector.component';
 import { GalleryFormFeedbackBadgesComponent } from './gallery.form-feedback-badges.component';
 import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
+import { GalleryDropdownBadgeComponent } from './gallery.dropdown-badge.component';
+import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-badge.component';
 
 @NgModule({
     imports: [
@@ -127,7 +129,8 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
         ImagePickerModule,
         ColorSelectorModule,
         RegexpInputModule,
-        FormFeedbackBadgesModule
+        FormFeedbackBadgesModule,
+        DropdownBadgeModule
     ],
     declarations: [
         GalleryComponent,
@@ -170,7 +173,8 @@ import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badge
         GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
         GalleryColorSelectorComponent,
-        GalleryFormFeedbackBadgesComponent
+        GalleryFormFeedbackBadgesComponent,
+        GalleryDropdownBadgeComponent
     ],
     providers: [
         GalleryGuard,

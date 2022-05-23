@@ -9,7 +9,7 @@
         </ig-portal-content-provider>
         
         <form [formGroup]="metricForm" *ngIf="model">
-            <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
+            <ig-property-group [igformGroup]="metricForm" i18n-title title="Details">
                 <div inputs>
                     <div class="row">
                         <label for="name" class="ig-label" i18n>Name</label>
@@ -92,7 +92,7 @@
                 </div><br />
             </ig-property-group>
 
-            <ig-property-group [igformGroup]="metricForm" [title]="'Pass Test'" *ngIf="!model.IsGroup && model.Definition && model.Definition.Governance">
+            <ig-property-group [igformGroup]="metricForm" i18n-title title="Pass Test" *ngIf="!model.IsGroup && model.Definition && model.Definition.Governance">
                 <div inputs>
                     <div class="row">
                         <label for="check" class="ig-label" i18n>Test Type</label>
@@ -292,7 +292,8 @@
                 </div>
             </ig-property-group>
             <ig-property-group [igformGroup]="metricForm"
-                               [title]="'Asset Conditions and Weighting'"
+                               i18n-title
+                               title="Asset Conditions and Weighting"
                                [showMoreInfo]="true"
                                [moreInfoHtml]="assetConditionsAndWeightingTooltip"
                                *ngIf="!metricForm.value.isGroup && !isExternallyCalculated"

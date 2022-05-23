@@ -210,4 +210,43 @@
   <data name="Relationship_UID_Name" xml:space="preserve">
     <value>Relationship UID</value>
   </data>
+  <data name="Load_Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Load_ErrorMessages" xml:space="preserve">
+    <value>Error Messages</value>
+  </data>
+  <data name="Load_Errors" xml:space="preserve">
+    <value>Errors</value>
+  </data>
+  <data name="Load_Incompletes" xml:space="preserve">
+    <value>Incompletes</value>
+  </data>
+  <data name="Load_MessageLessThanMin" xml:space="preserve">
+    <value>less than a minute</value>
+  </data>
+  <data name="Load_MessageMoreThanMin" xml:space="preserve">
+    <value>minute(s)</value>
+  </data>
+  <data name="Load_Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="Load_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Load_Successes" xml:space="preserve">
+    <value>Successes</value>
+  </data>
+  <data name="Load_Target" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="Load_TookMinutes" xml:space="preserve">
+    <value>Took (minutes)</value>
+  </data>
+  <data name="Load_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Load_UploadedBy" xml:space="preserve">
+    <value>Uploaded By</value>
+  </data>
 </root>

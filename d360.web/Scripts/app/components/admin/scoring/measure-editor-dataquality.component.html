@@ -204,8 +204,8 @@
                                (isValid)="canAddNewGroup($event)">
                 <div inputs>
                     <div class="row match-condition">
-                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="matchConditionsOnly" value="true" label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
-                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="matchConditionsOnly" value="false" label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
+                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="matchConditionsOnly" value="true" i18n-label label="Only apply this measure to assets that match a condition group"></p-radioButton>&nbsp;
+                        <p-radioButton igRadioButton formControlName="MatchConditionsOnly" [(ngModel)]="matchConditionsOnly" value="false" i18n-label label="Apply this measure to all assets, using the first matching condition group to determine measure weight"></p-radioButton>
                     </div>
                     <div class="condition-group" *ngFor="let cg of sortByDisplayOrder();let i=index">
                         <div class="row cg-header-row">

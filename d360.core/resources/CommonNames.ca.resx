@@ -117,22 +117,67 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AssetTypeClass_ActionType" xml:space="preserve">
+    <value>Âçƭïôñ T¥ƥè£ôř</value>
+  </data>
   <data name="AssetTypeClass_Business" xml:space="preserve">
     <value>ßúƨïñèƨƨ Âƨƨèƭ£ôřè</value>
+  </data>
+  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
+    <value>Ðïáϱřá₥ Âƨƨèƭ£ôř</value>
+  </data>
+  <data name="AssetTypeClass_GenericType" xml:space="preserve">
+    <value>Gèñèřïç T¥ƥè£ôř</value>
+  </data>
+  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
+    <value>Gřá₥₥áƭïç T¥ƥè£ôřè</value>
+  </data>
+  <data name="AssetTypeClass_Group" xml:space="preserve">
+    <value>Gřôúƥ£</value>
   </data>
   <data name="AssetTypeClass_Model" xml:space="preserve">
     <value>Môδèℓ£</value>
   </data>
+  <data name="AssetTypeClass_ModelType" xml:space="preserve">
+    <value>Môδèℓ T¥ƥè£ôř</value>
+  </data>
+  <data name="AssetTypeClass_Organization" xml:space="preserve">
+    <value>Óřϱáñïƺáƭïôñ£ôř</value>
+  </data>
   <data name="AssetTypeClass_Policy" xml:space="preserve">
     <value>Þôℓïç¥£</value>
   </data>
+  <data name="AssetTypeClass_PolicyType" xml:space="preserve">
+    <value>Þôℓïç¥ T¥ƥè£ôř</value>
+  </data>
+  <data name="AssetTypeClass_Reference" xml:space="preserve">
+    <value>Rèƒèřèñçè£ô</value>
+  </data>
+  <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
+    <value>Rèƒèřèñçè £ïƨƭ£ôřè</value>
+  </data>
+  <data name="AssetTypeClass_Relationship" xml:space="preserve">
+    <value>Rèℓáƭïôñƨλïƥ£ôř</value>
+  </data>
   <data name="AssetTypeClass_Rule" xml:space="preserve">
     <value>Rúℓè£</value>
+  </data>
+  <data name="AssetTypeClass_RuleType" xml:space="preserve">
+    <value>Rúℓè T¥ƥè£ô</value>
+  </data>
+  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
+    <value>§è₥áñƭïç T¥ƥè£ôř</value>
   </data>
   <data name="AssetTypeClass_Task" xml:space="preserve">
     <value>Ðïáϱřá₥£ô</value>
   </data>
   <data name="AssetTypeClass_Technical" xml:space="preserve">
     <value>Tèçλñïçáℓ Âƨƨèƭ£ôřè</value>
+  </data>
+  <data name="AssetTypeClass_User" xml:space="preserve">
+    <value>Ûƨèř£</value>
+  </data>
+  <data name="CommonName_AssetType" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè£ôř</value>
   </data>
 </root>

@@ -1,0 +1,112 @@
+﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { DropdownBadgeOption } from '../shared/controls/dropdown-badge/types/dropdown-bage-option.type';
+
+
+@Component({
+    selector: 'gallery-dropdown-badge',
+    templateUrl: './gallery.dropdown-badge.component.html',
+    styles: [
+        `
+        .gallery-section {
+            padding: 0 16px 32px 16px;
+        }
+
+        .gallery-section h4 {
+            padding-bottom: 8px;
+        }
+
+        pre {
+            margin: 0;
+        }
+
+        .component-container {
+            width: 200px;
+        }
+        `
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+
+export class GalleryDropdownBadgeComponent implements OnInit {
+    dropdownProperties: Array<any> = [];
+    optionProperties: Array<any> = [];
+    events: Array<any> = [];
+
+    numberOptions: DropdownBadgeOption<number>[];
+    statusOptions: DropdownBadgeOption<Status>[];
+
+    basicValue: number = 1;
+    disabledValue: Status = Status.PENDING;
+    statusValue: Status = Status.PENDING;
+
+    constructor() { }
+
+    ngOnInit(): void {
+        this.numberOptions = [
+            {label: '1', value: 1, color: '#248be5'},
+            {label: '2', value: 2, color: '#049649'},
+            {label: '3', value: 3, color: '#962470'}
+        ];
+        this.statusOptions = [
+            {label: 'Pending', value: Status.PENDING, color: '#248be5'},
+            {label: 'In Progress', value: Status.IN_PROGRESS, color: '#049649'},
+            {label: 'On Hold', value: Status.ON_HOLD, color: '#962470'},
+            {label: 'Blocked', value: Status.BLOCKED, color: '#d11947'}
+        ];
+
+        this.dropdownProperties.push({
+            Name: "disabled",
+            Type: "boolean",
+            Description: "Defines if user can interact with component",
+            Default: "false"
+        });
+        this.dropdownProperties.push({
+            Name: "options",
+            Type: "Array<DropdownBadgeOption>",
+            Description: "Defines the list of options, that can be chosen in dropdown",
+            Default: "[]"
+        });
+        this.dropdownProperties.push({
+            Name: "ngModel",
+            Type: "any",
+            Description: "Defines the variable, value of which will be managed by component. Initial value is REQUIRED",
+            Default: ""
+        });
+
+        this.optionProperties.push({
+            Name: "value",
+            Type: "any",
+            Description: "Defines value, that will be emitted by component, when option is selected",
+            Default: ""
+        });
+        this.optionProperties.push({
+            Name: "label",
+            Type: "string",
+            Description: "Defines the text representation of value, that has been selected, shown in the badge.",
+            Default: ""
+        });
+        this.optionProperties.push({
+            Name: "color",
+            Type: "string",
+            Description: "Defines the color, that represents the option",
+            Default: ""
+        });
+        this.optionProperties.push({
+            Name: "disabled",
+            Type: "boolean",
+            Description: "Defines if this option can be selected",
+            Default: "false"
+        });
+
+        this.events.push({Name: "ngModelChange", Description: "Fired when the selection changes"});
+
+    }
+
+}
+
+enum Status {
+    PENDING = "PENDING",
+    ON_HOLD = "ON HOLD",
+    IN_PROGRESS = "IN PROGRESS",
+    BLOCKED = "BLOCKED"
+}
