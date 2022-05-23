@@ -109,7 +109,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                     }
                 }
             }
-        };
+        }
     }
 
     private expandAndActivateInput(inputElement: HTMLElement) {
