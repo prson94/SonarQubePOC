@@ -16,7 +16,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <div class="col s12">
                 <div class="tile tile-detail">
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                    <header>Followers of {{objectName}}</header>
+                    <header i18n>Followers of {{objectName}}</header>
                     <span *ngIf="!isLoading">
 
                                 <input type="text"
@@ -39,11 +39,11 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'FollowerLastName'">
-                                                Last Name
+                                                <ng-container i18n>Last Name</ng-container> 
                                                 <d3s-sortIcon [field]="'FollowerLastName'"></d3s-sortIcon>
                                             </th>
                                             <th [pSortableColumn]="'FollowerFirstName'">
-                                                First Name
+                                                <ng-container i18n>First Name</ng-container>
                                                 <d3s-sortIcon [field]="'FollowerFirstName'"></d3s-sortIcon>
                                             </th>
                                             <th style="width: 28px"></th>

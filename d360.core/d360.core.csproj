@@ -59,6 +59,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyContextErrors.resx</DependentUpon>
     </Compile>
+    <Compile Update="resources\CustomAPI.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CustomAPI.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\DataQualityErrors.Designer.cs">
       <DependentUpon>DataQualityErrors.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -180,6 +185,10 @@
     <EmbeddedResource Update="resources\CompanyContextErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>CompanyContextErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\CustomAPI.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>CustomAPI.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\DataQualityErrors.resx">
       <LastGenOutput>DataQualityErrors.Designer.cs</LastGenOutput>

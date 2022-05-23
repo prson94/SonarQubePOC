@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.resources;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -20,28 +21,28 @@ namespace d360.core.enums
             AllowCommentsOnAsset
         ]
         BusinessAsset = 1,
-        
+
         [
             Name("Model"),
             Description("Model assets."),
             AllowCommentsOnAsset
         ]
         Model = 2,
-        
+
         [
             Name("Policy"),
             Description("Policy asset."),
             AllowCommentsOnAsset
         ]
         Policy = 6,
-        
+
         [
             Name("Rule"),
             Description("Rule asset."),
             AllowCommentsOnAsset
         ]
         Rule = 7,
-        
+
         [
             Name("Technical Asset"),
             Description("Technical asset that represent items like database columns, schemas, XML attributes, etc."),
@@ -49,55 +50,55 @@ namespace d360.core.enums
             AllowCommentsOnAsset
         ]
         TechnicalAsset = 8,
-        
+
         [
             Name("Reference"),
             Description("Reference asset.")
         ]
         Reference = 9,
-        
+
         [
             Name("Organization"),
             Description("Organization asset.")
         ]
         Organization = 10,
-        
+
         [
             Name("User"),
             Description("User asset.")
         ]
         User = 11,
-        
+
         [
             Name("Group"),
             Description("Group asset.")
         ]
         Group = 12,
-        
+
         [
             Name("Reference List"),
             Description("Reference Item List.")
         ]
         ReferenceItemType = 14,
-        
+
         [
             Name("Diagram"),
             Description("Diagram asset.")
         ]
         Diagram = 15,
-        
+
         [
             Name("MetricAllocation"),
             Description("Metric Allocation.")
         ]
         MetricAllocation = 16,
-        
+
         [
             Name("Predicate"),
             Description("Predicate.")
         ]
         Predicate = 17,
-        
+
         [
             Name("SemanticType"),
             Description("Semantic Type.")
@@ -114,13 +115,13 @@ namespace d360.core.enums
     public class AssetTypeClassInfo
     {
         public AssetTypeClass ID { get; set; }
-        
+
         public string Value { get; set; }
-        
+
         public string Name { get; set; }
-        
+
         public string Description { get; set; }
-        
+
         public bool AllowCommentsOnAsset { get; set; }
     }
 
@@ -128,7 +129,7 @@ namespace d360.core.enums
     {
         public static string GetDisplayName(this AssetTypeClass type)
         {
-            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+            return type.GetLocalizedName();
         }
 
         public static string GetName(this AssetTypeClass type)
@@ -190,6 +191,23 @@ namespace d360.core.enums
             info.ID = type;
             info.Value = type.ToString();
             return info;
+        }
+
+        public static string GetLocalizedName(this AssetTypeClass type)
+        {
+            switch (type)
+            {
+                case AssetTypeClass.BusinessAsset: return CommonNames.AssetTypeClass_Business;
+                case AssetTypeClass.TechnicalAsset: return CommonNames.AssetTypeClass_Technical;
+                case AssetTypeClass.Model: return CommonNames.AssetTypeClass_Model;
+                case AssetTypeClass.Policy: return CommonNames.AssetTypeClass_Policy;
+                case AssetTypeClass.Rule: return CommonNames.AssetTypeClass_Rule;
+                case AssetTypeClass.Diagram: return CommonNames.AssetTypeClass_Task;
+                case AssetTypeClass.Organization: return CommonNames.AssetTypeClass_Organization;
+                case AssetTypeClass.User: return CommonNames.AssetTypeClass_User;
+                case AssetTypeClass.Group: return CommonNames.AssetTypeClass_Group;
+                default: return type.ToString();
+            }
         }
     }
 }
