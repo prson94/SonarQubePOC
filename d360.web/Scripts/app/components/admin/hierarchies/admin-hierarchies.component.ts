@@ -168,7 +168,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     get typeEditorModalTitle(): string {
-        return (this.selected == null ? $localize`New` : $localize`Edit`) + ' ' + (this.assetTypeClass == AssetTypeClass.Model ? 'Model' : 'Policy') + '' + $localize`Type`;
+        return (this.selected == null ? $localize`New` : $localize`Edit`) + ' ' + (this.assetTypeClass == AssetTypeClass.Model ? $localize`Model` : $localize`Policy`) + ' ' + $localize`Type`;
     }
 
     get deleteModalTitle(): string {

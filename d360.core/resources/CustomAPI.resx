@@ -117,67 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AssetTypeClass_ActionType" xml:space="preserve">
-    <value>Action Type</value>
+  <data name="AllowFilter" xml:space="preserve">
+    <value>Allow Filter</value>
   </data>
-  <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>Business Asset</value>
+  <data name="AllowSelect" xml:space="preserve">
+    <value>Allow Select</value>
   </data>
-  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
-    <value>Diagram Asset</value>
+  <data name="AllowSort" xml:space="preserve">
+    <value>Allow Sort</value>
   </data>
-  <data name="AssetTypeClass_GenericType" xml:space="preserve">
-    <value>Generic Type</value>
+  <data name="CacheMaxAge" xml:space="preserve">
+    <value>Cache Max-Age (seconds)</value>
   </data>
-  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
-    <value>Grammatic Type</value>
+  <data name="CacheMaxAge_ValidationMessage" xml:space="preserve">
+    <value>Please enter a cache max-age value between 3,200-84,000 seconds.</value>
   </data>
-  <data name="AssetTypeClass_Group" xml:space="preserve">
-    <value>Group</value>
+  <data name="Collection" xml:space="preserve">
+    <value>Collection</value>
   </data>
-  <data name="AssetTypeClass_Model" xml:space="preserve">
-    <value>Model</value>
+  <data name="ElementName" xml:space="preserve">
+    <value>Element Name</value>
   </data>
-  <data name="AssetTypeClass_ModelType" xml:space="preserve">
-    <value>Model Type</value>
+  <data name="Field" xml:space="preserve">
+    <value>Field</value>
   </data>
-  <data name="AssetTypeClass_Organization" xml:space="preserve">
-    <value>Organization</value>
+  <data name="ItemElementName" xml:space="preserve">
+    <value>Item Element Name</value>
   </data>
-  <data name="AssetTypeClass_Policy" xml:space="preserve">
-    <value>Policy</value>
+  <data name="ItemElementName_ValidationMessage" xml:space="preserve">
+    <value>Must be between 1 and 50 alphanumeric characters in length.</value>
   </data>
-  <data name="AssetTypeClass_PolicyType" xml:space="preserve">
-    <value>Policy Type</value>
+  <data name="JsonFieldNameOverride" xml:space="preserve">
+    <value>Json Field Name Override</value>
   </data>
-  <data name="AssetTypeClass_Reference" xml:space="preserve">
-    <value>Reference</value>
+  <data name="MajorVersion" xml:space="preserve">
+    <value>Major Version</value>
   </data>
-  <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
-    <value>Reference List</value>
+  <data name="MinorVersion" xml:space="preserve">
+    <value>Minor Version</value>
   </data>
-  <data name="AssetTypeClass_Relationship" xml:space="preserve">
-    <value>Relationship</value>
+  <data name="Namespace" xml:space="preserve">
+    <value>Namespace</value>
   </data>
-  <data name="AssetTypeClass_Rule" xml:space="preserve">
-    <value>Rule</value>
+  <data name="Segment" xml:space="preserve">
+    <value>Segment</value>
   </data>
-  <data name="AssetTypeClass_RuleType" xml:space="preserve">
-    <value>Rule Type</value>
+  <data name="Singleton" xml:space="preserve">
+    <value>Singleton</value>
   </data>
-  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
-    <value>Semantic Type</value>
+  <data name="URISegment" xml:space="preserve">
+    <value>URI Segment</value>
   </data>
-  <data name="AssetTypeClass_Task" xml:space="preserve">
-    <value>Diagram</value>
+  <data name="URISegment_ValidationMessage" xml:space="preserve">
+    <value>Must be between 1 and 80 alphanumeric characters in length.</value>
   </data>
-  <data name="AssetTypeClass_Technical" xml:space="preserve">
-    <value>Technical Asset</value>
-  </data>
-  <data name="AssetTypeClass_User" xml:space="preserve">
-    <value>User</value>
-  </data>
-  <data name="CommonName_AssetType" xml:space="preserve">
-    <value>Asset Type</value>
+  <data name="XmlFieldNameOverride" xml:space="preserve">
+    <value>Xml Field Name Override</value>
   </data>
 </root>
