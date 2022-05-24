@@ -20,6 +20,7 @@ using d360.core.enums.Workflow;
 using d360.core.helpers;
 using d360.core.Models;
 using d360.core.queue;
+using d360.core.resources;
 using d360.model;
 using d360.model.workflow;
 using d360.web.Models;
@@ -200,7 +201,7 @@ namespace d360.web.Controllers.Services
 		[Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
 		public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype)
 		{
-			var sql = @"
+			var sql = $@"
 						select		distinct 
 									null as WorkflowID
 									,wi.ID as WorkflowItemID
@@ -222,12 +223,12 @@ namespace d360.web.Controllers.Services
 									,I.ID as IssueID
 									,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 									,case 
-										when wi.CompletedOn is not null then 'Closed'
+										when wi.CompletedOn is not null then '{Workflows.State_Closed.CleanForSql()}'
 										else
 											case cast(coalesce(IA.ResourceObjectID, 0) as bit)
 
-												when 1 then 'Pending'
-												else 'Waiting on user(s)'
+												when 1 then '{Workflows.State_Pending.CleanForSql()}'
+												else '{Workflows.State_Waiting.CleanForSql()}'
 
 											end
 

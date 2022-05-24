@@ -154,6 +154,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\Workflows.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Workflows.resx</DependentUpon>
+    </Compile>
     <Compile Update="versioning.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -265,6 +270,10 @@
     <EmbeddedResource Update="resources\Values.resx">
       <LastGenOutput>Values.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Workflows.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Workflows.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 
