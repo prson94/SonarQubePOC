@@ -128,8 +128,10 @@ namespace d360.model.DataAccessLayer.repositories
 			return $"{columnSql} AS {alias}";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null)
 		{
+			List<string> TempTableNameList = new List<string>();
+
 			fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
 			 {
                  var defaultVal = f.DefaultFormattedValue;
@@ -322,8 +324,69 @@ namespace d360.model.DataAccessLayer.repositories
 					 string targetType;
 					 var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
 
-					 var assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-					 var assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+					 string assetIdBackwardQuery;
+					 string assetIdForwardQuery;
+					 string assetIdBothQuery;
+					 string temptablename;
+					 string temptableScript;
+
+					 if (IsCreateTempTable)
+					 {
+						 switch (filtercond)
+						 {
+							 case SplitFilterCriteriaRelationship.Object:
+								 temptablename = $@"#TempGraphBack{f.LookupObjectID}";
+
+								 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
+									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
+									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID}";
+								 break;
+							 case SplitFilterCriteriaRelationship.Subject:
+								 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
+
+								 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
+									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
+									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID}";
+								 break;
+							 default:
+								 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
+
+								 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select * into {temptablename} from (
+									select S.ID SourceAssetID, O.Id as TargetAssetId 
+									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
+									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} 
+									union
+									select S.ID SourceAssetID, O.Id as TargetAssetId 
+									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
+									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} 
+									) a;";
+								 break;
+						 }
+
+
+						 if (!TempTableNameList.Contains(temptablename))
+						 {
+							 TempTableNameList.Add(temptablename);
+							 TempTableScriptList.Add(temptableScript);
+						 }
+
+						 assetIdBackwardQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
+						 assetIdForwardQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
+						 assetIdBothQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetId = A.Id";
+					 }
+					 else
+					 {
+						 assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+						 assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+						 assetIdBothQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
+					 }
+
 					 var assetIdFinalQuery = "";
 
 					 switch (filtercond)
@@ -335,7 +398,7 @@ namespace d360.model.DataAccessLayer.repositories
 							 assetIdFinalQuery = assetIdForwardQuery;
 							 break;
 						 default:
-							 assetIdFinalQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
+							 assetIdFinalQuery = assetIdBothQuery;
 							 break;
 					 }
 
@@ -404,47 +467,94 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else
 					 {
+						 string assetIdQuery;
+						 string assetIdFinalQuery;
+						 string temptablename;
+						 string temptableScript;
 
-						 if (filtercond == SplitFilterCriteriaRelationship.Object)
+						 if (IsCreateTempTable)
 						 {
-							 fieldJoins.Add($@"outer apply (
-							select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
-							{(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
-							where AD.ID in (        
-							SELECT        O.Id as TargetAssetId
-							FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-							WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
-							having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
-							) {tableAlias}");
-						 }
-						 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
-						 {
-							 fieldJoins.Add($@"outer apply (
-							select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
-							{(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
-							where AD.ID in ( 
-							 SELECT        O.Id as TargetAssetId
-							FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-							WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
-							having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
-							) {tableAlias}");
+							 if (filtercond == SplitFilterCriteriaRelationship.Object)
+							 {
+								 temptablename = $@"#TempGraphBack{f.LookupObjectID}";
+
+								 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
+									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
+									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID}";
+
+							 }
+							 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
+							 {
+								 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
+
+								 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
+									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
+									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID}";
+							 }
+							 else
+							 {
+								 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
+								 temptableScript = $@" 
+									drop table if exists {temptablename};
+											    
+									select * into {temptablename} from (
+									select S.ID SourceAssetID, O.Id as TargetAssetId 
+									FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+									WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID}
+									union
+									select S.ID SourceAssetID, O.Id as TargetAssetId
+									FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+									WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID}
+									)a;";
+							 }
+							 if (!TempTableNameList.Contains(temptablename))
+							 {
+								 TempTableNameList.Add(temptablename);
+								 TempTableScriptList.Add(temptableScript);
+							 }
+							 assetIdQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
 						 }
 						 else
-						 {
+                         {
+ 							 if (filtercond == SplitFilterCriteriaRelationship.Object)
+							 {
+								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
+												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+												WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
 
-							 fieldJoins.Add($@"outer apply (
+							 }
+							 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
+							 {
+
+								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
+												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+												WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id";
+
+							 }
+							 else
+							 {
+								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
+												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+												WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id
+												union
+												SELECT O.Id as TargetAssetId
+												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+												WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+							 }
+						 }
+						assetIdFinalQuery = $@" outer apply (
 							select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
 							{(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
-							where AD.ID in (SELECT        O.Id as TargetAssetId
-							FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-							WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id
-							union
-							SELECT        O.Id as TargetAssetId
-							FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-							WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
+							where AD.ID in (
+							{assetIdQuery})
 							having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
-							) {tableAlias}");
-						 }
+							) {tableAlias} ";
+
+						fieldJoins.Add(assetIdFinalQuery);
 					 }
 				 }
 				 else if (f.Type == "RefListRelationship")
@@ -488,24 +598,65 @@ namespace d360.model.DataAccessLayer.repositories
 				 }
 				 else if (f.Type == "Lookup")
 				 {
+					 string temptablename;
+					 string temptableScript;
+
 					 if (listColorsAsJSON && hasColor)
 					 {
 						 string lookupValueJoinCriteria;
 						 string displayName;
 
+						 string sql;
+
+						 string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
+
 						 if (f.AllowMultipleValues)
 						 {
 							 displayName = $@"ADV{tableAlias}.DisplayValue";
-							 lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.ObjectID = SPF{tableAlias}.value ";
+							 lookupValueJoinCriteria = $"cross apply GetAssetDisplayValueByID(ACF{tableAlias}.ID) ADV{tableAlias} cross apply STRING_SPLIT(F{tableAlias}.Value, ',') SPF{tableAlias} where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.ObjectID = try_cast(SPF{tableAlias}.value as int)";
 						 }
 						 else
 						 {
 							 displayName = $@"F{tableAlias}.formattedValue";
-							 lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = FT{tableAlias}.LookupObjectType and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
+							 lookupValueJoinCriteria = $" where ACF{tableAlias}.Object = '{f.LookupObjectType}' and ACF{tableAlias}.[ObjectID] = try_cast(F{tableAlias}.[Value] as int)";
 						 }
 
+						 if (IsCreateTempTable)
+						 {
+							 temptablename = $@"#TempLookUp{f.LookupObjectType}{f.LookupObjectID}";
+							 temptableScript = $@" 
+								drop table if exists {temptablename};
+								select A.[Object],A.[ObjectID],A.ID,A.Code,COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
+								into {temptablename}
+								from AssetType Att
+								inner join Asset A on Att.ID = A.AssetTypeId
+								cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
+								where att.Object = '{type}' and att.objectid = {f.LookupObjectID};
 
-						 string sql = $@"
+								create index ix_{temptablename} on {temptablename}(object,objectid);
+
+								";
+
+							 sql = $@"
+								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
+								outer apply(
+								select FormattedValue = 
+								(SELECT COALESCE({displayName}, ACF{tableAlias}.Code) as name,
+								ACF{tableAlias}.color
+								from {temptablename} ACF{tableAlias}								                                						
+								{lookupValueJoinCriteria} FOR JSON PATH),
+								[Value] = F{tableAlias}.[Value]
+							){tableAlias}(FormattedValue, [Value]) ";
+
+							 if (!TempTableNameList.Contains(temptablename))
+							 {
+								 TempTableNameList.Add(temptablename);
+								 TempTableScriptList.Add(temptableScript);
+							 }
+						 }
+						 else
+						 {
+							 sql = $@"
 								left join Field F{tableAlias} on F{tableAlias}.FieldTypeID = {f.ID} and F{tableAlias}.ObjectType = {objectSql} and F{tableAlias}.ObjectID = {objectIdSql}
 								left join FieldType FT{tableAlias} on FT{tableAlias}.ID = F{tableAlias}.FieldTypeID
 								outer apply(
@@ -517,12 +668,12 @@ namespace d360.model.DataAccessLayer.repositories
 								{lookupValueJoinCriteria} FOR JSON PATH),
 								[Value] = F{tableAlias}.[Value]
 							){tableAlias}(FormattedValue, [Value]) ";
+						 }
 						 fieldJoins.Add(sql);
 
 						 if (!string.IsNullOrEmpty(f.DefaultValue))
 						 {
 
-							 string type = f.LookupObjectType == "ReferenceItem" ? f.LookupObjectType + "Type" : f.LookupObjectType;
 							 string defaultSql = $@"
 							outer apply(
 							select FormattedValue = 
