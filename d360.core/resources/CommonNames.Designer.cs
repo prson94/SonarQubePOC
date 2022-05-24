@@ -248,5 +248,32 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("CommonName_AssetType", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference Item.
+        /// </summary>
+        public static string ReferenceItem {
+            get {
+                return ResourceManager.GetString("ReferenceItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group Membership.
+        /// </summary>
+        public static string Text_GroupMembership {
+            get {
+                return ResourceManager.GetString("Text_GroupMembership", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users.
+        /// </summary>
+        public static string Text_Users {
+            get {
+                return ResourceManager.GetString("Text_Users", resourceCulture);
+            }
+        }
     }
 }

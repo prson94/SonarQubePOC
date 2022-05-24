@@ -206,6 +206,7 @@ namespace d360.core.enums
                 case AssetTypeClass.Organization: return CommonNames.AssetTypeClass_Organization;
                 case AssetTypeClass.User: return CommonNames.AssetTypeClass_User;
                 case AssetTypeClass.Group: return CommonNames.AssetTypeClass_Group;
+                case AssetTypeClass.Reference: return CommonNames.AssetTypeClass_Reference;
                 default: return type.ToString();
             }
         }

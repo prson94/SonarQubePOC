@@ -95,7 +95,7 @@
                                               tooltipStyleClass="ig-tooltip">
                                             <a (click)="matchDetectionLinkClicked('data')">
                                                 <div class="ig-colorfield-swatch invalidCircle"></div>
-                                                {{dataProfile.matches.data | number}} duplicates
+                                                {{dataProfile.matches.data | number}} <ng-container i18n>duplicates</ng-container>
                                             </a>
                                         </span>
                                     </ng-container>

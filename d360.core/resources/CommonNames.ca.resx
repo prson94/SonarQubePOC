@@ -180,4 +180,13 @@
   <data name="CommonName_AssetType" xml:space="preserve">
     <value>Âƨƨèƭ T¥ƥè£ôř</value>
   </data>
+  <data name="ReferenceItem" xml:space="preserve">
+    <value>Rèƒèřèñçè Ìƭè₥£ôřè</value>
+  </data>
+  <data name="Text_GroupMembership" xml:space="preserve">
+    <value>Gřôúƥ Mè₥βèřƨλïƥ£ôřè</value>
+  </data>
+  <data name="Text_Users" xml:space="preserve">
+    <value>Ûƨèřƨ£</value>
+  </data>
 </root>
