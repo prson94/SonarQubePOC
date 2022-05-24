@@ -211,6 +211,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`;
                             break;
                         case '#Data Quality':
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`;
                             break;
                         case '#Monitor':
                             menu.NavigationItems = [];

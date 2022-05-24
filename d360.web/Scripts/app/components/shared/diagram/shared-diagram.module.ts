@@ -77,6 +77,7 @@ import { AssetEditorModule } from '../asset-editor/asset-editor.module';
 import { AssetTypeDetailModule } from '../asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../tagged-assets/tagged-assets-detail.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { AddRelationshipModule } from "../relationship-grid/add-relationship.module";
 
 
 @NgModule({
@@ -113,8 +114,8 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         //prime        
         CheckboxModule,
         ContextMenuModule,
-        EditorModule,     
-        InputSwitchModule, 
+        EditorModule,
+        InputSwitchModule,
         SharedModule,
         AutoCompleteModule,
         ButtonModule,
@@ -136,7 +137,8 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         TagViewModule,
         PopupMenuModule,
         SearchFieldModule,
-        DirectivesModule
+        DirectivesModule,
+        AddRelationshipModule
     ],
     declarations: [
         AssetBrowserAddPanelComponent,

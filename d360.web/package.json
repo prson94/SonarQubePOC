@@ -13,7 +13,7 @@
     "build-local-debug": "ng build --localize --watch --progress",
     "build-local-debug-no-localization": "ng build --localize=false --output-path=Scripts/dist/en --watch --progress",
     "updateBuild": "node ./replace.timestamp.js",
-    "extract-translation-files": "node_modules\\.bin\\ng extract-i18n"
+    "extract-translation-files": "node_modules\\.bin\\ng extract-i18n --output-path=locale"
   },
   "license": "ISC",
   "dependencies": {

@@ -400,7 +400,6 @@ END");
 			                                    ,[Notes]
 			                                    ,[uid]
 			                                    ,0 as [CanOwnFusion]
-			                                    ,[AutoDisplayDescription]
 			                                    ,[UseAsTransformation]
 			                                    ,F.FieldXML as FieldXml
                                             FROM    [dbo].AssetType as HashingTable 

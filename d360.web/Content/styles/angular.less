@@ -1075,6 +1075,10 @@ div.breadcrumbs {
         &:hover, &.hover {
           cursor: pointer;
         }
+
+        &.highlight {
+          color: var(--breadcrumbLinkColor);
+        }
       }
 
       &:before {
@@ -1103,6 +1107,10 @@ div.breadcrumbs {
 a.breadcrumb {
   color: var(--calculatedHeaderTextColor);
   display: inline-block;
+
+  &.highlight {
+    color: var(--breadcrumbLinkColor);
+  }
 
   .parent {
     color: var(--breadcrumbLinkColor);
@@ -1152,6 +1160,10 @@ a.breadcrumb {
       &:hover, &.hover {
         cursor: pointer;
         text-decoration: underline;
+      }
+
+      &.highlight {
+        color: var(--breadcrumbLinkColor);
       }
     }
   }
@@ -2826,7 +2838,8 @@ modal-overlay .modal-dialog .content {
 
 .title-bar {
   position: relative;
-  background: @ig-grey-t5;
+  background: var(--backColor);
+  color: var(--calculatedBackTextColor);
   margin-left: 40px;
   transition: all 200ms ease;
 
@@ -3247,9 +3260,9 @@ button.tab, button.tab-scroller {
   }
 
   &.selected {
-    border-bottom: 3px solid black;
+    border-bottom: 3px solid var(--calculatedBackTextColor);
     cursor: default;
-    color: black;
+    color: var(--calculatedBackTextColor);
     background: none;
 
     &:hover {

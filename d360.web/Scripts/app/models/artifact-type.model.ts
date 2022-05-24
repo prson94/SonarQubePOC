@@ -22,7 +22,6 @@ export class ArtifactType {
     Description: string;
     AllowHierarchy: boolean;
     AllowRelatedArtifacts: boolean;
-    AutoDisplayDescription: boolean;
     HasDashboards: boolean;
     HasV2Workflows: boolean;
     HasCustomExportTemplates: boolean;
@@ -34,7 +33,6 @@ export class ArtifactType {
     public static AsGridObject(artifact: ArtifactType): AssetGridObject {
         var ago = new AssetGridObject();
         ago.AssetTypeUID = artifact.AssetTypeUID;
-        ago.AutoDisplayDescription = artifact.AutoDisplayDescription;
         ago.Description = artifact.Description;
         ago.HasCustomExportTemplates = artifact.HasCustomExportTemplates;
         ago.ID = artifact.ID;

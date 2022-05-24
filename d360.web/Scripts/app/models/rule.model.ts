@@ -5,7 +5,6 @@ export class RuleType {
     Name: string;
     Description: string;
     HasDashboards: boolean;
-    AutoDisplayDescription: boolean;
     HasCustomExportTemplates: boolean;
     AssetTypeUID: string;
     HasWorkflow: boolean;
@@ -13,7 +12,6 @@ export class RuleType {
     public static AsGridObject(ruleType: RuleType): AssetGridObject {
         var ago = new AssetGridObject();
         ago.AssetTypeUID = ruleType.AssetTypeUID;
-        ago.AutoDisplayDescription = ruleType.AutoDisplayDescription;
         ago.Description = ruleType.Description;
         ago.HasCustomExportTemplates = ruleType.HasCustomExportTemplates;
         ago.ID = ruleType.ID;

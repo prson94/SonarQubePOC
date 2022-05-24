@@ -222,6 +222,10 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
     }
+
+    get deleteLabel(): string {
+        return $localize`Delete ${this.selectedCount} workflow items`;
+    }
 }
 
 
