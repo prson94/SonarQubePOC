@@ -126,14 +126,23 @@
   <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
     <value>Ðïáϱřá₥ Âƨƨèƭ£ôř</value>
   </data>
+  <data name="AssetTypeClass_GenericType" xml:space="preserve">
+    <value>Gèñèřïç T¥ƥè£ôř</value>
+  </data>
   <data name="AssetTypeClass_GramaticType" xml:space="preserve">
     <value>Gřá₥₥áƭïç T¥ƥè£ôřè</value>
+  </data>
+  <data name="AssetTypeClass_Group" xml:space="preserve">
+    <value>Gřôúƥ£</value>
   </data>
   <data name="AssetTypeClass_Model" xml:space="preserve">
     <value>Môδèℓ£</value>
   </data>
   <data name="AssetTypeClass_ModelType" xml:space="preserve">
     <value>Môδèℓ T¥ƥè£ôř</value>
+  </data>
+  <data name="AssetTypeClass_Organization" xml:space="preserve">
+    <value>Óřϱáñïƺáƭïôñ£ôř</value>
   </data>
   <data name="AssetTypeClass_Policy" xml:space="preserve">
     <value>Þôℓïç¥£</value>
@@ -164,5 +173,20 @@
   </data>
   <data name="AssetTypeClass_Technical" xml:space="preserve">
     <value>Tèçλñïçáℓ Âƨƨèƭ£ôřè</value>
+  </data>
+  <data name="AssetTypeClass_User" xml:space="preserve">
+    <value>Ûƨèř£</value>
+  </data>
+  <data name="CommonName_AssetType" xml:space="preserve">
+    <value>Âƨƨèƭ T¥ƥè£ôř</value>
+  </data>
+  <data name="ReferenceItem" xml:space="preserve">
+    <value>Rèƒèřèñçè Ìƭè₥£ôřè</value>
+  </data>
+  <data name="Text_GroupMembership" xml:space="preserve">
+    <value>Gřôúƥ Mè₥βèřƨλïƥ£ôřè</value>
+  </data>
+  <data name="Text_Users" xml:space="preserve">
+    <value>Ûƨèřƨ£</value>
   </data>
 </root>

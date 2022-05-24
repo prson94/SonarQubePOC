@@ -59,9 +59,6 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("AssetTypeID")]
         public virtual ICollection<Asset> Assets { get; set; }
 
-        [DataMember]
-        public bool AutoDisplayDescription { get; set; }
-
         [IgnoreDataMember, ForeignKey("AssetTypeID")]
         public virtual ICollection<AssetTypeLevel> AssetTypeLevels { get; set; }
 
@@ -143,9 +140,6 @@ namespace d360.core.entities
         
         [DataMember]
         public string Notes { get; set; }
-        
-        [DataMember]
-        public bool AutoDisplayDescription { get; set; }
         
         [DataMember]
         public bool UseAsTransformation { get; set; }

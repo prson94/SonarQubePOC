@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, Input, SimpleChanges, TemplateRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnDestroy, SimpleChanges, TemplateRef } from '@angular/core';
 import { PortalService } from './portal.service';
 
 /***
@@ -10,7 +10,7 @@ import { PortalService } from './portal.service';
     template: ``,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PortalContentProviderComponent {
+export class PortalContentProviderComponent implements OnDestroy {
     @Input() name: string;
     @Input() template: TemplateRef<any>;
 

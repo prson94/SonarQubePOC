@@ -36,8 +36,8 @@ import { CompanySettingsService } from '../../services/settings.service';
                                     <ng-container i18n>Type</ng-container>
                                     <d3s-sortIcon [field]="'IssueTypeName'"></d3s-sortIcon>
                                 </th>
-                                <th style="width: 300px">Description</th>
-                                <th style="width: 200px">Item Name</th>
+                                <th style="width: 300px" i18n>Description</th>
+                                <th style="width: 200px" i18n>Item Name</th>
                                 <th [pSortableColumn]="'RaisedBy'" style="width: 250px">
                                     <ng-container i18n>Reported By</ng-container>
                                     <d3s-sortIcon [field]="'RaisedBy'"></d3s-sortIcon>

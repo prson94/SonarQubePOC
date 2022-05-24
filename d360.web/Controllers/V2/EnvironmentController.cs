@@ -1380,6 +1380,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         [
             HttpGet,
+            AllowAnonymous,
             Route("themes/current.css"),
             SwaggerProduces("text/css"),
             SwaggerResponse(HttpStatusCode.OK, "Returns CSS for the current theme.", typeof(string)),

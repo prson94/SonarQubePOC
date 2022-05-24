@@ -65,10 +65,12 @@
                             type="submit"
                             [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value) || isSaveDisabled"
                             style="width: '150px';"
+                            i18n-label
                             label="Save"></button>
                     <button pButton
                             type="button"
                             (click)="closeClick.emit();"
+                            i18n-label
                             label="Close"
                             style="width: '150px';"></button>
                 </div>
@@ -156,7 +158,7 @@
                 </div>
             </div>
             <div class="action-bar">
-                <button igButton type="button" (click)="closeClick.emit();" tooltip="Close" label="Close"></button>
+                <button igButton type="button" (click)="closeClick.emit();" i18n-tooltip tooltip="Close" i18n-label label="Close"></button>
                 <span class="grow"></span>
                 <button igButton type="submit"
                         class="ig-button-primary"

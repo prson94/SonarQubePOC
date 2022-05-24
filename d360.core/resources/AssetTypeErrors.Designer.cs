@@ -448,15 +448,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayDescription].
-        /// </summary>
-        public static string InvalidValueautoDisplayDescription {
-            get {
-                return ResourceManager.GetString("InvalidValueautoDisplayDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid value for parameter [autoDisplayParent].
         /// </summary>
         public static string InvalidValueAutoDisplayParent {

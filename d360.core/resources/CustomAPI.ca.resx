@@ -117,76 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AssetTypeClass_ActionType" xml:space="preserve">
-    <value>Action Type</value>
+  <data name="AllowFilter" xml:space="preserve">
+    <value>Âℓℓôω Fïℓƭèř£ôř</value>
   </data>
-  <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>Business Asset</value>
+  <data name="AllowSelect" xml:space="preserve">
+    <value>Âℓℓôω §èℓèçƭ£ôř</value>
   </data>
-  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
-    <value>Diagram Asset</value>
+  <data name="AllowSort" xml:space="preserve">
+    <value>Âℓℓôω §ôřƭ£ôř</value>
   </data>
-  <data name="AssetTypeClass_GenericType" xml:space="preserve">
-    <value>Generic Type</value>
+  <data name="CacheMaxAge" xml:space="preserve">
+    <value>Çáçλè Máж-Âϱè (ƨèçôñδƨ)£ôřè₥ </value>
   </data>
-  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
-    <value>Grammatic Type</value>
+  <data name="CacheMaxAge_ValidationMessage" xml:space="preserve">
+    <value>Þℓèáƨè èñƭèř á çáçλè ₥áж-áϱè Ʋáℓúè βèƭωèèñ 3,200-84,000 ƨèçôñδƨ.£ôřè₥ ïƥƨú₥ δôℓôř ƨ</value>
   </data>
-  <data name="AssetTypeClass_Group" xml:space="preserve">
-    <value>Group</value>
+  <data name="Collection" xml:space="preserve">
+    <value>Çôℓℓèçƭïôñ£ôř</value>
   </data>
-  <data name="AssetTypeClass_Model" xml:space="preserve">
-    <value>Model</value>
+  <data name="ElementName" xml:space="preserve">
+    <value>Éℓè₥èñƭ Ná₥è£ôř</value>
   </data>
-  <data name="AssetTypeClass_ModelType" xml:space="preserve">
-    <value>Model Type</value>
+  <data name="Field" xml:space="preserve">
+    <value>Fïèℓδ£</value>
   </data>
-  <data name="AssetTypeClass_Organization" xml:space="preserve">
-    <value>Organization</value>
+  <data name="ItemElementName" xml:space="preserve">
+    <value>Ìƭè₥ Éℓè₥èñƭ Ná₥è£ôřè₥</value>
   </data>
-  <data name="AssetTypeClass_Policy" xml:space="preserve">
-    <value>Policy</value>
+  <data name="ItemElementName_ValidationMessage" xml:space="preserve">
+    <value>Múƨƭ βè βèƭωèèñ 1 áñδ 50 áℓƥλáñú₥èřïç çλářáçƭèřƨ ïñ ℓèñϱƭλ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
-  <data name="AssetTypeClass_PolicyType" xml:space="preserve">
-    <value>Policy Type</value>
+  <data name="JsonFieldNameOverride" xml:space="preserve">
+    <value>Jƨôñ Fïèℓδ Ná₥è ÓƲèřřïδè£ôřè₥ ï</value>
   </data>
-  <data name="AssetTypeClass_Reference" xml:space="preserve">
-    <value>Reference</value>
+  <data name="MajorVersion" xml:space="preserve">
+    <value>MáJôř Vèřƨïôñ£ôř</value>
   </data>
-  <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
-    <value>Reference List</value>
+  <data name="MinorVersion" xml:space="preserve">
+    <value>Mïñôř Vèřƨïôñ£ôř</value>
   </data>
-  <data name="AssetTypeClass_Relationship" xml:space="preserve">
-    <value>Relationship</value>
+  <data name="Namespace" xml:space="preserve">
+    <value>Ná₥èƨƥáçè£ô</value>
   </data>
-  <data name="AssetTypeClass_Rule" xml:space="preserve">
-    <value>Rule</value>
+  <data name="Segment" xml:space="preserve">
+    <value>§èϱ₥èñƭ£ô</value>
   </data>
-  <data name="AssetTypeClass_RuleType" xml:space="preserve">
-    <value>Rule Type</value>
+  <data name="Singleton" xml:space="preserve">
+    <value>§ïñϱℓèƭôñ£ô</value>
   </data>
-  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
-    <value>Semantic Type</value>
+  <data name="URISegment" xml:space="preserve">
+    <value>ÛRÌ §èϱ₥èñƭ£ôř</value>
   </data>
-  <data name="AssetTypeClass_Task" xml:space="preserve">
-    <value>Diagram</value>
+  <data name="URISegment_ValidationMessage" xml:space="preserve">
+    <value>Múƨƭ βè βèƭωèèñ 1 áñδ 80 áℓƥλáñú₥èřïç çλářáçƭèřƨ ïñ ℓèñϱƭλ.£ôřè₥ ïƥƨú₥ δôℓôř</value>
   </data>
-  <data name="AssetTypeClass_Technical" xml:space="preserve">
-    <value>Technical Asset</value>
-  </data>
-  <data name="AssetTypeClass_User" xml:space="preserve">
-    <value>User</value>
-  </data>
-  <data name="CommonName_AssetType" xml:space="preserve">
-    <value>Asset Type</value>
-  </data>
-  <data name="ReferenceItem" xml:space="preserve">
-    <value>Reference Item</value>
-  </data>
-  <data name="Text_GroupMembership" xml:space="preserve">
-    <value>Group Membership</value>
-  </data>
-  <data name="Text_Users" xml:space="preserve">
-    <value>Users</value>
+  <data name="XmlFieldNameOverride" xml:space="preserve">
+    <value>X₥ℓ Fïèℓδ Ná₥è ÓƲèřřïδè£ôřè₥ </value>
   </data>
 </root>

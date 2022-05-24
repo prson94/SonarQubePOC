@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from 
 
 export class ForceNoReuseStrategy implements RouteReuseStrategy {
     shouldDetach(route: ActivatedRouteSnapshot): boolean {
-        return true;
+        return false;
     }
 
     store(route: ActivatedRouteSnapshot, handle: DetachedRouteHandle): void {

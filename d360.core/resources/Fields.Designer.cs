@@ -421,6 +421,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Last Seen.
+        /// </summary>
+        public static string LastSeen_Name {
+            get {
+                return ResourceManager.GetString("LastSeen_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The exactl length that this field requires for a value..
         /// </summary>
         public static string Length_Description {

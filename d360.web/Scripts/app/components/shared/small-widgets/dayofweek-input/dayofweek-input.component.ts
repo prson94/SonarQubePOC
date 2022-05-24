@@ -111,6 +111,15 @@ export class DayOfWeekInputComponent implements ControlValueAccessor {
     }
 
     private displayDayName(day: number): string {
+        switch (day) {
+            case WeekDay.Sunday: return $localize`Sunday`;
+            case WeekDay.Monday: return $localize`Monday`;
+            case WeekDay.Tuesday: return $localize`Tuesday`;
+            case WeekDay.Wednesday: return $localize`Wednesday`;
+            case WeekDay.Thursday: return $localize`Thursday`;
+            case WeekDay.Friday: return $localize`Friday`;
+            case WeekDay.Saturday: return $localize`Saturday`;
+        }
         return WeekDay[day];
     }
 

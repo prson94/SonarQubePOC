@@ -161,8 +161,11 @@ namespace d360.model.DataAccessLayer
 			int pageNumber = 1;
 			int pageSize = 250;
 
-			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(S.ID,0) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and S.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
-			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(O.ID,0) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and O.AssetTypeID not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+			//use ISNULL(S.ID,-1)
+			//we need isnull as not in statment does not work well null values
+			//we need -1 to not match results when asset type id is null (Reference Lists)
+			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(S.ID,-1) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and ISNULL(S.AssetTypeID,-1) not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
+			whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" ISNULL(O.ID,-1) not in ({companyContext.GetNoReadSqlStatement(Permission.ReadRelationships)}) and ISNULL(O.AssetTypeID,-1) not in ({companyContext.GetAssetTypeNoReadSqlStatement(Permission.ReadRelationships)})";
 
 			if (queryParams != null)
 			{

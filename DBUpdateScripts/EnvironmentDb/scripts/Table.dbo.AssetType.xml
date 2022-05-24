@@ -255,4 +255,43 @@ END
 		]]>
     </rollback>
   </changeSet>
+
+  <changeSet author="vlova" id="Table.dbo.AssetType-DropAutoDisplayDescription-v1">
+    <comment>GOV-17822 Remove AutoDisplayDescription</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+
+-- dynamic drop of constraints is required, because "default 0" creates randomly-named constraint
+-- which prevents deleting of column AutoDisplayDescription
+declare @sql nvarchar(max)
+
+select 
+  @sql = 'alter table dbo.AssetType drop constraint ' + df.NAME 
+from sys.default_constraints df
+  INNER JOIN sys.tables t ON df.parent_object_id = t.object_id
+  INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_column_id = c.column_id
+where t.name = 'AssetType' and c.name = 'AutoDisplayDescription'
+
+exec sp_executeSql @sql
+
+-- drop column
+alter table dbo.AssetType 
+drop column if exists AutoDisplayDescription
+
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+
+IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayDescription') IS NULL
+BEGIN
+  ALTER TABLE [dbo].[AssetType] Add [AutoDisplayDescription] [bit] DEFAULT (0) NOT NULL
+END
+
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>
