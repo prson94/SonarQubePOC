@@ -2739,35 +2739,30 @@ namespace d360.web.Controllers.Services
 			if (form != null && form.field != null)
 			{
 				JArray sfields = new JArray(form.field);
-				JObject jo = sfields.Children<JObject>()
-						.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
 
-				string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
-
-				if (changedTypes != null)
+				foreach(var sfield in sfields.Children<JObject>())
 				{
-
-					foreach (var changedType in changedTypes.Split(','))
+					if (sfield["@fieldtype"] != null && sfield["@fieldtype"].ToString() == "relationshiptype")
 					{
-						var types = changedType.Split('|');
-
-						if (types.Length == 2)
+						string changedType = sfield["@value"] != null ? sfield["@value"].ToString() : null;
+						if (!string.IsNullOrEmpty(changedType))
 						{
-							var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
-							string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
-							displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
-							assets += $"/ {displayValue} ";
+							var types = changedType.Split('|');
+
+							if (types.Length == 2)
+							{
+								var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
+								string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
+								displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
+
+								sfield["@displayvalue"] = displayValue;
+
+							}
 						}
 					}
-
-					if (assets.StartsWith("/"))
-					{
-						assets = assets.Substring(1, assets.Length - 1);
-					}
-
-					jo["@displayvalue"] = assets;
-					form.field = sfields;
 				}
+
+				form.field = sfields;
 			}
 		}
 
@@ -2818,7 +2813,7 @@ namespace d360.web.Controllers.Services
 						{
 							JArray sfields = new JArray(itemStepFields.fields.form.field);
 							JObject jo = sfields.Children<JObject>()
-									.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
+									.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype" && o["@id"] == relation["@FormFieldId"]);
 
 							string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
 
