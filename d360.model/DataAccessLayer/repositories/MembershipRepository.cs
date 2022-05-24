@@ -1601,5 +1601,87 @@ namespace d360.model.DataAccessLayer
 
 			return models;
 		}
+
+		public async Task AddClaim(ClaimPostApiModel claim)
+		{
+			var newClaim = new ClaimMapping();
+			var companyDomainSetting = CommunityContext
+				.CompanyDomainSettings
+				.FirstOrDefault(d => 
+					d.CompanyID == CompanyContext.CurrentCompanyID 
+					&& d.DomainSettingID == CompanyContext.CurrentDomainSettingID);
+
+			if (claim.Location == ClaimLocation.Environment)
+			{
+				newClaim.ClientId = CompanyContext.CurrentClientID;
+				newClaim.CompanyId = CompanyContext.CurrentCompanyID;
+				newClaim.DomainSettingId = 0;
+			}
+			else if (claim.Location == ClaimLocation.Idp)
+			{
+				newClaim.ClientId = CompanyContext.CurrentClientID;
+				newClaim.CompanyId = CompanyContext.CurrentCompanyID;
+				newClaim.DomainSettingId = CompanyContext.CurrentDomainSettingID;
+			}
+			else if (claim.Location == ClaimLocation.Client)
+			{
+				newClaim.ClientId = CompanyContext.CurrentClientID;
+				newClaim.CompanyId = 0;
+				newClaim.DomainSettingId = 0;
+			}
+			else
+			{
+				newClaim.ClientId = 0;
+				newClaim.CompanyId = 0;
+				newClaim.DomainSettingId = 0;
+			}
+
+			newClaim.ClaimType = claim.ClaimType;
+			newClaim.AuthenticationType = companyDomainSetting.AuthenticationType;
+			newClaim.Action = claim.Action;
+			newClaim.Path = claim.Path;
+			newClaim.IsArray = claim.IsArray;
+
+			CommunityContext.ClaimMappings.Add(newClaim);
+			CommunityContext.SaveChanges();
+
+		}
+		public async Task UpdateClaim(int id, ClaimPutApiModel claim)
+		{
+			var existingClaim = CommunityContext.ClaimMappings.FirstOrDefault(c => c.Id == id);
+			if (existingClaim != null)
+			{
+				existingClaim.Action = claim.Action;
+				existingClaim.Path = claim.Path;
+				existingClaim.IsArray = claim.IsArray;
+
+				CommunityContext.SaveChanges();
+			}
+		}
+
+		public async Task DeleteClaim(int id)
+		{
+			var existingClaim = CommunityContext.ClaimMappings.FirstOrDefault(c => c.Id == id);
+			if (existingClaim != null)
+			{
+				CommunityContext.ClaimMappings.Remove(existingClaim);
+				CommunityContext.SaveChanges();
+			}
+		}
+
+		public async Task<IEnumerable<ClaimApiViewModel>> GetClaims()
+		{
+			var sql = @"
+				select 0 as Location, C.* from ClaimMapping C where ClientID = 0 and CompanyID = 0 and DomainSettingID = 0
+				union all
+				select 1 as Location, C.* from ClaimMapping C where ClientID = @CurrentClientID and CompanyID = 0 and DomainSettingID = 0
+				union all
+				select 2 as Location, C.* from ClaimMapping C where ClientID = @CurrentClientID and CompanyID = @CurrentCompanyID and DomainSettingID = 0
+				union all
+				select 3 as Location, C.* from ClaimMapping C where ClientID = @CurrentClientID and CompanyID = @CurrentCompanyID and DomainSettingID = @CurrentDomainSettingID
+			";
+
+			return CommunityContext.Query<ClaimApiViewModel>(sql, new { CompanyContext.CurrentClientID, CompanyContext.CurrentDomainSettingID, CompanyContext.CurrentCompanyID });
+		}
 	}
 }

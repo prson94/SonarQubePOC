@@ -25,7 +25,8 @@
 	<include file="scripts/Table.dbo.CompanyResource.xml"/>
 	<include file="scripts/Table.dbo.EnvironmentTemplate.xml"/>
 	<include file="scripts/Table.dbo.OpenIdRequest.xml"/>
-
+    <include file="scripts/Table.dbo.ClaimMapping.xml"/>
+	
 	<!-- Functions (object-based naming) -->
 
 	<!-- Views (object-based naming) -->
@@ -33,6 +34,7 @@
 
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.dbo.SetCompanyResource.xml"/>
+	<include file="scripts/Procedure.dbo.GetClaimMappings.xml"/>
 	
 	<!-- Cleanup -->
 	<include file="scripts/Function.Deletions.xml"/>

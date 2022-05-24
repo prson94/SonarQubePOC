@@ -1,0 +1,84 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ClaimMapping-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[ClaimMapping]') and type in (N'U'))
+begin
+	create table dbo.ClaimMapping (
+		ID int identity not null,
+		ClientID int not null,
+		CompanyID int not null,
+		DomainSettingID int not null,
+		AuthenticationType int not null,
+		ClaimType int not null,
+		Path nvarchar(250) not null,
+		IsArray bit not null,
+		[Action] int not null,
+		constraint [PK_ClaimMapping] primary key clustered ( [ID] asc )
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+    <changeSet author="Core" id="Table.dbo.ClaimMapping-Defaults">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.firstname',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.givenname',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.given_name',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 6, '$.lastname',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 6, '$.family_name',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 6, '$.surname',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 4, '$.sub',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 4, '$.email',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.infogixgroup',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.infogixgroups',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.group',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.groups',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.infogixgroup',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.securitygroups',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 5, 'first',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 5, 'firstname',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 5, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 6, 'last',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 6, 'lastname',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 6, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 4, 'username',0, 2);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 4, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',0, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',1, 2);
+
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',1, 2);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>

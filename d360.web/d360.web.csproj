@@ -613,6 +613,7 @@
       <DependentUpon>WorkflowApiMessages.resx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BaseMiddleware.cs" />
+    <Compile Include="App_Start\ClaimMappingsMiddleware.cs" />
     <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
     <Compile Include="App_Start\CorsMiddleware.cs" />
     <Compile Include="App_Start\GovernAppInsightsTelemetryInitializer.cs" />

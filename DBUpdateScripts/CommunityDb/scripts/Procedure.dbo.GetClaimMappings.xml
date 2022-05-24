@@ -1,0 +1,56 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.dbo.GetClaimMappings-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure GetClaimMappings
+(
+	@CompanyID int,
+	@url nvarchar(500)
+)
+as
+begin
+    set nocount on
+
+	declare @ClientID int,
+			@DomainSettingID int,
+			@AuthenticationType int;
+
+	select	@ClientID = ClientID 
+	from	Company 
+	where	ID = @CompanyID;
+
+	select	@DomainSettingID = DomainSettingID, 
+			@AuthenticationType = AuthenticationType 
+	from	CompanyDomainSetting 
+	where	CompanyID = @CompanyID 
+			and UrlPrefix = @url;
+
+	select	coalesce(C1.ClaimType, C2.ClaimType, C3.ClaimType, C4.ClaimType) as ClaimType,
+			coalesce(C1.[Path], C2.[Path], C3.[Path], C4.[Path]) as [Path],
+			coalesce(C1.IsArray, C2.IsArray, C3.IsArray, C4.IsArray) as IsArray,
+			coalesce(C1.[Action], C2.[Action], C3.[Action], C4.[Action]) as [Action]
+	from	ClaimMapping C4
+			left join ClaimMapping C3 on C3.ClientID = @ClientID and C3.CompanyID = 0 and C3.DomainSettingID = 0 and C3.ClaimType = C4.ClaimType and C3.AuthenticationType = C4.AuthenticationType
+			left join ClaimMapping C2 on C2.ClientID = @ClientID and C2.CompanyID = @CompanyID and C2.DomainSettingID = 0 and C2.ClaimType = C4.ClaimType and C2.AuthenticationType = C4.AuthenticationType
+			left join ClaimMapping C1 on C2.ClientID = @ClientID and C2.CompanyID = @CompanyID and C2.DomainSettingID = @DomainSettingID and C1.ClaimType = C4.ClaimType and C1.AuthenticationType = C4.AuthenticationType
+	where	C4.ClientID = 0 and C4.CompanyID = 0 and C4.DomainSettingID = 0 and C4.AuthenticationType = @AuthenticationType
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
