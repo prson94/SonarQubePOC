@@ -7049,3 +7049,39 @@ table {
     margin: 0 16px 0 8px;
   }
 }
+
+//Fixing PrimeNG table conflicts with Materialize
+.p-datatable-scrollable .p-datatable-thead > tr,
+.p-datatable-scrollable .p-datatable-tbody > tr,
+.p-datatable-scrollable .p-datatable-tfoot > tr {
+  &[hidden] {
+    display: none;
+  }
+}
+
+.p-datatable-scrollable table {
+  width: unset;
+}
+
+//Fixing PrimeNG 13 table for FieldDefinition
+.p-datatable-fielddefinition > .p-datatable-scrollable {
+  .p-datatable-thead > tr > th {
+    flex-wrap: wrap;
+    align-content: center;
+  }
+
+  .p-datatable-thead > tr > th,
+  .p-datatable-tbody > tr > td {
+    word-break: break-word;
+    padding: 0 7px;
+  }
+
+  .p-datatable-tbody > tr > td > .RowTools {
+    margin: 0;
+
+    a {
+      padding: 0;
+      border: 0;
+    }
+  }
+}

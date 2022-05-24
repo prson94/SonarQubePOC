@@ -46,115 +46,87 @@
          (onLazyLoad)="loadRuleResultsLazy($event)"
          [totalRecords]="totalRecords"
          [scrollable]="true"
+         scrollWidth="100%"
          [loading]="isLoading"
-         [loadingIcon]="'fa fa-spinner fa-spin'"
-         scrollWidth="100%">
-    <ng-template pTemplate="colgroup">
-        <colgroup>
-            <col style="width: 100px">
-            <col style="width: 150px">
-            <col style="width: 150px">
-            <col style="width: 120px">
-            <col style="width: 120px">
-            <col style="width: 100px">
-            <col style="width: 100px">
-            <col style="width: 100px">
-            <col style="width: 100px">
-            <col style="width: 20px">
-            <col style="width: 20px">
-        </colgroup>
-    </ng-template>
+         [loadingIcon]="'fa fa-spinner fa-spin'">
     <ng-template pTemplate="header">
         <tr>
-            <th [pSortableColumn]="'EvaluatedAssetClass'">
+            <th [pSortableColumn]="'EvaluatedAssetClass'" style="min-width: 100px">
                 <ng-container i18n>Asset Class</ng-container>
                 <d3s-sortIcon [field]="'EvaluatedAssetClass'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'EvaluatedAssetTypePath'">
+            <th [pSortableColumn]="'EvaluatedAssetTypePath'" style="min-width: 150px">
                 <ng-container i18n>Asset Type</ng-container>
                 <d3s-sortIcon [field]="'EvaluatedAssetTypePath'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'EvaluatedAssetPath'">
+            <th [pSortableColumn]="'EvaluatedAssetPath'" style="min-width: 150px">
                 <ng-container i18n>Asset</ng-container>
                 <d3s-sortIcon [field]="'EvaluatedAssetPath'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'RunDate'">
+            <th [pSortableColumn]="'RunDate'" style="min-width: 150px">
                 <ng-container i18n>Run Date</ng-container>
                 <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'EffectiveDate'">
+            <th [pSortableColumn]="'EffectiveDate'" style="min-width: 120px">
                 <ng-container i18n>Effective Date</ng-container>
                 <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'PassFraction'">
+            <th [pSortableColumn]="'PassFraction'" style="min-width: 120px">
                 <ng-container i18n>Pass Fraction</ng-container>
                 <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'TotalCount'" style="text-align:center;">
+            <th [pSortableColumn]="'TotalCount'" style="justify-content: center; min-width: 100px;">
                 <ng-container i18n>Total Rows</ng-container>
                 <d3s-sortIcon [field]="'TotalCount'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'PassCount'" style="text-align:center;">
+            <th [pSortableColumn]="'PassCount'" style="justify-content: center; min-width: 100px;">
                 <ng-container i18n>Rows Passed</ng-container>
                 <d3s-sortIcon [field]="'PassCount'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="'FailCount'" style="text-align:center;">
+            <th [pSortableColumn]="'FailCount'" style="justify-content: center; min-width: 100px;">
                 <ng-container i18n>Rows Failed</ng-container>
                 <d3s-sortIcon [field]="'FailCount'"></d3s-sortIcon>
             </th>
-            <th [pSortableColumn]="''"></th>
-            <th [pSortableColumn]="''"></th>
-        </tr>
-        <tr [hidden]="showSimpleFilter">
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
+            <th [pSortableColumn]="''" style="flex: 0 0 20px"></th>
+            <th [pSortableColumn]="''" style="flex: 0 0 20px"></th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-item>
         <tr [pSelectableRow]="item">
-            <td>
+            <td style="min-width: 100px">
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetClass}}</span>
             </td>
-            <td>
+            <td style="min-width: 150px">
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}" [innerHTML]="formatPath(item.EvaluatedAssetTypePath)"></span>
             </td>
-            <td>
+            <td style="min-width: 150px">
                 <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
                     <d3s-preview-tooltip *ngIf="item.EvaluatedAssetDisplayPath" [uid]="item.EvaluatedAssetUid">
                         <span [innerHTML]="formatPath(item.EvaluatedAssetDisplayPath)"></span>
                     </d3s-preview-tooltip>
                 </span>
             </td>
-            <td>
+            <td style="min-width: 150px">
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short' : 'UTC'}}</span>
             </td>
-            <td>
+            <td style="min-width: 120px">
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate' : 'UTC'}}</span>
             </td>
-            <td><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
-            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount | number}}</span></td>
-            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount | number}}</span></td>
-            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount | number}}</span></td>
-            <td style="text-align:center;">
-                <div class="RowTools">
-                    <a style="cursor:pointer;" (click)="selected=item;">
+            <td style="min-width: 120px"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
+            <td style="justify-content: center; min-width: 100px;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount | number}}</span></td>
+            <td style="justify-content: center; min-width: 100px;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount | number}}</span></td>
+            <td style="justify-content: center; min-width: 100px;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount | number}}</span></td>
+            <td style="justify-content: center; flex: 0 0 20px;">
+                <div class="RowTools" style="margin: unset; padding: unset;">
+                    <a style="cursor: pointer; margin: unset; padding: unset;" (click)="selected=item;">
                         <i [copy-clipboard]="item.ResultUid"
                            [pTooltip]="'Rule Result UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
                            tooltipPosition="top" class="fa fa-info"></i>
                     </a>
                 </div>
             </td>
-            <td style="text-align:center;">
-                <div class="RowTools">
+            <td style="justify-content: center; flex: 0 0 20px;">
+                <div class="RowTools" style="margin: unset; padding: unset;">
                     <div class="duplicate-message" *ngIf="item.IsDuplicate">
                         <i class="fa fa-exclamation-triangle"></i>
                         <div class="message" i18n>
