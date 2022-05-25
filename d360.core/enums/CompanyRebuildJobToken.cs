@@ -66,7 +66,7 @@ namespace d360.core.enums
 
                     list.Add(new CompanyRebuildJobTokenInfo
                     {
-                        Name = NameAsDisplayString(type),
+                        Name = NameAsDisplayString(enumValue),
                         QueueSettingName = ((QueueSettingNameAttribute)tm.GetCustomAttribute(typeof(QueueSettingNameAttribute))).Name,
                         Description = DescriptionAsDisplayString(enumValue),
                         ID = enumValue,
