@@ -33,36 +33,27 @@
              [rowsPerPageOptions]="defaultPagingOptions"
              [loading]="itemsLoading"
              [loadingIcon]="'fa fa-spinner fa-spin'">
-        <ng-template pTemplate="colgroup">
-            <colgroup>
-                <col style="width:125px">
-                <col *ngFor="let column of columns"
-                     style="width:250px">
-                <col style="width:100px">
-                <col style="width:250px">
-            </colgroup>
-        </ng-template>
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'Status'"
-                    style="width: 125px">
+                    style="min-width: 125px">
                     <ng-container i18n>Status</ng-container>
                     <d3s-sortIcon [field]="'Status'"></d3s-sortIcon>
                 </th>
                 <th *ngFor="let column of columns"
                     [pSortableColumn]="column.datafield"
-                    style="width: 250px">
+                    style="min-width: 250px">
                     {{column.text}}
                     <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
 
                 </th>
                 <th [pSortableColumn]="'RowIndex'"
-                    style="width: 100px">
+                    style="min-width: 100px">
                     <ng-container i18n>Row</ng-container>
                     <d3s-sortIcon [field]="'RowIndex'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="'StatusMessage'"
-                    style="width: 250px">
+                    style="min-width: 250px">
                     <ng-container i18n>Message</ng-container>
                     <d3s-sortIcon [field]="'StatusMessage'"></d3s-sortIcon>
                 </th>
@@ -88,16 +79,17 @@
         <ng-template pTemplate="body"
                      let-item>
             <tr [pSelectableRow]="item">
-                <td>{{item.Status}}</td>
-                <td *ngFor="let column of columns">
+                <td style="min-width: 125px">{{item.Status}}</td>
+                <td *ngFor="let column of columns"
+                    style="min-width: 250px">
                     <span [ngSwitch]="column.type">
                         <span *ngSwitchCase="'date'"><span *ngIf="item[column.datafield]">{{item[column.datafield] | date:'shortDate'}}</span></span>
                         <span *ngSwitchCase="'datetime'"><span *ngIf="item[column.datafield]">{{item[column.datafield] | utcDate | date:'medium'}}</span></span>
                         <span *ngSwitchDefault><span *ngIf="item[column.datafield]">{{item[column.datafield]}}</span></span>
                     </span>
                 </td>
-                <td>{{item.RowIndex}}</td>
-                <td>
+                <td style="min-width: 100px">{{item.RowIndex}}</td>
+                <td style="min-width: 250px">
                     <span *ngIf="item.StatusMessage"
                           [innerHtml]="item.StatusMessage"></span>
                 </td>
