@@ -1096,7 +1096,7 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<bool> DoesTypeQualifierExist(string typeQualifier)
 		{
-			return (await CompanyContext.QueryAsync<int>("select count(1) from Semantic where Qualifier = @typeQualifier", new { typeQualifier })).FirstOrDefault() > 0;
+			return (await CompanyContext.QueryAsync<int>("select count(1) from AssetDataProfile where TypeQualifier = @typeQualifier", new { typeQualifier })).FirstOrDefault() > 0;
 		}
 	}
 }
