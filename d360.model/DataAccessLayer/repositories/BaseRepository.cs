@@ -800,6 +800,11 @@ namespace d360.model.DataAccessLayer.repositories
 
 		protected string getFieldDataTypeWrapper(FieldType ft)
 		{
+			if (ft.Type == DataType.Path.ToString())
+			{
+				return GetPathColumnSql(ft);
+			}
+
 			if (ft.Type == "Score")
 			{
 				return $"F{ft.ID}.Value";
