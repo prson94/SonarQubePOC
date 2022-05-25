@@ -471,7 +471,7 @@ begin
 			from @tempAuditField F
 			Group by F.FieldTypeID,F.FieldName;
 			
-			if exists(select 1 from @MaxVersion where FieldTypeID > 0)
+			if exists(select 1 from @tbl where FieldTypeID > 0)
 				begin
 
 					update	T
@@ -490,7 +490,7 @@ begin
 					where T.FieldTypeID > 0
 				end
 			
-			if exists(select 1 from @MaxVersion where FieldTypeID = 0)
+			if exists(select 1 from @tbl where FieldTypeID = 0)
 				begin
 
 					update	T
