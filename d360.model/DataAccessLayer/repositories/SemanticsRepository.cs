@@ -649,7 +649,7 @@ namespace d360.model.DataAccessLayer
 							UpdatedBy = @resourceId,
 							transactionId= @transactionId
 							where rn=1";
-                int result = await CompanyContext.Database.Connection.ExecuteAsync(sql, new { transactionId, qualifiers = semantics.FindAll(s => s.IsDisabled == true).Select(o => o.Qualifier).ToList(), resourceId = CompanyContext.CurrentResourceID }, commandTimeout: ApiTimeout);
+                await CompanyContext.Database.Connection.ExecuteAsync(sql, new { transactionId, qualifiers = semantics.FindAll(s => s.IsDisabled == true).Select(o => o.Qualifier).ToList(), resourceId = CompanyContext.CurrentResourceID }, commandTimeout: ApiTimeout);
             }
 
 			if (repoModels.Count > 0)

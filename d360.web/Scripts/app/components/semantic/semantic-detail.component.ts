@@ -199,7 +199,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
 
     formatEffectiveDate(dateStr: string) {
         if (Number.isNaN(Date.parse(dateStr))) {
-            return dateStr
+			return dateStr;
         }
         return (new Date(dateStr)).toLocaleDateString();
     }

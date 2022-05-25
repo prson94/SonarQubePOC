@@ -34,6 +34,11 @@ export enum SemanticStatus {
     Certified = 2
 }
 
+export class DateRange {
+	startDate: string;
+	endDate: string;
+}
+
 export class SemanticType {
     uid: string;
     createdBy: SemanticUserModel;
@@ -103,7 +108,3 @@ export class SemanticTypeGetAssetsResponse {
     items: SemanticTypeAsset[];
 }
 
-export class DateRange {  
-    startDate: string;
-    endDate: string;
-}

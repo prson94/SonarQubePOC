@@ -408,7 +408,7 @@ export class DataProfileService extends BaseObservableService {
         };
         let semanticArray: any[] = [];
 
-        semanticArray.push({ qualifier: qualifier, isDisabled: isDisabled });
+        semanticArray.push({ qualifier, isDisabled });
 
         return this
             .http

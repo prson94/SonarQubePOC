@@ -645,7 +645,6 @@ namespace d360.core.entities
             List<DateRange> dateRange = new List<DateRange>();
 
             string startDate = null;
-            string endDate = null;
 
             foreach (var entry in effectiveDates)
             {
@@ -656,8 +655,7 @@ namespace d360.core.entities
 
                 if(entry == effectiveDates.First())
                 {
-                    startDate = effectiveDate.Split('T')[0];
-                    endDate = updateDate;
+                    startDate = effectiveDate.Split('T')[0];                    
                 }
 
                 if (entry == effectiveDates.Last())
@@ -676,7 +674,7 @@ namespace d360.core.entities
                 else if(entry != effectiveDates.First())
                 {
                     startDate ??= effectiveDate.Split('T')[0];                   
-                    if (effectiveDate != updateDate && !(effectiveDate.Split('T')[0] == updateDate.Split('T')[0] && dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0])))// && startDate != updateDate && !(startDate == effectiveDate && endDate == updateDate))
+                    if (effectiveDate != updateDate && !(effectiveDate.Split('T')[0] == updateDate.Split('T')[0] && dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0])))
                     {
                         if (!dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0]) && dateRange.Count>0)
                         {
@@ -693,8 +691,6 @@ namespace d360.core.entities
                         startDate = r.StartDate;
                         dateRange.Remove(r);
                     }
-
-                    endDate = updateDate;
                 }
             }
 
