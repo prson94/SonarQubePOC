@@ -1,7 +1,6 @@
 ﻿export class AssetGridObject {
     ID: number;
     Name: string;
-    AutoDisplayDescription: boolean;
     AutoDisplayParent: boolean;
     AssetTypeUID: string;
     HasCustomExportTemplates: boolean;

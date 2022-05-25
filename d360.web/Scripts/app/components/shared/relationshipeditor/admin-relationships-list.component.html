@@ -1,5 +1,5 @@
 ﻿<header *ngIf="!showEditor && !showDelete">
-    Relationship Types
+    <ng-container i18n>Relationship Types</ng-container>
     <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
 </header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>

@@ -17,7 +17,6 @@ import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
-import { AdminImageUploadComponent } from './admin-image-upload.component';
 import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
 import { AdminHomeComponent } from './admin-home.component';
 
@@ -69,7 +68,6 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
-        AdminImageUploadComponent,
         AdminSiteMenuPermissionsComponent,
         AdminHomeComponent,
     ],

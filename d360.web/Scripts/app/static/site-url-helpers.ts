@@ -51,6 +51,9 @@ export class SiteUrlHelpers {
     //hierarchy child routes
     static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
 
+    //asset child routes
+    static SITE_URL_ASSET_RULE = 'Rule';
+
     //workflow child routes
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
     static SITE_URL_WORKFLOW_VIEW_ITEM = 'work';

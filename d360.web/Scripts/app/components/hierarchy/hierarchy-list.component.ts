@@ -84,7 +84,7 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage as number;
+            this.rowsPerPage = rowsPerPage['Main'];
         });
     }
 

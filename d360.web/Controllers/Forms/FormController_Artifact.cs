@@ -236,7 +236,6 @@ namespace d360.web.Controllers
                         {
                             Uid = assetType.uid,
                             ParentUid = parentUid,
-                            AutoDisplayDescription = assetType.AutoDisplayDescription,
                             Description = assetType.Description,
                             DisplayFormat = assetType.DisplayFormat,
                             Class = @class,
@@ -269,7 +268,6 @@ namespace d360.web.Controllers
                     {
                         case AssetTypeClass.BusinessAsset:
                         case AssetTypeClass.TechnicalAsset:
-                            model.AssetType.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;

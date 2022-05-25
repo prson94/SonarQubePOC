@@ -10,7 +10,7 @@
     <i *ngIf="condition.field && hasRemoveIcon()"
        class="remove-button fa {{(condition.isDefaultFilter ? 'fa-undo' : 'fa-times-circle')}}"
        (click)="remove()"
-       pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
+       pTooltip="{{(condition.isDefaultFilter ? resetFilterText : removeFilterText)}}"
        tooltipPosition="top"
        tooltipStyleClass="ig-tooltip">
     </i>
@@ -132,7 +132,7 @@
                                             <p-tableHeaderCheckbox *ngIf="hasSelectAllCheckbox"></p-tableHeaderCheckbox>
                                         </th>
                                         <th>
-                                            <input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" placeholder="Search list" />
+                                            <input type="text" class="filter-item-table-filter" [(ngModel)]="filterTableValue" (ngModelChange)="filterTable($event)" i18n-placeholder placeholder="Search list" />
                                         </th>
                                     </tr>
                                 </ng-template>
@@ -238,7 +238,7 @@
                         igButton
                         icon="{{(condition.isDefaultFilter ? 'fa-undo' : 'fa-trash')}}"
                         style="margin-left:0px;"
-                        pTooltip="{{(condition.isDefaultFilter ? 'Reset filter' : 'Remove filter')}}"
+                        pTooltip="{{(condition.isDefaultFilter ? resetFilterText : removeFilterText)}}"
                         tooltipPosition="top"
                         tooltipStyleClass="ig-tooltip"
                         (click)="remove()">

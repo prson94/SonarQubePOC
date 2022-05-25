@@ -7,13 +7,8 @@ namespace d360.core
 {
     public enum QuestionDisplayStyle
     {
-        [Description("Radio List")]
         Radio = 1,
-        
-        [Description("Rating")]
         Rating = 2,
-        
-        [Description("Check List")]
         CheckList = 3
     }
 
@@ -34,9 +29,11 @@ namespace d360.core
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
+                var enumValue = (QuestionDisplayStyle)Enum.Parse(typeof(QuestionDisplayStyle), tm.Name);
+
                 var info = new QuestionDisplayStyleInfo
                 {
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    Description = DescriptionAsDisplayString(enumValue),
                     ID = (QuestionDisplayStyle)Enum.Parse(typeof(QuestionDisplayStyle), tm.Name),
                     Name = tm.Name
                 };
@@ -48,7 +45,18 @@ namespace d360.core
 
         public static string GetDescription(this QuestionDisplayStyle type)
         {
-            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
+            return DescriptionAsDisplayString(type);
+        }
+
+        private static string DescriptionAsDisplayString(QuestionDisplayStyle type)
+        {
+            switch (type)
+            {
+                case QuestionDisplayStyle.CheckList: return resources.Enums.QuestionDisplayStyle_Check; 
+                case QuestionDisplayStyle.Radio: return resources.Enums.QuestionDisplayStyle_Radio; 
+                case QuestionDisplayStyle.Rating: return resources.Enums.QuestionDisplayStyle_Rating; 
+                default: throw new ArgumentOutOfRangeException("QuestionDisplayStyle");
+            }
         }
     }
 }

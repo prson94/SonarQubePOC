@@ -1,5 +1,6 @@
 ﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import * as _ from 'lodash';
 import { BrandingService, Theme } from '../../../services/branding.service';
 import { FeatureFlags, FeatureFlagsService } from '../../../services/featureflags.service';
 
@@ -29,6 +30,13 @@ export class ThemeEditorComponent implements OnChanges {
     isCurrentTheme: boolean = false;
 
     changesMade: boolean = false;
+    _originalEditTheme: Theme;
+
+    labelDiscardChanges = $localize`Discard Changes`;
+    labelApplyChanges = $localize`Apply Changes`;
+    labelCancel = $localize`Cancel`;
+    labelSaveChanges = $localize`Save Changes`;
+    labelCreate = $localize`Create`;
 
     constructor(private fb: FormBuilder,
         private brandingService: BrandingService,
@@ -54,7 +62,14 @@ export class ThemeEditorComponent implements OnChanges {
         });
 
         this.formGroup.valueChanges.subscribe((val) => {
-            this.changesMade = true;
+            this.changesMade = false;
+            if (this.theme) {
+                Object.keys(val).forEach((p) => {
+                    if (val[`${p}`] !== this._originalEditTheme[`${p}`]) {
+                        this.changesMade = true;
+                    }
+                });
+            }
         });
 
         if (featureFlagService.flags[FeatureFlags.BrandingThemeCustomCss]) {
@@ -101,7 +116,7 @@ export class ThemeEditorComponent implements OnChanges {
                     valObj[`${p}`] = _th[`${p}`];
                     this.formGroup.patchValue(valObj);
                 });
-                this.changesMade = false;
+                this._originalEditTheme = _.cloneDeep(_th);
             });
     }
 
@@ -124,6 +139,11 @@ export class ThemeEditorComponent implements OnChanges {
                 this.onSave.emit();
                 this.setForm();
             }
+
+            if (_theme.isCurrent) {
+                location.reload();
+            }
+
             this.savingInProgress = false;
             this.confirmCurrentThemeSaveVisible = false;
             this.cdRef.markForCheck();
@@ -291,6 +311,10 @@ export class ThemeEditorComponent implements OnChanges {
 
         // Variables for red, green, blue values
         var r, g, b, hsp;
+
+        if (!color) {
+            return 'dark';
+        }
 
         // Check the format of the color, HEX or RGB?
         if (color.match(/^rgb/)) {

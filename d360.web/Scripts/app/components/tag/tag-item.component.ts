@@ -98,7 +98,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         {
             Name: 'CreatedOn',
             FriendlyName: $localize`Date Added`,
-            Type: new FieldType("DateTime"),
+            Type: new FieldType("Date"),
             Category: "",
             RemovePopulatedOperator: true
         },
@@ -271,7 +271,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.currentAreaName = $localize`Tags`;
                     let areaBreadcrumb = new Breadcrumb(
-                        this.currentAreaName, ``
+                        this.currentAreaName,
+                        `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`
                     );
 
                     let itemBreadcrumb = new Breadcrumb(

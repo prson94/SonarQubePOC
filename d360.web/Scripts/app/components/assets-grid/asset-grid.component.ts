@@ -73,7 +73,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showCustomExport: boolean = false;
     isEditing: boolean = false;
     isMenuOpen: boolean = false;
-    showArtifactDetails: boolean = false;
     showCertificationStatus: boolean = false;
     certificationStatusIndex: string = null;
     deleteName: string = 'Artifact';
@@ -116,6 +115,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         { title: $localize`Open` },
         { title: $localize`Open in New Tab` },
     ];
+
+    hideDescLabel = $localize`Hide Description`;
+    showDescLabel = $localize`Show Description`;
 
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
@@ -185,9 +187,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            if (typeof rowsPerPage === 'number') {
-                this.rowsPerPage = rowsPerPage;
-            }
+            this.rowsPerPage = rowsPerPage['Main'];
         });
     }
 
@@ -253,10 +253,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .then(() => this.changeDetectorRef.markForCheck());
 
         this.getFieldsDefinition();
-
-        if (this.gridObject.AutoDisplayDescription) {
-            this.toggleArtifactDetail();
-        }
     }
 
     public filterGridData(dt: Table) {
@@ -696,10 +692,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         if (this.isMenuOpen) {
             this.isMenuOpen = false;
         }
-    }
-
-    private toggleArtifactDetail() {
-        this.showArtifactDetails = !this.showArtifactDetails;
     }
 
     private onEdit(item) {

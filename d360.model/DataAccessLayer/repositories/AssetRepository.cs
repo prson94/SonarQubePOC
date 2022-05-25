@@ -113,21 +113,6 @@ namespace d360.model.DataAccessLayer
 					}
 				}
 
-				if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
-				{
-					var autoDisplayDescriptionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplaydescription").Value;
-					if (bool.TryParse(autoDisplayDescriptionString, out bool autoDisplayDescription))
-					{
-
-						condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
-						dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
-					}
-					else
-					{
-						throw new ArgumentException(AssetTypeErrors.InvalidValueautoDisplayDescription, autoDisplayDescriptionString);
-					}
-				}
-
 				if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
 				{
 					var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
@@ -229,7 +214,6 @@ namespace d360.model.DataAccessLayer
 									,HA.Hierarchical
 									,A.HierarchyMaximumDepth
 									,A.DisplayFormat
-									,A.AutoDisplayDescription
 									,A.UseAsTransformation
 									,0 as 'CanOwnFusion'
 									,A.AutoDisplayParent
@@ -2422,7 +2406,6 @@ namespace d360.model.DataAccessLayer
 						CreatedOn = DateTime.UtcNow,
 						Hierarchical = false,
 						Class = model.Class,
-						AutoDisplayDescription = model.AutoDisplayDescription,
 						UseAsTransformation = model.UseAsTransformation,
 						Parent = parentAssetType,
 						AutoDisplayParent = model.AutoDisplayParent,
@@ -2457,7 +2440,6 @@ namespace d360.model.DataAccessLayer
 					at = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
 					if (at != null)
 					{
-						at.AutoDisplayDescription = model.AutoDisplayDescription;
 						at.Notes = model.Notes;
 						at.uid = uid;
 						CompanyContext.Update(at);
@@ -2551,7 +2533,6 @@ namespace d360.model.DataAccessLayer
 						CreatedOn = DateTime.UtcNow,
 						Hierarchical = true,
 						Class = model.Class,
-						AutoDisplayDescription = model.AutoDisplayDescription,
 						UseAsTransformation = model.UseAsTransformation,
 						Parent = parentAssetType,
 						AutoDisplayParent = model.AutoDisplayParent,
@@ -2667,7 +2648,6 @@ namespace d360.model.DataAccessLayer
 					assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
 					assetType.Description = model.Description;
 					assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
-					assetType.AutoDisplayDescription = model.AutoDisplayDescription;
 					assetType.AutoDisplayParent = model.AutoDisplayParent;
 					if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
 					{
@@ -2725,7 +2705,6 @@ namespace d360.model.DataAccessLayer
 					assetType.Name = model.Name;
 					assetType.Description = model.Description;
 					assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
-					assetType.AutoDisplayDescription = model.AutoDisplayDescription;
 					assetType.Notes = model.Notes ?? assetType.Notes;
 					assetType.CanEditParent = model.CanEditParent;
 
@@ -3682,7 +3661,8 @@ namespace d360.model.DataAccessLayer
 			var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
 
 			List<DatabaseBulkAssetResult> results = null;
-			bool finished = (dbExecutionItem.Processed + dbExecutionItem.Error) == dbExecutionItem.Total;
+			bool finished = ((dbExecutionItem.Processed + dbExecutionItem.Error) >= dbExecutionItem.Total) 
+				|| (dbExecutionItem.CompletedOn.HasValue);
 
 			if (includeResults && finished)
 			{
@@ -4499,5 +4479,31 @@ namespace d360.model.DataAccessLayer
 
 			return results;
 		}
-	}
+
+        public IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType)
+        {
+			var sql = @"select distinct Asset.CreatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
+						from dbo.Asset
+							join reporting.Global_Resource globalResource on globalResource.ResourceID = Asset.CreatedBy
+						where Asset.AssetTypeID = @assetTypeId
+						order by globalResource.FirstName + ' ' + globalResource.LastName";
+
+			var results = CompanyContext.Query<dynamic>(sql, new { assetTypeId = assetType.ID}, ApiTimeout);
+
+			return results;
+        }
+
+        public IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType)
+        {
+			var sql = @"select distinct Asset.UpdatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
+						from dbo.Asset
+							join reporting.Global_Resource globalResource on globalResource.ResourceID = Asset.UpdatedBy
+						where Asset.AssetTypeID = @assetTypeId
+						order by globalResource.FirstName + ' ' + globalResource.LastName";
+
+			var results = CompanyContext.Query<dynamic>(sql, new { assetTypeId = assetType.ID }, ApiTimeout);
+
+			return results;
+		}
+    }
 }

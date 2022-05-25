@@ -10,7 +10,7 @@
             <p-treeTable *ngIf="!isLoading" #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [globalFilterFields]="['name']" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3" (onFilter)="expandNodes()" (onPage)="onPageEvent($event)">
                 <ng-template pTemplate="caption">
                     <div>
-                        <input type="text" pInputText placeholder="Search" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
+                        <input type="text" pInputText i18n-placeholder placeholder="Search" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
                     </div>
                 </ng-template>
                 <ng-template pTemplate="header">

@@ -16,6 +16,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.module';
+import { PortalsModule } from '../portals/portals.module';
 
 @NgModule({
     imports: [
@@ -31,7 +32,8 @@ import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.mo
         PipesModule,
         ScoreBadgeModule,
         InfoTooltipModule,
-        SimpleBadgeModule
+        SimpleBadgeModule,
+        PortalsModule
     ],
     declarations: [
         RightSidebarItemComponent,

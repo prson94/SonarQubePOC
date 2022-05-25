@@ -1,42 +1,54 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output, AfterViewChecked } from '@angular/core';
 import {
+    AfterViewChecked,
+    AfterViewInit,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    HostListener,
+    Input,
+    OnInit,
+    Output,
+    ViewChild
+} from '@angular/core';
+import {
+    AssetBrowserAlert,
+    AssetBrowserApiHopAssetRequestModel,
     AssetBrowserApiHopDirection,
     AssetBrowserDiagramAsset,
-    AssetBrowserTranslationNode,
-    AssetBrowserTranslationLink,
-    AssetBrowserTranslationRelationCount,
-    AssetBrowserFilterModel,
-    FilterSelectionsModel,
-    AssetBrowserApiHopAssetRequestModel,
-    AssetBrowserTranslationOwnerCount,
-    AssetBrowserGenericRelationModel,
-    LoadedFilterTypesModel,
-    AssetBrowserAlert,
-    DiagramType,
-    AssetBrowserFilterChangeEventType,
     AssetBrowserFilterChangeEvent,
+    AssetBrowserFilterChangeEventType,
+    AssetBrowserFilterModel,
+    AssetBrowserGenericRelationModel,
+    AssetBrowserLineageRequest,
     AssetBrowserPanelCommand,
     AssetBrowserPanelModel,
-    DiagramTypesModel,
-    FilterAncestryMode,
     AssetBrowserResponseModel,
-    AssetBrowserLineageRequest,
+    AssetBrowserTranslationLink,
+    AssetBrowserTranslationNode,
+    AssetBrowserTranslationOwnerCount,
+    AssetBrowserTranslationRelationCount,
+    DiagramType,
+    DiagramTypesModel,
+    FilterSelectionsModel,
+    LoadedFilterTypesModel,
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
-import { PermissionsService } from '../../../../services/permissions.service';
+import { Permissions, PermissionsService } from '../../../../services/permissions.service';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
 
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { TreeNode } from 'primeng/api';
-import { forkJoin, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { ProcessService } from '../../../../services/process.service';
@@ -50,6 +62,7 @@ import { CompanySettingsService } from '../../../../services/settings.service';
 import { CompanySettingEnum } from '../../../../models/settings.model';
 import { AssetDetailComponent } from '../../asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../../services/href-click-service';
+import { concatMap } from "rxjs/operators";
 
 declare var window: any;
 @Component({
@@ -105,6 +118,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     highlightedPart: go.Part;
     isFullScreen = false;
     loadingText = '';
+    isAddRelationshipModalVisible: boolean = false;
 
     isError: boolean = false;
     errorText = '';
@@ -131,6 +145,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     diagramTypes: DiagramTypesModel = null;
+    assetPermissions: Permissions;
 
     showNodeCount: boolean = true;
     autoCollapseNodeCount: number = 10; //0 or less disables auto-collapse
@@ -185,7 +200,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private readonly badgeFont: string = "14px 'Precisely'";
     private readonly badgeStrokeColor = "#d6d5d5";
-    private readonly badgeTextColor = "#6d18dd";
+    private badgeTextColor = "#6d18dd";
     private readonly ignoredPanelFieldTypes = [
         "Tag",
         "Relationship",
@@ -236,6 +251,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.linkClickInterceptor.handleEvent(this, ev);
         });
 
+        this.badgeTextColor = getComputedStyle(document.documentElement).getPropertyValue('--tabLinkColor');
+
         this.maxLinkCountToAvoidNodesTemplate = settingsService.getSettingById(CompanySettingEnum.DiagramMaxAvoidNodesLinkCount).NumberSetting.Value;
     }
 
@@ -257,31 +274,35 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.loadFilter(); // Load the default filter BEFORE updating the pre-selected diagram type.
 
-                this.browserService.getDiagramTypes(this.originalAssetUid)
-                    .subscribe(res => {
-                        this.diagramTypes = res;
+                this.permissionsService.getAssetPermissions(this.originalAssetUid).pipe(
+                    concatMap(permissions => {
+                        this.assetPermissions = permissions;
+                        return this.browserService.getDiagramTypes(this.originalAssetUid);
+                    })
+                ).subscribe(res => {
+                    this.diagramTypes = res;
 
-                        if (params['diagramType']) {
-                            let diagramTypeParameterValue: string = params['diagramType'];
+                    if (params['diagramType']) {
+                        let diagramTypeParameterValue: string = params['diagramType'];
 
-                            this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
-                            if (!this.isDiagramTypeSpecifiedInPath || !this.diagramTypes.items.some(x => x.value == DiagramType[diagramTypeParameterValue])) {
-                                diagramTypeParameterValue = DiagramType[this.diagramTypes.initial];
-                            }
-
-                            this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
-                            this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
-                        } else {
-                            this.helper_UpdateDiagramType(this.diagramTypes.initial);
-
+                        this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
+                        if (!this.isDiagramTypeSpecifiedInPath || !this.diagramTypes.items.some(x => x.value == DiagramType[diagramTypeParameterValue])) {
+                            diagramTypeParameterValue = DiagramType[this.diagramTypes.initial];
                         }
 
-                        if (this.diagram) this.diagram.div = null;
+                        this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
+                        this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
+                    } else {
+                        this.helper_UpdateDiagramType(this.diagramTypes.initial);
 
-                        if (this.displayConfiguration.DiagramType != DiagramType.Process)
-                            this.helper_InitializeDiagram();
+                    }
 
-                    });
+                    if (this.diagram) this.diagram.div = null;
+
+                    if (this.displayConfiguration.DiagramType != DiagramType.Process)
+                        this.helper_InitializeDiagram();
+
+                });
             }
         );
     }
@@ -910,6 +931,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
                                 this.selectedDiagramAsset.Uid = uid;
                                 this.selectedDiagramAsset.Id = data.assetId;
+                                this.selectedDiagramAsset.AssetTypeUid = data.assetTypeUid;
                                 if (this.panelModel.InformationVisible) {
                                     if (this.panel_InformationDisabled) {
                                         this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
@@ -1930,7 +1952,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             case AssetBrowserPanelCommand.Settings:
                 this.helper_SetVisiblePanel(e);
                 break;
+            case AssetBrowserPanelCommand.Add_Relationship:
+                this.openAddRelationshipModal();
+                break;
         }
+    }
+
+    private openAddRelationshipModal(): void {
+        this.isAddRelationshipModalVisible = true;
     }
 
     private panels_Download_Callback(image_data, assetUid) {
@@ -2463,8 +2492,32 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.context_Hide(e, obj) },
+                this.g(go.TextBlock, {
+                    text: "Add Relationship",
+                    background: "transparent",
+                    alignment: go.Spot.Left,
+                    margin: 8,
+                    font: this.fontContextMenu
+                }),
+                {
+                    click: () => {
+                        this.openAddRelationshipModal();
+                    }
+                },
+                new go.Binding("visible", "", (o) => {
+                    return !!(this.assetPermissions.AddRelationships && o.part.data.assetId);
+                }).ofObject()
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, {
+                    text: "Hide",
+                    background: "transparent",
+                    alignment: go.Spot.Left,
+                    margin: 8,
+                    font: this.fontContextMenu
+                }),
+                {click: (e, obj) => this.context_Hide(e, obj)},
                 new go.Binding("visible", "", (o) => (!o.part.data.group)).ofObject()
             ),
             this.g(
@@ -3449,6 +3502,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
         return 'diagram';
     }
+    
+    onAddRelationshipComplete(): void {
+        this.isAddRelationshipModalVisible = false;
+        this.helper_RefreshDiagram();
+    }
 
     private template_relationshipTopPanel(propertyName: string): go.Panel {
         return this.g(go.Panel, "Vertical",
@@ -3897,7 +3955,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             stroke: this.badgeTextColor,
                         },
                         new go.Binding("text", "", (obj) => {
-                            return propertyName === "relations" ? "Relationships" : "Responsibilities";
+                            return propertyName === "relations" ? $localize`Relationships` : $localize`Responsibilities`;
                         }),
                         new go.Binding("width", "", (obj: go.GraphObject, target: go.GraphObject) => {
                             if (obj.part.data["predicateWidth"]) {
@@ -4099,18 +4157,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (!rel.consolidated) {
             if (dataCount > 1) {
-                return `Items in this collection have '${title}' relationships to ${rel.count} other items.<br/>Click to toggle the display of related items.`
+                return $localize`Items in this collection have '${title}' relationships to ${rel.count} other items.<br/>Click to toggle the display of related items.`
             }
             else {
-                return `The item in this collection has '${title}' relationships to ${rel.count} other item.<br/>Click to toggle the display of related item.`
+                return $localize`The item in this collection has '${title}' relationships to ${rel.count} other item.<br/>Click to toggle the display of related item.`
             }
         }
         else {
             if (dataCount > 1) {
-                return `Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+                return $localize`Items in this collection have relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
             }
             else {
-                return `The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
+                return $localize`The item in this collection has relationships to ${rel.count} other items.<br/>Click to toggle the display of relationships.`
             }
         }
     }

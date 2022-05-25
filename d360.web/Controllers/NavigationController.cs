@@ -20,106 +20,129 @@ using Resources;
 
 namespace d360.web.Controllers
 {
-	[Authorize, RoutePrefix("navigation")]
-	public class NavigationController : BaseController
-	{
-		private readonly IStorageProvider Storage;
-		private readonly ICoreComponentSet Set;
+    [Authorize, RoutePrefix("navigation")]
+    public class NavigationController : BaseController
+    {
+        private readonly IStorageProvider Storage;
+        private readonly ICoreComponentSet Set;
+        private readonly Dictionary<string, string> defaultTitleValues = new Dictionary<string, string>();
 
-		public NavigationController(ICoreComponentSet set, IStorageProvider storage)
-			: base(set)
-		{
-			Set = set;
-			Storage = storage;
-		}
+        public NavigationController(ICoreComponentSet set, IStorageProvider storage)
+            : base(set)
+        {
+            Set = set;
+            Storage = storage;
 
-		internal List<NavigationItem> parseXmlNavigationDocument(XElement xml, bool showChildren = true)
-		{
-			var items = new List<NavigationItem>();
+            defaultTitleValues.Add("Rules", PageNames.RulesPage);
+            defaultTitleValues.Add("Workflow", PageNames.WorkflowPage);
+            defaultTitleValues.Add("Business Assets", PageNames.BusinessAssetsPage);
+            defaultTitleValues.Add("Models", PageNames.ModelsPage);
+            defaultTitleValues.Add("Policies", PageNames.PoliciesPage);
+            defaultTitleValues.Add("Reference Lists", PageNames.ReferenceListsPage);
+            defaultTitleValues.Add("Community", PageNames.CommunityPage);
+            defaultTitleValues.Add("Dashboards", PageNames.DashboardsPage);
+            defaultTitleValues.Add("Technical Assets", PageNames.TechnicalAssetsPage);
+            defaultTitleValues.Add("Semantic Types", PageNames.SemanticTypePage);
+        }
 
-			if (xml != null)
-			{
-				foreach (var el in xml.Elements("nav"))
-				{
-					var item = new NavigationItem { Name = (el.Element("name") ?? el.Element("Name")).Value, Url = el.Element("url").Value, ShowChildren = showChildren };
-					
-					if (el.Element("items") != null)
-					{
-						item.Items = parseXmlNavigationDocument(el.Element("items"), showChildren);
-					}
+        internal List<NavigationItem> parseXmlNavigationDocument(XElement xml, bool showChildren = true)
+        {
+            var items = new List<NavigationItem>();
 
-					items.Add(item);
-				}
-			}
+            if (xml != null)
+            {
+                foreach (var el in xml.Elements("nav"))
+                {
+                    var item = new NavigationItem { Name = (el.Element("name") ?? el.Element("Name")).Value, Url = el.Element("url").Value, ShowChildren = showChildren };
 
-			return items;
-		}
+                    if (el.Element("items") != null)
+                    {
+                        item.Items = parseXmlNavigationDocument(el.Element("items"), showChildren);
+                    }
 
-		internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren)
-		{
-			if (!hasTechAssets)
-			{
-				nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
-			}
+                    items.Add(item);
+                }
+            }
 
-			if (!Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
-			{
-				nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
-			}
+            return items;
+        }
 
-			if (nodes != null)
-			{
-				List<string> toggleVisibilityURLs = new List<string> {
-					"artifact/","policy/","quality/rule","model/"};
+        internal List<TopNavigationItem> GenerateSiteMenu(List<TopNavigationItem> nodes, bool hasTechAssets, bool showChildren)
+        {
+            if (!hasTechAssets)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+            }
 
-				nodes.ForEach(n =>
-				{
-					n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
-						new List<NavigationItem>() :
-						parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), showChildren);
+            if (!Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
+            {
+                nodes = nodes.Where(x => x.MenuID != "#SemanticTypes").ToList();
+            }
 
+            if (nodes != null)
+            {
+                List<string> toggleVisibilityURLs = new List<string> {
+                    "artifact/","policy/","quality/rule","model/"};
 
-					var urls = n.NavigationItems.Select(x => x.Url).ToList();
-					var counts = 0;
-					foreach (var urlPart in toggleVisibilityURLs)
-					{
-						var matches = urls.Where(x => !string.IsNullOrEmpty(x) && x.ToLower(System.Globalization.CultureInfo.InvariantCulture).Contains(urlPart.ToLower(System.Globalization.CultureInfo.InvariantCulture)));
-						counts += matches.Count();
-					}
-
-					if (urls.Count == counts)
-					{
-						n.ShowVisibilityToggle = true;
-					}
-
-				});
-			}
-
-			return nodes;
-		}
+                nodes.ForEach(n =>
+                {
+                    n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
+                        new List<NavigationItem>() :
+                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), showChildren);
 
 
-		[ValidateContracts(Ignore = true), Route("sitemenu")]
-		public JsonNetResult SiteMenu()
-		{
-			var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
-			var showChildren = SettingsRepository.GetSettingValue<bool>(Setting.ShowNavigationChildren);
+                    var urls = n.NavigationItems.Select(x => x.Url).ToList();
+                    var counts = 0;
+                    foreach (var urlPart in toggleVisibilityURLs)
+                    {
+                        var matches = urls.Where(x => !string.IsNullOrEmpty(x) && x.ToLower(System.Globalization.CultureInfo.InvariantCulture).Contains(urlPart.ToLower(System.Globalization.CultureInfo.InvariantCulture)));
+                        counts += matches.Count();
+                    }
 
-			return new JsonNetResult
-			{
-				Data = new
-				{
-					MenuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), techAssets > 0, showChildren),
-					IsAdmin = Company.CurrentResourceIsAdmin
-				},
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+                    if (urls.Count == counts)
+                    {
+                        n.ShowVisibilityToggle = true;
+                    }
 
-		[Route("GetAvailableSiteNavigation")]
-		public JsonNetResult GetAvailableSiteNavigation()
-		{
-			var nav = Company.Query<dynamic>($@"
+                });
+            }
+
+            return nodes;
+        }
+
+
+        [ValidateContracts(Ignore = true), Route("sitemenu")]
+        public JsonNetResult SiteMenu()
+        {
+            var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
+            var showChildren = SettingsRepository.GetSettingValue<bool>(Setting.ShowNavigationChildren);
+            var menuItems = GenerateSiteMenu(Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList(), techAssets > 0, showChildren);
+
+            //if db Titles are still defaults ones than load translation for them
+            //if different, use title from db record
+            foreach (var item in menuItems)
+            {
+                if (defaultTitleValues.ContainsKey(item.Title))
+                {
+                    item.Title = defaultTitleValues[item.Title];
+                }
+            }
+
+            return new JsonNetResult
+            {
+                Data = new
+                {
+                    MenuItems = menuItems,
+                    IsAdmin = Company.CurrentResourceIsAdmin
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        [Route("GetAvailableSiteNavigation")]
+        public JsonNetResult GetAvailableSiteNavigation()
+        {
+            var nav = Company.Query<dynamic>($@"
 				with s as
 				(
 					select  cast(
@@ -140,49 +163,59 @@ namespace d360.web.Controllers
 				)
 				select * from s where object not like '%Class' order by 1 asc").ToList();
 
-			return new JsonNetResult
-			{
-				Data = nav,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = nav,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpGet, Route("GetSiteNavItems")]
-		public JsonNetResult GetSiteNavItems()
-		{
-			var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);
-			var data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
-			
-			if (!allowSemantics)
-			{
-				data.RemoveAll(x => !allowSemantics && x.Name == "#SemanticTypes");
-			}
+        [HttpGet, Route("GetSiteNavItems")]
+        public JsonNetResult GetSiteNavItems()
+        {
+            var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);
+            var data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
 
-			return new JsonNetResult
-			{
-				Data = data,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            if (!allowSemantics)
+            {
+                data.RemoveAll(x => !allowSemantics && x.Name == "#SemanticTypes");
+            }
 
-		[HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken]
-		public JsonNetResult AddFolderItem(SiteNav item)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-			}
+            //if db Titles are still defaults ones than load translation for them
+            //if different, use title from db record
+            foreach (var item in data)
+            {
+                if (defaultTitleValues.ContainsKey(item.Title))
+                {
+                    item.Title = defaultTitleValues[item.Title];
+                }
+            }
 
-			var success = true;
-			string message;
-			try
-			{
-				if (string.IsNullOrWhiteSpace(item.Name))
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
-				}
+            return new JsonNetResult
+            {
+                Data = data,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-				var deleteExisting = Company.Query<SiteNav>(@"with s as
+        [HttpPost, Route("AddFolderItem"), AjaxValidateAntiForgeryToken]
+        public JsonNetResult AddFolderItem(SiteNav item)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
+
+            var success = true;
+            string message;
+            try
+            {
+                if (string.IsNullOrWhiteSpace(item.Name))
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
+                }
+
+                var deleteExisting = Company.Query<SiteNav>(@"with s as
 				(
 					select * from sitenavflat where objectid = @ObjectID and object = @Object
 					union all
@@ -191,400 +224,400 @@ namespace d360.web.Controllers
 				select n.* from s
 				join sitenav n on n.Object = s.Object and n.ObjectID = s.ObjectID", new { item.ObjectID, item.Object }).ToList();
 
-				deleteExisting.ForEach(d =>
-				{
-					var record = Company.GetById<SiteNav>(d.ID);
-					Company.Delete(record);
-				});
-				item.SortOrder = Company.SiteNav.Max(i => i.SortOrder) + 1;
-				Company.Add(item);
-				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderAdded;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                deleteExisting.ForEach(d =>
+                {
+                    var record = Company.GetById<SiteNav>(d.ID);
+                    Company.Delete(record);
+                });
+                item.SortOrder = Company.SiteNav.Max(i => i.SortOrder) + 1;
+                Company.Add(item);
+                Company.SaveChanges();
+                message = FormControllerApiMessage.FolderAdded;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken]
-		public JsonNetResult RemoveFolderItem(int id)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-			}
+        [HttpPost, Route("RemoveFolderItem"), NonNullableParameters, AjaxValidateAntiForgeryToken]
+        public JsonNetResult RemoveFolderItem(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+            }
 
-			var success = true;
-			string message;
+            var success = true;
+            string message;
 
-			try
-			{
-				var fi = Company.GetById<SiteNav>(id);
+            try
+            {
+                var fi = Company.GetById<SiteNav>(id);
 
-				if (fi == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
-				}
+                if (fi == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+                }
 
-				Company.Delete(fi);
-				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderItemRemoved;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                Company.Delete(fi);
+                Company.SaveChanges();
+                message = FormControllerApiMessage.FolderItemRemoved;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
-		public async Task<JsonNetResult> RemoveFolder(int id)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-			}
+        [HttpPost, Route("RemoveFolder"), NonNullableParameters, AjaxValidateAntiForgeryToken]
+        public async Task<JsonNetResult> RemoveFolder(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+            }
 
-			var success = true;
-			string message;
+            var success = true;
+            string message;
 
-			try
-			{
-				var folder = Company.GetById<SiteNav>(id);
+            try
+            {
+                var folder = Company.GetById<SiteNav>(id);
 
-				if (folder == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
-				}
+                if (folder == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+                }
 
-				string originalImage = folder.ImageIconUrl;
+                string originalImage = folder.ImageIconUrl;
 
-				if (!string.IsNullOrEmpty(originalImage))
-				{
-					await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
-				}
+                if (!string.IsNullOrEmpty(originalImage))
+                {
+                    await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                }
 
-				//clear out permissions
-				folder.Permissions = new List<SiteNavPermission>();
-				SetSiteNavPermissions(folder);
+                //clear out permissions
+                folder.Permissions = new List<SiteNavPermission>();
+                SetSiteNavPermissions(folder);
 
-				var subNavs = Company.SiteNav.Where(s => s.ParentID == folder.ID);
+                var subNavs = Company.SiteNav.Where(s => s.ParentID == folder.ID);
 
-				Company.SiteNav.RemoveRange(subNavs);
-				Company.Delete(folder);
-				Company.SaveChanges();
-				message = FormControllerApiMessage.FolderRemoved;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                Company.SiteNav.RemoveRange(subNavs);
+                Company.Delete(folder);
+                Company.SaveChanges();
+                message = FormControllerApiMessage.FolderRemoved;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
-		public async Task<JsonNetResult> AddFolder(AddSiteNavModel model)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-			}
+        [HttpPost, Route("AddFolder"), AjaxValidateAntiForgeryToken]
+        public async Task<JsonNetResult> AddFolder(AddSiteNavModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+            }
 
-			var success = true;
-			string message;
+            var success = true;
+            string message;
 
-			try
-			{
-				if (string.IsNullOrWhiteSpace(model.Folder.Name))
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
-				}
+            try
+            {
+                if (string.IsNullOrWhiteSpace(model.Folder.Name))
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
+                }
 
-				if (!string.IsNullOrEmpty(model.Folder.IconPayload))
-				{
-					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(model.Folder.IconPayload);
+                if (!string.IsNullOrEmpty(model.Folder.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(model.Folder.IconPayload);
 
-					var imageMime = imageMatch.Groups["mime"].Value;
-					var imageData = imageMatch.Groups["data"].Value;
-					var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
-					var imageByteArray = Convert.FromBase64String(imageData);
-					var imageGuid = Guid.NewGuid();
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
 
-					using (var imageStream = new MemoryStream(imageByteArray))
-					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-						model.Folder.ImageIconUrl = $"{imageFileName}";
-					}
-				}
+                        model.Folder.ImageIconUrl = $"{imageFileName}";
+                    }
+                }
 
-				model.Folder.SortOrder = 9999;
-				var folder = Company.SiteNav.Add(model.Folder);
+                model.Folder.SortOrder = 9999;
+                var folder = Company.SiteNav.Add(model.Folder);
 
-				folder.Title = model.Folder.Name;
-				Company.SaveChanges();
-				model.Items.ForEach(i =>
-				{
-					i.ParentID = folder.ID;
-				});
+                folder.Title = model.Folder.Name;
+                Company.SaveChanges();
+                model.Items.ForEach(i =>
+                {
+                    i.ParentID = folder.ID;
+                });
 
-				Company.SiteNav.AddRange(model.Items);
-				Company.SaveChanges();
-				SetSiteNavPermissions(model.Folder);
-				message = FormControllerApiMessage.FolderAdded;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                Company.SiteNav.AddRange(model.Items);
+                Company.SaveChanges();
+                SetSiteNavPermissions(model.Folder);
+                message = FormControllerApiMessage.FolderAdded;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPut, Route("MoveUp"), NonNullableParameters]
-		public JsonNetResult MoveUp(int id)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
+        [HttpPut, Route("MoveUp"), NonNullableParameters]
+        public JsonNetResult MoveUp(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
-			var success = true;
-			string message;
+            var success = true;
+            string message;
 
-			try
-			{
-				var siteNav = Company.GetById<SiteNav>(id);
-				var siteNavAbove = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder - 1).SingleOrDefault();
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(id);
+                var siteNavAbove = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder - 1).SingleOrDefault();
 
-				if (siteNav == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
-				}
+                if (siteNav == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+                }
 
-				if (siteNavAbove == null)
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToTop);
-				}
+                if (siteNavAbove == null)
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToTop);
+                }
 
-				siteNavAbove.SortOrder++;
-				siteNav.SortOrder--;
-				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMovedUp, siteNav.Name);
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                siteNavAbove.SortOrder++;
+                siteNav.SortOrder--;
+                Company.SaveChanges();
+                message = string.Format(FormControllerApiMessage.FolderMovedUp, siteNav.Name);
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPut, Route("MoveDown"), NonNullableParameters]
-		public JsonNetResult MoveDown(int id)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
+        [HttpPut, Route("MoveDown"), NonNullableParameters]
+        public JsonNetResult MoveDown(int id)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
-			var success = true;
-			string message;
+            var success = true;
+            string message;
 
-			try
-			{
-				var siteNav = Company.GetById<SiteNav>(id);
-				var siteNavBelow = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder + 1).SingleOrDefault();
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(id);
+                var siteNavBelow = Company.SiteNav.Where(s => s.ParentID == null && s.SortOrder == siteNav.SortOrder + 1).SingleOrDefault();
 
-				if (siteNav == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
-				}
+                if (siteNav == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+                }
 
-				if (siteNavBelow == null)
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToBottom);
-				}
+                if (siteNavBelow == null)
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.FolderAlreadySortedToBottom);
+                }
 
-				siteNavBelow.SortOrder--;
-				siteNav.SortOrder++;
-				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMovedDown, siteNav.Name);
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+                siteNavBelow.SortOrder--;
+                siteNav.SortOrder++;
+                Company.SaveChanges();
+                message = string.Format(FormControllerApiMessage.FolderMovedDown, siteNav.Name);
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPut, Route("EditFolder")]
-		public async Task<JsonNetResult> EditFolder(SiteNav folder)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
+        [HttpPut, Route("EditFolder")]
+        public async Task<JsonNetResult> EditFolder(SiteNav folder)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
-			var success = true;
-			string message;
+            var success = true;
+            string message;
 
-			try
-			{
-				if (folder == null)
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.InvalidFolder);
-				}
+            try
+            {
+                if (folder == null)
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.InvalidFolder);
+                }
 
-				var siteNav = Company.GetById<SiteNav>(folder.ID);
-				
-				if (siteNav == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.ID.ToString()));
-				}
+                var siteNav = Company.GetById<SiteNav>(folder.ID);
 
-				string originalImage = siteNav.ImageIconUrl;
+                if (siteNav == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.ID.ToString()));
+                }
 
-				if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.ImageIconUrl))
-				{
-					try
-					{
-						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
-					}
-					catch 
-					{
-						//swallow exception here.
-					}
-				}
+                string originalImage = siteNav.ImageIconUrl;
 
-				if (!string.IsNullOrEmpty(folder.IconPayload))
-				{
-					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(folder.IconPayload);
+                if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.ImageIconUrl))
+                {
+                    try
+                    {
+                        await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
+                    }
+                    catch
+                    {
+                        //swallow exception here.
+                    }
+                }
 
-					var imageMime = imageMatch.Groups["mime"].Value;
-					var imageData = imageMatch.Groups["data"].Value;
-					var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
-					var imageByteArray = Convert.FromBase64String(imageData);
-					var imageGuid = Guid.NewGuid();
+                if (!string.IsNullOrEmpty(folder.IconPayload))
+                {
+                    var imageMatch = MimeTypeExtensionsMap.RegEx.Match(folder.IconPayload);
 
-					using (var imageStream = new MemoryStream(imageByteArray))
-					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+                    var imageMime = imageMatch.Groups["mime"].Value;
+                    var imageData = imageMatch.Groups["data"].Value;
+                    var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+                    var imageByteArray = Convert.FromBase64String(imageData);
+                    var imageGuid = Guid.NewGuid();
 
-						folder.ImageIconUrl = $"{imageFileName}";
+                    using (var imageStream = new MemoryStream(imageByteArray))
+                    {
+                        var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+                        await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-					}
-				}
+                        folder.ImageIconUrl = $"{imageFileName}";
 
-				siteNav.Name = folder.Name;
-				siteNav.Icon = folder.Icon;
-				siteNav.Title = folder.Title ?? folder.Name;
-				siteNav.ImageIconUrl = folder.ImageIconUrl;
-				Company.SaveChanges();
-				SetSiteNavPermissions(folder);
-				message = FormControllerApiMessage.FolderUpdated;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                    }
+                }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
+                siteNav.Name = folder.Name;
+                siteNav.Icon = folder.Icon;
+                siteNav.Title = folder.Title ?? folder.Name;
+                siteNav.ImageIconUrl = folder.ImageIconUrl;
+                Company.SaveChanges();
+                SetSiteNavPermissions(folder);
+                message = FormControllerApiMessage.FolderUpdated;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
 
-		[HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
-		public JsonNetResult SiteNavFolderMove(int targetFolderId, int adjacentFolderId)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-			}
+        }
 
-			var success = true;
-			string message;
-			try
-			{
-				var siteNav = Company.GetById<SiteNav>(targetFolderId);
-				var siteNavBelow = Company.GetById<SiteNav>(adjacentFolderId);
+        [HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
+        public JsonNetResult SiteNavFolderMove(int targetFolderId, int adjacentFolderId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+            }
 
-				if (siteNav == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, targetFolderId.ToString()));
-				}
+            var success = true;
+            string message;
+            try
+            {
+                var siteNav = Company.GetById<SiteNav>(targetFolderId);
+                var siteNavBelow = Company.GetById<SiteNav>(adjacentFolderId);
 
-				if (siteNavBelow == null)
-				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, adjacentFolderId.ToString()));
-				}
+                if (siteNav == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, targetFolderId.ToString()));
+                }
 
-				int? tmpSortOrder = siteNav.SortOrder;
-				siteNav.SortOrder = siteNavBelow.SortOrder;
-				siteNavBelow.SortOrder = tmpSortOrder;
-				Company.SaveChanges();
-				message = string.Format(FormControllerApiMessage.FolderMoved, siteNav.Name);
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                if (siteNavBelow == null)
+                {
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, adjacentFolderId.ToString()));
+                }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+                int? tmpSortOrder = siteNav.SortOrder;
+                siteNav.SortOrder = siteNavBelow.SortOrder;
+                siteNavBelow.SortOrder = tmpSortOrder;
+                Company.SaveChanges();
+                message = string.Format(FormControllerApiMessage.FolderMoved, siteNav.Name);
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-		#region Permissions
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpGet, Route("permissions/get/list/{id:int}")]
-		public JsonNetResult GetSiteNavPermissionList(int id = 0)
-		{
-			var sql = @"
+        #region Permissions
+
+        [HttpGet, Route("permissions/get/list/{id:int}")]
+        public JsonNetResult GetSiteNavPermissionList(int id = 0)
+        {
+            var sql = @"
 					select * from
 					(
 						select 'Group :: ' + g.Name as label, 'Group|' + cast(g.ID as varchar) as [value] from [Group] g
@@ -595,27 +628,27 @@ namespace d360.web.Controllers
 					order by a.label
 					";
 
-			var results = Company.Query<dynamic>(sql, new { id }).ToList();
+            var results = Company.Query<dynamic>(sql, new { id }).ToList();
 
-			return new JsonNetResult
-			{
-				Data = results,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = results,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpGet, Route("permissions/get/list")]
-		public JsonNetResult GetSiteNavPermissionList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
-		{
-			var dbArgs = new Dapper.DynamicParameters();
-			var hideUsersSql = "";
+        [HttpGet, Route("permissions/get/list")]
+        public JsonNetResult GetSiteNavPermissionList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+        {
+            var dbArgs = new Dapper.DynamicParameters();
+            var hideUsersSql = "";
 
-			if (HideData3SixtyUsers())
-			{
-				hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
-			}
+            if (HideData3SixtyUsers())
+            {
+                hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
+            }
 
-			var querySql = @"
+            var querySql = @"
 					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
 						(
 							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
@@ -623,677 +656,677 @@ namespace d360.web.Controllers
 							union all
 							select  r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
 							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
-							+ hideUsersSql +
-						") as Sub";
+                            + hideUsersSql +
+                        ") as Sub";
 
 
-			if (!string.IsNullOrEmpty(gbfilter))
-			{
-				querySql = string.Format(@"select * from ({0}) gb where  [Text] like '%' +   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
-				dbArgs.Add("gbfilter", gbfilter);
-			}
+            if (!string.IsNullOrEmpty(gbfilter))
+            {
+                querySql = string.Format(@"select * from ({0}) gb where  [Text] like '%' +   @gbfilter + '%'  or [Type] like   @gbfilter + '%'", querySql);
+                dbArgs.Add("gbfilter", gbfilter);
+            }
 
-			var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
-			var sql = string.Format(@"select * from ({0}) A", querySql);
+            var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
+            var sql = string.Format(@"select * from ({0}) A", querySql);
 
-			dbArgs.Add("id", id);
+            dbArgs.Add("id", id);
 
-			countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
-			int totalCount = Company.Query<int>(countSql, dbArgs).First();
+            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
+            int totalCount = Company.Query<int>(countSql, dbArgs).First();
 
-			sql = applySortSuffix(sql, sortDataField, sortOrder, "Text", "asc");
-			sql = applyPagingSuffix(sql, pagenum, pagesize);
+            sql = applySortSuffix(sql, sortDataField, sortOrder, "Text", "asc");
+            sql = applyPagingSuffix(sql, pagenum, pagesize);
 
-			var query = Company.Query<dynamic>(sql, dbArgs);
+            var query = Company.Query<dynamic>(sql, dbArgs);
 
-			return new JsonNetResult
-			{
-				Data = new { total = totalCount, results = query },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { total = totalCount, results = query },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpGet, Route("permissions/get/{id:int}")]
-		public JsonNetResult GetSiteNavPermissions(int id)
-		{
-			var perms = Company.Query<SiteNavPermission>(QueryConstants.SiteNavPermissions, new { id }).ToList();
+        [HttpGet, Route("permissions/get/{id:int}")]
+        public JsonNetResult GetSiteNavPermissions(int id)
+        {
+            var perms = Company.Query<SiteNavPermission>(QueryConstants.SiteNavPermissions, new { id }).ToList();
 
-			return new JsonNetResult
-			{
-				Data = perms,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = perms,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken]
-		public JsonNetResult SetSiteNavPermissions(SiteNav nav)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
-			}
+        [HttpPost, Route("permissions/set"), AjaxValidateAntiForgeryToken]
+        public JsonNetResult SetSiteNavPermissions(SiteNav nav)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
+            }
 
-			if (nav == null || nav.ID < 1)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.ModelPassedToMethodInvalid));
-			}
+            if (nav == null || nav.ID < 1)
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.ModelPassedToMethodInvalid));
+            }
 
-			var existing = Company.SiteNavPermissions.Where(p => p.SiteNavID == nav.ID).ToList();
+            var existing = Company.SiteNavPermissions.Where(p => p.SiteNavID == nav.ID).ToList();
 
-			if (nav.Permissions == null)
-			{
-				nav.Permissions = new List<SiteNavPermission>();
-			}
+            if (nav.Permissions == null)
+            {
+                nav.Permissions = new List<SiteNavPermission>();
+            }
 
-			nav.Permissions.ForEach(p => { p.SiteNavID = nav.ID; });
+            nav.Permissions.ForEach(p => { p.SiteNavID = nav.ID; });
 
-			try
-			{
-				Company.SiteNavPermissions.RemoveRange(existing);
-				Company.SaveChanges();
+            try
+            {
+                Company.SiteNavPermissions.RemoveRange(existing);
+                Company.SaveChanges();
 
-				if (nav.Permissions != null && nav.Permissions.Count > 0)
-				{
-					Company.SiteNavPermissions.AddRange(nav.Permissions);
-					Company.SaveChanges();
-				}
-			}
-			catch (Exception ex)
-			{
-				return jsonNetException(ex);
-			}
+                if (nav.Permissions != null && nav.Permissions.Count > 0)
+                {
+                    Company.SiteNavPermissions.AddRange(nav.Permissions);
+                    Company.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
 
-			return new JsonNetResult
-			{
-				Data = nav.ID,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = nav.ID,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken]
-		public JsonNetResult AddSiteNavPermission(SiteNavPermission perm)
-		{
-			var nav = Company.GetById<SiteNav>(perm.SiteNavID);
+        [HttpPost, Route("permissions/add"), AjaxValidateAntiForgeryToken]
+        public JsonNetResult AddSiteNavPermission(SiteNavPermission perm)
+        {
+            var nav = Company.GetById<SiteNav>(perm.SiteNavID);
 
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
-			}
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
+            }
 
-			if (nav == null)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.SiteNavNotFound));
-			}
+            if (nav == null)
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.SiteNavNotFound));
+            }
 
-			if (string.IsNullOrEmpty(perm.Object) || perm.ObjectID == 0)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.invalidObjectPassed));
-			}
+            if (string.IsNullOrEmpty(perm.Object) || perm.ObjectID == 0)
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.invalidObjectPassed));
+            }
 
-			try
-			{
-				Company.SiteNavPermissions.Add(perm);
-				Company.SaveChanges();
-			}
-			catch (Exception ex)
-			{
-				return jsonNetException(ex);
-			}
+            try
+            {
+                Company.SiteNavPermissions.Add(perm);
+                Company.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return jsonNetException(ex);
+            }
 
-			return new JsonNetResult
-			{
-				Data = perm,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = perm,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpDelete, Route("permissions/remove")]
-		public JsonNetResult RemoveSiteNavPermission(SiteNavPermission perm)
-		{
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
-			}
+        [HttpDelete, Route("permissions/remove")]
+        public JsonNetResult RemoveSiteNavPermission(SiteNavPermission perm)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.NoPermissionToDoThis));
+            }
 
-			perm = Company.SiteNavPermissions.Where(p => p.SiteNavID == perm.SiteNavID && p.Object == perm.Object && p.ObjectID == perm.ObjectID).FirstOrDefault();
+            perm = Company.SiteNavPermissions.Where(p => p.SiteNavID == perm.SiteNavID && p.Object == perm.Object && p.ObjectID == perm.ObjectID).FirstOrDefault();
 
-			if (perm != null)
-			{
-				try
-				{
-					Company.SiteNavPermissions.Remove(perm);
-					Company.SaveChanges();
-				}
-				catch (Exception ex)
-				{
-					return jsonNetException(ex);
-				}
-			}
-			else
-			{
-				return jsonNetException(new Exception(FormControllerApiMessage.CoultNotFindPermission));
-			}
+            if (perm != null)
+            {
+                try
+                {
+                    Company.SiteNavPermissions.Remove(perm);
+                    Company.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    return jsonNetException(ex);
+                }
+            }
+            else
+            {
+                return jsonNetException(new Exception(FormControllerApiMessage.CoultNotFindPermission));
+            }
 
-			return new JsonNetResult
-			{
-				Data = perm.SiteNavID,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = perm.SiteNavID,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		#endregion
+        #endregion
 
-		#region Favorites
+        #region Favorites
 
-		[HttpPut, Route("MoveFavorite"), NonNullableParameters]
-		public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
-		{
-			var success = true;
-			string message;
+        [HttpPut, Route("MoveFavorite"), NonNullableParameters]
+        public JsonNetResult MoveFavorite(string route, bool moveUp = false, bool admin = false)
+        {
+            var success = true;
+            string message;
 
-			try
-			{
-				if (admin && !Company.CurrentResourceIsAdmin)
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.UserDoesnotAdmin);
-				}
+            try
+            {
+                if (admin && !Company.CurrentResourceIsAdmin)
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.UserDoesnotAdmin);
+                }
 
-				var resid = admin ? 0 : Company.CurrentResourceID;
+                var resid = admin ? 0 : Company.CurrentResourceID;
 
-				var favorite = Company.Favorites.Where(f => f.ResourceID == resid && f.Route == route).First();
+                var favorite = Company.Favorites.Where(f => f.ResourceID == resid && f.Route == route).First();
 
-				if (favorite == null)
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteRoute);
-				}
-				if (moveUp)
-				{
-					var above = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder - 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
-					if (above == null)
-					{
-						throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteAbove);
-					}
-					favorite.SortOrder--;
-					above.SortOrder++;
-				}
-				else
-				{
-					var below = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder + 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
-					if (below == null)
-					{
-						throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteBelow);
-					}
-					favorite.SortOrder++;
-					below.SortOrder--;
-				}
+                if (favorite == null)
+                {
+                    throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteRoute);
+                }
+                if (moveUp)
+                {
+                    var above = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder - 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
+                    if (above == null)
+                    {
+                        throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteAbove);
+                    }
+                    favorite.SortOrder--;
+                    above.SortOrder++;
+                }
+                else
+                {
+                    var below = Company.Favorites.Where(f => f.SortOrder == (favorite.SortOrder + 1) && f.ResourceID == favorite.ResourceID).SingleOrDefault();
+                    if (below == null)
+                    {
+                        throw new ArgumentNullException(FormControllerApiMessage.NoFavoriteBelow);
+                    }
+                    favorite.SortOrder++;
+                    below.SortOrder--;
+                }
 
-				Company.SaveChanges();
-				message = FormControllerApiMessage.FavoriteMoved;
-			}
-			catch (Exception ex)
-			{
-				success = false;
-				message = ex.GetFullExceptionData();
-			}
+                Company.SaveChanges();
+                message = FormControllerApiMessage.FavoriteMoved;
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                message = ex.GetFullExceptionData();
+            }
 
-			return new JsonNetResult
-			{
-				Data = new { success, message },
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = new { success, message },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpGet, Route("GetCounts")]
-		public async Task<JsonNetResult> GetCounts()
-		{
-			var ItemCounts = await Company.QueryAsync<dynamic>("GetSiteNavigationCounts @ResourceID",
-				new { ResourceID = Company.CurrentResourceID });
+        [HttpGet, Route("GetCounts")]
+        public async Task<JsonNetResult> GetCounts()
+        {
+            var ItemCounts = await Company.QueryAsync<dynamic>("GetSiteNavigationCounts @ResourceID",
+                new { ResourceID = Company.CurrentResourceID });
 
-			return new JsonNetResult
-			{
-				Data = ItemCounts,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = ItemCounts,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		[HttpGet, Route("GetItemCount/{url}")]
-		public async Task<JsonNetResult> GetItemCount(string url)
-		{
-			int count, id;
-			string type;
-			var urlElements = url.Split('-');
-			type = urlElements[0];
+        [HttpGet, Route("GetItemCount/{url}")]
+        public async Task<JsonNetResult> GetItemCount(string url)
+        {
+            int count, id;
+            string type;
+            var urlElements = url.Split('-');
+            type = urlElements[0];
 
-			if (type.Equals("quality", StringComparison.OrdinalIgnoreCase))
-			{
-				id = int.TryParse(urlElements[2], out id) ? id : 0;
-				type = urlElements[1];
-			}
-			else if (type.Equals("model", StringComparison.OrdinalIgnoreCase))
-			{
-				type = "Taxonomy";
-				id = int.TryParse(urlElements[1], out id) ? id : 0;
-			}
-			else
-			{
-				id = int.TryParse(urlElements[1], out id) ? id : 0;
-			}
+            if (type.Equals("quality", StringComparison.OrdinalIgnoreCase))
+            {
+                id = int.TryParse(urlElements[2], out id) ? id : 0;
+                type = urlElements[1];
+            }
+            else if (type.Equals("model", StringComparison.OrdinalIgnoreCase))
+            {
+                type = "Taxonomy";
+                id = int.TryParse(urlElements[1], out id) ? id : 0;
+            }
+            else
+            {
+                id = int.TryParse(urlElements[1], out id) ? id : 0;
+            }
 
-			type = FormatType(type);
+            type = FormatType(type);
 
-			count = (await Company.QueryAsync<int>(@"
+            count = (await Company.QueryAsync<int>(@"
 						select	count(1)
 						from    [Asset] A
 						inner join AssetType ATT on (a.AssetTypeID = Att.id)
 						where  ATT.[Object] = @type and  ATT.ObjectID = @id and A.[State] = 1
 						", new { type, id })).FirstOrDefault();
 
-			return new JsonNetResult
-			{
-				Data = count,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
-		}
+            return new JsonNetResult
+            {
+                Data = count,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
 
-		public static string FormatType(string s)
-		{
-			// Check for empty string.  
-			if (string.IsNullOrEmpty(s))
-			{
-				return string.Empty;
-			}
-			// Return char and concat substring.  
-			return string.Format("{0}{1}{2}", char.ToUpper(s[0]), s.Substring(1), "Type");
-		}
+        public static string FormatType(string s)
+        {
+            // Check for empty string.  
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+            // Return char and concat substring.  
+            return string.Format("{0}{1}{2}", char.ToUpper(s[0]), s.Substring(1), "Type");
+        }
 
-		#endregion
+        #endregion
 
-		[HttpPost, Route("secondaryNavigationSettings")]
-		public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
-		{
-			bool execProcedure = true;
-			SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
+        [HttpPost, Route("secondaryNavigationSettings")]
+        public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
+        {
+            bool execProcedure = true;
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
 
-			//Static nav
-			if (model.AssetUid == null)
-			{
-				if (model.ObjectType != null && model.ObjectId != null)
-				{
-					var assetType = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
-					
-					if (assetType != null)
-					{
-						model.Class = assetType.Class;
-						responseModel.Uid = assetType.uid;
-					}
-				}
+            //Static nav
+            if (model.AssetUid == null)
+            {
+                if (model.ObjectType != null && model.ObjectId != null)
+                {
+                    var assetType = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
 
-				if (model.ObjectType == SystemObjects.ArtifactType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.ArtifactType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
+                    if (assetType != null)
+                    {
+                        model.Class = assetType.Class;
+                        responseModel.Uid = assetType.uid;
+                    }
+                }
 
-					responseModel.Items.HasAudit = true;
+                if (model.ObjectType == SystemObjects.ArtifactType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ArtifactType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
 
-					if (model.Class == AssetTypeClass.TechnicalAsset)
-					{
-						responseModel.DisplayValue = "Technical Assets";
-						responseModel.MainTabTitle = "Technical Asset Types";
-					}
-					if (model.Class == AssetTypeClass.BusinessAsset)
-					{
-						responseModel.DisplayValue = "Business Assets";
-						responseModel.MainTabTitle = "Business Asset Types";
-					}
-				}
-				else if (model.ObjectType == SystemObjects.TaskType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.Items.HasAudit = true;
 
-					if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
-					{
-						var assetType = Company.AssetTypes.Where(x => x.Object == model.ObjectType).OrderBy(x => x.Name).FirstOrDefault();
-						
-						if (assetType != null)
-						{
-							responseModel.Uid = assetType.uid;
-						}
-					}
+                    if (model.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        responseModel.DisplayValue = PageNames.TechnicalAssetsPage;
+                        responseModel.MainTabTitle = PageNames.TechnicalAssetsPageTabTitle;
+                    }
+                    if (model.Class == AssetTypeClass.BusinessAsset)
+                    {
+                        responseModel.DisplayValue = PageNames.BusinessAssetsPage;
+                        responseModel.MainTabTitle = PageNames.BusinessAssetsPageTabTitle;
+                    }
+                }
+                else if (model.ObjectType == SystemObjects.TaskType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    
+                    if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
+                    {
+                        var assetType = Company.AssetTypes.Where(x => x.Object == model.ObjectType).OrderBy(x => x.Name).FirstOrDefault();
 
-					responseModel.Items.HasAudit = true;
-					responseModel.DisplayValue = "Diagram Assets";
-					responseModel.MainTabTitle = "Diagram Asset Types";
-					responseModel.Object = SystemObjects.TaskType.ToString();
+                        if (assetType != null)
+                        {
+                            responseModel.Uid = assetType.uid;
+                        }
+                    }
 
-					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+                    responseModel.Items.HasAudit = true;
+                    responseModel.DisplayValue = PageNames.DiagramAssetsPage;
+                    responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
+                    responseModel.Object = SystemObjects.TaskType.ToString();
 
-					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
-				}
-				else if (model.ObjectType == SystemObjects.IntersectType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Relationships";
-					responseModel.MainTabTitle = "Relationship Types";
-					responseModel.Items.HasAudit = true;
-					responseModel.Items.HasField = true;
-				}
-				else if (model.ObjectType == SystemObjects.IssueType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Workflow Actions";
-					responseModel.MainTabTitle = "Action Types";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Responsibilities";
-					responseModel.MainTabTitle = "Responsibility Types";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.Report.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Dashboards";
-					responseModel.MainTabTitle = "Dashboards";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Models";
-					responseModel.MainTabTitle = "Model Types";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.PolicyType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Policies";
-					responseModel.MainTabTitle = "Policy Types";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.Tag.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Tags";
-					responseModel.MainTabTitle = "Tags";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.RuleType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.RuleType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Rules";
-					responseModel.MainTabTitle = "Rules";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Diagram Assets";
-					responseModel.MainTabTitle = "Diagram Asset Types";
-					responseModel.Items.HasAudit = true;
-					var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
+                    var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
-					if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
-					{
-						var assetType = Company.AssetTypes.Where(x => x.Object == SystemObjects.TaskType.ToString()).OrderBy(x => x.Name).FirstOrDefault();
-						
-						if (assetType != null)
-						{
-							responseModel.Uid = assetType.uid;
-						}
-					}
-					responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
-				}
-				else if (model.ObjectType == SystemObjects.ResourceType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Users";
-					responseModel.MainTabTitle = "Users";
-					responseModel.Items.HasAudit = true;
-					responseModel.Items.HasField = true;
-				}
-				else if (model.ObjectType == SystemObjects.GroupType.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Groups";
-					responseModel.MainTabTitle = "Groups";
-					responseModel.Items.HasAudit = true;
-					responseModel.Items.HasField = true;
-				}
-				else if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.DisplayValue = "Scoring Definitions";
-					responseModel.MainTabTitle = "Scoring Definitions";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.Predicate.ToString())
-				{
-					execProcedure = false;
-					responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
-					responseModel.ObjectID = model.ObjectId ?? 0;
-					responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-b00000000012");
-					responseModel.DisplayValue = "Predicates";
-					responseModel.MainTabTitle = "Predicates";
-					responseModel.Items.HasAudit = true;
-				}
-				else if (model.ObjectType == SystemObjects.Resource.ToString())
-				{
-					var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
-					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
-					FillResponseModelForResource(asset, resource);
-				}
-			}
+                    responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
+                }
+                else if (model.ObjectType == SystemObjects.IntersectType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.RelationshipsTab;
+                    responseModel.MainTabTitle = PageNames.RelationshipsTabTitle;
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
+                }
+                else if (model.ObjectType == SystemObjects.IssueType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.WorkflowActionsTab;
+                    responseModel.MainTabTitle = PageNames.WorkflowActionsTabTitle;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.ResponsibilitiesTab;
+                    responseModel.MainTabTitle = PageNames.ResponsibilitiesTabTitle;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.Report.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.DashboardsPage;
+                    responseModel.MainTabTitle = PageNames.DashboardsPage;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.ModelsPage;
+                    responseModel.MainTabTitle = PageNames.ModelsPageTabTitle;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.PolicyType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.PoliciesPage;
+                    responseModel.MainTabTitle = PageNames.PoliciesPageTabTitle;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.Tag.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.TagsPage;
+                    responseModel.MainTabTitle = PageNames.TagsPage;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.RuleType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.RuleType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.RulesPage;
+                    responseModel.MainTabTitle = PageNames.RulesPage;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.ConnectorLabel.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.DiagramAssetsPage;
+                    responseModel.MainTabTitle = PageNames.DiagramAssetsPageTabTitle;
+                    responseModel.Items.HasAudit = true;
+                    var govRoleUid = SettingsRepository.GetSettingValue<Guid>(Setting.GovernanceRoleReferenceListUid);
 
-			if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
-			{
-				execProcedure = false;
-				var tag = Company.Tags.FirstOrDefault(x => x.uid == model.AssetUid);
-				responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
-				responseModel.ObjectID = model.ObjectId ?? 0;
-				responseModel.DisplayValue = tag.Value;
-				responseModel.MainTabTitle = "Tagged Assets";
-				responseModel.Items.HasAudit = true;
-				responseModel.Uid = tag.uid;
-			}
+                    if ((responseModel.Uid == null || responseModel.Uid == Guid.Empty) && responseModel.ObjectID == 0)
+                    {
+                        var assetType = Company.AssetTypes.Where(x => x.Object == SystemObjects.TaskType.ToString()).OrderBy(x => x.Name).FirstOrDefault();
 
-			if (model.AssetUid != null)
-			{
-				var asset = Company.Assets.FirstOrDefault(x => x.uid == model.AssetUid);
+                        if (assetType != null)
+                        {
+                            responseModel.Uid = assetType.uid;
+                        }
+                    }
+                    responseModel.Items.HasGovernanceRoleUidSet = govRoleUid != null && govRoleUid != Guid.Empty;
+                }
+                else if (model.ObjectType == SystemObjects.ResourceType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ResourceType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.UsersPage;
+                    responseModel.MainTabTitle = PageNames.UsersPage;
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
+                }
+                else if (model.ObjectType == SystemObjects.GroupType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.GroupType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.GroupsTab;
+                    responseModel.MainTabTitle = PageNames.GroupsTab;
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
+                }
+                else if (model.ObjectType == SystemObjects.MetricAllocation.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.MetricAllocation.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = PageNames.ScoringDefinitionsTab;
+                    responseModel.MainTabTitle = PageNames.ScoringDefinitionsTab;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.Predicate.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Predicate.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.Uid = Guid.Parse("00000001-0000-0000-0000-b00000000012");
+                    responseModel.DisplayValue = PageNames.PredicatesPage;
+                    responseModel.MainTabTitle = PageNames.PredicatesPage;
+                    responseModel.Items.HasAudit = true;
+                }
+                else if (model.ObjectType == SystemObjects.Resource.ToString())
+                {
+                    var asset = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId);
+                    var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.ResourceID == model.ObjectId);
+                    FillResponseModelForResource(asset, resource);
+                }
+            }
 
-				if (asset != null && (asset.Object == "Group"))
-				{
-					execProcedure = false;
-					responseModel.Object = asset.Object;
-					responseModel.ObjectID = asset.ObjectID;
-					responseModel.DisplayValue = "Groups";
-					responseModel.MainTabTitle = "Groups";
-					responseModel.Items.HasAudit = true;
-					responseModel.Uid = asset.uid;
-				}
+            if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
+            {
+                execProcedure = false;
+                var tag = Company.Tags.FirstOrDefault(x => x.uid == model.AssetUid);
+                responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = tag.Value;
+                responseModel.MainTabTitle = PageNames.TaggedAssetsPage;
+                responseModel.Items.HasAudit = true;
+                responseModel.Uid = tag.uid;
+            }
 
-				if (asset != null && (asset.Object == "Resource"))
-				{
-					var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
-					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.Uid == model.AssetUid);
-					FillResponseModelForResource(asset, resource);
-				}
-			}
+            if (model.AssetUid != null)
+            {
+                var asset = Company.Assets.FirstOrDefault(x => x.uid == model.AssetUid);
 
-			if (model.ObjectType == SystemObjects.SemanticType.ToString() && Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
-			{
-				execProcedure = false;
-				responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
-				responseModel.ObjectID = model.ObjectId ?? 0;
-				responseModel.DisplayValue = "Semantic Types";
-				responseModel.MainTabTitle = "Semantic Types";
-				responseModel.Items.HasAudit = true;
+                if (asset != null && (asset.Object == "Group"))
+                {
+                    execProcedure = false;
+                    responseModel.Object = asset.Object;
+                    responseModel.ObjectID = asset.ObjectID;
+                    responseModel.DisplayValue = PageNames.GroupsTab;
+                    responseModel.MainTabTitle = PageNames.GroupsTab;
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Uid = asset.uid;
+                }
 
-				if (model.AssetUid.HasValue)
-				{
-					var semantic = Company.Semantics.FirstOrDefault(x => x.Uid == model.AssetUid);
-					responseModel.Uid = semantic.Uid;
-				}
-			}
+                if (asset != null && (asset.Object == "Resource"))
+                {
+                    var assetDetail = Company.AssetDetails.FirstOrDefault(x => x.uid == model.AssetUid);
+                    var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.Uid == model.AssetUid);
+                    FillResponseModelForResource(asset, resource);
+                }
+            }
 
-			if (execProcedure)
-			{
-				if (model.ObjectId != null && model.ObjectType != null)
-				{
-					model.AssetUid = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+            if (model.ObjectType == SystemObjects.SemanticType.ToString() && Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))
+            {
+                execProcedure = false;
+                responseModel.Object = responseModel.ObjectType = SystemObjects.SemanticType.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = PageNames.SemanticTypePage;
+                responseModel.MainTabTitle = PageNames.SemanticTypePage;
+                responseModel.Items.HasAudit = true;
 
-					if (model.AssetUid == null)
-					{
-						model.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
-					}
-				}
+                if (model.AssetUid.HasValue)
+                {
+                    var semantic = Company.Semantics.FirstOrDefault(x => x.Uid == model.AssetUid);
+                    responseModel.Uid = semantic.Uid;
+                }
+            }
 
-				if (model.AssetId != null)
-				{
-					model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
-				}
+            if (execProcedure)
+            {
+                if (model.ObjectId != null && model.ObjectType != null)
+                {
+                    model.AssetUid = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
 
-				var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
-				responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
+                    if (model.AssetUid == null)
+                    {
+                        model.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+                    }
+                }
 
-				if (responseModel != null)
-				{
-					if (responseModel.Object == "Artifact")
-					{
-						responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
-					}
+                if (model.AssetId != null)
+                {
+                    model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
+                }
 
-					if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
-					{
-						var apiCtrlr = new D3SApiController(Set, null, null, null, null, null)
-						{
-							Request = new System.Net.Http.HttpRequestMessage()
-						};
-						responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
-					}
+                var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
+                responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
 
-					if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
-					{
-						var apiCtrlr = new TaxonomyController(Set);
-						responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
-					}
+                if (responseModel != null)
+                {
+                    if (responseModel.Object == "Artifact")
+                    {
+                        responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+                    }
 
-					var anyDiagramRelationTypes = Company.Query<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and Subject = @ObjectType and SubjectID = @ObjectTypeId", new { responseModel.ObjectType, responseModel.ObjectTypeId, predicateType = (int)PredicateType.Diagram }).SingleOrDefault();
-					
-					if (anyDiagramRelationTypes)
-					{
-						responseModel.Items.HasProcessDiagram = true;
-					}
+                    if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
+                    {
+                        var apiCtrlr = new D3SApiController(Set, null, null, null, null, null)
+                        {
+                            Request = new System.Net.Http.HttpRequestMessage()
+                        };
+                        responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
+                    }
 
-					if (responseModel.Object == SystemObjects.ReferenceItemType.ToString())
-					{
-						responseModel.Items.HasImpact = responseModel.Items.HasLineage = responseModel.Items.HasProcessDiagram = false;
-					}
-				}
-			}
+                    if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
+                    {
+                        var apiCtrlr = new TaxonomyController(Set);
+                        responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+                    }
 
-			if (responseModel != null && !Company.CurrentResourceIsAdmin && model.ObjectType != SystemObjects.SemanticType.ToString())
-			{
-				if (model.AssetUid != null)
-				{
-					var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
+                    var anyDiagramRelationTypes = Company.Query<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and Subject = @ObjectType and SubjectID = @ObjectTypeId", new { responseModel.ObjectType, responseModel.ObjectTypeId, predicateType = (int)PredicateType.Diagram }).SingleOrDefault();
 
-					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
-					{
-						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
-						{
-							responseModel.Items.HasOwnership = false;
-						}
-						else
-						{
-							responseModel.Items.HasOwnership = true;
-						}
-					}
+                    if (anyDiagramRelationTypes)
+                    {
+                        responseModel.Items.HasProcessDiagram = true;
+                    }
 
-					if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
-					{
-						responseModel.Items.HasRelationship = true;
-					}
-				}
+                    if (responseModel.Object == SystemObjects.ReferenceItemType.ToString())
+                    {
+                        responseModel.Items.HasImpact = responseModel.Items.HasLineage = responseModel.Items.HasProcessDiagram = false;
+                    }
+                }
+            }
 
-				if (model.AssetId == null && model.AssetTypeUid != null)
-				{
-					var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
+            if (responseModel != null && !Company.CurrentResourceIsAdmin && model.ObjectType != SystemObjects.SemanticType.ToString())
+            {
+                if (model.AssetUid != null)
+                {
+                    var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
 
-					if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
-					{
-						if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
-						{
-							responseModel.Items.HasOwnership = false;
-						}
-						else
-						{
-							responseModel.Items.HasOwnership = true;
-						}
-					}
-					else
-					{
-						responseModel.Items.HasOwnership = false;
-					}
+                    if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
+                    {
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
+                    }
 
-					if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
-					{
-						responseModel.Items.HasRelationship = true;
-					}
-					else
-					{
-						responseModel.Items.HasRelationship = false;
-					}
-				}
-			}
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
+                    {
+                        responseModel.Items.HasRelationship = true;
+                    }
+                }
 
-			return new JsonNetResult
-			{
-				Data = responseModel,
-				Formatting = Newtonsoft.Json.Formatting.None
-			};
+                if (model.AssetId == null && model.AssetTypeUid != null)
+                {
+                    var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
 
-			void FillResponseModelForResource(Asset asset, GlobalReportingResource resource)
-			{
-				execProcedure = false;
-				responseModel.Object = asset.Object;
-				responseModel.ObjectID = asset.ObjectID;
-				responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
-				responseModel.MainTabTitle = "Profile";
-				responseModel.Items.HasItemOwn = true;
-				responseModel.Items.HasRelationship = true;
-				responseModel.Items.HasGroups = true;
-				responseModel.Items.HasFollowing = true;
-				responseModel.Uid = asset.uid;
-			}
-		}
-	}
+                    if (permissions.Any(x => x.ID == Permission.ReadResponsibilities) || permissions.Count == 0)
+                    {
+                        if (responseModel.ObjectType == SystemObjects.ReferenceItemType.ToString() && !Company.CurrentResourceIsAdmin)
+                        {
+                            responseModel.Items.HasOwnership = false;
+                        }
+                        else
+                        {
+                            responseModel.Items.HasOwnership = true;
+                        }
+                    }
+                    else
+                    {
+                        responseModel.Items.HasOwnership = false;
+                    }
+
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships) || permissions.Count == 0)
+                    {
+                        responseModel.Items.HasRelationship = true;
+                    }
+                    else
+                    {
+                        responseModel.Items.HasRelationship = false;
+                    }
+                }
+            }
+
+            return new JsonNetResult
+            {
+                Data = responseModel,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+
+            void FillResponseModelForResource(Asset asset, GlobalReportingResource resource)
+            {
+                execProcedure = false;
+                responseModel.Object = asset.Object;
+                responseModel.ObjectID = asset.ObjectID;
+                responseModel.DisplayValue = $"{resource.FirstName} {resource.LastName}";
+                responseModel.MainTabTitle = PageNames.ProfilePage;
+                responseModel.Items.HasItemOwn = true;
+                responseModel.Items.HasRelationship = true;
+                responseModel.Items.HasGroups = true;
+                responseModel.Items.HasFollowing = true;
+                responseModel.Uid = asset.uid;
+            }
+        }
+    }
 }

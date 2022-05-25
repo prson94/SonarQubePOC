@@ -84,7 +84,7 @@ export class LinkClickInterceptor {
                 adcEv.objectId = val.TooltipID;
                 adcEv.objectType = val.TooltipType;
 
-                if (adcEv.objectType === "ReferenceItem") {
+                if (adcEv.objectType === "ReferenceItem" || val?.TooltipType === "ReferenceItemType") {
                     adcEv.type = AssetDetailClickType.ReferenceItem;
                 }
 

@@ -6,7 +6,7 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'd3s-admin-allocation',
     providers: [],
     template: `
-                <header>Allocations</header>                
+                <header i18n>Allocations</header>                
                     <p-table #dt [value]="allocations" class="nym-table" selectionMode="single" [metaKeySelection]="true" [dataKey]="'Name'">
                         <ng-template pTemplate="header">
                             <tr>
@@ -50,5 +50,5 @@ export class AdminAllocationComponent extends BaseComponent {
 
     public rows = [0];
 
-    public allocations: any[] = [{ Name: 'Grammatic Type Allocation' }];
+    public allocations: any[] = [{ Name: $localize`Grammatic Type Allocation` }];
 }

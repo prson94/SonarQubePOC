@@ -34,6 +34,7 @@ import { SharedAssetScoreModule } from "../shared/asset-score/shared-asset-score
 import { AdvancedFiltersModule } from "./advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 import { SiteModalModule } from "../shared/modal/gov-modal.module";
+import { PortalsModule } from "../shared/portals/portals.module";
 
 @NgModule({
     imports: [
@@ -70,7 +71,8 @@ import { SiteModalModule } from "../shared/modal/gov-modal.module";
         TilesModule,
         WorkflowModule,
         AdvancedFiltersModule,
-        SearchFieldModule
+        SearchFieldModule,
+        PortalsModule
     ],
     declarations: [
         AssetGridCustomExportComponent,

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
-
+using d360.core.resources;
 using d360.core.types;
 
 using Newtonsoft.Json;
@@ -414,7 +414,7 @@ namespace d360.core.enums
 
                     list.Add(new OperatorInfo
                     {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Name = NameAsDisplayString(enumValue),
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                         ID = enumValue,
                         MinimumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Min,
@@ -458,7 +458,7 @@ namespace d360.core.enums
 
                     list.Add(new OperatorInfo
                     {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Name = NameAsDisplayString(enumValue),
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                         ID = enumValue,
                         MinimumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Min,
@@ -484,6 +484,37 @@ namespace d360.core.enums
             }
 
             return value;
+        }
+
+        private static string NameAsDisplayString(Operator type)
+        {
+            switch (type)
+            {
+                case Operator.After: return Enums.OperatorAfter;
+                case Operator.Before: return Enums.OperatorBefore;
+                case Operator.Between: return Enums.OperatorBetween;
+                case Operator.Contains: return Enums.OperatorContains;
+                case Operator.EndsWith: return Enums.OperatorEndsWith;
+                case Operator.Equals: return Enums.OperatorEquals;
+                case Operator.GreaterThan: return Enums.OperatorGreaterThan;
+                case Operator.GreaterThanOrEquals: return Enums.OperatorGreaterThanOrEquals;
+                case Operator.In: return Enums.OperatorIn;
+                case Operator.IsFalse: return Enums.OperatorIsFalse;
+                case Operator.IsInBand: return Enums.OperatorIsInBand;
+                case Operator.IsTrue: return Enums.OperatorIsTrue;
+                case Operator.LessThan: return Enums.OperatorLessThan;
+                case Operator.LessThanOrEquals: return Enums.OperatorLessThanOrEquals;
+                case Operator.NotContains: return Enums.OperatorNotContains;
+                case Operator.NotEquals: return Enums.OperatorNotEquals;
+                case Operator.NotIn: return Enums.OperatorNotIn;
+                case Operator.NotPopulated: return Enums.OperatorNotPopulated;
+                case Operator.OnOrAfter: return Enums.OperatorOnOrAfter;
+                case Operator.OnOrBefore: return Enums.OperatorOnOrBefore;
+                case Operator.Populated: return Enums.OperatorPopulated;
+                case Operator.StartsWith: return Enums.OperatorStartsWith;
+
+                default: throw new ArgumentOutOfRangeException("Operator");
+            }
         }
 
         /// <summary>

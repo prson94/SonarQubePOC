@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.resources;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
@@ -124,10 +125,12 @@ namespace d360.core
                 {
                     continue;
                 }
+                var enumValue = (DataType)Enum.Parse(typeof(DataType), tm.Name);
+
                 var info = new DataTypeInfo
                 {
                     ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    Description = DescriptionAsDisplayString(enumValue),
                     ID = (DataType)Enum.Parse(typeof(DataType), tm.Name),
                     Name = tm.Name
                 };
@@ -150,11 +153,12 @@ namespace d360.core
                 {
                     continue;
                 }
+                var enumValue = (DataType)Enum.Parse(typeof(DataType), tm.Name);
 
                 var info = new DataTypeInfo
                 {
                     ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                    Description = DescriptionAsDisplayString(enumValue),
                     ID = (DataType)Enum.Parse(typeof(DataType), tm.Name),
                     Name = tm.Name
                 };
@@ -175,6 +179,43 @@ namespace d360.core
                 new AllowedConversionOption { FromType = "Text", ToType = "Html" },
                 new AllowedConversionOption { FromType = "ComplexRelationLookup", ToType = "Relationship" }
             };
+        }
+
+        private static string DescriptionAsDisplayString(DataType type)
+        {
+            switch (type)
+            {
+                case DataType.Boolean: return Enums.FieldType_Boolean;
+                case DataType.Color: return Enums.FieldType_ColorPicker;
+                case DataType.ComplexRelationLookup: return Enums.FieldType_RelationLookup;
+                case DataType.Counter: return Enums.FieldType_Counter;
+                case DataType.DataTableSelect: return Enums.FieldType_DataTableSelect;
+                case DataType.Date: return Enums.FieldType_Date;
+                case DataType.DateTime: return Enums.FieldType_DateTime;
+                case DataType.Decimal: return Enums.FieldType_Decimal;
+                case DataType.FieldFromRelationship: return Enums.FieldType_FieldFromRel;
+                case DataType.File: return Enums.FieldType_File;
+                case DataType.Hidden: return Enums.FieldType_Hidden;
+                case DataType.Html: return Enums.FieldType_Html;
+                case DataType.JSON: return Enums.FieldType_JSON;
+                case DataType.JsonElement: return Enums.FieldType_JSONAttribute;
+                case DataType.Link: return Enums.FieldType_Link;
+                case DataType.Lookup: return Enums.FieldType_List;
+                case DataType.None: return Enums.FieldType_None;
+                case DataType.Number: return Enums.FieldType_Number;
+                case DataType.OwnershipLookup: return Enums.FieldType_OwnershipLookup;
+                case DataType.Password: return Enums.FieldType_Password;
+                case DataType.Path: return Enums.FieldType_AssetPath;
+                case DataType.Percentage: return Enums.FieldType_Percentage;
+                case DataType.RefListRelationship: return Enums.FieldType_ReferenceItemListFromRel;
+                case DataType.Relationship: return Enums.FieldType_Relationship;
+                case DataType.Score: return Enums.FieldType_Score;
+                case DataType.Tag: return Enums.FieldType_Tag;
+                case DataType.Text: return Enums.FieldType_SimpleText;
+                case DataType.UncLink: return Enums.FieldType_UNCLink;
+
+                default: throw new ArgumentOutOfRangeException("DataType");
+            }
         }
     }
 }

@@ -96,7 +96,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         formatted.hasMeasure = x.hasMeasure;
         formatted.hasDisabledMeasure = x.hasDisabledMeasure;
         formatted.hasField = x.hasField;
-        formatted.isExternallyCalculated = x.isExternallyCalculated ? 'External' : 'Internal';
+        formatted.isExternallyCalculated = x.isExternallyCalculated ? $localize`External` : $localize`Internal`;
         formatted.lowerThreshold = x.lowerThreshold;
         formatted.upperThreshold = x.upperThreshold;
         formatted.formattedThreshold = +(x.lowerThreshold + "" + x.upperThreshold);
@@ -122,6 +122,8 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
         switch (sct.toString()) {
             case 'DataQuality':
                 return $localize`Data Quality`;
+            case 'Governance':
+                return $localize`Governance`;
             default:
                 return sct.toString();
         }

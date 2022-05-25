@@ -79,6 +79,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     private previousFilter: string = "";
 
+    resetFilterText = $localize`Reset filter`;
+    removeFilterText = $localize`Remove filter`;
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -319,7 +322,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     getOperators(item: AdvancedFilterFieldCondition) {
         let options: SelectItem[] = [];
-        if (this.condition.field === SystemFields.OwnedByFieldCode) {
+        if (this.condition.field === SystemFields.OwnedByFieldCode
+            || this.condition.field === SystemFields.CreatedByFieldCode
+            || this.condition.field === SystemFields.LastModifiedBy) {
             options.push({ label: $localize`contains`, value: "Equals" });
             options.push({ label: $localize`does not contain`, value: "NotEquals" });
             return options;
@@ -373,8 +378,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         }
 
         if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
-            options[0].label = $localize`contains`;
-            options[1].label = $localize`does not contain`;
+            ft.Operators[0].label = $localize`contains`;
+            ft.Operators[1].label = $localize`does not contain`;
         }
 
 
@@ -560,7 +565,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                if (this.condition.field === "[Level]") {
+                if (this.condition.field === SystemFields.LastModifiedBy && !(this.loadIdentifier === "AdminTags")) {
+                    this.loadLookupValuesForRedactors(params);
+                }
+                else if (this.condition.field === SystemFields.CreatedByFieldCode && !(this.loadIdentifier === "AdminTags")) {
+                    this.loadLookupValuesForCreators(params);
+                }
+                else if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
                 }
                 else if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
@@ -717,6 +728,44 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
 
         }
+    }
+
+    loadLookupValuesForCreators(params: any) {
+        this.isLookupValuesLoading = true;
+
+        this.assetTypeService.GetAssetTypePossibleCreators(this.assetTypeUid).subscribe((res) => {
+            this.currentField.Values = [];
+            res.map((creator) => {
+                if (params.filter) {
+                    if (!creator.Name.toLowerCase().includes(params.filter.toLowerCase())) {
+                        return;
+                    }
+                }
+
+                this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' });
+            });
+        });
+
+        this.isLookupValuesLoading = false;
+    }
+
+    loadLookupValuesForRedactors(params: any) {
+        this.isLookupValuesLoading = true;
+
+        this.assetTypeService.GetAssetTypePossibleRedactors(this.assetTypeUid).subscribe((res) => {
+            this.currentField.Values = [];
+            res.map((redactor) => {
+                if (params.filter) {
+                    if (!redactor.Name.toLowerCase().includes(params.filter.toLowerCase())) {
+                        return;
+                    }
+                }
+
+                this.currentField.Values.push({ title: redactor.Name, value: redactor.Id + '' });
+            });
+        });
+
+        this.isLookupValuesLoading = false;
     }
 
     loadLookupValuesForOwners() {

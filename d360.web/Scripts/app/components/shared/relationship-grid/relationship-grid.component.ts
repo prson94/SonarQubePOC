@@ -107,7 +107,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     filterFieldList: AdvancedFilterFieldType[] = [
         {
             Name: 'relationshiptype',
-            FriendlyName: 'Relationship Type',
+            FriendlyName: $localize`Relationship Type`,
             Type: new FieldType("Lookup"),
             Category: "",
             ValueLoader: this.getRelationshipTypes.bind(this),
@@ -116,7 +116,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         },
         {
             Name: 'assetpath',
-            FriendlyName: 'Asset',
+            FriendlyName: $localize`Asset`,
             Type: new FieldType("Text"),
             Category: ""
         }

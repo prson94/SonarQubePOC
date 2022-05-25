@@ -71,7 +71,6 @@ export class AssetType {
     Class: AssetTypeClass;
     FlowObjectType: FlowObjectType;
     Description: string;
-    AutoDisplayDescription: boolean;
     DisplayFormat: string;
     ParentUid: string;
     Notes: string;
@@ -101,7 +100,6 @@ export class AssetTypeApiModel {
     Path: string;
     Class: AssetTypeClassApiModel;
     Description: string;
-    AutoDisplayDescription: boolean;
     DisplayFormat: string;
     ParentUid: string;
     Notes: string;

@@ -134,7 +134,6 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
 			SwaggerParameter("UseAsTransformation", "Filter results by Use As Transformation setting. This filter is used to show only Business and Technical asset types which have been marked as transformational asset types in their configuration. Transformational assets have special meaning in the asset browser. Please see the Govern user guide for further details about transformational assets.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("Hierarchical", "Filter results by Hierarchical setting. This value is used to show Model and Policy Types.", DataType = "boolean", ParameterType = "query", Required = false),
-			SwaggerParameter("AutoDisplayDescription", "Filter results by Auto Display Description setting. This value is used by the Govern UI to have the Description shown on the asset list page by default or not.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
@@ -1941,6 +1940,94 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
+		[
+			HttpGet,
+			Route("{assetTypeUid:Guid}/possibleCreators"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerConsumes("application/json"), 
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Assets of specified AssetType."),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleCreatorsByAssetTypeUid(Guid assetTypeUid)
+		{
+			var prefix = $"Assets.{nameof(GetPossibleCreatorsByAssetTypeUid)} => ";
+			string errorMessage;
+
+			try
+			{
+				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidAssetTypeUid));
+				}
+
+				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+				if (assetType == null)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString())));
+				}
+
+				IEnumerable<dynamic> results = AssetRepository.GetPossibleCreatorsForAssetType(assetType);
+
+				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string>() {
+					{ ApiMessages.EndpointMethod, prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
+			}
+		}
+
+		[
+			HttpGet,
+			Route("{assetTypeUid:Guid}/possibleRedactors"),
+			ApiExplorerSettings(IgnoreApi = true),
+			SwaggerConsumes("application/json"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were modifying Assets of specified AssetType."),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleRedactorsByAssetTypeUid(Guid assetTypeUid)
+		{
+			var prefix = $"Assets.{nameof(GetPossibleCreatorsByAssetTypeUid)} => ";
+			string errorMessage;
+
+			try
+			{
+				if (assetTypeUid == null || assetTypeUid == Guid.Empty)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ActionApiMessages.InvalidAssetTypeUid));
+				}
+
+				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+				if (assetType == null)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetTypeNotFound, assetTypeUid.ToString())));
+				}
+
+				IEnumerable<dynamic> results = AssetRepository.GetPossibleRedactorsForAssetType(assetType);
+
+				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string>() {
+					{ ApiMessages.EndpointMethod, prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
+			}
+		}
+
 		#region Batch
 
 		/// <summary>
@@ -3520,12 +3607,12 @@ namespace d360.web.Controllers.V2
 			return new WorkHttpStatus(HttpStatusCode.OK, "", "");
 		}
 
-        /// <summary>
-        /// Gets ancestry list of asset types for a given asset type. 
-        /// </summary>
-        /// <param name="assetTypeUid">Asset Type UID</param>
-        /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns></returns>
+		/// <summary>
+		/// Gets ancestry list of asset types for a given asset type. 
+		/// </summary>
+		/// <param name="assetTypeUid">Asset Type UID</param>
+		/// <param name="cancellationToken">Cancellation token</param>
+		/// <returns></returns>
 		[SwaggerProduces("application/json")]
 		[SwaggerResponse(HttpStatusCode.OK, "Ancestry for a given asset type.", typeof(ICollection<AssetTypeAncestryModel>))]
 		[SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse))]

@@ -22,7 +22,7 @@ export class AdminRelationshipsEditor {
     @Input() relationshipType: RelationshipType;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
-    action: string = "Edit";
+    action: string = $localize`Edit`;
     error: any;
     cardinalityOptions: SelectItem[] = [];
     subjectCardinalityOptions: SelectItem[] = [];
@@ -56,7 +56,7 @@ export class AdminRelationshipsEditor {
             this.relationshipType.Subject = new RelationshipTypeEdge();
             this.relationshipType.Object = new RelationshipTypeEdge();
             this.relationshipType.Predicate = new Predicate();
-            this.action = 'New';
+            this.action = $localize`New`;
         }
     }
 

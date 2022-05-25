@@ -171,7 +171,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
     }
 
     buildBreadcrumb() {
-        this.secondaryNavService.setCurrentArea(this.label.Value, 'fa-tag', 'Where Used');
+        this.secondaryNavService.setCurrentArea(this.label.Value, 'fa-tag', $localize`Where Used`);
     }
 
     formatValue(item: ConnectorLabelUsage) {

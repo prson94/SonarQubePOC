@@ -32,31 +32,31 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'WorkflowName'">
-                        Workflow Name
+                        <ng-container i18n>Workflow Name</ng-container> 
                         <d3s-sortIcon [field]="'WorkflowName'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Type'">
-                        Type
+                        <ng-container i18n>Type</ng-container> 
                         <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'TypeName'">
-                        Type Name
+                        <ng-container i18n>Type Name</ng-container> 
                         <d3s-sortIcon [field]="'TypeName'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Asset'">
-                        Asset
+                        <ng-container i18n>Asset</ng-container> 
                         <d3s-sortIcon [field]="'Asset'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Initiator'">
-                        Initiator
+                        <ng-container i18n>Initiator</ng-container> 
                         <d3s-sortIcon [field]="'Initiator'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'StartedOn'">
-                        Started
+                        <ng-container i18n>Started</ng-container> 
                         <d3s-sortIcon [field]="'StartedOn'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'CompletedOn'">
-                        Completed
+                        <ng-container i18n>Completed</ng-container> 
                         <d3s-sortIcon [field]="'CompletedOn'"></d3s-sortIcon>
                     </th>
                 </tr>
@@ -91,10 +91,10 @@
         </p-table>
         <div [hidden]="!isAdmin">
             <div>
-                <button pButton type="button" (click)="selectAll()" label="Select All" [disabled]="items.length < 1"></button>
-                <button pButton type="button" (click)="confirmDelete(true)" label="Delete {{selectedCount}} workflow items" [disabled]="selectedCount < 1"></button>
+                <button pButton type="button" (click)="selectAll()" i18n-label label="Select All" [disabled]="items.length < 1"></button>
+                <button pButton type="button" (click)="confirmDelete(true)" [label]="deleteLabel" [disabled]="selectedCount < 1"></button>
             </div>
-            <p>Use the {{getMetaKey()}} key to select multiple items.</p>
+            <p i18n>Use the {{getMetaKey()}} key to select multiple items.</p>
         </div>
     </div>
 </div>

@@ -23,7 +23,7 @@
                                 </ng-container>
                             </ng-container>
                             <ng-container *ngIf="canEditProcessDiagram()">
-                                <button i18n-pTooltip pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" label="Edit" (click)="editProcess()"></button>
+                                <button i18n-pTooltip pTooltip="Edit Process Diagram" tooltipPosition="top" tooltipStyleClass="ig-tooltip" *ngIf="canEditProcessDiagram()" igButton [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded" class="ig-button-primary" icon="fa-pencil" i18n-label label="Edit" (click)="editProcess()"></button>
                                 <ng-container *ngIf="!isProcessDiagramEmpty()">
                                     <div class="button-spacer"></div>
                                     <button i18n-pTooltip pTooltip="View and edit relationships for the selected item" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton label="Item Relationships" id="igx-relationship-items" class="ig-button-pad-right" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
@@ -33,7 +33,7 @@
                                     </div>
                                 </ng-container>
                                 <ng-container *ngIf="isProcessDiagramEmpty()">
-                                    <button [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded || processDiagramRef.hasNoImportAssets" pTooltip="Import diagram from another asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-upload" label="Import Diagram" (click)="processDiagramRef.doControlledAction('open-diagram-import')"></button>
+                                    <button [disabled]="!processDiagramRef || !processDiagramRef.isDiagramLoaded || processDiagramRef.hasNoImportAssets" pTooltip="Import diagram from another asset" tooltipPosition="top" tooltipStyleClass="ig-tooltip" igButton icon="fa-upload" i18n-label label="Import Diagram" (click)="processDiagramRef.doControlledAction('open-diagram-import')"></button>
                                 </ng-container>
                             </ng-container>
                         </ng-container>
@@ -49,6 +49,8 @@
                     </ng-container>
                     <div class="asset-browser-button-group">
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"
+                                                 [assetPermissions]="assetPermissions"
+                                                 [selectedDiagramAsset]="selectedDiagramAsset"
                                                  [diagramType]="displayConfiguration.DiagramType"
                                                  [enableAdd]="helper_LineageDiagramApplies() && panel_InformationHasReadAccess"
                                                  [enableDownload]="!isError"
@@ -270,3 +272,10 @@
         </div>
     </div>
 </div>
+
+<add-relationship-editor [assetUid]="selectedDiagramAsset?.Uid"
+                         [assetTypeUid]="selectedDiagramAsset?.AssetTypeUid"
+                         [isVisible]="isAddRelationshipModalVisible"
+                         (onClose)="isAddRelationshipModalVisible = false"
+                         (onAddComplete)="onAddRelationshipComplete()">
+</add-relationship-editor>

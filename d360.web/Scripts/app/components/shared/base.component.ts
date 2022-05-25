@@ -548,7 +548,7 @@ export class BaseComponent {
             }
         }
 
-        if (uid && uid != blankUid) {
+        if (uid) {
             return `/${uid}`;
         }
         return '';
@@ -1044,7 +1044,7 @@ export class BaseComponent {
 
                     this.breadcrumbsService.clearBreadcrumbs();
                     this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe((res) => {
-                        this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
+                        this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, $localize`Definition`);
                         let areaName: string = currentAreaName ? currentAreaName : folderTitle;
                         let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
                         if (area == "Technical Assets") {
@@ -1194,7 +1194,12 @@ export class BaseComponent {
                 var currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
                     this.breadcrumbsService.clearBreadcrumbs();
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res, undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+                    this.breadcrumbsService.showBreadcrumb(
+                        new Breadcrumb(
+                            currentAreaName ? currentAreaName : res,
+                            `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_RULE}`
+                        )
+                    );
                     this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${data.ObjectTypeId}`,
                         undefined,
                         'RuleType',
@@ -1204,7 +1209,7 @@ export class BaseComponent {
                         true));
 
                     this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe((icon) => {
-                        this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, $localize`Definition`);
 
                     });
 

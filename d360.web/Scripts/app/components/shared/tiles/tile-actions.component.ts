@@ -39,7 +39,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     @Input() dataCyPrefix: string = '';
     @Input() hasAdd: boolean = false;
-    @Input() addTooltip: string = "Add";
+    @Input() addTooltip: string = $localize`Add`;
     @Input() hasExport: boolean = false;
     @Input() hasCustomExport: boolean = false;
     @Input() hasExportErrors: boolean = false;
@@ -70,6 +70,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     @Output() fullScreenClick = new EventEmitter();
 
+    exportLabel: string = $localize`Export to Excel`;
     private dateMenuItems: MenuItem[] = [];
 
     constructor(private reuseInterceptor: ReuseInterceptor) {

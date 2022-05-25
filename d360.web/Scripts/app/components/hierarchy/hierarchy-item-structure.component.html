@@ -5,41 +5,45 @@
                  [innerHtml]="assetType.Description"
                  class="item-description"></div>
 
-            <div class="grid-actions-header" *ngIf="!showDelete">
-                <div class="simple-search">
-                    <ig-search-field mode="Keypress"
-                                     [debounce]="600"
-                                     (onSearch)="loadNodes()"
-                                     [(ngModel)]="simpleFilterValue"
-                                     [infoTooltip]="simpleSearchTooltipHTML">
-                    </ig-search-field>
-                </div>
-                <advanced-filtering [loadIdentifier]="assetTypeUid" [gridType]="'Tree'" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-                <div class="grid-action-buttons">
-                    <button *ngIf="hasAddAssetPermissions()"
-                            igButton
-                            pTooltip="Add new asset"
-                            i18n-pTooltip
-                            tooltipPosition="top"
-                            tooltipStyleClass="ig-tooltip"
-                            class="ig-button-primary"
-                            icon="fa-plus"
-                            [disabled]="isLoading"
-                            [igDataCy]="'Assets_Add'"
-                            (click)="showAdd(0)">
-                    </button>
-
-                    <div pTooltip="exportTooltip"
-                         tooltipPosition="left"
-                         tooltipStyleClass="ig-tooltip">
-                        <button igButton
-                                [disabled]="!canExportRecords() || isExportInProgress"
-                                icon="fa-download"
-                                [loading]="isExportInProgress"
-                                [igDataCy]="'Assets_Export'"
-                                (click)="exportExcel(0)">
-                        </button>
+            <div class="grid-actions-header column-layout" *ngIf="!showDelete">
+                <div class="grid-actions-header-row">
+                    <div class="simple-search">
+                        <ig-search-field mode="Keypress"
+                                         [debounce]="600"
+                                         (onSearch)="loadNodes()"
+                                         [(ngModel)]="simpleFilterValue"
+                                         [infoTooltip]="simpleSearchTooltipHTML">
+                        </ig-search-field>
                     </div>
+                    <div class="grid-action-buttons">
+                        <button *ngIf="hasAddAssetPermissions()"
+                                igButton
+                                pTooltip="Add new asset"
+                                i18n-pTooltip
+                                tooltipPosition="top"
+                                tooltipStyleClass="ig-tooltip"
+                                class="ig-button-primary"
+                                icon="fa-plus"
+                                [disabled]="isLoading"
+                                [igDataCy]="'Assets_Add'"
+                                (click)="showAdd(0)">
+                        </button>
+    
+                        <div pTooltip="exportTooltip"
+                             tooltipPosition="left"
+                             tooltipStyleClass="ig-tooltip">
+                            <button igButton
+                                    [disabled]="!canExportRecords() || isExportInProgress"
+                                    icon="fa-download"
+                                    [loading]="isExportInProgress"
+                                    [igDataCy]="'Assets_Export'"
+                                    (click)="exportExcel(0)">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-actions-header-row">
+                    <advanced-filtering [loadIdentifier]="assetTypeUid" [gridType]="'Tree'" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
                 </div>
             </div>
 

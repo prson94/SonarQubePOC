@@ -3757,7 +3757,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
                                 {
                                     CompanyID = CurrentCompanyID,
-                                    AssetTypeUid = r.uid
+                                    AssetTypeUid = r.uid,
+                                    Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
                                 });
                             });
                     }

@@ -20,6 +20,7 @@ using d360.core.enums.Workflow;
 using d360.core.helpers;
 using d360.core.Models;
 using d360.core.queue;
+using d360.core.resources;
 using d360.model;
 using d360.model.workflow;
 using d360.web.Models;
@@ -200,7 +201,7 @@ namespace d360.web.Controllers.Services
 		[Route("issue/type/{objectid:int}/{objecttype}"), HttpGet]
 		public HttpResponseMessage GetTaskByIDForObjectAndType(int objectid, string objecttype)
 		{
-			var sql = @"
+			var sql = $@"
 						select		distinct 
 									null as WorkflowID
 									,wi.ID as WorkflowItemID
@@ -222,12 +223,12 @@ namespace d360.web.Controllers.Services
 									,I.ID as IssueID
 									,case when wi.CompletedOn is null then datediff(day,wi.StartedOn,GetUtcDate()) else datediff(day, wi.StartedOn, wi.CompletedOn) end as EllapsedDays
 									,case 
-										when wi.CompletedOn is not null then 'Closed'
+										when wi.CompletedOn is not null then '{Workflows.State_Closed.CleanForSql()}'
 										else
 											case cast(coalesce(IA.ResourceObjectID, 0) as bit)
 
-												when 1 then 'Pending'
-												else 'Waiting on user(s)'
+												when 1 then '{Workflows.State_Pending.CleanForSql()}'
+												else '{Workflows.State_Waiting.CleanForSql()}'
 
 											end
 
@@ -2739,35 +2740,30 @@ namespace d360.web.Controllers.Services
 			if (form != null && form.field != null)
 			{
 				JArray sfields = new JArray(form.field);
-				JObject jo = sfields.Children<JObject>()
-						.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
 
-				string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
-
-				if (changedTypes != null)
+				foreach(var sfield in sfields.Children<JObject>())
 				{
-
-					foreach (var changedType in changedTypes.Split(','))
+					if (sfield["@fieldtype"] != null && sfield["@fieldtype"].ToString() == "relationshiptype")
 					{
-						var types = changedType.Split('|');
-
-						if (types.Length == 2)
+						string changedType = sfield["@value"] != null ? sfield["@value"].ToString() : null;
+						if (!string.IsNullOrEmpty(changedType))
 						{
-							var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
-							string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
-							displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
-							assets += $"/ {displayValue} ";
+							var types = changedType.Split('|');
+
+							if (types.Length == 2)
+							{
+								var typeSql = @"Select DisplayValue from assetdetail where object =@obj and objectId=@objId";
+								string displayValue = Company.Query<string>(typeSql, new { obj = types[0].Replace("Type", ""), objId = types[1] }).FirstOrDefault();
+								displayValue = string.IsNullOrEmpty(displayValue) ? "Not Found" : displayValue;
+
+								sfield["@displayvalue"] = displayValue;
+
+							}
 						}
 					}
-
-					if (assets.StartsWith("/"))
-					{
-						assets = assets.Substring(1, assets.Length - 1);
-					}
-
-					jo["@displayvalue"] = assets;
-					form.field = sfields;
 				}
+
+				form.field = sfields;
 			}
 		}
 
@@ -2818,7 +2814,7 @@ namespace d360.web.Controllers.Services
 						{
 							JArray sfields = new JArray(itemStepFields.fields.form.field);
 							JObject jo = sfields.Children<JObject>()
-									.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype");
+									.FirstOrDefault(o => o["@fieldtype"] != null && o["@fieldtype"].ToString() == "relationshiptype" && o["@id"] == relation["@FormFieldId"]);
 
 							string changedTypes = jo != null && jo["@value"] != null ? jo["@value"].ToString() : null;
 

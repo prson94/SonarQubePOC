@@ -228,9 +228,6 @@
   <data name="InvalidOwnerUid" xml:space="preserve">
     <value>Invalid Owner Uid in parameters!</value>
   </data>
-  <data name="InvalidValueautoDisplayDescription" xml:space="preserve">
-    <value>Invalid value for parameter [autoDisplayDescription]</value>
-  </data>
   <data name="InvalidValueAutoDisplayParent" xml:space="preserve">
     <value>Invalid value for parameter [autoDisplayParent]</value>
   </data>

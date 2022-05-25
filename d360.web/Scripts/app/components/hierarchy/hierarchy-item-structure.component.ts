@@ -68,10 +68,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     rowID: string = 'AssetUid';
     routeSub: any;
-    currentAreaNameSub: any;
     filterTimer: any;
 
-    currentAreaName: string;
     selectedParentId: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
@@ -164,20 +162,19 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     ngOnInit() {
         this.type = this.route.parent.snapshot.data.type;
-
         switch (this.type) {
             case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
                 this.assetTypeClass = AssetTypeClass.Model;
                 this.objectType = StringConstants.ObjectTaxonomyType;
                 this.object = StringConstants.ObjectTaxonomy;
-                this.objectName = 'Model';
+                this.objectName = $localize`Model`;
                 this.navFolderName = '#Models';
                 this.showDiagram = true;
                 break;
             case SiteUrlHelpers.SITE_URL_POLICY_ROOT:
                 this.assetTypeClass = AssetTypeClass.Policy;
                 this.objectType = StringConstants.ObjectPolicyType;
-                this.objectName = 'Policy';
+                this.objectName = $localize`Policy`;
                 this.object = StringConstants.ObjectPolicy;
                 this.navFolderName = '#Policy';
                 this.showDiagram = false;
@@ -231,7 +228,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.numberOfRowsByCategoryService.rowsPerPage.pipe(
             takeUntil(this.destroy)
         ).subscribe((rowsPerPage) => {
-            this.rowsPerPage = rowsPerPage as number;
+            this.rowsPerPage = rowsPerPage['Main'];
         });
     }
 
@@ -306,9 +303,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     load() {
         this.setObjectInfo(this.objectType, this.objectTypeId);
         this.setCommonSecondaryNavTabs({ hasAudit: true });
-        this.currentAreaNameSub = this.headerBreadcrumbService
-            .getAreaName(this.objectType, this.objectTypeId)
-            .subscribe((result) => { this.currentAreaName = result });
 
         this.getFieldsDefinition();
         this.PermissionInterval = 500;
@@ -322,20 +316,29 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.buildNav();
     }
 
-    buildNav() {
+    async buildNav() {
+        const currentAreaName = await this.headerBreadcrumbService
+            .getAreaName(this.objectType, this.objectTypeId)
+            .toPromise();
+
         this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then((res) => {
             this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${this.type} /${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
+            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(currentAreaName
+                 ? currentAreaName 
+                 : res, 
+                 `${this.type} /${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
+                 ));
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.assetType.Name, SiteUrlHelpers.getAssetTypeUrl(this.objectType, this.assetTypeUid), undefined, this.objectType, this.assetType.ID, undefined, undefined, true));
 
-            this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, this.currentAreaName ? this.currentAreaName : res)
+            this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, currentAreaName ? currentAreaName : res)
                 .subscribe((icon) => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
+
                     this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                     this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
                     if (this.showDiagram) {
-                        this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
+                        this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
                     }
 
                     if (this.auditSidebar) {

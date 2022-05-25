@@ -25,7 +25,7 @@ import { takeUntil } from "rxjs/operators";
 export class WorkflowMonitorListComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() predefinedFilters: GridFilterExpression[] = [];
     @Input() showHeader: boolean = true;
-    title: string = 'WorkFlow Items';
+    title: string = $localize`WorkFlow Items`;
     items: WorkflowMonitorItem[] = [];;
     subItems: Subscription
     totalRecords: number;
@@ -221,6 +221,10 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
 
     canExportRecords() {
         return this.totalRecords <= this.maxExportRows;
+    }
+
+    get deleteLabel(): string {
+        return $localize`Delete ${this.selectedCount} workflow items`;
     }
 }
 

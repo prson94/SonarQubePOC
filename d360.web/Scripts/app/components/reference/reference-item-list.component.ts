@@ -7,7 +7,7 @@ import { Subject, Subscription } from 'rxjs';
 import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 import { CompanySettingsService } from '../../services/settings.service';
 import { Table } from 'primeng/table';
-import { NumberOfRowsByCategories, NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
+import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
@@ -35,7 +35,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     @Input() isForAssetDetailPage: boolean = false;
     @Input() highlightUid: string = '';
 
-    public rowsPerPage: NumberOfRowsByCategories;
+    public rowsPerPage: number;
     private sortField: string = 'Code';
     private items: any[] = [];
     private totalRecords: number = 10000;
@@ -64,7 +64,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     ngOnInit() {
         this.exportMessage = $localize`Export not available for over ${this.maxExportRows} rows`;
         this.setRowsPerPage();
-        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
+        this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage, this.title);
     }
 
     setRowsPerPage(): void {

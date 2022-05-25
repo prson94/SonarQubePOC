@@ -1,55 +1,54 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
-<div *ngIf="!showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
-    <div class="header-description">
-        <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
-             [innerHtml]="gridObject.Description | safeHtml"
-             class="tile-description ql-editor no-padding"></div>
-        <span *ngIf="gridObject && gridObject.Description"
-              aria-hidden="true"
-              title="Details"
-              i18n-title
-              class="action-tile-span"
-              (click)="toggleArtifactDetail()">
-            {{showArtifactDetails ? 'Hide Description':'Show Description'}}
-        </span>
-    </div>
-</div>
+<ig-portal-content-provider name="asset-description" [template]="description">
+    <ng-template #description>
+        <i *ngIf="isDefinitionLoaded && gridObject && gridObject.Description"
+            class="header-description fa fa-info-circle help-icon"
+            [escape]="false"
+            [pTooltip]="gridObject.Description | sanitize"
+            tooltipPosition="top"
+            tooltipStyleClass="ig-tooltip"></i>
+    </ng-template>
+</ig-portal-content-provider>
 
-<div class="grid-actions-header {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
-    <div class="simple-search">
-        <ig-search-field mode="Keypress"
-                         [debounce]="600"
-                         (onSearch)="onSimpleSearch($event)"
-                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
-                         [infoTooltip]="simpleSearchTooltipHTML">
-        </ig-search-field>
-    </div>
-    <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-    <div class="grid-action-buttons">
-        <button *ngIf="showAddButton && hasAddAssetPermissions()"
-                igButton
-                [attr.data-cy]="'Assets_Add'"
-                pTooltip="Create new asset"
-                i18n-pTooltip
-                tooltipPosition="top"
-                tooltipStyleClass="ig-tooltip"
-                class="ig-button-primary"
-                icon="fa-plus"
-                [igDataCy]="'Assets_Add'"
-                (click)="add()">
-        </button>
-
-        <div pTooltip="{{exportTooltip}}"
-             tooltipPosition="left"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    [disabled]="!canExportRecords() || isExportInProgress"
-                    [igDataCy]="'Assets_Export'"
-                    icon="fa-download"
-                    [loading]="isExportInProgress"
-                    (click)="export(false)">
-            </button>
+<div class="grid-actions-header column-layout {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
+    <div class="grid-actions-header-row">
+        <div class="simple-search">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="onSimpleSearch($event)"
+                             [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
         </div>
+        <div class="grid-action-buttons">
+            <button *ngIf="showAddButton && hasAddAssetPermissions()"
+                    igButton
+                    [attr.data-cy]="'Assets_Add'"
+                    pTooltip="Create new asset"
+                    i18n-pTooltip
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    [igDataCy]="'Assets_Add'"
+                    (click)="add()">
+            </button>
+    
+            <div pTooltip="{{exportTooltip}}"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        [disabled]="!canExportRecords() || isExportInProgress"
+                        [igDataCy]="'Assets_Export'"
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export(false)">
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="grid-actions-header-row">
+        <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     </div>
 </div>
 

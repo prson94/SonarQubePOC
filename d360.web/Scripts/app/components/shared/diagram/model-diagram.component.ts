@@ -245,7 +245,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
                     this.breadcrumbsService.getAssetFolderIcon(this.objectType, this.id, this.currentAreaName ? this.currentAreaName : res)
                         .subscribe(icon => {
-                            this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, "Model");
+                            this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, $localize`Model`);
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                             this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
                             let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7)
