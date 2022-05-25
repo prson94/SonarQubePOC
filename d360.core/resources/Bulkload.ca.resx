@@ -117,79 +117,43 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AssetTypeClass_ActionType" xml:space="preserve">
-    <value>Âçƭïôñ T¥ƥè£ôř</value>
+  <data name="Lineage" xml:space="preserve">
+    <value>£ïñèáϱè£ô</value>
   </data>
-  <data name="AssetTypeClass_Business" xml:space="preserve">
-    <value>ßúƨïñèƨƨ Âƨƨèƭ£ôřè</value>
+  <data name="LineageTechnical" xml:space="preserve">
+    <value>£ïñèáϱè : Tèçλñïçáℓ£ôřè₥</value>
   </data>
-  <data name="AssetTypeClass_DiagramAsset" xml:space="preserve">
-    <value>Ðïáϱřá₥ Âƨƨèƭ£ôř</value>
+  <data name="Object_Default" xml:space="preserve">
+    <value>Ðèƒáúℓƭ£ô</value>
   </data>
-  <data name="AssetTypeClass_GenericType" xml:space="preserve">
-    <value>Gèñèřïç T¥ƥè£ôř</value>
+  <data name="Object_Deleted" xml:space="preserve">
+    <value>Ðèℓèƭèδ£ô</value>
   </data>
-  <data name="AssetTypeClass_GramaticType" xml:space="preserve">
-    <value>Gřá₥₥áƭïç T¥ƥè£ôřè</value>
-  </data>
-  <data name="AssetTypeClass_Group" xml:space="preserve">
-    <value>Gřôúƥ£</value>
-  </data>
-  <data name="AssetTypeClass_Model" xml:space="preserve">
-    <value>Môδèℓ£</value>
-  </data>
-  <data name="AssetTypeClass_ModelType" xml:space="preserve">
-    <value>Môδèℓ T¥ƥè£ôř</value>
-  </data>
-  <data name="AssetTypeClass_Organization" xml:space="preserve">
-    <value>Óřϱáñïƺáƭïôñ£ôř</value>
-  </data>
-  <data name="AssetTypeClass_Policy" xml:space="preserve">
-    <value>Þôℓïç¥£</value>
-  </data>
-  <data name="AssetTypeClass_PolicyType" xml:space="preserve">
-    <value>Þôℓïç¥ T¥ƥè£ôř</value>
-  </data>
-  <data name="AssetTypeClass_Reference" xml:space="preserve">
-    <value>Rèƒèřèñçè£ô</value>
-  </data>
-  <data name="AssetTypeClass_ReferenceList" xml:space="preserve">
-    <value>Rèƒèřèñçè £ïƨƭ£ôřè</value>
-  </data>
-  <data name="AssetTypeClass_Relationship" xml:space="preserve">
-    <value>Rèℓáƭïôñƨλïƥ£ôř</value>
-  </data>
-  <data name="AssetTypeClass_Resource" xml:space="preserve">
-    <value>Rèƨôúřçè£ô</value>
-  </data>
-  <data name="AssetTypeClass_Rule" xml:space="preserve">
-    <value>Rúℓè£</value>
-  </data>
-  <data name="AssetTypeClass_RuleType" xml:space="preserve">
-    <value>Rúℓè T¥ƥè£ô</value>
-  </data>
-  <data name="AssetTypeClass_SemanticType" xml:space="preserve">
-    <value>§è₥áñƭïç T¥ƥè£ôř</value>
-  </data>
-  <data name="AssetTypeClass_Task" xml:space="preserve">
-    <value>Ðïáϱřá₥£ô</value>
-  </data>
-  <data name="AssetTypeClass_Technical" xml:space="preserve">
-    <value>Tèçλñïçáℓ Âƨƨèƭ£ôřè</value>
-  </data>
-  <data name="AssetTypeClass_User" xml:space="preserve">
-    <value>Ûƨèř£</value>
-  </data>
-  <data name="CommonName_AssetType" xml:space="preserve">
-    <value>Âƨƨèƭ T¥ƥè£ôř</value>
-  </data>
-  <data name="ReferenceItem" xml:space="preserve">
-    <value>Rèƒèřèñçè Ìƭè₥£ôřè</value>
-  </data>
-  <data name="Text_GroupMembership" xml:space="preserve">
+  <data name="Object_GroupMembership" xml:space="preserve">
     <value>Gřôúƥ Mè₥βèřƨλïƥ£ôřè</value>
   </data>
-  <data name="Text_Users" xml:space="preserve">
+  <data name="Object_Users" xml:space="preserve">
     <value>Ûƨèřƨ£</value>
+  </data>
+  <data name="Promotion" xml:space="preserve">
+    <value>Þřô₥ôƭïôñ£ô</value>
+  </data>
+  <data name="Promotion_ViaWorkflow" xml:space="preserve">
+    <value>Þřô₥ôƭïôñ (Ʋïá Þřôƥôƨè Wôřƙƒℓôω)£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="Relation" xml:space="preserve">
+    <value>Rèℓáƭïôñ£ô</value>
+  </data>
+  <data name="Responsibilities" xml:space="preserve">
+    <value>Rèƨƥôñƨïβïℓïƭïèƨ£ôřè</value>
+  </data>
+  <data name="Synonyms" xml:space="preserve">
+    <value>§¥ñôñ¥₥ƨ£ô</value>
+  </data>
+  <data name="Unrelation" xml:space="preserve">
+    <value>Ûñřèℓáƭïôñ£ôř</value>
+  </data>
+  <data name="UsersGroups" xml:space="preserve">
+    <value>Ûƨèřƨ/Gřôúƥƨ£ôř</value>
   </data>
 </root>
