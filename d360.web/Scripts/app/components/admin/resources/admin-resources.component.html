@@ -20,20 +20,14 @@
                             <div class="icon-holder">
                                 <i class="fa fa-info-circle"></i>
                             </div>
-                            <span>Select a user from the list to display their properties</span>
+                            <span i18n>Select a user from the list to display their properties</span>
                         </div>
                     </div>
                     <ng-container *ngIf="selectedResource && sidePanelTab === 'detail'">
-                        <ig-asset-detail [objectUID]="selectedResource.uid"
-                                         [objectType]="'Resource'"
-                                         [useAccordion]="true"
-                                         [shouldBePadded]="true"
-                                         [showHeader]="true"
-                                         [showHeaderLine]="false"
-                                         [spacerHeight]="'16px'"
-                                         [tooltipAlign]="'left'"
-                                         [isSidePanel]="true"
-                                         [interceptLinkClick]="true"></ig-asset-detail>
+                        <asset-preview [assetUid]="selectedResource.uid"
+                                       [assetType]="'Resource'"                                       
+                                       [hasEditLink]="false"
+                                       [hasOpenLink]="true"></asset-preview>
                     </ng-container>                    
                 </ng-container>
             </side-panel>

@@ -13,7 +13,7 @@ import { AdminResourcesComponent } from './admin-resources.component';
 import { AdminResourcesRoutingModule } from './admin-resources.routes';
 import { SharedModule } from 'primeng/api';
 import { SidePanelModule } from '../../shared/sidepanel/side-panel.module';
-import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 
 @NgModule({
@@ -33,7 +33,7 @@ import { AssetDetailModule } from '../../shared/asset-detail/asset-detail.module
         SharedFieldDefinitionModule,        
         TilesModule,
         SidePanelModule,
-        AssetDetailModule,
+        AssetPreviewModule
     ],
     declarations: [
         AdminResourcesComponent,
