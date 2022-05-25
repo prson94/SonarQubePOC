@@ -1308,6 +1308,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of a semantic type. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("asOfEffectiveDate", "Assumed to be current UTC date if left empty, otherwise, gets semantic types as of the specified effective date, and nothing later. This is the parameter used to get prior versions.", DataType = "datetime", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeDisabled", " If true returns both enabled and disabled semantic types. Default value is true.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(GetSemantics)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
@@ -1335,7 +1336,19 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels);
+                    bool includeDisabled=false;
+
+                    if (queryParams.Any(q => q.Key == "_includeDisabled"))
+                    {
+                        var _includeDisabled = queryParams.ToList().FirstOrDefault(q => q.Key == "_includeDisabled").Value;                       
+
+                        if (!bool.TryParse(_includeDisabled, out includeDisabled))
+                        {
+                            includeDisabled = false;
+                        }
+                    }
+
+                    SLDocument document = CreateResponseDocumentForSemanticTypesExport(apiModels, includeDisabled);
                     document.SelectWorksheet(ExcelExports.Common_ItemsSheetName);
                     var stream = new MemoryStream();
                     document.SaveAs(stream);
@@ -1375,7 +1388,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("semantictypes/{qualifier}/versions"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Qualifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the semantic types are ordered by Effective Date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered descending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of semantic types.", typeof(List<GetSemantic>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
@@ -1566,9 +1579,9 @@ namespace d360.web.Controllers.V2
             {
                 throw;
             }
-            catch
+            catch (Exception ex)
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error updating semantic types", ApiMessages.UnknownErrorInvestigatingMessage);
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error updating semantic types", ex.Message);
             }
         }
 
@@ -1732,14 +1745,9 @@ namespace d360.web.Controllers.V2
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics)
+        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
         {
-            var document = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")))
-            {
-                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
-                {
-                    HeaderRows = {
-                        new ExcelRow
+            ExcelRow HeaderRow = new ExcelRow
                         {
                             DataProfileAPIMessages.NameColumn,
                             DataProfileAPIMessages.QualifierColumn,
@@ -1761,9 +1769,28 @@ namespace d360.web.Controllers.V2
                             DataProfileAPIMessages.MinimumColumn,
                             DataProfileAPIMessages.MaximumColumn,
                             DataProfileAPIMessages.MinimumMaximumPresentColumn,
-                            DataProfileAPIMessages.SemanticTypeUidColumn,
-                            DataProfileAPIMessages.SemanticTypeURLColumn
-                        }
+
+                        };
+            if (includeDisabled)
+            {
+                HeaderRow.Add(DataProfileAPIMessages.SemanticTypeDisabledColumn);
+                HeaderRow.Add(DataProfileAPIMessages.SemanticTypeEffectiveRangeColumn);
+                HeaderRow.Add(DataProfileAPIMessages.SemanticTypeUidColumn);
+                HeaderRow.Add(DataProfileAPIMessages.SemanticTypeURLColumn);
+            }
+            else
+            {
+                HeaderRow.Add(DataProfileAPIMessages.SemanticTypeUidColumn);
+                HeaderRow.Add(DataProfileAPIMessages.SemanticTypeURLColumn);
+            }
+            var document = new ExcelDocument(string.Format(DataProfileAPIMessages.SemanticTypeExportFilename, DateTime.Now.ToString("ddd MMM dd yyyy")))
+            {
+
+
+                new ExcelSheet(ExcelExports.Common_ItemsSheetName)
+                {
+                    HeaderRows = {
+                        HeaderRow
                     },
 
                     ValueRows = semantics.items.Select(row => new ExcelRow
@@ -1788,8 +1815,10 @@ namespace d360.web.Controllers.V2
                         row.Minimum.ToString(),
                         row.Maximum.ToString(),
                         row.MinMaxPresent.ToString(),
-                        row.Uid.ToString(),
-                        $"semantics/{row.Uid}"
+                        includeDisabled ? row.IsDisabled.ToString() : row.Uid.ToString(),
+                        includeDisabled ? string.Join("|", row.EffectiveDates) : $"semantics/{row.Uid}",
+                        includeDisabled ? row.Uid.ToString() : "",
+                        includeDisabled ? $"semantics/{row.Uid}" : ""
                     }).ToList(),
                 },
 
@@ -1884,7 +1913,6 @@ namespace d360.web.Controllers.V2
 
             return document.ToSLDocument();
         }
-
         #endregion
     }
 }

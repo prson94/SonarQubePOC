@@ -86,11 +86,11 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
     getData() {
         this.isLoading = true;
         if (this.semanticType) {
-            this.setSemanticDetails(this.semanticType);
+            this.setSemanticDetails(this.semanticType);             
         } else {
             this.dataProfileService.getSemanticTypes(1, 1, "", `qualifier eq '${this.qualifier}'`).subscribe((s) => {
                 this.setSemanticDetails(s.items[0]);
-                this.semanticDetails = s.items[0];                
+                this.semanticDetails = s.items[0];
             });
         }
     }
@@ -195,5 +195,12 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
 
     getBaseTypeText(baseType: string) {
         return SemanticType.getBaseTypeText(baseType);
+    }    
+
+    formatEffectiveDate(dateStr: string) {
+        if (Number.isNaN(Date.parse(dateStr))) {
+            return dateStr
+        }
+        return (new Date(dateStr)).toLocaleDateString();
     }
 }

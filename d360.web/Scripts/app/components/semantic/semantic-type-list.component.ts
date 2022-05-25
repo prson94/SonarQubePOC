@@ -52,6 +52,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     sortOrder: number;
     isExportInProgress: boolean = false;
     theDeleteCallback: Function;
+    theDisableCallback: Function;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -159,6 +160,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     showEditor: boolean = false;
     showAddButton: boolean = false;
     isAdd: boolean = false;
+    showDisableDialog: boolean = false;
+    showDisabled: boolean = false;
 
     constructor(private route: ActivatedRoute,
         protected router: Router,
@@ -175,6 +178,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         private cdRef: ChangeDetectorRef) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.theDeleteCallback = this.deleteSemanticType.bind(this);
+        this.theDisableCallback = this.changeSemanticDisabledStatus.bind(this);
     }
 
     ngOnInit() {
@@ -189,8 +193,9 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     }
 
     getData(selectedIndex: number = 0, autoSelect: boolean = true) {
-        this.isLoading = true;
-        this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((p) => {
+        this.isLoading = true;        
+        
+        this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null, this.showDisabled).subscribe((p) => {
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
             if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {
@@ -205,8 +210,16 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                 ];
 
                 if (this.authenticationService.isAdmin) {
-                    this.showAddButton = true;
-                    i[this.menuKey].push({ title: $localize`Edit` });
+                    this.showAddButton = true;      
+
+                    if (i.isDisabled) {
+                        i[this.menuKey].push({ title: $localize`Edit`, disabled: true, tooltip: $localize`Built-In semantic types cannot be deleted.` });
+                        i[this.menuKey].push({ title: $localize`Enable` });
+                    } else {
+                        i[this.menuKey].push({ title: $localize`Edit` });
+                        i[this.menuKey].push({ title: $localize`Disable` });
+                    }
+
                     if (SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {
                         if (!i.hasQualifiedAssets) {
                             i[this.menuKey].push({ title: $localize`Delete` });
@@ -216,7 +229,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                     } else if (SemanticSource[i.source.toString()] === SemanticSource.BuiltIn) {
                         i[this.menuKey].push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Built-In semantic types cannot be deleted.` });
 
-                    }
+                    }                    
                 }
             });
 
@@ -302,6 +315,12 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                 break;
             case $localize`Delete`.toLowerCase():
                 this.showDelete = true;
+                break;
+            case $localize`Disable`.toLowerCase():
+                this.showDisableDialog = true;
+                break;
+            case $localize`Enable`.toLowerCase():
+                this.changeSemanticDisabledStatus(item);
                 break;
             case $localize`Edit`.toLowerCase():
                 this.isAdd = false;
@@ -433,5 +452,23 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         }
 
         this.cdRef.markForCheck();
+    }
+
+    changeSemanticDisabledStatus(item: SemanticType) {
+        this.isLoading = true;
+        this.dataProfileService.changeSemanticDisabledStatus(item.qualifier, !item.isDisabled)
+            .subscribe((res) => {
+                this.showDisableDialog = false;
+                this.getData();
+
+            },
+                (err) => {
+                this.showDisableDialog = false;
+                this.isLoading = true;
+            });
+    }
+
+    isDisabled(effectiveDate: Date, UpdatedOn: Date) {
+        return new Date(UpdatedOn) > new Date(effectiveDate);
     }
 }

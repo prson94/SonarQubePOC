@@ -158,7 +158,7 @@ export class DataProfileService extends BaseObservableService {
         super.downloadFile(data, filename);
     }
 
-    getSemanticTypes(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null): Observable<SemanticTypeGetResponse> {
+    getSemanticTypes(pageNum: number, pageSize: number, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, callback: Function = null, includeDisabled: boolean = true): Observable<SemanticTypeGetResponse> {
         let url = `api/v2/dataprofiles/semantictypes?_pageSize=${pageSize}&_pageNum=${((pageNum > 0) ? pageNum : 1)}`;
 
         if (simpleFilter) {
@@ -175,6 +175,11 @@ export class DataProfileService extends BaseObservableService {
                 url += `&_direction=${direction === SortOrder.Ascending ? "asc" : "desc"}`;
             }
         }
+
+        if (!includeDisabled) {
+            url += `&_includeDisabled=false`;
+        }
+
         if (isExport) {
             this.
                 http
@@ -203,7 +208,7 @@ export class DataProfileService extends BaseObservableService {
                 );
         }        
     }
-
+    
     getSemanticTypeMatchingAssets(typeQualifier: string, pageNum: number, pageSize: number, minConfidence: number = 0.01, simpleFilter: string = '', advancedFilter: string = "", order: string = "", direction: number = SortOrder.Ascending, isExport: boolean = false, typeName: string = "",  callback: Function = null): Observable<SemanticTypeGetAssetsResponse> {
 
         if (minConfidence <= 0) {
@@ -386,6 +391,28 @@ export class DataProfileService extends BaseObservableService {
         return this
             .http
             .put(`api/v2/dataprofiles/`, dataprofileArray, httpOptions)
+            .pipe(
+                map((res: any) => {
+                    return res;
+                }),
+                catchError((err) => this.handleError(err))
+            );
+    }        
+
+    public changeSemanticDisabledStatus(
+        qualifier: string, isDisabled: boolean
+    ): Observable<any> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+        };
+        let semanticArray: any[] = [];
+
+        semanticArray.push({ qualifier: qualifier, isDisabled: isDisabled });
+
+        return this
+            .http
+            .patch(`api/v2/dataprofiles/semantictypes/`, semanticArray, httpOptions)
             .pipe(
                 map((res: any) => {
                     return res;

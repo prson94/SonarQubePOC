@@ -40,6 +40,10 @@
                                     <label class="ig-label" style="margin-right: 5px" i18n>Qualifier</label>
                                     <div class="ig-value">{{semanticDetails.qualifier}}</div>
                                 </div>
+                                <div *ngIf="semanticDetails.isDisabled" class="semantic-field">
+                                    <label class="ig-label" style="margin-right: 5px" i18n>Effective Dates</label>
+                                    <div *ngFor="let range of semanticDetails.effectiveDates" class="ig-value">{{formatEffectiveDate(range.startDate)}} - {{formatEffectiveDate(range.endDate)}}</div>
+                                </div>
                             </div>
                             <div class="row">
                                 <div>

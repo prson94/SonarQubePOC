@@ -2380,5 +2380,22 @@
 		]]>
 	</rollback>
   </changeSet>
-
+	<changeSet author="bquinlivan" id="Data.Initial.SemanticTypes-v3">
+	<comment>GOV-16659</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			update semantic 
+				set EffectiveDate = UpdatedOn
+			where
+				source = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

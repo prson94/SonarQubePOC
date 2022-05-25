@@ -99,9 +99,9 @@ export class SecondaryNavService {
         return this.siteMenuService;
     }
 
-    setCurrentArea(area: string, icon: string, title: string) {
-        this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title });
-        this.secondaryNavState.currentState.currentArea = { title: area, icon: icon, tabTitle: title };
+    setCurrentArea(area: string, icon: string, title: string, badges: string[] = []) {
+        this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title, customBadges: badges.filter(x => x.length > 0) });
+        this.secondaryNavState.currentState.currentArea = { title: area, icon: icon, tabTitle: title, customBadges: badges.filter(x => x.length > 0) };
         this.saveSecondaryNavState(this.secondaryNavState);
     }
 

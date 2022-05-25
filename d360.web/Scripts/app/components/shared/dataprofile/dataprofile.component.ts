@@ -803,7 +803,7 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
 
     isOutOfDate(semanticDate: Date, profileDate: Date) {
         let sDate = (new Date(semanticDate));
-        sDate.setUTCHours(0, 0, 0, 0);
-        return sDate > new Date(profileDate);
+        sDate.setUTCHours(0, 0, 0, 0);        
+        return sDate > new Date(profileDate) || new Date(profileDate) > new Date(this.semanticType.updatedOn);
     }
 }
