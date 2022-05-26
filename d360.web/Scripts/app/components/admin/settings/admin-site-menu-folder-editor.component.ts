@@ -54,7 +54,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
     folderItems: SiteNav[] = [];
     formMode = FormMode.Default;
     matchTypes: any[];
-    modalFormMaxHeight = 820;
     savingInProgress: boolean = false;
     hasHeader: boolean = false;
     iconType = 'icon';
@@ -435,5 +434,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         this.permissionMode = $event;
         this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
 
+    }
+
+    addNewFolder(item: SiteNav) {
+        let x = this.availableItems.findIndex(i => i.ObjectID == item.ObjectID && i.Object == item.Object);
+        let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+        this.newFolderItems.push(i);
+    }
+
+    deleteNewFolder(item: SiteNav) {
+        let x = this.availableItems.findIndex(i => i.ObjectID == item.ObjectID && i.Object == item.Object);
+        let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+        this.availableItems.push(i);
     }
 }
