@@ -392,7 +392,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     export() {
         this.isExportInProgress = true;
-        this.dataProfileService.getSemanticTypes(1, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => { this.isExportInProgress = false; });
+		this.dataProfileService.getSemanticTypes(1, this.maxExportRows, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, () => { this.isExportInProgress = false; }, this.showDisabled);
     }
 
     getBaseTypeText(baseType: string) {
