@@ -205,6 +205,8 @@ import { SharedModule } from 'primeng/api';
 import { AssetPathWidgetModule } from '../../search/asset-path-widget/asset-path-widget.module';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { DataCyModule } from '../../../directives/ig-data-cy.directive';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 
 
@@ -215,6 +217,8 @@ import { CompanySettingEnum } from '../../../models/settings.model';
 
         RouterModule,
 
+        DataCyModule,
+        PipesModule,
         //d3s
         AssetPathWidgetModule,
 

@@ -85,10 +85,15 @@
                                  let-item="rowData">
                         <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)">
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
-                                <p-treeTableToggler [rowNode]="rowNode" style="margin-right: 8px;" *ngIf="i === 0"></p-treeTableToggler>
+                                <p-treeTableToggler [rowNode]="rowNode"
+                                                    style="margin-right: 8px;"
+                                                    (click)="test(item)"
+                                                    [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
+                                                    *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">
                                     <a (click)="showHierarchy(item)"
-                                       [ngStyle]="setTreeNodeStyles(rowNode.node)">
+                                       [ngStyle]="setTreeNodeStyles(rowNode.node)"
+                                       [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
                                         <d3s-dynamic-field-value [column]="column"
                                                                  [fields]="fields"
                                                                  [useApiName]="true"
@@ -109,8 +114,16 @@
                             </td>
                             <td class="asset-grid-tools">
                                 <div>
-                                    <button igButton type="button" icon="fa-ellipsis-v" (click)="selectAsset(rowNode.node);linkMenu.toggle($event)"></button>
-                                    <ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
+                                    <button igButton
+                                            type="button"
+                                            icon="fa-ellipsis-v"
+                                            [igDataCy]="'Hierarchy_Menu_Button_' + item.AssetUid"
+                                            (click)="selectAsset(rowNode.node);linkMenu.toggle($event)"></button>
+                                    <ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)"
+                                                   [items]="item[menuKey]"
+                                                   [dataCy]="'Hierarchy_Menu_Popup_' + item.AssetUid"
+                                                   #linkMenu
+                                                   [tabIndex]="1"></ig-popup-menu>
                                 </div>
                             </td>
                         </tr>

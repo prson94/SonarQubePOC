@@ -17,6 +17,7 @@ import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.modul
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 import { SimpleBadgeModule } from '../small-widgets/simple-badge/simple-badge.module';
 import { PortalsModule } from '../portals/portals.module';
+import { DataCyModule } from '../../../directives/ig-data-cy.directive';
 
 @NgModule({
     imports: [
@@ -25,6 +26,7 @@ import { PortalsModule } from '../portals/portals.module';
         DynamicPercentageModule,
 
         SharedDynamicGridEditorModule,
+        DataCyModule,
         TagUsageInfoModule,
         SharedDeleteFormModule,
         SiteModalModule,

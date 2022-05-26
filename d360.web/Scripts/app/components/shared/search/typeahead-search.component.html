@@ -3,6 +3,7 @@
         <p-autoComplete #ac size="300"
                         styleClass="global-search-typeahead"
                         scrollHeight="400px"
+                        [igDataCy]="'Header_Typeahead_Search'"
                         [(ngModel)]="result"
                         [suggestions]="results"
                         field="Name"
@@ -17,14 +18,16 @@
                         (onKeyUp)="syncSearchText($event)">
             <ng-template let-result pTemplate="item">
                 <div>
-                    <div *ngIf="result?.Type == endSearchAllTypeToken;else suggestion" class="search-typeahead-suggestion">
+                    <div *ngIf="result?.Type == endSearchAllTypeToken;else suggestion"
+                         class="search-typeahead-suggestion"
+                         [igDataCy]="'Search_Suggestion_Show_All_Results'">
                         <div class="card-row search-all-row">
                             <div class="search-all-res"><i class="folder-icon searchall fa fa-search"></i><span class="displayname" i18n>Show All Results</span></div>
                             <span class="right-text" i18n>Hit <strong>Enter</strong> to see all matches</span>
                         </div>
                     </div>
                     <ng-template #suggestion>
-                        <div class="search-typeahead-suggestion">
+                        <div class="search-typeahead-suggestion" [igDataCy]="result.DisplayName | replaceString : ' ' : '_'">
                             <div class="card-row top-row">
                                 <i *ngIf="result?.Icon" class="folder-icon fa {{result.Icon}}"></i>
                                 <span *ngIf="result?.ImageUrl" class="folder-icon">

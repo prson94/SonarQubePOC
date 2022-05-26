@@ -4,6 +4,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { KeyMapHelpers } from '../../../../static/keyboard-key-helper';
 import { IgBadgeModule } from '../badge/badge.module';
+import { DataCyModule } from '../../../../directives/ig-data-cy.directive';
 
 @Component({
     selector: 'ig-popup-menu',
@@ -14,6 +15,7 @@ import { IgBadgeModule } from '../badge/badge.module';
 })
 export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     @Input() tabIndex: number = -1;
+    @Input() dataCy: string;
     @Input() items: PopupMenuItem[];
     @Input() location: PopupMenuLocation;
     @Input() allowAllUnchecked: boolean = true;
@@ -577,6 +579,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
         CommonModule,
         TooltipModule,
         FormsModule,
+        DataCyModule,
         IgBadgeModule
     ],
     declarations: [PopupMenu],
