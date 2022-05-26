@@ -246,7 +246,7 @@ export class DataProfileService extends BaseObservableService {
                 .pipe(
                     map((response) => <SemanticTypeGetAssetsResponse>response),
                     catchError((err) => {
-                        if (err?.status === 409) {
+						if (err?.status === 409 || err?.status === 404) {
                             return of(new SemanticTypeGetAssetsResponse());
                         } else {
                             this.handleError(err, true);
