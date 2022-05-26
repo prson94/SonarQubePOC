@@ -37,12 +37,7 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
                 break;
             case PrimeComponent.Checkbox:
                 const checkboxLabel = nativeElement.querySelector('.p-checkbox-label');
-                if(checkboxLabel) {
-                    this.setDataCyAttr(checkboxLabel, this.igDataCy);
-                } else {
-                    const checkBox = nativeElement.querySelector('.p-checkbox-box');
-                    this.setDataCyAttr(checkBox, this.igDataCy);
-                }
+                this.setDataCyAttrToCheckbox(checkboxLabel);
                 break;
             case PrimeComponent.Autocomplete:
                 const autocompleteInput = nativeElement.querySelector('.p-autocomplete-input');
@@ -59,6 +54,15 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
 
     private setDataCyAttr(el: HTMLElement, attrValue: string): void {
         this.renderer.setAttribute(el, this.attr, attrValue);
+    }
+
+    private setDataCyAttrToCheckbox(checkboxLabel: HTMLElement) {
+        if(checkboxLabel) {
+            this.setDataCyAttr(checkboxLabel, this.igDataCy);
+        } else {
+            const checkBox = this.el.nativeElement.querySelector('.p-checkbox-box');
+            this.setDataCyAttr(checkBox, this.igDataCy);
+        }
     }
 
     private setDataCyAttrToPaginator(nativeElement: HTMLElement): void {

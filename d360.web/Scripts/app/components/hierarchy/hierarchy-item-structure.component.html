@@ -87,7 +87,6 @@
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
                                 <p-treeTableToggler [rowNode]="rowNode"
                                                     style="margin-right: 8px;"
-                                                    (click)="test(item)"
                                                     [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
                                                     *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">

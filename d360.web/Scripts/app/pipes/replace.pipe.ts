@@ -8,6 +8,7 @@ export class ReplaceStringPipe implements PipeTransform {
             return value;
         }
 
+        // eslint-disable-next-line
         return value.replace(new RegExp(stringToReplace, 'g'), replacementString);
     }
 }
