@@ -13,5 +13,11 @@ namespace d360.model.DataAccessLayer.repositories
             var enumerable = await gridReader.ReadAsync<T>().ConfigureAwait(false);
             return enumerable.ToArray();
         }
+
+        public static async Task<ICollection<T>> ReadCollectionAsync<T>(this SqlMapper.GridReader gridReader)
+        {
+	        var enumerable = await gridReader.ReadAsync<T>().ConfigureAwait(false);
+	        return enumerable.AsList();
+        }
     }
 }
