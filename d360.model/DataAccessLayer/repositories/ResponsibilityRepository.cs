@@ -1574,94 +1574,94 @@ namespace d360.model.DataAccessLayer
 			var responsibilityTypeUidFilter = responsibilityTypeUid == null ? "1=1" : "responsibilityType.[uid] = @responsibilityTypeUid";
 
 			var applyToTypeResponsibilityDetailsSql = $@"
-SELECT responsibilityDetail.AssetID
-  FROM [dbo].[ResponsibilityDetail] responsibilityDetail
- INNER JOIN [dbo].[ResponsibilityType] responsibilityType
-    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
- INNER JOIN [dbo].[AssetType] assetType
-    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
-       AND assetType.Object = responsibilityDetail.[Type]
-       AND assetType.[ObjectID] = C.[TypeID]
-       AND assetType.Object = C.[Type]
- INNER JOIN Asset asset
-    ON asset.[AssetTypeID] = assetType.[ID]
- WHERE responsibilityDetail.[AssetID] = 0
-   AND responsibilityDetail.[ApplyToType] = 1
-   AND responsibilityDetail.[IsVisible] = 1
-   AND responsibilityDetail.ResourceUid = @resourceUid
-   AND {responsibilityTypeUidFilter}
+			SELECT responsibilityDetail.AssetID
+			  FROM [dbo].[ResponsibilityDetail] responsibilityDetail
+			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+			    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
+			 INNER JOIN [dbo].[AssetType] assetType
+			    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
+			       AND assetType.Object = responsibilityDetail.[Type]
+			       AND assetType.[ObjectID] = C.[TypeID]
+			       AND assetType.Object = C.[Type]
+			 INNER JOIN Asset asset
+			    ON asset.[AssetTypeID] = assetType.[ID]
+			 WHERE responsibilityDetail.[AssetID] = 0
+			   AND responsibilityDetail.[ApplyToType] = 1
+			   AND responsibilityDetail.[IsVisible] = 1
+			   AND responsibilityDetail.ResourceUid = @resourceUid
+			   AND {responsibilityTypeUidFilter}
 			";
 
 			var nonApplyToTypeResponsibilityDetailsSql = $@"
-SELECT responsibilityDetail.AssetID
-  FROM ResponsibilityDetail responsibilityDetail
- INNER JOIN [dbo].[ResponsibilityType] responsibilityType
-    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
- INNER JOIN AssetType assetType
-    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
-       AND assetType.Object = responsibilityDetail.[Type]
-       AND assetType.[ObjectID] = C.[TypeID]
-       AND assetType.Object = C.[Type]       
- WHERE responsibilityDetail.ApplyToType = 0
-   AND responsibilityDetail.IsVisible = 1   
-   AND responsibilityDetail.ResourceUid = @resourceUid
-   AND {responsibilityTypeUidFilter}
+			SELECT responsibilityDetail.AssetID
+			  FROM ResponsibilityDetail responsibilityDetail
+			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+			    ON responsibilityType.[ID] = responsibilityDetail.[ResponsibilityTypeID]
+			 INNER JOIN AssetType assetType
+			    ON assetType.[ObjectID] = responsibilityDetail.[TypeID]
+			       AND assetType.Object = responsibilityDetail.[Type]
+			       AND assetType.[ObjectID] = C.[TypeID]
+			       AND assetType.Object = C.[Type]       
+			 WHERE responsibilityDetail.ApplyToType = 0
+			   AND responsibilityDetail.IsVisible = 1   
+			   AND responsibilityDetail.ResourceUid = @resourceUid
+			   AND {responsibilityTypeUidFilter}
 			";
 
 			var detailsCountSql = $@"
-SELECT C.[Type]
-     , C.[TypeID]
-     , responsibilityType.[uid]
-     , AC.Count as AssetCount
-  FROM ResponsibilityDetail C
- INNER JOIN [dbo].[ResponsibilityType] responsibilityType
-    ON responsibilityType.[ID] = C.[ResponsibilityTypeID]
-CROSS APPLY (
-    SELECT COUNT(*) as 'Count'
-      FROM (
-		{applyToTypeResponsibilityDetailsSql}
-        UNION ALL
-		{nonApplyToTypeResponsibilityDetailsSql}
-    ) A
-) AC(Count)
- WHERE C.IsVisible = 1
-   AND ResourceUid = @resourceUid
-   AND {responsibilityTypeUidFilter}     
+			SELECT C.[Type]
+			     , C.[TypeID]
+			     , responsibilityType.[uid]
+			     , AC.Count as AssetCount
+			  FROM ResponsibilityDetail C
+			 INNER JOIN [dbo].[ResponsibilityType] responsibilityType
+			    ON responsibilityType.[ID] = C.[ResponsibilityTypeID]
+			CROSS APPLY (
+			    SELECT COUNT(*) as 'Count'
+			      FROM (
+					{applyToTypeResponsibilityDetailsSql}
+			        UNION ALL
+					{nonApplyToTypeResponsibilityDetailsSql}
+			    ) A
+			) AC(Count)
+			 WHERE C.IsVisible = 1
+			   AND ResourceUid = @resourceUid
+			   AND {responsibilityTypeUidFilter}     
 			";
 
 			var sql = $@"
--- better to use memory optimized table (https://docs.microsoft.com/en-us/sql/relational-databases/in-memory-oltp/faster-temp-table-and-table-variable-by-using-memory-optimization?view=azuresqldb-current)
--- in this case however it now supported by our SQL Database...
--- 'MEMORY_OPTIMIZED tables' is not supported in this service tier of the database. See Books Online for more details on feature support in different service tiers of Windows Azure SQL Database.
-DECLARE @temp TABLE
-(
-    AssetTypeUid UNIQUEIDENTIFIER,
-    ResponsibilityTypeUid UNIQUEIDENTIFIER,
-    AssetCount INT
-)
+			-- better to use memory optimized table (https://docs.microsoft.com/en-us/sql/relational-databases/in-memory-oltp/faster-temp-table-and-table-variable-by-using-memory-optimization?view=azuresqldb-current)
+			-- in this case however it now supported by our SQL Database...
+			-- 'MEMORY_OPTIMIZED tables' is not supported in this service tier of the database. See Books Online for more details on feature support in different service tiers of Windows Azure SQL Database.
+			DECLARE @temp TABLE
+			(
+			    AssetTypeUid UNIQUEIDENTIFIER,
+			    ResponsibilityTypeUid UNIQUEIDENTIFIER,
+			    AssetCount INT
+			)
 
-INSERT INTO @temp
-SELECT DISTINCT
-       AssetType.[uid] AssetTypeUid
-     , R.[uid] ResponsibilityTypeUid
-     , R.AssetCount AssetCount
-  FROM AssetType
- INNER JOIN ({detailsCountSql}) R
-    ON R.[Type] = AssetType.[Object]
-   AND R.TypeID = AssetType.[ObjectID];
+			INSERT INTO @temp
+			SELECT DISTINCT
+			       AssetType.[uid] AssetTypeUid
+			     , R.[uid] ResponsibilityTypeUid
+			     , R.AssetCount AssetCount
+			  FROM AssetType
+			 INNER JOIN ({detailsCountSql}) R
+			    ON R.[Type] = AssetType.[Object]
+			   AND R.TypeID = AssetType.[ObjectID];
 
-SELECT *
-  FROM @temp;
+			SELECT *
+			  FROM @temp;
 
-SELECT DISTINCT AssetType.*
-  FROM AssetType
- INNER JOIN @temp temp
-    ON temp.AssetTypeUid = AssetType.[uid];
+			SELECT DISTINCT AssetType.*
+			  FROM AssetType
+			 INNER JOIN @temp temp
+			    ON temp.AssetTypeUid = AssetType.[uid];
 
-SELECT DISTINCT ResponsibilityType.*
-  FROM ResponsibilityType
- INNER JOIN @temp temp
-    ON temp.ResponsibilityTypeUid = ResponsibilityType.[uid];
+			SELECT DISTINCT ResponsibilityType.*
+			  FROM ResponsibilityType
+			 INNER JOIN @temp temp
+			    ON temp.ResponsibilityTypeUid = ResponsibilityType.[uid];
 			";
 
 			#endregion build sql

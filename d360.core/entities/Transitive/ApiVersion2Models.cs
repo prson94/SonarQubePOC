@@ -1257,31 +1257,31 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
-    [DataContract]
-    public class ResponsibilityBreakdownResponse
-    {
-        [DataMember]
-        public Guid? ResponsibilityTypeUid { get; set; }
+	[DataContract]
+	public class ResponsibilityBreakdownResponse
+	{
+		[DataMember]
+		public Guid? ResponsibilityTypeUid { get; set; }
 
-        [DataMember]
-        public string ResponsibilityName { get; set; }
+		[DataMember]
+		public string ResponsibilityName { get; set; }
 
-        [DataMember]
-        public int Count { get; set; }
-    }
+		[DataMember]
+		public int Count { get; set; }
+	}
 
 	public class ResponsibilityGetBreakdownByResourceModel
-    {
-        [JsonProperty("Name")]
-        public string Name { get; set; }
+	{
+		[JsonProperty("Name")]
+		public string Name { get; set; }
 
-        [JsonProperty("Class")]
-        public string Class { get; set; }
+		[JsonProperty("Class")]
+		public string Class { get; set; }
 
-        [JsonProperty("AssetTypeUid")]
-        public Guid AssetTypeUid { get; set; }
+		[JsonProperty("AssetTypeUid")]
+		public Guid AssetTypeUid { get; set; }
 
-        [JsonProperty("Count")]
-        public int AssetCount { get; set; }
-    }
+		[JsonProperty("Count")]
+		public int AssetCount { get; set; }
+	}
 }

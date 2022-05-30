@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -20,11 +19,8 @@ using d360.web.Models;
 using d360.web.Services;
 using d360.web.Utilities;
 using MediatR;
-
 using Microsoft.Web.Http;
-
 using Resources;
-
 using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2

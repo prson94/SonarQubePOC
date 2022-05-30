@@ -57,12 +57,26 @@ namespace igx.UnitTests
 			return ReturnsNewValue(mock, FixtureProvider.Create());
 		}
 
-		public static IReturnsResult<TMock> ReturnsNullAsync<TMock, TResult>(this IReturns<TMock, Task<TResult>> mock) where TMock : class
+		/// <summary>
+		/// Return <see cref="default(TResult)"/>.
+		/// </summary>
+		/// <typeparam name="TMock"></typeparam>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="mock"></param>
+		/// <returns></returns>
+		public static IReturnsResult<TMock> ReturnsDefaultAsync<TMock, TResult>(this IReturns<TMock, Task<TResult>> mock) where TMock : class
 		{
 			return mock.ReturnsAsync(() => default);
 		}
 
-		public static IReturnsResult<TMock> ReturnsNull<TMock, TResult>(this IReturns<TMock, TResult> mock) where TMock : class
+		/// <summary>
+		/// Return <see cref="default(TResult)"/>.
+		/// </summary>
+		/// <typeparam name="TMock"></typeparam>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="mock"></param>
+		/// <returns></returns>
+		public static IReturnsResult<TMock> ReturnsDefault<TMock, TResult>(this IReturns<TMock, TResult> mock) where TMock : class
 		{
 			return mock.Returns(() => default);
 		}
