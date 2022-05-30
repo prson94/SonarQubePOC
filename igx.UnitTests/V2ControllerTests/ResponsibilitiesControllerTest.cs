@@ -11,6 +11,7 @@ using System.Web.Http.Results;
 using AutoFixture;
 using AutoFixture.Xunit2;
 using d360.model.DataAccessLayer;
+using d360.web.Services;
 using FluentAssertions;
 using igx.UnitTests.ServicesTests;
 using Moq;
@@ -22,13 +23,17 @@ namespace igx.UnitTests.V2ControllerTests
 	{
 		protected ResponsibilitiesController responsibilitiesController;
 
-		protected Mock<IResponsibilityRepository> mockResponsibilityRepository;
+		protected readonly Mock<IResponsibilityRepository> mockResponsibilityRepository;
+		protected readonly Mock<IResourceRepository> mockResourceRepository;
+		protected readonly Mock<IAssetService> mockAssetService;
 
 		protected ResponsibilitiesControllerTestBase()
 		{
 			mockResponsibilityRepository = GetResponsibilityRepositoryMock();
+			mockResourceRepository = new Mock<IResourceRepository>();
+			mockAssetService = new Mock<IAssetService>();
 
-			responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetAssetRepository(), GetMediator(), mockResponsibilityRepository.Object)
+			responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetAssetRepository(), GetMediator(), mockResponsibilityRepository.Object, mockResourceRepository.Object, mockAssetService.Object)
 			{
 				Request = new HttpRequestMessage(),
 				Configuration = new HttpConfiguration()
@@ -201,24 +206,146 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				var businessLayerResponse = AutoFixtureHelpers.CreateClassWithRecursiveData<ICollection<ResponsibilityBreakdownResponse>>();
-
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Returns((ResponsibilityType)null);
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNull();
+				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsNewValueAsync();
 
 				// act
-				try
-				{
-					await responsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
-					Assert.False(true, $"Exception not thrown");
-				}
-				catch (Exception exception)
-				{
-					// assert
-					exception.Should().BeOfType<ArgumentException>();
-				}
+				var act = responsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdown(typeUid));
+
+				// assert
+				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
 			}
 		}
+
+		#region GetResponsibilityTypeBreakdownByResource
+
+		public class GetResponsibilityTypeBreakdownByResource : ResponsibilitiesControllerTestBase
+		{
+			#region Happy Path
+
+			[Theory, AutoData]
+			public async Task Ok_Test(
+				Guid resourceUid,
+				Guid? typeUid
+			)
+			{
+				// assign
+				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				var aggregate = mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+
+				// act
+				var actualResponse = await responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+
+				// assert
+				var actualResult = actualResponse.ShouldBeOKContent<ICollection<ResponsibilityGetBreakdownByResourceModel>>();
+				actualResult.Should().HaveCount(aggregate.Count);
+			}
+
+			#endregion Happy Path
+
+			#region NotFound
+			[Theory, AutoData]
+			public async Task NotFound_Resource_Test(
+				Guid resourceUid,
+				Guid? typeUid
+			)
+			{
+				// assign
+				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNullAsync();
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+
+				// act
+				var act = responsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid));
+
+				// assert
+				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
+			}
+
+			[Theory, AutoData]
+			public async Task NotFound_ResponsibilityType_Test(
+				Guid resourceUid,
+				Guid? typeUid
+			)
+			{
+				// assign
+				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNull();
+				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+
+				// act
+				var act = responsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid));
+
+				// assert
+				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
+			}
+			#endregion NotFound
+
+			#region Rethrow
+			[Theory, AutoData]
+			public async Task RethrowException_GetResponsibilityTypeByUID_Test(
+				Guid resourceUid,
+				Guid? typeUid
+			)
+			{
+				// assign
+				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				var expectedException = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ThrowsTestException();
+				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+
+				// act
+				var act = responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+
+				// assert
+				await VerifyTestExceptionAsync(act, expectedException);
+			}
+
+			[Theory, AutoData]
+			public async Task RethrowException_GetByUidAsync_Test(
+				Guid resourceUid,
+				Guid? typeUid
+			)
+			{
+				// assign
+				var expectedException = ThrowsTestExceptionAsync(mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)));
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+
+				// act
+				var act = responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+
+				// assert
+				await VerifyTestExceptionAsync(act, expectedException);
+			}
+
+			[Theory, AutoData]
+			public async Task RethrowException_GetTypeBreakdownByResourceAsync_Test(
+				Guid resourceUid,
+				Guid? typeUid
+			)
+			{
+				// assign
+				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				var expectedException = mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ThrowsTestExceptionAsync();
+				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+
+				// act
+				var act = responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+
+				// assert
+				await VerifyTestExceptionAsync(act, expectedException);
+			}
+			#endregion Rethrow
+		}
+
+		#endregion GetResponsibilityTypeBreakdownByResource
 	}
 
 }

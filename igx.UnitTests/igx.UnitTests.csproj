@@ -60,8 +60,11 @@
     <Compile Include="CoreTests\SystemObjectHelperTests.cs" />
     <Compile Include="Core\BaseTestClass.cs" />
     <Compile Include="Core\DataConstants.cs" />
+    <Compile Include="Core\FixtureProvider.cs" />
+    <Compile Include="Core\FluentAssertExtensions.cs" />
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\MessagesHelper.cs" />
+    <Compile Include="Core\MockExtensions.cs" />
     <Compile Include="Core\SqlConstants.cs" />
     <Compile Include="Core\TestException.cs" />
     <Compile Include="ExtensionsTests\DynamicHelperTests.cs" />
@@ -104,14 +107,10 @@
     <Compile Include="ServicesTests\Exceptions\RecoverableBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnauthorizedBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnrecoverableBusinessLayerExceptionTests.cs" />
-    <Compile Include="ServicesTests\ResourceIsExistsRequestHandlerTests.cs" />
     <Compile Include="ServicesTests\ResponsibilityDeleteRulesRequestHandlerTests.cs" />
-    <Compile Include="ServicesTests\ResponsibilityGetBreakdownByResourceRequestHandlerTests.cs" />
-    <Compile Include="ServicesTests\ResponsibilityTypeIsExistsRequestHandlerTests.cs" />
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
     <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.cs" />
-    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.GetResponsibilityBreakdownByResource.cs" />
     <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.DeleteResponsibilityRules.cs" />
     <Compile Include="V2ControllerTests\TestExtensions.cs" />
     <Compile Include="ValidatorTests\SurveyApiModelValidatorTests.cs" />

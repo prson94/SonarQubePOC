@@ -1,6 +1,7 @@
 ﻿using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Controllers.V2;
+using d360.web.Services;
 using d360.web.Utilities;
 using MediatR;
 using Moq;
@@ -9,7 +10,10 @@ namespace igx.UnitTests.V2ControllerTests
 {
     public partial class ResponsibilitiesControllerTests: BaseTest
     {
-        protected ResponsibilitiesControllerTests()
+	    private readonly Mock<IResourceRepository> mockResourceRepository;
+	    private readonly Mock<IAssetService> mockAssetService;
+
+	    protected ResponsibilitiesControllerTests()
         {
             MockResponsibilityRepository = new Mock<IResponsibilityRepository>();
             MockAssetRepository = new Mock<IAssetRepository>();
@@ -18,12 +22,16 @@ namespace igx.UnitTests.V2ControllerTests
             MockCompanyContext = new Mock<ICompanyContext>();
             MockMediator = new Mock<IMediator>();
             MockApplicationUriProvider = new Mock<IApplicationUriProvider>();
+            mockResourceRepository = new Mock<IResourceRepository>();
+            mockAssetService = new Mock<IAssetService>();
 
             Controller = new ResponsibilitiesController(
                 GetCoreComponentSet(),
                 MockAssetRepository.Object,
                 MockMediator.Object,
-                MockResponsibilityRepository.Object
+                MockResponsibilityRepository.Object,
+                mockResourceRepository.Object,
+                mockAssetService.Object
             );
         }
 

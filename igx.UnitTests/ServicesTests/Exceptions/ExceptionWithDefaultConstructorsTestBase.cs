@@ -20,7 +20,7 @@ namespace igx.UnitTests.ServicesTests
             var testClass = (T)Activator.CreateInstance(typeof(T));
             using (new AssertionScope())
             {
-                testClass.Message.Should().Be($"Exception of type '{typeof(T).FullName}' was thrown.");
+                testClass.Message.Should().Be($"Entity not found");
                 testClass.InnerException.Should().BeNull();
                 testClass.Data.Should().NotBeNull();
                 testClass.Data.Count.Should().Be(0);
