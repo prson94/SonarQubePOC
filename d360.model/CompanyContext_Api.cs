@@ -3885,15 +3885,36 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 								from	AssetDisplayValue T
                                         inner join #deleteAssets O on O.id = T.AssetId;
 
-								-- Delete where assets are on the subject side of relationship.
-								delete	T
-								from	[Intersect] T
-										inner join #deleteAssets A on A.Object = T.Subject and A.ObjectID = T.SubjectID;
+							
+								-- Delete where assets are on the subject side and object side of relationship.
+								drop table if exists #tempIntersect;
+								create table #tempIntersect (ID int);
+								create index idx_tempIntersect on #tempIntersect(ID);
 
-								-- Delete where assets are on the object side of relationship.
-								delete	T
+								insert into #tempIntersect (ID)
+								select id from
+								(
+								select T.id
 								from	[Intersect] T
-										inner join #deleteAssets A on A.Object = T.Object and A.ObjectID = T.ObjectID;
+										inner join #deleteAssets A on A.Object = T.Subject and A.ObjectID = T.SubjectID
+								union 
+								select T.id
+								from	[Intersect] T
+										inner join #deleteAssets A on A.Object = T.Object and A.ObjectID = T.ObjectID
+								) a;
+
+								
+								if exists(select 1 from #tempIntersect)
+								begin
+
+									delete T
+									from	[Field] T
+											inner join #tempIntersect A on T.ObjectType = 'Intersect' and T.ObjectID = A.ID
+
+									delete T
+									from	[Intersect] T
+											inner join #tempIntersect A on A.ID = T.ID;
+								end
 
 								delete	T
 								from	Field T
@@ -4140,13 +4161,46 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								delete	[metrics].Allocation where AssetTypeUid = @assetTypeUid;
 
-								delete	T
-								from	[IntersectType] T
-										where T.Subject = @Object and T.SubjectID = @ObjectId;
+								drop table if exists #tempITIDField;
+								create table #tempITIDField (FieldTypeID int);
+								create index idx_tempITIDField on #tempITIDField(FieldTypeID)
 
-								delete	T
+								drop table if exists #tempITID;
+								create table #tempITID (IntersectTypeID int);
+								create index idx_ittempITID on #tempITID(IntersectTypeID)
+
+								insert into #tempITID
+								select distinct IntersectTypeID from (
+								select	T.ID IntersectTypeID
 								from	[IntersectType] T
-										where T.Object = @Object and T.ObjectID = @ObjectId;
+										where T.Subject = @Object and T.SubjectID = @ObjectId
+								Union
+								select	T.ID IntersectTypeID
+								from	[IntersectType] T
+										where T.Object = @Object and T.ObjectID = @ObjectId
+								) a;
+
+								if exists(select 1 from #tempITID)
+								begin
+										delete from #tempITIDField;
+
+										insert into #tempITIDField
+										select distinct ft.id
+										from FieldType ft
+										inner join #tempITID tempit on ft.[object] = 'IntersectType' and ft.[ObjectID] = tempit.IntersectTypeID;
+
+										
+										if exists (select 1 from #tempITIDField)
+										begin
+											delete ft 
+											from fieldType ft
+											inner join #tempITIDField tempfield on ft.id = tempfield.FieldTypeID;
+										end
+										
+										delete IType
+										from [intersectType] IType
+										inner join #tempITID tempIT on tempIT.IntersectTypeID = IType.ID;
+								end
 
 								-- Delete parent/child relationships.
 								delete	T
