@@ -63,20 +63,19 @@ export function localeInitializer(localeId: string) {
         if (localeId && localeId.toLowerCase() != 'en-us') {
             return new Promise((resolve, reject) => {
                 //Dynamic import of locales issue in Angular 13 https://github.com/angular/angular-cli/issues/22154
-                import(`/node_modules/@angular/common/locales/${localeId}.js`)
+				import(`/node_modules/@angular/common/locales/${localeId}.mjs`)
                     .then(module => {
                         console.log(`Govern locale is set to [${localeId}]`);
                         registerLocaleData(module.default);
                         resolve('');
                     }).catch(() => {
                         if (localeId.indexOf('-') !== -1) {
-                            import(`/node_modules/@angular/common/locales/${localeId.split('-')[0]}.js`)
+							import(`/node_modules/@angular/common/locales/${localeId.split('-')[0]}.mjs`)
                                 .then(module => {
                                     console.log(`Govern locale is set to [${localeId.split('-')[0]}]`);
                                     registerLocaleData(module.default);
                                     resolve('');
                                 }, reject);
-
                         }
                         else {
                             reject;
