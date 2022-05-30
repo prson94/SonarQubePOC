@@ -26,7 +26,7 @@
         </div>
         <div class="col s2">
             <button class="right" pButton type="button" [disabled]="isLoading" (click)="cancelClick()" i18n-label label="Cancel"></button>
-            <button class="right" pButton type="button" [disabled]="isLoading" (click)="saveClick();" label="{{comment.Uid ? 'Update' : 'Post'}}"></button>
+            <button class="right" pButton type="button" [disabled]="isLoading" (click)="saveClick();" label="{{comment.Uid ? labelUpdate : labelPost}}"></button>
         </div>
     </div>
 </div>

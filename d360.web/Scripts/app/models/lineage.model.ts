@@ -383,7 +383,8 @@ export enum AssetBrowserPanelCommand {
     Filters = 5,
     FullScreen = 6,
     Refresh = 7,
-    Settings = 8
+    Settings = 8,
+    Add_Relationship = 9
 }
 
 export class FilterSelectionsModel {

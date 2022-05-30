@@ -493,7 +493,10 @@ namespace d360.web.Controllers
 						Color.ColorJson, 
 						flv.DisplayText, 
 						refAsset.uid,
-						refType.uid as assetTypeUid
+						case when flv.LookupObjectType = 'ReferenceItemType' and flv.LookupObjectID = 0
+							then flv.AssetUid
+							else refType.uid
+						end as assetTypeUid
 					{lookupDataSelectSQL}
 					cross apply (
 						select * from STRING_SPLIT(f.Value,',')
@@ -1323,7 +1326,6 @@ namespace d360.web.Controllers
 				model.Add("Description", assetType.Description);
 				model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
-				model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
@@ -2478,7 +2480,7 @@ namespace d360.web.Controllers
 
 			DynamicParameters dbParams = new DynamicParameters();
 
-			var sql = @"select 
+			var sql = $@"select 
 										c.[Object], 
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
@@ -2486,8 +2488,11 @@ namespace d360.web.Controllers
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor,
-										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
-										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '${CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '${CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'ReferenceItem' then '${CommonNames.AssetTypeClass_Reference}'
+										when c.[Object] = 'Taxonomy' then '${CommonNames.AssetTypeClass_Model}'
+										when c.[Object] = 'Policy' then '${CommonNames.AssetTypeClass_Policy}'
 										else	c.[Object] end [Displayobject],
 										Uid as AssetUid
 										from [dbo].AssetWithType c   
@@ -3581,11 +3586,11 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Action", FieldName = "LoadAction", FieldDescription = "", Value = load.Action }
+								new ReadOnlyField { Name = FieldInfo.Load_Action, FieldName = "LoadAction", FieldDescription = "", Value = load.Action }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Target", FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName }
+								new ReadOnlyField { Name = FieldInfo.Load_Target, FieldName = "LoadObjectName", FieldDescription = "", Value = load.ObjectName }
 							}
 						});
 
@@ -3594,7 +3599,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Uploaded By", FieldName = "Requestor", FieldDescription = "", Value = load.Requestor }
+								new ReadOnlyField { Name = FieldInfo.Load_UploadedBy, FieldName = "Requestor", FieldDescription = "", Value = load.Requestor }
 							}
 						});
 
@@ -3603,7 +3608,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Notes", FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" }
+								new ReadOnlyField { Name = FieldInfo.Load_Notes, FieldName = "LoadNotes", FieldDescription = "", Value = load.Notes + "" }
 							}
 						});
 
@@ -3612,7 +3617,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Error Messages", FieldName = "ErrorMessage", FieldDescription = "", Value = load.ErrorMessage + "" }
+								new ReadOnlyField { Name = FieldInfo.Load_ErrorMessages, FieldName = "ErrorMessage", FieldDescription = "", Value = load.ErrorMessage + "" }
 							}
 						});
 
@@ -3621,11 +3626,11 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Total", FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() }
+								new ReadOnlyField { Name = FieldInfo.Load_Total, FieldName = "LoadTotal", FieldDescription = "", Value = load.Total.ToString() }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "# Incompletes", FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() }
+								new ReadOnlyField { Name = "# "+FieldInfo.Load_Incompletes, FieldName = "LoadIncomplete", FieldDescription = "", Value = load.Incomplete.ToString() }
 							}
 						});
 
@@ -3634,11 +3639,11 @@ namespace d360.web.Controllers
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "# Successes", FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() }
+								new ReadOnlyField { Name = "# "+ FieldInfo.Load_Successes, FieldName = "LoadSuccess", FieldDescription = "", Value = load.Success.ToString() }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "# Errors", FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() }
+								new ReadOnlyField { Name = "# "+ FieldInfo.Load_Errors, FieldName = "LoadError", FieldDescription = "", Value = load.Error.ToString() }
 							}
 						});
 
@@ -3646,14 +3651,14 @@ namespace d360.web.Controllers
 						{
 							var minutes = Math.Round((load.DateCompleted.Value - load.DateStarted.Value).TotalMinutes);
 
-							var minutesMessage = minutes == 0 ? "less than a minute" : minutes + " minute(s)";
+							var minutesMessage = minutes == 0 ? FieldInfo.Load_MessageLessThanMin : minutes + " "+ FieldInfo.Load_MessageMoreThanMin;
 
 							model.rows.Add(new DetailReadOnlyRowModel
 							{
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Took (minutes)", FieldName = "EllapsedTime", FieldDescription = "", Value = minutesMessage  }
+								new ReadOnlyField { Name = FieldInfo.Load_TookMinutes, FieldName = "EllapsedTime", FieldDescription = "", Value = minutesMessage  }
 							}
 							});
 						}
@@ -3666,7 +3671,7 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Status", FieldName = "Status", FieldDescription = "", Value = currentStatus  }
+								new ReadOnlyField { Name = FieldInfo.Load_Status, FieldName = "Status", FieldDescription = "", Value = currentStatus  }
 							}
 							});
 						}
@@ -4248,7 +4253,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Name", Value = resource.FullName },
+								new ReadOnlyField { Name = Fields.Name_Name, Value = resource.FullName },
 							},
 						});
 
@@ -4257,7 +4262,7 @@ namespace d360.web.Controllers
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Email", FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
+								new ReadOnlyField { Name = Fields.Email_Name, FieldName = "ResourceEmail", FieldDescription = resource.GetDescription(i => i.Email), Value = resource.Email }
 							},
 						});
 
@@ -4270,7 +4275,7 @@ namespace d360.web.Controllers
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Last Seen", FieldName = "LastSeen", Value = lastSeen }
+								new ReadOnlyField { Name = Fields.LastSeen_Name , FieldName = "LastSeen", Value = lastSeen }
 							}
 							});
 						}

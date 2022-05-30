@@ -48,6 +48,10 @@ export class ScoreBadgeComponent implements OnInit, OnChanges {
         return this._type === "Data Quality" ? $localize`Data Quality` : $localize`Governance`;
     }
 
+    getShortName(name: string): string {
+        return name === "DQ" ? $localize`:@@score_type.abbr.DataQuality:DQ` : $localize`:@@score_type.abbr.Governance:GV`;
+    }
+
     getBadgeText(): string {
         return this.getType() + ' ' + this.scoreDislpayPipe.transform(this.score.Value, this.precision);
     }

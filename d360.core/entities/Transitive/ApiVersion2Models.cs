@@ -61,9 +61,6 @@ namespace d360.core.entities
         [DataMember]
         public string Description { get; set; }
 
-        [DataMember]
-        public bool AutoDisplayDescription { get; set; }
-
         [DataMember, MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string DisplayFormat { get; set; }
 

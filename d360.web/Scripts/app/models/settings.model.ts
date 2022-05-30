@@ -225,17 +225,17 @@ export class SearchType {
 export module SettingsHelper {
     export function getSearchTypesList(): SearchType[] {
         return [
-            new SearchType(StringConstants.AssetTypeClass_Business + "s", "BusinessAsset"),
-            new SearchType(StringConstants.AssetTypeClass_Technical + "s", "TechnicalAsset"),
-            new SearchType("Diagram Assets", "Diagram"),
-            new SearchType("Models", "Model"),
-            new SearchType("Policies", "Policy"),
-            new SearchType("Rules", "Rule"),
-            new SearchType("Reference Lists", "Reference"),
-            new SearchType("Grammatic Types", "Synonym"),
-            new SearchType("Semantic Types", "SemanticType"),
-            new SearchType("Groups", "Group"),
-            new SearchType("Users", "User"),
+            new SearchType($localize`Business Assets`, "BusinessAsset"),
+            new SearchType($localize`Technical Assets`, "TechnicalAsset"),
+            new SearchType($localize`Diagram Assets`, "Diagram"),
+            new SearchType($localize`Models`, "Model"),
+            new SearchType($localize`Policies`, "Policy"),
+            new SearchType($localize`Rules`, "Rule"),
+            new SearchType($localize`Reference Lists`, "Reference"),
+            new SearchType($localize`Grammatic Types`, "Synonym"),
+            new SearchType($localize`Semantic Types`, "SemanticType"),
+            new SearchType($localize`Groups`, "Group"),
+            new SearchType($localize`Users`, "User"),
         ];
     }
 

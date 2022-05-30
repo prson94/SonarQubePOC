@@ -31,7 +31,6 @@ namespace igx.UnitTests.RepositoryTests
             List<string> mustContain = new List<string>();
             mustContain.Add("A.UseAsTransformation=@useAsTransformation");
             mustContain.Add("A.Hierarchical=@hierarchical");
-            mustContain.Add("A.AutoDisplayDescription=@autodisplaydescription");
             mustContain.Add("A.AutoDisplayParent=@autoDisplayParent");
             mustContain.Add("A.Object=@obj");
             mustContain.Add("A.ObjectID=@objId");
@@ -70,7 +69,6 @@ namespace igx.UnitTests.RepositoryTests
             List<KeyValuePair<string, string>> pars = new List<KeyValuePair<string, string>>();
             pars.Add(new KeyValuePair<string, string>("useastransformation", "true"));
             pars.Add(new KeyValuePair<string, string>("hierarchical", "true"));
-            pars.Add(new KeyValuePair<string, string>("autodisplaydescription", "true"));
             pars.Add(new KeyValuePair<string, string>("autodisplayparent", "true"));
             pars.Add(new KeyValuePair<string, string>("includedashboardflag", "true"));
             pars.Add(new KeyValuePair<string, string>("includelevels", "true"));
@@ -101,11 +99,6 @@ namespace igx.UnitTests.RepositoryTests
             result = assetRepository.GetAssetType(pars, AssetTypeClass.BusinessAsset, Guid.Parse("cee303f2-9c99-46b4-9ec3-116634049d17"));
             Assert.Contains("Invalid value for parameter [hierarchical]", result.Exception.InnerException.Message);
 
-
-            pars.Clear();
-            pars.Add(new KeyValuePair<string, string>("autodisplaydescription", "invalid_bool_value"));
-            result = assetRepository.GetAssetType(pars, AssetTypeClass.BusinessAsset, Guid.Parse("cee303f2-9c99-46b4-9ec3-116634049d17"));
-            Assert.Contains("Invalid value for parameter [autodisplaydescription]".ToLowerInvariant(), result.Exception.InnerException.Message.ToLowerInvariant());
 
             pars.Clear();
             pars.Add(new KeyValuePair<string, string>("autodisplayparent", "invalid_bool_value"));

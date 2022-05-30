@@ -1842,7 +1842,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         //load the palette with the appropriate nodes
         let start = new NodeModel();
         start.category = 'start';
-        start.name = 'Start';
+        start.name = $localize`Start`;
         start.diagramObjectType = DiagramObjectType.Node;
         start.stepType = StepType.Start;
         start.activityType = 0;
@@ -1854,7 +1854,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         let finish = new NodeModel();
         finish.category = 'finish';
-        finish.name = 'Finish';
+        finish.name = $localize`Finish`;
         finish.diagramObjectType = DiagramObjectType.Node;
         finish.stepType = StepType.Finish;
         finish.activityType = 0;
@@ -1866,7 +1866,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         let terminate = new NodeModel();
         terminate.category = 'finish';
-        terminate.name = 'Terminate';
+        terminate.name = $localize`Terminate`;
         terminate.diagramObjectType = DiagramObjectType.Node;
         terminate.stepType = StepType.Terminate;
         terminate.activityType = 0;

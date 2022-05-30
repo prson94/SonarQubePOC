@@ -414,7 +414,7 @@ namespace d360.core.enums
 
                     list.Add(new OperatorInfo
                     {
-                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Name = NameAsDisplayString(enumValue),
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                         ID = enumValue,
                         MinimumValueCount = ((OperatorValueCountRangeAttribute)tm.GetCustomAttribute(typeof(OperatorValueCountRangeAttribute))).Min,

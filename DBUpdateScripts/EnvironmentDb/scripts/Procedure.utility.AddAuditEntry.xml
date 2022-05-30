@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Procedure.utility.AddAuditEntry-v17">
-  <comment>GOV-15612</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.utility.AddAuditEntry-v19">
+  <comment>GOV-18313</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,6 +32,8 @@ begin
 			@ConvertMainObjectTypeName nvarchar(250)
 	
 	declare @tbl table (ID int identity, FieldTypeID int, FieldName nvarchar(250), NewValue nvarchar(max), MostRecentVersion int, Updated bit)
+	declare @tempAuditField table (FieldTypeID int, FieldName nvarchar(250), [Version] int, Value nvarchar(max));
+	declare @MaxVersion table (FieldTypeID int, FieldName nvarchar(250), [Version] int);
 
 	if @DependentObject is not null
 	begin
@@ -443,30 +445,72 @@ begin
 		set @MainObjectName = 'Tag'
 	end
 
-	update	T
-	set		T.MostRecentVersion = coalesce(S.[Version], 0),
-			T.Updated = case 
-							when T.NewValue = S.Value then 0
-							when T.NewValue is null and S.Value is null then 0
-							else 1
-						end
-	from	@tbl T
-			left join (
-						select	V.*,
-								F.Value
-						from	reporting.Global_Audit A
-								inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
-								inner join (
-											select		F.FieldTypeID,
-														case when F.FieldTypeID > 0 then ' ' else F.FieldName end FieldName,
-														max([Version]) as [Version]
-											from		reporting.Global_Audit A
-														inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
-											group by	F.FieldTypeID,
-														case when F.FieldTypeID > 0 then ' ' else F.FieldName end
-											) V on ((V.FieldTypeID = 0 and V.FieldTypeID = F.FieldTypeID and V.FieldName = F.FieldNAme) or (V.FieldTypeID > 0 and V.FieldTypeID = F.FieldTypeID)) and V.[Version] = F.[Version]
-						) S on (S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID and S.FieldName = T.FieldName) or (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)
+	insert into @tempAuditField(FieldTypeID, FieldName, [Version],[Value])
+	select distinct F.FieldTypeID,
+		   case when F.FieldTypeID > 0 then ' ' else F.FieldName end FieldName,
+		   F.Version,
+		   F.Value
+	from reporting.Global_Audit A
+	inner join reporting.Global_FieldAudit F on F.AuditID = A.ID
+	where A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID;
+	
+	if not exists(select 1 from @tempAuditField)
+	   begin
+			update	T
+			set		T.MostRecentVersion = 0,
+					T.Updated = case when T.NewValue is null then 0 else 1 end
+			from	@tbl T
+	   end
+	else
+		Begin
+			insert into @MaxVersion(FieldTypeID, FieldName, [Version])
+			select 
+			F.FieldTypeID,
+			F.FieldName,
+			max([Version]) as [Version]
+			from @tempAuditField F
+			Group by F.FieldTypeID,F.FieldName;
+			
+			if exists(select 1 from @tbl where FieldTypeID > 0)
+				begin
 
+					update	T
+					set		T.MostRecentVersion = coalesce(S.[Version], 0),
+							T.Updated = case when T.NewValue = S.Value then 0
+											 when T.NewValue is null and S.Value is null then 0
+											 else 1
+											 end
+					from	@tbl T			
+					left join (
+							select	V.*,
+								F.Value
+									from	@MaxVersion V
+											inner join @tempAuditField F on F.fieldtypeID  = V.Fieldtypeid and F.[Version] = V.[Version] and F.Fieldtypeid > 0
+							) S on (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)			
+					where T.FieldTypeID > 0
+				end
+			
+			if exists(select 1 from @tbl where FieldTypeID = 0)
+				begin
+
+					update	T
+					set		T.MostRecentVersion = coalesce(S.[Version], 0),
+							T.Updated = case when T.NewValue = S.Value then 0
+											 when T.NewValue is null and S.Value is null then 0
+											 else 1
+											 end
+					from	@tbl T			
+					left join (
+							select	V.*,
+								F.Value
+									from	@MaxVersion V
+											inner join @tempAuditField F on F.FieldName  = V.FieldName  and F.[Version] = V.[Version] and F.fieldtypeID  = V.Fieldtypeid and F.Fieldtypeid = 0 
+							) S on (S.FieldName  = T.FieldName and S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID)			
+				   where T.FieldTypeID = 0
+				end
+		
+		end
+	
 	declare	@auditID bigint,
 			@current int = 1, 
 			@max int,
@@ -1047,7 +1091,7 @@ begin
 				@MainObjectName = coalesce(@predicateName,'Predicate')
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID		
 		insert into @tbl  select 0, 'Inverse', Inverse, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
-		insert into @tbl  select 0, 'Functional Type', Type, 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
+		insert into @tbl  select 0, 'Functional Type', [utility].[GetPredicateFunctionalTypeValue](Type), 0, 0 from [dbo].[Predicate] where ID = @MainObjectID
 	end
   
 	if (@Action = 'Created' and @DependentObject = 'MetricAllocation')

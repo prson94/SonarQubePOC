@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class CommonNames {
@@ -61,11 +61,56 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Action Type.
+        /// </summary>
+        public static string AssetTypeClass_ActionType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_ActionType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Business Asset.
         /// </summary>
         public static string AssetTypeClass_Business {
             get {
                 return ResourceManager.GetString("AssetTypeClass_Business", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Diagram Asset.
+        /// </summary>
+        public static string AssetTypeClass_DiagramAsset {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_DiagramAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generic Type.
+        /// </summary>
+        public static string AssetTypeClass_GenericType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_GenericType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grammatic Type.
+        /// </summary>
+        public static string AssetTypeClass_GramaticType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_GramaticType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group.
+        /// </summary>
+        public static string AssetTypeClass_Group {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Group", resourceCulture);
             }
         }
         
@@ -79,6 +124,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Model Type.
+        /// </summary>
+        public static string AssetTypeClass_ModelType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_ModelType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Organization.
+        /// </summary>
+        public static string AssetTypeClass_Organization {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Organization", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Policy.
         /// </summary>
         public static string AssetTypeClass_Policy {
@@ -88,11 +151,65 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Policy Type.
+        /// </summary>
+        public static string AssetTypeClass_PolicyType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_PolicyType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference.
+        /// </summary>
+        public static string AssetTypeClass_Reference {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Reference", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference List.
+        /// </summary>
+        public static string AssetTypeClass_ReferenceList {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_ReferenceList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relationship.
+        /// </summary>
+        public static string AssetTypeClass_Relationship {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Relationship", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule.
         /// </summary>
         public static string AssetTypeClass_Rule {
             get {
                 return ResourceManager.GetString("AssetTypeClass_Rule", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rule Type.
+        /// </summary>
+        public static string AssetTypeClass_RuleType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_RuleType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Semantic Type.
+        /// </summary>
+        public static string AssetTypeClass_SemanticType {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_SemanticType", resourceCulture);
             }
         }
         
@@ -111,6 +228,51 @@ namespace d360.core.resources {
         public static string AssetTypeClass_Technical {
             get {
                 return ResourceManager.GetString("AssetTypeClass_Technical", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User.
+        /// </summary>
+        public static string AssetTypeClass_User {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_User", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type.
+        /// </summary>
+        public static string CommonName_AssetType {
+            get {
+                return ResourceManager.GetString("CommonName_AssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reference Item.
+        /// </summary>
+        public static string ReferenceItem {
+            get {
+                return ResourceManager.GetString("ReferenceItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Group Membership.
+        /// </summary>
+        public static string Text_GroupMembership {
+            get {
+                return ResourceManager.GetString("Text_GroupMembership", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users.
+        /// </summary>
+        public static string Text_Users {
+            get {
+                return ResourceManager.GetString("Text_Users", resourceCulture);
             }
         }
     }

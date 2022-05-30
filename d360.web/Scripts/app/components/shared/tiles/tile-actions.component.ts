@@ -70,6 +70,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     @Output() fullScreenClick = new EventEmitter();
 
+    exportLabel: string = $localize`Export to Excel`;
     private dateMenuItems: MenuItem[] = [];
 
     constructor(private reuseInterceptor: ReuseInterceptor) {

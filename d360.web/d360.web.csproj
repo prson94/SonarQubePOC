@@ -803,7 +803,9 @@
     <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\primeicons.css" />
-    <Content Include="Content\primeicons\primeicons.min.css" />
+    <Content Include="Content\primeicons\primeicons.min.css">
+      <DependentUpon>primeicons.css</DependentUpon>
+    </Content>
     <Content Include="Content\primeng\default.css" />
     <Content Include="Content\primeng\default.min.css">
       <DependentUpon>default.css</DependentUpon>

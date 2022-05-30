@@ -53,17 +53,9 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                     <p-table #dt [value]="items" [selectionMode]="multiple ? 'multiple' : 'single'" [scrollable]="true" scrollWidth="100%" [lazy]="true" [totalRecords]="totalRecords" [metaKeySelection]="!multiple" 
                         [globalFilterFields]="['Text','Type']" [pageLinks]="3" [paginator]="true" [rows]="rowsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [loading]="isLoading" 
                         loadingIcon="fa fa-spinner" [selection]="selectedItems" (selectionChange)="handleItemSelection($event);"  (onLazyLoad)="lazyLoad($event)">
-                        <ng-template pTemplate="colgroup">
-                            <colgroup>
-                                <col style="width:38px">
-                                <col >
-                                <col >
-                                <col style="width:5%" *ngIf="showToolTip">
-                            </colgroup>
-                        </ng-template>
                         <ng-template pTemplate="header">
                             <tr>
-                                <th style="width: 38px"><p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox></th>
+                                <th style="flex: 0 0 38px"><p-tableHeaderCheckbox *ngIf="multiple"></p-tableHeaderCheckbox></th>
                                 <th [pSortableColumn]="'Text'">
                                     <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Text'"></d3s-sortIcon>
@@ -72,18 +64,18 @@ export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                     <ng-container i18n>Resource Type</ng-container>
                                     <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
                                 </th>
-                                <th style="width: 5%" *ngIf="showToolTip"></th>
+                                <th style="flex: 0 0 5%" *ngIf="showToolTip"></th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
                             <tr [pSelectableRow]="item">
-                                <td>
+                                <td style="flex: 0 0 38px">
                                     <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                                     <p-tableRadioButton *ngIf="!multiple" [value]="item"></p-tableRadioButton>
                                 </td>
                                 <td>{{item.Text}}</td>
                                 <td>{{item.Type}}</td>
-                                <td *ngIf="showToolTip">
+                                <td *ngIf="showToolTip" style="flex: 0 0 5%">
                                     <div class="RowTools">
                                         <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]" icon="info"></d3s-preview-tooltip>
                                     </div>
