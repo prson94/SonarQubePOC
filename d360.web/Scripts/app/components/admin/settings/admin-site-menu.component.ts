@@ -47,7 +47,11 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     oldFolderName;
 
     IsMenuPermissionsAdding: boolean= false;
-    permissionMode: FormMode = FormMode.Default;
+	permissionMode: FormMode = FormMode.Default;
+
+	showAddAssetType: boolean = false;
+	selectedAssetType: any;
+	assetTypes: any[] =[];
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,

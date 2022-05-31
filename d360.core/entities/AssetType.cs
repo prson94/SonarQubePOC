@@ -11,173 +11,183 @@ using Newtonsoft.Json.Converters;
 
 namespace d360.core.entities
 {
-    [DataContract(Namespace = NAMESPACE)]
-    public class AssetType : BaseCreatedAndUpdatedIntObject
-    {
-        [DataMember]
-        public Guid uid { get; set; }
+	[DataContract(Namespace = NAMESPACE)]
+	public class AssetType : BaseCreatedAndUpdatedIntObject
+	{
+		[DataMember]
+		public Guid uid { get; set; }
 
-        [DataMember]
-        public string Name { get; set; }
+		[DataMember]
+		public string Name { get; set; }
 
-        [DataMember]
-        public string Description { get; set; }
+		[DataMember]
+		public string Description { get; set; }
 
-        [DataMember]
-        public AssetTypeClass Class { get; set; }
+		[DataMember]
+		public AssetTypeClass Class { get; set; }
 
-        [DataMember]
-        public string DisplayFormat { get; set; }
+		[DataMember]
+		public string DisplayFormat { get; set; }
 
-        [DataMember]
-        public FlowObjectType? FlowObjectType { get; set; }
+		[DataMember]
+		public FlowObjectType? FlowObjectType { get; set; }
 
-        [DataMember]
-        public State State { get; set; }
+		[DataMember]
+		public State State { get; set; }
 
-        [DataMember]
-        public bool Hierarchical { get; set; }
+		[DataMember]
+		public bool Hierarchical { get; set; }
 
-        [DataMember]
-        public int? HierarchyIntersectTypeID { get; set; }
+		[DataMember]
+		public int? HierarchyIntersectTypeID { get; set; }
 
-        [DataMember]
-        public int? HierarchyPredicateID { get; set; }
+		[DataMember]
+		public int? HierarchyPredicateID { get; set; }
 
-        [DataMember]
-        public int HierarchyMaximumDepth { get; set; }
+		[DataMember]
+		public int HierarchyMaximumDepth { get; set; }
 
-        [DataMember]
-        public string Notes { get; set; }
+		[DataMember]
+		public string Notes { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
+		[DataMember, Column(TypeName = "varchar"), StringLength(50)]
+		public string Object { get; set; }
 
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ObjectID { get; set; }
+		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public int ObjectID { get; set; }
 
-        [IgnoreDataMember, ForeignKey("AssetTypeID")]
-        public virtual ICollection<Asset> Assets { get; set; }
+		[IgnoreDataMember, ForeignKey("AssetTypeID")]
+		public virtual ICollection<Asset> Assets { get; set; }
 
-        [IgnoreDataMember, ForeignKey("AssetTypeID")]
-        public virtual ICollection<AssetTypeLevel> AssetTypeLevels { get; set; }
+		[IgnoreDataMember, ForeignKey("AssetTypeID")]
+		public virtual ICollection<AssetTypeLevel> AssetTypeLevels { get; set; }
 
-        [IgnoreDataMember, ForeignKey("ID")]
-        public virtual AssetTypeStyle AssetTypeStyle { get; set; }
+		[IgnoreDataMember, ForeignKey("ID")]
+		public virtual AssetTypeStyle AssetTypeStyle { get; set; }
 
-        [DataMember]
-        public bool UseAsTransformation { get; set; }
+		[DataMember]
+		public bool UseAsTransformation { get; set; }
 
-        [NotMapped]
-        public AssetType Parent { get; set; }
+		[NotMapped]
+		public AssetType Parent { get; set; }
 
-        [DataMember]
-        public bool? AutoDisplayParent { get; set; }
+		[DataMember]
+		public bool? AutoDisplayParent { get; set; }
 
-        [DataMember]
-        public bool? CanEditParent { get; set; }
-    }
+		[DataMember]
+		public bool? CanEditParent { get; set; }
+	}
 
-    public class AssetTypeBrowserApiViewModel
-    {
-        public Guid uid { get; set; }
+	public class AssetTypeBrowserApiViewModel
+	{
+		public Guid uid { get; set; }
 
-        public string Name { get; set; }
+		public string Name { get; set; }
 
-        private int _ClassID;
-        
-        public int ClassID
-        {
-            get => _ClassID;
-            set
-            {
-                _ClassID = value;
-                Class = ((AssetTypeClass)_ClassID).AsInfoModel();
-            }
-        }
+		private int _ClassID;
 
-        public AssetTypeClassInfo Class { get; set; }
-        
-        public string Path { get; set; }
-    }
+		public int ClassID
+		{
+			get => _ClassID;
+			set
+			{
+				_ClassID = value;
+				Class = ((AssetTypeClass)_ClassID).AsInfoModel();
+			}
+		}
+
+		public AssetTypeClassInfo Class { get; set; }
+
+		public string Path { get; set; }
+	}
 
 
-    [DataContract(Namespace = NAMESPACE)]
-    public class AssetTypeApiViewModel : BaseObject
-    {
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid uid { get; set; }
+	[DataContract(Namespace = NAMESPACE)]
+	public class AssetTypeApiViewModel : BaseObject
+	{
+		[DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		public Guid uid { get; set; }
 
-        [DataMember]
-        public string Name { get; set; }
+		[DataMember]
+		public string Name { get; set; }
 
-        private AssetTypeClass _ClassID;
-        
-        public AssetTypeClass ClassID
-        {
-            get => _ClassID;
-            set
-            {
-                _ClassID = value;
-                Class = _ClassID.AsInfoModel();
-            }
-        }
-        
-        [DataMember]
-        public AssetTypeClassInfo Class { get; set; }
-        
-        [DataMember]
-        public string Description { get; set; }
-        
-        [DataMember]
-        public bool Hierarchical { get; set; }
-        
-        [DataMember]
-        public int HierarchyMaximumDepth { get; set; }
-        
-        [DataMember]
-        public string DisplayFormat { get; set; }
-        
-        [DataMember]
-        public string Notes { get; set; }
-        
-        [DataMember]
-        public bool UseAsTransformation { get; set; }
+		private AssetTypeClass _ClassID;
 
-        [DataMember]
-        public bool CanOwnFusion { get; set; }   // left for backward compatibility so as to not introduce a breaking api change.
+		public AssetTypeClass ClassID
+		{
+			get => _ClassID;
+			set
+			{
+				_ClassID = value;
+				Class = _ClassID.AsInfoModel();
+			}
+		}
 
-        [DataMember]
-        public string Path { get; set; }
+		[DataMember]
+		public AssetTypeClassInfo Class { get; set; }
 
-        [DataMember]
-        public IconStyleInsert IconStyle { get; set; }
-        
-        [DataMember]
-        public bool? AutoDisplayParent { get; set; }
-        
-        [DataMember]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public FlowObjectType? FlowObjectType { get; set; }
-        
-        [DataMember]
-        public bool? CanEditParent { get; set; }
+		[DataMember]
+		public string Description { get; set; }
 
-        [DataMember]
-        public bool? HasDashboards { get; set; }
+		[DataMember]
+		public bool Hierarchical { get; set; }
 
-        [IgnoreDataMember]
-        public string LevelsJson { get; set; }
+		[DataMember]
+		public int HierarchyMaximumDepth { get; set; }
 
-        [DataMember]
-        public List<AssetTypeLevelApiViewModel> Levels
-        {
-            get
-            {
-                return string.IsNullOrEmpty(LevelsJson) 
-                    ? null 
-                    : JsonConvert.DeserializeObject<List<AssetTypeLevelApiViewModel>>(LevelsJson);
-            }
-        }
-    }
+		[DataMember]
+		public string DisplayFormat { get; set; }
+
+		[DataMember]
+		public string Notes { get; set; }
+
+		[DataMember]
+		public bool UseAsTransformation { get; set; }
+
+		[DataMember]
+		public bool CanOwnFusion { get; set; }   // left for backward compatibility so as to not introduce a breaking api change.
+
+		[DataMember]
+		public string Path { get; set; }
+
+		[DataMember]
+		public IconStyleInsert IconStyle { get; set; }
+
+		[DataMember]
+		public bool? AutoDisplayParent { get; set; }
+
+		[DataMember]
+		[JsonConverter(typeof(StringEnumConverter))]
+		public FlowObjectType? FlowObjectType { get; set; }
+
+		[DataMember]
+		public bool? CanEditParent { get; set; }
+
+		[DataMember]
+		public bool? HasDashboards { get; set; }
+
+		[IgnoreDataMember]
+		public string LevelsJson { get; set; }
+
+		[DataMember]
+		public List<AssetTypeLevelApiViewModel> Levels
+		{
+			get
+			{
+				return string.IsNullOrEmpty(LevelsJson)
+					? null
+					: JsonConvert.DeserializeObject<List<AssetTypeLevelApiViewModel>>(LevelsJson);
+			}
+		}
+	}
+
+	public class AssetTypeSelectApiModel
+	{
+		[DataMember]
+		public string title { get; set; }
+		[DataMember]
+		public Guid? value { get; set; }
+		[DataMember]
+		public AssetTypeClass Class { get; set; }
+	}
 }
