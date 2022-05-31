@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input} from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SocialService } from '../../services/social.service';
 import { Count } from '../../models/counts.model';
@@ -8,7 +8,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     selector: 'd3s-board-tile',
     template: `
                 <div class="tile tile-detail">
-                   <header>Board<span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
+                   <header><ng-container i18n>Board</ng-container><span style="color:#999;font-size:60%;vertical-align:middle;">{{timeFrameMessage()}}</span>
                     <d3s-tile-actions [hasAdd]="false" [hasDate]="true" (dateClick)="changeDates($event);"></d3s-tile-actions>                            
                    </header>
                     <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -16,11 +16,11 @@ import { CompanySettingsService } from '../../services/settings.service';
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'Total'" style="text-align:center">
-                                    Total
+                                    <ng-container i18n>Total</ng-container>
                                     <d3s-sortIcon [field]="'Total'"></d3s-sortIcon>
                                 </th>
                             </tr>
@@ -42,7 +42,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                         </ng-template>
                     </p-table>
   
-                    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px">No board activity for this timeframe</div>
+                    <div *ngIf="counts.length == 0 && !isLoading" style="padding:10px" i18n>No board activity for this timeframe</div>
                 </div>
                 `,
     providers: [SocialService],
@@ -50,7 +50,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 
 export class BoardTile extends BaseComponent implements OnInit {
     counts: Count[] = [];
-    selected: any;    
+    selected: any;
     @Input() daysToLookBack: number = 7;
     @Output() daysToLookBackChange = new EventEmitter();
 
@@ -72,11 +72,11 @@ export class BoardTile extends BaseComponent implements OnInit {
         this.socialService.getMyCounts(this.daysToLookBack).subscribe(
             res => {
                 this.counts = res.filter(item => item.Total > 0);
-                this.isLoading = false;                
+                this.isLoading = false;
             });
     }
 
-    doSelect(item: Count) {        
+    doSelect(item: Count) {
         this.showItemDetail.emit({
             selected: item
         });
@@ -84,20 +84,20 @@ export class BoardTile extends BaseComponent implements OnInit {
 
     changeDates(event) {
         this.daysToLookBack = event.days;
-        this.daysToLookBackChange.emit( this.daysToLookBack );
+        this.daysToLookBackChange.emit(this.daysToLookBack);
         this.load();
     }
 
     timeFrameMessage() {
         switch (this.daysToLookBack) {
             case 7:
-                return ' (Past week)';
+                return ' (' + $localize`Past week` + ')';
             case 30:
-                return ' (Past month)';
+                return ' (' + $localize`Past month` + ')';
             case 365:
-                return ' (Past year)';
+                return ' (' + $localize`Past year` + ')';
         }
-        return ' (All)'
+        return ' (' + $localize`All` + ')'
     }
 }
 

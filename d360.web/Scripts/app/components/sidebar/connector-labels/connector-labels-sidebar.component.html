@@ -2,13 +2,13 @@
 <div class="row connector-label-list">
     <div class="col s12">
         <div class="tile tile-detail">
-            <header>
+            <header i18n>
                 Connector Labels
             </header>
             <div class="inline-header">
-                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <input [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
                 <div *ngIf="selected.length > 1" class="grid-header-actions">
-                    <div class="text">{{selected.length}} items selected</div>
+                    <div class="text" i18n>{{selected.length}} items selected</div>
                     <button type="button" icon="fa-ellipsis-v" igButton (click)="popupMenu.toggle($event)"></button>
                     <ig-popup-menu #popupMenu [location]="3" (onSelect)="actionSelected($event)" [items]="multiselectMenu"></ig-popup-menu>
                 </div>
@@ -34,11 +34,11 @@
                             <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                         </th>
                         <th [pSortableColumn]="'Value'" style="width: 60%">
-                            Name
+                            <ng-container i18n>Name</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                            Use count
+                            <ng-container i18n>Use count</ng-container>
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
                         </th>
                         <th style="width: 110px"></th>
@@ -103,7 +103,7 @@
                              [showDownloadWhereUsed]="labelUsage && labelUsage.length > 0"
                              (onUsageExport)="exportUsage()">
                 <div prompt>
-                    <p>
+                    <p i18n>
                         Please confirm that you wish to delete the connector label '{{this.selected[0].Value}}'.
                     </p>
 
@@ -124,7 +124,7 @@
                              (onCancel)="showDelete=false;"
                              (onUsageExport)="exportUsage()">
                 <div prompt>
-                    <p>
+                    <p i18n>
                         Please confirm that you wish to delete the following Connector Labels.
                     </p>
                     <p-table #usageTable
@@ -138,11 +138,11 @@
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Value'" style="width: 60%">
-                                    Connector Label
+                                    <ng-container i18n>Connector Label</ng-container>
                                     <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                    Where Used
+                                    <ng-container i18n>Where Used</ng-container>
                                     <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
                                 </th>
                             </tr>
@@ -177,7 +177,7 @@
                 <div prompt>
                     <div class="content">
                         <div class="row">
-                            <p>Please select the one Connector Label you wish to keep:</p>
+                            <p i18n>Please select the one Connector Label you wish to keep:</p>
 
                             <p-table #usageTableConsolidate
                                      [value]="selected"
@@ -190,11 +190,11 @@
                                 <ng-template pTemplate="header">
                                     <tr>
                                         <th [pSortableColumn]="'Value'" style="width: 60%">
-                                            Connector Label
+                                            <ng-container i18n>Connector Label</ng-container>
                                             <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
                                         </th>
                                         <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                            Where Used
+                                            <ng-container i18n>Where Used</ng-container>
                                             <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
                                         </th>
                                     </tr>
@@ -220,17 +220,17 @@
                                 </ng-template>
                             </p-table>
                         </div>
-                        <div class="row"><br />
+                        <div class="row" i18n>
                             All occurrences of the unselected labels will be replaced by occurrences of the selected label.<br />
                             The unselected Connector Labels will then be deleted. Please note that this operation cannot be undone.
                         </div>
                     </div>
                 </div>
                 <div class="action-bar">
-                    <button igButton type="button" label="Cancel" (click)="showConsolidationPopup=false"></button>&nbsp;&nbsp;
-                    <button igButton type="button" label="Download Where Used Reports" (click)="exportUsage()"></button>
+                    <button igButton type="button" i18n-label label="Cancel" (click)="showConsolidationPopup=false"></button>&nbsp;&nbsp;
+                    <button igButton type="button" i18n-label label="Download Where Used Reports" (click)="exportUsage()"></button>
                     <div class="grow"></div>
-                    <button igButton type="submit" [disabled]="!consolidateValue" [loading]="isSaving" (click)="consolidateClick()" class="ig-button-primary" label="Consolidate"></button>
+                    <button igButton type="submit" i18n-label [disabled]="!consolidateValue" [loading]="isSaving" (click)="consolidateClick()" class="ig-button-primary" label="Consolidate"></button>
                 </div>
             </d3s-modal>
         </div>

@@ -41,7 +41,7 @@ import {
     HTTPResponseSettings,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { map, concatMap } from 'rxjs/operators';
+import { tap, map, concatMap } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
 import { CompanySettingsService } from '../../../../services/settings.service';
  
@@ -151,8 +151,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             this.isWindowVisible = true;
             this.HideSqlProcedure = false;
         }
-
-        this.isLoadingCounter++;
     }
 
     public ngOnChanges(changes: SimpleChanges) {
@@ -341,11 +339,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (this.model != null) {
             if (this.model.Event == null || this.model.Event.Object == null || this.model.Event.ObjectID == null) {
                 console.warn('Model passed to workflow diagram with no Event Registration data.');
-                this.isLoadingCounter--;
                 return of();
 
             }
 
+            this.isLoadingCounter++;
             return this.workflowService.getWorkflowFieldTypes(this.model.Event.ObjectID, this.model.Event.Object, true, this.model.Event.IssueObject)
                 .pipe(
                     map(r => this.fieldTypes = r),
@@ -357,7 +355,6 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         //if we don't have at least an id at this point, there's nothing we can do
         if (!this.id && this.uid == "00000000-0000-0000-0000-000000000000") {
-            this.isLoadingCounter--;
             return of();
         }
 
@@ -532,7 +529,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 concatMap(() => of(this.initializeFormFields())),
                 concatMap(() => of(this.getObjectName())),
                 concatMap(() => of(this.setWorkflowFields())),
-            concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
+                concatMap(() => of(this.isWindowVisible = (this.monitorView || !this.isReadOnly)))
             ).subscribe();
     }
 
@@ -731,8 +728,10 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     }
 
     private getActivityTypes(): Observable<any> {
+        this.isLoadingCounter++;
         return this.workflowService.getActivityTypes()
             .pipe(
+                tap(() => { this.isLoadingCounter--; }),
                 map(r => {
                     let excluded = r.findIndex(a => a.ID == WorkflowActivityType.None);
 
@@ -882,7 +881,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             else if (n.activityType == WorkflowActivityType.StateChange)
             {
                 n.fore = "#fff";
-                n.activityDescription = "State Change (Unsupported Activity)";
+                n.activityDescription = $localize`State Change (Unsupported Activity)`;
             }
             else
             {
@@ -1451,34 +1450,34 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
 
         if (invalidNodeCount > 0)
-            this.errors.push('There are one or more invalid steps on the diagram (highlighted in red)');
+            this.errors.push($localize`There are one or more invalid steps on the diagram (highlighted in red)`);
 
         if (invalidLinkCount > 0)
-            this.errors.push('There are one or more invalid transitions on the digram (highlighted in red)');
+            this.errors.push($localize`There are one or more invalid transitions on the digram (highlighted in red)`);
 
         if (startNodes != 1)
-            this.errors.push('There must be exactly 1 start step on the diagram');
+            this.errors.push($localize`There must be exactly 1 start step on the diagram`);
 
         if (finishNodes != 1)
-            this.errors.push('There must be exactly 1 finish step on the diagram');
+            this.errors.push($localize`There must be exactly 1 finish step on the diagram`);
 
         if (disconnectedNodeCount > 0)
-            this.errors.push('There are steps on the diagram which are not connected');
+            this.errors.push($localize`There are steps on the diagram which are not connected`);
 
         if (missingInputCount > 0 || missingOutputCount > 0)
-            this.errors.push('There are steps on the diagram which are missing an input or output');
+            this.errors.push($localize`There are steps on the diagram which are missing an input or output`);
 
         if (startToFinish)
-            this.errors.push('The start step cannot be connected directly to the finish step');
+            this.errors.push($localize`The start step cannot be connected directly to the finish step`);
 
         if (invalidFieldReferences > 0)
-            this.errors.push(`There are ${invalidFieldReferences} invalid field references in workflow`);
+            this.errors.push($localize`There are ${invalidFieldReferences} invalid field references in workflow`);
 
         if (StateChangeCount > 0)
-            this.errors.push(`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);
+            this.errors.push($localize`Unsupported workflow activity "State Change" exists in diagram. This workflow activity must be removed.`);
 
         if (SqlProcedureCount > 0)
-            this.errors.push(`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);
+            this.errors.push($localize`Wrong workflow activity "Sql Procedure" exists in diagram. This workflow activity must be removed. Procedure configuration missing.`);
         
         if (this.errors.length > 0)
             this.isValid = false;
@@ -1843,7 +1842,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         //load the palette with the appropriate nodes
         let start = new NodeModel();
         start.category = 'start';
-        start.name = 'Start';
+        start.name = $localize`Start`;
         start.diagramObjectType = DiagramObjectType.Node;
         start.stepType = StepType.Start;
         start.activityType = 0;
@@ -1855,7 +1854,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         let finish = new NodeModel();
         finish.category = 'finish';
-        finish.name = 'Finish';
+        finish.name = $localize`Finish`;
         finish.diagramObjectType = DiagramObjectType.Node;
         finish.stepType = StepType.Finish;
         finish.activityType = 0;
@@ -1867,7 +1866,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         let terminate = new NodeModel();
         terminate.category = 'finish';
-        terminate.name = 'Terminate';
+        terminate.name = $localize`Terminate`;
         terminate.diagramObjectType = DiagramObjectType.Node;
         terminate.stepType = StepType.Terminate;
         terminate.activityType = 0;

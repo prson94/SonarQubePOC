@@ -39,7 +39,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     @Input() dataCyPrefix: string = '';
     @Input() hasAdd: boolean = false;
-    @Input() addTooltip: string = "Add";
+    @Input() addTooltip: string = $localize`Add`;
     @Input() hasExport: boolean = false;
     @Input() hasCustomExport: boolean = false;
     @Input() hasExportErrors: boolean = false;
@@ -59,7 +59,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasView: boolean = false;
     @Input() hasNewWindow: boolean = false;
     @Input() isExportDisabled: boolean = false;
-    @Input() exportDisabledMessage: string = 'Export Disabled';
+    @Input() exportDisabledMessage: string = $localize`Export Disabled`;
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];
     @Output() menuClick = new EventEmitter();
@@ -70,6 +70,7 @@ export class TileActionsComponent implements OnInit, OnChanges {
 
     @Output() fullScreenClick = new EventEmitter();
 
+    exportLabel: string = $localize`Export to Excel`;
     private dateMenuItems: MenuItem[] = [];
 
     constructor(private reuseInterceptor: ReuseInterceptor) {
@@ -95,10 +96,10 @@ export class TileActionsComponent implements OnInit, OnChanges {
             this.dateMenuItems.push({
                 icon: 'fa fa-clock-o',
                 items: [
-                    { label: 'Past Week', command: () => this.dateClick.emit({ days: 7 }) },
-                    { label: 'Past Month', command: () => this.dateClick.emit({ days: 30 }) },
-                    { label: 'Past Year', command: () => this.dateClick.emit({ days: 365 }) },
-                    { label: 'All', command: () => this.dateClick.emit({ days: 0 }) }
+                    { label: $localize`Past Week`, command: () => this.dateClick.emit({ days: 7 }) },
+                    { label: $localize`Past Month`, command: () => this.dateClick.emit({ days: 30 }) },
+                    { label: $localize`Past Year`, command: () => this.dateClick.emit({ days: 365 }) },
+                    { label: $localize`All`, command: () => this.dateClick.emit({ days: 0 }) }
                 ]
             });
         }

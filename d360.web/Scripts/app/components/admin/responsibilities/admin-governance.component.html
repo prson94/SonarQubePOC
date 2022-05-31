@@ -2,15 +2,15 @@
     <div class="col s4">
         <div class="tile tile-detail">
             <header>
-                Responsibility Types
+                <ng-container i18n>Responsibility Types</ng-container>
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()"></d3s-tile-actions>
             </header>
-            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="{{searchText}}" class="grid-simple-filter">
             <p-table #dt [value]="responsibilityTypeItems" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [(selection)]="selectedRow" (onRowSelect)="selectedItemChange()">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Name'">
-                            Name
+                            <ng-container i18n>Name</ng-container>
                             <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                         </th>
                         <th style="width: 40px"></th>
@@ -49,18 +49,18 @@
             <d3s-responsibility-rules [id]="selectedRow?.ID" *ngIf="selectedRow && selectedRow?.ID" [forceReload]="forceRulesReloadFlag"></d3s-responsibility-rules>
         </div>
         <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail" style="padding:10px;">
-            <header>Edit Role</header>
+            <header i18n>Edit Role</header>
             <d3s-responsibility-type-form [id]="selectedRow.ID" (onSaveComplete)="save($event)" (onCancel)="cancel()"></d3s-responsibility-type-form>
         </div>
         <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail" style="padding:10px;">
-            <header>Add Role</header>
+            <header i18n>Add Role</header>
             <d3s-responsibility-type-form [id]="0" (onSaveComplete)="save($event)" (onCancel)="cancel()"></d3s-responsibility-type-form>
         </div>
         <div *ngSwitchCase="FormMode.Deleting" class="tile tile-detail">
             <d3s-delete-form [method]="'callback'"
                              [callback]="theDeleteCallback"
                              [itemId]="selected?.uid"
-                             [prompt]="'Are you sure you want to delete this responsibility type?'"
+                             [prompt]="deletePromptText"
                              (onCancel)="cancel()">
             </d3s-delete-form>
         </div>

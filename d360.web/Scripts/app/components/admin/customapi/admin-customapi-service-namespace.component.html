@@ -1,5 +1,6 @@
 <div class="tile tile-detail">
-    <header *ngIf="!showEditor && !showDelete && !showDelete">Namespaces
+    <header *ngIf="!showEditor && !showDelete && !showDelete">
+        <ng-container i18n>Namespaces</ng-container>
         <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                           [(filterMode)]="showSimpleFilter"
                           [hasAdd]="true"
@@ -11,9 +12,9 @@
                [hidden]="!showSimpleFilter"
                class="grid-simple-filter"
                pInputText
-               placeholder="Search..."
+               placeholder="{{searchText}}"
                size="100"
-               type="text"/>
+               type="text" />
         <p-table #dt
                  [(selection)]="selected"
                  [globalFilterFields]="['Node','Namespace']"
@@ -27,21 +28,25 @@
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'Node'">
-                        Element Name
+                        <ng-container i18n>Element Name</ng-container>
                         <d3s-sortIcon [field]="'Node'"></d3s-sortIcon>
                     </th>
                     <th [pSortableColumn]="'Namespace'">
-                        Namespace
+                        <ng-container i18n>Namespace</ng-container>
                         <d3s-sortIcon [field]="'Namespace'"></d3s-sortIcon>
                     </th>
                     <th style="width: 35px"></th>
                     <th style="width: 35px"></th>
                 </tr>
                 <tr [hidden]="showSimpleFilter">
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'Node'"></d3s-column-filter></th>
-                    <th><d3s-column-filter [datatype]="'text'"
-                                           [field]="'Namespace'"></d3s-column-filter></th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Node'"></d3s-column-filter>
+                    </th>
+                    <th>
+                        <d3s-column-filter [datatype]="'text'"
+                                           [field]="'Namespace'"></d3s-column-filter>
+                    </th>
                     <th></th>
                     <th></th>
                 </tr>
@@ -81,11 +86,11 @@
                         [objectType]="'Namespace'"
                         [parentID]="serviceId"
                         [selection]="selected"
-                        [title]="'Namespace'"></d3s-dynamic-editor>
+                        [title]="editorTitle"></d3s-dynamic-editor>
     <d3s-delete-form (onCancel)="showDelete=false;"
                      *ngIf="showDelete"
                      [callback]="theDeleteCallback"
                      [itemId]="selected?.ID"
-                     [prompt]="'Are you sure you want to delete the  namespace [' + [selected?.Node] + ']?'"
+                     [prompt]="deleteModalTitle"
                      method="callback"></d3s-delete-form>
 </div>

@@ -39,7 +39,7 @@ export class AssetDetailCategoryComponent {
     }
 
     showInColumn(data: any[]): boolean {
-        if (!data || this.category.name === "System Fields") {
+        if (!data || this.category.name === $localize`System Fields`) {
             return false;
         }
         if (data.length > 1) {

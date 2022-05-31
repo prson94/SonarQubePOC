@@ -65,7 +65,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @Output() listItemChange = new EventEmitter();
     @Output() relationItemChange = new EventEmitter();
 
-    private regexErrorMessage: string = "The field doesnt meet the required pattern.";
+    private regexErrorMessage: string = $localize`The field doesnt meet the required pattern.`;
     keyFieldError: string = "";
 
     private excludedRelationitems = {};
@@ -97,8 +97,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     isLookupValuesLoading: boolean = false;
 
-    linkFieldOptionalPlaceholder: string = 'Optional: you should start the URL with a protocol prefix eg. http:// or https://';
-    linkFieldRequiredPlaceholder: string = 'Value required: you should start the URL with a protocol prefix eg. http:// or https://';
+    linkFieldOptionalPlaceholder: string = $localize`Optional: you should start the URL with a protocol prefix eg. http:// or https://`;
+    linkFieldRequiredPlaceholder: string = $localize`Value required: you should start the URL with a protocol prefix eg. http:// or https://`;
 
     showLookupSearchField: boolean = false;
     hadInitialLazyLoad: boolean = false;
@@ -148,10 +148,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     public setKeyFieldsErrorMessage(isSingle: boolean) {
         if (this.field.IsPartOfKey) {
             if (isSingle) {
-                this.keyFieldError = "Please enter a unique value";
+                this.keyFieldError = $localize`Please enter a unique value`;
             }
             else {
-                this.keyFieldError = "Please enter a unique combination of key field values";
+                this.keyFieldError = $localize`Please enter a unique combination of key field values`;
             }
             this.ref.markForCheck();
         }
@@ -220,7 +220,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         if (this.field && this.field.Validations) {
             for (let validation of this.field.Validations) {
                 if (validation.regex) {
-                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : 'Value does not match the required pattern.';
+                    this.regexErrorMessage = validation.message ? String(validation.message).replace(/<[^>]+>/gm, '') : $localize`Value does not match the required pattern.`;
                 } else if (validation.rule && validation.rule.startsWith('increment')) {
                     this.Increment = +validation.rule.split("increment=")[1];
                 } else if (validation.rule && validation.rule.startsWith('min')) {
@@ -415,7 +415,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         for (let i = 0; i < numInputs.length; i++) {
             let elem = numInputs[i] as HTMLInputElement;
 
-            if (elem.validity.badInput && elem.validationMessage === "Please enter a number.") {
+            if (elem.validity.badInput && elem.validationMessage === $localize`Please enter a number.`) {
                 if (this.field.FieldType === 'Number' && this.field.FieldName === elem.name) {
                     this.form.controls[this.field.FieldName].setErrors({ integer: true });
                 }
@@ -487,47 +487,47 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         if (errors["number"]) {
-            message += "Please enter a valid number. ";
+            message += $localize`Please enter a valid number.`;
         }
 
         if (errors["integer"]) {
-            message += "Please enter a valid integer. ";
+            message += $localize`Please enter a valid integer. `;
         }
 
         if (errors["maxlength"]) {
-            message += `${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}] `;
+            message += $localize`${this.currentFieldName} maximum length of ${errors["maxlength"].requiredLength} characters exceeded.  Current length is [${errors["maxlength"].actualLength}] `;
         }
 
         if (errors["minlength"]) {
-            message += `${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}] `;
+            message += $localize`${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}] `;
         }
 
         if (errors["validDay"]) {
-            message += "Value cannot be less than 1 or greater than 365. ";
+            message += $localize`Value cannot be less than 1 or greater than 365.`;
         }
 
         if (errors["max"]) {
-            message += ` Please enter a maximum value of ${errors["max"].max} `;
+            message += $localize`Please enter a maximum value of ${errors["max"].max} `;
         }
 
         if (errors["min"]) {
-            message += ` Please enter a minimum value of ${errors["min"].min} `;
+            message += $localize`Please enter a minimum value of ${errors["min"].min} `;
         }
 
         if (errors["alreadyExists"]) {
-            message += `A ${this.object.toLowerCase()} with this name already exists, please enter a unique name.`;
+            message += $localize`A ${this.object.toLowerCase()} with this name already exists, please enter a unique name.`;
         }
 
         if (errors["hasPipe"]) {
-            message += `Tag name should not have pipe symbol '|' in name!`;
+            message += $localize`Tag name should not have pipe symbol '|' in name!`;
         }
 
         if (errors["alreadyExistsProcess"]) {
-            message += `Please enter a unique name.`;
+            message += $localize`Please enter a unique name.`;
         }
 
         if (errors["invalidUrlStart"]) {
-            message += `Please start the URL with a protocol prefix eg.http:// or https://`;
+            message += $localize`Please start the URL with a protocol prefix eg.http:// or https://`;
         }
 
         return message;
@@ -681,19 +681,19 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     getPlaceholder() {
         if (this.isRequired()) {
-            return 'Value required';
+            return $localize`Value required`;
         }
         else {
-            return 'Optional';
+            return $localize`Optional`;
         }
     }
 
     getfilterplaceholder() {
-        var strfiltePH = 'Search colors';
+        var strfiltePH = $localize`Search colors`;
         if (this.field) {
             if (this.field.Name !== null) {
                 if (this.selectedObject === 'TaskType' && this.field.FieldName === 'GovernanceRole') {
-                    strfiltePH = 'Search roles';
+                    strfiltePH = $localize`Search roles`;
                 }
             }
         }
@@ -707,9 +707,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     get lookupSelectPlaceholder(): string {
         if (this.field && this.field.ParentFieldTypeName && this.field.ParentFieldTypeName.length > 0) {
-            return `Select a ${this.field.ParentFieldTypeName}`;
+            return $localize`Select a ${this.field.ParentFieldTypeName}`;
         }
-        return this.field.Required ? 'Value Required' : 'Optional';
+        return this.field.Required ? $localize`Value Required` : $localize`Optional`;
     }
 
     get isLookupFieldDisabled(): boolean {

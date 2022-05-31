@@ -252,8 +252,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     getReferenceTypes(): SelectItem[] {
         return [
-            { label: 'Self Reference', value: '1' },
-            { label: 'Child Reference', value: '2' },
+            { label: $localize`Self Reference`, value: '1' },
+            { label: $localize`Child Reference`, value: '2' },
         ];
     }
 

@@ -19,7 +19,7 @@
                 </div>
                 <div *ngSwitchCase="'Link'">
                     <div class="flex-grid-link">
-                        <div class="label">Name</div>
+                        <div class="label" i18n>Name</div>
                         <div class="link-input">
                             <input igInput
                                    igSize="full"
@@ -185,7 +185,7 @@
                                     <ng-template pTemplate="emptymessage" let-columns>
                                         <tr>
                                             <td [attr.colspan]="2">
-                                                <span *ngIf="hadInitialLazyLoad">&nbsp;&nbsp;No matches found</span>
+                                                <span *ngIf="hadInitialLazyLoad" i18n>&nbsp;&nbsp;No matches found</span>
                                             </td>
                                         </tr>
                                     </ng-template>

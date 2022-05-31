@@ -11,10 +11,11 @@
 
             <ig-search-field [hidden]="!showSimpleFilter"
                              mode="Keypress"
-                             placeholder="Search..." 
+                             i18n-placeholder
+                             placeholder="Search..."
                              class="grid-simple-filter"
                              [debounce]="600"
-                             (onSearch)="dt.filterGlobal($event, 'contains')" >
+                             (onSearch)="dt.filterGlobal($event, 'contains')">
             </ig-search-field>
             <p-table #dt
                      [value]="responsibilities"
@@ -27,34 +28,23 @@
                      [rowsPerPageOptions]="defaultPagingOptions"
                      (sortFunction)="columnSort($event)"
                      [scrollable]="true">
-                <ng-template pTemplate="colgroup">
-                    <colgroup>
-                        <col width="200" />
-                        <col width="200" />
-                        <col width="200" />
-                        <col width="300" />
-                        <col width="40" />
-                        <col width="40" />
-
-                    </colgroup>
-                </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 200px" [pSortableColumn]="'Responsibility'">
-                            Responsibility
+                        <th style="min-width: 200px" [pSortableColumn]="'Responsibility'">
+                            <ng-container i18n>Responsibility</ng-container>
                             <d3s-sortIcon [field]="'Responsibility'"></d3s-sortIcon>
                         </th>
                         <th style="min-width: 200px" [pSortableColumn]="'Resource'">
-                            Resource
+                            <ng-container i18n>Resource</ng-container>
                             <d3s-sortIcon [field]="'Resource'"></d3s-sortIcon>
                         </th>
-                        <th style="width: 200px" [pSortableColumn]="'Group'">
-                            Via
+                        <th style="min-width: 200px" [pSortableColumn]="'Group'">
+                            <ng-container i18n>Via</ng-container>
                             <d3s-sortIcon [field]="'Group'"></d3s-sortIcon>
                         </th>
-                        <th style="min-width: 300px">Context</th>
-                        <th style="width: 40px"></th>
-                        <th style="width: 40px"></th>
+                        <th style="min-width: 300px" i18n>Context</th>
+                        <th style="flex: 0 0 40px"></th>
+                        <th style="flex: 0 0 40px"></th>
                     </tr>
                     <tr [hidden]="showSimpleFilter">
                         <th><d3s-column-filter [field]="'Responsibility'" [datatype]="'text'"></d3s-column-filter></th>
@@ -67,32 +57,32 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
-                        <td>
+                        <td style="min-width: 200px">
                             <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityUid">{{item.Responsibility}}</d3s-preview-tooltip>
                         </td>
-                        <td>
+                        <td style="min-width: 200px">
                             <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.Resource}}</d3s-preview-tooltip>
                         </td>
-                        <td>
+                        <td style="min-width: 200px">
                             <div *ngIf="item.Group">{{item.Group}}</div>
                         </td>
-                        <td>
+                        <td style="min-width: 300px">
                             <div *ngIf="item.Description" [innerHtml]="item.Description"></div>
                         </td>
-                        <td>
+                        <td style="flex: 0 0 40px">
                             <div [hidden]="true">{{item.ResponsibilityUid}}</div>
                             <div *ngIf="showEdit(item)" class="RowTools">
                                 <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
-                        <td>
+                        <td style="flex: 0 0 40px">
                             <div *ngIf="item.AssignedBy.toLowerCase()=='user' && hasDeleteResponsibilitiesPermissions() && showRowTools" class="RowTools">
                                 <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </td>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="emptymessage">
+                <ng-template pTemplate="emptymessage" i18n>
                     No responsibilities found
                 </ng-template>
                 <ng-template pTemplate="summary">
@@ -102,7 +92,7 @@
         </div>
         <div *ngIf="isEditing">
             <d3s-responsibility-item-form [item]="selectedRow" [assetID]="assetID" [assetUid]="assetUid" (onSaveComplete)="load(); isEditing=false;" (onCancel)="selectedRow=$event.item;isEditing=false;"></d3s-responsibility-item-form>
-        </div> 
+        </div>
         <div *ngIf="isDeleting" style="padding:15px;">
             <d3s-delete-form [callback]="deleteCallback"
                              method="callback"

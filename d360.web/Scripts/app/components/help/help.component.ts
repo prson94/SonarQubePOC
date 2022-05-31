@@ -16,9 +16,7 @@ import { CompanySettingsService } from '../../services/settings.service';
         <div class="row">
             <div class="col s10 offset-s1">
                 <div class="tile tile-detail">
-                    <header>
-                        Help
-                    </header>
+                    <header i18n>Help</header>
 
                     <div>
                         <div class="row" *ngFor="let hr of (helpResources$ | async)">
@@ -52,9 +50,9 @@ export class HelpComponent extends BaseComponent implements OnInit {
         this.setBrowserTitle(this.titleService, 'Help');
 
         this.helpResources$ = this.resourceService.getHelpResources();
-        
+
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Help'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Help`));
     }
 }

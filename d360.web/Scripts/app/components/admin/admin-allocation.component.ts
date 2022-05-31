@@ -6,16 +6,16 @@ import { BaseComponent } from '../shared/base.component';
     selector: 'd3s-admin-allocation',
     providers: [],
     template: `
-                <header>Allocations</header>                
+                <header i18n>Allocations</header>                
                     <p-table #dt [value]="allocations" class="nym-table" selectionMode="single" [metaKeySelection]="true" [dataKey]="'Name'">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 25px; padding-left: 2px; padding-right: 2px; text-align: center"></th>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
-                            </tr>
+                            </tr> 
                             <tr [hidden]="showSimpleFilter">
                                 <th></th>
                                 <th></th>
@@ -50,5 +50,5 @@ export class AdminAllocationComponent extends BaseComponent {
 
     public rows = [0];
 
-    public allocations: any[] = [{ Name: 'Grammatic Type Allocation' }];
+    public allocations: any[] = [{ Name: $localize`Grammatic Type Allocation` }];
 }

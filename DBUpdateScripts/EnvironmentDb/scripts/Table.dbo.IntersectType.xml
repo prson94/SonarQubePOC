@@ -59,6 +59,37 @@ END
 	</rollback>
   </changeSet>
 
+  
+    <changeSet author="Puneet Gupta" id="Index.dbo.IntersectType-Uid-v1">
+    <comment>GOV-18232</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IntersectType')
+BEGIN
+	IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid' and object_id = object_id(N'dbo.IntersectType'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_IntersectType_Uid] ON [dbo].[IntersectType] ( [Uid] ASC )
+	END
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IntersectType')
+BEGIN
+	IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid' and object_id = object_id(N'dbo.IntersectType'))
+	BEGIN
+		DROP INDEX [IX_IntersectType_Uid] ON [dbo].[IntersectType]
+	END
+END		
+]]>
+	</rollback>
+  </changeSet>
+  
+
   <changeSet author="Core" id="Table.dbo.IntersectType-IntersectType_AfterInsert-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

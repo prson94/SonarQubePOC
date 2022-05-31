@@ -72,6 +72,14 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
                     });
 
                     break;
+                case AssetTypeClass.Rule:
+                    // false alarm from codacy, $localize is declared globaly
+                    // eslint-disable-next-line
+                    const assetType = $localize`Rules`;
+                    this.folderTitle = assetType;
+                    this.setBrowserTitle(this.titleService, assetType);
+                    this.area = assetType;
+                    break;
                 default:
                     let className: string = AssetTypeClass[this.assetTypeClass];
                     this.folderTitle = `${className} Assets`;
@@ -127,7 +135,11 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
     navigate(uid: string) {
         this.assetService.getAssetTypeLegacyData(uid)
             .subscribe(res => {
-                this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
+                if(res.Object === 'RuleType') {
+                    this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_RULE_ROOT}/` + res.ObjectID);
+                } else {
+                    this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
+                }
             })
     }
 }

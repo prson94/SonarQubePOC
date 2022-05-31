@@ -37,7 +37,6 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
 import { AdminExportTemplateStylesComponent } from './admin-export-template-styles.component';
 import { AdminExportTemplateStyleFormComponent } from './admin-export-template-style-form.component';
-import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 
 
 @NgModule({

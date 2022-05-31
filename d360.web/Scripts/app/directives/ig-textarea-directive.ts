@@ -21,9 +21,9 @@ export class TextAreaDirective implements AfterViewInit {
         this.disabled = this.el.nativeElement.getAttribute("disabled");
 
         if (this.required == null) {
-            this.el.nativeElement.setAttribute("placeholder", "Optional");
+            this.el.nativeElement.setAttribute("placeholder", $localize`Optional`);
         } else {
-            this.el.nativeElement.setAttribute("placeholder", "Value required");
+            this.el.nativeElement.setAttribute("placeholder", $localize`Value required`);
             this.el.nativeElement.setAttribute("aria-required", true);
 
         }

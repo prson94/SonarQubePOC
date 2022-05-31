@@ -55,6 +55,9 @@ export class AssetLookupGridComponent extends BaseComponent implements OnDestroy
         return this.visibleColumns.map((c) => c.datafield);
     }
 
+    hideDescLabel = $localize`Hide Description`;
+    showDescLabel = $localize`Show Description`;
+
     constructor(private router: Router,
         private assetService: AssetService,
         protected settingsService: CompanySettingsService,

@@ -51,9 +51,9 @@
                 <button igButton
                         type="button"
                         [igDataCy]="'Asset_Modal_Button_Cancel'"
-                        label="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}"
-                        tooltip="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}"
-                        title="{{hasUpdateFormChanged ? 'Discard Changes' : 'Cancel'}}"
+                        label="{{cancelButtonLabel}}"
+                        tooltip="{{cancelButtonLabel}}"
+                        title="{{cancelButtonLabel}}"
                         (click)="closeClick.emit();">
                 </button>
                 <div class="flex-grow"></div>
@@ -62,6 +62,8 @@
                         [igDataCy]="'Asset_Modal_Button_Another'"
                         igButton
                         [disabled]="!form.valid || savingInProgress"
+                        i18n-label
+                        i18n-tooltip
                         label="Create and Add Another"
                         tooltip="Create and Add Another"
                         [loading]="savingInProgress && savingInProgressWithAddNew"
@@ -72,8 +74,8 @@
                         class="ig-button-primary"
                         [igDataCy]="'Asset_Modal_Button_Save'"
                         igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
-                        label="{{selection ? 'Save Changes' : 'Create'}}"
-                        tooltip="{{selection ? 'Save Changes' : 'Create'}}"
+                        label="{{saveButtonLabel}}"
+                        tooltip="{{saveButtonLabel}}"
                         [loading]="savingInProgress && !savingInProgressWithAddNew">
                 </button>
             </div>

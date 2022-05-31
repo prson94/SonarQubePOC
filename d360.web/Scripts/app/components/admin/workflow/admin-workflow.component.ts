@@ -1,14 +1,12 @@
-﻿import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 
 import { WorkflowDiagramModel } from '../../../models/workflow.model';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
-
 
 @Component({
     selector: 'admin-workflow',
@@ -36,7 +34,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     ngOnInit() {
         this.areaName = StringConstants.Section_Workflows;
         this.clearSidebar();
-        this.titleService.setTitle('Workflows');
+        this.titleService.setTitle($localize`Workflows`);
         this.setCommonItems();
     }
 

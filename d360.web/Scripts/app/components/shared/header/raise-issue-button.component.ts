@@ -7,8 +7,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-raise-issue-button',
     template: `           
-        <button type="button"  class="issue-button" (click)="raiseIssue()">Take Action</button>
-        `,    
+        <button type="button"  class="issue-button" (click)="raiseIssue()" i18n>Take Action</button>
+        `,
     styles: [`
         :host{
             float:right;
@@ -18,7 +18,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class RaiseIssueButtonComponent extends BaseComponent {
-    
+
     constructor(
         protected settingsService: CompanySettingsService,
         private router: Router) {
@@ -27,5 +27,5 @@ export class RaiseIssueButtonComponent extends BaseComponent {
 
     public raiseIssue() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_RAISE_ISSUE}`);
-    }    
+    }
 }

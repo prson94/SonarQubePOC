@@ -9,21 +9,21 @@ import { CompanySettingsService } from '../../../services/settings.service';
     selector: 'd3s-admin-survey-questions',
     providers: [SurveysService],
     template: `
-               <header *ngIf="!showEditor && !showDelete">Questions
+               <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Questions</ng-container>
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
-                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="questions" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','DisplayStyle']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'DisplayStyle'">
-                                    Display Type
+                                    <ng-container i18n>Display Type</ng-container>
                                     <d3s-sortIcon [field]="'DisplayStyle'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 40px"></th>
@@ -64,7 +64,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     [callback]="theDeleteCallback"
                     [itemId]="selected?.ID"
                     [method]="'callback'"
-                    [prompt]="'Are you sure you want to delete the question [' + [selected?.Name] + ']?'"                                         
+                    [prompt]="deletePromptText"                                         
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
                 <d3s-admin-survey-question-editor *ngIf="showEditor" [questionId]="selected?.ID" [surveyTypeId]="survey?.ID" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
@@ -80,6 +80,10 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
 
     selected: SurveyQuestionType = null;
     theDeleteCallback: Function;
+
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the question [${this.selected?.Name}]?`
+    }
 
     constructor(
         private messagesService: MessagesObservableService,

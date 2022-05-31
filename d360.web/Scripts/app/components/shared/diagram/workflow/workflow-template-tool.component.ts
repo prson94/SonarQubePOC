@@ -27,29 +27,29 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
     outputFieldsSub: any;
 
     defaultFields = [
-        { value: "[OBJECT_NAME]", label: "Object Name" },
-        { value: "[OBJECT_TYPE]", label: "Object Type" },
-        { value: "[ASSET_PATH]", label: "Object Asset Path" },
-        { value: "[GOV_SCORE]", label: "Object Governance Score" },
-        { value: "[DQ_SCORE]", label: "Object Data Quality Score" },
-        { value: "[GOV_SCORE_PREV]", label: "Previous Governance Score" },
-        { value: "[DQ_SCORE_PREV]", label: "Previous Data Quality Score" },
-        { value: "[WORKFLOW_INITIATOR]", label: "Workflow Initiator Name" },
-        { value: "[WORKFLOW_INITIATOR_UID]", label: "Workflow Initiator UID" },
-        { value: "[ACTION_DETAILS]", label: "Action Details" },
-        { value: "[RECIPIENT_TYPE]", label: "Recipient Type" },
-        { value: "[RECIPIENT_RESPONSIBILITY]", label: "Recipient Responsibility" },
-        { value: "[WORKFLOW_STEP_ID]", label: "Workflow Step ID" },
-        { value: "[WORKFLOW_ID]", label: "Workflow ID" },
-        { value: "[WORKFLOW_INSTANCE_ID]", label: "Workflow Instance ID" },
-        { value: "[ASSET_UID]", label: "Asset UID" },
+        { value: "[OBJECT_NAME]", label: $localize`Object Name` },
+        { value: "[OBJECT_TYPE]", label: $localize`Object Type` },
+        { value: "[ASSET_PATH]", label: $localize`Object Asset Path` },
+        { value: "[GOV_SCORE]", label: $localize`Object Governance Score` },
+        { value: "[DQ_SCORE]", label: $localize`Object Data Quality Score` },
+        { value: "[GOV_SCORE_PREV]", label: $localize`Previous Governance Score` },
+        { value: "[DQ_SCORE_PREV]", label: $localize`Previous Data Quality Score` },
+        { value: "[WORKFLOW_INITIATOR]", label: $localize`Workflow Initiator Name` },
+        { value: "[WORKFLOW_INITIATOR_UID]", label: $localize`Workflow Initiator UID` },
+        { value: "[ACTION_DETAILS]", label: $localize`Action Details` },
+        { value: "[RECIPIENT_TYPE]", label: $localize`Recipient Type` },
+        { value: "[RECIPIENT_RESPONSIBILITY]", label: $localize`Recipient Responsibility` },
+        { value: "[WORKFLOW_STEP_ID]", label: $localize`Workflow Step ID` },
+        { value: "[WORKFLOW_ID]", label: $localize`Workflow ID` },
+        { value: "[WORKFLOW_INSTANCE_ID]", label: $localize`Workflow Instance ID` },
+        { value: "[ASSET_UID]", label: $localize`Asset UID` },
     ];
 
     relationshipFields = [
-        { value: "[REL_SUBJECT_NAME]", label: "Relationship Subject Name" },
-        { value: "[REL_OBJECT_NAME]", label: "Relationship Object Name" },
-        { value: "[REL_SUBJECT_UID]", label: "Relationship Subject UID" },
-        { value: "[REL_OBJECT_UID]", label: "Relationship Object UID" },
+        { value: "[REL_SUBJECT_NAME]", label: $localize`Relationship Subject Name` },
+        { value: "[REL_OBJECT_NAME]", label: $localize`Relationship Object Name` },
+        { value: "[REL_SUBJECT_UID]", label: $localize`Relationship Subject UID` },
+        { value: "[REL_OBJECT_UID]", label: $localize`Relationship Object UID` },
     ];
 
     selected = "none";
@@ -122,7 +122,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked, 
                 this.outputFields.forEach((f) => {
                     let label = "HTTP Response :: " + f.Name;
                     this.fields.push({
-                        value: "[HTTPRESPONSE|" + f.StepId + "|" + f.Id+ "]",
+                        value: "[HTTPRESPONSE|" + f.StepId + "|" + f.Id + "]",
                         label
                     });
                 });

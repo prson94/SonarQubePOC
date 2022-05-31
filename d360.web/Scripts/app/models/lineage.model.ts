@@ -383,7 +383,8 @@ export enum AssetBrowserPanelCommand {
     Filters = 5,
     FullScreen = 6,
     Refresh = 7,
-    Settings = 8
+    Settings = 8,
+    Add_Relationship = 9
 }
 
 export class FilterSelectionsModel {
@@ -392,22 +393,22 @@ export class FilterSelectionsModel {
     ResponsibilityTypeOptions: AssetBrowserResponsibilityTypeFilterModel[];
 
     AncestryOptions: SelectItem[] = [
-        { value: FilterAncestryMode.AllAncestors, label: 'Show all parents/owners' },
-        { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }
+        { value: FilterAncestryMode.AllAncestors, label: $localize`Show all parents/owners` },
+        { value: FilterAncestryMode.DirectAncestor, label: $localize`Show direct parent/owner` }
     ];
 
     DescendancyOptions: SelectItem[] = [
-        { value: FilterDescendancyMode.None, label: 'None' },
-        { value: FilterDescendancyMode.Direct, label: 'Direct children only' },
-        { value: FilterDescendancyMode.All, label: 'All descendants' }
+        { value: FilterDescendancyMode.None, label: $localize`None` },
+        { value: FilterDescendancyMode.Direct, label: $localize`Direct children only` },
+        { value: FilterDescendancyMode.All, label: $localize`All descendants` }
     ];
 
     HopOptions: SelectItem[] = [
-        { label: 'One', value: 1 },
-        { label: 'Two', value: 2 },
-        { label: 'Three', value: 3 },
-        { label: 'Four', value: 4 },
-        { label: 'Five', value: 5 }
+        { label: $localize`One`, value: 1 },
+        { label: $localize`Two`, value: 2 },
+        { label: $localize`Three`, value: 3 },
+        { label: $localize`Four`, value: 4 },
+        { label: $localize`Five`, value: 5 }
     ];
 
     FilterAssetTypes: TreeNode[] = [];

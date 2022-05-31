@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 })
 
 export class ShoppingCartRequestComponent extends BaseComponent implements OnInit, OnDestroy {
-    private title = 'Shopping Cart Request';
+    private title = $localize`Shopping Cart Request`;
     private cart: ShoppingCart;
     private items: ShoppingCartListItem[] = [];
     private sub;
@@ -71,7 +71,7 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
     }
 
     navigate(item: ShoppingCartListItem) {
-        this.router.navigateByUrl(item.Url); 
+        this.router.navigateByUrl(item.Url);
     }
 }
 

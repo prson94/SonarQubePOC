@@ -8,7 +8,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-responsibility-relations',
     templateUrl: './responsibility-relations.component.html',
-    providers: [ResponsibilityTypeService ]
+    providers: [ResponsibilityTypeService]
 })
 
 export class ResponsibilityRelationsComponent extends BaseComponent implements OnChanges {
@@ -40,7 +40,7 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
     private theDeleteCallback: Function;
 
-    
+
     constructor(
         private responsibilityTypeService: ResponsibilityTypeService,
         private messagesService: MessagesObservableService,
@@ -69,10 +69,10 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
 
         // Update component title.
         if (this.queryType === 'A') {
-            this.title = 'Responsibility Type Assignment';
+            this.title = $localize`Responsibility Type Assignment`;
         }
         else {
-            this.title = 'Asset Assignment';
+            this.title = $localize`Asset Assignment`;
         }
 
         this.isLoading = true;
@@ -153,11 +153,15 @@ export class ResponsibilityRelationsComponent extends BaseComponent implements O
         this.responsibilityTypeService.deleteResponsibilityTypeAllocation(this.selectedRow.ResponsibilityTypeUid, this.selectedRow.AssetTypeUid)
             .subscribe((res) => {
                 this.showMessageForResult(this.messagesService, res);
-                if (!res.isError){
+                if (!res.isError) {
                     this.isDeleting = false;
                     this.onDelete.emit();
                     this.load();
                 }
             });
+    }
+
+    get deletePromptText(): string {
+        return $localize`Are you sure you want to delete the responsibility relation between [${this.selectedRow?.AssetTypeName}] and [${this.selectedRow?.ResponsibilityTypeName}]? This will remove all assigned responsibilities between these two types and cannot be undone.`;
     }
 }

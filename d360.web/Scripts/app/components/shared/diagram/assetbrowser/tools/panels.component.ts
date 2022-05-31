@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
-import { AssetBrowserPanelCommand, DiagramType } from '../../../../../models/lineage.model';
+import { AssetBrowserDiagramAsset, AssetBrowserPanelCommand, DiagramType } from '../../../../../models/lineage.model';
+import { Permissions } from "../../../../../services/permissions.service";
 
 @Component({
     selector: 'd3s-assetbrowser-panels',
@@ -23,6 +24,8 @@ export class AssetBrowserPanelsComponent {
     @Input() totalAlertCount: number;
 
     @Input() diagramType = DiagramType.Lineage;
+    @Input() assetPermissions: Permissions;
+    @Input() selectedDiagramAsset: AssetBrowserDiagramAsset;
 
     @Output() refresh: EventEmitter<boolean> = new EventEmitter();
     @Output() download: EventEmitter<boolean> = new EventEmitter();
@@ -71,5 +74,9 @@ export class AssetBrowserPanelsComponent {
 
     private execute_Settings() {
         this.execute(AssetBrowserPanelCommand.Settings);
+    }
+
+    get expandShringLabel(): string {
+        return this.isFullScreen ? $localize`Shrink View` : $localize`Expand View`;
     }
 } 

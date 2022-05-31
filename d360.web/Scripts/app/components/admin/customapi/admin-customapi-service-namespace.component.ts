@@ -1,12 +1,12 @@
-﻿import {Component, OnInit, SimpleChange} from '@angular/core';
-import {Title} from '@angular/platform-browser';
-import {ActivatedRoute, Router} from '@angular/router';
-import {Breadcrumb} from '../../../models/breadcrumb.model';
-import {ApiNamespace, ApiService} from '../../../models/custom-api.model';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {CustomAPIService} from '../../../services/custom-api.service';
-import {SecondaryNavService} from '../../../services/right-sidebar.service';
-import {AdminBaseComponent} from '../admin-base.component';
+﻿import { Component, OnInit, SimpleChange } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { ApiNamespace, ApiService } from '../../../models/custom-api.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CustomAPIService } from '../../../services/custom-api.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 
@@ -26,6 +26,9 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
     private sub: any;
     public service: ApiService = null;
 
+    searchText = $localize`Search...`;
+    editorTitle = $localize`Namespace`;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -37,7 +40,7 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-        this.areaName = "Custom API";
+        this.areaName = $localize`Custom API`;
         this.theDeleteCallback = this.deleteItem.bind(this);
     }
 
@@ -58,8 +61,8 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
 
                             this.headerBreadcrumbService.clearBreadcrumbs();
 
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Administration'));
-                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Custom API', '/admin/customapi'));
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Administration`));
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Custom API`, '/admin/customapi'));
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));
                         });
                 });
@@ -101,5 +104,9 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
                 this.showDelete = false;
             }
         );
+    }
+
+    get deleteModalTitle(): string {
+        return $localize`Are you sure you want to delete the namespace [${this.selected?.Node}]?`;
     }
 }

@@ -72,7 +72,7 @@ ig-search-field {
         position: absolute;
         width: 32px;
         height: 32px;
-        color: @ig-purple;
+        color: var(--tabLinkColor);
         top: 0;
         right: 28px;
         text-align: center;
@@ -125,6 +125,18 @@ ig-search-field {
     .ig-search-field-button.clear {
       background-color: @ig-grey-t5;
       color: @ig-black;
+    }
+  }
+}
+
+.grid-actions-header.column-layout {
+  ig-search-field {
+    width: 100%;
+  }
+
+  .ig-search-field {
+    &.has-tooltip {
+      width: 100%;
     }
   }
 }

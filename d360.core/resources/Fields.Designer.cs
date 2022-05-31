@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Fields {
@@ -61,11 +61,56 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Administrator?.
+        /// </summary>
+        public static string Administrator_Name {
+            get {
+                return ResourceManager.GetString("Administrator_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Path.
+        /// </summary>
+        public static string AssetPath_Name {
+            get {
+                return ResourceManager.GetString("AssetPath_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Assigned User/Group.
+        /// </summary>
+        public static string AssignedUserGroup_Name {
+            get {
+                return ResourceManager.GetString("AssignedUserGroup_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Code.
         /// </summary>
         public static string Code_Name {
             get {
                 return ResourceManager.GetString("Code_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Color.
+        /// </summary>
+        public static string Color_Name {
+            get {
+                return ResourceManager.GetString("Color_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Context.
+        /// </summary>
+        public static string Context_Name {
+            get {
+                return ResourceManager.GetString("Context_Name", resourceCulture);
             }
         }
         
@@ -376,6 +421,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Last Seen.
+        /// </summary>
+        public static string LastSeen_Name {
+            get {
+                return ResourceManager.GetString("LastSeen_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The exactl length that this field requires for a value..
         /// </summary>
         public static string Length_Description {
@@ -538,6 +592,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owned items.
+        /// </summary>
+        public static string OwnedItems_Name {
+            get {
+                return ResourceManager.GetString("OwnedItems_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Owner/Parent.
         /// </summary>
         public static string Parent_Name {
@@ -583,6 +646,69 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Choose sample....
+        /// </summary>
+        public static string RegexPatternChoose {
+            get {
+                return ResourceManager.GetString("RegexPatternChoose", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        public static string RegexPatternEmail {
+            get {
+                return ResourceManager.GetString("RegexPatternEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Internal Url.
+        /// </summary>
+        public static string RegexPatternInternalUrl {
+            get {
+                return ResourceManager.GetString("RegexPatternInternalUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IP Address.
+        /// </summary>
+        public static string RegexPatternIP {
+            get {
+                return ResourceManager.GetString("RegexPatternIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to North American Phone.
+        /// </summary>
+        public static string RegexPatternNorthAmericanPhone {
+            get {
+                return ResourceManager.GetString("RegexPatternNorthAmericanPhone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Public Url.
+        /// </summary>
+        public static string RegexPatternPublicUrl {
+            get {
+                return ResourceManager.GetString("RegexPatternPublicUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to US Zip Code.
+        /// </summary>
+        public static string RegexPatternUSZipCode {
+            get {
+                return ResourceManager.GetString("RegexPatternUSZipCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A description of the meaning for this report; what this report trying to explain..
         /// </summary>
         public static string ReportDescription_Description {
@@ -615,6 +741,15 @@ namespace d360.core.resources {
         public static string ReportObjectType_Name {
             get {
                 return ResourceManager.GetString("ReportObjectType_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Responsibility.
+        /// </summary>
+        public static string Responsibility_Name {
+            get {
+                return ResourceManager.GetString("Responsibility_Name", resourceCulture);
             }
         }
         
@@ -723,6 +858,15 @@ namespace d360.core.resources {
         public static string ValidationDescription_Name {
             get {
                 return ResourceManager.GetString("ValidationDescription_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Via.
+        /// </summary>
+        public static string Via_Name {
+            get {
+                return ResourceManager.GetString("Via_Name", resourceCulture);
             }
         }
     }

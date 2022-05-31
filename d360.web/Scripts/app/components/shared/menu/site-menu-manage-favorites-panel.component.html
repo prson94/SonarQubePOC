@@ -1,67 +1,70 @@
 <div class="ie-min-content">
-	<ng-container *ngLet="isLoading$ | async as isLoading">
-		<div class="megamenu-header truncate manageFavoritesHeader">
-			<button [disabled]="isLoading"
-				(click)="store.toggleManageFavoritesOffAction()"
-				igButton
-				icon="fa-arrow-left"
-				pTooltip="Back to Favorites"
-				tooltipPosition="top"
-				tooltipStyleClass="ig-tooltip">
-			</button>
-			<div class="manageFavoritesHeaderText">Manage Favorites</div>
-			<button [disabled]="!(canRemove$ | async) || isLoading"
-				[loading]="isLoading"
-				(click)="store.removeFavoritesSaga()"
-				igButton
-				icon="fa-trash"
-				pTooltip="Remove selected favorites"
-				tooltipPosition="top"
-				tooltipStyleClass="ig-tooltip"
-				class="removeButton">
-			</button>
-		</div>
-		<div [ngStyle]="{'max-height': maxHeight}"
-			class="row megamenu-items favorites-scroll-fix">
-			<d3s-loading [isLoading]="isLoading"></d3s-loading>
-			<div *ngIf="!isLoading"
-				class="col s12 megamenu-items-container">
-				<ul class="menu-group">
-					<div class="menu-item truncate">
-						<div class="favorite-container">
-							<ng-container *ngLet="allFavoritesRemovalStatus$ | async as allFavoritesRemovalStatus">
-								<p-triStateCheckbox [ngModel]="allFavoritesRemovalStatus"
-									(ngModelChange)="toggleAll(allFavoritesRemovalStatus, $event)"
-									name="all"
-									label="All"
-									igCheckbox>
-								</p-triStateCheckbox>
-							</ng-container>
-						</div>
-					</div>
-					<ng-container *ngFor="let favorite of favorites$ | async">
-						<ng-container *ngLet="getFavoriteRemovalStatus(favorite.Id) | async as removalStatus">
-							<div [class.on]="removalStatus"
-								class="menu-item truncate">
-								<div [style.paddingLeft]="'20px'"
-									class="favorite-container">
-									<p-checkbox [name]="favorite.Id"
-										[label]="''"
-										[ngModel]="removalStatus"
-										(ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: $event })"
-										igCheckbox
-										binary="true">
-									</p-checkbox>
-									<label [for]="favorite.Id"
-										(click)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: !removalStatus })">
-										<d3s-site-menu-favorite-item [favorite]="favorite"></d3s-site-menu-favorite-item>
-									</label>
-								</div>
-							</div>
-						</ng-container>
-					</ng-container>
-				</ul>
-			</div>
-		</div>
-	</ng-container>
+    <ng-container *ngLet="isLoading$ | async as isLoading">
+        <div class="megamenu-header truncate manageFavoritesHeader">
+            <button [disabled]="isLoading"
+                    (click)="store.toggleManageFavoritesOffAction()"
+                    igButton
+                    icon="fa-arrow-left"
+                    i18n-pTooltip
+                    pTooltip="Back to Favorites"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip">
+            </button>
+            <div class="manageFavoritesHeaderText">Manage Favorites</div>
+            <button [disabled]="!(canRemove$ | async) || isLoading"
+                    [loading]="isLoading"
+                    (click)="store.removeFavoritesSaga()"
+                    igButton
+                    icon="fa-trash"
+                    i18n-pTooltip
+                    pTooltip="Remove selected favorites"
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="removeButton">
+            </button>
+        </div>
+        <div [ngStyle]="{'max-height': maxHeight}"
+             class="row megamenu-items favorites-scroll-fix">
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div *ngIf="!isLoading"
+                 class="col s12 megamenu-items-container">
+                <ul class="menu-group">
+                    <div class="menu-item truncate">
+                        <div class="favorite-container">
+                            <ng-container *ngLet="allFavoritesRemovalStatus$ | async as allFavoritesRemovalStatus">
+                                <p-triStateCheckbox [ngModel]="allFavoritesRemovalStatus"
+                                                    (ngModelChange)="toggleAll(allFavoritesRemovalStatus, $event)"
+                                                    name="all"
+                                                    i18n-label
+                                                    label="All"
+                                                    igCheckbox>
+                                </p-triStateCheckbox>
+                            </ng-container>
+                        </div>
+                    </div>
+                    <ng-container *ngFor="let favorite of favorites$ | async">
+                        <ng-container *ngLet="getFavoriteRemovalStatus(favorite.Id) | async as removalStatus">
+                            <div [class.on]="removalStatus"
+                                 class="menu-item truncate">
+                                <div [style.paddingLeft]="'20px'"
+                                     class="favorite-container">
+                                    <p-checkbox [name]="favorite.Id"
+                                                [label]="''"
+                                                [ngModel]="removalStatus"
+                                                (ngModelChange)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: $event })"
+                                                igCheckbox
+                                                binary="true">
+                                    </p-checkbox>
+                                    <label [for]="favorite.Id"
+                                           (click)="store.setFavoriteRemovalAction({ favoriteId: favorite.Id, removeOn: !removalStatus })">
+                                        <d3s-site-menu-favorite-item [favorite]="favorite"></d3s-site-menu-favorite-item>
+                                    </label>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </ng-container>
+                </ul>
+            </div>
+        </div>
+    </ng-container>
 </div>

@@ -27,6 +27,10 @@
           "en-gb": {
             "translation": "locale/messages.en-gb.xlf",
             "baseHref": ""
+          },
+          "ca": {
+            "translation": "locale/messages.ca.xlf",
+            "baseHref": ""
           }
         }
       },
@@ -90,6 +94,11 @@
               "localize": [
                 "en-gb"
               ]
+            },
+            "ca": {
+              "localize": [
+                "ca"
+              ]
             }
           },
           "defaultConfiguration": ""
@@ -109,17 +118,6 @@
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
             "browserTarget": "govern:build"
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "scripts/tsconfig.aot.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         }
       }

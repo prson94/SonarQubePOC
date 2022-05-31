@@ -1,53 +1,54 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
-<div *ngIf="!showDelete && !isEditing && !hasNoListableColumns && isDefinitionLoaded">
-    <div class="header-description">
-        <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
-             [innerHtml]="gridObject.Description | safeHtml"
-             class="tile-description ql-editor no-padding"></div>
-        <span *ngIf="gridObject && gridObject.Description"
-              aria-hidden="true"
-              title="Details"
-              class="action-tile-span"
-              (click)="toggleArtifactDetail()">
-            {{showArtifactDetails ? 'Hide Description':'Show Description'}}
-        </span>
-    </div>
-</div>
+<ig-portal-content-provider name="asset-description" [template]="description">
+    <ng-template #description>
+        <i *ngIf="isDefinitionLoaded && gridObject && gridObject.Description"
+            class="header-description fa fa-info-circle help-icon"
+            [escape]="false"
+            [pTooltip]="gridObject.Description | sanitize"
+            tooltipPosition="top"
+            tooltipStyleClass="ig-tooltip"></i>
+    </ng-template>
+</ig-portal-content-provider>
 
-<div class="grid-actions-header {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
-    <div class="simple-search">
-        <ig-search-field mode="Keypress"
-                         [debounce]="600"
-                         (onSearch)="onSimpleSearch($event)"
-                         [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
-                         [infoTooltip]="simpleSearchTooltipHTML">
-        </ig-search-field>
-    </div>
-    <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
-    <div class="grid-action-buttons">
-        <button *ngIf="showAddButton && hasAddAssetPermissions()"
-                igButton
-                [attr.data-cy]="'Assets_Add'"
-                pTooltip="Create new asset"
-                tooltipPosition="top"
-                tooltipStyleClass="ig-tooltip"
-                class="ig-button-primary"
-                icon="fa-plus"
-                [igDataCy]="'Assets_Add'"
-                (click)="add()">
-        </button>
-
-        <div pTooltip="{{(canExportRecords() ? 'Export to Excel' : 'Export not available for over ' + maxExportRows + ' rows')}}"
-             tooltipPosition="left"
-             tooltipStyleClass="ig-tooltip">
-            <button igButton
-                    [disabled]="!canExportRecords() || isExportInProgress"
-                    [igDataCy]="'Assets_Export'"
-                    icon="fa-download"
-                    [loading]="isExportInProgress"
-                    (click)="export(false)">
-            </button>
+<div class="grid-actions-header column-layout {{(this.showDelete || this.isEditing || !isDefinitionLoaded ? 'hidden' : '')}}">
+    <div class="grid-actions-header-row">
+        <div class="simple-search">
+            <ig-search-field mode="Keypress"
+                             [debounce]="600"
+                             (onSearch)="onSimpleSearch($event)"
+                             [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
+                             [infoTooltip]="simpleSearchTooltipHTML">
+            </ig-search-field>
         </div>
+        <div class="grid-action-buttons">
+            <button *ngIf="showAddButton && hasAddAssetPermissions()"
+                    igButton
+                    [attr.data-cy]="'Assets_Add'"
+                    pTooltip="Create new asset"
+                    i18n-pTooltip
+                    tooltipPosition="top"
+                    tooltipStyleClass="ig-tooltip"
+                    class="ig-button-primary"
+                    icon="fa-plus"
+                    [igDataCy]="'Assets_Add'"
+                    (click)="add()">
+            </button>
+    
+            <div pTooltip="{{exportTooltip}}"
+                 tooltipPosition="left"
+                 tooltipStyleClass="ig-tooltip">
+                <button igButton
+                        [disabled]="!canExportRecords() || isExportInProgress"
+                        [igDataCy]="'Assets_Export'"
+                        icon="fa-download"
+                        [loading]="isExportInProgress"
+                        (click)="export(false)">
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="grid-actions-header-row">
+        <advanced-filtering [loadIdentifier]="gridObject.AssetTypeUID" (onLoad)="onFiltersLoaded()" (onChange)="advancedFiltersChanged($event)"></advanced-filtering>
     </div>
 </div>
 
@@ -60,7 +61,7 @@
 <div class="row asset-grid-wrapper" *ngIf="!showDelete && !isEditing && !hasNoListableColumns">
     <div #rightMenu
          [ngClass]="{ 'artifact-context-menu': isMenuOpen, 'artifact-context-menu-closed': !isMenuOpen }">
-        <a [href]="itemUrl" target="_blank">Open in new window</a>
+        <a [href]="itemUrl" target="_blank" i18n>Open in new window</a>
     </div>
     <d3s-asset-grid-custom-export *ngIf="showCustomExport && canExportRecords()"
                                   (closeClick)="showCustomExport = false"
@@ -98,32 +99,24 @@
                  [loading]="isLoading"
                  [loadingIcon]="'fa fa-spinner fa-spin'"
                  (onPage)="numberOfRowsByCategoryService.onPage($event)">
-            <ng-template pTemplate="colgroup">
-                <colgroup>
-                    <col *ngFor="let col of columns"
-                         [style.width]="col.columnWidth ? col.columnWidth + 'px' : null" />
-                    <col style="width: 30px" />
-                    <col style="width: 48px" />
-                </colgroup>
-            </ng-template>
             <ng-template pTemplate="header">
                 <tr>
                     <th *ngFor="let col of columns"
                         [pSortableColumn]="col.sortable ? col.datafield : null"
-                        [style.width]="col.columnWidth ? col.columnWidth + 'px' : null">
+                        [style.minWidth]="col.columnWidth ? col.columnWidth + 'px' : '75px'">
                         {{ col.text }}
                         <d3s-sortIcon *ngIf="col.sortable"
                                       [field]="col.datafield"></d3s-sortIcon>
                     </th>
-                    <th style="width: 30px"></th>
-                    <th style="width: 30px"></th>
+                    <th style="flex: 0 0 30px"></th>
+                    <th style="flex: 0 0 30px"></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
-                    <td *ngFor="let col of columns; let i=index">
+                    <td *ngFor="let col of columns; let i=index" [style.minWidth]="col.columnWidth ? col.columnWidth + 'px' : '75px'">
                         <ng-container *ngIf="i != linkColumnIndex; else linked">
-                            <div style="display:block; word-wrap:break-word">
+                            <div style="display: block; word-wrap: break-word; width: 100%">
                                 <d3s-dynamic-field-value [column]="col"
                                                          [fields]="fields"
                                                          [item]="item"
@@ -134,7 +127,7 @@
                         </ng-container>
                         <ng-template #linked>
                             <a (click)="selectArtifact(item)"
-                               style="word-wrap:break-word;">
+                               style="word-wrap: break-word; width: 100%">
                                 <d3s-dynamic-field-value [column]="col"
                                                          [fields]="fields"
                                                          [item]="item"
@@ -146,7 +139,7 @@
                         </ng-template>
 
                     </td>
-                    <td>
+                    <td style="flex: 0 0 30px">
                         <div class="RowTools"
                              *ngIf="item[certificationStatusIndex] != null && item[certificationStatusIndex] != '' && !statusHasColor">
                             <i [pTooltip]="'Status: ' + item[certificationStatusIndex]"
@@ -155,7 +148,7 @@
                                style="margin: 0 10px 0 5px"></i>
                         </div>
                     </td>
-                    <td class="asset-grid-tools">
+                    <td class="asset-grid-tools" style="flex: 0 0 30px">
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
@@ -179,7 +172,7 @@
                   *ngIf="showEditor"
                   [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
                   [objectType]="gridObject.Object"
-                  [title]="selected ? 'Edit Asset' : 'Create New Asset'"
+                  [title]="assetEditorTitle"
                   [selection]="selected"
                   [rowID]="rowID"
                   [objectTypeUid]="gridObject?.AssetTypeUID"
@@ -198,6 +191,6 @@
                          (onCancel)="showDelete = false"
                          (onDeleted)="onDeleted()">
 </d3s-asset-delete-editor>
-<div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;">
+<div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;" i18n>
     The current artifact type has no listable fields types configured.  Please configure at least one field type as listable in order to see data on the artifact list page.  For further information how to configure a field type as listable see the product guide.
 </div>

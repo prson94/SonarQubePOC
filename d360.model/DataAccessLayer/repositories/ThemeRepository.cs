@@ -21,6 +21,8 @@ namespace d360.model.DataAccessLayer
     {
         #region DI
 
+        private readonly Guid defaultThemeUID = new Guid("AAAAAAAA-0000-0000-0000-000000000001");
+
         internal ICompanyContext CompanyContext;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
@@ -268,6 +270,14 @@ namespace d360.model.DataAccessLayer
 
             if (dbTheme == null)
             {
+                //load default Precisely theme if for any reason dbTheme is null
+                dbTheme = CompanyContext.Themes.FirstOrDefault(x => x.Uid == this.defaultThemeUID);
+                dbCreatedBy = new GlobalReportingResource();
+                dbUpdatedBy = new GlobalReportingResource();
+            }
+
+            if (dbTheme == null)
+            {
                 throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnGet, ThemeErrors.NoCurrentThemes);
             }
 
@@ -349,6 +359,11 @@ namespace d360.model.DataAccessLayer
             if (existingTheme == null)
             {
                 throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeWithUidNotFound);
+            }
+
+            if (theme.IsCurrent != existingTheme.IsCurrent && existingTheme.IsCurrent == true)
+            {
+                throw new GenericException(HttpStatusCode.NotFound, ThemeErrors.ErrorOnUpdate, ThemeErrors.ThemeInUseForIsCurrentEdit);
             }
 
             var nowPreviousTheme = existingTheme.CloneThis();

@@ -51,21 +51,33 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Table.workflow.Item-v2">
-  <comment>GOV-12894</comment>
+  <changeSet author="Puneet Gupta" id="Index.workflow.Item-v1">
+  <comment>GOV-18232</comment>
    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 <![CDATA[
-IF not EXISTS (select * from sys.indexes where name = 'IX_WorkflowItem_ObjectObjectID')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'Item')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_WorkflowItem_ObjectObjectID] ON [workflow].[Item] ([Object] ASC, [ObjectID] ASC)
+	IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_WorkflowItem_ObjectObjectID' and object_id = object_id(N'workflow.Item'))
+	BEGIN
+		DROP INDEX [IX_WorkflowItem_ObjectObjectID] ON [workflow].[Item] 
+	END
+
+	IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_WorkflowItem_ObjectObjectID' and object_id = object_id(N'workflow.Item'))
+	BEGIN
+		CREATE NONCLUSTERED INDEX [IX_WorkflowItem_ObjectObjectID] ON [workflow].[Item] ([Object] ASC, [ObjectID] ASC) INCLUDE([VersionID])
+	END
+
 END
 ]]>
     </sql>
 	<rollback>
 <![CDATA[
-IF EXISTS (select * from sys.indexes where name = 'IX_WorkflowItem_ObjectObjectID')
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'Item')
 BEGIN
-	DROP INDEX [IX_WorkflowItem_ObjectObjectID] ON [workflow].[Item] 
+	IF EXISTS (select * from sys.indexes where name = 'IX_WorkflowItem_ObjectObjectID')
+	BEGIN
+		DROP INDEX [IX_WorkflowItem_ObjectObjectID] ON [workflow].[Item] 
+	END
 END
 ]]>
 	</rollback>

@@ -3757,7 +3757,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel
                                 {
                                     CompanyID = CurrentCompanyID,
-                                    AssetTypeUid = r.uid
+                                    AssetTypeUid = r.uid,
+                                    Origin = "RemoveAssetTypes, uid: " + r.uid.ToString()
                                 });
                             });
                     }
@@ -11022,12 +11023,22 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 				inner join fieldtype ft on pd.fieldtypeid = ft.id
 				where pd.fieldtypeid is not null and ft.type = 'Boolean'
 
-				update #parsedData
-				set Value = flv.Value
-				from #parsedData pd
-				inner join fieldtype ft on pd.fieldtypeid = ft.id
-				left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
-				where pd.fieldtypeid is not null and ft.type = 'Lookup'
+		        update #parsedData
+                set 
+	                Value = lookupValue.Value
+                from #parsedData pd 
+	                inner join fieldtype ft on pd.fieldtypeid = ft.id
+	                left join (
+		                select distinct
+			                flv.FieldTypeID,
+			                flv.Text,
+                            flv.Value
+		                from #parsedData pd
+		                left join FieldLookupValue flv on flv.FieldTypeID = pd.FieldTypeId
+	                ) lookupValue
+		                on lookupValue.FieldTypeID = pd.FieldTypeId 
+		                and trim(pd.Value) = lookupValue.Text 
+                where pd.fieldtypeid is not null and ft.type = 'Lookup'
 
 				update #parsedData
 				set ErrorMessage = 'Invalid Field name.'

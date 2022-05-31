@@ -831,7 +831,7 @@ select 'TaxonomyType|0' as value, '{CommonNames.AssetTypeClass_Model.CleanForSql
 union
 select 'PolicyType|0' as value, '{CommonNames.AssetTypeClass_Policy.CleanForSql()}' as title
 union
-select 'ReferenceItemType|0' as value, 'Reference' as title
+select 'ReferenceItemType|0' as value, '{CommonNames.AssetTypeClass_Reference.CleanForSql()}' as title
 ) O order by title";
 					break;
 				#endregion
@@ -860,7 +860,7 @@ from	(
 
 		select		3 as Sort,
 					'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 
-					'Reference Item: ' + P.[Path] as title 
+					'{CommonNames.ReferenceItem.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType  A
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 9
@@ -900,12 +900,12 @@ order by Sort, title";
 				#endregion
 				case "M":   // Users/Groups
 					models = new List<OptionModel> {
-						new OptionModel { title = "Group Membership", value = "Membership|0" },
-						new OptionModel { title = "Users", value = "Membership|1" }
+						new OptionModel { title = CommonNames.Text_GroupMembership, value = "Membership|0" },
+						new OptionModel { title = CommonNames.Text_Users, value = "Membership|1" }
 					};
 					break;
 				case "BL":   // Lineage
-					models = new List<OptionModel> { new OptionModel { title = "Default", value = "Lineage|-1" } };
+					models = new List<OptionModel> { new OptionModel { title = Values.Default, value = "Lineage|-1" } };
 					break;
 				default:
 					models = new List<OptionModel>();

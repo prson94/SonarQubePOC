@@ -9,6 +9,7 @@
                                class="grid-simple-filter"
                                pInputText
                                placeholder="Search..."
+                               i18n-placeholder
                                size="100"
                                type="text">
                         <p-table #dt
@@ -28,7 +29,7 @@
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
-                                    Name
+                                    <ng-container i18n>Name</ng-container>
                                     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                                 </th>
                                 <th *ngIf="hasModifyAssetPermissions()"
@@ -72,13 +73,13 @@
                            *ngIf="showEditor"
                            [assetTypeClass]="assetTypeClass"
                            [id]="selected?.AssetTypeID"
-                           [title]="selected != null ? 'Edit Reference List' : 'Add Reference List'">
+                           [title]="assetTypEditorTitle">
     </d3s-asset-type-editor>
     <d3s-delete-form (onCancel)="showDelete=false;"
                      *ngIf="showDelete"
                      [callback]="theDeleteCallback"
                      [itemId]="selected?.AssetTypeID"
                      [method]="'callback'"
-                     [prompt]="'Are you sure you want to delete the selected item?'"
+                     [prompt]="deleteTitle"
     ></d3s-delete-form>
 </div>

@@ -1,14 +1,14 @@
-﻿<header>Upload a Spreadsheet Job</header>
+﻿<header i18n>Upload a Spreadsheet Job</header>
 <div class="clear"></div>
-<div class="form-instructions">Please ensure that you have column headers in your spreadsheet.</div>
+<div class="form-instructions" i18n>Please ensure that you have column headers in your spreadsheet.</div>
 <form #form="ngForm" (ngSubmit)="save()">
     <div class="row">
         <div class="col s12">
-            <div class="FieldNameRequired">Action</div>
+            <div class="FieldNameRequired" i18n>Action</div>
             <p-dropdown [options]="actions" [(ngModel)]="selectedAction" (onChange)="loadTypes()" [style]="{'width':'98%'}" name="Action"></p-dropdown>
         </div>
         <div class="col s12" *ngIf="selectedAction && selectedAction != '' && selectedAction != 'O'">
-            <div class="FieldNameRequired">Type</div>
+            <div class="FieldNameRequired" i18n>Type</div>
             <div *ngIf="isLoadingTypes">
                 <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
             </div>
@@ -30,11 +30,11 @@
             </div>
         </div>
         <div class="col s12" *ngIf="showDetail()">
-            <div class="FieldName">Notes</div>
+            <div class="FieldName" i18n>Notes</div>
             <textarea [(ngModel)]="notes" name="Notes"></textarea>
         </div>
         <div class="col s12" *ngIf="showDetail()">
-            <div class="FieldName">Expected columns based on the type you selected (Bold columns are required)</div>
+            <div class="FieldName" i18n>Expected columns based on the type you selected (Bold columns are required)</div>
             <div *ngIf="isLoadingColumns">
                 <div style="width:100%;text-align:center;"><i class="fa fa-spinner fa-spin"></i></div>
             </div>
@@ -46,20 +46,21 @@
                 </table>
             </div>
             <br /><br />
-            <a [href]="getTemplateDownloadUri()">Download Spreadsheet</a>. (Bold columns are required.  If you do not want to populate an optional column remove the column from the spreadsheet.)
+            <a [href]="getTemplateDownloadUri()" i18n>Download Spreadsheet</a>. (<ng-container i18n>Bold columns are required.  If you do not want to populate an optional column remove the column from the spreadsheet.</ng-container>)
         </div>
         <div class="col s12" *ngIf="showDetail()">
             <div class="row">&nbsp;</div>
-            <div class="FieldName">File</div>
+            <div class="FieldName" i18n>File</div>
             <div>
                 <input type="file" (change)="changeFile($event);" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="width: 99%" name="File" formenctype="multipart/form-data" />
             </div>
         </div>
         <div *ngIf="errorMessage.length > 0" class="col s12">
-            <span style="color:maroon;">An error occurred while uploading the file: {{errorMessage}}</span>
+            <span style="color:maroon;" i18n>An error occurred while uploading the file: {{errorMessage}}</span>
         </div>
         <div class="col s12" style="padding-top:15px;">
-            <button pButton type="submit" label="Save" [disabled]="!file || !showDetail() || isSaving"></button><button pButton label="Cancel" (click)="cancel()"></button><i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
+            <button pButton type="submit" label="{{saveLabel}}" [disabled]="!file || !showDetail() || isSaving"></button>
+            <button pButton label="{{cancelLabel}}" (click)="cancel()"></button><i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
         </div>
     </div>
 </form>

@@ -7,42 +7,42 @@
     <div class="content">
         <div *ngIf="isLoading"></div>
         <div *ngIf="!isLoading" class="modal-edit-form">
-            <div class="title">
+            <div class="title" i18n>
                 API Key
             </div>
-            <p>
+            <p i18n>
                 Use this set of credentials to read, add, update, or delete data within your environment, via the REST APIs.
                 Responsibilities still apply to your account, so you may have limited access to certain objects.
             </p>
             <div class="row">
                 <div class="col s12 no-padding">
-                    <label class="ig-label">API Key</label>
+                    <label class="ig-label" i18n>API Key</label>
                     <div class="key-box">
                         <input igInput igSize="full" [value]="resource.apiKey" readonly />
-                        <button igButton class="copy-to-clip" [copy-clipboard]="resource.apiKey" icon="fa-clipboard" pTooltip="Copy to clipboard" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                        <button igButton class="copy-to-clip" [copy-clipboard]="resource.apiKey" icon="fa-clipboard" i18n-pTooltip pTooltip="Copy to clipboard" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col s12 no-padding">
-                    <label class="ig-label">API Secret</label>
+                    <label class="ig-label" i18n>API Secret</label>
                     <div class="key-box">
                         <input igInput igSize="full" [value]="resource.apiSecret" readonly />
-                        <button igButton class="copy-to-clip" [copy-clipboard]="resource.apiSecret" icon="fa-clipboard" pTooltip="Copy to clipboard" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+                        <button igButton class="copy-to-clip" [copy-clipboard]="resource.apiSecret" icon="fa-clipboard" i18n-pTooltip pTooltip="Copy to clipboard" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
                     </div>
                 </div>
             </div>
             <div class="row">
-                <button igButton (click)="regenerateKeys()" [loading]="isSaving" [disabled]="isSaving" label="Regenerate API Key and Secret"></button>
+                <button igButton (click)="regenerateKeys()" [loading]="isSaving" [disabled]="isSaving" i18n-label label="Regenerate API Key and Secret"></button>
             </div>
-            <div class="row light-text">
+            <div class="row light-text" i18n>
                 Please note that you should only regenerate your API key and secret if you need to change these details for security reasons.
             </div>
         </div>
     </div>
     <div class="action-bar">
         <span class="grow"></span>
-        <button igButton (click)="onClose.emit()" class="ig-button-primary" label="Close"></button>
+        <button igButton (click)="onClose.emit()" class="ig-button-primary" i18n-label label="Close"></button>
     </div>
 </d3s-modal>
 

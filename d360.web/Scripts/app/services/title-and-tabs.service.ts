@@ -116,12 +116,12 @@ export class TitleAndTabsService extends AssetGridBaseComponent {
       }),
     ).subscribe((iconName: string) => {
       this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
-      this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
-      this.secondaryNavService.setCurrentArea(this.artifactType.Name, iconName, 'Assets');
+        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
+        this.secondaryNavService.setCurrentArea(this.artifactType.Name, iconName, $localize`Assets`);
       if (this.artifactType.HasV2Workflows) {
         this.secondaryNavService.showItem(
-          new SecondaryNavItem(
-            'Workflow',
+            new SecondaryNavItem(
+            $localize`Workflow`,
             'workflowmonitor',
             ['fa-usb'],
             `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`

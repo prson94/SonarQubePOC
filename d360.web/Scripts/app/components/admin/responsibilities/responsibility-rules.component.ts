@@ -1,6 +1,6 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { ResponsibilityType, IResponsibilityTypeService, ResponsibilityTypeRelationRule, ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
+import { ResponsibilityTypeRelationRuleSummary } from '../../../models/responsibility-type.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -8,12 +8,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
 @Component({
     selector: 'd3s-responsibility-rules',
     templateUrl: './responsibility-rules.component.html',
-    providers: [ResponsibilityTypeService ]
+    providers: [ResponsibilityTypeService]
 })
 
 export class ResponsibilityRulesComponent extends BaseComponent implements OnChanges {
     @Input() id: number;
-    @Input() title: string = 'Ownership Rules';
+    @Input() title: string = $localize`Ownership Rules`;
     @Input() forceReload: boolean = false;
 
     @Input() showAddButton: boolean = true;
@@ -37,7 +37,10 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
 
     private theDeleteCallback: Function;
     private theDeleteDateCallback: Function;
-    
+
+    deleteButtonText = $localize`Run Rule`;
+    searchText = $localize`Search...`;
+
     constructor(
         private responsibilityTypeService: ResponsibilityTypeService,
         private messagesService: MessagesObservableService,
@@ -140,5 +143,13 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
 
     private htmlDecode(val: string): string {
         return val ? String(val).replace(/<[^>]+>/gm, '') : '';
+    }
+
+    get deletePrompt(): string {
+        return $localize`Are you sure you want to delete the rule[${this.selectedRow?.Name}]?`;
+    }
+
+    get runRulePrompt(): string {
+        return $localize`Are you sure you want to run the rule [${this.selectedRow?.Name}] now? The rule will be scheduled to run immediately, clearing the current Last Run Date. Ownership rules are scheduled to run automatically on a regular basis. You should only need to use this feature if you are having issues with ownership rules being applied automatically.`;
     }
 }

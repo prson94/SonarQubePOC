@@ -1,12 +1,12 @@
 ﻿<div class="row">
     <div class="col s12">
-        <div class="FieldName">Name</div>
+        <div class="FieldName" i18n>Name</div>
         <div>
             <input type="text" style="width: 95%" [ngModel]="transition.name" (ngModelChange)="transition.name = $event; transitionChange.emit(transition)" />
         </div>
     </div>
     <div class="col s12">
-        <div class="FieldName">Transition Type</div>
+        <div class="FieldName" i18n>Transition Type</div>
         <div>
             <select [ngModel]="transition.transitionType" (ngModelChange)="changeType($event)" style="width: 95%">
                 <option *ngFor="let t of transitionTypes" [value]="t.ID">{{t.Name}}</option>
@@ -42,7 +42,7 @@
     </div>
     <div *ngSwitchCase="TransitionType.Timer" class="row">
         <div class="col s12" style="padding-bottom:15px">
-            <div class="FieldName">Frequency (Days)</div>
+            <div class="FieldName" i18n>Frequency (Days)</div>
             <div>
                 <input type="number" [ngModel]="transition.settings.TimerInterval" (ngModelChange)="transition.settings.TimerInterval = $event; transitionChange.emit(transition)" style="width: 95%" />
             </div>

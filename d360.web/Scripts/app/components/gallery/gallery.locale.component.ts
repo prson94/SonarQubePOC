@@ -1,6 +1,5 @@
 ﻿import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
-
 @Component({
     selector: 'gallery-locale',
     templateUrl: './gallery.locale.component.html',

@@ -66,19 +66,26 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     private allowReassignResource = false;
     private allowReassignObject = false;
 
+    menuEditLabel = $localize`Edit`;
+    menuDeleteLabel = $localize`Delete`;
+    menuMoveToTopLabel = $localize`Move to Top`;
+    menuMoveUpTopLabel = $localize`Move Up`;
+    menuMoveDownLabel = $localize`Move Down`;
+    menuMoveToBottomLabel = $localize`Move to Bottom`;
+
     private baseMenuItems: any[] = [
-        { title: "Edit" },
-        { title: "Delete" },
+        { title: this.menuEditLabel },
+        { title: this.menuDeleteLabel },
     ];
 
     private upMenuItems: any[] = [
-        { title: "Move to Top" },
-        { title: "Move Up" }
+        { title: this.menuMoveToTopLabel },
+        { title: this.menuMoveUpTopLabel }
     ];
 
     private downMenuItems: any[] = [
-        { title: "Move Down" },
-        { title: "Move to Bottom" }
+        { title: this.menuMoveDownLabel },
+        { title: this.menuMoveToBottomLabel }
     ];
 
     private types = [
@@ -533,22 +540,22 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
 
     clickMenu(e: any) {
         switch (e.value.toLowerCase()) {
-            case "edit":
+            case this.menuEditLabel.toLowerCase():
                 this.edit();
                 break;
-            case "delete":
+            case this.menuDeleteLabel.toLowerCase():
                 this.remove();
                 break;
-            case "move up":
+            case this.menuMoveUpTopLabel.toLowerCase():
                 this.move(-1);
                 break;
-            case "move to top":
+            case this.menuMoveToTopLabel.toLowerCase():
                 this.moveTop();
                 break;
-            case "move down":
+            case this.menuMoveDownLabel.toLowerCase():
                 this.move(1);
                 break;
-            case "move to bottom":
+            case this.menuMoveToBottomLabel.toLowerCase():
                 this.moveBottom();
                 break;
         }

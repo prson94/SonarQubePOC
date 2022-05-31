@@ -3,10 +3,11 @@
     <div class="col s12 overflow-container" style="display: flex">
         <div class="tile tile-detail grid-tile">
             <div class="actions-header">
-                <h2>Themes</h2>
+                <h2 i18n>Themes</h2>
                 <div class="flex-grow"></div>
                 <div class="grid-action-buttons">
                     <button igButton
+                            i18n-pTooltip
                             pTooltip="Add new Theme"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
@@ -15,6 +16,7 @@
                     </button>
                     <button *ngIf="selectedRow && selectedRow.hasDownloadOption"
                             igButton
+                            i18n-pTooltip
                             pTooltip="Download"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
@@ -24,6 +26,7 @@
                     <input #uploadInput type="file" class="file-input" accept=".json" (change)="onFileSelected($event)" hidden>
                     <button igButton
                             [loading]="isThemeUploading"
+                            i18n-pTooltip
                             pTooltip="Import"
                             tooltipPosition="top"
                             tooltipStyleClass="ig-tooltip"
@@ -43,7 +46,7 @@
                     </div>
                     <div class="theme-name">{{theme.name}}</div>
                     <div class="flex-grow"></div>
-                    <ig-badge *ngIf="theme.isCurrent" [text]="'Current Theme'" [variant]="'positive'"></ig-badge>
+                    <ig-badge *ngIf="theme.isCurrent" i18n-text text="Current Theme" [variant]="'positive'"></ig-badge>
 
                     <button igButton type="button" icon="fa-ellipsis-v" (click)="linkMenu.toggle($event);"></button>
                     <ig-popup-menu (onSelect)="clickMenuItem($event, theme)"
@@ -82,13 +85,13 @@
            (onClose)="showDelete=false"
            [title]="'Delete Theme'"
            [isVisible]="showDelete">
-    <div class="content">
+    <div class="content" i18n>
         Please confirm that you wish to delete the theme <strong>{{selectedRow.name}}</strong>. Please note that this operation cannot be undone.
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
+        <button igButton igAutoFocus i18n-label label="Cancel" (click)="showDelete = false" [disabled]="deleteInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Delete" (click)="delete();" [loading]="deleteInProgress" [disabled]="deleteInProgress"></button>
     </div>
 </d3s-modal>
 
@@ -96,14 +99,14 @@
            (onClose)="isSetCurrentThemeVisible=false"
            [title]="'Set as Current Theme'"
            [isVisible]="isSetCurrentThemeVisible">
-    <div class="content">
+    <div class="content" i18n>
         Setting this as the current theme will apply all colors and images defined in the theme.
         The next time users log in they will see the appearance of the new theme. Any users currently logged in will see the change when they refresh their screen.
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="isSetCurrentThemeVisible = false" [disabled]="settingCurrentThemeInProgress"></button>
+        <button igButton igAutoFocus i18n-label label="Cancel" (click)="isSetCurrentThemeVisible = false" [disabled]="settingCurrentThemeInProgress"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Set as Current Theme" (click)="setAsCurrentTheme();" [loading]="settingCurrentThemeInProgress" [disabled]="settingCurrentThemeInProgress"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Set as Current Theme" (click)="setAsCurrentTheme();" [loading]="settingCurrentThemeInProgress" [disabled]="settingCurrentThemeInProgress"></button>
     </div>
 </d3s-modal>
 
@@ -111,21 +114,21 @@
            (onClose)="shouldRename=false"
            title="{{(canReplace ? 'Replace or Rename the Theme' : 'Rename the Theme')}}"
            [isVisible]="shouldRename">
-    <div class="content" *ngIf="!canReplace">
+    <div class="content" *ngIf="!canReplace" i18n>
         The theme you are trying to upload has the same name as the theme you are currently using. Rename the theme to complete the upload process.
        </div>
-    <div class="content" *ngIf="canReplace">
+    <div class="content" *ngIf="canReplace" i18n>
         There is already a theme called <strong>{{existingThemeName}}</strong>. You can either replace an existing theme or rename it.
     </div>
     <div class="content-input" *ngIf="themeToLoad">
-        <label>Theme Name</label>
+        <label i18n>Theme Name</label>
         <input igInput type="text" igSize="full" [(ngModel)]="themeToLoad.name" />
 
     </div>
     <div class="action-bar">
-        <button igButton igAutoFocus label="Cancel" (click)="resetUpload()" [disabled]="isThemeUploading"></button>
+        <button igButton igAutoFocus i18n-label label="Cancel" (click)="resetUpload()" [disabled]="isThemeUploading"></button>
         <span class="grow"></span>
-        <button igButton class="ig-button-primary" label="Rename Theme" (click)="triggerRename();" [loading]="isThemeUploading" [disabled]="isThemeUploading || themeToLoad?.name === existingThemeName"></button>&nbsp;&nbsp;&nbsp;&nbsp;
-        <button *ngIf="canReplace" igButton class="ig-button-primary" label="Replace Theme" (click)="uploadTheme(true);" [loading]="isThemeUploading" [disabled]="isThemeUploading"></button>
+        <button igButton class="ig-button-primary" i18n-label label="Rename Theme" (click)="triggerRename();" [loading]="isThemeUploading" [disabled]="isThemeUploading || themeToLoad?.name === existingThemeName"></button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button *ngIf="canReplace" igButton class="ig-button-primary" i18n-label label="Replace Theme" (click)="uploadTheme(true);" [loading]="isThemeUploading" [disabled]="isThemeUploading"></button>
     </div>
 </d3s-modal>

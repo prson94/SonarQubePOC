@@ -23,19 +23,19 @@
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th>
                 <th [pSortableColumn]="'StepNo'">
-                    Step No
+                    <ng-container i18n>Step No</ng-container>
                     <p-sortIcon [field]="'StepNo'"></p-sortIcon>
                 </th>
                 <th [pSortableColumn]="'Name'">
-                    Name
+                    <ng-container i18n>Name</ng-container>
                     <p-sortIcon [field]="'Name'"></p-sortIcon>
                 </th>
                 <th [pSortableColumn]="'assetTypeName'">
-                    Diagram Asset Type Name
+                    <ng-container i18n>Diagram Asset Type Name</ng-container>
                     <p-sortIcon [field]="'assetTypeName'"></p-sortIcon>
                 </th>
                 <th [pSortableColumn]="'governanceDisplayValue'">
-                    Governance Role
+                    <ng-container i18n>Governance Role</ng-container>
                     <p-sortIcon [field]="'governanceDisplayValue'"></p-sortIcon>
                 </th>
             </tr>
@@ -56,7 +56,7 @@
         <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
     </div>
 
-    <div class="empty-list-message" *ngIf="!nodeArray || nodeArray.length == 0">
+    <div class="empty-list-message" *ngIf="!nodeArray || nodeArray.length == 0" i18n>
         Showing no items. Switch to Diagram View to start adding flow objects.
     </div>
 </div>

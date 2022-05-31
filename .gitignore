@@ -87,6 +87,7 @@
 /d360.web/Content/styles/materialize.css
 /d360.web/Scripts/dist/*.js
 /d360.web/Scripts/dist/*.map
+/d360.web/.angular/cache/**
 /d360.web/App_Data
 /d360.web/Content/quill/v1.3.7/quill.snow.min.css
 /d360.web/Content/primeng/theme.min.css
@@ -118,3 +119,7 @@
 /d360.web/Content/primeicons/primeicons.min.css
 /d360.web/Content/codemirror/eclipse.min.css
 /d360.web/Content/codemirror/codemirror.min.css
+/d360.web/Scripts/dist/ca
+
+# Ignore JetBrains IDEs
+/.idea

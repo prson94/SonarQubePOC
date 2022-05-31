@@ -13,13 +13,13 @@ import { CompanySettingsService } from '../../services/settings.service';
     template: `
                 <div class="row">    
                     <div class="col s12">&nbsp;</div>
-                    <div class="form-instructions">Please select how you would like to see the exported results formatted.</div>                                
+                    <div class="form-instructions" i18n>Please select how you would like to see the exported results formatted.</div>                                
                     <div class="col s12" *ngFor="let option of exportOptions">
                         <a (click)="doExport(option)" style="padding:2px;cursor:pointer">{{option.Name}}</a> <span *ngIf="option.Description">- {{option.Description}}</span>
                     </div>  
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12 buttons">
-                        <button pButton type="button" style="width: '150px';" label="Close" (click)="closeClick.emit()"></button>                        
+                        <button pButton type="button" style="width: '150px';" i18n-label label="Close" (click)="closeClick.emit()"></button>                        
                     </div>                    
                 </div>        
                 `,

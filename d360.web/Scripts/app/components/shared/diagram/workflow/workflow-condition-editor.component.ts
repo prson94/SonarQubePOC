@@ -46,8 +46,8 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
 
 
     private bool = [
-        { value: 'true', label: 'True' },
-        { value: 'false', label: 'False' }
+        { value: 'true', label: $localize`True` },
+        { value: 'false', label: $localize`False` }
     ];
 
     constructor(
@@ -74,7 +74,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         let outputFieldsChanged = changes['outputFields'] != null && !changes['outputFields'].isFirstChange();
         let objectChanged = (changes['objectType'] != null && !changes['objectType'].isFirstChange()) || (changes['objectId'] != null && !changes['objectId'].isFirstChange());
 
-        if (outputFieldsChanged || formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged)    {
+        if (outputFieldsChanged || formFieldsChanged || httpFieldsChanged || changeTypeChanged || objectChanged) {
             this.loadContextualFields();
             this.loadFormFields();
             this.loadHttpFields();
@@ -310,7 +310,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@FormInputID'] = field['@id'];
         }
         else if (this.selectedField.split('|')[0] == 'HTTPResponse') {
-            
+
             let field = this.outputFields.find(f => f.StepId == this.selectedField.split('|')[1] && f.Id == this.selectedField.split('|')[2]);
             console.log(this.selectedField, this.outputFields, this.httpFields, field);
 
@@ -367,7 +367,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
         switch (type.toLowerCase()) {
             case 'boolean':
             case 'lookup':
-            case 'text':            
+            case 'text':
                 ops.add('=');
                 ops.add('!=');
                 break;
@@ -456,7 +456,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             (this.condition['@ContextualFieldID'] == null || this.condition['@ContextualFieldID'] == '') &&
             this.condition['@FormInputID'] == null)
             return false;
-        if (this.condition['@Value'] == null && ['C','P','NP'].indexOf(this.condition['@Operator']) == -1)
+        if (this.condition['@Value'] == null && ['C', 'P', 'NP'].indexOf(this.condition['@Operator']) == -1)
             return false;
         if (this.condition['@Operator'] == '') return false;
         if (this.condition['@Value'] === '') return false;

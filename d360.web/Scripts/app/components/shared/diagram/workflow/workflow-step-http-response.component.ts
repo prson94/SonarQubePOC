@@ -41,9 +41,12 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     selectedIndex = 0;
     selectedRow = null;
 
+    editMenuText = $localize`Edit`;
+    deleteMenuText = $localize`Delete`;
+
     menuItems: any[] = [
-        { title: "Edit" },
-        { title: "Delete" },
+        { title: this.editMenuText },
+        { title: this.deleteMenuText },
     ];
 
     httpRequests = [];
@@ -64,10 +67,10 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
 
     clickMenu(e: any) {
         switch (e.value.toLowerCase()) {
-            case "edit":
+            case this.editMenuText.toLowerCase():
                 this.showEdit();
                 break;
-            case "delete":
+            case this.deleteMenuText.toLowerCase():
                 this.showDelete();
                 break;
         }
@@ -76,7 +79,7 @@ export class WorkflowStepHttpResponseComponent extends BaseComponent implements 
     removeOutput() {
         this.workflowFieldsService.deleteOutputField(this.selectedRow.StepId, this.selectedRow.Id);
         this.step.settings.HTTPResponse.Outputs.splice(this.selectedIndex, 1);
-        
+
         this.cancel();
         this.stepChange.emit(this.step);
     }

@@ -33,7 +33,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
     @Input() assetUID: string;
     @Input() assetUIDList: string[];
     @Input() ignoreResizing: boolean = false;
-    @Input() placeHolder: string = "Click to add...";
+    @Input() placeHolder: string = $localize`Click to add...`;
     @Output() tagsChanged = new EventEmitter();
     @Input() interceptLinkClick: boolean = false;
 
@@ -77,7 +77,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         private datePipe: DatePipe,
         private router: Router,
         private linkClickInterceptor: LinkClickInterceptor,
-        private genericMessageService: GenericMessageService ) {
+        private genericMessageService: GenericMessageService) {
         super(settingsService);
     }
 
@@ -249,25 +249,25 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.savingTag = false;
-                this.messagesService.showError('Error', `Tag already assigned to Asset${(this.assetUIDList.length > 1 ? "s" : "")}`);
+                this.messagesService.showError('Error', $localize`Tag already assigned to ` + (this.assetUIDList.length > 1 ? $localize`Assets` : $localize`Asset`));
             }
         });
 
         if (event.Value.includes("|")) {
             this.existingTag = true;
             this.savingTag = false;
-            this.messagesService.showError('Error', "Tag can't contain | character");
+            this.messagesService.showError('Error', $localize`Tag can't contain | character`);
         }
         this.tagNoSpaces = event.Value.trim();
         if (this.tagNoSpaces.length < 1) {
             this.existingTag = true;
             this.savingTag = false;
-            this.messagesService.showError('Error', "Tag must be as least 1 character long in length");
+            this.messagesService.showError('Error', $localize`Tag must be as least 1 character long in length`);
         }
         if (this.tagNoSpaces.length > 100) {
             this.existingTag = true;
             this.savingTag = false;
-            this.messagesService.showError('Error', "Tag must be less then 100 characters in length");
+            this.messagesService.showError('Error', $localize`Tag must be less then 100 characters in length`);
         }
         if (!this.existingTag) {
             this.tagNameBeingAdded = tags[0].TagName;
@@ -280,7 +280,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                             .subscribe(result => {
                                 let msg: string = '';
                                 if (result != null) {
-                                    msg = `${event.Value} successfully added to ${tags.length === 1 ? "Asset" : "Assets"}`;
+                                    msg = $localize`${event.Value} successfully added to ` + (tags.length === 1 ? $localize`Asset` : $localize`Assets`);
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 event.uid = result[0].Uid;
@@ -308,14 +308,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                 .subscribe(result => {
                                     let msg: string = '';
                                     if (event.uid == undefined) {
-                                        msg = `${event.Value} successfully created`;
+                                        msg = $localize`${event.Value} successfully created`;
                                     }
                                     this.showMessageForResult(this.messagesService, result, msg);
                                     this.tagService.createAssetTag(tags)
                                         .subscribe(result => {
                                             let msg: string = '';
                                             if (event.uid == undefined) {
-                                                msg = `${event.Value} successfully added to ${tags.length === 1 ? "Asset" : "Assets"}`;
+                                                msg = $localize`${event.Value} successfully added to ` + (tags.length === 1 ? $localize`Asset` : $localize`Assets`);
                                             }
                                             this.showMessageForResult(this.messagesService, result, msg);
                                             if (event.uid == undefined) {
@@ -376,7 +376,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         this.tagService.deleteAssetTag(tags).
             subscribe(result => {
                 let msg: string = '';
-                msg = `Tag successfully removed`;
+                msg = $localize`Tag successfully removed`;
                 this.showMessageForResult(this.messagesService, result, msg);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
@@ -550,11 +550,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 });
 
                 this.isTooltipLoaded = true;
+                let addedString = $localize`Tag added by ${this.tagTooltip.CreatedBy} on`;
                 this.tooltipValue = `<span class="span-break">${this.tagTooltip.Value}</span>
-                            <span>Tag added by ${this.tagTooltip.CreatedBy} on ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
+                            <span>${addedString} ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
 
                 if (this.interceptLinkClick) {
-                    this.tooltipValue = `<span>Added by ${this.tagTooltip.CreatedBy} on ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
+                    addedString = $localize`Added by ${this.tagTooltip.CreatedBy} on`;
+                    this.tooltipValue = `<span>${addedString} ${(this.datePipe.transform(this.tagTooltip.CreatedOn, 'short'))}</span>`;
                 }
                 this.ref.markForCheck();
             });

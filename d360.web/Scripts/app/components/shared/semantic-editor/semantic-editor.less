@@ -23,6 +23,10 @@
   .form-wrapper {
     overflow: auto;
     padding-right: 24px;
+    
+    &--semantic {
+      min-height: 130px;
+    }
 
     .dropdown-selected-value {
       margin-top: -7px;
@@ -162,7 +166,7 @@
 
 .tooltip-icon {
   width: 32px;
-  color: @ig-purple;
+  color: var(--tabLinkColor);
   text-align: center;
   cursor: pointer;
   padding-top: 1px;

@@ -19,7 +19,7 @@ import { SiteMenuComponent } from './site-menu.component';
 export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() expanded: boolean;
     @Output() activeItemChanged = new EventEmitter();
-    title = 'Favorites';
+    title = $localize`Favorites`;
 
 
     public menu: SiteMenu;

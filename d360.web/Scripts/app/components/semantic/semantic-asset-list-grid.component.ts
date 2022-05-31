@@ -39,11 +39,14 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     simpleFilter: string = "";
     advancedFilter: string = "";
     isExportInProgress: boolean = false;
+    semanticEffectiveDate: Date;
 
     menuItems: any[] = [
-        { title: "Open" },
-        { title: "Open in New Tab" },
+        { title: $localize`Open` },
+        { title: $localize`Open in New Tab` },
     ];
+
+    exportTooltip: string = '';
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
     private filterFieldsSubject: ReplaySubject<AdvancedFilterFieldType[]> = new ReplaySubject(1);
@@ -60,7 +63,14 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
             FriendlyName: 'Asset Type Path',
             Type: new FieldType("Text"),
             Category: ""
-        }        
+        },
+        {
+            Name: 'outOfDate',
+            FriendlyName: 'Out of date classification',
+            Type: new FieldType("Boolean"),
+            Category: "",
+            RemovePopulatedOperator: true
+        }     
     ]    
 
     constructor(private route: ActivatedRoute,
@@ -73,13 +83,14 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         private featureFlagService: FeatureFlagsService,
     ) {
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
+        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
     }
 
     ngOnInit() {
         this.filterFields$ = this.filterFieldsSubject.asObservable();
         this.filterFieldsSubject.next(this.filterFieldList);
         this.filterFieldsSubject.complete();
-        
+
         this.getData();
     }
 
@@ -88,6 +99,8 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
     getData() {
+        this.semanticEffectiveDate = new Date(this.semanticType.effectiveDate);
+        this.semanticEffectiveDate.setUTCHours(0, 0, 0, 0);
         if (this.semanticTypesEnabled) {
             this.isLoading = true;
             this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
@@ -100,7 +113,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
                 this.assetCountUpdated.emit({ assetCount: this.assetsTotal });
                 this.isLoading = false;
             });
-        }       
+        }
     }
 
     advancedFiltersChanged($event: Filters) {
@@ -143,9 +156,9 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     clickMenuItem(event: any, item: SemanticTypeAsset) {
         let key = event.value.toLowerCase();
 
-        if (key === 'open') {
+        if (key === $localize`Open`.toLowerCase()) {
             this.selectSemanticTypeAsset(item);
-        } else if (key === 'open in new tab') {
+        } else if (key === $localize`Open in New Tab`.toLowerCase()) {
             this.selectSemanticTypeAsset(item, true);
         }
     }
@@ -158,4 +171,9 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         this.isExportInProgress = true;
         this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, this.maxExportRows, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, this.semanticType.name, () => { this.isExportInProgress = false; });
     }
+
+    isOutOfDate(profileDate) {
+        return this.semanticEffectiveDate > new Date(profileDate);
+    }
+    
 }

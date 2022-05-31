@@ -13,19 +13,19 @@ import { CompanySettingsService } from '../../../services/settings.service';
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading">
         <header>
-            IP Restrictions
+            <ng-container i18n>IP Restrictions</ng-container>
             <d3s-tile-actions [hasAdd]="true" (addClick)="addIpRestriction()"></d3s-tile-actions>
         </header>
-        <div class="directions">
+        <div class="directions" i18n>
             Restrictions will only apply if there are entries present.  If no entries are present, then users will be allowed to access this environment from any IP.
         </div>
         <div>
             <table class="responsive-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Start Range</th>
-                        <th>End Range</th>
+                        <th i18n>Name</th>
+                        <th i18n>Start Range</th>
+                        <th i18n>End Range</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -41,7 +41,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <input [(ngModel)]="companySettings.IpRestrictions[i].End" (ngModelChange)="companySettings.IpRestrictions[i].End = $event; companySettingsChange.emit(companySettings)" type="text" />
                         </td>
                         <td style="width: 20px; text-align: right; vertical-align: top">
-                            <a style="padding: 0 .5rem;" class="btn waves-effect waves-red btn-flat" title="Remove this restriction" (click)="removeIpRestriction(i)"><i class="fa fa-trash"></i></a>
+                            <a style="padding: 0 .5rem;" class="btn waves-effect waves-red btn-flat" i18n-title title="Remove this restriction" (click)="removeIpRestriction(i)"><i class="fa fa-trash"></i></a>
                         </td>
                     </tr>
                 </tbody>

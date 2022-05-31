@@ -8,8 +8,8 @@ import { HeaderActionsService } from '../../../services/header-actions.service';
 @Component({
     selector: 'd3s-header-shopping-cart',
     template:
-    `
-        <div class="header-button" routerLink="/cart" title="Shopping cart">
+        `
+        <div class="header-button" routerLink="/cart" i18n-title title="Shopping cart">
             <i class="fa fa-shopping-cart"></i>
         </div>
     `,
@@ -27,7 +27,7 @@ export class HeaderShoppingCartComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-       
+
     }
 }
 

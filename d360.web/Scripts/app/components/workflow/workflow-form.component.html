@@ -1,48 +1,53 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="row"
-    *ngIf="!isLoading">
+     *ngIf="!isLoading">
     <div class="col s12">
         <div class="tile tile-detail"
-            *ngIf="!isCompleted && isUserAllowedToComplete && !isItemDeleted">
+             *ngIf="!isCompleted && isUserAllowedToComplete && !isItemDeleted">
             <header>{{title}}</header>
             <div class="col s12"
-                *ngIf="objectType != 'Issue'">The following form is for the [<b>{{typeName}}</b>] named [<b>
+                 *ngIf="objectType != 'Issue'">
+                <ng-container i18n>The following form is for the [<b>{{typeName}}</b>] named </ng-container>[<b>
                     <d3s-preview-tooltip [objectType]="objectType"
-                        [objectId]="objectID">
+                                         [objectId]="objectID">
                         <a *ngIf="objectUrl != null"
-                            [routerLink]="objectUrl">{{objectName}}</a>
+                           [routerLink]="objectUrl">{{objectName}}</a>
                         <span *ngIf="objectUrl == null">{{objectName}}</span>
                     </d3s-preview-tooltip>
-                </b>]. <span [innerHtml]="description | safeHtml"></span></div>
+                </b>]. <span [innerHtml]="description | safeHtml"></span>
+            </div>
             <div class="form-instructions"
-                *ngIf="objectType == 'Issue'">The following form is for the [<b>
+                 *ngIf="objectType == 'Issue'">
+                The following form is for the [<b>
                     <d3s-preview-tooltip [objectType]="objectType"
-                        [objectId]="objectID">{{issueTypeName}}</d3s-preview-tooltip>
+                                         [objectId]="objectID">{{issueTypeName}}</d3s-preview-tooltip>
                 </b>] action raised on [<b>
                     <d3s-preview-tooltip [objectType]="issueObject"
-                        [objectId]="issueObjectID">{{issueObjectName}}</d3s-preview-tooltip>
-                </b>]. <span [innerHtml]="description | safeHtml"></span></div>
+                                         [objectId]="issueObjectID">{{issueObjectName}}</d3s-preview-tooltip>
+                </b>]. <span [innerHtml]="description | safeHtml"></span>
+            </div>
             <form (ngSubmit)="onSubmit()"
-                #workflowForm="ngForm">
+                  #workflowForm="ngForm">
                 <div class="row">
                     <div class="l6 s12">
                         <d3s-workflow-form-fields [fields]="fields" [form]="workflowForm" #fieldsComponent></d3s-workflow-form-fields>
                     </div>
                     <div class="col s12"
-                        *ngIf="hasObjectReassign">
+                         *ngIf="hasObjectReassign">
                         <p-checkbox [(ngModel)]="isReassignEnabled"
-                            name="reassign"
-                            binary="true"
-                            label="Check here to re-assign this action."></p-checkbox>
+                                    name="reassign"
+                                    binary="true"
+                                    i18n-label
+                                    label="Check here to re-assign this action."></p-checkbox>
                     </div>
                     <div class="col s12"
                          *ngIf="isReassignEnabled">
                         <div class="row">
                             <div>&nbsp;</div>
                             <div class="col l3 s12">
-                                <div class="FieldName">Re-assign to:</div>
+                                <div class="FieldName" i18n>Re-assign to:</div>
                                 <p-dropdown igDropdown
-                                             name="reassignType"
+                                            name="reassignType"
                                             [ngModel]="reassignType"
                                             (ngModelChange)="reassignType=$event;selectedReassignmentType=null;selectedReassignmentAsset=null;selectedReassignResource=null;"
                                             [options]="reassignAvailableTypes"
@@ -55,23 +60,23 @@
                         </div>
                         <div class="row">
                             <div class="col l3 s12" *ngIf="reassignType == 'object'">
-                                <div class="FieldName">Select Asset:</div>
-                                <p-autoComplete igAutocomplete 
-                                                placeholder="" 
-                                                name="other" 
-                                                field="Name" 
+                                <div class="FieldName" i18n>Select Asset:</div>
+                                <p-autoComplete igAutocomplete
+                                                placeholder=""
+                                                name="other"
+                                                field="Name"
                                                 [style]="{'width': '100%' }"
                                                 [inputStyle]="{'width': '100%' }"
-                                                [(ngModel)]="selectedReassignmentAsset" 
-                                                (completeMethod)="filterItems($event)" 
-                                                [suggestions]="filteredAssets" 
+                                                [(ngModel)]="selectedReassignmentAsset"
+                                                (completeMethod)="filterItems($event)"
+                                                [suggestions]="filteredAssets"
                                                 (onSelect)="selectItem($event)"></p-autoComplete>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col l3 s12"
                                  *ngIf="reassignType == 'resource'">
-                                <div class="FieldName">Select user:</div>
+                                <div class="FieldName" i18n>Select user:</div>
                                 <p-dropdown igDropdown
                                             name="reassignResources"
                                             [(ngModel)]="selectedReassignResource"
@@ -94,6 +99,8 @@
                                             [(ngModel)]="clearAssignments"
                                             name="cleaAssignements"
                                             binary="true"
+                                            i18n-label
+                                            i18n-title
                                             label="Clear other assignments."
                                             title="This will remove all other assignments of this form. The User selected will be the designated Assignee to work this issue"></p-checkbox>
                             </div>
@@ -107,77 +114,84 @@
                                         (click)="reassign()"
                                         [disabled]="selectedReassignResource == null && selectedReassignmentAsset?.ID == null"
                                         style="width: 150px;"
+                                        i18n-label
                                         label="Assign"></button>
                                 <button pButton
                                         type="button"
                                         (click)="isReassignEnabled = false"
                                         style="width: 150px;"
+                                        i18n-label
                                         label="Cancel"></button>
                             </div>
                         </div>
-                     </div>
+                    </div>
                     <div class="col s12">&nbsp;</div>
                     <div class="col s12" *ngIf="!isReassignEnabled">
                         <button pButton
-                            type="submit"
-                            [disabled]="!workflowForm.valid || isReassignEnabled"
-                            style="width: 150px;"
-                            label="Submit"></button>
+                                type="submit"
+                                [disabled]="!workflowForm.valid || isReassignEnabled"
+                                style="width: 150px;"
+                                i18n-label
+                                label="Submit"></button>
                         <button pButton
-                            *ngIf="hasCloseButton"
-                            type="button"
-                            (click)="close();"
-                            label="Cancel"
-                            style="width: 150px;"></button>
+                                *ngIf="hasCloseButton"
+                                type="button"
+                                (click)="close();"
+                                label="Cancel"
+                                i18n-label
+                                style="width: 150px;"></button>
                     </div>
                 </div>
             </form>
         </div>
         <div *ngIf="isCompleted"
-            class="tile tile-detail">
+             class="tile tile-detail">
             <header>{{title}}</header>
             <div class="row">
-                <div class="col s12">Thank you, your responses have been submitted.</div>
+                <div class="col s12" i18n>Thank you, your responses have been submitted.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
                     <button pButton
-                        *ngIf="hasCloseButton"
-                        type="button"
-                        (click)="close();"
-                        label="Close"
-                        style="width: 150px;"></button>
+                            *ngIf="hasCloseButton"
+                            type="button"
+                            (click)="close();"
+                            i18n-label
+                            label="Close"
+                            style="width: 150px;"></button>
                 </div>
             </div>
         </div>
         <div *ngIf="!isUserAllowedToComplete && !isCompleted && !isItemDeleted && !isFormInvalid"
-            class="tile tile-detail">
+             class="tile tile-detail">
             <header>{{title}}</header>
             <div class="row">
-                <div class="col s12">You currently do not have access to complete this form.</div>
+                <div class="col s12" i18n>You currently do not have access to complete this form.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
                     <button pButton
-                        *ngIf="hasCloseButton"
-                        type="button"
-                        (click)="close();"
-                        label="Close"
-                        style="width: 150px;"></button>
+                            *ngIf="hasCloseButton"
+                            type="button"
+                            (click)="close();"
+                            i18n-label
+                            label="Close"
+                            style="width: 150px;"></button>
                 </div>
             </div>
         </div>
         <div *ngIf="isItemDeleted && !isCompleted"
-            class="tile tile-detail">
+             class="tile tile-detail">
             <header>{{title}}</header>
             <div class="row">
-                <div class="col s12">The item for this form has been deleted.</div>
+                <div class="col s12" i18n>The item for this form has been deleted.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
                     <button pButton
-                        *ngIf="hasCloseButton"
-                        type="button"
-                        (click)="close();"
-                        label="Close"
-                        style="width: 150px;"></button>
+                            *ngIf="hasCloseButton"
+                            type="button"
+                            (click)="close();"
+                            i18n-label
+                            label="Close"
+                            style="width: 150px;"></button>
                 </div>
             </div>
         </div>
@@ -185,13 +199,14 @@
              class="tile tile-detail">
             <header>{{title}}</header>
             <div class="row">
-                <div class="col s12">The form configuration is invalid.</div>
+                <div class="col s12" i18n>The form configuration is invalid.</div>
                 <div class="col s12">&nbsp;</div>
                 <div class="col s12">
                     <button pButton
                             *ngIf="hasCloseButton"
                             type="button"
                             (click)="close();"
+                            i18n-label
                             label="Close"
                             style="width: 150px;"></button>
                 </div>

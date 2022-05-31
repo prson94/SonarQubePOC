@@ -35,18 +35,18 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     //#region Tooltip data
 
-    measurestooltip: string = 'Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures. '
-        + 'Only those assets matching the conditions will be scored using these measures. '
-        + 'Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures';
+    measurestooltip: string = $localize`Asset conditions can be used to more specifically target assets of the chosen type to be scored by your measures.
+           Only those assets matching the conditions will be scored using these measures.
+           Where you use multiple conditions, you can specify whether an asset must match all or any of the conditions in order to be score by these measures`;
 
-    weightTootlip: string = 'Weight determines the contributions of this measure to the overall score calculated for an asset.'
-        + 'For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.'
-        + 'The sum of all measures used to calculate the score should sum to 100% (at the top-level and within each group of measures).'
-        + 'Where they do not, they will be adjusted when used to calculate the score.';
+    weightTootlip: string = $localize`Weight determines the contributions of this measure to the overall score calculated for an asset.
+           For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
+           The sum of all measures used to calculate the score should sum to 100% (at the top-level and within each group of measures).
+           Where they do not, they will be adjusted when used to calculate the score.`;
 
-    groupingTooltip: string = 'Grouping measures can be used to organize your measures, collecting together a group of a'
-        + 'similar nature(E.g.responsibility assignments, required field checks).'
-        + 'Grouping measures do not have asset conditions, as they are not applied directly to the assets.';
+    groupingTooltip: string = $localize`Grouping measures can be used to organize your measures, collecting together a group of a
+          similar nature(E.g.responsibility assignments, required field checks).
+          Grouping measures do not have asset conditions, as they are not applied directly to the assets.`;
 
     assetConditionsAndWeightingTooltip: string = "";
     conditionWeightTootlip: string = "";
@@ -54,7 +54,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     //#endregion
 
     child = "";
-    closeLabel: string = "Cancel";
+    closeLabel: string = $localize`Cancel`;
     conditionFormMode = FormMode.Default;
     conditionGroups: MetricAssetVersionConditionViewModel[] = [];
     matchConditionsOnly: string = "true";
@@ -73,24 +73,28 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     originalConditions: MetricAssetVersionConditionViewModel[];
     originalEffectiveDate: Date;
     originalModel: MetricAssetViewModel;
-    saveLabel: string = "Create";
+    saveLabel: string = $localize`Create`;
     showMatchPicker: boolean = false;
     verb = "Add";
     canAddGroup: boolean = false;
     private baseMenuItems = [
-        { "title": "Duplicate" },
-        { "title": "Delete" }
+        { "title": $localize`Duplicate` },
+        { "title": $localize`Delete` }
     ];
 
     private upMenuItems: any[] = [
-        { title: "Move to Top" },
-        { title: "Move Up" }
+        { title: $localize`Move to Top` },
+        { title: $localize`Move Up` }
     ];
 
     private downMenuItems: any[] = [
-        { title: "Move Down" },
-        { title: "Move to Bottom" }
+        { title: $localize`Move Down` },
+        { title: $localize`Move to Bottom` }
     ];
+
+    matchAllLabel = $localize`Match all conditions`;
+    matchAnyLabel = $localize`Match any conditions`;
+    addButtonLabel = $localize`Add condition group`;
 
     @ViewChildren(PropertyGroupComponent) groups: QueryList<PropertyGroupComponent>;
 
@@ -105,13 +109,16 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
         this.conditionGroupLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
         this.conditionAndWeightLink = helpBaseUri + "Default.htm#d-admin/scoring-definitions.htm#Asset_conditions";
+        let readMoreText = $localize`Read more about Asset Conditions and Weighting`;
+        let conditionWeightTooltipText = $localize`You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.`;
 
-        this.conditionWeightTootlip = "<div>You can override the <b>Weight</b> set in the <b>Detail</b> section here, specifically for assets which meet the conditions of this group.</div>"
-            + "<div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+        this.conditionWeightTootlip = `<div>${conditionWeightTooltipText}</div>
+                <div style=\"padding-top: 8px;\" ><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionGroupLink + "\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
 
-        this.assetConditionsAndWeightingTooltip = "<div>Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, "
-            + "either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.</div>"
-            + "<div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> Read more about Asset Conditions and Weighting</a></div>";
+        let assetConditionsAndWeightingTooltipText = $localize`Asset Conditions and Weighting allows you to target specific subsets of your scoring asset type, 
+                either choosing to apply your measures to only those assets which match your conditions, or applying different weights to different matches.`;
+
+        this.assetConditionsAndWeightingTooltip = `<div>${assetConditionsAndWeightingTooltipText}</div><div style=\"padding-top: 8px;\"><a (click)=\"test()\" target=\"_blank\" href=\"" + this.conditionAndWeightLink + "\"><i class=\"fa fa-external-link\"></i> ${readMoreText}</a></div>`;
     }
 
     menuOptions(includeUp: boolean, includeDown: boolean): any[] {
@@ -131,17 +138,17 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     menuClicked(event, displyOrder, pos) {
         switch (event.value) {
-            case 'Duplicate': this.duplicate(pos);
+            case $localize`Duplicate`: this.duplicate(pos);
                 break;
-            case 'Delete': this.delete(pos);
+            case $localize`Delete`: this.delete(pos);
                 break;
-            case 'Move to Top': this.moveTotop(displyOrder);
+            case $localize`Move to Top`: this.moveTotop(displyOrder);
                 break;
-            case 'Move Up': this.moveUp(displyOrder);
+            case $localize`Move Up`: this.moveUp(displyOrder);
                 break;
-            case 'Move Down': this.moveDown(displyOrder);
+            case $localize`Move Down`: this.moveDown(displyOrder);
                 break;
-            case 'Move to Bottom': this.moveToBottom(displyOrder);
+            case $localize`Move to Bottom`: this.moveToBottom(displyOrder);
                 break;
             default: console.log("unknown action");
                 break;
@@ -216,14 +223,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             return 0;
         }
     }
-   
+
     canAddNewGroup(event: boolean) {
         if (this.conditionGroups.length > 0 && this.conditionGroups.every(x => x.conditionItemFields.filter(x => x.field).length > 0)) {
             this.canAddGroup = event;
         } else {
             this.canAddGroup = false;
         }
-    } 
+    }
 
     orderConditionGroups() {
         this.conditionGroups.sort((a, b) => a.DisplayOrder - b.DisplayOrder);
@@ -276,7 +283,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 newGroup.Uid = x.Uid;
                 newGroup.MatchType = x.MatchType;
                 newGroup.DisplayOrder = x.Position ?? this.getMaxPositionForGroups();
-                newGroup.Position = newGroup.DisplayOrder; 
+                newGroup.Position = newGroup.DisplayOrder;
                 newGroup.Threshold = x.Threshold;
                 newGroup.Weight = x.Weight;
                 if (newGroup.Weight) {
@@ -316,7 +323,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
     }
 
-    showConditionMatch(cg): boolean{
+    showConditionMatch(cg): boolean {
         return cg.conditionItemFields.filter(x => x.field).length > 1;
     }
 
@@ -388,8 +395,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         if (this.isEditBasedOnUid()) {
             this.verb = "Edit"
-            this.saveLabel = "Save Changes";
-            this.closeLabel = "Close";
+            this.saveLabel = $localize`Save Changes`;
+            this.closeLabel = $localize`Close`;
             if (this.model.EffectiveDate !== null) {
                 var date = this.utcToLocal(new Date(this.model.EffectiveDate));
                 this.currentEffectiveDate = new Date(this.model.EffectiveDate);
@@ -454,7 +461,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     saveMeasure() {
-        
+
         this.model.ConditionGroups = this.conditionGroups;
         this.isSaving = true;
         let prevDate: string | Date = null;
@@ -471,9 +478,9 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate;
         }
-        
+
         this.matchType = (this.matchType == 'Any') ? 'Any' : 'All';
-        
+
         if (this.allocation.isExternallyCalculated) {
             this.model.ConditionGroups = [];
         }
@@ -670,7 +677,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     if (x.MatchType !== originalMatch.MatchType
                         || x.Position !== originalMatch.Position
                         || x.Threshold !== originalMatch.Threshold
-                        || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0) 
+                        || +(x.Weight ?? 0) !== +(originalMatch.Weight ?? 0)
                         || +(x.DisplayWeight ?? 0) !== +(originalMatch.DisplayWeight ?? 0)
                         || +(x.DisplayThreshold ?? 0) !== +(originalMatch.DisplayThreshold ?? 0)
                         || x.DisplayOrder !== originalMatch.DisplayOrder

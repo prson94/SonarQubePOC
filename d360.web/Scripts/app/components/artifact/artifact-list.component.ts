@@ -9,9 +9,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
-import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
 import { forkJoin, Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
@@ -164,10 +162,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                     var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
                         this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
                         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
-                        this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
+                        this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, $localize`Assets`);
                         if (this.artifactType.HasV2Workflows) {
                             this.secondaryNavService.showItem(
-                                new SecondaryNavItem('Workflow',
+                                new SecondaryNavItem($localize`Workflow`,
                                                      'workflowmonitor',
                                                      ['fa-usb'],
                                                      `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`)

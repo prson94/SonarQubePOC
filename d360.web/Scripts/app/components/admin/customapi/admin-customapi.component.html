@@ -1,7 +1,8 @@
 <div class="row">
     <div class="col s12">
         <div class="tile tile-detail">
-            <header *ngIf="!showEditor && !showDelete">Services
+            <header *ngIf="!showEditor && !showDelete">
+                Services
                 <d3s-tile-actions (addClick)="selected=null;showEditor=true;"
                                   [(filterMode)]="showSimpleFilter"
                                   [hasAdd]="true"
@@ -13,9 +14,9 @@
                        [hidden]="!showSimpleFilter"
                        class="grid-simple-filter"
                        pInputText
-                       placeholder="Search..."
+                       placeholder="{{searchText}}"
                        size="100"
-                       type="text"/>
+                       type="text" />
                 <p-table #dt
                          [(selection)]="selected"
                          [globalFilterFields]="['Name','UriPrefix','Description','MaximumCacheAge']"
@@ -29,27 +30,35 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'">
-                                Name
+                                <ng-container i18n>Name</ng-container>
                                 <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                             </th>
                             <th [pSortableColumn]="'UriPrefix'">
-                                Uri Segment
+                                <ng-container i18n>Uri Segment</ng-container>
                                 <d3s-sortIcon [field]="'UriPrefix'"></d3s-sortIcon>
                             </th>
-                            <th>Description</th>
-                            <th>Cache Max-Age</th>
+                            <th><ng-container i18n>Description</ng-container></th>
+                            <th><ng-container i18n>Cache Max-Age</ng-container></th>
                             <th style="width: 40px"></th>
                             <th style="width: 40px"></th>
                         </tr>
                         <tr [hidden]="showSimpleFilter">
-                            <th><d3s-column-filter [datatype]="'text'"
-                                                   [field]="'Name'"></d3s-column-filter></th>
-                            <th><d3s-column-filter [datatype]="'text'"
-                                                   [field]="'UriPrefix'"></d3s-column-filter></th>
-                            <th><d3s-column-filter [datatype]="'text'"
-                                                   [field]="'Description'"></d3s-column-filter></th>
-                            <th><d3s-column-filter [datatype]="'text'"
-                                                   [field]="'MaximumCacheAge'"></d3s-column-filter></th>
+                            <th>
+                                <d3s-column-filter [datatype]="'text'"
+                                                   [field]="'Name'"></d3s-column-filter>
+                            </th>
+                            <th>
+                                <d3s-column-filter [datatype]="'text'"
+                                                   [field]="'UriPrefix'"></d3s-column-filter>
+                            </th>
+                            <th>
+                                <d3s-column-filter [datatype]="'text'"
+                                                   [field]="'Description'"></d3s-column-filter>
+                            </th>
+                            <th>
+                                <d3s-column-filter [datatype]="'text'"
+                                                   [field]="'MaximumCacheAge'"></d3s-column-filter>
+                            </th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -100,7 +109,7 @@
                              [callback]="theDeleteCallback"
                              [itemId]="selected?.ID"
                              [method]="'callback'"
-                             [prompt]="'Are you sure you want to delete the api service [' + [selected?.Name] + ']?'"></d3s-delete-form>
+                             [prompt]="deleteModalTitle"></d3s-delete-form>
         </div>
     </div>
 </div>

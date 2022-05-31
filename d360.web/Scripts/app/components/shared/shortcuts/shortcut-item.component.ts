@@ -24,54 +24,54 @@ import { CompanySettingsService } from '../../../services/settings.service';
     </div>
     <div class="row">
         <div class="col s12 m6">
-            <div class="FieldName">Description</div>
+            <div class="FieldName" i18n>Description</div>
             <input type="text" [(ngModel)]="shortcut.Description" style="width: 98%" maxlength="500" />
         </div>        
         <div class="col s12 m6">
             <div class="FieldName">Link Opens In</div>
             <div><select [(ngModel)]="shortcut.LinkTarget" style="width:98%">
-                <option value="0">New Tab</option>
-                <option value="1">Current Tab - Reload</option>
-                <option value="2">Current Tab - Within D3S</option>
+                <option value="0" i18n>New Tab</option>
+                <option value="1" i18n>Current Tab - Reload</option>
+                <option value="2" i18n>Current Tab - Within D3S</option>
             </select></div>
         </div>     
     </div>
     <div class="row">
         <div class="col s12 m6">
-            <div class="FieldName">Override Icon Color</div>
+            <div class="FieldName" i18n>Override Icon Color</div>
             <input type="checkbox" [ngModel]="showIconColor" (ngModelChange)="showIconColor=$event;(shortcut.IconColor = ($event ? '#FF0000' : null))"/>
         </div>        
         <div class="col s12 m6" *ngIf="showIconColor">
-            <div class="FieldName">Icon Color</div>
+            <div class="FieldName" i18n>Icon Color</div>
             <p-colorPicker [(ngModel)]="shortcut.IconColor" name="iconColor"></p-colorPicker>                            
             <input type="text" [(ngModel)]="shortcut.IconColor" name="iconColorText" style="padding:2px;" />
         </div>        
     </div>
     <div class="row">
         <div class="col s12 m6">
-            <div class="FieldName">Override Title Color</div>
+            <div class="FieldName" i18n>Override Title Color</div>
             <input type="checkbox" [ngModel]="showTitleColor" (ngModelChange)="showTitleColor=$event;(shortcut.TitleColor = ($event ? '#00FF00' : null))"/>
         </div>        
         <div class="col s12 m6" *ngIf="showTitleColor">
-            <div class="FieldName">Title Color</div>
+            <div class="FieldName" i18n>Title Color</div>
             <p-colorPicker [(ngModel)]="shortcut.TitleColor" name="titleColor"></p-colorPicker>       
             <input type="text" [(ngModel)]="shortcut.TitleColor" name="titleColorText" style="padding:2px;" />
         </div>
     </div>
     <div class="row">
         <div class="col s12 m6">
-            <div class="FieldName">Override Background Color</div>
+            <div class="FieldName" i18n>Override Background Color</div>
             <input type="checkbox" [ngModel]="showBackgroundColor" (ngModelChange)="showBackgroundColor=$event;(shortcut.BackgroundColor = ($event ? '#0000FF' : null))"/>
         </div>        
         <div class="col s12 m6" *ngIf="showBackgroundColor">
-            <div class="FieldName">Background Color</div>
+            <div class="FieldName" i18n>Background Color</div>
             <p-colorPicker [(ngModel)]="shortcut.BackgroundColor" name="backgroundColor"></p-colorPicker>                            
             <input type="text" [(ngModel)]="shortcut.BackgroundColor" name="backgroundColorText" style="padding:2px;" />
         </div>
     </div>
     <div class="row" style="padding-top:12px">
         <div class="col s12 m6">
-            <div class="FieldName">Icon</div>
+            <div class="FieldName" i18n>Icon</div>
             <div>
                 <div>
                     <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
@@ -88,7 +88,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             </div>
         </div>        
         <div class="col s12 m6">
-            <div class="FieldName">Preview</div>
+            <div class="FieldName" i18n>Preview</div>
             <div *ngIf="iconType == 'icon'" style="padding:10px">
                 <span style="font-size: 64px"><i [class]="'fa ' + shortcut.Icon"></i></span>
             </div>
@@ -96,15 +96,15 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 72px; max-height: 128px;" />
                 <img *ngIf="shortcut.IconPayload == null && iconImage.dataUrl == null && shortcut.FullURL != null" [src]="shortcut.FullURL" style="max-width: 72px; max-height: 127px;" />
                 <div *ngIf="shortcut.IconPayload != null || shortcut.IconUrl != null">
-                    <button pButton type="button" label="Clear" (click)="clearIcon()"></button>
+                    <button pButton type="button" i18n-label label="Clear" (click)="clearIcon()"></button>
                 </div>
             </div>
         </div>
     </div>
     <div class="row" style="padding-top:12px">
         <div class="col s12">
-            <button pButton type="button" label="Save" (click)="save()" [disabled]="!valid()"></button>
-            <button pButton type="button" label="Cancel" (click)="cancel()"></button>
+            <button pButton type="button" i18n-label label="Save" (click)="save()" [disabled]="!valid()"></button>
+            <button pButton type="button" i18n-label label="Cancel" (click)="cancel()"></button>
         </div>
     </div>
 </div>
@@ -161,7 +161,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
             this.iconImage = new CompanyImage();
         }
     }
-    
+
 
     clearIcon() {
         this.shortcut.IconUrl = null;

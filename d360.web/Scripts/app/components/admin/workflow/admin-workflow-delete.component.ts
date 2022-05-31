@@ -10,14 +10,14 @@ import { CompanySettingsService } from '../../../services/settings.service';
     providers: [WorkflowService],
     template: `
 <div class="row">
-    <div class="col s12">
+    <div class="col s12" i18n>
         Are you sure you want to delete this workflow?
     </div>
 </div>
 <div class="row" style="padding-top:10px;">
     <div class="col s12">
-        <button pButton label="Delete" (click)="delete()" [disabled]="isLoading"></button>
-        <button pButton label="Cancel" (click)="onCancel.emit()"></button>
+        <button pButton i18n-label label="Delete" (click)="delete()" [disabled]="isLoading"></button>
+        <button pButton i18n-label label="Cancel" (click)="onCancel.emit()"></button>
     </div>
 </div>
 `

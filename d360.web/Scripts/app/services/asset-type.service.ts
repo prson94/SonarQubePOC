@@ -125,6 +125,25 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
+    GetAssetTypePossibleCreators(uid: string): Observable<any[]> {
+        return this
+            .http
+            .get(`api/v2/assets/${uid}/possibleCreators`)
+            .pipe(
+                map((response) => { return <any[]>response }),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    GetAssetTypePossibleRedactors(uid: string): Observable<any[]> {
+        return this
+            .http
+            .get(`api/v2/assets/${uid}/possibleRedactors`)
+            .pipe(
+                map((response) => { return <any[]>response }),
+                catchError(err => this.handleError(err))
+            );
+    }
 
     public postAssetType(model: AssetType)
         : Observable<ApiResult & ErrorResponse> {

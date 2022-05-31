@@ -159,6 +159,10 @@ export class MultiInputField implements ControlValueAccessor {
         this.currentText = "";
         this.ref.markForCheck();
     }
+
+    get placeholderText(): string {
+        return this.required ? $localize`Value required` : `Optional`;
+    }
 }
 
 @NgModule({

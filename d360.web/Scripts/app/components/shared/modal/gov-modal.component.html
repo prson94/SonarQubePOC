@@ -10,10 +10,10 @@
         </div>
         <ng-content></ng-content>
         <div *ngIf="showConfirm" class="action-bar">
-            <button class="button" (click)="closePopUp()">Cancel</button>
+            <button class="button" (click)="closePopUp()" i18n>Cancel</button>
             <span class="grow"></span>
             <button class="button primary" (click)="confirm()">
-                Confirm
+                <ng-container i18n>Confirm</ng-container>
                 <span class="loader"><span class="spinner light"></span></span>
             </button>
         </div>

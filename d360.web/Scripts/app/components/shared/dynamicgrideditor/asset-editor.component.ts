@@ -66,7 +66,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() useNonLegacyData: boolean = false;
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
-    readonly defaultCategory: string = "General";
+    readonly defaultCategory: string = $localize`General`;
 
     form: FormGroup;
 

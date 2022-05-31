@@ -7,7 +7,7 @@
     <button type="button" tabindex="-1" (click)="tryChangeValue(false)" class="uncheck">{{falseLabel}}</button>
 </div>
 <span *ngIf="!optional && value === undefined" class="switch-required-message">
-    <span>
+    <span i18n>
         Value required
     </span>
 </span>

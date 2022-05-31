@@ -17,7 +17,6 @@ using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.model.helpers.filters;
-
 using Dapper;
 
 using Newtonsoft.Json;
@@ -2571,17 +2570,17 @@ namespace d360.model.DataAccessLayer
 			List<GridColumn> Columns = new List<GridColumn>();
 			List<GridField> Fields = new List<GridField>();
 
-			Columns.Add(new GridColumn { text = "Responsibility", datafield = "ResponsibilityTypeName", columntype = "textbox" });
-			Columns.Add(new GridColumn { text = "Assigned User/Group", datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
+			Columns.Add(new GridColumn { text = core.resources.Fields.Responsibility_Name, datafield = "ResponsibilityTypeName", columntype = "textbox" });
+			Columns.Add(new GridColumn { text = core.resources.Fields.AssignedUserGroup_Name, datafield = "ResourceName", columntype = "preview", uidfield = "SecurityAssetUid", urlfield = "ResourceItemUrl" });
 			
 			if (definition.DisplayAssignmentSource)
 			{
-				Columns.Add(new GridColumn { text = "Via", datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
+				Columns.Add(new GridColumn { text = core.resources.Fields.Via_Name, datafield = "SecurityAssetName", columntype = "preview", uidfield = "SecurityAssetUid" });
 				Fields.Add(new GridField { apiName = "SecurityAssetName", name = "SecurityAssetName", type = "preview" });
 
 			}
 
-			Columns.Add(new GridColumn { text = "Context", datafield = "Context", columntype = "textbox" });
+			Columns.Add(new GridColumn { text = core.resources.Fields.Context_Name, datafield = "Context", columntype = "textbox" });
 
 
 			Fields.Add(new GridField { apiName = "ResponsibilityTypeName", name = "ResponsibilityTypeName", type = "string" });

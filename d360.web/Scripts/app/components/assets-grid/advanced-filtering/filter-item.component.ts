@@ -32,6 +32,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     nonValueOperators: string[] = ["Populated", "NotPopulated", "IsTrue", "IsFalse"];
 
+    multiInputTooltip = $localize`Type and hit Enter to create multiple phrases, to be compared against asset path segments for matches`;
+
     lazyLoadSubscription: Subscription;
 
     currentField: FieldTypeAPIModelFieldAdvancedCondition;
@@ -77,6 +79,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     private previousFilter: string = "";
 
+    resetFilterText = $localize`Reset filter`;
+    removeFilterText = $localize`Remove filter`;
+
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @ViewChild("multiInput", { static: false }) multiInputRef: MultiInputField;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
@@ -117,7 +122,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 if (this.condition.isDefaultFilter === true && this.condition.field.toLowerCase() === data.fieldName.toLowerCase()) {
                     var values = [];
                     data.values.forEach((d) => {
-                        values.push({ title: d.name, value: d.uid });
+                        let val: string = d.uid;
+
+                        if (d["perspective"]) {
+                            //if values are coming from relationship type filters on relationship screen they contain perspective value (subject or object) which must be included in selection value
+                            val = d.uid + "|" + d["perspective"];
+                        }
+                        values.push({ title: d.name, value: val });
                     });
                     if (values.length === 0) {
                         this.remove();
@@ -133,7 +144,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         this.allFieldsDropdown = [];
 
         if (this.fields && this.fields.length > 0) {
-            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: "Asset Fields", items: [] };
+            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: $localize`Asset Fields`, items: [] };
             this.allFieldsDropdown.push(assetFieldGroup);
 
             this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
@@ -144,7 +155,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         if (this.isAssetType) {
             var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
             if (systemFields.length > 0) {
-                let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: "System Fields", items: [] };
+                let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: $localize`System Fields`, items: [] };
                 this.allFieldsDropdown.push(systemFieldsGroup);
 
                 systemFields.forEach((f) => {
@@ -153,7 +164,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             }
 
             if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
-                let relationshipGroup: SelectItemGroup = { value: "rel-field", label: "Relationships", items: [] };
+                let relationshipGroup: SelectItemGroup = { value: "rel-field", label: $localize`Relationships`, items: [] };
                 this.allFieldsDropdown.push(relationshipGroup);
 
                 SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
@@ -168,7 +179,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     filterTable($event: any) {
-        this.dataTable.filterGlobal($event, "contains");
+        this.dataTable.filterGlobal($event, 'contains');
     }
 
     setSelectionVirtualScrollHeight() {
@@ -311,13 +322,15 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     getOperators(item: AdvancedFilterFieldCondition) {
         let options: SelectItem[] = [];
-        if (this.condition.field === SystemFields.OwnedByFieldCode) {
-            options.push({ label: "contains", value: "Equals" });
-            options.push({ label: "does not contain", value: "NotEquals" });
+        if (this.condition.field === SystemFields.OwnedByFieldCode
+            || this.condition.field === SystemFields.CreatedByFieldCode
+            || this.condition.field === SystemFields.LastModifiedBy) {
+            options.push({ label: $localize`contains`, value: "Equals" });
+            options.push({ label: $localize`does not contain`, value: "NotEquals" });
             return options;
         } else if (this.isGlobalSearch) {
-            options.push({ label: "contains", value: "Contains" });
-            options.push({ label: "does not contain", value: "NotContains" });
+            options.push({ label: $localize`contains`, value: "Contains" });
+            options.push({ label: $localize`does not contain`, value: "NotContains" });
             return options;
         }
 
@@ -332,14 +345,14 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.condition.relationshipCardinality = this.relationshipFieldIntersectCardinality;
 
             options = [];
-            options.push({ value: "Equals", label: " is " });
-            options.push({ value: "NotEquals", label: " is not " });
-            options.push({ value: "Populated", label: " exists " });
-            options.push({ value: "NotPopulated", label: " does not exist " });
+            options.push({ value: "Equals", label: $localize` is ` });
+            options.push({ value: "NotEquals", label: $localize` is not ` });
+            options.push({ value: "Populated", label: $localize` exists ` });
+            options.push({ value: "NotPopulated", label: $localize` does not exist ` });
 
             if (this.relationshipFieldIntersectCardinality === "Many") {
-                options[0].label = "contains";
-                options[1].label = "does not contain";
+                options[0].label = $localize`contains`;
+                options[1].label = $localize`does not contain`;
             }
             return options;
         }
@@ -352,21 +365,21 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
         if (ft.Type.Relationship) {
             options = [];
-            options.push({ value: "Equals", label: " is " });
-            options.push({ value: "NotEquals", label: " is not " });
-            options.push({ value: "Populated", label: " exists " });
-            options.push({ value: "NotPopulated", label: " does not exist " });
+            options.push({ value: "Equals", label: $localize` is ` });
+            options.push({ value: "NotEquals", label: $localize` is not ` });
+            options.push({ value: "Populated", label: $localize` exists ` });
+            options.push({ value: "NotPopulated", label: $localize` does not exist ` });
 
             if (this.relationshipFieldIntersectCardinality === "Many") {
-                options[0].label = "contains";
-                options[1].label = "does not contain";
+                options[0].label = $localize`contains`;
+                options[1].label = $localize`does not contain`;
             }
             return options;
         }
 
         if (ft.Type.Lookup && ft.Type.Lookup.List.AllowMultipleValues) {
-            ft.Operators[0].label = "contains";
-            ft.Operators[1].label = "does not contain";
+            ft.Operators[0].label = $localize`contains`;
+            ft.Operators[1].label = $localize`does not contain`;
         }
 
 
@@ -497,6 +510,10 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             this.uiCurrentOperatorsList = this.getOperators(this.condition);
             this.uiFilterLabel = this.condition.getFilterLabel();
 
+            if (this.condition.field === "CreatedBy") {
+                this.hasSelectAllCheckbox = true;
+            }
+
             if (type.Type.Score && !this.condition.value) {
                 this.condition.value = "poor";
             }
@@ -548,7 +565,13 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         var type = this.getFieldType(this.condition);
         if (type.Type) {
             if (this.condition.fieldType === "Lookup") {
-                if (this.condition.field === "[Level]") {
+                if (this.condition.field === SystemFields.LastModifiedBy && !(this.loadIdentifier === "AdminTags")) {
+                    this.loadLookupValuesForRedactors(params);
+                }
+                else if (this.condition.field === SystemFields.CreatedByFieldCode && !(this.loadIdentifier === "AdminTags")) {
+                    this.loadLookupValuesForCreators(params);
+                }
+                else if (this.condition.field === "[Level]") {
                     this.loadLookupValuesForLevelNames();
                 }
                 else if (this.isComplexField && this.complexFieldDefinition.FieldType === 'OwnershipLookup') {
@@ -638,16 +661,20 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
         res.items.forEach((str) => {
             if (typeof str === 'object' && str.value && str.name) {
-                loadedData.push({ title: str.name, value: str.value, count:str.count });
+                loadedData.push({ title: str.name, value: str.value, count: str.count });
             }
             else {
                 loadedData.push({ title: str, value: str });
             }
         });
 
-        Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
-
-        this.currentField.Values = [...this.currentField.Values];
+        if (loadedData.length <= params.take) {
+            this.currentField.Values = loadedData;
+        }
+        else {
+            Array.prototype.splice.apply(this.currentField.Values, [...[params.skip, params.take], ...loadedData]);
+            this.currentField.Values = [...this.currentField.Values];
+        }
 
         this.isLookupValuesLoading = false;
 
@@ -655,13 +682,6 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadLookupValuesForComplexFields(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
-        }
-
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -710,6 +730,44 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
+    loadLookupValuesForCreators(params: any) {
+        this.isLookupValuesLoading = true;
+
+        this.assetTypeService.GetAssetTypePossibleCreators(this.assetTypeUid).subscribe((res) => {
+            this.currentField.Values = [];
+            res.map((creator) => {
+                if (params.filter) {
+                    if (!creator.Name.toLowerCase().includes(params.filter.toLowerCase())) {
+                        return;
+                    }
+                }
+
+                this.currentField.Values.push({ title: creator.Name, value: creator.Id + '' });
+            });
+        });
+
+        this.isLookupValuesLoading = false;
+    }
+
+    loadLookupValuesForRedactors(params: any) {
+        this.isLookupValuesLoading = true;
+
+        this.assetTypeService.GetAssetTypePossibleRedactors(this.assetTypeUid).subscribe((res) => {
+            this.currentField.Values = [];
+            res.map((redactor) => {
+                if (params.filter) {
+                    if (!redactor.Name.toLowerCase().includes(params.filter.toLowerCase())) {
+                        return;
+                    }
+                }
+
+                this.currentField.Values.push({ title: redactor.Name, value: redactor.Id + '' });
+            });
+        });
+
+        this.isLookupValuesLoading = false;
+    }
+
     loadLookupValuesForOwners() {
         if (!this.currentField.Values || this.currentField.Values.length === 0) {
             this.isLookupValuesLoading = true;
@@ -741,15 +799,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             });
         }
     }
-
+    private oldSearchPhrase: string = '';
     loadRelationshipValues(params: any) {
-        if (this.currentField.Values && this.currentField.Values.length > 0 && !params.filter) {
-            var subData = this.currentField.Values.slice(+params.skip, +params.skip + +params.take);
-            if (!subData.some((x) => !x)) {
-                return;
-            }
-        }
-
         if (this.lazyLoadSubscription) {
             this.lazyLoadSubscription.unsubscribe();
         }
@@ -761,12 +812,22 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             nameAsParam = this.relationshipFieldName;
         }
 
+        if (+params["take"] < 40) {
+            //prime table event sometimes tries to load less than 40 results and after that assumes there is no more new items to fetch
+            //forcing to take min 40 items resolves an issue
+            params["take"] = 40;
+        }
+
         this.lazyLoadSubscription = this.assetService
             .getAssetsLookupValues(nameAsParam.split("|")[1], params)
             .subscribe((res) => {
-                if (!this.currentField.Values || params.filter) {
+                if (!this.currentField.Values || (params.filter && params.filter !== this.oldSearchPhrase)) {
+                    //initialize new empty array if its uninitialized or if simple filter changes
                     this.currentField.Values = Array.from({ length: 0 });
                 }
+
+                this.oldSearchPhrase = params.filter ?? "";
+
                 let loadedData = [];
 
                 res.forEach((str) => {
@@ -1191,7 +1252,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             if (this.currentOperator.toString() === "StartsWith" || this.currentOperator.toString() === "EndsWith") {
                 return "text";
             }
-            
+
             return this?.condition?.type?.Type?.Path?.Definition ? "text" : "multi-input";
         }
 

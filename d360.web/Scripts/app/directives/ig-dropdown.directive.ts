@@ -44,10 +44,10 @@ export class DropdownDirective implements AfterContentInit {
 
         if (!isPlaceholderSet) {
             if (this.required == null) {
-                this.dropdownRef.placeholder = "Optional";
+                this.dropdownRef.placeholder = $localize`Optional`;
                 this.dropdownRef.showClear = true;
             } else {
-                this.dropdownRef.placeholder = "Value required";
+                this.dropdownRef.placeholder = $localize`Value required`;
                 this.dropdownRef.showClear = false;
                 this.el.nativeElement.setAttribute("aria-required", true);
             }
@@ -80,7 +80,7 @@ export class DropdownDirective implements AfterContentInit {
             let count: number = this.getItemsCount();
             if (count > 10) {
                 this.dropdownRef.filter = true;
-                this.dropdownRef.filterPlaceholder = "Search fields";
+                this.dropdownRef.filterPlaceholder = $localize`Search fields`;
             }
             else {
                 this.dropdownRef.filter = false;

@@ -14,6 +14,7 @@
                    pInputText
                    size="100"
                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                   i18n-placeholder
                    placeholder="Search..."
                    class="grid-simple-filter">
             <p-table #dt
@@ -30,15 +31,15 @@
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Name'">
-                            Name
+                            <ng-container i18n>Name</ng-container>
                             <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'ObjectTypeName'">
-                            Type
+                            <ng-container i18n>Type</ng-container>
                             <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
                         </th>
                         <th [pSortableColumn]="'ParentName'">
-                            Parent
+                            <ng-container i18n>Parent</ng-container>
                             <d3s-sortIcon [field]="'ParentName'"></d3s-sortIcon>
                         </th>
                         <th style="width:   48px "></th>
@@ -95,7 +96,7 @@
             <div class="row">
                 <div class="col s12">
                     <div class="FieldName"
-                         style="display:block;">
+                         style="display:block;" i18n>
                         Type
                     </div>
                     <select [(ngModel)]="selectedType"
@@ -106,7 +107,7 @@
                                 [value]="i.Value">
                             {{i.Name}}
                         </option>
-                        <option value="_custom">Custom</option>
+                        <option value="_custom" i18n>Custom</option>
                     </select>
                 </div>
             </div>
@@ -115,13 +116,14 @@
                  *ngIf="selectedType != '_custom'">
                 <div class="col s12">
                     <div class="FieldName"
-                         style="display:block;">
+                         style="display:block;" i18n>
                         Value
                     </div>
                     <p-autoComplete [suggestions]="synonymItems"
                                     (completeMethod)="search($event)"
                                     field="Name"
                                     [(ngModel)]="selectedSynonym"
+                                    i18n-placeholder
                                     placeholder="Search..."
                                     size="64"
                                     [disabled]="selectedType == ''"></p-autoComplete>
@@ -132,7 +134,7 @@
                  style="padding-bottom: 15px"
                  *ngIf="selectedType == '_custom'">
                 <div class="col s12">
-                    <div class="FieldName">Value</div>
+                    <div class="FieldName" i18n>Value</div>
                     <div>
                         <input maxlength="250"
                                pInputText
@@ -148,11 +150,13 @@
                 <div class="col s12">
                     <button pButton
                             type="button"
+                            i18n-label
                             label="Save"
                             (click)="save();"
                             [disabled]="(selectedType != '_custom' && selectedSynonym?.uid == null) || (selectedType == '_custom' && (!customSynonymName))"></button>
                     <button pButton
                             type="button"
+                            i18n-label
                             label="Cancel"
                             (click)="formMode = FormMode.Default;"></button>
                 </div>
@@ -162,7 +166,7 @@
                          [callback]="theDeleteCallback"
                          [itemId]="selectedItem"
                          [method]="'callback'"
-                         [prompt]="'Are you sure you want to remove the ' + predicateName + ' ' + selectedItem.Name + '?'"
+                         [prompt]="deletePrompt"
                          (onCancel)="formMode = FormMode.Default;deselectElement();"></d3s-delete-form>
     </div>
 </div>

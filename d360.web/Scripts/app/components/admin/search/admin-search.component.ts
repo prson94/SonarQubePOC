@@ -11,8 +11,6 @@ import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
 
-
-
 @Component({
     selector: "d3s-admin-search-component",
     templateUrl: "./admin-search.component.html"
@@ -27,6 +25,8 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
     indexableNodes: TreeNode[];
     readonly JobStatus: string[] = ["None", "Pending", "Processing", "Processing By Asset Type", "Error", "Completed"];
     readonly emptyguid: string = "00000000-0000-0000-0000-000000000000";
+
+    refreshViewLabel = $localize`Refresh View`;
 
     constructor(
         protected searchService: SearchService,

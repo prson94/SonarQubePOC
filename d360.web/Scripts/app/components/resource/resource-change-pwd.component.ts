@@ -32,11 +32,11 @@ export class ResourceChangePwdComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Change Your Password'));
-        this.setBrowserTitle(this.titleService, 'Change Your Password');
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb($localize`Change Your Password`));
+        this.setBrowserTitle(this.titleService, $localize`Change Your Password`);
     }
 
     public onCloseEvent() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_HOME_ROOT}`);
-    }    
+    }
 }

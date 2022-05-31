@@ -65,6 +65,14 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
+    get editorTitle(): string {
+        return !this.semanticType ? $localize`Create` : $localize`Edit` + $localize`Semantic Type`;
+    }
+
+    get submitButtonLabel(): string {
+        return this.semanticType ? $localize`Save Changes` : $localize`Create`;
+    }
+
     constructor(
         private cdRef: ChangeDetectorRef,
         private formBuilder: FormBuilder,
@@ -87,7 +95,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             description: null,
             effectiveDate: null,
             threshold: ['', [Validators.required]],
-            priority: ['', [Validators.required]],          
+            priority: ['', [Validators.required]],
             matchType: null,
             baseType: null,
             qualifier: null,
@@ -115,20 +123,20 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                     this.hasFormChanged = false;
                 }
             });
-        }, 500);        
+        }, 500);
 
-        this.populateTypeLists();  
+        this.populateTypeLists();
     }
-    ngOnChanges(changes: SimpleChanges): void {        
+    ngOnChanges(changes: SimpleChanges): void {
         let c = changes;
         if (this.semanticType) {
             this.model = _.cloneDeep(this.semanticType);
             this.isBuiltIn = this.semanticType.source.toString() === SemanticSource[SemanticSource.BuiltIn];
             this.isEdit = true;
-            
+
             if (this.semanticType.matchType.toString() === SemanticMatchType[SemanticMatchType.Advanced]) {
                 this.advancedJson = JSON.stringify(this.semanticType.advanced, null, 2);
-            }            
+            }
         } else {
             this.isEdit = false;
             this.model = new SemanticType();
@@ -138,7 +146,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         }
         this.cdRef.markForCheck();
 
-        this.populateTypeLists();        
+        this.populateTypeLists();
     }
     populateModelFromDataProfile() {
         this.model.qualifier = this.dataProfile?.typeQualifier;
@@ -151,7 +159,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             return false;
         }
         return this.semanticForm.valid;
-    }   
+    }
 
     onSubmit(addAnother: boolean = false) {
         this.savingInProgress = true;
@@ -165,7 +173,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         }
 
         this.clearInvalidFields();
-        
+
         if (this.isEdit) {
             if (this.isBuiltIn) {
                 this.dataProfileService.patchSemanticType(this.model)
@@ -182,17 +190,17 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                             this.savingInProgressWithAddNew = false;
                         }
                     );
-            }                     
-        } else {            
+            }
+        } else {
             this.dataProfileService.postSemanticType(this.model).subscribe((res) => {
-                this.handleSaveComplete(res, addAnother);                
-            });            
-        }        
+                this.handleSaveComplete(res, addAnother);
+            });
+        }
     }
 
     handleSaveComplete(res: any, addAnother: boolean = false) {
         if (!(res?.status)) {
-            let msg = `Successfully ${this.isEdit ? 'updated' :'created'}`;
+            let msg = this.isEdit ? $localize`Successfully updated` : $localize`Successfully created'}`;
             this.showMessageForResult(this.messagesService, res, msg);
             this.savingInProgress = false;
             this.savingInProgressWithAddNew = false;
@@ -200,7 +208,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                 this.model = new SemanticType();
                 this.semanticForm.reset();
             }
-            this.saveClick.emit({ item: res[0], action: `${this.isEdit ? 'edit' :'new'}`, addAnother });
+            this.saveClick.emit({ item: res[0], action: `${this.isEdit ? $localize`Edit` : $localize`New`}`, addAnother });
         }
         else {
             this.savingInProgress = false;
@@ -214,7 +222,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     populateTypeLists() {
         if (!this.matchTypes || !this.baseTypes || !this.statuses || !this.locales) {
-            this.isLoading = true;            
+            this.isLoading = true;
             this.dataProfileService.getSemanticLookupList("matchtypes", false, null, "none").subscribe((matchRes) => {
                 this.matchTypes = matchRes.map((matchType) => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description }; });
                 this.dataProfileService.getSemanticLookupList("basetypes").subscribe((baseRes) => {
@@ -236,7 +244,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                 });
             });
         }
-        this.isLoading = false;                
+        this.isLoading = false;
     }
 
     isEmptyString(): ValidatorFn {
@@ -250,13 +258,13 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                 return {
                     empty: { value: control.value }
                 };
-            }                
+            }
             return null;
         };
-    }    
+    }
 
     isValid(): boolean {
-        
+
         if (this.model?.matchType?.toString() === SemanticMatchType[SemanticMatchType.Advanced]) {
             return this.isJsonValid;
         }
@@ -279,7 +287,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         this.setFormHeight();
     }
 
-    private setFormHeight() {       
+    private setFormHeight() {
         var groupsHeight = 0;
         var topPos = 260;
         if (this.elRef.nativeElement) {
@@ -299,7 +307,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         }
 
         this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight;
-        this.cdRef.markForCheck();        
+        this.cdRef.markForCheck();
     }
 
     expandChanged() {
@@ -322,7 +330,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
                     break;
                 case "pattern":
                     this.model.invalidList = this.dataProfile?.outlierDetail.map(({ key }) => key);
-                    this.model.regExpReturned = this.dataProfile?.regExp;                   
+                    this.model.regExpReturned = this.dataProfile?.regExp;
                     break;
             }
         }
@@ -330,14 +338,14 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     get cancelButtonText(): string {
         if (!this.isEdit) {
-            return "Cancel";
+            return $localize`Cancel`;
         }
 
         if (this.hasFormChanged && this.isEdit) {
-            return "Discard Changes";
+            return $localize`Discard Changes`;
         }
 
-        return "Close";
+        return $localize`Close`;
     }
 
     getBaseTypeOptions() {
@@ -360,7 +368,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             allowedFields = [
                 ...allowedFields,
                 ...["minimum", "maximum", "minSamples", "minMaxPresent", "regExpReturned", "headerRegExps", "headerRegExpConfidence"]
-            ];                
+            ];
         }
         if (this.model.matchType.toString() === SemanticMatchType[SemanticMatchType.Pattern]) {
             allowedFields = [
@@ -376,9 +384,9 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         Object.keys(this.model).forEach((key) => {
             if (!allowedFields.find((x) => x === key)) {
                 this.model[key] = null;
-            }                        
+            }
         });
-        
+
     }
 
     validateMinMax() {
