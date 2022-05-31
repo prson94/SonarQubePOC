@@ -6,7 +6,7 @@
 			<div class="flex-grow"></div>
 			<button igButton (click)="add()" i18n-label i18n-pTooltip label="Add Folder" pTooltip="Add Folder" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
 			<div class="spacer"></div>
-			<button igButton (click)="showAddAssetType = true" i18n-label i18n-pTooltip label="Add Asset Type" pTooltip="Add Asset Type" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+			<button igButton (click)="addAssetType()" i18n-label i18n-pTooltip label="Add Asset Type" pTooltip="Add Asset Type" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
 		</div>
 
 		<p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection">
@@ -272,7 +272,7 @@
 </div>
 
 <d3s-modal additionalClasses="modal-dyn-editor asset-editor"
-		   (onClose)="showAddAssetType=false"
+		   (onClose)="closeAddAssetType()"
 		   i18n-title
 		   title="Add Asset Type"
 		   subtitle="Site Navigation"
@@ -303,7 +303,7 @@
 						<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
 
 						<span class="rel-text">
-							{{item.name}}
+							{{item.title}}
 						</span>
 					</td>
 				</tr>
@@ -317,8 +317,8 @@
 		</p-table>
 	</div>
 	<div class="action-bar">
-		<button igButton igAutoFocus i18n-label label="Cancel" (click)="showAddAssetType = false"></button>
+		<button igButton igAutoFocus i18n-label label="Cancel" (click)="closeAddAssetType()"></button>
 		<span class="grow"></span>
-		<button igButton class="ig-button-primary" i18n-label label="Add Asset Type" ></button>
+		<button igButton class="ig-button-primary" i18n-label label="Add Asset Type" (click)="addAssetTypeFolder()" [disabled]="!selectedAssetType || addAssetTypeFolderSaving" [loading]="addAssetTypeFolderSaving"></button>
 	</div>
 </d3s-modal>

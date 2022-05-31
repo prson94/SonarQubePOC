@@ -12,6 +12,7 @@ import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-admin-site-menu',
@@ -49,10 +50,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     IsMenuPermissionsAdding: boolean= false;
 	permissionMode: FormMode = FormMode.Default;
 
-	showAddAssetType: boolean = false;
-	selectedAssetType: any;
-	assetTypes: any[] =[];
-
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService,
@@ -60,7 +57,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
         private messagesService: MessagesObservableService,
-        private featureFlagService: FeatureFlagsService
+		private featureFlagService: FeatureFlagsService,
+		private assetTypeService: AssetTypeService
     ) {
         super(headerBreadcrumbService, titleService, settingsService);
     }
@@ -439,6 +437,52 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     menuPermissionsOnModeChange($event) {
         this.permissionMode = $event;
         this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
-       
-    }
+	}
+
+	showAddAssetType: boolean = false;
+	areAssetTypesLoading: boolean = false;
+	selectedAssetType: any;
+	assetTypes: any[] = [];
+	addAssetTypeFolderSaving: boolean = false;
+	addAssetType() {
+		this.showAddAssetType = true;
+		this.areAssetTypesLoading = true;
+		this.assetTypeService.GetPossibleAssetTypeForSiteNav()
+			.subscribe((res) => {
+				this.assetTypes = res;
+				this.areAssetTypesLoading = false;
+			});
+	}
+
+	closeAddAssetType() {
+		this.selectedAssetType = null;
+		this.assetTypes = [];
+		this.showAddAssetType = false;
+	}
+
+	addAssetTypeFolder() {
+		if (!this.selectedAssetType) {
+			return;
+		}
+		this.addAssetTypeFolderSaving = true;
+		let nav = new SiteNav();
+		nav.Name = "#ASSET_TYPE";
+		nav.Object = this.selectedAssetType.Object;
+		nav.ObjectID = this.selectedAssetType.ObjectID;
+		var model = {
+			folder: nav
+		};
+
+		this.siteMenuService.addFolder(model)
+			.subscribe(r => {
+				this.showMessageForResult(this.messagesService, r);
+				this.stateService.reloadLeftNavMenu();
+				this.onSaveComplete.emit();
+				this.siteMenuService.setSiteNavPermissions(this.selection)
+				this.loadFolderItems();
+				this.addAssetTypeFolderSaving = false;
+				this.closeAddAssetType();
+			})
+	}
+
 }

@@ -189,5 +189,9 @@ namespace d360.core.entities
 		public Guid? value { get; set; }
 		[DataMember]
 		public AssetTypeClass Class { get; set; }
+		[DataMember]
+		public int ObjectID { get; set; }
+		[DataMember]
+		public string Object { get; set; }
 	}
 }

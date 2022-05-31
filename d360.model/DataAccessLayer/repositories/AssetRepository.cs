@@ -4518,7 +4518,9 @@ namespace d360.model.DataAccessLayer
 			var results = (await CompanyContext.QueryAsync<AssetTypeSelectApiModel>(@$"select 
 				at.uid as value,
 				at.Class,
-				path.Path as title
+				path.Path as title,
+				at.Object,
+				at.ObjectID
 				from AssetType at
 				cross apply GetAssetTypeTextPathById(at.id, ' > ')Path
 				where at.class in @allowedClasses", new { allowedClasses} ,ApiTimeout)).ToList();
@@ -4535,7 +4537,7 @@ namespace d360.model.DataAccessLayer
 					default: break;
 				}
 			});
-			return results;
+			return results.OrderBy(x=> x.title);
 		}
 	}
 }

@@ -143,7 +143,16 @@ export class AssetTypeService extends BaseObservableService {
                 map((response) => { return <any[]>response }),
                 catchError(err => this.handleError(err))
             );
-    }
+	}
+	GetPossibleAssetTypeForSiteNav(): Observable<any[]> {
+		return this
+			.http
+			.get(`api/v2/assets/possibleSiteNav`)
+			.pipe(
+				map((response) => { return <any[]>response }),
+				catchError(err => this.handleError(err))
+			);
+	}
 
     public postAssetType(model: AssetType)
         : Observable<ApiResult & ErrorResponse> {

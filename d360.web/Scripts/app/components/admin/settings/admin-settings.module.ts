@@ -35,7 +35,6 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
 import { TooltipModule } from 'primeng/tooltip';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 
-
 @NgModule({
     imports: [CommonModule,
         FormsModule,
@@ -74,7 +73,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
         AdminSiteMenuPermissionsComponent,
-        AdminHomeComponent,
+		AdminHomeComponent
     ],
     providers: [
     ]
