@@ -17,7 +17,6 @@ import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
-import { AdminImageUploadComponent } from './admin-image-upload.component';
 import { AdminSiteMenuFolderEditorComponent } from './admin-site-menu-folder-editor.component';
 import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
 import { AdminHomeComponent } from './admin-home.component';
@@ -70,13 +69,12 @@ import { SiteModalModule } from "../../shared/modal/gov-modal.module";
         IgCheckboxModule,
         IgNumberFieldModule,
         PopupMenuModule,
-        SiteModalModule,
+		SiteModalModule,
     ],
     declarations: [
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
-        AdminImageUploadComponent,
         AdminSiteMenuFolderEditorComponent,
         AdminSiteMenuPermissionsComponent,
         AdminHomeComponent,
