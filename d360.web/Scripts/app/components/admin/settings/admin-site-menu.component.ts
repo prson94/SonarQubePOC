@@ -16,19 +16,8 @@ import { FeatureFlagsService } from '../../../services/featureflags.service';
 @Component({
     selector: 'd3s-admin-site-menu',
     providers: [CompanySettingsService, SiteMenuService],
-    templateUrl: './admin-site-menu.component.html',
-    styles: [`
-        .remove {
-            cursor: pointer; 
-            color: maroon; 
-            font-size: 1.5em;
-            vertical-align: middle;
-        }
-        input[type=text] {
-            width: 90%;
-            height:25px;
-        }
-  `],
+	templateUrl: './admin-site-menu.component.html',
+	styleUrls: ['./admin-site-menu.component.less']
 })
 
 export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit {
@@ -355,7 +344,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.isLoading = false;
                         this.stateService.reloadLeftNavMenu();
                         this.onSaveComplete.emit();
-                        this.siteMenuService.setSiteNavPermissions(this.selection)
+						this.siteMenuService.setSiteNavPermissions(this.selection)
+						this.loadFolderItems();
                     })
                 break;
             case FormMode.Deleting:
@@ -366,7 +356,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.stateService.reloadLeftNavMenu();
                         this.formMode = FormMode.Default;
                         this.isLoading = false;
-                        this.onSaveComplete.emit();
+						this.onSaveComplete.emit();
                     });
                 break;
         }

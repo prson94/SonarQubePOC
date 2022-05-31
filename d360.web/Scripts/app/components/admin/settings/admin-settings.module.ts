@@ -32,6 +32,7 @@ import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
 import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 
 @NgModule({
@@ -62,7 +63,8 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         ResourceMultiSelectGridModule,
         PipesModule,
         IgCheckboxModule,
-        IgNumberFieldModule,
+		IgNumberFieldModule,
+		TooltipModule
     ],
     declarations: [
         AdminSettingsComponent,
