@@ -40,7 +40,7 @@ export function getInvalidCount({ formGroup, formContainer }: { formGroup: FormG
         let control = <FormControl>formGroup.get(x);
         let elem = getFormControlDomElement({ formContainer, controlName: x });
         if (elem && control && control.errors) {
-            invCount += Object.keys(control.errors).filter(x => x !== "required").length > 0 ? 1 : 0;
+            invCount += Object.keys(control.errors).filter((x) => x !== "required").length > 0 ? 1 : 0;
         }
     });
 

@@ -15,7 +15,7 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     @Input() includePreciselyLogo: boolean = false;
     @Input() subtitle: string;
 
-    @Input() formFeedbackPortalName: string = undefined;
+    @Input() formFeedbackPortalName: string;
 
     @Input() modalSidePanelAssetUID: string = 'TETET';
 

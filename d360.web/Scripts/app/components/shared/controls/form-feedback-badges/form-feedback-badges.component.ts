@@ -64,7 +64,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         for (const x of Object.keys(this.igformGroup.controls)) {
             let control = <FormControl>this.igformGroup.get(x);
             if (control && control.errors && !found) {
-                let invFound = Object.keys(control.errors).filter(x => x != "required").length > 0;
+                let invFound = Object.keys(control.errors).filter((x) => x !== "required").length > 0;
                 if (invFound) {
                     let elem = this.getFormControlDomElement(x);
 
@@ -93,7 +93,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         let idx = 0;
         for (const x of Object.keys(this.igformGroup.controls)) {
             let control = <FormControl>this.igformGroup.get(x);
-            if (control && control.errors && control.errors["required"] == true && !found) {
+            if (control && control.errors && control.errors["required"] === true && !found) {
                 let elem = <HTMLElement>this.getFormControlDomElement(x);
                 if (elem) {
                     idx++;
@@ -152,11 +152,11 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 
     getFormControlCount(type: string): number {
         let count = 0;
-        Object.keys(this.igformGroup.controls).forEach(x => {
+        Object.keys(this.igformGroup.controls).forEach((x) => {
             let control = <FormControl>this.igformGroup.get(x);
             if (control) {
                 if (type === "required") {
-                    if (control.errors && control.errors["required"] == true) {
+                    if (control.errors && control.errors["required"] === true) {
                         let elem = <HTMLElement>this.getFormControlDomElement(x);
                         if (elem) {
                             count++;
@@ -165,7 +165,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                 }
                 if (type === "errors") {
                     if (control.errors) {
-                        if (Object.keys(control.errors).filter((x) => x != "required").length > 0) {
+                        if (Object.keys(control.errors).filter((x) => x !== "required").length > 0) {
                             let elem = <HTMLElement>this.getFormControlDomElement(x);
                             if (elem) {
                                 count++;

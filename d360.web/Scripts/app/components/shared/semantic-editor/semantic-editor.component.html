@@ -6,7 +6,8 @@
                 <ng-container i18n>Semantic Types</ng-container> {{(semanticType?.name ? '> ' + semanticType?.name : '')}}
             </div>
         </div>
-        <ig-form-feedback-badges 
+        <ig-form-feedback-badges
+            class="ig-form-feedback-badges"
             [igformGroup]="semanticForm"
             [inputContainer]="formElement"
         >
