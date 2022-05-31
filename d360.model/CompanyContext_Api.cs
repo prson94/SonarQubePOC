@@ -12064,10 +12064,11 @@ EG.GroupUid
                     DataProfileSampleTable.Columns.Add("SampleType", typeof(string));
                     DataProfileSampleTable.Columns.Add("Key", typeof(string));
                     DataProfileSampleTable.Columns.Add("Value", typeof(string));
+					DataProfileSampleTable.Columns.Add("JsonValue", typeof(string));
 
-                    #region Populate Data Tables
+					#region Populate Data Tables
 
-                    foreach (DataProfileUpsertModel item in request)
+					foreach (DataProfileUpsertModel item in request)
                     {
                         DataRow row = DataProfileTable.NewRow();
 
@@ -12289,6 +12290,39 @@ EG.GroupUid
                             }
                         }
 
+						if (item.textPatternDetail != null)
+						{
+							foreach (DataProfileTextPatternDetail stat in item?.textPatternDetail)
+							{
+								DataRow jsonRow = DataProfileSampleTable.NewRow();
+								jsonRow["ExecutionID"] = execution.ExecutionID;
+								jsonRow["ItemNumber"] = itemNumber;
+								if (item.ExecutionItemUid.HasValue)
+								{
+									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
+								}
+								jsonRow["SampleType"] = "textPatternDetail";
+								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
+								DataProfileSampleTable.Rows.Add(jsonRow);
+							}
+						}
+
+						if (item.semanticAnalysisDetail != null)
+						{
+							foreach (DataProfileSemanticAnalysisDetail stat in item?.semanticAnalysisDetail)
+							{
+								DataRow jsonRow = DataProfileSampleTable.NewRow();
+								jsonRow["ExecutionID"] = execution.ExecutionID;
+								jsonRow["ItemNumber"] = itemNumber;
+								if (item.ExecutionItemUid.HasValue)
+								{
+									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
+								}
+								jsonRow["SampleType"] = "semanticAnalysisDetail";
+								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
+								DataProfileSampleTable.Rows.Add(jsonRow);
+							}
+						}
 
                         if (item.topK != null)
                         {
@@ -12423,13 +12457,14 @@ EG.GroupUid
                                 bulkCopy.ColumnMappings.Add("SampleType", "SampleType");
                                 bulkCopy.ColumnMappings.Add("Key", "Key");
                                 bulkCopy.ColumnMappings.Add("Value", "Value");
+                                bulkCopy.ColumnMappings.Add("JsonValue", "JsonValue");
 
                                 bulkCopy.WriteToServer(DataProfileSampleTable);
                             }
 
-                            #endregion
+							#endregion
 
-                            transaction.Commit();
+							transaction.Commit();
 
                             AddMeasurement(metrics, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, ++step);
                         }
@@ -12688,7 +12723,9 @@ EG.GroupUid
 											,ADP.[UpdatedOn] = GETDATE()                                       
 										OUTPUT  inserted.ID INT, EDP.ItemNumber INTO #mergeResultTable;
 
-											Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID";
+											Delete ADPS from AssetDataProfileSample ADPS inner join #mergeResultTable rt on ADPS.AssetDataProfileID = rt.DataProfileID
+											Delete ADPSJ from AssetDataProfileSampleJson ADPSJ inner join #mergeResultTable rt on ADPSJ.AssetDataProfileID = rt.DataProfileID";
+
 
                     string insertSampleSQL = $@"
 										insert into AssetDataProfileSample 
@@ -12708,16 +12745,39 @@ EG.GroupUid
 										INNER JOIN 
 											#mergeResultTable rt ON rt.itemNumber = EDPS.itemNumber
 										WHERE 
+											EDPS.JsonValue is null AND
 											{querySuffix}
 											";
 
-                    string sql = $@"{insertSQL}
-								{insertSampleSQL}";
+					string insertSampleJsonSQL = $@"
+										insert into AssetDataProfileSampleJson 
+													([AssetDataProfileID]
+													,[SampleType]
+													,[JsonValue])                                            
+										SELECT  
+											rt.DataProfileID
+											,EDPS.SampleType
+											,EDPS.JsonValue
+										FROM  
+											api.ExecutionAssetDataProfileSample EDPS
+										INNER JOIN
+											api.ExecutionAssetDataProfile E ON EDPS.ExecutionID=E.ExecutionID AND EDPS.itemnumber = E.itemnumber
+										INNER JOIN 
+											#mergeResultTable rt ON rt.itemNumber = EDPS.itemNumber
+										WHERE 
+											EDPS.Value is null AND EDPS.JsonValue is not null AND
+											{querySuffix}
+											";
+
+					string sql = $@"{insertSQL}
+								{insertSampleSQL}
+								{insertSampleJsonSQL}";
 
                     if (!isInsert)
                     {
                         sql = $@"{updateSQL}
-								{insertSampleSQL}";
+								{insertSampleSQL}
+								{insertSampleJsonSQL}";
                     }
 
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
@@ -13489,6 +13549,7 @@ EG.GroupUid
 
 							
 								Delete from AssetDataProfileSample where AssetDataProfileID in( select ID from #deletedResults dr where dr.ItemNumber between @beginItemNumber and @endItemNumber )
+								Delete from AssetDataProfileSampleJson where AssetDataProfileID in( select ID from #deletedResults dr where dr.ItemNumber between @beginItemNumber and @endItemNumber )
 
 								Update E
 								set E.DeletedCount = DR.DeletedCount
