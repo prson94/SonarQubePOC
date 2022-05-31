@@ -524,7 +524,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.moveToBottom(item);
         }
     }
-	}
 
 	showAddAssetType: boolean = false;
 	areAssetTypesLoading: boolean = false;
@@ -571,5 +570,4 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				this.closeAddAssetType();
 			})
 	}
-
 }

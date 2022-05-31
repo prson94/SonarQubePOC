@@ -17,7 +17,6 @@ import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
-import { AdminImageUploadComponent } from './admin-image-upload.component';
 import { AdminSiteMenuFolderEditorComponent } from './admin-site-menu-folder-editor.component';
 import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
 import { AdminHomeComponent } from './admin-home.component';
@@ -36,6 +35,7 @@ import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
 import { SiteModalModule } from "../../shared/modal/gov-modal.module";
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [CommonModule,
@@ -77,7 +77,6 @@ import { SiteModalModule } from "../../shared/modal/gov-modal.module";
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
-        AdminImageUploadComponent,
         AdminSiteMenuFolderEditorComponent,
         AdminSiteMenuPermissionsComponent,
 		AdminHomeComponent
