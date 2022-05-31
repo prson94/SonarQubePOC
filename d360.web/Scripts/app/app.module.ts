@@ -62,20 +62,20 @@ export function localeInitializer(localeId: string) {
     return (): Promise<any> => {
         if (localeId && localeId.toLowerCase() != 'en-us') {
             return new Promise((resolve, reject) => {
-                import(`@angular/common/locales/${localeId}.js`)
+                //Dynamic import of locales issue in Angular 13 https://github.com/angular/angular-cli/issues/22154
+				import(`/node_modules/@angular/common/locales/${localeId}.mjs`)
                     .then(module => {
                         console.log(`Govern locale is set to [${localeId}]`);
                         registerLocaleData(module.default);
                         resolve('');
                     }).catch(() => {
                         if (localeId.indexOf('-') !== -1) {
-                            import(`@angular/common/locales/${localeId.split('-')[0]}.js`)
+							import(`/node_modules/@angular/common/locales/${localeId.split('-')[0]}.mjs`)
                                 .then(module => {
                                     console.log(`Govern locale is set to [${localeId.split('-')[0]}]`);
                                     registerLocaleData(module.default);
                                     resolve('');
                                 }, reject);
-
                         }
                         else {
                             reject;
@@ -96,16 +96,14 @@ export function localeInitializer(localeId: string) {
         AppComponent,
     ],
     imports: [
-        CommonModule,        
+        CommonModule,
         BrowserModule,
         HttpClientModule,
         AppRoutingModule,
         BrowserAnimationsModule,
-
         // prime
         ToastModule,
         DialogModule,
-
         //d3s modules                                            
         RightsidebarModule,
         SiteMenuModule,
@@ -157,9 +155,7 @@ export function localeInitializer(localeId: string) {
         ApplicationInsightsService,
         SearchService,
         { provide: RouteReuseStrategy, useClass: ForceNoReuseStrategy },
-    ],
-    entryComponents: [D3SModal],
-
+    ]
 })
 
 export class AppModule { }

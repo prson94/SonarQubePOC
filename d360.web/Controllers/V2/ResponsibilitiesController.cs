@@ -1573,7 +1573,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("breakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(IReadOnlyList<ResponsibilityBreakdownResponse>)),
+            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(ICollection<ResponsibilityBreakdownResponse>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
@@ -1582,18 +1582,17 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? responsibilityTypeUid = null)
         {
             ValidateParameters();
-
-            // create business logic request model
-            var request = new ResponsibilityGetTypeBreakdownRequest()
+            
+            if (responsibilityTypeUid != null)
             {
-                ResponsibilityTypeUid = responsibilityTypeUid
-            };
+	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
+	            if (responsibilityType == null)
+	            {
+		            throw new ArgumentException("Specified responsibility type not found");
+	            }
+            }
 
-            // call business logic
-            var response = await Mediator.Send(request);
-
-            // convert result to UI (API) representation.
-            var result = response.Data;
+            var result = await ResponsibilityRepository.GetTypeBreakdownAsync(responsibilityTypeUid);
 
             return Ok(result);
         }

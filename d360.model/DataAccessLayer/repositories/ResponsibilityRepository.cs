@@ -1321,5 +1321,251 @@ namespace d360.model.DataAccessLayer
                  WHERE type.uid = @typeUid
             ", new { typeUid });
         }
+
+        public async Task<ICollection<ResponsibilityBreakdownResponse>> GetTypeBreakdownAsync(Guid? responsibilityTypeUid)
+		{
+			string CountSql(string innerQuery)
+			{
+				var where = responsibilityTypeUid == null ? "" : "WHERE [uid] = @responsibilityTypeUid";
+
+				return $@"
+				SELECT [ID]     AS ResponsibilityTypeID
+					 , [uid]    AS ResponsibilityTypeUID
+					 , [Name]   AS ResponsibilityTypeName
+					 , COUNT(1) AS AssetCount
+				 FROM ({innerQuery}) innerQuery
+				{where}
+				GROUP BY [ID]
+				       , [uid]
+				       , [Name]
+				";
+			}
+
+			#region inner queries
+
+			var userResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM [responsibilitytyperelationrule] r
+			       INNER JOIN ResponsibilityType rt
+			               ON ( rt.ID = r.ResponsibilityTypeID
+			                    AND r.ApplyToType = 1 )
+			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
+			               ON ( r.ID = rresource.RuleID )
+			       INNER JOIN AssetType att
+			               ON ( att.[Object] = r.[Object]
+			                    AND att.ObjectID = r.ObjectID )
+			       INNER JOIN Asset a
+			               ON ( a.AssetTypeID = att.id )
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = rresource.SecurityAssetID
+			                  AND rresource.SecurityAsset = 'R'
+			 WHERE RES.State = 1
+			   AND r.IsVisible = 1
+			";
+
+			var userOverrideInRelationResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM [dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			       INNER JOIN ResponsibilityType RT
+			               ON RT.ID = oride.ResponsibilityTypeID
+			       INNER JOIN [dbo].asset a
+			               ON ( a.id = oride.assetID )
+			       INNER JOIN [dbo].assettype att
+			               ON ( att.id = a.assettypeid )
+			       INNER JOIN [dbo].[ResponsibilityTypeRelation] RR
+			               ON ( att.[object] = RR.[objectType]
+			                    AND att.objectid = RR.[Objectid]
+			                    AND RR.ResponsibilityTypeID = oride.ResponsibilityTypeID )
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = oride.SecurityAssetID
+			                  AND oride.SecurityAsset = 'R'
+			                  AND RES.State = 1
+			";
+
+			var userInRelationResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM responsibilitytyperelationrule r
+			       INNER JOIN ResponsibilityTypeRelation rrel
+			               ON ( r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+			                    AND r.[Object] = rrel.[ObjectType]
+			                    AND r.ObjectID = rrel.ObjectID )
+			       INNER JOIN [ResponsibilityRuleResultAsset] rasset
+			               ON ( r.ID = rasset.RuleID )
+			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
+			               ON ( r.ID = rresource.RuleID )
+			       INNER JOIN ResponsibilityType RT
+			               ON RT.ID = r.ResponsibilityTypeID
+			       INNER JOIN Asset A
+			               ON (( A.ID = rasset.AssetID ))
+			       INNER JOIN AssetType T
+			               ON T.ID = A.AssetTypeID
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = rresource.SecurityAssetID
+			                  AND rresource.SecurityAsset = 'R'
+			 WHERE RES.State = 1
+			   AND r.IsVisible = 1
+			   AND r.ApplyToType = 0
+			";
+
+			var groupResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM [responsibilitytyperelationrule] r
+			       INNER JOIN ResponsibilityType rt
+			               ON ( rt.ID = r.ResponsibilityTypeID
+			                    AND r.ApplyToType = 1 )
+			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
+			               ON ( r.ID = rresource.RuleID )
+			       INNER JOIN AssetType att
+			               ON ( att.[Object] = r.[Object]
+			                    AND att.ObjectID = r.ObjectID )
+			       INNER JOIN Asset a
+			               ON ( a.AssetTypeID = att.id )
+			       INNER JOIN [Group] G
+			               ON rresource.SecurityAsset = 'G'
+			                  AND G.ID = rresource.SecurityAssetID
+			       INNER JOIN ResourceGroup RG
+			               ON RG.GroupID = G.ID
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = RG.ResourceID
+			 WHERE RES.State = 1
+			   AND r.IsVisible = 1
+			";
+
+			var groupInRelationResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM responsibilitytyperelationrule r
+			       INNER JOIN ResponsibilityTypeRelation rrel
+			               ON ( r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+			                    AND r.[Object] = rrel.[ObjectType]
+			                    AND r.ObjectID = rrel.ObjectID )
+			       INNER JOIN [ResponsibilityRuleResultAsset] rasset
+			               ON ( r.ID = rasset.RuleID )
+			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
+			               ON ( r.ID = rresource.RuleID )
+			       INNER JOIN ResponsibilityType RT
+			               ON RT.ID = r.ResponsibilityTypeID
+			       INNER JOIN Asset A
+			               ON (( A.ID = rasset.AssetID ))
+			       INNER JOIN AssetType T
+			               ON T.ID = A.AssetTypeID
+			       INNER JOIN [Group] G
+			               ON rresource.SecurityAsset = 'G'
+			                  AND G.ID = rresource.SecurityAssetID
+			       INNER JOIN ResourceGroup RG
+			               ON RG.GroupID = G.ID
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = RG.ResourceID
+			 WHERE RES.State = 1
+			   AND r.IsVisible = 1
+			   AND r.ApplyToType = 0
+			";
+
+			var groupOverrideInRelationResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM [dbo].[ResponsibilityTypeRelationOverrideItem] oride
+			       INNER JOIN ResponsibilityType RT
+			               ON RT.ID = oride.ResponsibilityTypeID
+			       INNER JOIN [dbo].asset a
+			               ON ( a.id = oride.assetID )
+			       INNER JOIN [dbo].assettype att
+			               ON ( att.id = a.assettypeid )
+			       INNER JOIN [dbo].[ResponsibilityTypeRelation] RR
+			               ON ( att.[object] = RR.[objectType]
+			                    AND att.objectid = RR.[Objectid]
+			                    AND RR.ResponsibilityTypeID = oride.ResponsibilityTypeID )
+			       INNER JOIN [Group] G
+			               ON oride.SecurityAsset = 'G'
+			                  AND G.ID = oride.SecurityAssetID
+			       INNER JOIN ResourceGroup RG
+			               ON RG.GroupID = G.ID
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = RG.ResourceID
+			                  AND RES.[State] = 1
+			";
+
+			var organizationResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM [responsibilitytyperelationrule] r
+			       INNER JOIN ResponsibilityType rt
+			               ON ( rt.ID = r.ResponsibilityTypeID
+			                    AND r.ApplyToType = 1 )
+			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
+			               ON ( r.ID = rresource.RuleID )
+			       INNER JOIN AssetType att
+			               ON ( att.[Object] = r.[Object]
+			                    AND att.ObjectID = r.ObjectID )
+			       INNER JOIN Asset a
+			               ON ( a.AssetTypeID = att.id )
+			       INNER JOIN [Organization] D
+			               ON rresource.SecurityAsset = 'O'
+			                  AND D.ID = rresource.SecurityAssetID
+			       INNER JOIN OrganizationResource RD
+			               ON RD.OrganizationID = D.ID
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = RD.ResourceID
+			 WHERE RES.State = 1
+			   AND r.IsVisible = 1
+			";
+
+			var organizationInRelationResponsibilityTypesSql = @"
+			SELECT rt.*
+			  FROM responsibilitytyperelationrule r
+			       INNER JOIN ResponsibilityTypeRelation rrel
+			               ON ( r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+			                    AND r.[Object] = rrel.[ObjectType]
+			                    AND r.ObjectID = rrel.ObjectID )
+			       INNER JOIN [ResponsibilityRuleResultAsset] rasset
+			               ON ( r.ID = rasset.RuleID )
+			       INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource
+			               ON ( r.ID = rresource.RuleID )
+			       INNER JOIN ResponsibilityType RT
+			               ON RT.ID = r.ResponsibilityTypeID
+			       INNER JOIN Asset A
+			               ON (( A.ID = rasset.AssetID ))
+			       INNER JOIN [Organization] D
+			               ON rresource.SecurityAsset = 'O'
+			                  AND D.ID = rresource.SecurityAssetID
+			       INNER JOIN OrganizationResource RD
+			               ON RD.OrganizationID = D.ID
+			       INNER JOIN reporting.Global_Resource RES
+			               ON RES.ResourceID = RD.ResourceID
+			 WHERE RES.State = 1
+			   AND r.IsVisible = 1
+			   AND r.ApplyToType = 0
+			";
+
+			#endregion inner queries
+
+			var sql = $@"
+			SELECT ResponsibilityTypeID
+			     , ResponsibilityTypeUID
+			     , ResponsibilityTypeName AS ResponsibilityType
+			     , ResponsibilityTypeName AS ResponsibilityName
+			     , SUM(AssetCount)        AS [Count]
+			  FROM ({CountSql(userResponsibilityTypesSql)}
+			        UNION ALL
+			        {CountSql(userInRelationResponsibilityTypesSql)}
+			        UNION ALL
+					{CountSql(userOverrideInRelationResponsibilityTypesSql)}
+			        UNION ALL
+					{CountSql(groupResponsibilityTypesSql)}
+			        UNION ALL
+					{CountSql(groupInRelationResponsibilityTypesSql)}
+			        UNION ALL
+					{CountSql(groupOverrideInRelationResponsibilityTypesSql)}
+			        UNION ALL
+					{CountSql(organizationResponsibilityTypesSql)}
+			        UNION ALL
+					{CountSql(organizationInRelationResponsibilityTypesSql)}
+			 ) X
+			 GROUP BY ResponsibilityTypeID
+			          ,ResponsibilityTypeUID
+			          ,ResponsibilityTypeName
+			 ORDER BY ResponsibilityTypeName 
+			";
+
+	        var entities = await Company.Connection.QueryAsync<ResponsibilityBreakdownResponse>(sql, new { responsibilityTypeUid });
+	        return entities.ToList();
+        }
 	}
 }

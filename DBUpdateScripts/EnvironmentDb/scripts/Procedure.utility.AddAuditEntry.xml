@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.utility.AddAuditEntry-v18">
+  <changeSet author="Puneet Gupta" id="Procedure.utility.AddAuditEntry-v19">
   <comment>GOV-18313</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -471,7 +471,7 @@ begin
 			from @tempAuditField F
 			Group by F.FieldTypeID,F.FieldName;
 			
-			if exists(select 1 from @MaxVersion where FieldTypeID > 0)
+			if exists(select 1 from @tbl where FieldTypeID > 0)
 				begin
 
 					update	T
@@ -487,9 +487,10 @@ begin
 									from	@MaxVersion V
 											inner join @tempAuditField F on F.fieldtypeID  = V.Fieldtypeid and F.[Version] = V.[Version] and F.Fieldtypeid > 0
 							) S on (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)			
+					where T.FieldTypeID > 0
 				end
 			
-			if exists(select 1 from @MaxVersion where FieldTypeID = 0)
+			if exists(select 1 from @tbl where FieldTypeID = 0)
 				begin
 
 					update	T
@@ -505,6 +506,7 @@ begin
 									from	@MaxVersion V
 											inner join @tempAuditField F on F.FieldName  = V.FieldName  and F.[Version] = V.[Version] and F.fieldtypeID  = V.Fieldtypeid and F.Fieldtypeid = 0 
 							) S on (S.FieldName  = T.FieldName and S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID)			
+				   where T.FieldTypeID = 0
 				end
 		
 		end

@@ -6,6 +6,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
 
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-admin-resources',
@@ -13,6 +14,12 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AdminResourcesComponent extends AdminBaseComponent implements OnInit {
+
+    selectedResource: any;
+    showSidePanel: boolean = true;
+    private sidePanelOpen: boolean = false;
+    sidePanelTab: string = 'detail';
+    sidePanelStorageKey: string = 'Admin_User_list_' + CurrentResourceID;;
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -28,6 +35,7 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
         this.setObjectInfo('ResourceType', 1);
         this.buildSecondaryNavigationForObject(0, 'ResourceType');
     }
+
     ngOnInit() {
         this.clearSidebar();
     }

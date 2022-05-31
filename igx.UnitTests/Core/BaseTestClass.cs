@@ -643,7 +643,7 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
-        public IResponsibilityRepository GetResponsibilityRepository()
+        public Mock<IResponsibilityRepository> GetResponsibilityRepositoryMock()
         {
             var mock = new Mock<IResponsibilityRepository>();
 
@@ -668,7 +668,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
                 .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
 
-            return mock.Object;
+            return mock;
         }
 
         public ISettingsRepository GetSettingsRepository()

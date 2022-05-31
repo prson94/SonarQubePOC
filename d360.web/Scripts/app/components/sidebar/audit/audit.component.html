@@ -38,14 +38,9 @@
                          [rows]="rowsPerPage"
                          [rowsPerPageOptions]="defaultPagingOptions"
                          [(selection)]="selected">
-                    <ng-template pTemplate="colgroup">
-                        <colgroup>
-                            <col *ngFor="let column of columns" [style]="'width:' + column.columnWidth + 'px'">
-                        </colgroup>
-                    </ng-template>
                     <ng-template pTemplate="header">
                         <tr>
-                            <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'width:' + column.columnWidth + 'px'">
+                            <th *ngFor="let column of columns" [pSortableColumn]="column.datafield" [style]="'flex: 0 0 '+ column.columnWidth + 'px'">
                                 {{column.text}}
                                 <d3s-sortIcon [field]="column.datafield"></d3s-sortIcon>
                             </th>
@@ -53,32 +48,27 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
                         <tr [pSelectableRow]="item">
-                            <td>{{item.resourceName}}</td>
-                            <td>
-                                <span>{{item.date | date: 'medium'}}</span>
+                            <td *ngFor="let column of columns" [style]="'flex: 0 0 ' + column.columnWidth + 'px'">
+                                <ng-container [ngSwitch]="column.datafield">
+                                    <span *ngSwitchCase="'date'">{{item.date | date: 'medium'}}</span>
+                                    <ng-container *ngSwitchDefault>{{item[column.datafield]}}</ng-container>
+                                    <ng-container *ngSwitchCase="'newValue'">
+                                        <ng-container *ngTemplateOutlet="valueDisplay"></ng-container>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'previousValue'">
+                                        <ng-container *ngTemplateOutlet="valueDisplay"></ng-container>
+                                    </ng-container>
+                                    <ng-template #valueDisplay>
+                                        <ng-container *ngIf="item[column.datafield]">
+                                            <span [ngSwitch]="(item.fieldType ? item.fieldType:'').toLowerCase()">
+                                                <div *ngSwitchCase="'date'" [innerHtml]="item[column.datafield] | date: 'shortDate'"></div>
+                                                <div *ngSwitchCase="'datetime'" [innerHtml]="item[column.datafield] | date: 'medium'"></div>
+                                                <div *ngSwitchDefault [innerHtml]="item[column.datafield]"></div>
+                                            </span>
+                                        </ng-container>
+                                    </ng-template>
+                                </ng-container>
                             </td>
-                            <td>{{item.action}}</td>
-                            <td>{{item.field}}</td>
-                            <td *ngIf="item.newValue;else emptyValue">
-                                <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
-                                    <div *ngSwitchCase="'date'" [innerHtml]="item.newValue | date: 'shortDate'"></div>
-                                    <div *ngSwitchCase="'datetime'" [innerHtml]="item.newValue | date: 'medium'"></div>
-                                    <div *ngSwitchDefault [innerHtml]="item.newValue"></div>
-                                </span>
-                            </td>
-                            <td *ngIf="item.previousValue;else emptyValue">
-                                <span [ngSwitch]="(item.fieldType?item.fieldType:'').toLowerCase()">
-                                    <div *ngSwitchCase="'date'" [innerHtml]="item.previousValue | date: 'shortDate'"></div>
-                                    <div *ngSwitchCase="'datetime'" [innerHtml]="item.previousValue | date: 'medium'"></div>
-                                    <div *ngSwitchDefault [innerHtml]="item.previousValue"></div>
-                                </span>
-                            </td>
-                            <ng-template #emptyValue><td></td></ng-template>
-                            <td>{{item.actionObject}}</td>
-                            <td>{{item.actionObjectTypeName}}</td>
-                            <td>{{item.actionObjectName}}</td>
-                            <td>{{item.actionDescription}}</td>
-                            <td>{{item.version}}</td>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="summary">
