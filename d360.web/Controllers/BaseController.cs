@@ -2146,9 +2146,11 @@ namespace d360.web.Controllers
             var settings = SettingsRepository.GetSettingsAsDictionary();
 
             var isThemeEnabled = Ld.BoolVariation(FeatureFlags.TEMP_BRANDING_NEWUI_TEMP, GetSdkFeatureFlagUser(), false);
-            if (isThemeEnabled || true)
+            if (isThemeEnabled)
             {
                 settings["CustomCSSLocation"] = "";
+                settings["CompanyIcon"] = "";
+                settings["CompanyLogo"] = "";
                 var currentTheme = await this.ThemeRepository.GetCurrentThemeByUserAsync();
                 if (currentTheme != null && !string.IsNullOrEmpty(currentTheme.IconUri))
                 {
