@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
@@ -49,6 +49,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
     IsMenuPermissionsAdding: boolean= false;
 	permissionMode: FormMode = FormMode.Default;
+
+    showFolderModalDialog: boolean = false;
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -150,6 +152,14 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         } else if (this.formMode == FormMode.Adding) {
             this.newFolder.IconPayload = this.iconImage.dataUrl;
         }
+    }
+
+    addFolderDialog() {
+        this.selection = null;
+        this.newFolder = new SiteNav();
+        this.newFolderItems = new Array<SiteNav>();
+        this.loadFolderItems();
+        this.showFolderModalDialog = true;
     }
 
     add() {
@@ -278,6 +288,38 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.isLoading = false;
                     });
                 
+            })
+    }
+
+    moveToTop(item: SiteNav) {
+        this.selection = item;
+        this.isLoading = true;
+        this.siteMenuService.moveFolderToTop(this.selection.ID)
+            .subscribe(() => {
+                this.siteMenuService.getSiteNavItems()
+                    .subscribe(s => {
+                        this.companySettings.SiteNav = s;
+                        this.companySettingsChange.emit(this.companySettings);
+                        this.stateService.reloadLeftNavMenu();
+                        this.isLoading = false;
+                    });
+
+            })
+    }
+
+    moveToBottom(item: SiteNav) {
+        this.selection = item;
+        this.isLoading = true;
+        this.siteMenuService.moveFolderToBottom(this.selection.ID)
+            .subscribe(() => {
+                this.siteMenuService.getSiteNavItems()
+                    .subscribe(s => {
+                        this.companySettings.SiteNav = s;
+                        this.companySettingsChange.emit(this.companySettings);
+                        this.stateService.reloadLeftNavMenu();
+                        this.isLoading = false;
+                    });
+
             })
     }
 
@@ -425,6 +467,28 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         }
     }
 
+    getMenuOptions(folder: SiteNav): any[] {
+        let menuOptions = [
+            { title: 'Edit' },
+        ];
+
+        if (folder.IsCustom) {
+            menuOptions.push({ title: 'Delete' });
+        }
+
+        if (this.companySettings.SiteNav[0].ID != folder.ID) {
+            menuOptions.push({ title: 'Move To Top' });
+            menuOptions.push({ title: 'Move Up' });
+        }
+
+        if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
+            menuOptions.push({ title: 'Move Down' });
+            menuOptions.push({ title: 'Move To Bottom' });
+        }
+
+        return menuOptions;
+    }
+
     loadSiteNavPermissions(item: SiteNav) {
         this.isLoading = true;
         return this.siteMenuService.getSiteNavPermissions(item.ID)
@@ -437,6 +501,29 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     menuPermissionsOnModeChange($event) {
         this.permissionMode = $event;
         this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
+       
+    }
+
+    selectRow(data) {
+        this.selection = data;
+    }
+
+    clickMenuItem(event: any, item: any) {
+        let key = event.value.toLowerCase();
+        if (key === 'edit') {
+            this.edit(item);
+        } else if (key === 'delete') {
+            this.delete(item);
+        } else if (key === 'move up') {
+            this.moveUp(item);
+        } else if (key === 'move down') {
+            this.moveDown(item);
+         } else if(key === 'move to top') {
+            this.moveToTop(item);
+        } else if (key === 'move to bottom') {
+            this.moveToBottom(item);
+        }
+    }
 	}
 
 	showAddAssetType: boolean = false;

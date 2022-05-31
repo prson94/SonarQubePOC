@@ -502,6 +502,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Folder {0} moved to bottom successfully..
+        /// </summary>
+        public static string FolderMovedToBottom {
+            get {
+                return ResourceManager.GetString("FolderMovedToBottom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Folder {0} moved to top successfully..
+        /// </summary>
+        public static string FolderMovedToTop {
+            get {
+                return ResourceManager.GetString("FolderMovedToTop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Folder {0} moved up successfully..
         /// </summary>
         public static string FolderMovedUp {
