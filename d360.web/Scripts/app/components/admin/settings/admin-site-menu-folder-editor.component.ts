@@ -447,4 +447,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
         this.availableItems.push(i);
     }
+
+    imageUploadClick(event: any) {
+        event.preventDefault();
+        let el: HTMLElement = document.getElementById('imageUpload') as HTMLElement;
+        el.click();
+    }
 }

@@ -2,7 +2,7 @@
      style="min-height: 820px; min-width:820">
     <div class="form-header">
         <header>
-            Add Navigation Folder
+            Add Folder
         </header>
         <div class="sub-header" *ngIf="!isLoading">
             Site Naviagtion {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
@@ -18,29 +18,27 @@
                 <div class="row">
                     <div class="col s12">
                         <label for="FieldName" class="ig-label FieldName" style="margin-top: 0">Folder Name</label>
-                        <input maxlength="250" required tabindex="1" type="text" [(ngModel)]="folderModel.Name" style="width:100%" />
+                        <input maxlength="250" required tabindex="1" type="text" [(ngModel)]="folderModel.Name" style="width:30%" />
                     </div>
                 </div>
                 <div class="row" style="margin-bottom:15px;">
                     <div class="row" style="padding-top:12px">
-                        <div class="col s12 m6">
+                        <div class="col s12 m5 l5">
                             <div class="FieldName">Icon</div>
                             <div>
                                 <div>
-                                    <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                                    <input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
+                                    Use a predefined icon or <a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link">Browse</a>
                                 </div>
-                                <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
+                                <div style="padding-bottom: 10px;">
                                     <ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" ngDefaultControl></ig-icon-picker>
-                                </div>
-                                <div>
-                                    <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
-                                </div>
-                                <div *ngIf="iconType == 'image'">
-                                    <input #imageUpload type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
                                 </div>
                             </div>
                         </div>
-                        <div class="col s12 m6">
+                        <div class="col s1 m1 l1">
+                            &nbsp;
+                        </div>
+                        <div class="col s12 m5 l5">
                             <div class="FieldName">Preview</div>
                             <div *ngIf="iconType == 'icon'" style="padding:10px">
                                 <span style="font-size: 15px">
@@ -56,9 +54,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                    </div>
                 <div class="row">
-                    <div class="col s12 m6">
+                    <div class="col s12 m5 l5">
                         <p-table #dt3 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                             <ng-template pTemplate="header">
                                 <tr>
@@ -81,7 +79,10 @@
                             </ng-template>
                         </p-table>
                     </div>
-                    <div class="col s12 m6">
+                    <div class="col s1 m1 l1">
+                        Buttons
+                    </div>
+                    <div class="col s12 m5 l5">
                         <p-table #dt4 [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                             <ng-template pTemplate="header">
                                 <tr>
@@ -111,7 +112,8 @@
                         <button pButton 
                                 type="button" 
                                 label="Cancel" 
-                                (click)="closeClick.emit();"></button>
+                                (click)="closeClick.emit();"
+                                pTooltip="Do not save changes"></button>
                     </div>
                     <div class="col s6">
                         <button pButton

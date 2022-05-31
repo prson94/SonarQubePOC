@@ -172,3 +172,64 @@
     max-width: calc(100% - 80px);
     max-height: calc(100% - 80px);
 }
+
+#imageUpload {
+    display: none
+}
+
+.p-dropdown-clear-icon:before {
+    position: absolute;
+    bottom: 150%;
+    left: 50%;
+    margin-bottom: 5px;
+    margin-left: -80px;
+    padding: 7px;
+    width: 100px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background-color: white;
+    color: black;
+    content: "Clear";
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+.p-dropdown-clear-icon:after {
+    position: absolute;
+    bottom: 150%;
+    left: 50%;
+    margin-left: -5px;
+    width: 0;
+    border-top: 5px solid #000;
+    border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    content: " ";
+    font-size: 0;
+    line-height: 0;
+}
+
+.p-dropdown-clear-icon:before,
+.p-dropdown-clear-icon:after {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.p-dropdown-clear-icon:hover:before,
+.p-dropdown-clear-icon:hover:after {
+    visibility: visible;
+    opacity: 1;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+html {
+    box-sizing: border-box;
+}
