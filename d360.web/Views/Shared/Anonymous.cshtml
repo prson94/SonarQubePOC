@@ -32,15 +32,10 @@
     <link href="/Content/styles/materialize.css" rel="stylesheet" />
     <link rel="stylesheet" type="text/css" href="/api/v2/environment/themes/current.css" />
 
-    @if (!string.IsNullOrEmpty(customStylesheet))
-    {
-        <link rel="stylesheet" type="text/css" href="@(customStylesheet)" />
-    }
-
     @RenderSection("TopJs", false)
     <style>
         .loginlogo {
-            background-image: url(@(companyLogo));
+            background-image: var(--headerLogoUri);
             background-repeat: no-repeat;
             background-position: left top;
             background-size: auto 40px;
