@@ -497,21 +497,21 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			let menuOptions = [];
 
 			if (folder.Name !== '#ASSET_TYPE') {
-				menuOptions.push({ title: 'Edit' });
+				menuOptions.push({ title: $localize`Edit` });
 			}
 
 			if (folder.IsCustom || folder.Name === '#ASSET_TYPE') {
-				menuOptions.push({ title: 'Delete' });
+				menuOptions.push({ title: $localize`Delete` });
 			}
 
 			if (this.companySettings.SiteNav[0].ID != folder.ID) {
-				menuOptions.push({ title: 'Move To Top' });
-				menuOptions.push({ title: 'Move Up' });
+				menuOptions.push({ title: $localize`Move To Top` });
+				menuOptions.push({ title: $localize`Move Up` });
 			}
 
 			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
-				menuOptions.push({ title: 'Move Down' });
-				menuOptions.push({ title: 'Move To Bottom' });
+				menuOptions.push({ title: $localize`Move Down` });
+				menuOptions.push({ title: $localize`Move To Bottom` });
 			}
 
 			folder["menuItems"] = menuOptions;
@@ -520,17 +520,17 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 	clickMenuItem(event: any, item: any) {
 		let key = event.value.toLowerCase();
-		if (key === 'edit') {
+		if (key === $localize`Edit`.toLowerCase()) {
 			this.edit(item);
-		} else if (key === 'delete') {
+		} else if (key === $localize`Delete`.toLowerCase()) {
 			this.delete(item);
-		} else if (key === 'move up') {
+		} else if (key === $localize`Move Up`.toLowerCase()) {
 			this.moveUp(item);
-		} else if (key === 'move down') {
+		} else if (key === $localize`Move Down`.toLowerCase()) {
 			this.moveDown(item);
-		} else if (key === 'move to top') {
+		} else if (key === $localize`Move To Top`.toLowerCase()) {
 			this.moveToTop(item);
-		} else if (key === 'move to bottom') {
+		} else if (key === $localize`Move To Bottom`.toLowerCase()) {
 			this.moveToBottom(item);
 		}
 	}
