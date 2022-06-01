@@ -1431,4 +1431,194 @@ end
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18103-IssueType">
+  <comment>Clean up script issuetype addition fields exists for missing issuetype.</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @totalcount bigint = 0,
+		@runcount bigint = 0,
+		@fieldtypeid int;
+
+drop table if exists #tempfieldid;
+
+create table #tempfieldid (id [bigint] IDENTITY(1,1) NOT NULL, FieldTypeId [bigint]);
+
+insert into #tempfieldid (FieldTypeId)
+select ft.id
+from fieldtype ft
+where object = 'IssueType'
+and not exists (select 1 
+				from IssueType it 
+				where it.id = ft.ObjectID
+				);
+
+create nonclustered index cix_tempfieldid1 on #tempfieldid (id);
+create nonclustered index cix_tempfieldid2 on #tempfieldid (FieldTypeid);
+
+select @totalcount = count(id) from #tempfieldid;
+
+while (@runcount <= @totalcount)
+begin
+	set @runcount = @runcount + 1;
+	
+	set @fieldtypeid = null;
+	
+	select @fieldtypeid = tf.fieldtypeid 
+	from #tempfieldid tf
+	where id = @runcount
+	and exists (select 1 from field f
+				where f.fieldtypeid = tf.fieldtypeid);
+	
+	if (@fieldtypeid is not null)
+	begin
+		delete  f
+		from    Field f
+		where   f.fieldtypeid = @fieldtypeid;
+	end
+end;
+
+delete	FT
+from	dbo.FieldType FT
+inner join #tempfieldid T on T.FieldTypeID = FT.ID
+where FT.object = 'IssueType';
+
+drop table if exists #tempfieldid; 
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18103-Issue">
+  <comment>Clean up script issue value in field exists for missing issue.</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @totalcount bigint = 0,
+		@runcount bigint = 0,
+		@fieldtypeid int;
+
+drop table if exists #tempMissingIssueData;
+drop table if exists #tempfieldid;
+
+create table #tempfieldid (id [bigint] IDENTITY(1,1) NOT NULL, FieldTypeId [bigint]);
+
+select F.FieldTypeID,F.ID
+into #tempMissingIssueData
+from Field F
+where F.objectType = 'Issue' 
+and not exists (select 1 from issue s where s.id = f.objectid);
+
+create nonclustered index cix_tempMissingIssueData on #tempMissingIssueData(FieldTypeID,ID);
+
+
+insert into #tempfieldid (FieldTypeId)
+select Distinct f.FieldTypeID
+from #tempMissingIssueData f;
+
+create nonclustered index cix_tempfieldid1 on #tempfieldid (id);
+create nonclustered index cix_tempfieldid2 on #tempfieldid (FieldTypeid);
+
+select @totalcount = count(id) from #tempfieldid;
+
+while (@runcount <= @totalcount)
+begin
+	set @runcount = @runcount + 1;
+	
+	set @fieldtypeid = null;
+	
+	select @fieldtypeid = tf.fieldtypeid 
+	from #tempfieldid tf
+	where id = @runcount;
+	
+	if (@fieldtypeid is not null)
+	begin
+		delete  f
+		from    Field f
+		inner join #tempMissingIssueData s on s.id = f.id and s.fieldtypeid = f.fieldtypeid
+		where   f.fieldtypeid = @fieldtypeid;
+	end
+end
+
+drop table if exists #tempMissingIssueData;
+drop table if exists #tempfieldid; 
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+  
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18103-IntersectType">
+  <comment>Clean up script IntersectType addition fields exists for missing IntersectType.</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @totalcount bigint = 0,
+		@runcount bigint = 0,
+		@fieldtypeid int;
+
+drop table if exists #tempfieldid;
+
+create table #tempfieldid (id [bigint] IDENTITY(1,1) NOT NULL, FieldTypeId [bigint]);
+
+insert into #tempfieldid (FieldTypeId)
+select ft.id
+from fieldtype ft
+where ft.object = 'IntersectType'
+and not exists (select 1 
+				from IntersectType it 
+				where it.id = ft.ObjectID
+				);
+
+create nonclustered index cix_tempfieldid1 on #tempfieldid (id);
+create nonclustered index cix_tempfieldid2 on #tempfieldid (FieldTypeid);
+
+select @totalcount = count(id) from #tempfieldid;
+
+while (@runcount <= @totalcount)
+begin
+	set @runcount = @runcount + 1;
+	
+	set @fieldtypeid = null;
+	
+	select @fieldtypeid = tf.fieldtypeid 
+	from #tempfieldid tf
+	where id = @runcount
+	and exists (select 1 from field f
+				where f.fieldtypeid = tf.fieldtypeid);
+	
+	if (@fieldtypeid is not null)
+	begin
+		delete  f
+		from    Field f
+		where   f.fieldtypeid = @fieldtypeid;
+	end
+end;
+
+delete	FT
+from	dbo.FieldType FT
+inner join #tempfieldid T on T.FieldTypeID = FT.ID
+where FT.object = 'IntersectType';
+
+drop table if exists #tempfieldid; 
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
