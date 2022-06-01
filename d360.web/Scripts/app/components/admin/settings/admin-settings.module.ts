@@ -36,6 +36,7 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
 import { SiteModalModule } from "../../shared/modal/gov-modal.module";
 import { TooltipModule } from 'primeng/tooltip';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -72,7 +73,8 @@ import { TooltipModule } from 'primeng/tooltip';
 		IgNumberFieldModule,
 		TooltipModule,
 		SiteModalModule,
-		TableModule
+		TableModule,
+		SearchFieldModule
     ],
     declarations: [
         AdminSettingsComponent,
