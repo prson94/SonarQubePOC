@@ -56,7 +56,7 @@
                     </div>
                 <div class="row">
                     <div class="col s12 m5 l5">
-                        <p-table #dt3 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                        <p-table #dt3 [value]="availableItems" selectionMode="multiple" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th>Available Folder Items</th>
@@ -78,11 +78,64 @@
                             </ng-template>
                         </p-table>
                     </div>
-                    <div class="col s1 m1 l1">
-                        Buttons
+                    <div class="col s1 m1 l1 marginLeft">
+                        <tr>
+                            <button igButton
+                                    class="ig-lookup-grid-button"
+                                    icon="fa-arrow-right"
+                                    (click)="addNewFolder(pSelectableRow)"
+                                    pTooltip="Add to selected folder items"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"></button>
+                        </tr>
+                        <tr>
+                            <button igButton
+                                    class="ig-lookup-grid-button"
+                                    icon="fa-arrow-left"
+                                    (click)="removeFromSelectedFolderItems()"
+                                    pTooltip="Remove from selected folder items"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"></button>
+                        </tr>
+                        <tr>
+                            <button igButton
+                                    class="ig-lookup-grid-button rotateRight"
+                                    icon="fa-step-backward"
+                                    (click)="moveToTop()"
+                                    pTooltip="Move to top"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"></button>
+                        </tr>
+                        <tr>
+                            <button igButton
+                                    class="ig-lookup-grid-button rotateLeft"
+                                    icon="fa-play"
+                                    (click)="moveUp()"
+                                    pTooltip="Move up"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"></button>
+                        </tr>
+                        <tr>
+                            <button igButton
+                                    class="ig-lookup-grid-button rotateRight"
+                                    icon="fa-play"
+                                    (click)="moveDown()"
+                                    pTooltip="Move down"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"></button>
+                        </tr>
+                        <tr>
+                            <button igButton
+                                    class="ig-lookup-grid-button rotateLeft"
+                                    icon="fa-step-backward"
+                                    (click)="moveToBottom()"
+                                    pTooltip="Move to bottom"
+                                    tooltipPosition="top"
+                                    tooltipStyleClass="ig-tooltip"></button>
+                        </tr>
                     </div>
                     <div class="col s12 m5 l5">
-                        <p-table #dt4 [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                        <p-table #dt4 [value]="newFolderItems" selectionMode="multiple" [metaKeySelection]="true" [paginator]="true" [rows]="10">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th>Existing Folder Items</th>

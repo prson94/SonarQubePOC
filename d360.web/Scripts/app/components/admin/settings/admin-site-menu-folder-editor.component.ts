@@ -452,5 +452,23 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         event.preventDefault();
         let el: HTMLElement = document.getElementById('imageUpload') as HTMLElement;
         el.click();
-    }
+	}
+
+	addToSelectedFolderItems(items: SiteNav[]) {
+	}
+
+	removeFromSelectedFolderItems(items: SiteNav[]) {
+	}
+
+	moveToTop(items: SiteNav[]) {
+	}
+
+	moveUp(items: SiteNav[]) {
+	}
+
+	moveDown(items: SiteNav[]) {
+	}
+
+	moveToBottom(items: SiteNav[]) {
+	}
 }
