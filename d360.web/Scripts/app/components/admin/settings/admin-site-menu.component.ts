@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
+import { CompanySettings, CompanyImage, AppSettingsEnum, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -16,7 +16,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
 	selector: 'd3s-admin-site-menu',
-	providers: [CompanySettingsService, SiteMenuService],
+	providers: [SiteMenuService],
 	templateUrl: './admin-site-menu.component.html',
 	styleUrls: ['./admin-site-menu.component.less'],
 	encapsulation: ViewEncapsulation.None
@@ -52,6 +52,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	permissionMode: FormMode = FormMode.Default;
 
 	showFolderModalDialog: boolean = false;
+	addAssetTypeHelpLink: string = '';
 
 	constructor(
 		headerBreadcrumbService: HeaderBreadcrumbService,
@@ -64,12 +65,23 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		private assetTypeService: AssetTypeService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
+		let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
+		this.addAssetTypeHelpLink = helpBaseUri + "Default.htm#d-admin/establishing-responsibilities.htm?TocPath=Administration%257CManaging%2520users%2520and%2520groups%257C_____3";
 	}
 
 	ngOnInit() {
+		this.loadNavItems();
+	}
+
+	loadNavItems(preselectModel = null) {
 		this.isLoading = true;
 		this.siteMenuService.getSiteNavItems().subscribe((nav) => {
 			this.companySettings.SiteNav = nav;
+
+			if (preselectModel) {
+				var folder: SiteNav = preselectModel.folder;
+				this.selection = this.companySettings.SiteNav.find((res) => res.Object === folder.Object && res.ObjectID === folder.ObjectID);
+			}
 			this.setMenuOptions();
 			this.isLoading = false;
 		});
@@ -193,6 +205,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			.subscribe(res => {
 				this.showMessageForResult(this.messagesService, res);
 				this.stateService.reloadLeftNavMenu();
+				this.loadNavItems();
 				this.formMode = FormMode.Default;
 				this.isLoading = false;
 			});
@@ -210,6 +223,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				.subscribe(() => {
 					this.stateService.reloadLeftNavMenu();
 					this.loadFolderItems();
+					this.loadNavItems();
 				})
 		}
 	}
@@ -225,6 +239,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				.subscribe(() => {
 					this.stateService.reloadLeftNavMenu();
 					this.loadFolderItems();
+					this.loadNavItems();
 				})
 		}
 	}
@@ -272,6 +287,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.companySettings.SiteNav = s;
 						this.companySettingsChange.emit(this.companySettings);
 						this.stateService.reloadLeftNavMenu();
+
 						this.setMenuOptions();
 						this.isLoading = false;
 					})
@@ -377,6 +393,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.isLoading = false;
 						this.formMode = FormMode.Default;
 						this.onSaveComplete.emit();
+						this.loadNavItems();
 					})
 				break;
 			case FormMode.Adding:
@@ -396,6 +413,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.onSaveComplete.emit();
 						this.siteMenuService.setSiteNavPermissions(this.selection)
 						this.loadFolderItems();
+						this.loadNavItems();
 					})
 				break;
 			case FormMode.Deleting:
@@ -407,6 +425,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.formMode = FormMode.Default;
 						this.isLoading = false;
 						this.onSaveComplete.emit();
+						this.loadNavItems();
 					});
 				break;
 		}
@@ -578,6 +597,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				this.loadFolderItems();
 				this.addAssetTypeFolderSaving = false;
 				this.closeAddAssetType();
+				this.loadNavItems(model);
 			})
 	}
 }

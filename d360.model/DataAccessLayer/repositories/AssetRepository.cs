@@ -4523,7 +4523,8 @@ namespace d360.model.DataAccessLayer
 				at.ObjectID
 				from AssetType at
 				cross apply GetAssetTypeTextPathById(at.id, ' > ')Path
-				where at.class in @allowedClasses", new { allowedClasses} ,ApiTimeout)).ToList();
+				left join sitenav sn on sn.object = at.object and sn.objectid = at.objectid
+				where at.class in @allowedClasses and sn.id is null", new { allowedClasses} ,ApiTimeout)).ToList();
 
 			results.ForEach((res) =>
 			{

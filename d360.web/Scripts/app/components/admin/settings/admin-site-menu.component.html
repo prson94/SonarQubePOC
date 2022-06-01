@@ -158,7 +158,7 @@
 		</header>
 		<div clas="row">
 			<div class="col s12" style="padding-bottom:10px" i18n>
-				Are you sure you want to delete the {{selection.Name}} folder?
+				Are you sure you want to delete the {{selection.Title}} folder?
 			</div>
 		</div>
 		<button pButton type="button" i18n-label label="Delete" (click)="save()"></button>
@@ -282,13 +282,14 @@
 	<div class="content">
 		<div class="info-block ng-star-inserted">
 			<i class="fa fa-info-circle"></i>
-			<span class="text-value" i18n>
-				Users will only see asset types when they have appropriate permissions.
+			<span class="text-value">
+				<ng-container i18n>Users will only see asset types when they have appropriate permissions.</ng-container>  <a href="{{addAssetTypeHelpLink}}" target="_blank" i18n> Learn more</a>
 			</span>
 		</div>
-		<ig-search-field class="search"
+		<ig-search-field class="search tooltip-full-width"
 						 mode="Keypress"
 						 i18n-placeholder
+						 [infoTooltip]="simpleSearchTooltipHTML"
 						 placeholder="Search"
 						 (onSearch)="dt.filterGlobal($event, 'contains')"
 						 style="width:100%; padding-bottom:8px;"></ig-search-field>
