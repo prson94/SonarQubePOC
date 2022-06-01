@@ -1,0 +1,37 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="Table.dbo.AssetDataProfileSample-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfileSampleJson')
+BEGIN
+	CREATE TABLE [dbo].[AssetDataProfileSampleJson](
+		[ID] [BIGINT] IDENTITY(1,1) NOT NULL,
+		[AssetDataProfileID] BIGINT NOT NULL,			
+		[SampleType] NVARCHAR(100) NOT NULL,
+		[Value] NVARCHAR(MAX) NOT NULL,		
+		CONSTRAINT [PK_AssetDataProfileSampleJson] PRIMARY KEY CLUSTERED ([ID], AssetDataProfileID)
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDataProfileSampleJson_AssetDataProfileID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetDataProfileSampleJson_AssetDataProfileID] ON [dbo].[AssetDataProfileSampleJson] ( [AssetDataProfileID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>

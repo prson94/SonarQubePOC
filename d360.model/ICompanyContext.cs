@@ -246,7 +246,9 @@ namespace d360.model
         
         DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
 
-        int ApiTimeout { get; }
+		DbSet<AssetDataProfileSampleJson> AssetDataProfileSampleJson { get; set; }
+
+		int ApiTimeout { get; }
         
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
         
