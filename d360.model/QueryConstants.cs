@@ -6,19 +6,25 @@ namespace d360.model
 {
 	public static class QueryConstants
 	{
-		public static readonly string HighLevelTypeCaseStatement = $@"case 
-				when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
-				when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
-				when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()}: ' 
-				when T.Object = 'ReferenceItemType' then 'Reference: ' 
-				when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' 
-				when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
-				when T.Object = 'AttributeType' then 'Attribute: '
-				when T.Object = 'GroupType' then 'Group: '
-				when T.Object = 'OrganizationType' then 'Organization: '
-				when T.Object = 'ResourceType' then 'Resource: '
-				else ''
-			end ";
+		public static string HighLevelTypeCaseStatement
+		{
+			get
+			{
+				return $@"case 
+					when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
+					when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
+					when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()}: ' 
+					when T.Object = 'ReferenceItemType' then 'Reference: ' 
+					when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' 
+					when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
+					when T.Object = 'AttributeType' then 'Attribute: '
+					when T.Object = 'GroupType' then '{CommonNames.AssetTypeClass_Group.CleanForSql()}: '
+					when T.Object = 'OrganizationType' then '{CommonNames.AssetTypeClass_Organization.CleanForSql()}: '
+					when T.Object = 'ResourceType' then '{CommonNames.AssetTypeClass_Resource.CleanForSql()}: '
+					else ''
+				end ";
+			}
+		}
 
 		public static readonly string ArtifactActivitySpecificDateCountList = @"
 				select 
@@ -564,7 +570,11 @@ namespace d360.model
 			inner join workflow.[versionsteptransition] vst on vst.fromversionstepid = vs.id
 			where t.id = @id and vst.State = 1 and v.id = coalesce((select top 1 id from workflow.version where typeid = @id and version = @version), (select top 1 id from workflow.version where typeid = @id order by [version] desc))";
 
-		public static readonly string WorkflowObjectTypes = $@"
+		public static string WorkflowObjectTypes
+		{
+			get
+			{
+				return $@"
 			select * from (
 				select 
 					[object] + '|' + cast(objectId as varchar) as [value],
@@ -611,6 +621,8 @@ namespace d360.model
 				group by t.id, t.name
 				) o
 				order by o.label";
+			}
+		}
 
 		public static readonly string WorkflowList = @"
 				  select t.ID
