@@ -36,7 +36,7 @@ import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
 import { SiteModalModule } from "../../shared/modal/gov-modal.module";
-
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [CommonModule,
@@ -69,7 +69,11 @@ import { SiteModalModule } from "../../shared/modal/gov-modal.module";
         IgCheckboxModule,
         IgNumberFieldModule,
         PopupMenuModule,
+        SiteModalModule,
+		IgNumberFieldModule,
+		TooltipModule,
 		SiteModalModule,
+		TableModule
     ],
     declarations: [
         AdminSettingsComponent,
@@ -77,7 +81,7 @@ import { SiteModalModule } from "../../shared/modal/gov-modal.module";
         AdminIpRestrictionComponent,
         AdminSiteMenuFolderEditorComponent,
         AdminSiteMenuPermissionsComponent,
-        AdminHomeComponent,
+		AdminHomeComponent
     ],
     providers: [
     ]

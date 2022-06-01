@@ -174,7 +174,32 @@ namespace d360.web.Controllers
         public JsonNetResult GetSiteNavItems()
         {
             var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);
-            var data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
+
+			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
+				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
+				union 
+				select s.ID, 
+					s.ParentID, 
+					s.Name, 
+					s.Route, 
+					s.SortOrder, 
+					s.ObjectID, 
+					s.Object, 
+					case when ats.Icon is not null 
+						then ats.Icon
+						else (
+						  select case 
+							  when at.Class = 1 or at.Class = 8 or at.Class = 7 then 'fa-book' 
+							  when at.Class = 2 then 'fa-sitemap' 
+							  when at.Class = 6 then 'fa-university' 
+							  end as value)
+						end as Icon,
+					at.Name as 'title', 
+					s.ImageIconUrl from dbo.SiteNav S
+				left join AssetType at on at.Object = s.Object and at.ObjectID = s.ObjectID
+				left join AssetTypeStyle ats on ats.id = at.ID
+				where S.ParentID is null and s.Name != '#Home' and s.Name = '#ASSET_TYPE'
+				order by SortOrder").ToList();
 
             if (!allowSemantics)
             {

@@ -183,6 +183,9 @@
   <data name="ReferenceItem" xml:space="preserve">
     <value>Reference Item</value>
   </data>
+  <data name="Text_Folder" xml:space="preserve">
+    <value>Folder</value>
+  </data>
   <data name="Text_GroupMembership" xml:space="preserve">
     <value>Group Membership</value>
   </data>

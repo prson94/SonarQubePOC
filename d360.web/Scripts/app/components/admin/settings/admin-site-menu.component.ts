@@ -12,23 +12,13 @@ import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FeatureFlagsService } from '../../../services/featureflags.service';
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-admin-site-menu',
     providers: [CompanySettingsService, SiteMenuService],
-    templateUrl: './admin-site-menu.component.html',
-    styles: [`
-        .remove {
-            cursor: pointer; 
-            color: maroon; 
-            font-size: 1.5em;
-            vertical-align: middle;
-        }
-        input[type=text] {
-            width: 90%;
-            height:25px;
-        }
-  `],
+	templateUrl: './admin-site-menu.component.html',
+	styleUrls: ['./admin-site-menu.component.less']
 })
 
 export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit {
@@ -58,7 +48,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     oldFolderName;
 
     IsMenuPermissionsAdding: boolean= false;
-    permissionMode: FormMode = FormMode.Default;
+	permissionMode: FormMode = FormMode.Default;
 
     showFolderModalDialog: boolean = false;
 
@@ -69,7 +59,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         private siteMenuService: SiteMenuService,
         private stateService: StateService,
         private messagesService: MessagesObservableService,
-        private featureFlagService: FeatureFlagsService
+		private featureFlagService: FeatureFlagsService,
+		private assetTypeService: AssetTypeService
     ) {
         super(headerBreadcrumbService, titleService, settingsService);
     }
@@ -77,7 +68,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     ngOnInit() {             
         this.isLoading = true;
         this.siteMenuService.getSiteNavItems().subscribe((nav) => {
-            this.companySettings.SiteNav = nav;
+			this.companySettings.SiteNav = nav;
+			this.setMenuOptions();
             this.isLoading = false;
         });
     }
@@ -278,7 +270,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     })
             })
@@ -293,7 +286,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     });
                 
@@ -309,7 +303,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     });
 
@@ -325,7 +320,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     });
 
@@ -397,7 +393,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.isLoading = false;
                         this.stateService.reloadLeftNavMenu();
                         this.onSaveComplete.emit();
-                        this.siteMenuService.setSiteNavPermissions(this.selection)
+						this.siteMenuService.setSiteNavPermissions(this.selection)
+						this.loadFolderItems();
                     })
                 break;
             case FormMode.Deleting:
@@ -408,7 +405,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                         this.stateService.reloadLeftNavMenu();
                         this.formMode = FormMode.Default;
                         this.isLoading = false;
-                        this.onSaveComplete.emit();
+						this.onSaveComplete.emit();
                     });
                 break;
         }
@@ -475,28 +472,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         }
     }
 
-    getMenuOptions(folder: SiteNav): any[] {
-        let menuOptions = [
-            { title: 'Edit' },
-        ];
-
-        if (folder.IsCustom) {
-            menuOptions.push({ title: 'Delete' });
-        }
-
-        if (this.companySettings.SiteNav[0].ID != folder.ID) {
-            menuOptions.push({ title: 'Move To Top' });
-            menuOptions.push({ title: 'Move Up' });
-        }
-
-        if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
-            menuOptions.push({ title: 'Move Down' });
-            menuOptions.push({ title: 'Move To Bottom' });
-        }
-
-        return menuOptions;
-    }
-
     loadSiteNavPermissions(item: SiteNav) {
         this.isLoading = true;
         return this.siteMenuService.getSiteNavPermissions(item.ID)
@@ -516,6 +491,30 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         this.selection = data;
     }
 
+	setMenuOptions() {
+		this.companySettings.SiteNav.forEach((folder) => {
+			let menuOptions = [
+				{ title: 'Edit' },
+			];
+
+			if (folder.IsCustom || folder.Name === '#ASSET_TYPE') {
+				menuOptions.push({ title: 'Delete' });
+			}
+
+			if (this.companySettings.SiteNav[0].ID != folder.ID) {
+				menuOptions.push({ title: 'Move To Top' });
+				menuOptions.push({ title: 'Move Up' });
+			}
+
+			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
+				menuOptions.push({ title: 'Move Down' });
+				menuOptions.push({ title: 'Move To Bottom' });
+			}
+
+			folder["menuItems"] = menuOptions;
+		});
+	}
+
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
         if (key === 'edit') {
@@ -532,4 +531,50 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
             this.moveToBottom(item);
         }
     }
+
+	showAddAssetType: boolean = false;
+	areAssetTypesLoading: boolean = false;
+	selectedAssetType: any;
+	assetTypes: any[] = [];
+	addAssetTypeFolderSaving: boolean = false;
+	addAssetType() {
+		this.showAddAssetType = true;
+		this.areAssetTypesLoading = true;
+		this.assetTypeService.GetPossibleAssetTypeForSiteNav()
+			.subscribe((res) => {
+				this.assetTypes = res;
+				this.areAssetTypesLoading = false;
+			});
+	}
+
+	closeAddAssetType() {
+		this.selectedAssetType = null;
+		this.assetTypes = [];
+		this.showAddAssetType = false;
+	}
+
+	addAssetTypeFolder() {
+		if (!this.selectedAssetType) {
+			return;
+		}
+		this.addAssetTypeFolderSaving = true;
+		let nav = new SiteNav();
+		nav.Name = "#ASSET_TYPE";
+		nav.Object = this.selectedAssetType.Object;
+		nav.ObjectID = this.selectedAssetType.ObjectID;
+		var model = {
+			folder: nav
+		};
+
+		this.siteMenuService.addFolder(model)
+			.subscribe(r => {
+				this.showMessageForResult(this.messagesService, r);
+				this.stateService.reloadLeftNavMenu();
+				this.onSaveComplete.emit();
+				this.siteMenuService.setSiteNavPermissions(this.selection)
+				this.loadFolderItems();
+				this.addAssetTypeFolderSaving = false;
+				this.closeAddAssetType();
+			})
+	}
 }
