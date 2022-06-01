@@ -74,6 +74,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
     semanticHelpURL: string;
     IsMenuPermissionsAdding: boolean = false;
     permissionMode: FormMode = FormMode.Default;
+	simpleTextFilter: string = '';
 
     private iconImage: CompanyImage = new CompanyImage();
 

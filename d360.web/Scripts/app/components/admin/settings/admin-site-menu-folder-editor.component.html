@@ -56,7 +56,23 @@
                     </div>
                 <div class="row">
                     <div class="col s12 m5 l5">
-                        <p-table #dt3 [value]="availableItems" selectionMode="multiple" [metaKeySelection]="true" [paginator]="true" [rows]="10">
+                        <ig-search-field class="search tooltip-full-width"
+                                         mode="Keypress"
+                                         i18n-placeholder
+                                         [infoTooltip]="simpleSearchTooltipHTML"
+                                         placeholder="Search"
+                                         [(ngModel)]="simpleTextFilter"
+                                         (onSearch)="dt3.filterGlobal($event, 'contains')"
+                                         style="width:100%; padding-bottom:8px;"></ig-search-field>
+                        <p-table #dt3 
+                                 [globalFilterFields]="['Title']"
+                                 [value]="availableItems" 
+                                 selectionMode="multiple" 
+                                 [metaKeySelection]="true" 
+                                 [paginator]="true" 
+                                 [rows]="10"
+                				 [rowsPerPageOptions]="defaultPagingOptions"
+                                 [scrollable]="true">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th>Available Folder Items</th>
@@ -74,7 +90,9 @@
                                 </tr>
                             </ng-template>
                             <ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt3.first" [rows]="dt3.rows" [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+                                <d3s-grid-paging-info [first]="dt3.first" 
+                                                      [rows]="dt3.rows" 
+                                                      [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
                             </ng-template>
                         </p-table>
                     </div>
