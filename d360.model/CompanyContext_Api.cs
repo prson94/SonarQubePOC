@@ -12753,7 +12753,7 @@ EG.GroupUid
 										insert into AssetDataProfileSampleJson 
 													([AssetDataProfileID]
 													,[SampleType]
-													,[JsonValue])                                            
+													,[Value])                                            
 										SELECT  
 											rt.DataProfileID
 											,EDPS.SampleType
