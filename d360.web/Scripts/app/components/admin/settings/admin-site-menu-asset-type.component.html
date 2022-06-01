@@ -1,0 +1,63 @@
+﻿<div class="content">
+	<div class="info-block ng-star-inserted">
+		<i class="fa fa-info-circle"></i>
+		<span class="text-value">
+			<ng-container i18n>Users will only see asset types when they have appropriate permissions.</ng-container>  <a href="{{addAssetTypeHelpLink}}" target="_blank" i18n> Learn more</a>
+		</span>
+	</div>
+	<ig-search-field class="search tooltip-full-width"
+					 mode="Keypress"
+					 i18n-placeholder
+					 [infoTooltip]="simpleSearchTooltipHTML"
+					 placeholder="Search"
+					 [(ngModel)]="simpleTextFilter"
+					 (onSearch)="dt.filterGlobal($event, 'contains')"
+					 style="width:100%; padding-bottom:8px;"></ig-search-field>
+	<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+
+		<p-table #dt
+				 [value]="assetTypes"
+				 selectionMode="single"
+				 [globalFilterFields]="['title']"
+				 [(selection)]="selectedAssetType"
+				 [pageLinks]="3"
+				 [paginator]="true"
+				 paginatorDropdownAppendTo="body"
+				 [rows]="10"
+				 [rowsPerPageOptions]="defaultPagingOptions"
+				 [scrollable]="true">
+			<ng-template pTemplate="header">
+				<tr>
+					<th i18n>
+						Available Asset Types
+					</th>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="body"
+						 let-item>
+				<tr [pSelectableRow]="item">
+					<td class="rel-name">
+						<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+
+						<span class="rel-text">
+							{{item.title}}
+						</span>
+					</td>
+				</tr>
+			</ng-template>
+			<ng-template pTemplate="summary">
+				<d3s-grid-paging-info [first]="dt.first"
+									  [rows]="dt.rows"
+									  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+			</ng-template>
+			<ng-template pTemplate="emptymessage" i18n>
+				No asset types found
+			</ng-template>
+		</p-table>
+	</div>
+</div>
+<div class="action-bar" style="margin-top:16px;">
+	<button igButton igAutoFocus i18n-label label="Cancel" (click)="closeAddAssetType()"></button>
+	<span class="grow"></span>
+	<button igButton class="ig-button-primary" i18n-label label="Add Asset Type" (click)="addAssetTypeFolder()" [disabled]="!selectedAssetType || addAssetTypeFolderSaving" [loading]="addAssetTypeFolderSaving"></button>
+</div>

@@ -6,7 +6,7 @@
 			<div class="flex-grow"></div>
 			<button igButton (click)="addFolderDialog()" i18n-label i18n-pTooltip label="Add Folder" pTooltip="Add Folder" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
 			<div class="spacer"></div>
-			<button igButton (click)="addAssetType()" i18n-label i18n-pTooltip label="Add Asset Type" pTooltip="Add Asset Type" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+			<button igButton (click)="showAssetTypeModelDialog = true" i18n-label i18n-pTooltip label="Add Asset Type" pTooltip="Add Asset Type" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
 		</div>
 		<p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection"
 				 [scrollable]="true" scrollHeight="420px">
@@ -14,7 +14,7 @@
 				<tr>
 					<th i18n>Name</th>
 					<th width="35%">Type</th>
-					<th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
+					<th width="40px"></th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
@@ -32,7 +32,7 @@
 					<td width="35%">
 						{{item.Type}}
 					</td>
-					<td class="asset-grid-tools" style="width: 5%;" alignFrozen="right" (click)="selectRow(item)">
+					<td width="40px" class="asset-grid-tools" (click)="selectRow(item)">
 						<div style="display:inline-block">
 							<button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
 							<ig-popup-menu [items]="item.menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
@@ -284,72 +284,14 @@
 	</folder-editor>
 </d3s-modal>
 
-<d3s-modal additionalClasses="large-dialog full-height"
-		   (onClose)="closeAddAssetType()"
+<d3s-modal additionalClasses="large-dialog"
+		   (onClose)="showAssetTypeModelDialog=false"
 		   i18n-title
 		   title="Add Asset Type"
 		   subtitle="Site Navigation"
-		   [isVisible]="showAddAssetType">
-	<div class="content">
-		<div class="info-block ng-star-inserted">
-			<i class="fa fa-info-circle"></i>
-			<span class="text-value">
-				<ng-container i18n>Users will only see asset types when they have appropriate permissions.</ng-container>  <a href="{{addAssetTypeHelpLink}}" target="_blank" i18n> Learn more</a>
-			</span>
-		</div>
-		<ig-search-field class="search tooltip-full-width"
-						 mode="Keypress"
-						 i18n-placeholder
-						 [infoTooltip]="simpleSearchTooltipHTML"
-						 placeholder="Search"
-						 (onSearch)="dt.filterGlobal($event, 'contains')"
-						 style="width:100%; padding-bottom:8px;"></ig-search-field>
-		<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
-
-			<p-table #dt
-					 [value]="assetTypes"
-					 selectionMode="single"
-					 [globalFilterFields]="['title']"
-					 [(selection)]="selectedAssetType"
-					 [pageLinks]="3"
-					 [paginator]="true"
-					 paginatorDropdownAppendTo="body"
-					 [rows]="10"
-					 [rowsPerPageOptions]="defaultPagingOptions"
-					 [scrollable]="true">
-				<ng-template pTemplate="header">
-					<tr>
-						<th i18n>
-							Available Asset Types
-						</th>
-					</tr>
-				</ng-template>
-				<ng-template pTemplate="body"
-							 let-item>
-					<tr [pSelectableRow]="item">
-						<td class="rel-name">
-							<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
-
-							<span class="rel-text">
-								{{item.title}}
-							</span>
-						</td>
-					</tr>
-				</ng-template>
-				<ng-template pTemplate="summary">
-					<d3s-grid-paging-info [first]="dt.first"
-										  [rows]="dt.rows"
-										  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-				</ng-template>
-				<ng-template pTemplate="emptymessage" i18n>
-					No asset types found
-				</ng-template>
-			</p-table>
-		</div>
-	</div>
-	<div class="action-bar" style="margin-top:16px;">
-		<button igButton igAutoFocus i18n-label label="Cancel" (click)="closeAddAssetType()"></button>
-		<span class="grow"></span>
-		<button igButton class="ig-button-primary" i18n-label label="Add Asset Type" (click)="addAssetTypeFolder()" [disabled]="!selectedAssetType || addAssetTypeFolderSaving" [loading]="addAssetTypeFolderSaving"></button>
-	</div>
+		   [isVisible]="showAssetTypeModelDialog">
+	<d3s-admin-site-menu-asset-type-editor 
+										   (onSave)="onAssetTypeNavAdded($event)"
+										   (onCancel)="showAssetTypeModelDialog = false">
+	</d3s-admin-site-menu-asset-type-editor>
 </d3s-modal>

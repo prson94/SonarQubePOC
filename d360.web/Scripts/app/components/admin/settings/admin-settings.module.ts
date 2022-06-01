@@ -37,6 +37,7 @@ import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.com
 import { SiteModalModule } from "../../shared/modal/gov-modal.module";
 import { TooltipModule } from 'primeng/tooltip';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { AdminSiteMenuAssetTypeEditorComponent } from './admin-site-menu-asset-type.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -80,7 +81,8 @@ import { SearchFieldModule } from '../../shared/controls/search-field/search-fie
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
-        AdminSiteMenuFolderEditorComponent,
+		AdminSiteMenuFolderEditorComponent,
+		AdminSiteMenuAssetTypeEditorComponent,
         AdminSiteMenuPermissionsComponent,
 		AdminHomeComponent
     ],
