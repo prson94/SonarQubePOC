@@ -56,6 +56,8 @@ import { PopupMenuModule } from '../../shared/controls/popup-menu/popup-menu.com
 import { IgBadgeModule } from '../../shared/controls/badge/badge.module';
 import { MetricPassTestDetailsModule } from './admin-metric-pass-test-details.module';
 import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score-definition.module';
+import { FormFeedbackBadgesModule } from '../../shared/controls/form-feedback-badges/form-feedback-badges.component';
+import { PortalsModule } from '../../shared/portals/portals.module';
 
 
 @NgModule({
@@ -108,6 +110,8 @@ import { ScoreDefinitionModule } from '../../shared/asset-score/definition/score
         PopupMenuModule,
         IgBadgeModule,
         ScoreDefinitionModule,
+        PortalsModule,
+        FormFeedbackBadgesModule,
 
         MetricPassTestDetailsModule
 

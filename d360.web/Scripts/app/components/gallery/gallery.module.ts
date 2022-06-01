@@ -80,6 +80,8 @@ import { GalleryComponentPropertiesComponent } from './shared/gallery.component-
 import { RegexpInputModule } from '../shared/controls/regexp/regexp-input.component';
 import { ColorSelectorModule } from '../shared/controls/color-selector/color-selector.component';
 import { GalleryColorSelectorComponent } from './gallery.color-selector.component';
+import { GalleryFormFeedbackBadgesComponent } from './gallery.form-feedback-badges.component';
+import { FormFeedbackBadgesModule } from '../shared/controls/form-feedback-badges/form-feedback-badges.component';
 import { GalleryDropdownBadgeComponent } from './gallery.dropdown-badge.component';
 import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-badge.component';
 
@@ -127,6 +129,7 @@ import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-
         ImagePickerModule,
         ColorSelectorModule,
         RegexpInputModule,
+        FormFeedbackBadgesModule,
         DropdownBadgeModule
     ],
     declarations: [
@@ -170,6 +173,7 @@ import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-
         GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
         GalleryColorSelectorComponent,
+        GalleryFormFeedbackBadgesComponent,
         GalleryDropdownBadgeComponent
     ],
     providers: [

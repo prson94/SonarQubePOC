@@ -14,7 +14,8 @@ import {
     QueryList,
     HostListener,
     AfterViewChecked,
-    SimpleChanges
+    SimpleChanges,
+    ViewChild
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
@@ -63,6 +64,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     isJsonValid: boolean = true;
     semanticHelpURL: string;
 
+    @ViewChild('form', { static: false }) formElement: ElementRef;
     @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
     get editorTitle(): string {

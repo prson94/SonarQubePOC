@@ -72,7 +72,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() targetTypeID: number;
     @Input() hasCloseButton = false;
     @Input() newActionName: string = "New";
-    @Input() hasHeader = true;
     @Input() selectedObject: string;
     @Input() selectedObjectID: any;
     @Input() adding: boolean = false;

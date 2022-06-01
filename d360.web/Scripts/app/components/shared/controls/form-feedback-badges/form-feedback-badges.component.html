@@ -1,0 +1,24 @@
+<span *ngIf="invalidCount > 0"
+	(keypress)="onInputKeyUp($event)"
+	(click)="focusInvalid($event)"
+	class="badge-feedback inv noselect"
+	tabindex="1"
+	i18n-pTooltip
+	pTooltip="Click to focus invalid fields"
+	tooltipPosition="top"
+	tooltipStyleClass="ig-tooltip ig-tooltip-small"
+	i18n>
+	{{invalidCount}} invalid
+</span>
+<span *ngIf="requiredCount > 0"
+	(keypress)="onInputKeyUp($event)"
+	(click)="focusRequired($event)"
+	class="badge-feedback req noselect"
+	tabindex="1"
+	i18n-pTooltip
+	pTooltip="Click to focus required fields"
+	tooltipPosition="top"
+	tooltipStyleClass="ig-tooltip ig-tooltip-small"
+	i18n>
+	{{requiredCount}} required
+</span>
