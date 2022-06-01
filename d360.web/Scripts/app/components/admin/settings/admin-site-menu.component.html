@@ -14,7 +14,7 @@
                 <tr>
                     <th>Name</th>
                     <th width="35%">Type</th>
-                    <th style="width: 5%"></th>
+                    <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
@@ -32,10 +32,10 @@
                     <td width="35%">
                         {{item.Type}}
                     </td>
-                    <td class="asset-grid-tools" style="width: 5%;" (click)="selectRow(item)">
+                    <td class="asset-grid-tools" style="width: 5%;" alignFrozen="right" (click)="selectRow(item)">
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
-                            <ig-popup-menu [items]="getMenuOptions(item)" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
+                            <ig-popup-menu [items]="item.menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>
                 </tr>

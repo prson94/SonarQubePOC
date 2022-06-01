@@ -68,7 +68,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     ngOnInit() {             
         this.isLoading = true;
         this.siteMenuService.getSiteNavItems().subscribe((nav) => {
-            this.companySettings.SiteNav = nav;
+			this.companySettings.SiteNav = nav;
+			this.setMenuOptions();
             this.isLoading = false;
         });
     }
@@ -269,7 +270,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     })
             })
@@ -284,7 +286,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     });
                 
@@ -300,7 +303,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     });
 
@@ -316,7 +320,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
                     .subscribe(s => {
                         this.companySettings.SiteNav = s;
                         this.companySettingsChange.emit(this.companySettings);
-                        this.stateService.reloadLeftNavMenu();
+						this.stateService.reloadLeftNavMenu();
+						this.setMenuOptions();
                         this.isLoading = false;
                     });
 
@@ -467,28 +472,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
         }
     }
 
-    getMenuOptions(folder: SiteNav): any[] {
-        let menuOptions = [
-            { title: 'Edit' },
-        ];
-
-        if (folder.IsCustom) {
-            menuOptions.push({ title: 'Delete' });
-        }
-
-        if (this.companySettings.SiteNav[0].ID != folder.ID) {
-            menuOptions.push({ title: 'Move To Top' });
-            menuOptions.push({ title: 'Move Up' });
-        }
-
-        if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
-            menuOptions.push({ title: 'Move Down' });
-            menuOptions.push({ title: 'Move To Bottom' });
-        }
-
-        return menuOptions;
-    }
-
     loadSiteNavPermissions(item: SiteNav) {
         this.isLoading = true;
         return this.siteMenuService.getSiteNavPermissions(item.ID)
@@ -507,6 +490,30 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
     selectRow(data) {
         this.selection = data;
     }
+
+	setMenuOptions() {
+		this.companySettings.SiteNav.forEach((folder) => {
+			let menuOptions = [
+				{ title: 'Edit' },
+			];
+
+			if (folder.IsCustom || folder.Name === '#ASSET_TYPE') {
+				menuOptions.push({ title: 'Delete' });
+			}
+
+			if (this.companySettings.SiteNav[0].ID != folder.ID) {
+				menuOptions.push({ title: 'Move To Top' });
+				menuOptions.push({ title: 'Move Up' });
+			}
+
+			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
+				menuOptions.push({ title: 'Move Down' });
+				menuOptions.push({ title: 'Move To Bottom' });
+			}
+
+			folder["menuItems"] = menuOptions;
+		});
+	}
 
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();

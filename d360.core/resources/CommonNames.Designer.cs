@@ -259,6 +259,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Folder.
+        /// </summary>
+        public static string Text_Folder {
+            get {
+                return ResourceManager.GetString("Text_Folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Group Membership.
         /// </summary>
         public static string Text_GroupMembership {
