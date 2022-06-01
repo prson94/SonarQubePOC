@@ -111,7 +111,6 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
     cancel() {
         this.load();
         this.onCancel.emit(this.model.Name);
-        this.model = null;
     }
 
     checkModelChanged() {
