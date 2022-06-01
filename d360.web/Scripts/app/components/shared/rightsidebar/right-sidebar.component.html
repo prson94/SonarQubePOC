@@ -15,6 +15,10 @@
                           [badgeValue]="status"
                           [badgeType]="'Status'">
         </d3s-simple-badge>
+        <d3s-simple-badge *ngFor="let badge of area.customBadges"
+                          [badgeValue]="badge"
+                          [badgeType]="'Status'">
+        </d3s-simple-badge>
         <button class="button" *ngIf="showCertify" (click)="requestCertification()"><span i18n>Request Certification</span></button>
         <span class="grow"></span>
         <button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span i18n>Take Survey</span></button>

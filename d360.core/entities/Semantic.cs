@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using d360.core.enums;
@@ -135,6 +136,17 @@ namespace d360.core.entities
 
         [JsonProperty("hasQualifiedAssets")]
         public bool HasQualifiedAssets { get; set; }
+
+        [JsonProperty("isDisabled")]
+        public bool IsDisabled {
+            get
+            {
+                return EffectiveDate < UpdatedOn;
+            }
+        }
+
+        [JsonProperty("effectiveDates")]
+        public List<DateRange>? EffectiveDates { get; set; }
     }
 
     public class PatchSemantic : SemanticBase
@@ -165,6 +177,9 @@ namespace d360.core.entities
 
         [JsonProperty("advanced"), NotMapped]
         public new JObject? JsonPayloadStructured { get; set; }
+
+        [JsonProperty("isDisabled")]
+        public bool? IsDisabled { get; set; }
     }
 
     public class PostSemantic : SemanticBase
@@ -227,12 +242,20 @@ namespace d360.core.entities
         internal string serializeTextProperty<T>(T propertyValue)
         {
             return (propertyValue == null) ? null : JsonConvert.SerializeObject(propertyValue);
-        }
+        }        
     }
 
-    #region Extensions
+	public class DateRange
+	{
+		[JsonProperty("startDate")]
+		public string StartDate { get; set; }
+		[JsonProperty("endDate")]
+		public string EndDate { get; set; }
+	}
 
-    public static class SemanticExtensions
+	#region Extensions
+
+	public static class SemanticExtensions
     {
         private static string ResolveIncomingProperty(this string incomingValue, string defaultValue)
         {
@@ -248,7 +271,7 @@ namespace d360.core.entities
             return incomingValue;
         }
 
-        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, bool hasQualifiedAssets = false)
+        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, bool hasQualifiedAssets = false, List<string> effectiveDates = null)
         {
             return new GetSemantic
             {
@@ -286,7 +309,8 @@ namespace d360.core.entities
                 UpdatedOn = model.UpdatedOn,
                 ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
                 ValidValuesStructured = model.deserializeTextProperty<List<string>>(model.ValidValues),
-                HasQualifiedAssets = hasQualifiedAssets
+                HasQualifiedAssets = hasQualifiedAssets,
+                EffectiveDates = parseEffectiveDates(effectiveDates)
             };
         }
 
@@ -384,7 +408,7 @@ namespace d360.core.entities
                 CreatedBy = existing.CreatedBy,
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description ?? existing.Description,
-                EffectiveDate = date,
+                EffectiveDate = model.IsDisabled.HasValue && model.IsDisabled.Value ? existing.EffectiveDate : date,
                 HeaderFilter = model.HeaderFilter ?? existing.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence ?? existing.HeaderFilterConfidence,
                 InvalidValuesStructured = model.InvalidValuesStructured ?? existing.InvalidValuesStructured,
@@ -609,6 +633,69 @@ namespace d360.core.entities
             {
                 throw new GenericException(System.Net.HttpStatusCode.BadRequest, "This semantic is invalid.", string.Join("; ", errors));
             }
+        }
+
+        public static List<DateRange> parseEffectiveDates(List<string> effectiveDates)
+        {
+            if (effectiveDates == null || effectiveDates.Count == 0)
+            {
+                return new List<DateRange>();
+            }
+            
+            List<DateRange> dateRange = new List<DateRange>();
+
+            string startDate = null;
+
+            foreach (var entry in effectiveDates)
+            {
+                var range = entry.Split(':');
+
+                var effectiveDate = range[0];
+                var updateDate = range[1];
+
+                if(entry == effectiveDates.First())
+                {
+                    startDate = effectiveDate.Split('T')[0];                    
+                }
+
+                if (entry == effectiveDates.Last())
+                {
+                    startDate ??= effectiveDate.Split('T')[0];
+                    var isPresent = effectiveDate == updateDate || updateDate.Split('T')[0] == DateTime.Now.ToString("yyyy-MM-dd");
+                    if (dateRange.Any(r=>r.EndDate == startDate))
+                    {
+                        var r = dateRange.Find(x => x.EndDate == startDate);
+                        startDate = r.StartDate;
+                        dateRange.Remove(r);
+                    }
+                    dateRange.Add(new DateRange { StartDate = startDate, EndDate = isPresent ? "Present" : updateDate.Split('T')[0] });
+                    break;
+                }
+                else if(entry != effectiveDates.First())
+                {
+                    startDate ??= effectiveDate.Split('T')[0];                   
+                    if (effectiveDate != updateDate && !(effectiveDate.Split('T')[0] == updateDate.Split('T')[0] && dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0])))
+                    {
+                        if (!dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0]) && dateRange.Count>0)
+                        {
+                            startDate = effectiveDate.Split('T')[0];
+                        }
+                        dateRange.Add(new DateRange { StartDate = startDate, EndDate = updateDate.Split('T')[0] });                            
+                        startDate = null;                        
+                    }
+
+                    //if disabled and renabled on the same day
+                    if (effectiveDate == updateDate && dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0]))
+                    {
+                        var r = dateRange.Find(x => x.EndDate == effectiveDate.Split('T')[0]);
+                        startDate = r.StartDate;
+                        dateRange.Remove(r);
+                    }
+                }
+            }
+
+            dateRange.Reverse();
+            return dateRange;
         }
     }
 

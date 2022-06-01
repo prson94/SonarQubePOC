@@ -34,6 +34,11 @@ export enum SemanticStatus {
     Certified = 2
 }
 
+export class DateRange {
+	startDate: string;
+	endDate: string;
+}
+
 export class SemanticType {
     uid: string;
     createdBy: SemanticUserModel;
@@ -62,6 +67,8 @@ export class SemanticType {
     validList: string[];
     hasQualifiedAssets: boolean = false;
     headerRegExps: string;
+    isDisabled: boolean = false;
+    effectiveDates: DateRange[];
 
     public static getBaseTypeText(baseType: string): string {
         switch (baseType.toString().toLocaleLowerCase()) {
@@ -100,3 +107,4 @@ export class SemanticTypeGetAssetsResponse {
     total: number;
     items: SemanticTypeAsset[];
 }
+

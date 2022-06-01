@@ -391,4 +391,12 @@
   <data name="TypeQualifierNotFound" xml:space="preserve">
     <value>Type Qualifier '{0}' does not exist</value>
   </data>
+  <data name="SemanticTypeDisabledColumn" xml:space="preserve">
+    <value>Disabled</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeEffectiveRangeColumn" xml:space="preserve">
+    <value>Effective Range</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
 </root>

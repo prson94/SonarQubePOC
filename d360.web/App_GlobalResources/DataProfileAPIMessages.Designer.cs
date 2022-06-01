@@ -743,5 +743,27 @@ namespace Resources {
                 return ResourceManager.GetString("ValidValuesColumn", resourceCulture);
             }
         }
-    }
+
+		/// <summary>
+		///   Looks up a localized string similar to Disabled.
+		/// </summary>
+		internal static string SemanticTypeDisabledColumn
+		{
+			get
+			{
+				return ResourceManager.GetString("SemanticTypeDisabledColumn", resourceCulture);
+			}
+		}
+
+		/// <summary>
+		///   Looks up a localized string similar to Effective Range.
+		/// </summary>
+		internal static string SemanticTypeEffectiveRangeColumn
+		{
+			get
+			{
+				return ResourceManager.GetString("SemanticTypeEffectiveRangeColumn", resourceCulture);
+			}
+		}
+	}
 }
