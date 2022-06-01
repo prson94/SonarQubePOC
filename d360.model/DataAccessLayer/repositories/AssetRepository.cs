@@ -388,6 +388,8 @@ namespace d360.model.DataAccessLayer
 			List<string> fieldJoins = new List<string>();
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
+			List<string> TempTableScriptList = new List<string>();
+			string TempTableScriptStr = " ";
 
 			var dbArgs = new DynamicParameters();
 			var model = new AssetsApiViewModel();
@@ -402,12 +404,14 @@ namespace d360.model.DataAccessLayer
 
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
-			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
+			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON, true, TempTableScriptList);
 			List<string> countJoins = new List<string>(fieldJoins);
+
+			TempTableScriptStr = string.Join("\n ", TempTableScriptList);
 
 			if (includeProfilingCheck)
 			{
-				profilingCheckSql = $"cross apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling";
+				profilingCheckSql = $"outer apply (select case when exists (select 1 from AssetDataProfile where AssetID = A.ID) then cast(1 as bit) else cast(0 as bit) end as HasProfiling) Profiling";
 				profilingCheckFields = $"Profiling.HasProfiling as HasProfiling,";
 			}
 
@@ -725,6 +729,7 @@ namespace d360.model.DataAccessLayer
 					ownershipColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
 					groupColumns.Add($"F{f.ID}.FormattedValue");
 					fieldJoins.Add(ownershipQuery);
+					countJoins.Add(ownershipQuery);
 					ownershipJoins.Add(ownershipQuery);
 					ownershipPropertiesMapping.Add(f.Name, "F{f.ID}.FormattedValue");
 				});
@@ -760,6 +765,8 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
+
+			var OrderMainQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_assetuid"))
 			{
@@ -1262,20 +1269,47 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+
+			int RecordStart = 1;
+			int RecordEnd = 200;
+
+			if (model.pageNum > 0 && model.pageSize > 0)
+			{
+				RecordStart = ((model.pageNum - 1) * model.pageSize) + 1;
+				RecordEnd = RecordStart + model.pageSize - 1;
+			}
+
 			var countSql = $@"
-				select  count(*)
+				{TempTableScriptStr}
+
+				DROP TABLE IF EXISTS #tempasset;
+				create table #tempasset (id int identity(1,1), AssetId bigint);
+
+				insert into #tempasset
+				select  A.ID
 				from    Asset A 
 				left join graph.AssetNode Node on Node.id = a.id 
-				{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
+				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{string.Join("\n", countJoins)}
+				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
+				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
+				{(includePermissionDetails ? permissionDetailSQL : "")}
+				{(includeProfilingCheck ? profilingCheckSql : "")}
 				{hierarchyParentUidSelect}
-				{(includeParentInCount ? parentApplySQL : "")}
-				{whereSql}";
+				{(includeParent ? parentApplySQL : "")}
+				{whereSql}
+				{OrderMainQuery}
+
+				create index ix_tempasset on #tempasset	(id);
+
+				{(includeTotal ? "select count(1) from #tempasset" : "")}";
+
 
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
-					{(useTempTableForResults ? $"row_number() over ({pagingSql.First()}) as _rowid," : "")}
+					{(useTempTableForResults ? $"row_number() over (order by TempA.ID) as _rowid," : "")}
 					A.ID as AssetId,
 					A.[UID] as [AssetUid],
 					A.AssetTypeId,
@@ -1296,7 +1330,8 @@ namespace d360.model.DataAccessLayer
 					{(includePermissionDetails ? includePermissionFields : "")} 
 					{hierarchyParentUidCol}
 				{(useTempTableForResults ? " into #results " : "")}
-				from Asset A
+				from #tempasset TempA
+				inner join Asset A on TempA.AssetId = A.ID and TempA.ID Between {RecordStart} and {RecordEnd}
 				left join graph.AssetNode Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
@@ -1307,14 +1342,12 @@ namespace d360.model.DataAccessLayer
 				{(includeProfilingCheck ? profilingCheckSql : "")}
 				{hierarchyParentUidSelect}
 				{(includeParent ? parentApplySQL : "")}
-				{whereSql}
-				{string.Join("\n", pagingSql)}
+				Order By TempA.ID
 				{(useTempTableForResults ? "select * from #results order by _rowid " : "")}
 			";
 
 			if (!includeTotal)
 			{
-				countSql = "";
 				model.total = null;
 			}
 
