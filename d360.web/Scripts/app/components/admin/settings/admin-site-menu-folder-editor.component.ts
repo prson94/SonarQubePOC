@@ -75,6 +75,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
     IsMenuPermissionsAdding: boolean = false;
     permissionMode: FormMode = FormMode.Default;
 	simpleTextFilter: string = '';
+	simpleTextFilterForExistingItems: string = '';
 
     private iconImage: CompanyImage = new CompanyImage();
 

@@ -53,7 +53,7 @@
                             </div>
                         </div>
                     </div>
-                    </div>
+                </div>
                 <div class="row">
                     <div class="col s12 m5 l5">
                         <ig-search-field class="search tooltip-full-width"
@@ -64,40 +64,44 @@
                                          [(ngModel)]="simpleTextFilter"
                                          (onSearch)="dt3.filterGlobal($event, 'contains')"
                                          style="width:100%; padding-bottom:8px;"></ig-search-field>
-                        <p-table #dt3 
-                                 [globalFilterFields]="['Title']"
-                                 [value]="availableItems" 
-                                 selectionMode="multiple" 
-                                 [metaKeySelection]="true" 
-                                 [paginator]="true" 
-                                 [rows]="10"
-                				 [rowsPerPageOptions]="defaultPagingOptions"
-                                 [scrollable]="true">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th>Available Folder Items</th>
-                                    <th></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td>{{item.Title}}</td>
-                                    <td>
-                                        <div class="RowTools" style="height: initial;">
-                                            <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt3.first" 
-                                                      [rows]="dt3.rows" 
-                                                      [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>
+                        <div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+                            <p-table #dt3
+                                     [globalFilterFields]="['Title']"
+                                     [value]="availableItems"
+                                     selectionMode="multiple"
+                                     [metaKeySelection]="true"
+                                     [paginator]="true"
+                                     [rows]="10"
+                                     [rowsPerPageOptions]="defaultPagingOptions"
+                                     [scrollable]="true">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Available Folder Items</th>
+                                        <th></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td>{{item.Title}}</td>
+                                        <td>
+                                            <div class="RowTools" style="height: initial;">
+                                                <a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt3.first"
+                                                          [rows]="dt3.rows"
+                                                          [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>
+                        </div>
                     </div>
                     <div class="col s1 m1 l1 marginLeft">
-                        <tr>
+                        <tr style="height:100px">
+                        </tr>
+                        <tr style="height:40px">
                             <button igButton
                                     class="ig-lookup-grid-button"
                                     icon="fa-arrow-right"
@@ -106,7 +110,7 @@
                                     tooltipPosition="top"
                                     tooltipStyleClass="ig-tooltip"></button>
                         </tr>
-                        <tr>
+                        <tr style="height:80px">
                             <button igButton
                                     class="ig-lookup-grid-button"
                                     icon="fa-arrow-left"
@@ -115,7 +119,7 @@
                                     tooltipPosition="top"
                                     tooltipStyleClass="ig-tooltip"></button>
                         </tr>
-                        <tr>
+                        <tr style="height:40px">
                             <button igButton
                                     class="ig-lookup-grid-button rotateRight"
                                     icon="fa-step-backward"
@@ -124,7 +128,7 @@
                                     tooltipPosition="top"
                                     tooltipStyleClass="ig-tooltip"></button>
                         </tr>
-                        <tr>
+                        <tr style="height:40px">
                             <button igButton
                                     class="ig-lookup-grid-button rotateLeft"
                                     icon="fa-play"
@@ -133,7 +137,7 @@
                                     tooltipPosition="top"
                                     tooltipStyleClass="ig-tooltip"></button>
                         </tr>
-                        <tr>
+                        <tr style="height:40px">
                             <button igButton
                                     class="ig-lookup-grid-button rotateRight"
                                     icon="fa-play"
@@ -153,46 +157,62 @@
                         </tr>
                     </div>
                     <div class="col s12 m5 l5">
-                        <p-table #dt4 [value]="newFolderItems" selectionMode="multiple" [metaKeySelection]="true" [paginator]="true" [rows]="10">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th>Existing Folder Items</th>
-                                    <th></th>
-                                </tr>
+                        <ig-search-field class="search tooltip-full-width"
+                                            mode="Keypress"
+                                            i18n-placeholder
+                                            [infoTooltip]="simpleSearchTooltipHTML"
+                                            placeholder="Search"
+                                            [(ngModel)]="simpleTextFilterForExistingItems"
+                                            (onSearch)="dt4.filterGlobal($event, 'contains')"
+                                            style="width:100%; padding-bottom:8px;"></ig-search-field>
+                        <div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+                            <p-table #dt4 [value]="newFolderItems"
+                                        [globalFilterFields]="['Title']"
+                                        selectionMode="multiple"
+                                        [metaKeySelection]="true"
+                                        [paginator]="true"
+                                        [rows]="10"
+                                        [rowsPerPageOptions]="defaultPagingOptions"
+                                        [scrollable]="true">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Existing Folder Items</th>
+                                        <th></th>
+                                    </tr>
 
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td>{{item.Name}}</td>
-                                    <td>
-                                        <div class="RowTools" style="height: initial;">
-                                            <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt4.first" [rows]="dt4.rows" [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr [pSelectableRow]="item">
+                                        <td>{{item.Name}}</td>
+                                        <td>
+                                            <div class="RowTools" style="height: initial;">
+                                                <a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
+                                    <d3s-grid-paging-info [first]="dt4.first"
+                                                            [rows]="dt4.rows"
+                                                            [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
+                                </ng-template>
+                            </p-table>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col s6">
-                        <button pButton 
-                                type="button" 
-                                label="Cancel" 
-                                (click)="closeClick.emit();"
-                                pTooltip="Do not save changes"></button>
-                    </div>
-                    <div class="col s6">
-                        <button pButton
-                                type="button"
-                                label="Add Folder"
-                                style="float: right;"
-                                (click)="save()"
-                                [disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
-                    </div>
+                <div class="action-bar" style="margin-top:16px;">
+                    <button igButton 
+                            igAutoFocus 
+                            i18n-label 
+                            label="Cancel" 
+                            (click)="closeClick.emit();"></button>
+                    <span class="grow"></span>
+                    <button igButton
+                            class="ig-button-primary"
+                            i18n-label
+                            label="Add Folder"
+                            (click)="save()"
+                            [disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
                 </div>
             </div>
         </div>
