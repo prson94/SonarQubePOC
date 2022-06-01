@@ -432,6 +432,7 @@
                          [min]="1"
                          [step]="1"
                          formControlName="minimum"
+						 [ariaInvalid]="semanticForm.get('minimum').errors?.invalidMinMax"
                          [disabled]="isBuiltIn"
                          [required]="model.minMaxPresent"
                          [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
@@ -439,7 +440,7 @@
         <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && semanticForm.get('minimum').errors?.underMin" class="ig-text-required" i18n>
             Please enter a value greater than 0
         </div>
-        <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && !validateMinMax()" class="ig-text-required" i18n>
+        <div *ngIf="(semanticForm.get('minimum').dirty || semanticForm.get('minimum').touched) && semanticForm.get('minimum').errors?.invalidMinMax" class="ig-text-required" i18n>
             Minimum value must be less than maximum
         </div>
     </div>
@@ -457,6 +458,7 @@
                          [min]="1"
                          [step]="1"
                          formControlName="maximum"
+						 [ariaInvalid]="semanticForm.get('maximum').errors?.invalidMinMax"
                          [disabled]="isBuiltIn"
                          [required]="model.minMaxPresent"
                          [placeholder]="(model.minMaxPresent ? 'Value required' : 'Optional')"
@@ -464,7 +466,7 @@
         <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && semanticForm.get('maximum').errors?.underMin" class="ig-text-required" i18n>
             Please enter a value greater than 0
         </div>
-        <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && !validateMinMax()" class="ig-text-required" i18n>
+        <div *ngIf="(semanticForm.get('maximum').dirty || semanticForm.get('maximum').touched) && semanticForm.get('maximum').errors?.invalidMinMax" class="ig-text-required" i18n>
             Maximum value must be greater than minimum
         </div>
     </div>
