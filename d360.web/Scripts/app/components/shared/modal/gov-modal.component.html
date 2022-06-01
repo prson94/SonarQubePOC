@@ -7,6 +7,7 @@
                 <h2 *ngIf="subtitle" [innerHTML]="subtitle"></h2>
             </div>
             <span class="grow"></span>
+            <ig-portal-renderer *ngIf="formFeedbackPortalName != null" [name]="formFeedbackPortalName"></ig-portal-renderer>
         </div>
         <ng-content></ng-content>
         <div *ngIf="showConfirm" class="action-bar">

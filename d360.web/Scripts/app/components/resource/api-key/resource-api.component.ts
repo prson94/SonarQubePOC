@@ -33,7 +33,6 @@ export class ResourceApiComponent extends BaseComponent {
 
     ngOnInit() {
         this.isLoading = true;
-        this.secondaryNavService.showHeader(false);
         this.resourcesService.getApiKeys()
             .subscribe(r => {
                 this.resource = r;

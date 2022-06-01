@@ -173,7 +173,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
     }
 
     isOutOfDate(profileDate) {
-        return this.semanticEffectiveDate > new Date(profileDate);
+        return this.semanticEffectiveDate > new Date(profileDate) || new Date(profileDate) > new Date(this.semanticType.updatedOn);
     }
     
 }

@@ -103,7 +103,9 @@ namespace d360.model.DataAccessLayer
 									UpdatedOn,
 									case @action
 										when 'C' then 'Created'
-										when 'U' then 'Updated'
+										when 'U' then 
+											case when effectiveDate < UpdatedOn then 'Disabled'
+											else'Updated' end											
 										else 'Removed'
 									end,
 									null
@@ -133,6 +135,7 @@ namespace d360.model.DataAccessLayer
 										union all select 'Maximum', cast(Maximum as nvarchar(max))
 										union all select 'MinMaxPresent', cast(MinMaxPresent as nvarchar(max))
 										union all select 'JsonPayload', cast(JsonPayload as nvarchar(max)) 
+										union all select 'Disabled', case when EffectiveDate < UpdatedOn then 'True' else 'False' end
 									) F (FieldName, FieldValue)
 							where	TransactionId = @transactionId
 
@@ -172,6 +175,7 @@ namespace d360.model.DataAccessLayer
 															union all select 'Maximum', cast(S.Maximum as nvarchar(max))
 															union all select 'MinMaxPresent', cast(S.MinMaxPresent as nvarchar(max))
 															union all select 'JsonPayload', cast(S.JsonPayload as nvarchar(max)) 
+															union all select 'Disabled', case when S.EffectiveDate < S.UpdatedOn then 'True' else 'False' end
 														) F (FieldName, FieldValue)
 												where	S.Qualifier = T.Qualifier
 														and F.FieldName = T.FieldName
@@ -191,11 +195,13 @@ namespace d360.model.DataAccessLayer
 							ActionDescription)
 						output inserted.ID, inserted.ObjectName into @ids
 						select	Object, ObjectID, Qualifier, 
-								ResourceID, Date, Action,
+								ResourceID, Date, Case Action when 'Disabled' then 'Updated' else Action end,
 								Object, ObjectID, 'Semantic', Qualifier,
 								'Semantic type ' + case @action
 										when 'C' then 'created'
-										when 'U' then 'updated'
+										when 'U' then 
+											case when Action = 'Disabled' then 'disabled' 
+											else 'updated' end
 										else 'removed'
 									end + '.'
 						from @items
@@ -315,12 +321,13 @@ namespace d360.model.DataAccessLayer
 			var dbArgs = new DynamicParameters();
 
 			var pageNum = 1;
-			var pageSize = 200;
+			var pageSize = 200;			
 			var order = "Qualifier";
 			var direction = "asc";
 			DateTime asOfEffectiveDate = DateTime.UtcNow;
 			var whereStatements = new List<string>();
 			var statusSQL = "";
+			var includeDisabled = true;
 
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
 			{
@@ -395,6 +402,19 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
+			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includedisabled"))
+			{
+				if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includedisabled").Value, out includeDisabled))
+				{
+					includeDisabled = true;
+				}
+			}
+
+            if (!includeDisabled)
+            {
+				whereStatements.Add("EffectiveDate = UpdatedOn");
+			}
+
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "asofeffectivedate"))
 			{
 				if (!DateTime.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofeffectivedate").Value, out asOfEffectiveDate))
@@ -440,7 +460,7 @@ namespace d360.model.DataAccessLayer
 				}
 			}
 
-			var tableQuery = $@"(select	ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSQL} from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
+			var tableQuery = $@"(select ROW_NUMBER() OVER(PARTITION BY Qualifier ORDER BY EffectiveDate desc ) AS RowNum, * {statusSQL} from Semantic where EffectiveDate <= @asOfEffectiveDate) S where S.RowNum = 1";
 			var whereConjunction = whereStatements.Count > 0 ? "and" : "";
 
 			var countSql = $"select count(1) as [Count] from {tableQuery} {whereConjunction} {string.Join(" and ", whereStatements)}";
@@ -463,9 +483,10 @@ namespace d360.model.DataAccessLayer
 				join c in CompanyContext.GlobalReportingResources on s.CreatedBy equals c.ResourceID
 				join u in CompanyContext.GlobalReportingResources on s.UpdatedBy equals u.ResourceID
 				let p = CompanyContext.AssetDataProfile.Where(dp => s.Qualifier == dp.TypeQualifier).FirstOrDefault()
-				select s.ToGetModel(c, u, p != null)
+				let dates = includeDisabled ? CompanyContext.Semantics.Where(s1 => s1.Qualifier == s.Qualifier).Select(a => new { a.EffectiveDate, a.UpdatedOn }).ToList() : null
+				select s.ToGetModel(c, u, p != null, dates?.Select(x=> { return $"{x.EffectiveDate:yyyy-MM-ddThh.mm.ss}:{x.UpdatedOn:yyyy-MM-ddThh.mm.ss}"; }).ToList())
 				).ToList();
-
+			
 			return model;
 		}
 
@@ -547,12 +568,10 @@ namespace d360.model.DataAccessLayer
 			var nonUpdatedableSemantics = new List<string>();
 			existingSemantics.ForEach(e =>
 			{
-				if (e.Source == core.enums.SemanticSource.BuiltIn)
+				var patchModel = semantics.SingleOrDefault(o => o.Qualifier == e.Qualifier);
+				if (patchModel != null)
 				{
-					var patchModel = semantics.SingleOrDefault(o => o.Qualifier == e.Qualifier);
-					if (patchModel != null)
-					{
-						if (patchModel.BaseType.HasValue
+					if (patchModel.BaseType.HasValue
 							|| patchModel.HeaderFilter != null
 							|| patchModel.HeaderFilterConfidence.HasValue
 							|| patchModel.InvalidValuesStructured != null
@@ -567,11 +586,24 @@ namespace d360.model.DataAccessLayer
 							|| patchModel.Threshold.HasValue
 							|| patchModel.ValidLocalesStructured != null
 							|| patchModel.ValidValuesStructured != null)
+					{
+						if (e.Source == core.enums.SemanticSource.BuiltIn)
 						{
 							nonUpdatedableSemantics.Add(e.Qualifier);
 						}
-					}
-				}
+						if (patchModel.IsDisabled.HasValue && patchModel.IsDisabled.Value)
+						{
+							if(patchModel.Description.Length>0 || patchModel.Name.Length > 0)
+                            {
+								throw new GenericException(
+									HttpStatusCode.Conflict,
+									"Semantics cannot be updated while also being disabled.",
+									$"Semantics cannot be updated while also being disabled. Please specify provide the qualifer and isDisabled values when disabling"
+									);
+							}
+						}
+					}					
+				}			                
 			});
 
 			if (nonUpdatedableSemantics.Count > 0)
@@ -586,7 +618,7 @@ namespace d360.model.DataAccessLayer
 			#endregion
 
 			var repoModels = (
-				from u in semantics
+				from u in semantics.FindAll(s=> s.IsDisabled==null || s.IsDisabled==false)
 				join e in existingSemantics on u.Qualifier.ToLower() equals e.Qualifier.ToLower()
 				select u.ToRepositoryModel(e, CompanyContext.CurrentResourceID)
 				).ToList();
@@ -598,8 +630,33 @@ namespace d360.model.DataAccessLayer
 				s.TransactionId = transactionId;
 			});
 
-			CompanyContext.Semantics.AddRange(repoModels);
-			await CompanyContext.SaveChangesAsync();
+            if (semantics.FindAll(s => s.IsDisabled == true).Count > 0)
+            {
+                var sql = $@";with s as (
+								select
+									*,
+									Row_number()
+									OVER ( 
+										partition BY qualifier 
+										ORDER BY UpdatedOn DESC) rn 
+								from 
+									Semantic 
+								where 
+									qualifier in @qualifiers   
+							)											
+							update s set
+							UpdatedOn = GETDATE(),
+							UpdatedBy = @resourceId,
+							transactionId= @transactionId
+							where rn=1";
+                await CompanyContext.Database.Connection.ExecuteAsync(sql, new { transactionId, qualifiers = semantics.FindAll(s => s.IsDisabled == true).Select(o => o.Qualifier).ToList(), resourceId = CompanyContext.CurrentResourceID }, commandTimeout: ApiTimeout);
+            }
+
+			if (repoModels.Count > 0)
+			{
+				CompanyContext.Semantics.AddRange(repoModels);
+				await CompanyContext.SaveChangesAsync();
+			}
 
 			queueForSearchIndex(transactionId);
 			addToChangeLog(transactionId, "U");

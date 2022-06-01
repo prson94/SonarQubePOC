@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfileSample-v1">
+  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfileSample-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,10 +20,19 @@ BEGIN
 		[ExecutionItemUid] [uniqueidentifier] NULL,
 		[SampleType] NVARCHAR(100) NOT NULL,
 		[Key] NVARCHAR(200) NULL,
-		[Value] NVARCHAR(200) NOT NULL,
+		[Value] NVARCHAR(200) NULL,
+		[JsonValue] NVARCHAR(MAX) NULL
 	 CONSTRAINT [PK_ExecutionAssetDataProfileSample] PRIMARY KEY CLUSTERED (ID) WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
 	) ON [PRIMARY]
 END
+
+ALTER TABLE [api].[ExecutionAssetDataProfileSample] alter column Value NVARCHAR(200) null;
+
+IF COL_LENGTH('api.ExecutionAssetDataProfileSample','JsonValue') IS NULL
+BEGIN
+	ALTER TABLE [api].[ExecutionAssetDataProfileSample] ADD JsonValue nvarchar(max) null;
+END
+
 		]]>
     </sql>
 	<rollback>

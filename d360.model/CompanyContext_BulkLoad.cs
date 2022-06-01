@@ -12,6 +12,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.helpers;
 using d360.core.queue;
+using d360.core.resources;
 using d360.model.DataAccessLayer;
 
 using Dapper;
@@ -39,15 +40,17 @@ namespace d360.model
 		#region Engine Methods
 
 		#region Get Methods
-
-		private readonly string LoadDetailBaseSql = @"select	L.ID,
+		private static string LoadDetailBaseSql 
+		{
+			get {
+				return $@"select	L.ID,
 													L.[Object],
 													L.ObjectID,
 													case 
-														when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
-														when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
-														when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
-														else coalesce(C_D.[Name], 'Default') 
+														when L.[Action] = 'M' and L.ObjectID = 0 then '{Bulkload.Object_GroupMembership.CleanForSql()}'
+														when L.[Action] = 'M' and L.ObjectID = 1 then '{Bulkload.Object_Users.CleanForSql()}'
+														when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[{Bulkload.Object_Deleted.CleanForSql()}]')  
+														else coalesce(C_D.[Name], '{Bulkload.Object_Default.CleanForSql()}') 
 													end as ObjectName,
 													L.Notes, 
 													coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
@@ -67,15 +70,15 @@ namespace d360.model
 														L.DateCompleted 
 													end as DateCompleted,
 													case L.[Action]
-														when 'M' then 'Users/Groups'
-														when 'P' then 'Promotion'
-														when 'R' then 'Relation'
-														when 'U' then 'Unrelation'
-														when 'L' then 'Lineage'
-														when 'O' then 'Responsibilities'
-														when 'T' then 'Lineage : Technical'
-														when 'S' then 'Synonyms'
-														when 'W' then 'Promotion (via Propose Workflow)'
+														when 'M' then '{Bulkload.UsersGroups.CleanForSql()}'
+														when 'P' then '{Bulkload.Promotion.CleanForSql()}'
+														when 'R' then '{Bulkload.Relation.CleanForSql()}'
+														when 'U' then '{Bulkload.Unrelation.CleanForSql()}'
+														when 'L' then '{Bulkload.Lineage.CleanForSql()}'
+														when 'O' then '{Bulkload.Responsibilities.CleanForSql()}'
+														when 'T' then '{Bulkload.LineageTechnical.CleanForSql()}'
+														when 'S' then '{Bulkload.Synonyms.CleanForSql()}'
+														when 'W' then '{Bulkload.Promotion_ViaWorkflow.CleanForSql()}'
 													end as [Action],
 													S.C as Success,
 													E.C as Error,
@@ -93,7 +96,9 @@ namespace d360.model
 
 													) C_D on C_D.[Object] = L.[Object] and C_D.ObjectID = L.ObjectID 
 													left join reporting.Global_Resource R on R.ResourceID = L.UpdatedBy       
-													{0}";
+													{{0}}";
+			}
+		}
 
 		public IEnumerable<LoadDetail> GetLoadDetails()
 		{

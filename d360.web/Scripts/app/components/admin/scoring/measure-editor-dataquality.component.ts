@@ -1,4 +1,4 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
+import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ElementRef, ViewChild } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricFieldTypeViewModel, MetricAssetDefinitionViewModel, MetricRuleResultOperation, MetricMatchType, MetricPathOptionViewModel, MetricAssetDefinitionDataQualityViewModel, MetricAssetDefinitionDataQualityFilterViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -60,7 +60,8 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
     ruleResultFields: FieldTypeAPIModelFieldCondition[] = [];
     ruleResultFilters: FieldCondition[] = [];
     ruleResultFiltersMatchType: string;
-
+    
+    @ViewChild('form', { static: false }) formElement: ElementRef;
 
     delayedReload = _.debounce(() => {
         this.load();

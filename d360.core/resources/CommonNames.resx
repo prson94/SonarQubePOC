@@ -159,6 +159,9 @@
   <data name="AssetTypeClass_Relationship" xml:space="preserve">
     <value>Relationship</value>
   </data>
+  <data name="AssetTypeClass_Resource" xml:space="preserve">
+    <value>Resource</value>
+  </data>
   <data name="AssetTypeClass_Rule" xml:space="preserve">
     <value>Rule</value>
   </data>

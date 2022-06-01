@@ -1,7 +1,14 @@
 ﻿<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" class="measure-form" [style.maxHeight.px]="maxHeight">
-        <form [formGroup]="metricForm" *ngIf="model">
+        <ig-portal-content-provider *ngIf="formFeedbackPortalName" [name]="formFeedbackPortalName" [template]="formFeedback">
+            <ng-template #formFeedback>
+                <ig-form-feedback-badges [igformGroup]="metricForm" [inputContainer]="formElement">
+                </ig-form-feedback-badges>
+            </ng-template>
+        </ig-portal-content-provider>
+        
+        <form [formGroup]="metricForm" *ngIf="model" #form>
             <ig-property-group [igformGroup]="metricForm" [title]="'Details'">
                 <div inputs>
                     <div class="row">

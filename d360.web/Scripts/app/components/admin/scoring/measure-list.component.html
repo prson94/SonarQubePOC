@@ -60,12 +60,14 @@
         </p-treeTable>
         <div *ngIf="metricTree.length == 0" class="no-measure-message" i18n>No measures defined</div>
     </div>
-    <d3s-modal [title]="titleCreateMeasure" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding" (onClose)="formMode = FormMode.Default;">
+    <d3s-modal [title]="titleCreateMeasure" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Adding" (onClose)="formMode = FormMode.Default;"
+        [formFeedbackPortalName]="createMeasureFormFeedbackPortalName">
         <dataquality-measure-editor *ngIf="isDataQualityScoreType()"
                                     [allocation]="allocation"
                                     [screenReferences]="screenReferences"
                                     [parentUid]="selection?.Uid"
                                     [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                    [formFeedbackPortalName]="createMeasureFormFeedbackPortalName"
                                     (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
                                     (onSave)="formMode = FormMode.Default; load($event); ">
         </dataquality-measure-editor>
@@ -73,6 +75,7 @@
                                  [allocation]="allocation"
                                  [screenReferences]="screenReferences"
                                  [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                 [formFeedbackPortalName]="createMeasureFormFeedbackPortalName"
                                  (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
                                  (onSave)="formMode = FormMode.Default; load($event); ">
         </external-measure-editor>
@@ -81,17 +84,20 @@
                                    [screenReferences]="screenReferences"
                                    [parentUid]="selection?.Uid"
                                    [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                   [formFeedbackPortalName]="createMeasureFormFeedbackPortalName"
                                    (onCancel)="formMode = FormMode.Default; load(previousSelection?.Name);"
                                    (onSave)="formMode = FormMode.Default; load($event); ">
         </governance-measure-editor>
     </d3s-modal>
-    <d3s-modal [title]="titleEditMeasure" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing" (onClose)="formMode = FormMode.Default;">
+    <d3s-modal [title]="titleEditMeasure" additionalClasses="large-dialog modal-measure" [isVisible]="formMode == FormMode.Editing" (onClose)="formMode = FormMode.Default;"
+        [formFeedbackPortalName]="editMeasureFormFeedbackPortalName">
         <dataquality-measure-editor *ngIf="isDataQualityScoreType() && formMode == FormMode.Editing"
                                     [allocation]="allocation"
                                     [screenReferences]="screenReferences"
                                     [(model)]="selection"
                                     [uid]="selection?.Uid"
                                     [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                    [formFeedbackPortalName]="editMeasureFormFeedbackPortalName"
                                     (onCancel)="formMode = FormMode.Default; load($event)"
                                     (onSave)="formMode = FormMode.Default; load($event); ">
         </dataquality-measure-editor>
@@ -101,6 +107,7 @@
                                  [screenReferences]="screenReferences"
                                  [uid]="selection?.Uid"
                                  [maxScoreEffectiveDate]="maxScoreEffectiveDate"
+                                 [formFeedbackPortalName]="editMeasureFormFeedbackPortalName"
                                  (onCancel)="formMode = FormMode.Default; load($event)"
                                  (onSave)="formMode = FormMode.Default; load($event); ">
         </external-measure-editor>
@@ -110,6 +117,7 @@
                                    [maxScoreEffectiveDate]="maxScoreEffectiveDate"
                                    [(model)]="selection"
                                    [uid]="selection?.Uid"
+                                   [formFeedbackPortalName]="editMeasureFormFeedbackPortalName"
                                    (onCancel)="formMode = FormMode.Default; load($event)"
                                    (onSave)="formMode = FormMode.Default; load($event); ">
         </governance-measure-editor>

@@ -14,9 +14,17 @@ import {
     QueryList,
     HostListener,
     AfterViewChecked,
-    SimpleChanges
+    SimpleChanges,
+    ViewChild
 } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import {
+	AbstractControl,
+	FormBuilder,
+	FormGroup,
+	ValidationErrors,
+	ValidatorFn,
+	Validators
+} from '@angular/forms';
 import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -63,6 +71,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     isJsonValid: boolean = true;
     semanticHelpURL: string;
 
+    @ViewChild('form', { static: false }) formElement: ElementRef;
     @ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
     get editorTitle(): string {
@@ -111,7 +120,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             headerRegExp: null,
             regExpReturned: null,
             validLocales: null
-        });
+        }, {validators: [this.minMaxValidator]});
         setTimeout(() => {
             this.semanticForm.valueChanges.subscribe((change) => {
                 this.isEdit = this.semanticType?.qualifier?.length > 0;
@@ -269,7 +278,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
             return this.isJsonValid;
         }
         if (this.model?.matchType?.toString() === SemanticMatchType[SemanticMatchType.Number]) {
-            return this.validateMinMax();
+            return this.semanticForm.valid;
         }
         return true;
     }
@@ -389,10 +398,25 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     }
 
-    validateMinMax() {
-        if (this.model?.minimum && this.model?.maximum && this.model.minimum > this.model.maximum) {
-            return false;
-        }
-        return true;
-    }
+	minMaxValidator = (control: AbstractControl): ValidationErrors => {
+		const minimum = control.get('minimum');
+		const maximum = control.get('maximum');
+		if (minimum.value && maximum.value) {
+			if (+minimum.value > +maximum.value) {
+				[minimum, maximum].forEach((control) => {
+					control.setErrors({...control.errors, invalidMinMax: true});
+				});
+			} else {
+				[minimum, maximum].forEach((control) => {
+					if (control.errors) {
+						delete control.errors['invalidMinMax'];
+						control.setErrors(Object.keys(control.errors).length ? control.errors : null);	
+					} else {
+						control.setErrors(null);
+					}
+				});
+			}
+		}
+		return null;
+	};
 }

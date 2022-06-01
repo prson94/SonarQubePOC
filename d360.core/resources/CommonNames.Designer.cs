@@ -187,6 +187,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Resource.
+        /// </summary>
+        public static string AssetTypeClass_Resource {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Resource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Rule.
         /// </summary>
         public static string AssetTypeClass_Rule {
