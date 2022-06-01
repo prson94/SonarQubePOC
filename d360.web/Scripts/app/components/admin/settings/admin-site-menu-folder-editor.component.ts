@@ -124,7 +124,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         this.populateTypeLists();
         setTimeout(() => {
             this.folderForm.valueChanges.subscribe((change) => {
-                debugger;
                 this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
             });
             this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
@@ -169,14 +168,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         switch (this.formMode) {
             case FormMode.Editing:
                 this.selection.IconPayload = this.iconImage.dataUrl;
-                this.siteMenuService.editFolder(this.selection)
-                    .subscribe(result => {
-                        this.showMessageForResult(this.messagesService, result);
-                        this.siteMenuService.setSiteNavPermissions(this.selection);
-                        this.stateService.reloadLeftNavMenu();
-                        this.isLoading = false;
-                        this.formMode = FormMode.Default;
-                    })
+				this.siteMenuService.editFolder(this.selection)
+					.subscribe((result) => {
+						this.showMessageForResult(this.messagesService, result);
+						this.siteMenuService.setSiteNavPermissions(this.selection);
+						this.stateService.reloadLeftNavMenu();
+						this.isLoading = false;
+						this.formMode = FormMode.Default;
+					});
                 break;
             case FormMode.Adding:
 
@@ -186,15 +185,15 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
                     items: this.newFolderItems
                 };
 
-                this.siteMenuService.addFolder(model)
-                    .subscribe(result => {
-                        this.showMessageForResult(this.messagesService, result);
-                        this.formMode = FormMode.Default;
-                        this.isLoading = false;
-                        this.stateService.reloadLeftNavMenu();
-                        this.siteMenuService.setSiteNavPermissions(this.selection)
-                        this.handleSaveComplete(result, addAnother);
-                    })
+				this.siteMenuService.addFolder(model)
+					.subscribe((result) => {
+						this.showMessageForResult(this.messagesService, result);
+						this.formMode = FormMode.Default;
+						this.isLoading = false;
+						this.stateService.reloadLeftNavMenu();
+						this.siteMenuService.setSiteNavPermissions(this.selection);
+						this.handleSaveComplete(result, addAnother);
+					});
                 break;
         }
     }
@@ -229,7 +228,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         type NewType = AbstractControl;
 
         return (control: NewType): { [key: string]: any } | null => {
-            if (control.value === null || control.value === undefined) {
+            if (control.value === null || (typeof control.value === 'undefined')) {
                 return {};
             }
             if ((control.value as string).trim() === '' && (control.value as string) !== '') {
@@ -309,10 +308,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
     }
 
     changeIconType(e: any) {
-        debugger;
-        if (this.formMode == FormMode.Editing) {
-            if (this.iconType == 'icon') {
-                this.iconType = 'image'
+        if (this.formMode === FormMode.Editing) {
+            if (this.iconType === 'icon') {
+				this.iconType = 'image';
                 this.selection.Icon = null;
             } else {
                 this.iconType = 'icon';
@@ -320,9 +318,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
                 this.selection.IconPayload = null;
                 this.iconImage = new CompanyImage();
             }
-        } else if (this.formMode == FormMode.Adding) {
-            if (this.iconType == 'icon') {
-                this.iconType = 'image'
+        } else if (this.formMode === FormMode.Adding) {
+            if (this.iconType === 'icon') {
+				this.iconType = 'image';
                 this.folderModel.Icon = null;
             } else {
                 this.iconType = 'icon';
@@ -345,24 +343,26 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
     }
 
     checkIfImg(value: string) {
-        if (value && value.indexOf('/Content') != -1) {
-            return true;
-        }
-        else
-            return false;
+		if (value && value.indexOf('/Content') !== -1) {
+			return true;
+		}
+		else {
+			return false;
+		}
     }
 
-    onFileChange(event): void {
-        if (this.iconImage == null)
-            this.iconImage = new CompanyImage();
+	onFileChange(event): void {
+		if (this.iconImage == null) { 
+			this.iconImage = new CompanyImage();
+		}
 
         if (event == null) {
             this.iconImage.file = null;
             this.iconImage.setDataUrl();
 
-            if (this.formMode == FormMode.Editing) {
+            if (this.formMode === FormMode.Editing) {
                 this.selection.IconPayload = null;
-            } else if (this.formMode == FormMode.Adding) {
+            } else if (this.formMode === FormMode.Adding) {
                 this.folderModel.IconPayload = null;
             }
 
@@ -395,14 +395,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
         if (this.selection == null || this.selection.ID == null) {
             return this.siteMenuService.getAvailableItems()
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.availableItems = r;
                     this.isLoading = false;
                 });
         } else {
 
             return this.siteMenuService.getAvailableItems()
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.availableItems = r;
                     this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
                         .subscribe(s => {
@@ -410,7 +410,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
                             this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
                             this.isLoading = false;
                             this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
-                                .subscribe(s => {
+                                .subscribe((s) => {
                                     this.folderItems = s;
                                     this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
                                     this.isLoading = false;
@@ -433,17 +433,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
     menuPermissionsOnModeChange($event) {
         this.permissionMode = $event;
         this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
-
     }
 
     addNewFolder(item: SiteNav) {
-        let x = this.availableItems.findIndex(i => i.ObjectID == item.ObjectID && i.Object == item.Object);
+        let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
         let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
         this.newFolderItems.push(i);
     }
 
     deleteNewFolder(item: SiteNav) {
-        let x = this.availableItems.findIndex(i => i.ObjectID == item.ObjectID && i.Object == item.Object);
+        let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
         let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
         this.availableItems.push(i);
     }

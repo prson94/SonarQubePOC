@@ -1,4 +1,4 @@
-import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation } from '@angular/core';
+import { Input, Component, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetDefinitionViewModel } from '../../../models/metrics.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -31,7 +31,9 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
     labelMatchAll = $localize`Match all conditions`;
     labelMatchAny = $localize`Match any condition`;
 
-    addButtonLabel = $localize`Add condition group`;
+    addButtonLabel = $localize`Add condition group`;    
+    
+    @ViewChild('form', { static: false }) formElement: ElementRef;
 
     constructor(protected metricsService: MetricsService,
         protected messagesService: MessagesObservableService,

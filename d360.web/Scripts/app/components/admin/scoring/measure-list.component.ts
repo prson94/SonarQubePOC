@@ -72,6 +72,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     titleVersionHistory = $localize`Version History`;
     titleRecalculateMeasure = $localize`Recalculate Measure`;
 
+    createMeasureFormFeedbackPortalName = 'create-measure-form-feedback';
+    editMeasureFormFeedbackPortalName = 'edit-measure-form-feedback';
+
     todayAndEffectiveDateAreSame(item: MetricAssetViewModel): boolean {
         if (item) {
             let today = new Date();

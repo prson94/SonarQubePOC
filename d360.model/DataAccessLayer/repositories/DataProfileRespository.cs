@@ -99,7 +99,8 @@ namespace d360.model.DataAccessLayer
 					if (!includeChildAssets)
 					{
 						List<AssetDataProfileSample> dataProfileSamples = CompanyContext.AssetDataProfileSample.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
-						results.items = new List<DataProfileModel> { new DataProfileModel(assetUid, dataprofile, dataProfileSamples) };
+						List<AssetDataProfileSampleJson> dataProfileDetails = CompanyContext.AssetDataProfileSampleJson.Where(x => x.AssetDataProfileID == dataprofile.ID).ToList();
+						results.items = new List<DataProfileModel> { new DataProfileModel(assetUid, dataprofile, dataProfileSamples, dataProfileDetails) };
 
 						if (includeTotal)
 						{
@@ -957,6 +958,8 @@ namespace d360.model.DataAccessLayer
 								{(includeSamples ? ",JSON_QUERY(characterSpacingStatistics.[value]) as characterSpacingStatistics" : "")}
 								{(includeSamples ? ",JSON_QUERY(specialCharacterStatistics.[value]) as specialCharacterStatistics" : "")}
 								{(includeSamples ? ",JSON_QUERY(percentileStatistics.[value]) as percentileStatistics" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(textStatistics.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as textPatternDetail" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(semanticStatistics.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as semanticAnalysisDetail" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
 								,ADP.TotalCount
@@ -1090,7 +1093,32 @@ namespace d360.model.DataAccessLayer
 																lower(SampleType) = 'topk'
 															for json path
 															) as [value]
-													) topK "
+													) topK 
+								outer apply (
+								
+													select  (
+															select json_query([value]) as [value]
+															from AssetDataProfileSampleJson
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'textPatternDetail'
+															for json path
+															) as [value]
+								) as textPatternDetail
+								outer apply (
+								
+													select  (
+															select json_query([value]) as [value]
+															from AssetDataProfileSampleJson
+															where
+																AssetDataProfileId = ADP.ID
+																and
+																lower(SampleType) = 'semanticAnalysisDetail'
+															for json path
+															) as [value]
+								) as semanticAnalysisDetail
+"
 					: "")}";
 		}
 

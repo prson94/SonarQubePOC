@@ -190,6 +190,7 @@ namespace d360.model
 		public DbSet<AssetDataProfile> AssetDataProfile { get; set; }
 		
 		public DbSet<AssetDataProfileSample> AssetDataProfileSample { get; set; }
+		public DbSet<AssetDataProfileSampleJson> AssetDataProfileSampleJson { get; set; }
 
 		#endregion
 

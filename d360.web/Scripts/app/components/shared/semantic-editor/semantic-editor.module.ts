@@ -15,6 +15,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { CodeAreaModule } from '../controls/codearea/codearea.component';
 import { TooltipModule } from 'primeng/tooltip';
 import { PropertyGroupModule } from "../controls/property-group/property-group.component";
+import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-feedback-badges.component';
 
 @NgModule({
     imports: [
@@ -33,7 +34,8 @@ import { PropertyGroupModule } from "../controls/property-group/property-group.c
         MultiSelectModule,
         CodeAreaModule,
         TooltipModule,
-        PropertyGroupModule
+        PropertyGroupModule,
+        FormFeedbackBadgesModule
     ],
     declarations: [        
         SemanticEditorComponent

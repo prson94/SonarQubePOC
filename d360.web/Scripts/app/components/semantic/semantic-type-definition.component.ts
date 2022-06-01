@@ -110,7 +110,8 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
             var breadCrumbsSub = this.headerBreadcrumbService.getFolderIcon(res).subscribe((icon) => {
                 this.secondaryNavService.clearItems();
                 this.secondaryNavService.clearCurrentObject();
-                this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`);
+                let disabledBadge = this.isDisabled() ? "[{\"name\":\"Disabled\", \"color\":\"#D7D8DC\"}]" : "";
+                this.secondaryNavService.setCurrentArea(this.semanticType.name, icon, $localize`Definition`, [disabledBadge]);
                 let assetstab = new SecondaryNavItem($localize`Assets`, null, null, `${SiteUrlHelpers.SITE_URL_SEMANTICTYPES_ROOT}/${this.semanticType.uid}/assets`, this.semanticAssetsCount, 2);
 
                 this.secondaryNavService.showItem(assetstab);
@@ -134,5 +135,9 @@ export class SemanticDefinitionComponent extends SemanticBaseComponent implement
         this.headerActionsService.emitFavoritesChange();    
         this.getData(this.semanticType.uid);
         this.showEditor = false;
+    }
+
+    isDisabled() {
+        return new Date(this.semanticType.effectiveDate ) < new Date(this.semanticType.updatedOn);
     }
 }

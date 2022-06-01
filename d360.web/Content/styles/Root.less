@@ -131,11 +131,11 @@ fieldset legend {
     padding: 5px;
     border-radius: 5px;
     box-sizing: border-box;
-    background-color: @ig-purple-t1;
+    background-color: var(--primaryButtonBackColor);
     height: 32px;
     border: none;
     outline: none;
-    color: white;
+    color: var(--calculatedPrimaryButtonTextColor);
 
     &[type="submit"], &[type="button"] {
       border: none;
@@ -150,9 +150,9 @@ fieldset legend {
   }
 
   #loginButton {
-    color: white;
+    color: var(--calculatedPrimaryButtonTextColor);
     border: none;
-    background-color: @ig-purple-t1;
+    background-color: var(--primaryButtonBackColor);
     font-weight: bold;
   }
 }

@@ -52,7 +52,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	permissionMode: FormMode = FormMode.Default;
 
 	showFolderModalDialog: boolean = false;
-	addAssetTypeHelpLink: string = '';
+	showAssetTypeModelDialog: boolean = false;
 
 	constructor(
 		headerBreadcrumbService: HeaderBreadcrumbService,
@@ -65,8 +65,6 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		private assetTypeService: AssetTypeService
 	) {
 		super(headerBreadcrumbService, titleService, settingsService);
-		let helpBaseUri: string = this.settingsService.getAppSetting(AppSettingsEnum.HelpBaseUri);
-		this.addAssetTypeHelpLink = helpBaseUri + "Default.htm#d-admin/establishing-responsibilities.htm?TocPath=Administration%257CManaging%2520users%2520and%2520groups%257C_____3";
 	}
 
 	ngOnInit() {
@@ -523,12 +521,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				menuOptions.push({ title: $localize`Delete` });
 			}
 
-			if (this.companySettings.SiteNav[0].ID != folder.ID) {
+			if (this.companySettings.SiteNav[0].ID !== folder.ID) {
 				menuOptions.push({ title: $localize`Move To Top` });
 				menuOptions.push({ title: $localize`Move Up` });
 			}
 
-			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
+			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID !== folder.ID) {
 				menuOptions.push({ title: $localize`Move Down` });
 				menuOptions.push({ title: $localize`Move To Bottom` });
 			}
@@ -554,50 +552,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		}
 	}
 
-	showAddAssetType: boolean = false;
-	areAssetTypesLoading: boolean = false;
-	selectedAssetType: any;
-	assetTypes: any[] = [];
-	addAssetTypeFolderSaving: boolean = false;
-	addAssetType() {
-		this.showAddAssetType = true;
-		this.areAssetTypesLoading = true;
-		this.assetTypeService.GetPossibleAssetTypeForSiteNav()
-			.subscribe((res) => {
-				this.assetTypes = res;
-				this.areAssetTypesLoading = false;
-			});
-	}
-
-	closeAddAssetType() {
-		this.selectedAssetType = null;
-		this.assetTypes = [];
-		this.showAddAssetType = false;
-	}
-
-	addAssetTypeFolder() {
-		if (!this.selectedAssetType) {
-			return;
-		}
-		this.addAssetTypeFolderSaving = true;
-		let nav = new SiteNav();
-		nav.Name = "#ASSET_TYPE";
-		nav.Object = this.selectedAssetType.Object;
-		nav.ObjectID = this.selectedAssetType.ObjectID;
-		var model = {
-			folder: nav
-		};
-
-		this.siteMenuService.addFolder(model)
-			.subscribe(r => {
-				this.showMessageForResult(this.messagesService, r);
-				this.stateService.reloadLeftNavMenu();
-				this.onSaveComplete.emit();
-				this.siteMenuService.setSiteNavPermissions(this.selection)
-				this.loadFolderItems();
-				this.addAssetTypeFolderSaving = false;
-				this.closeAddAssetType();
-				this.loadNavItems(model);
-			})
+	onAssetTypeNavAdded(model) {
+		this.stateService.reloadLeftNavMenu();
+		this.onSaveComplete.emit();
+		this.siteMenuService.setSiteNavPermissions(this.selection)
+		this.loadFolderItems();
+		this.showAssetTypeModelDialog = false;
+		this.loadNavItems(model);
 	}
 }

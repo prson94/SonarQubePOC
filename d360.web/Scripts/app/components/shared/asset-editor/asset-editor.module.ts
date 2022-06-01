@@ -40,6 +40,7 @@ import { SearchFieldModule } from '../controls/search-field/search-field.compone
 import { AssetEditorComponent } from './asset-editor.component';
 import { AssetEditorFieldComponent } from './asset-editor-field.component';
 import { DynamicFieldNameModule } from '../dynamic-field-name.component';
+import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-feedback-badges.component';
 
 @NgModule({
     imports: [
@@ -66,6 +67,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
         MultiSelectModule,
         SearchFieldModule,
         DynamicFieldNameModule,
+        FormFeedbackBadgesModule,
         
         //prime        
         CalendarModule,

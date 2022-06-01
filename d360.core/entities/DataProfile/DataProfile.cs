@@ -117,7 +117,7 @@ namespace d360.core.entities
 
         [ForeignKey("AssetDataProfileID"), IgnoreDataMember]
         public virtual ICollection<AssetDataProfileSample> AssetDataProfileSamples { get; set; }
-    }
+	}
 
     [DataContract(Namespace = NAMESPACE), Table("AssetDataProfileSample", Schema = "dbo")]
     public class AssetDataProfileSample : BaseLongObject
@@ -283,7 +283,13 @@ namespace d360.core.entities
         [ValidateSample(200)]
         public List<DataProfileSampleDetail> percentileStatistics { get; set; }
 
-        [DataMember(Name = "totalCount")]
+		[DataMember]
+		public List<DataProfileTextPatternDetail> textPatternDetail { get; set; }
+
+		[DataMember]
+		public List<DataProfileSemanticAnalysisDetail> semanticAnalysisDetail { get; set; }
+
+		[DataMember(Name = "totalCount")]
         public long? TotalCount { get; set; }
 
         [DataMember(Name = "outlierCount")]
@@ -308,7 +314,7 @@ namespace d360.core.entities
 
         public DataProfileModel() { }
 
-        public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples)
+        public DataProfileModel(Guid uid, AssetDataProfile profile, List<AssetDataProfileSample> samples, List<AssetDataProfileSampleJson> details)
         {
             assetUid = uid;
             profileIdentifier = profile.ProfileIdentifier;
@@ -356,8 +362,8 @@ namespace d360.core.entities
 
                 return results.Any() ? results : null;
             };
-            
-            shapesDetail = getSamplesByType("shapesdetail");
+
+			shapesDetail = getSamplesByType("shapesdetail");
             cardinalityDetail = getSamplesByType("cardinalityDetail");
             outlierDetail = getSamplesByType("outlierDetail");
             scriptDistributionStatistics = getSamplesByType("scriptDistributionStatistics");
@@ -370,7 +376,10 @@ namespace d360.core.entities
             topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
             bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
 
-            if (topK.Count == 0)
+			textPatternDetail = details?.Where(d => d.SampleType.Equals("textPatternDetail", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileTextPatternDetail>(d.Value))?.ToList() ?? null;
+			semanticAnalysisDetail = details?.Where(d => d.SampleType.Equals("semanticAnalysisDetail", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileSemanticAnalysisDetail>(d.Value))?.ToList() ?? null;
+
+			if (topK.Count == 0)
             {
                 topK = null;
             }
@@ -379,6 +388,9 @@ namespace d360.core.entities
             {
                 bottomK = null;
             }
+
+
+
         }
     }
 
@@ -394,6 +406,33 @@ namespace d360.core.entities
 
         public int count { get; set; }
     }
+
+	public class AssetDataProfileSampleJson
+	{
+		public long Id { get; set; }
+		public long AssetDataProfileID {get; set;}
+		public string Value { get; set; }
+		public string SampleType { get; set; }
+	}
+
+	public class DataProfileTextPatternDetail
+	{
+		public string groupPattern { get; set; }
+		public string groupRegex { get; set; }
+		public dynamic patterns { get; set; }
+	}
+
+	public class DataProfileSemanticAnalysisDetail
+	{
+		public int count { get; set; }
+		public int invalid { get; set; }
+		public string semanticType { get; set; }
+		public string displayName { get; set; }
+		public List<DataProfileSampleDetail> frequencyDetails { get; set; }
+		public List<DataProfileSampleDetail> phoneCountryFrequency { get; set; }
+		public List<DataProfileSampleDetail> phoneTypeFrequency { get; set; }
+		public List<DataProfileSampleDetail> phoneRegionFrequency { get; set; }
+	}
 
     public class AssetDataProfilesApiViewModel : PagedApiBaseViewModel
     {

@@ -28,6 +28,8 @@ import { SharedDeleteFormModule } from '../shared/delete.form';
 
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { SemanticEditorModule } from '../shared/semantic-editor/semantic-editor.module';
+import { CheckboxModule } from 'primeng/checkbox';
+import { IgBadgeModule } from '../shared/controls/badge/badge.module';
 
 @NgModule({
     imports: [
@@ -50,7 +52,9 @@ import { SemanticEditorModule } from '../shared/semantic-editor/semantic-editor.
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SiteModalModule,
-        SemanticEditorModule
+        SemanticEditorModule,
+        CheckboxModule,
+        IgBadgeModule
     ],
     declarations: [
         SemanticsComponent,
