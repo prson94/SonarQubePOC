@@ -69,6 +69,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "igx.functions.consumption",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "d360.utils.excel", "d360.utils.excel\d360.utils.excel.csproj", "{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.ThemeMigration", "utilities\igx.ThemeMigration\igx.ThemeMigration.csproj", "{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,10 @@ Global
 		{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82FAA62E-0A4F-4D1A-BA72-6689705A59A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +204,7 @@ Global
 		{11E0BC56-6F38-42EB-AF5C-6FA9968BA0FA} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 		{E847AC05-71C8-4D30-AAC6-C88B56C45A5D} = {27F0D451-FD9F-4E23-AFCF-F2CE94522A50}
 		{82FAA62E-0A4F-4D1A-BA72-6689705A59A0} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
+		{2D8D0F71-4DAD-4919-8EF8-2A80CE73F602} = {E08213BF-83D1-4263-8F7B-ED4EFAC6BA58}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
