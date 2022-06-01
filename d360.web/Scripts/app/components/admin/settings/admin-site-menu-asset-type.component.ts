@@ -86,10 +86,10 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		};
 
 		this.siteMenuService.addFolder(model)
-			.subscribe(r => {
+			.subscribe((r) => {
 				this.showMessageForResult(this.messagesService, r);
 				this.closeAddAssetType();
 				this.onSave.emit(model);
-			})
+			});
 	}
 }

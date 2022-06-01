@@ -531,7 +531,7 @@ namespace d360.web.Controllers
 				{
 					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
 				}
-				var allItems = Company.SiteNav.ToList();
+				
 				siteNav.SortOrder = 1;
                 foreach (var item in Company.SiteNav.Where(x => x.ID != siteNav.ID))
                 {

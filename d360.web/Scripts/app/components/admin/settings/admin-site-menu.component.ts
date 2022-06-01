@@ -521,12 +521,12 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				menuOptions.push({ title: $localize`Delete` });
 			}
 
-			if (this.companySettings.SiteNav[0].ID != folder.ID) {
+			if (this.companySettings.SiteNav[0].ID !== folder.ID) {
 				menuOptions.push({ title: $localize`Move To Top` });
 				menuOptions.push({ title: $localize`Move Up` });
 			}
 
-			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID != folder.ID) {
+			if (this.companySettings.SiteNav[this.companySettings.SiteNav.length - 1].ID !== folder.ID) {
 				menuOptions.push({ title: $localize`Move Down` });
 				menuOptions.push({ title: $localize`Move To Bottom` });
 			}
