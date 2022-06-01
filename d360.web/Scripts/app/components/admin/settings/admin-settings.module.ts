@@ -31,7 +31,6 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
-import { TooltipModule } from "primeng/tooltip";
 import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
 import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";

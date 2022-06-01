@@ -1,11 +1,13 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div [ngSwitch]="formMode" *ngIf="!isLoading" class="admin-site-menu">
     <div *ngSwitchDefault>
-        <header>
-            Site Navigation
-            <button igButton type="button" label="Add Folder" (click)="addFolderDialog()" style="float: right;"></button>
-            <button igButton type="button" label="Add Asset Type" (click)="add()" style="float: right; margin-right: 8px;"></button>
-        </header>
+        <div class="grid-header">
+            <h2 i18n>Site Navigation</h2>
+            <div class="flex-grow"></div>
+            <button igButton (click)="addFolderDialog()" i18n-label i18n-pTooltip label="Add Folder" pTooltip="Add Folder" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+            <div class="spacer"></div>
+            <button igButton (click)="addAssetType()" i18n-label i18n-pTooltip label="Add Asset Type" pTooltip="Add Asset Type" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></button>
+        </div>
         <p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection"
                  [scrollable]="true" scrollHeight="420px">
             <ng-template pTemplate="header">
