@@ -16,7 +16,7 @@ using System.Data.SqlClient;
 
 namespace ThemeMigration
 {
-	class Program
+	static class Program
 	{
 		const string THEME_NAME = "Custom Theme";
 		const string PRECISELY_THEME_UID = "AAAAAAAA-0000-0000-0000-000000000001";
@@ -50,20 +50,26 @@ namespace ThemeMigration
 
 					if (items.Count > 0)
 					{
+
+
+#if DEBUG
+						var uid = new Guid();
+						if(x.CompanyID == 6){
+							uid = createCustomTheme(preciselyTheme, cnn);
+						}												
+#else
 						var uid = createCustomTheme(preciselyTheme, cnn);
-						
-						#if isDEBUG
-						if(uid == Guid.Empty || x.CompanyID != 6)
+#endif
+						if (uid == Guid.Empty)
 						{
 							Console.WriteLine($"\tTheme 'Custom Theme' already exist.");
 							return;
 						}
-						#endif
 
 						var themeContainer = serviceClient.GetBlobContainerClient("themes");
 						themeContainer.CreateIfNotExistsAsync();
 
-						#if isDEBUG
+						#if DEBUG
 						if (x.CompanyID == 6)
 						{
 							themeContainer.GetBlobs();
@@ -85,56 +91,57 @@ namespace ThemeMigration
 
 							Stream downloadStream = null;
 							var sourceFileName = s.Value.Split('/').Last();
+							
+							var fileSuffix = "";
 
-							if (Setting.CustomCSSLocation == (Setting)s.ID)
+							switch ((Setting)s.ID)
 							{
-								downloadStream = getDownloadStream(sourceFileName, cssContainer);
-
-								if (downloadStream != null)
+								case Setting.CompanyLogo:
+									fileSuffix = "logo";
+									downloadStream = getDownloadStream(sourceFileName, logoContainer);
+									break;
+								case Setting.CompanyIcon:
+									fileSuffix = "icon";
+									downloadStream = getDownloadStream(sourceFileName, iconContainer);
+									break;
+								case Setting.HomePageBackgroundImage:
+									fileSuffix = "background";
+									downloadStream = getDownloadStream(sourceFileName, backgroundContainer);
+									break;
+								case Setting.CustomCSSLocation:
+									downloadStream = getDownloadStream(sourceFileName, cssContainer);
+									break;
+								default:
+									return;
+							}
+								
+							if (downloadStream != null)
+							{
+								if (Setting.CustomCSSLocation == (Setting)s.ID)
 								{
-								#if isDebug
-									if (x.CompanyID == 6)
+									downloadStream = getDownloadStream(sourceFileName, cssContainer);
+
+									if (downloadStream != null)
 									{
+									#if DEBUG
+										if (x.CompanyID == 6)
+										{
+											updateThemeCSS(downloadStream, cnn, uid);
+										}		
+									#else
 										updateThemeCSS(downloadStream, cnn, uid);
-									}		
-								#else
-									updateThemeCSS(downloadStream, cnn, uid);
-								#endif
+									#endif
+									}
 								}
-							}
-							else
-							{
-								var fileSuffix = "";
+								else
+								{									
+									var extension = $".{sourceFileName.Split('.').Last()}";
 
-								var extension = $".{sourceFileName.Split('.').Last()}";
+									var fileName = $"{uid}_{fileSuffix}{extension}";
 
-								switch ((Setting)s.ID)
-								{
-									case Setting.CompanyLogo:
-										fileSuffix = "logo";
-										downloadStream = getDownloadStream(sourceFileName, logoContainer);
-										break;
-									case Setting.CompanyIcon:
-										fileSuffix = "icon";
-										downloadStream = getDownloadStream(sourceFileName, iconContainer);
-										break;
-									case Setting.HomePageBackgroundImage:
-										fileSuffix = "background";
-										downloadStream = getDownloadStream(sourceFileName, backgroundContainer);
-										break;
-									default:
-										return;
-								}
-
-								var fileName = $"{uid}_{fileSuffix}{extension}";
-
-								if (downloadStream != null)
-								{
 									copyToThemeFolder(downloadStream, themeContainer, x.CompanyID, fileName);
-								}
+								}									
 							}
-
-
 						});
 
 						//only change the theme if the precisesly theme is current.
@@ -208,10 +215,15 @@ namespace ThemeMigration
 			if (!blobClient.Exists())
 			{
 				Console.WriteLine("\t - Writing file {0}.\n", fileName);
+
+			#if DEBUG
 				if (companyID == 6)
 				{
 					blobClient.UploadAsync(content, true);
 				}
+			#else
+				blobClient.UploadAsync(content, true);
+			#endif
 			}
 			else
 			{
