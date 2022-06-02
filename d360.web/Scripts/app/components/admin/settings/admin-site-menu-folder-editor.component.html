@@ -170,6 +170,7 @@
 									<p-table #dt4 [value]="newFolderItems"
 											 [globalFilterFields]="['Title']"
 											 selectionMode="multiple"
+											 [(selection)]="selectedNewFolderItems"
 											 [metaKeySelection]="true"
 											 [paginator]="true"
 											 paginatorDropdownAppendTo="body"

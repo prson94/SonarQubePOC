@@ -62,6 +62,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	isInError: boolean = false;
 	newFolderItems: SiteNav[] = [];
 	selectedFolderItems: SiteNav[] = [];
+	selectedNewFolderItems: SiteNav[] = [];
 	folderModel: SiteNav;
 	selection: SiteNav = null;
 	folderForm: FormGroup;
@@ -115,6 +116,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.selection = null;
 		this.newFolderItems = new Array<SiteNav>();
 		this.selectedFolderItems = new Array<SiteNav>();
+		this.selectedNewFolderItems = new Array<SiteNav>();
 		this.loadFolderItems();
 
 		this.folderForm = this.formBuilder.group({
@@ -428,7 +430,15 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
-	removeFromSelectedFolderItems(items: SiteNav[]) {
+	removeFromSelectedFolderItems() {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+				this.availableItems.push(i);
+			}
+			this.selectedNewFolderItems = new Array<SiteNav>();
+		}
 	}
 
 	moveToTop(items: SiteNav[]) {
