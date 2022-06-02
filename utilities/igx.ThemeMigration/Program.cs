@@ -20,6 +20,7 @@ namespace ThemeMigration
 	{
 		const string THEME_NAME = "Custom Theme";
 		const string PRECISELY_THEME_UID = "AAAAAAAA-0000-0000-0000-000000000001";
+		const int DEBUG_COMPANY_ID = 6;
 		static void Main(string[] args)
 		{
 			migrateTheme();
@@ -54,7 +55,8 @@ namespace ThemeMigration
 
 #if DEBUG
 						var uid = new Guid();
-						if(x.CompanyID == 6){
+						if(x.CompanyID == DEBUG_COMPANY_ID)
+						{
 							uid = createCustomTheme(preciselyTheme, cnn);
 						}												
 #else
@@ -70,7 +72,7 @@ namespace ThemeMigration
 						themeContainer.CreateIfNotExistsAsync();
 
 						#if DEBUG
-						if (x.CompanyID == 6)
+						if (x.CompanyID == DEBUG_COMPANY_ID)
 						{
 							themeContainer.GetBlobs();
 							var list = themeContainer.GetBlobs(prefix: $"{x.CompanyID}").ToList();
@@ -124,7 +126,7 @@ namespace ThemeMigration
 									if (downloadStream != null)
 									{
 									#if DEBUG
-										if (x.CompanyID == 6)
+										if (x.CompanyID == DEBUG_COMPANY_ID)
 										{
 											updateThemeCSS(downloadStream, cnn, uid);
 										}		
@@ -217,7 +219,7 @@ namespace ThemeMigration
 				Console.WriteLine("\t - Writing file {0}.\n", fileName);
 
 			#if DEBUG
-				if (companyID == 6)
+				if (companyID == DEBUG_COMPANY_ID)
 				{
 					blobClient.UploadAsync(content, true);
 				}
