@@ -89,6 +89,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	simpleTextFilterPermissionAssets: string = '';
 	isPermissionAssetTableLoading: boolean = false;
 	higlightedItem: any;
+	previewAssetUid: any;
+	previewAssetType: any;
 
 	private iconImage: CompanyImage = new CompanyImage();
 

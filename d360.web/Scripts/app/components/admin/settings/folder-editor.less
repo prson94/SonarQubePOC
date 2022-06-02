@@ -1,14 +1,45 @@
 ﻿@import "../../../../../Content/styles/infogix-ui/infogix-ui.less";
 @import '../../../../../Content/styles/_Variables.less';
 
+.flex-modal {
+  display: flex;
+
+  .flex-side-panel {
+    display: block;
+    width: 400px;
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    .asset-detail-user-image {
+      position: relative;
+
+      img {
+        border-radius: 50%;
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+    }
+  }
+}
+
 .add-folder-form {
   padding: 24px;
+  width: 100%;
+
+  &.opened-side-panel {
+    width: calc(100% - 400px);
+  }
 
   .folder-flex-grid {
     display: flex;
 
     .buttons-grid {
-      padding: 0px 48px;
+      padding: 0px 32px;
     }
 
     .table-content {

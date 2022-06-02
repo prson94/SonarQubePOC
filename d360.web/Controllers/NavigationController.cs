@@ -750,12 +750,13 @@ namespace d360.web.Controllers
             }
 
             var querySql = $@"
-					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
+					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type], uid from
 						(
-							select '{CommonNames.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{CommonNames.AssetTypeClass_Group}' as [Type] from [Group] g
+							select '{CommonNames.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{CommonNames.AssetTypeClass_Group}' as [Type], a.uid from [Group] g
+							inner join asset a on a.object ='Group' and a.objectid = g.id
 							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
 							union all
-							select '{CommonNames.AssetTypeClass_User}: ' + r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'{CommonNames.AssetTypeClass_User}' as 'Type' from reporting.Global_Resource r
+							select '{CommonNames.AssetTypeClass_User}: ' + r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'{CommonNames.AssetTypeClass_User}' as 'Type', r.uid from reporting.Global_Resource r
 							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
 							+ hideUsersSql +
                         ") as Sub";
