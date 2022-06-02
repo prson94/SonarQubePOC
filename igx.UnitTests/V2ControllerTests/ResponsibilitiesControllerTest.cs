@@ -3,6 +3,7 @@ using d360.web.Controllers.V2;
 using igx.UnitTests.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ using AutoFixture.Xunit2;
 using d360.model.DataAccessLayer;
 using d360.web.Services;
 using FluentAssertions;
-using igx.UnitTests.ServicesTests;
 using Moq;
 using Xunit;
 
@@ -33,7 +33,7 @@ namespace igx.UnitTests.V2ControllerTests
 			mockResourceRepository = new Mock<IResourceRepository>();
 			mockAssetService = new Mock<IAssetService>();
 
-			responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetAssetRepository(), GetMediator(), mockResponsibilityRepository.Object, mockResourceRepository.Object, mockAssetService.Object)
+			responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetAssetRepository(), mockResponsibilityRepository.Object, mockResourceRepository.Object, mockAssetService.Object)
 			{
 				Request = new HttpRequestMessage(),
 				Configuration = new HttpConfiguration()
@@ -191,7 +191,7 @@ namespace igx.UnitTests.V2ControllerTests
 			{
 				// assign
 				Guid? typeUid = null;
-				var businessLayerResponse = AutoFixtureHelpers.CreateClassWithRecursiveData<ICollection<ResponsibilityBreakdownResponse>>();
+				var businessLayerResponse = Fixture.Create<ICollection<ResponsibilityBreakdownResponse>>();
 
 				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
 
@@ -346,6 +346,96 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
 		#endregion GetResponsibilityTypeBreakdownByResource
+
+		#region DeleteResponsibilityRules
+
+		public class DeleteResponsibilityRules : ResponsibilitiesControllerTestBase
+		{
+			#region Arrange "Happy Path"
+			private IReadOnlyList<Guid> RulesForDeletion;
+			private IReadOnlyList<ResponsibilityRuleDeleteModel> ResponsibilityRulesDeletes;
+			private Guid ResponsibilityTypeUid;
+			private ResponsibilityType ResponsibilityType;
+			private ICollection<ResponsibilityRuleDeleteResponse> ExpectedResult;
+
+			public DeleteResponsibilityRules()
+			{
+				// first of all we arrange happy path for tested method
+				ResponsibilityTypeUid = Fixture.Create<Guid>();
+				ResponsibilityRulesDeletes = Fixture.CreateEnumerable<ResponsibilityRuleDeleteModel>().ToArray();
+				RulesForDeletion = ResponsibilityRulesDeletes.Select(x => x.Uid).ToArray();
+				ResponsibilityType = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ReturnsNewValue();
+				ExpectedResult = mockResponsibilityRepository.Setup(x => x.DeleteResponsibilityRulesAsync(ResponsibilityTypeUid, RulesForDeletion)).ReturnsNewValueAsync();
+				// and in each test we only slightly change behavior of used services to check if method process it properly
+			}
+			#endregion Arrange "Happy Path"
+
+			#region Ok
+
+			[Fact]
+			public async Task Ok_Test()
+			{
+				// arrange
+
+				// act
+				var actualResponse = await responsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
+
+				// assert
+				var content = actualResponse.ShouldBeOKContent<ICollection<ResponsibilityRuleDeleteResponse>>();
+				content.Should().BeEquivalentTo(ExpectedResult);
+			}
+
+			#endregion Happy Path
+
+			#region NotFound
+
+			[Fact]
+			public async Task NotFound_Test()
+			{
+				// arrange
+				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ReturnsDefault();
+
+				// act
+				var act = responsibilitiesController.Invoking(x => x.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes));
+
+				// assert
+				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
+			}
+
+			#endregion NotFound
+
+			#region Rethrow
+
+			[Fact]
+			public async Task Rethrow_ResponsibilityRepository_GetResponsibilityTypeByUID_Test()
+			{
+				// arrange
+				var testException = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ThrowsTestException();
+
+				// act
+				var act = responsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
+
+				// assert
+				await VerifyTestExceptionAsync(act, testException);
+			}
+
+			[Fact]
+			public async Task Rethrow_ResponsibilityRepository_DeleteResponsibilityRulesAsync_Test()
+			{
+				// arrange
+				var testException = mockResponsibilityRepository.Setup(x => x.DeleteResponsibilityRulesAsync(ResponsibilityTypeUid, RulesForDeletion)).ThrowsTestException();
+
+				// act
+				var act = responsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
+
+				// assert
+				await VerifyTestExceptionAsync(act, testException);
+			}
+
+			#endregion Rethrow
+		}
+
+		#endregion DeleteResponsibilityRules
 	}
 
 }
