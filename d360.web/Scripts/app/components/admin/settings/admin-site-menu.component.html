@@ -277,11 +277,11 @@
 		   (onClose)="showFolderModalDialog=false"
 		   [showTitle]="false"
 		   [isVisible]="showFolderModalDialog">
-	<folder-editor *ngIf="showFolderModalDialog"
-				   [navigationFolder]="isAdd ? null : selectedFolder"
-				   (closeClick)="showFolderModalDialog=false"
-				   (saveClick)="saveNavigationFolder($event)">
-	</folder-editor>
+		<folder-editor *ngIf="showFolderModalDialog"
+					   [navigationFolder]="isAdd ? null : selectedFolder"
+					   (closeClick)="showFolderModalDialog=false"
+					   (saveClick)="saveNavigationFolder($event)">
+		</folder-editor>
 </d3s-modal>
 
 <d3s-modal additionalClasses="large-dialog"
