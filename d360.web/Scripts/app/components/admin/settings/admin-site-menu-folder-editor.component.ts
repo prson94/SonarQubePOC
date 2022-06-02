@@ -88,6 +88,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	permissionAssetsTotalCount: number;
 	_tempSelectedPermissionAssets: any[] = [];
 	_selectedPermissionAsset: any[] = [];
+	isAvailableFolderItemsTableLoading: boolean = false;
 	isPermissionAssetTableLoading: boolean = false;
 	higlightedItem: any;
 	previewAssetUid: any;
@@ -112,7 +113,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	ngOnInit(): void {
-		this.isLoading = true;
+		this.isAvailableFolderItemsTableLoading = true;
 		this.selection = null;
 		this.newFolderItems = new Array<SiteNav>();
 		this.selectedFolderItems = new Array<SiteNav>();
@@ -122,7 +123,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.folderForm = this.formBuilder.group({
 			name: ['', [Validators.required, this.isEmptyString()]]
 		});
-		this.populateTypeLists();
 		this.loadPermissionAssets();
 		setTimeout(() => {
 			this.folderForm.valueChanges.subscribe((change) => {
@@ -142,8 +142,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.folderModel = new SiteNav();
 		}
 		this.cdRef.markForCheck();
-
-		this.populateTypeLists();
 	}
 
 	populateModelFromDataProfile() {
@@ -165,7 +163,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 		this.clearInvalidFields();
 
-		this.isLoading = true;
+		this.isAvailableFolderItemsTableLoading = true;
 
 		switch (this.formMode) {
 			case FormMode.Editing:
@@ -175,7 +173,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						this.showMessageForResult(this.messagesService, result);
 						this.siteMenuService.setSiteNavPermissions(this.selection);
 						this.stateService.reloadLeftNavMenu();
-						this.isLoading = false;
+						this.isAvailableFolderItemsTableLoading = false;
 						this.formMode = FormMode.Default;
 					});
 				break;
@@ -191,7 +189,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
 						this.formMode = FormMode.Default;
-						this.isLoading = false;
+						this.isAvailableFolderItemsTableLoading = false;
 						this.stateService.reloadLeftNavMenu();
 						this.siteMenuService.setSiteNavPermissions(this.selection);
 						this.handleSaveComplete(result, addAnother);
@@ -220,10 +218,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 		}
 		this.cdRef.markForCheck();
-	}
-
-	populateTypeLists() {
-		this.isLoading = false;
 	}
 
 	isEmptyString(): ValidatorFn {
@@ -357,13 +351,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	loadFolderItems() {
-		this.isLoading = true;
+		this.isAvailableFolderItemsTableLoading = true;
 
 		if (this.selection == null || this.selection.ID == null) {
 			return this.siteMenuService.getAvailableItems()
 				.subscribe((r) => {
 					this.availableItems = r;
-					this.isLoading = false;
+					this.isAvailableFolderItemsTableLoading = false;
+					this.cdRef.markForCheck();
 				});
 		} else {
 
@@ -374,14 +369,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						.subscribe(s => {
 							this.folderItems = s;
 							this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
-							this.isLoading = false;
-							this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
-								.subscribe((s) => {
-									this.folderItems = s;
-									this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
-									this.isLoading = false;
-									this.stateService.reloadLeftNavMenu();
-								})
+							this.isAvailableFolderItemsTableLoading = false;
+							this.cdRef.markForCheck();
 						})
 				})
 		}
@@ -511,10 +500,24 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.cdRef.markForCheck();
 	}
 
+	selectAllAvailableFolderItems($event, table: Table) {
+		this.selectedFolderItems = [];
+		for (let i = 0; i < table.selection.length; i++) {
+			this.selectedFolderItems.push(this.availableItems.find((item) => item.ObjectID == table.selection[i].ObjectID));
+		}
+	}
+
+	selectAllSelectedFolderItems($event, table: Table) {
+		this.selectedNewFolderItems = [];
+		for (let i = 0; i < table.selection.length; i++) {
+			this.selectedNewFolderItems.push(this.newFolderItems.find((item) => item.ObjectID == table.selection[i].ObjectID));
+		}
+	}
+
 	headerSelectAll($event, table: Table) {
 		this._tempSelectedPermissionAssets = [];
-		for (let i = table.first; i < table.first + table.rows; i++) {
-			this._tempSelectedPermissionAssets.push(this.permissionAssets[i]);
+		for (let i = 0; i < table.selection.length; i++) {
+			this._tempSelectedPermissionAssets.push(this.permissionAssets.find((item) => item.uid == table.selection[i].uid));
 		}
 	}
 }

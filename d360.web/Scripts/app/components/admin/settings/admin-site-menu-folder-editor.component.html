@@ -80,10 +80,13 @@
 								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
 									<p-table #dt3
 											 [globalFilterFields]="['Title']"
+  											 [loading]="isAvailableFolderItemsTableLoading"
+											 [loadingIcon]="'fa fa-spinner fa-spin'"
 											 [value]="availableItems"
 											 [(selection)]="selectedFolderItems"
 											 selectionMode="multiple"
 											 [metaKeySelection]="true"
+  											 (onHeaderCheckboxToggle)="selectAllAvailableFolderItems($event, dt3)"
 											 [paginator]="true"
 											 paginatorDropdownAppendTo="body"
 											 [rows]="10"
@@ -91,22 +94,23 @@
 											 [scrollable]="true"
 											 scrollHeight="420px">
 										<ng-template pTemplate="header">
-											<tr>
+											<tr [pSelectableRow]="item">
+												<th style="max-width: 28px;">
+													<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+												</th>
 												<th>Available Folder Items</th>
 												<th></th>
 											</tr>
 										</ng-template>
 										<ng-template pTemplate="body" let-item>
 											<tr [pSelectableRow]="item">
-												<td>{{item.Title}}</td>
-												<td>
-													<div class="RowTools" style="height: initial;">
-														<a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-													</div>
+												<td style="max-width: 28px;">
+													<p-tableCheckbox [value]="item"></p-tableCheckbox>
 												</td>
+												<td>{{item.Title}}</td>
 											</tr>
 										</ng-template>
-										<ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
+										<ng-template pTemplate="summary">
 											<d3s-grid-paging-info [first]="dt3.first"
 																  [rows]="dt3.rows"
 																  [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
@@ -180,11 +184,13 @@
 										 i18n>{{selectedNewFolderItems.length}} item{{selectedNewFolderItems.length > 1 ? "s":""}} selected</div>
 								</div>
 								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
-									<p-table #dt4 [value]="newFolderItems"
+									<p-table #dt4 
+											 [value]="newFolderItems"
 											 [globalFilterFields]="['Title']"
 											 selectionMode="multiple"
 											 [(selection)]="selectedNewFolderItems"
 											 [metaKeySelection]="true"
+  											 (onHeaderCheckboxToggle)="selectAllSelectedFolderItems($event, dt4)"
 											 [paginator]="true"
 											 paginatorDropdownAppendTo="body"
 											 [rows]="10"
@@ -193,22 +199,22 @@
 											 scrollHeight="420px">
 										<ng-template pTemplate="header">
 											<tr>
+												<th style="max-width: 28px;">
+													<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+												</th>
 												<th>Selected Folder Items</th>
 												<th></th>
 											</tr>
-
 										</ng-template>
 										<ng-template pTemplate="body" let-item>
 											<tr [pSelectableRow]="item">
-												<td>{{item.Name}}</td>
-												<td>
-													<div class="RowTools" style="height: initial;">
-														<a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-													</div>
+												<td style="max-width: 28px;">
+													<p-tableCheckbox [value]="item"></p-tableCheckbox>
 												</td>
-											</tr>
+												<td>{{item.Title}}</td>
+											<tr>
 										</ng-template>
-										<ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
+										<ng-template pTemplate="summary">
 											<d3s-grid-paging-info [first]="dt4.first"
 																  [rows]="dt4.rows"
 																  [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
