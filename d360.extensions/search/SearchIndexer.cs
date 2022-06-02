@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace d360.extensions.search
             _messages = new List<string>();
         }
 
-		protected static readonly List<string> ExcludedFieldTypes = new List<string> {
+		public static readonly ReadOnlyCollection<string> ExcludedFieldTypes = new List<string> {
 			"DateTime",
 			"Color",
 			"FilteredLookup",
@@ -44,7 +45,7 @@ namespace d360.extensions.search
 			"FieldFromRelationship",
 			"RefListRelationship",
 			"JSON"
-		};
+		}.AsReadOnly();
 
         private static readonly List<string> allowedClassesAndObjectTypes = new List<string> {
                 SystemObjects.Artifact.ToString(),
