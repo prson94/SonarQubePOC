@@ -1,5 +1,4 @@
-﻿<div class="add-folder-form {{savingInProgress ? 'saving-in-progress' : ''}}"
-	 style="min-height: 820px; min-width:820">
+﻿<div class="add-folder-form {{savingInProgress ? 'saving-in-progress' : ''}}">
 	<div class="form-header">
 		<header>
 			Add Folder
@@ -61,8 +60,8 @@
 
 				<ig-property-group title="Folder Items" i18n-title [expanded]="false" [shouldBePadded]="false">
 					<div readonly>
-						<div class="row">
-							<div class="col s12 m5 l5">
+						<div class="folder-flex-grid">
+							<div class="table-content">
 								<ig-search-field class="search tooltip-full-width"
 												 mode="Keypress"
 												 i18n-placeholder
@@ -105,7 +104,7 @@
 									</p-table>
 								</div>
 							</div>
-							<div class="col s1 m1 l1 marginLeft">
+							<div class="buttons-grid">
 								<div style="height:100px"></div>
 								<div class="buttons-vertical">
 									<button igButton
@@ -153,7 +152,7 @@
 											tooltipStyleClass="ig-tooltip"></button>
 								</div>
 							</div>
-							<div class="col s12 m5 l5">
+							<div class="table-content">
 								<ig-search-field class="search tooltip-full-width"
 												 mode="Keypress"
 												 i18n-placeholder
@@ -201,22 +200,28 @@
 					</div>
 				</ig-property-group>
 
+				<ig-property-group title="Permissions" i18n-title [expanded]="false" [shouldBePadded]="false">
+					<div readonly>
+					  In progress
+					</div>
+				</ig-property-group>
 
-				<div class="action-bar" style="margin-top:16px;">
-					<button igButton
-							igAutoFocus
-							i18n-label
-							label="Cancel"
-							(click)="closeClick.emit();"></button>
-					<span class="grow"></span>
-					<button igButton
-							class="ig-button-primary"
-							i18n-label
-							label="Add Folder"
-							(click)="save()"
-							[disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
-				</div>
 			</div>
+		</div>
+
+		<div class="action-bar" style="margin-top:16px;">
+			<button igButton
+					igAutoFocus
+					i18n-label
+					label="Cancel"
+					(click)="closeClick.emit();"></button>
+			<span class="grow"></span>
+			<button igButton
+					class="ig-button-primary"
+					i18n-label
+					label="Add Folder"
+					(click)="save()"
+					[disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
 		</div>
 	</div>
 </div>
