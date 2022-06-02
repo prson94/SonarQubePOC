@@ -1558,84 +1558,84 @@ namespace d360.web.Controllers.V2
 			return Ok(result);
 		}
 
-        /// <summary>
-        /// Gets the breakdown of responsibilities
-        /// </summary>
-        /// <param name="responsibilityTypeUid">Responsibility Type UID</param>
-        /// <returns>An Array of responsibility type breakdowns.</returns>
-        [
-            HttpGet,
-            Route("breakdown"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(ICollection<ResponsibilityBreakdownResponse>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? responsibilityTypeUid = null)
-        {
-            ValidateParameters();
-            
-            if (responsibilityTypeUid != null)
-            {
-	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
-	            Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
-            }
+		/// <summary>
+		/// Gets the breakdown of responsibilities
+		/// </summary>
+		/// <param name="responsibilityTypeUid">Responsibility Type UID</param>
+		/// <returns>An Array of responsibility type breakdowns.</returns>
+		[
+			HttpGet,
+			Route("breakdown"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(ICollection<ResponsibilityBreakdownResponse>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? responsibilityTypeUid = null)
+		{
+			ValidateParameters();
 
-            var result = await ResponsibilityRepository.GetTypeBreakdownAsync(responsibilityTypeUid);
+			if (responsibilityTypeUid != null)
+			{
+				var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
+				Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
+			}
 
-            return Ok(result);
-        }
+			var result = await ResponsibilityRepository.GetTypeBreakdownAsync(responsibilityTypeUid);
 
-        /// <summary>
-        /// Gets the breakdown of responsibilities
-        /// </summary>
-        /// <param name="resourceUid">Resource UID</param>
-        /// <param name="responsibilityTypeUid">Responsibility Type UID</param>
-        /// <returns>An Array of responsibility type breakdowns.</returns>
-        [
-            HttpGet,
-            Route("breakdown/{resourceUid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(ICollection<ResponsibilityGetBreakdownByResourceModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdownByResource(Guid resourceUid, [FromUri] Guid? responsibilityTypeUid = null)
-        {
-            ValidateParameters();
+			return Ok(result);
+		}
 
-            var resource = await ResourceRepository.GetByUidAsync(resourceUid);
-            Condition.Require(resource, NotFoundBusinessLayerException.Create<GlobalReportingResource>);
+		/// <summary>
+		/// Gets the breakdown of responsibilities
+		/// </summary>
+		/// <param name="resourceUid">Resource UID</param>
+		/// <param name="responsibilityTypeUid">Responsibility Type UID</param>
+		/// <returns>An Array of responsibility type breakdowns.</returns>
+		[
+			HttpGet,
+			Route("breakdown/{resourceUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(ICollection<ResponsibilityGetBreakdownByResourceModel>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetResponsibilityTypeBreakdownByResource(Guid resourceUid, [FromUri] Guid? responsibilityTypeUid = null)
+		{
+			ValidateParameters();
 
-            if (responsibilityTypeUid != null)
-            {
-	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
-	            Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
-            }
+			var resource = await ResourceRepository.GetByUidAsync(resourceUid);
+			Condition.Require(resource, NotFoundBusinessLayerException.Create<GlobalReportingResource>);
 
-            var entities = await ResponsibilityRepository.GetTypeBreakdownByResourceAsync(resourceUid, responsibilityTypeUid);
+			if (responsibilityTypeUid != null)
+			{
+				var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
+				Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
+			}
 
-            ResponsibilityGetBreakdownByResourceModel Convert(ResponsibilityBreakdownByResourceAggregate aggregate)
-            {
-	            var model = new ResponsibilityGetBreakdownByResourceModel
-	            {
-		            Name = AssetService.GetAssetName(aggregate.AssetType),
-		            Class = aggregate.AssetType.Class.ToString(),
-		            AssetTypeUid = aggregate.AssetType.uid,
-		            AssetCount = aggregate.AssetCount
-	            };
+			var entities = await ResponsibilityRepository.GetTypeBreakdownByResourceAsync(resourceUid, responsibilityTypeUid);
 
-	            return model;
-            }
+			ResponsibilityGetBreakdownByResourceModel Convert(ResponsibilityBreakdownByResourceAggregate aggregate)
+			{
+				var model = new ResponsibilityGetBreakdownByResourceModel
+				{
+					Name = AssetService.GetAssetName(aggregate.AssetType),
+					Class = aggregate.AssetType.Class.ToString(),
+					AssetTypeUid = aggregate.AssetType.uid,
+					AssetCount = aggregate.AssetCount
+				};
 
-            ICollection<ResponsibilityGetBreakdownByResourceModel> result = entities.Select(Convert).ToList();
+				return model;
+			}
 
-            return Ok(result);
-        }
+			ICollection<ResponsibilityGetBreakdownByResourceModel> result = entities.Select(Convert).ToList();
+
+			return Ok(result);
+		}
 
         /// <summary>
         /// Test a responsibility rule definition to see which assets it will apply to.
