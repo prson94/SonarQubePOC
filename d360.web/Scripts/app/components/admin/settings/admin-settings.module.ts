@@ -38,6 +38,7 @@ import { SiteModalModule } from "../../shared/modal/gov-modal.module";
 import { TooltipModule } from 'primeng/tooltip';
 import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
 import { AdminSiteMenuAssetTypeEditorComponent } from './admin-site-menu-asset-type.component';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -75,7 +76,8 @@ import { AdminSiteMenuAssetTypeEditorComponent } from './admin-site-menu-asset-t
 		TooltipModule,
 		SiteModalModule,
 		TableModule,
-		SearchFieldModule
+		SearchFieldModule,
+		PropertyGroupModule
     ],
     declarations: [
         AdminSettingsComponent,
