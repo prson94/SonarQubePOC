@@ -50,16 +50,20 @@ namespace ThemeMigration
 
 					if (items.Count > 0)
 					{
-						var uid = new Guid();
-						if (x.CompanyID == 6)
-						{
-							uid = createCustomTheme(preciselyTheme, cnn);
-						}
+						var uid = createCustomTheme(preciselyTheme, cnn);
 						
+						#if isDEBUG
+						if(uid == Guid.Empty || x.CompanyID != 6)
+						{
+							Console.WriteLine($"\tTheme 'Custom Theme' already exist.");
+							return;
+						}
+						#endif
+
 						var themeContainer = serviceClient.GetBlobContainerClient("themes");
 						themeContainer.CreateIfNotExistsAsync();
 
-#if isDEBUG
+						#if isDEBUG
 						if (x.CompanyID == 6)
 						{
 							themeContainer.GetBlobs();
@@ -72,9 +76,7 @@ namespace ThemeMigration
 								blobClient.DeleteIfExists();
 							});
 						}
-#endif
-
-						BlobRequestConditions conditions = new BlobRequestConditions();
+						#endif
 
 						items.ForEach(s =>
 						{
@@ -90,13 +92,14 @@ namespace ThemeMigration
 
 								if (downloadStream != null)
 								{
-									var reader = new StreamReader(downloadStream);
-									var customCss = reader.ReadToEnd();
-									Console.WriteLine("\tUpdate themes CustomCss\n");
+								#if isDebug
 									if (x.CompanyID == 6)
 									{
-										cnn.Execute($"Update theme set [CustomCss] = @customCss where uid = @uid", new { customCss, uid });
-									}
+										updateThemeCSS(downloadStream, cnn, uid);
+									}		
+								#else
+									updateThemeCSS(downloadStream, cnn, uid);
+								#endif
 								}
 							}
 							else
@@ -119,6 +122,8 @@ namespace ThemeMigration
 										fileSuffix = "background";
 										downloadStream = getDownloadStream(sourceFileName, backgroundContainer);
 										break;
+									default:
+										return;
 								}
 
 								var fileName = $"{uid}_{fileSuffix}{extension}";
@@ -144,12 +149,12 @@ namespace ThemeMigration
 
 									Update theme 
 										set isCurrent = 1
-										where uid = @uid;", new { uid = uid });
+										where uid = @uid;", new { uid });
 							}
 						}
 						else
 						{
-							Console.WriteLine("The precisely theme is not current so not changing current theme.");
+							Console.WriteLine("\tThe precisely theme is not current so not changing current theme.");
 						}
 					}
 				}
@@ -157,6 +162,7 @@ namespace ThemeMigration
 				{
 					Console.WriteLine($"\tError: {ex.Message}");
 				}
+
 				Console.WriteLine("-------------------------------------------------------------------");
 			});
 
@@ -181,6 +187,18 @@ namespace ThemeMigration
 			return null;
 		}
 
+		private static void updateThemeCSS(Stream content, SqlConnection connection, Guid themeUid)
+		{
+			if (content != null)
+			{
+				var reader = new StreamReader(content);
+				var customCss = reader.ReadToEnd();
+				Console.WriteLine("\tUpdate themes CustomCss\n");
+
+				connection.Execute($"Update theme set [CustomCss] = @customCss where uid = @themeUid", new { customCss, themeUid });
+			}
+		}
+
 		private static void copyToThemeFolder(Stream content, BlobContainerClient themeContainer, int companyID, string fileName)
 		{
 			var path = $"{companyID}/{fileName}";
@@ -198,7 +216,6 @@ namespace ThemeMigration
 			else
 			{
 				Console.WriteLine("\t - File \"{0}\" already exists.", fileName);
-				return;
 			}
 		}
 
@@ -259,7 +276,7 @@ namespace ThemeMigration
 			}
 			else
 			{
-				return existingTheme.Uid;
+				return new Guid();
 			}			
 		}
 	}
