@@ -200,7 +200,15 @@ export class SiteMenuService extends BaseObservableService {
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))
             );
-    }
+	}
+
+	getSiteNavPermissionsAssets(): Observable<any[]> {
+		return this.http.get(`navigation/permissions/get/list/?id=0&pagenum=0&pagesize=10000`)
+			.pipe(
+				map(response => <any[]>response),
+				catchError(err => this.handleError(err))
+			);
+	}
 
     getItemCount(url: string) {
 

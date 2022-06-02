@@ -749,15 +749,15 @@ namespace d360.web.Controllers
                 hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
             }
 
-            var querySql = @"
+            var querySql = $@"
 					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
 						(
-							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+							select '{CommonNames.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{CommonNames.AssetTypeClass_Group}' as [Type] from [Group] g
 							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
 							union all
-							select  r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
+							select '{CommonNames.AssetTypeClass_User}: ' + r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'{CommonNames.AssetTypeClass_User}' as 'Type' from reporting.Global_Resource r
 							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
-                            + hideUsersSql +
+							+ hideUsersSql +
                         ") as Sub";
 
 
