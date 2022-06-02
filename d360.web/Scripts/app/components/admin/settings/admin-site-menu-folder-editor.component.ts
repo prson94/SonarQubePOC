@@ -43,10 +43,10 @@ import { Table } from 'primeng/table';
 })
 
 export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit {
-    @Input() navigationFolder: SiteNav;
-    @Input() dataProfile: any = null;
-    @Output() closeClick = new EventEmitter();
-    @Output() saveClick = new EventEmitter();
+	@Input() navigationFolder: SiteNav;
+	@Input() dataProfile: any = null;
+	@Output() closeClick = new EventEmitter();
+	@Output() saveClick = new EventEmitter();
 
 	availableItems: SiteNav[] = [];
 	isBuiltIn: boolean = false;
@@ -86,7 +86,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	permissionAssetsTotalCount: number;
 	_tempSelectedPermissionAssets: any[] = [];
 	_selectedPermissionAsset: any[] = [];
-	simpleTextFilterPermissionAssets: string = '';
 	isPermissionAssetTableLoading: boolean = false;
 	higlightedItem: any;
 	previewAssetUid: any;
@@ -116,18 +115,18 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.newFolderItems = new Array<SiteNav>();
 		this.loadFolderItems();
 
-        this.folderForm = this.formBuilder.group({
-            name: ['', [Validators.required, this.isEmptyString()]]
-        });
+		this.folderForm = this.formBuilder.group({
+			name: ['', [Validators.required, this.isEmptyString()]]
+		});
 		this.populateTypeLists();
 		this.loadPermissionAssets();
-        setTimeout(() => {
-            this.folderForm.valueChanges.subscribe((change) => {
-                this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
-            });
-            this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
-        }, 500);
-    }
+		setTimeout(() => {
+			this.folderForm.valueChanges.subscribe((change) => {
+				this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+			});
+			this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+		}, 500);
+	}
 
 	ngOnChanges(changes: SimpleChanges): void {
 		let c = changes;
@@ -247,10 +246,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		return this.matchTypes.filter((m) => (m.label === matchType.label))[0].description;
 	}
 
-    get cancelButtonText(): string {
-        if (!this.isEdit) {
-            return "Cancel";
-        }
+	get cancelButtonText(): string {
+		if (!this.isEdit) {
+			return "Cancel";
+		}
 
 		if (this.hasFormChanged && this.isEdit) {
 			return "Discard Changes";
@@ -436,6 +435,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	lastLoadedEvent: any;
 	loadPermissionAssets() {
+		this.isPermissionAssetTableLoading = true;
 		this.siteMenuService.getSiteNavPermissionsAssets()
 			.subscribe((res) => {
 				this.isPermissionAssetTableLoading = false;
@@ -470,5 +470,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.permissionAssetsTotalCount = this.permissionAssets.length;
 		this._selectedPermissionAsset = [];
 		this.cdRef.markForCheck();
+	}
+	headerSelectAll($event, table: Table) {
+		this._tempSelectedPermissionAssets = [];
+		for (let i = table.first; i < table.first + table.rows; i++) {
+			this._tempSelectedPermissionAssets.push(this.permissionAssets[i]);
+		}
 	}
 }

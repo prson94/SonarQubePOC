@@ -2,11 +2,11 @@
 
 	<div class="add-folder-form {{savingInProgress ? 'saving-in-progress' : ''}} {{higlightedItem ? 'opened-side-panel' : ''}}">
 		<div class="form-header">
-			<header>
+			<header i18n>
 				Add Folder
 			</header>
 			<div class="sub-header" *ngIf="!isLoading">
-				Site Naviagtion {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
+				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
 			</div>
 		</div>
 		<div class="row" *ngIf="isInError">
@@ -19,18 +19,18 @@
 						<div readonly>
 							<div class="row">
 								<div class="col s12">
-									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0">Folder Name</label>
+									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0" i18n>Folder Name</label>
 									<input maxlength="250" required tabindex="1" type="text" [(ngModel)]="folderModel.Name" style="width:30%" />
 								</div>
 							</div>
 							<div class="row" style="margin-bottom:15px;">
 								<div class="row" style="padding-top:12px">
 									<div class="col s12 m5 l5">
-										<div class="FieldName">Icon</div>
+										<div class="FieldName" i18n>Icon</div>
 										<div>
 											<div>
 												<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
-												Use a predefined icon or <a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link">Browse</a>
+												<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
 											</div>
 											<div style="padding-bottom: 10px;">
 												<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" ngDefaultControl></ig-icon-picker>
@@ -41,7 +41,7 @@
 										&nbsp;
 									</div>
 									<div class="col s12 m5 l5">
-										<div class="FieldName">Preview</div>
+										<div class="FieldName" i18n>Preview</div>
 										<div *ngIf="iconType == 'icon'" style="padding:10px">
 											<span style="font-size: 15px">
 												<img class="d3s-gov-icon" *ngIf="checkIfImg(folderModel.Icon)" [src]="folderModel.Icon" />
@@ -51,7 +51,7 @@
 										<div *ngIf="iconType == 'image'" style="padding:10px">
 											<img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 15px; max-height: 15px;" />
 											<div *ngIf="iconImage.dataUrl != null">
-												<button pButton type="button" label="Clear" (click)="clearIcon()"></button>
+												<button pButton type="button" i18n-label label="Clear" (click)="clearIcon()"></button>
 											</div>
 										</div>
 									</div>
@@ -60,7 +60,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Folder Items" i18n-title [expanded]="false" [shouldBePadded]="false">
+					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false">
 						<div readonly>
 							<div class="folder-flex-grid">
 								<div class="table-content">
@@ -77,6 +77,8 @@
 												 [globalFilterFields]="['Title']"
 												 [value]="availableItems"
 												 selectionMode="multiple"
+												 [loading]="isLoading"
+												 [loadingIcon]="'fa fa-spinner fa-spin'"
 												 [metaKeySelection]="true"
 												 [paginator]="true"
 												 paginatorDropdownAppendTo="body"
@@ -85,7 +87,7 @@
 												 [scrollable]="true">
 											<ng-template pTemplate="header">
 												<tr>
-													<th>Available Folder Items</th>
+													<th i18n>Available Folder Items</th>
 													<th></th>
 												</tr>
 											</ng-template>
@@ -114,6 +116,7 @@
 												class="ig-lookup-grid-button"
 												icon="fa-arrow-right"
 												(click)="addNewFolder(pSelectableRow)"
+												i18n-pTooltip
 												pTooltip="Add to selected folder items"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
@@ -121,6 +124,7 @@
 												class="ig-lookup-grid-button"
 												icon="fa-arrow-left"
 												(click)="removeFromSelectedFolderItems()"
+												i18n-pTooltip
 												pTooltip="Remove from selected folder items"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
@@ -129,6 +133,7 @@
 												class="ig-lookup-grid-button rotateRight"
 												icon="fa-step-backward"
 												(click)="moveToTop()"
+												i18n-pTooltip
 												pTooltip="Move to top"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
@@ -136,6 +141,7 @@
 												class="ig-lookup-grid-button rotateLeft"
 												icon="fa-play"
 												(click)="moveUp()"
+												i18n-pTooltip
 												pTooltip="Move up"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
@@ -143,6 +149,7 @@
 												class="ig-lookup-grid-button rotateRight"
 												icon="fa-play"
 												(click)="moveDown()"
+												i18n-pTooltip
 												pTooltip="Move down"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
@@ -150,6 +157,7 @@
 												class="ig-lookup-grid-button rotateLeft"
 												icon="fa-step-backward"
 												(click)="moveToBottom()"
+												i18n-pTooltip
 												pTooltip="Move to bottom"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
@@ -176,7 +184,7 @@
 												 [scrollable]="true">
 											<ng-template pTemplate="header">
 												<tr>
-													<th>Existing Folder Items</th>
+													<th i18n>Existing Folder Items</th>
 													<th></th>
 												</tr>
 
@@ -204,7 +212,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Permissions" i18n-title [expanded]="false" [shouldBePadded]="false">
+					<ig-property-group title="Permissions" i18n-title [expanded]="true" [shouldBePadded]="false">
 						<div readonly>
 							<div class="info-block">
 								<i class="fa fa-info-circle"></i>
@@ -214,23 +222,28 @@
 							</div>
 							<div class="folder-flex-grid">
 								<div class="table-content">
-									<ig-search-field class="search tooltip-full-width"
-													 mode="Keypress"
-													 i18n-placeholder
-													 [infoTooltip]="simpleSearchTooltipHTML"
-													 placeholder="Search"
-													 [(ngModel)]="simpleTextFilterPermissionAssets"
-													 (onSearch)="dt4.filterGlobal($event, 'contains')"
-													 style="width:100%; padding-bottom:8px;"></ig-search-field>
+									<div class="flex-grid-search">
+										<ig-search-field class="search tooltip-full-width"
+														 mode="Keypress"
+														 i18n-placeholder
+														 [infoTooltip]="simpleSearchTooltipHTML"
+														 placeholder="Search"
+														 (onSearch)="dt6.filterGlobal($event, 'contains')"
+														 style="width:100%; padding-bottom:8px;"></ig-search-field>
+										<div class="selected-count" *ngIf="_tempSelectedPermissionAssets && _tempSelectedPermissionAssets.length === 1" i18n>1 item selected</div>
+										<div class="selected-count" *ngIf="_tempSelectedPermissionAssets && _tempSelectedPermissionAssets.length > 1" i18n>{{_tempSelectedPermissionAssets.length}} items selected</div>
+									</div>
+
 									<div class="table-wrapper" style="max-height: calc(100vh - 420px);">
-										<p-table #dt4
-												 [globalFilterFields]="['Text']"
+										<p-table #dt6
 												 [value]="permissionAssets"
+												 [globalFilterFields]="['Text']"
 												 [(selection)]="_tempSelectedPermissionAssets"
 												 selectionMode="multiple"
-												 [metaKeySelection]="true"
+												 [metaKeySelection]="false"
 												 [paginator]="true"
 												 [rows]="10"
+												 (onHeaderCheckboxToggle)="headerSelectAll($event, dt6)"
 												 [totalRecords]="permissionAssetsTotalCount"
 												 [rowsPerPageOptions]="defaultPagingOptions"
 												 [loading]="isPermissionAssetTableLoading"
@@ -240,8 +253,10 @@
 												 scrollHeight="420px">
 											<ng-template pTemplate="header">
 												<tr>
-													<th style="max-width: 28px;"></th>
-													<th [pSortableColumn]="'Text'">Available Users/Groups <d3s-sortIcon [field]="'Text'"></d3s-sortIcon></th>
+													<th style="max-width: 28px;">
+														<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+													</th>
+													<th [pSortableColumn]="'Text'"><ng-container i18n>Available Users/Groups</ng-container> <d3s-sortIcon [field]="'Text'"></d3s-sortIcon></th>
 													<th></th>
 												</tr>
 											</ng-template>
@@ -257,8 +272,8 @@
 												</tr>
 											</ng-template>
 											<ng-template pTemplate="summary">
-												<d3s-grid-paging-info [first]="dt4.first"
-																	  [rows]="dt4.rows"
+												<d3s-grid-paging-info [first]="dt6.first"
+																	  [rows]="dt6.rows"
 																	  [totalRecords]="permissionAssetsTotalCount"></d3s-grid-paging-info>
 											</ng-template>
 										</p-table>
@@ -272,7 +287,8 @@
 												icon="fa-arrow-right"
 												(click)="addPermissionAssets()"
 												[disabled]="!_tempSelectedPermissionAssets || _tempSelectedPermissionAssets.length === 0"
-												pTooltip="Add to selected folder items"
+												pTooltip="Add to selected users/groups"
+												i18n-pTooltip
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
 										<button igButton
@@ -280,7 +296,8 @@
 												icon="fa-arrow-left"
 												(click)="removePermissionAssets()"
 												[disabled]="!_selectedPermissionAsset || _selectedPermissionAsset.length === 0"
-												pTooltip="Remove from selected folder items"
+												pTooltip="Remove from selected users/groups"
+												i18n-pTooltip
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
 									</div>
@@ -305,8 +322,10 @@
 												 scrollHeight="420px">
 											<ng-template pTemplate="header">
 												<tr>
-													<th style="max-width: 28px;"></th>
-													<th [pSortableColumn]="'Text'">Selected Users/Groups <d3s-sortIcon [field]="'Text'"></d3s-sortIcon></th>
+													<th style="max-width: 28px;">
+														<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+													</th>
+													<th [pSortableColumn]="'Text'"><ng-container i18n>Selected Users/Groups </ng-container> <d3s-sortIcon [field]="'Text'"></d3s-sortIcon></th>
 												</tr>
 											</ng-template>
 											<ng-template pTemplate="body" let-item>
@@ -355,7 +374,7 @@
 				</div>
 			</div>
 			<asset-preview [assetUid]="previewAssetUid"
-						   [assetType]="previewAssetType"
+						   [assetType]="previewAssetType === 'User' ? 'Resource' : previewAssetType"
 						   [hasEditLink]="false"
 						   [hasOpenLink]="false"></asset-preview>
 		</div>
