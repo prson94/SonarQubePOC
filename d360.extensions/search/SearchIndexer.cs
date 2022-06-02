@@ -34,6 +34,18 @@ namespace d360.extensions.search
             _messages = new List<string>();
         }
 
+		public static readonly List<string> ExcludedFieldTypes = new List<string> {
+			"DateTime",
+			"Color",
+			"FilteredLookup",
+			"ComplexRelationLookup",
+			"OwnershipLookup",
+			"Relationship",
+			"FieldFromRelationship",
+			"RefListRelationship",
+			"JSON"
+		};
+
         private static readonly List<string> allowedClassesAndObjectTypes = new List<string> {
                 SystemObjects.Artifact.ToString(),
                 SystemObjects.Resource.ToString(),
@@ -1107,7 +1119,7 @@ namespace d360.extensions.search
             string fieldsSql = @"select F.AssetID, FT.Name, F.FormattedValue from Field F " +
                 string.Join(" " + Environment.NewLine, fieldJoin.ToArray()) +
             " where F.FormattedValue is not null and F.FormattedValue <> '' and " +
-            " FT.[Type] not in('DateTime','Color','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
+            " FT.[Type] not in('" + string.Join("','", ExcludedFieldTypes.ToArray()) + "')";
             if (fieldWhere.Any())
             {
                 fieldsSql += " and " + string.Join(Environment.NewLine + " and ", fieldWhere.ToArray());

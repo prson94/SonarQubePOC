@@ -343,7 +343,8 @@ namespace d360.extensions.search
                                 .Mapping("underscore2space", mca => mca
                                     .Mappings(new []
                                     {
-                                        "_ => \\u0020"
+                                        "_ => \\u0020",
+										". => \\u0020"
                                     })
                                 )
                             )
@@ -488,7 +489,106 @@ namespace d360.extensions.search
             return response.Records.Select(r => r.Index).Where(i => i.StartsWith(INDEX_PREFIX)).Select(i => int.Parse(i.Substring(INDEX_PREFIX.Length)));
         }
 
-        public static void DeleteIndexIfExists(string serverUrl, int companyID)
+		public static bool IndexHasLatestFeatures(string serverUrl, int companyID)
+		{
+			var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
+			return IndexHasLatestFeatures(client, companyID);
+		}
+
+
+		private static bool IndexHasLatestFeatures(IElasticClient client, int companyID)
+		{
+			var indexName = GetCompanyIndexName(companyID);
+			//Latest feature is 'underscore2space' char filter converting period to space, so the number of mappings should be 2
+			var response = client.GetIndexSettings(i => i.Index(indexName));
+            if(!response.IsValid)
+            {
+				throw new SearchException(response.OriginalException);
+			}
+			var state = response.Indices[indexName];
+			if (state.Settings.Analysis?.CharFilters?.ContainsKey("underscore2space") ?? false)
+			{
+				var filter = (MappingCharFilter)state.Settings.Analysis.CharFilters["underscore2space"];
+				if(filter.Mappings.Count() == 2)
+				{
+					return true;
+				}
+			}	
+			return false;
+		}
+
+		public static int GetIndexTotalFieldsLimit(string serverUrl, int companyID)
+		{
+			var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
+			return GetIndexTotalFieldsLimit(client, companyID);
+		}
+
+		private static int GetIndexTotalFieldsLimit(IElasticClient client, int companyID)
+		{
+			var indexName = GetCompanyIndexName(companyID);
+			var response = client.GetIndexSettings(i => i.Index(indexName));
+			if (!response.IsValid)
+			{
+				throw new SearchException(response.OriginalException);
+			}
+			var state = response.Indices[indexName];
+			if(state.Settings.ContainsKey("index.mapping.total_fields.limit"))
+			{
+				return int.Parse(state.Settings["index.mapping.total_fields.limit"].ToString());
+			}
+			return 1000; //Default Elasticsearch value
+		}
+
+		public static int GetIndexFieldMappingCount(string serverUrl, int companyID)
+		{
+			var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
+			return GetIndexFieldMappingCount(client, companyID);
+		}
+
+		private static int GetIndexFieldMappingCount(IElasticClient client, int companyID)
+		{
+			var indexName = GetCompanyIndexName(companyID);
+			var response = client.GetMapping<object>(m => m.Index(indexName).AllTypes());
+			if (!response.IsValid)
+			{
+				throw new SearchException(response.OriginalException);
+			}
+			var state = response.Indices[indexName];
+			var fields = (ObjectProperty)state.Mappings["_doc"].Properties.Where(p => p.Key == "fields").FirstOrDefault().Value;
+			return fields.Properties?.Count() ?? 0;
+		}
+
+		public static int SuggestIndexLimit(SqlConnection context)
+		{
+			/*
+             * To estimate the limit of fields in the index, we count the number of field types and add 20%
+             * We are not indexing all field types, and field types with the same name are mapped to the same elastic field
+             * If the number of field types is too high, then count the distinct field names and add 80%.
+             * Under no circumstance should we set limit higher than 30,000
+             * https://www.elastic.co/guide/en/elasticsearch/reference/6.8/mapping.html#mapping-limit-settings
+             */
+			var sql = @"SELECT CASE
+                            WHEN a.dist > 30000 THEN 30000
+                            WHEN a.total > 30000 THEN a.dist
+                            ELSE a.total
+                        END
+                        FROM (
+                            SELECT FLOOR(COUNT(*) * 1.2) AS total,
+                                    FLOOR(COUNT(DISTINCT [Name]) * 1.8) AS dist
+                            FROM [dbo].[FieldType]
+                        ) a;";
+			return context.Query<int>(sql).FirstOrDefault();
+		}
+		public static int CountIndexableFieldTypes(SqlConnection context)
+		{
+			var sql = @"SELECT COUNT(*)
+                FROM [dbo].[FieldType]
+				WHERE AssetTypeID IS NOT NULL
+				AND [Type] not in('" + string.Join("','", SearchIndexer.ExcludedFieldTypes.ToArray()) + "')";
+			return context.Query<int>(sql).FirstOrDefault();
+		}
+
+		public static void DeleteIndexIfExists(string serverUrl, int companyID)
         {
             var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
             DeleteIndexIfExists(client, companyID);
