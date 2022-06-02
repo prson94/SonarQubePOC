@@ -64,14 +64,19 @@
 					<div readonly>
 						<div class="folder-flex-grid">
 							<div class="table-content">
-								<ig-search-field class="search tooltip-full-width"
-												 mode="Keypress"
-												 i18n-placeholder
-												 [infoTooltip]="simpleSearchTooltipHTML"
-												 placeholder="Search"
-												 [(ngModel)]="simpleTextFilter"
-												 (onSearch)="dt3.filterGlobal($event, 'contains')"
-												 style="width:100%; padding-bottom:8px;"></ig-search-field>
+								<div class="flex-grid-search">
+									<ig-search-field class="search tooltip-full-width"
+													 mode="Keypress"
+													 i18n-placeholder
+													 [infoTooltip]="simpleSearchTooltipHTML"
+													 placeholder="Search"
+													 [(ngModel)]="simpleTextFilter"
+													 (onSearch)="dt3.filterGlobal($event, 'contains')"
+													 style="width:100%; padding-bottom:8px;"></ig-search-field>
+									<div class="selected-count"
+										 *ngIf="selectedFolderItems && selectedFolderItems.length > 0" 
+										 i18n>{{selectedFolderItems.length}} item{{selectedFolderItems.length > 1 ? "s":""}} selected</div>
+								</div>
 								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
 									<p-table #dt3
 											 [globalFilterFields]="['Title']"
@@ -161,14 +166,19 @@
 								</div>
 							</div>
 							<div class="table-content">
-								<ig-search-field class="search tooltip-full-width"
-												 mode="Keypress"
-												 i18n-placeholder
-												 [infoTooltip]="simpleSearchTooltipHTML"
-												 placeholder="Search"
-												 [(ngModel)]="simpleTextFilterForExistingItems"
-												 (onSearch)="dt4.filterGlobal($event, 'contains')"
-												 style="width:100%; padding-bottom:8px;"></ig-search-field>
+								<div class="flex-grid-search">
+									<ig-search-field class="search tooltip-full-width"
+													 mode="Keypress"
+													 i18n-placeholder
+													 [infoTooltip]="simpleSearchTooltipHTML"
+													 placeholder="Search"
+													 [(ngModel)]="simpleTextFilterForExistingItems"
+													 (onSearch)="dt4.filterGlobal($event, 'contains')"
+													 style="width:100%; padding-bottom:8px;"></ig-search-field>
+									<div class="selected-count"
+										 *ngIf="selectedNewFolderItems && selectedNewFolderItems.length > 0"
+										 i18n>{{selectedNewFolderItems.length}} item{{selectedNewFolderItems.length > 1 ? "s":""}} selected</div>
+								</div>
 								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
 									<p-table #dt4 [value]="newFolderItems"
 											 [globalFilterFields]="['Title']"
@@ -183,29 +193,29 @@
 											 scrollHeight="420px">
 										<ng-template pTemplate="header">
 											<tr>
-												<th>Existing Folder Items</th>
+												<th>Selected Folder Items</th>
 												<th></th>
 											</tr>
 
-											</ng-template>
-											<ng-template pTemplate="body" let-item>
-												<tr [pSelectableRow]="item">
-													<td>{{item.Name}}</td>
-													<td>
-														<div class="RowTools" style="height: initial;">
-															<a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-														</div>
-													</td>
-												</tr>
-											</ng-template>
-											<ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
-												<d3s-grid-paging-info [first]="dt4.first"
-																	  [rows]="dt4.rows"
-																	  [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
-											</ng-template>
-										</p-table>
-									</div>
+										</ng-template>
+										<ng-template pTemplate="body" let-item>
+											<tr [pSelectableRow]="item">
+												<td>{{item.Name}}</td>
+												<td>
+													<div class="RowTools" style="height: initial;">
+														<a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
+											<d3s-grid-paging-info [first]="dt4.first"
+																  [rows]="dt4.rows"
+																  [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
+										</ng-template>
+									</p-table>
 								</div>
+							</div>
 							</div>
 
 						</div>
