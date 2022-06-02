@@ -18,7 +18,7 @@ namespace igx.functions.consumption
         const string functionName = "IndexMaintainance";
         private CoreFunction CoreFunction;
 
-        const string timerSettings = "0 0 17 * * 6";
+		const string timerSettings = "0 0 17 * * *"; //"0 0 17 * * 6";
 
         [FunctionName("IndexMaintainance")]
         public async Task Run([TimerTrigger(timerSettings)] TimerInfo myTimer, ExecutionContext context, TextWriter log)
