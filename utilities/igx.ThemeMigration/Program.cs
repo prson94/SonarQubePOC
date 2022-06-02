@@ -10,10 +10,9 @@ using d360.core.enums;
 using Dapper;
 using System.Configuration;
 using Azure.Storage.Blobs;
-//using d360.extensions.storage;
 using System.IO;
 using Azure.Storage.Blobs.Models;
-using Azure.Core;
+using System.Data.SqlClient;
 
 namespace ThemeMigration
 {
@@ -28,7 +27,6 @@ namespace ThemeMigration
 
 		private static void migrateTheme()
 		{
-			//var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
 			var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(ConfigurationManager.AppSettings["CommunityContext"]);
 			var StorageConnectionString = ConfigurationManager.AppSettings["AzureStorageConnectionString"];
 
@@ -55,70 +53,13 @@ namespace ThemeMigration
 						var uid = new Guid();
 						if (x.CompanyID == 6)
 						{
-							var existingTheme = cnn.QueryFirstOrDefault<Theme>("select * from theme where name = @themeName", new { themeName = THEME_NAME });
-							if (existingTheme == null)
-							{
-								uid = cnn.Query<Guid>($@"insert into theme ([Uid]
-																			,[Name]																			
-																			,[BackColor]
-																			,[BreadcrumbLinkColor]
-																			,[ButtonBackColor]
-																			,[PrimaryButtonBackColor]
-																			,[HeaderBackColor]
-																			,[NavBarBackColor]
-																			,[NavBarBackSelectedColor]
-																			,[TabLinkColor]
-																			,[TableHeaderBackColor]
-																			,[TableRowBackSelectedColor]
-																			,CreatedBy
-																			,CreatedOn
-																			,UpdatedBy
-																			,UpdatedOn)
-														OUTPUT inserted.Uid
-														values(
-																NEWID(), 
-																@themeName, 
-																@BackColor, 
-																@BreadcrumbLinkColor, 
-																@ButtonBackColor, 
-																@PrimaryButtonBackColor,
-																@HeaderBackColor,
-																@NavBarBackColor,
-																@NavBarBackSelectedColor,
-																@TabLinkColor,
-																@TableHeaderBackColor,
-																@TableRowBackSelectedColor,
-																0, 
-																GETDATE(), 
-																0, 
-																GETDATE())",
-														new
-														{
-															themeName = THEME_NAME,
-															preciselyTheme.BackColor,
-															preciselyTheme.BreadcrumbLinkColor,
-															preciselyTheme.ButtonBackColor,
-															preciselyTheme.PrimaryButtonBackColor,
-															preciselyTheme.HeaderBackColor,
-															preciselyTheme.NavBarBackColor,
-															preciselyTheme.NavBarBackSelectedColor,
-															preciselyTheme.TabLinkColor,
-															preciselyTheme.TableHeaderBackColor,
-															preciselyTheme.TableRowBackSelectedColor
-														},
-														commandTimeout: 12000).FirstOrDefault();
-							}
-							else
-							{
-								uid = existingTheme.Uid;
-							}
-
+							uid = createCustomTheme(preciselyTheme, cnn);
 						}
-
+						
 						var themeContainer = serviceClient.GetBlobContainerClient("themes");
 						themeContainer.CreateIfNotExistsAsync();
 
-#if DEBUG
+#if isDEBUG
 						if (x.CompanyID == 6)
 						{
 							themeContainer.GetBlobs();
@@ -160,7 +101,6 @@ namespace ThemeMigration
 							}
 							else
 							{
-
 								var fileSuffix = "";
 
 								var extension = $".{sourceFileName.Split('.').Last()}";
@@ -257,9 +197,70 @@ namespace ThemeMigration
 			}
 			else
 			{
-				Console.WriteLine("File \"{0}\" already exists.", fileName);
+				Console.WriteLine("\t - File \"{0}\" already exists.", fileName);
 				return;
 			}
+		}
+
+		private static Guid createCustomTheme(Theme preciselyTheme, SqlConnection connection)
+		{			
+			var existingTheme = connection.QueryFirstOrDefault<Theme>("select * from theme where name = @themeName", new { themeName = THEME_NAME });
+			if (existingTheme == null)
+			{
+				return connection.Query<Guid>($@"insert into theme ([Uid]
+																	,[Name]																			
+																	,[BackColor]
+																	,[BreadcrumbLinkColor]
+																	,[ButtonBackColor]
+																	,[PrimaryButtonBackColor]
+																	,[HeaderBackColor]
+																	,[NavBarBackColor]
+																	,[NavBarBackSelectedColor]
+																	,[TabLinkColor]
+																	,[TableHeaderBackColor]
+																	,[TableRowBackSelectedColor]
+																	,CreatedBy
+																	,CreatedOn
+																	,UpdatedBy
+																	,UpdatedOn)
+													OUTPUT inserted.Uid
+													values(
+															NEWID(), 
+															@themeName, 
+															@BackColor, 
+															@BreadcrumbLinkColor, 
+															@ButtonBackColor, 
+															@PrimaryButtonBackColor,
+															@HeaderBackColor,
+															@NavBarBackColor,
+															@NavBarBackSelectedColor,
+															@TabLinkColor,
+															@TableHeaderBackColor,
+															@TableRowBackSelectedColor,
+															0, 
+															GETDATE(), 
+															0, 
+															GETDATE())",
+										new
+										{
+											themeName = THEME_NAME,
+											preciselyTheme.BackColor,
+											preciselyTheme.BreadcrumbLinkColor,
+											preciselyTheme.ButtonBackColor,
+											preciselyTheme.PrimaryButtonBackColor,
+											preciselyTheme.HeaderBackColor,
+											preciselyTheme.NavBarBackColor,
+											preciselyTheme.NavBarBackSelectedColor,
+											preciselyTheme.TabLinkColor,
+											preciselyTheme.TableHeaderBackColor,
+											preciselyTheme.TableRowBackSelectedColor
+										},
+										commandTimeout: 12000).FirstOrDefault();
+			}
+			else
+			{
+				return existingTheme.Uid;
+			}			
 		}
 	}
 
