@@ -117,7 +117,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
         this.folderForm = this.formBuilder.group({
             name: ['', [Validators.required, this.isEmptyString()]]
         });
-        this.populateTypeLists();
+		this.populateTypeLists();
+		this.loadPermissionAssets();
         setTimeout(() => {
             this.folderForm.valueChanges.subscribe((change) => {
                 this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
