@@ -1755,7 +1755,8 @@ namespace d360.extensions.search
                 return new List<TypeaheadResult>();
             }
 
-            if (phrase.Length > QueryRequest.SEARCH_TERM_MAX_LENGTH)
+			phrase = phrase.Replace("+", "");
+			if (phrase.Length > QueryRequest.SEARCH_TERM_MAX_LENGTH)
             {
                 phrase = phrase.Substring(0, QueryRequest.SEARCH_TERM_MAX_LENGTH);
             }
