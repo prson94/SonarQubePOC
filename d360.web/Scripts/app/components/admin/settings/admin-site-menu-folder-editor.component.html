@@ -74,13 +74,15 @@
 									<p-table #dt3
 											 [globalFilterFields]="['Title']"
 											 [value]="availableItems"
+											 [(selection)]="selectedFolderItems"
 											 selectionMode="multiple"
 											 [metaKeySelection]="true"
 											 [paginator]="true"
 											 paginatorDropdownAppendTo="body"
 											 [rows]="10"
 											 [rowsPerPageOptions]="defaultPagingOptions"
-											 [scrollable]="true">
+											 [scrollable]="true"
+											 scrollHeight="420px">
 										<ng-template pTemplate="header">
 											<tr>
 												<th>Available Folder Items</th>
@@ -111,7 +113,7 @@
 									<button igButton
 											class="ig-lookup-grid-button"
 											icon="fa-arrow-right"
-											(click)="addNewFolder(pSelectableRow)"
+											(click)="addToSelectedFolderItems()"
 											pTooltip="Add to selected folder items"
 											tooltipPosition="top"
 											tooltipStyleClass="ig-tooltip"></button>
@@ -171,7 +173,8 @@
 											 paginatorDropdownAppendTo="body"
 											 [rows]="10"
 											 [rowsPerPageOptions]="defaultPagingOptions"
-											 [scrollable]="true">
+											 [scrollable]="true"
+											 scrollHeight="420px">
 										<ng-template pTemplate="header">
 											<tr>
 												<th>Existing Folder Items</th>
