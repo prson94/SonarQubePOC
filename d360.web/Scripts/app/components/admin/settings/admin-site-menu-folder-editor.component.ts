@@ -442,6 +442,21 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	moveToTop(items: SiteNav[]) {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				this.newFolderItems.splice(j, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+			this.selectedNewFolderItems = new Array<SiteNav>();
+			this.cdRef.markForCheck();
+		}
+	}
+
+	disableBtnMoveToTop() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
+		);
 	}
 
 	moveUp(items: SiteNav[]) {
@@ -495,6 +510,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this._selectedPermissionAsset = [];
 		this.cdRef.markForCheck();
 	}
+
 	headerSelectAll($event, table: Table) {
 		this._tempSelectedPermissionAssets = [];
 		for (let i = table.first; i < table.first + table.rows; i++) {
