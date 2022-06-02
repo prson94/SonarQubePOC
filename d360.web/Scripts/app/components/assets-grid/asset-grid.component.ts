@@ -101,6 +101,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     areFiltersLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
     linkColumnIndex: number = -1;
+	flexGrow: number = 0;
     readonly excludedLinkColumnTypes = [
         'Tag',
         'OwnershipLookup',
@@ -308,7 +309,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasNoListableColumns = true;
                 }
                 else {
-                    this.hasNoListableColumns = false;
+					this.hasNoListableColumns = false;
+					//If all columns have defined width, they must be allowed to grow to allow the table to go to 100% width
+					this.flexGrow = this.columns.every((c) => c.columnWidth) ? 1 : 0;
 
                     for (let i = 0; i < this.columns.length; i++) {
                         if (this.excludedLinkColumnTypes.findIndex((e) => e === (this.columns[i] as any).fieldType) === -1) {
