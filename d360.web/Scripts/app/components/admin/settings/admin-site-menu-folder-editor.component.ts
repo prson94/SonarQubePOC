@@ -42,11 +42,11 @@ import { Table } from 'primeng/table';
 	styleUrls: ['folder-editor.less']
 })
 
-export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit, AfterViewChecked {
-	@Input() navigationFolder: SiteNav;
-	@Input() dataProfile: any = null;
-	@Output() closeClick = new EventEmitter();
-	@Output() saveClick = new EventEmitter();
+export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit {
+    @Input() navigationFolder: SiteNav;
+    @Input() dataProfile: any = null;
+    @Output() closeClick = new EventEmitter();
+    @Output() saveClick = new EventEmitter();
 
 	availableItems: SiteNav[] = [];
 	isBuiltIn: boolean = false;
@@ -114,38 +114,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.newFolderItems = new Array<SiteNav>();
 		this.loadFolderItems();
 
-		this.folderForm = this.formBuilder.group({
-			name: ['', [Validators.required, this.isEmptyString()]],
-			description: null,
-			effectiveDate: null,
-			threshold: ['', [Validators.required]],
-			priority: ['', [Validators.required]],
-			matchType: null,
-			baseType: null,
-			qualifier: null,
-			headerConfidence: null,
-			minSamples: null,
-			validValues: null,
-			invalidValues: null,
-			advancedJson: null,
-			statuses: null,
-			minMaxPresent: null,
-			minimum: null,
-			maximum: null,
-			headerRegExp: null,
-			regExpReturned: null,
-			validLocales: null
-		});
-		this.populateTypeLists();
-		setTimeout(() => {
-			this.folderForm.valueChanges.subscribe((change) => {
-				this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
-			});
-			this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
-		}, 500);
-
-		this.loadPermissionAssets();
-	}
+        this.folderForm = this.formBuilder.group({
+            name: ['', [Validators.required, this.isEmptyString()]]
+        });
+        this.populateTypeLists();
+        setTimeout(() => {
+            this.folderForm.valueChanges.subscribe((change) => {
+                this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+            });
+            this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+        }, 500);
+    }
 
 	ngOnChanges(changes: SimpleChanges): void {
 		let c = changes;
@@ -265,46 +244,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		return this.matchTypes.filter((m) => (m.label === matchType.label))[0].description;
 	}
 
-	@HostListener('window:resize', ['$event'])
-	onResize(event) {
-		this.setFormHeight();
-	}
-
-	ngAfterViewChecked() {
-		this.setFormHeight();
-	}
-
-	private setFormHeight() {
-		var groupsHeight = 0;
-		var topPos = 260;
-		if (this.elRef.nativeElement) {
-			var els = this.elRef.nativeElement.getElementsByClassName('form-wrapper');
-			if (els[0]) {
-				var rect = els[0].getBoundingClientRect();
-				topPos = rect.top + 120;
-			}
-		}
-		var maxHeight = window.innerHeight - topPos;
-		if (this.propertyGroups) {
-			var a = this.propertyGroups.first;
-			this.propertyGroups.forEach((pg) => {
-				var height = pg.inputContainer.nativeElement.offsetHeight;
-				groupsHeight += height !== 0 ? (height + 34) : 34;
-			});
-		}
-
-		//this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight;
-		//this.cdRef.markForCheck();
-	}
-
-	expandChanged() {
-		setTimeout(() => this.setFormHeight(), 10);
-	}
-
-	get cancelButtonText(): string {
-		if (!this.isEdit) {
-			return "Cancel";
-		}
+    get cancelButtonText(): string {
+        if (!this.isEdit) {
+            return "Cancel";
+        }
 
 		if (this.hasFormChanged && this.isEdit) {
 			return "Discard Changes";
