@@ -18,7 +18,6 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using d360.web.Utilities;
-using MediatR;
 using Microsoft.Web.Http;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
@@ -36,22 +35,19 @@ namespace d360.web.Controllers.V2
     public class ResponsibilitiesController : BaseV2ApiController
     {
         private readonly IAssetRepository AssetRepository;
-        private IMediator Mediator { get; }
         private readonly IResponsibilityRepository ResponsibilityRepository;
         private readonly IResourceRepository ResourceRepository;
         private readonly IAssetService AssetService;
 
         public ResponsibilitiesController(ICoreComponentSet set,
             IAssetRepository assetRepository,
-            IMediator mediator,
             IResponsibilityRepository responsibilityRepository,
             IResourceRepository resourceRepository,
             IAssetService assetService
             )
             : base(set)
         {
-            Mediator = mediator;
-            ResponsibilityRepository = responsibilityRepository;
+	        ResponsibilityRepository = responsibilityRepository;
             ResourceRepository = resourceRepository;
             AssetRepository = assetRepository;
             AssetService = assetService;
@@ -1531,42 +1527,36 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Deletes a list of ownership rules for the specified responsibility type..
-        /// </summary>
-        /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
-        /// <param name="responsibilityRulesDeletes">A list of responsibility rules you want to delete.</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            HttpDelete,
-            Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
-        ]
-        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] IReadOnlyList<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
-        {
-            ValidateParameters();
+		/// <summary>
+		/// Deletes a list of ownership rules for the specified responsibility type..
+		/// </summary>
+		/// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
+		/// <param name="responsibilityRulesDeletes">A list of responsibility rules you want to delete.</param>
+		/// <returns>An HTTP status code and message.</returns>
+		[
+			HttpDelete,
+			RequireAdminPermissions,
+			Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(ICollection<ResponsibilityRuleDeleteResponse>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] IReadOnlyList<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
+		{
+			ValidateParameters();
 
-            // create business logic request model
-            var request = new ResponsibilityDeleteRulesRequest()
-            {
-                TypeUid = responsibilityTypeUid,
-                RuleDeleteUidCollection = responsibilityRulesDeletes.Select(x => x.Uid).ToList()
-            };
+			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+			Condition.Require(responsibility, NotFoundBusinessLayerException.Create<ResponsibilityType>);
 
-            // call business logic
-            var response = await Mediator.Send(request);
+			var rulesForDeletion = responsibilityRulesDeletes.Select(x => x.Uid).ToList();
+			var result = await ResponsibilityRepository.DeleteResponsibilityRulesAsync(responsibilityTypeUid, rulesForDeletion);
 
-            // convert result to UI (API) representation.
-            var result = response.Data;
-
-            return Ok(result);
-        }
+			return Ok(result);
+		}
 
         /// <summary>
         /// Gets the breakdown of responsibilities

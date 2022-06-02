@@ -992,23 +992,22 @@ namespace d360.model.DataAccessLayer
 			return results;
 		}
 
-		public async Task<IReadOnlyList<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRulesAsync(Guid responsibilityTypeUid, IReadOnlyList<Guid> rulesForDeletion)
+		public async Task<ICollection<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRulesAsync(Guid responsibilityTypeUid, IReadOnlyList<Guid> rulesForDeletion)
 		{
 			if (Company.Connection.State != ConnectionState.Open)
 			{
 				Company.Connection.Open();
 			}
 
-			List<ResponsibilityRuleDeleteResponse> returnResults = null;
+			ICollection<ResponsibilityRuleDeleteResponse> returnResults = null;
 
-			using (var trans = Company.Connection.BeginTransaction("DeleteResponsibilityRules"))
+			using var trans = Company.Connection.BeginTransaction("DeleteResponsibilityRules");
+			try
 			{
-				try
-				{
-					// Setup and initial validation.
-					await Company
-						.Connection
-						.ExecuteAsync(@"
+				// Setup and initial validation.
+				await Company
+					.Connection
+					.ExecuteAsync(@"
 										create table #results
 										(
 											Uid uniqueidentifier, 
@@ -1026,10 +1025,10 @@ namespace d360.model.DataAccessLayer
 											MetricAssetVersionUid uniqueidentifier 
 										);", transaction: trans);
 
-					// Setup and initial validation.
-					await Company
-						.Connection
-						.ExecuteAsync(@"
+				// Setup and initial validation.
+				await Company
+					.Connection
+					.ExecuteAsync(@"
 										insert into #results (Uid)
 											select cast(value as uniqueidentifier) from string_split(@rulesUids,',');
 
@@ -1051,10 +1050,10 @@ namespace d360.model.DataAccessLayer
 						transaction: trans
 					);
 
-					// Now load the asset/measure combinations that will be impacted by these deletions.
-					await Company
-						.Connection
-						.ExecuteAsync(@"
+				// Now load the asset/measure combinations that will be impacted by these deletions.
+				await Company
+					.Connection
+					.ExecuteAsync(@"
 										insert into #measureResults
 											select  A.AssetUid, 
 													M.AllocationUid,
@@ -1083,10 +1082,10 @@ namespace d360.model.DataAccessLayer
 														and JSON_VALUE(V.Definition, '$.Governance.Owner.ResponsibilityTypeUid') = O.Uid
 														and V.Definition <> '{}'", new { today = DateTime.UtcNow.Date }, transaction: trans);
 
-					// Perform deletes on impacted tables and save results to temporary table.
-					await Company
-						.Connection
-						.ExecuteAsync(@"
+				// Perform deletes on impacted tables and save results to temporary table.
+				await Company
+					.Connection
+					.ExecuteAsync(@"
 										drop table if exists #r;
 										create table #r(ID int);
 										
@@ -1109,40 +1108,39 @@ namespace d360.model.DataAccessLayer
 												Success = 1
 										where   Success is null", transaction: trans);
 
-					var queryResults = await Company.Connection.QueryMultipleAsync(@"select * from #results; select * from #measureResults", transaction: trans);
+				var queryResults = await Company.Connection.QueryMultipleAsync(@"select * from #results; select * from #measureResults", transaction: trans);
 
-					returnResults = queryResults.Read<ResponsibilityRuleDeleteResponse>().ToList();
-					var measureResults = queryResults.Read<ResponsibilityAssetMeasureProcessedResult>();
-					var today = DateTime.UtcNow.Date;
-					var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
-						.Select(m => new AssetMeasureModel
+				returnResults = queryResults.Read<ResponsibilityRuleDeleteResponse>().ToList();
+				var measureResults = queryResults.Read<ResponsibilityAssetMeasureProcessedResult>();
+				var today = DateTime.UtcNow.Date;
+				var structuredMeasures = measureResults.GroupBy(m => new { m.AssetUid })
+					.Select(m => new AssetMeasureModel
+					{
+						AssetUid = m.Key.AssetUid,
+						EffectiveDate = today,
+						Measures = m.Select(o => new AssetMeasureChildModel
 						{
-							AssetUid = m.Key.AssetUid,
-							EffectiveDate = today,
-							Measures = m.Select(o => new AssetMeasureChildModel
-							{
-								AllocationUid = o.AllocationUid,
-								MetricAssetUid = o.MetricAssetUid,
-								MetricAssetVersionUid = o.MetricAssetVersionUid
-							}).Distinct().ToList()
-						}).ToList();
+							AllocationUid = o.AllocationUid,
+							MetricAssetUid = o.MetricAssetUid,
+							MetricAssetVersionUid = o.MetricAssetVersionUid
+						}).Distinct().ToList()
+					}).ToList();
 
-					trans.Commit();
+				trans.Commit();
 
-					Company.CreateMeasureChangedResultExecution(structuredMeasures);
-				}
-				catch (Exception)
+				Company.CreateMeasureChangedResultExecution(structuredMeasures);
+			}
+			catch (Exception)
+			{
+				try
 				{
-					try
+					if (trans != null)
 					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
+						trans.Rollback();
 					}
-					catch
-					{
-					}
+				}
+				catch
+				{
 				}
 			}
 
