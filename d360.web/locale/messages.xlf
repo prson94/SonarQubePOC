@@ -1054,15 +1054,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">172,174</context>
+          <context context-type="linenumber">166,168</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">231,233</context>
+          <context context-type="linenumber">226,228</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">311,313</context>
+          <context context-type="linenumber">306,308</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid-top-level-list.component.html</context>
@@ -1634,7 +1634,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">354,359</context>
+          <context context-type="linenumber">349,354</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-permissions.component.ts</context>
@@ -7112,75 +7112,11 @@
           <context context-type="linenumber">63,66</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="d33b639ee4668535495dabce3f9ffd27f9280eab" datatype="html">
-        <source>Available Folder Items</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">90,95</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.html</context>
-          <context context-type="linenumber">97,103</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="14badb7dc1e5dda9a57c8aaf0049beab6979c25f" datatype="html">
-        <source>Add to selected folder items</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">120,124</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="484ca1bb3a678e5762646a1b08db2053e964fd21" datatype="html">
-        <source>Remove from selected folder items</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">128,132</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7d94dabd04baf688b208c7b780f74a6e579624b8" datatype="html">
-        <source>Move to top</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">137,141</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="f5d502c5d44fd9d78ed4979a7efae43369b09dca" datatype="html">
-        <source>Move up</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">146,149</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7a91e24cda07c3ccff6a84d88c25de674bf288f0" datatype="html">
-        <source>Move down</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">153,157</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="cc2a64c2c676a17696c280e710e1399dd964d5a8" datatype="html">
-        <source>Move to bottom</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">161,166</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="d3a35a703d457ac1768399c7cdb3c87ce6e18f2a" datatype="html">
-        <source>Existing Folder Items</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">187,193</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.html</context>
-          <context context-type="linenumber">120,125</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="70f45880fce6ac5d8e468e25e82aefbba8098cfe" datatype="html">
         <source>Permissions</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">215,218</context>
+          <context context-type="linenumber">210,213</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-permissions.component.ts</context>
@@ -7195,14 +7131,14 @@
         <source>By default all users can see each navigation folder. If there are any permissions defined, only those users/groups will see the folder on their navigation.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">220,225</context>
+          <context context-type="linenumber">215,220</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d65359aa0a93837b05780a55a20187a267adc0cf" datatype="html">
         <source>1 item selected</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">233,234</context>
+          <context context-type="linenumber">228,229</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/multiselect-grid.component.html</context>
@@ -7213,21 +7149,21 @@
         <source><x id="INTERPOLATION" equiv-text="[value"/> items selected</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">234,239</context>
+          <context context-type="linenumber">229,234</context>
         </context-group>
       </trans-unit>
       <trans-unit id="d689a5ba5e92c377411ec2878091d9635289af20" datatype="html">
         <source>Available Users/Groups</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">259,263</context>
+          <context context-type="linenumber">254,258</context>
         </context-group>
       </trans-unit>
       <trans-unit id="abae93b8ed78d0dcbde4d90a443fdc1b0b02518d" datatype="html">
         <source>View Information</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">270,274</context>
+          <context context-type="linenumber">265,269</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dynamicgrideditor/multiselect-grid.component.html</context>
@@ -7238,28 +7174,28 @@
         <source>Add to selected users/groups</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">290,295</context>
+          <context context-type="linenumber">285,290</context>
         </context-group>
       </trans-unit>
       <trans-unit id="497e7ad4b5c38fb133f31a9777804d67307c42b2" datatype="html">
         <source>Remove from selected users/groups</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">299,305</context>
+          <context context-type="linenumber">294,300</context>
         </context-group>
       </trans-unit>
       <trans-unit id="288a69d8f01f663d3456aa2f57e7947f0a98f26c" datatype="html">
         <source>Selected Users/Groups </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">328,331</context>
+          <context context-type="linenumber">323,326</context>
         </context-group>
       </trans-unit>
       <trans-unit id="064087aa6e3d4b41fd66596f45db167f4787c760" datatype="html">
         <source>Add Folder</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">359,361</context>
+          <context context-type="linenumber">354,356</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.html</context>
@@ -7274,7 +7210,7 @@
         <source>Information</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">370,372</context>
+          <context context-type="linenumber">365,367</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/artifact/artifact-item.component.html</context>
@@ -7317,11 +7253,18 @@
         <source>Close side panel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
-          <context context-type="linenumber">372,376</context>
+          <context context-type="linenumber">367,371</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/relationship-grid/add-relationship.component.html</context>
           <context context-type="linenumber">76,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2e7c96c7bcd53cb1f6443fe7a08c561be533c2d2" datatype="html">
+        <source>Click the information button to display the properties of a referenced item</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.html</context>
+          <context context-type="linenumber">374,379</context>
         </context-group>
       </trans-unit>
       <trans-unit id="600e165ce929242cefa98797a8826fae196f0123" datatype="html">
@@ -7377,6 +7320,20 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.html</context>
           <context context-type="linenumber">61,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d33b639ee4668535495dabce3f9ffd27f9280eab" datatype="html">
+        <source>Available Folder Items</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.html</context>
+          <context context-type="linenumber">97,103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="d3a35a703d457ac1768399c7cdb3c87ce6e18f2a" datatype="html">
+        <source>Existing Folder Items</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu.component.html</context>
+          <context context-type="linenumber">120,125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="52c9a103b812f258bcddc3d90a6e3f46871d25fe" datatype="html">

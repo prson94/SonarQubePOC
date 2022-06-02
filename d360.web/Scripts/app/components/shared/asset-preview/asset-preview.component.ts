@@ -15,7 +15,7 @@ export class AssetPreviewComponent implements OnChanges, OnDestroy {
     @Input() assetTypeUid: string = '';
     @Input() hasOpenLink: boolean = true;
     @Input() hasEditLink: boolean = false;
-
+	@Input() emptyMessage: string = '';
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
@@ -41,7 +41,11 @@ export class AssetPreviewComponent implements OnChanges, OnDestroy {
                 else {
                     this.selectedAsset = { uid: this.assetUid, type: this.assetType };
                 }
-            }
+			}
+
+			if (this.assetUid === '') {
+                this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+			}
         }
     }
 

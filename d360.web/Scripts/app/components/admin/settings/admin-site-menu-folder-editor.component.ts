@@ -462,10 +462,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			if (this.selectedPermissionAssets.indexOf(pa) === -1) {
 				this.selectedPermissionAssets.push(pa);
 				this.permissionAssets = this.permissionAssets.filter((x) => x !== pa);
+				if (pa.uid === this.previewAssetUid) {
+					this.previewAssetUid = '';
+				}
 			}
 		});
 		this.permissionAssetsTotalCount = this.permissionAssets.length;
 		this._tempSelectedPermissionAssets = [];
+
 		this.cdRef.markForCheck();
 	}
 

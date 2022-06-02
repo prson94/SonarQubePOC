@@ -60,7 +60,7 @@
 						</div>
 					</ig-property-group>
 
-				<ig-property-group title="Folder Items" i18n-title [expanded]="false" [shouldBePadded]="false">
+				<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false">
 					<div readonly>
 						<div class="folder-flex-grid">
 							<div class="table-content">
@@ -370,6 +370,8 @@
 			</div>
 			<asset-preview [assetUid]="previewAssetUid"
 						   [assetType]="previewAssetType === 'User' ? 'Resource' : previewAssetType"
+						   i18n-emptyMessage
+						   emptyMessage="Click the information button to display the properties of a referenced item"
 						   [hasEditLink]="false"
 						   [hasOpenLink]="false"></asset-preview>
 		</div>
