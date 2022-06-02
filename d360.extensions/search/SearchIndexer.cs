@@ -34,7 +34,7 @@ namespace d360.extensions.search
             _messages = new List<string>();
         }
 
-		public static readonly List<string> ExcludedFieldTypes = new List<string> {
+		protected static readonly List<string> ExcludedFieldTypes = new List<string> {
 			"DateTime",
 			"Color",
 			"FilteredLookup",
