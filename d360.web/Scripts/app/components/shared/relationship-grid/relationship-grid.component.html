@@ -83,21 +83,21 @@
                                 {{column.text}}
                                 <d3s-sortIcon [field]="column.apiName"></d3s-sortIcon>
                             </th>
-                            <th width="40px"></th>
+                            <th style="flex: 0 0 40px"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
                         <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
-                            <td width="50%">
+                            <td width="50%" style="word-break: break-word;">
                                 {{item.RelationshipTypeName}}
                             </td>
-                            <td>
+                            <td style="word-break: break-word;">
                                 {{item.AssetPath}}
                             </td>
                             <td *ngFor="let column of columns">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
-                            <td width="40px" class="asset-grid-tools">
+                            <td style="flex: 0 0 40px" class="asset-grid-tools">
                                 <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
                                     <button igButton class="ig-button-transparent" type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
