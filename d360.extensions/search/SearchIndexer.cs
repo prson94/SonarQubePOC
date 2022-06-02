@@ -427,12 +427,25 @@ namespace d360.extensions.search
                 origin += ", asset type uid: " + assetTypeUid.ToString();
             }
             model.Origin = origin;
-            CreatePendingDBLog(assetClass, assetTypeUid);
-
-            queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+			if (!IsPendingOrActive(assetClass, assetTypeUid))
+			{
+				CreatePendingDBLog(assetClass, assetTypeUid);
+				queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+			}
         }
 
-        private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
+		private bool IsPendingOrActive(AssetTypeClass assetClass, Guid? assetTypeUid)
+		{
+			object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
+			int count = _context.QuerySingle<int>(@"SELECT COUNT(1) FROM [queue].[Search]
+				WHERE Class = @assetClass AND AssetTypeUid = @AssetTypeUid
+				AND (Active = 1 OR status = @status)
+				AND LastUpdate > DATEADD(MINUTE, -5, GETUTCDATE())
+			", param);
+			return count > 0;
+		}
+
+		private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
         {
             object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
 
