@@ -60,133 +60,128 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false">
-						<div readonly>
-							<div class="folder-flex-grid">
-								<div class="table-content">
-									<ig-search-field class="search tooltip-full-width"
-													 mode="Keypress"
-													 i18n-placeholder
-													 [infoTooltip]="simpleSearchTooltipHTML"
-													 placeholder="Search"
-													 [(ngModel)]="simpleTextFilter"
-													 (onSearch)="dt3.filterGlobal($event, 'contains')"
-													 style="width:100%; padding-bottom:8px;"></ig-search-field>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
-										<p-table #dt3
-												 [globalFilterFields]="['Title']"
-												 [value]="availableItems"
-												 selectionMode="multiple"
-												 [loading]="isLoading"
-												 [loadingIcon]="'fa fa-spinner fa-spin'"
-												 [metaKeySelection]="true"
-												 [paginator]="true"
-												 paginatorDropdownAppendTo="body"
-												 [rows]="10"
-												 [rowsPerPageOptions]="defaultPagingOptions"
-												 [scrollable]="true">
-											<ng-template pTemplate="header">
-												<tr>
-													<th i18n>Available Folder Items</th>
-													<th></th>
-												</tr>
-											</ng-template>
-											<ng-template pTemplate="body" let-item>
-												<tr [pSelectableRow]="item">
-													<td>{{item.Title}}</td>
-													<td>
-														<div class="RowTools" style="height: initial;">
-															<a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-														</div>
-													</td>
-												</tr>
-											</ng-template>
-											<ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
-												<d3s-grid-paging-info [first]="dt3.first"
-																	  [rows]="dt3.rows"
-																	  [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
-											</ng-template>
-										</p-table>
-									</div>
+				<ig-property-group title="Folder Items" i18n-title [expanded]="false" [shouldBePadded]="false">
+					<div readonly>
+						<div class="folder-flex-grid">
+							<div class="table-content">
+								<ig-search-field class="search tooltip-full-width"
+												 mode="Keypress"
+												 i18n-placeholder
+												 [infoTooltip]="simpleSearchTooltipHTML"
+												 placeholder="Search"
+												 [(ngModel)]="simpleTextFilter"
+												 (onSearch)="dt3.filterGlobal($event, 'contains')"
+												 style="width:100%; padding-bottom:8px;"></ig-search-field>
+								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+									<p-table #dt3
+											 [globalFilterFields]="['Title']"
+											 [value]="availableItems"
+											 [(selection)]="selectedFolderItems"
+											 selectionMode="multiple"
+											 [metaKeySelection]="true"
+											 [paginator]="true"
+											 paginatorDropdownAppendTo="body"
+											 [rows]="10"
+											 [rowsPerPageOptions]="defaultPagingOptions"
+											 [scrollable]="true"
+											 scrollHeight="420px">
+										<ng-template pTemplate="header">
+											<tr>
+												<th>Available Folder Items</th>
+												<th></th>
+											</tr>
+										</ng-template>
+										<ng-template pTemplate="body" let-item>
+											<tr [pSelectableRow]="item">
+												<td>{{item.Title}}</td>
+												<td>
+													<div class="RowTools" style="height: initial;">
+														<a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
+													</div>
+												</td>
+											</tr>
+										</ng-template>
+										<ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
+											<d3s-grid-paging-info [first]="dt3.first"
+																  [rows]="dt3.rows"
+																  [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
+										</ng-template>
+									</p-table>
 								</div>
-								<div class="buttons-grid">
-									<div style="height:100px"></div>
-									<div class="buttons-vertical">
-										<button igButton
-												class="ig-lookup-grid-button"
-												icon="fa-arrow-right"
-												(click)="addNewFolder(pSelectableRow)"
-												i18n-pTooltip
-												pTooltip="Add to selected folder items"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button"
-												icon="fa-arrow-left"
-												(click)="removeFromSelectedFolderItems()"
-												i18n-pTooltip
-												pTooltip="Remove from selected folder items"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<div style="height:16px"></div>
-										<button igButton
-												class="ig-lookup-grid-button rotateRight"
-												icon="fa-step-backward"
-												(click)="moveToTop()"
-												i18n-pTooltip
-												pTooltip="Move to top"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button rotateLeft"
-												icon="fa-play"
-												(click)="moveUp()"
-												i18n-pTooltip
-												pTooltip="Move up"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button rotateRight"
-												icon="fa-play"
-												(click)="moveDown()"
-												i18n-pTooltip
-												pTooltip="Move down"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button rotateLeft"
-												icon="fa-step-backward"
-												(click)="moveToBottom()"
-												i18n-pTooltip
-												pTooltip="Move to bottom"
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-									</div>
+							</div>
+							<div class="buttons-grid">
+								<div style="height:100px"></div>
+								<div class="buttons-vertical">
+									<button igButton
+											class="ig-lookup-grid-button"
+											icon="fa-arrow-right"
+											(click)="addToSelectedFolderItems()"
+											pTooltip="Add to selected folder items"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip"></button>
+									<button igButton
+											class="ig-lookup-grid-button"
+											icon="fa-arrow-left"
+											(click)="removeFromSelectedFolderItems()"
+											pTooltip="Remove from selected folder items"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip"></button>
+									<div style="height:16px"></div>
+									<button igButton
+											class="ig-lookup-grid-button rotateRight"
+											icon="fa-step-backward"
+											(click)="moveToTop()"
+											pTooltip="Move to top"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip"></button>
+									<button igButton
+											class="ig-lookup-grid-button rotateLeft"
+											icon="fa-play"
+											(click)="moveUp()"
+											pTooltip="Move up"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip"></button>
+									<button igButton
+											class="ig-lookup-grid-button rotateRight"
+											icon="fa-play"
+											(click)="moveDown()"
+											pTooltip="Move down"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip"></button>
+									<button igButton
+											class="ig-lookup-grid-button rotateLeft"
+											icon="fa-step-backward"
+											(click)="moveToBottom()"
+											pTooltip="Move to bottom"
+											tooltipPosition="top"
+											tooltipStyleClass="ig-tooltip"></button>
 								</div>
-								<div class="table-content">
-									<ig-search-field class="search tooltip-full-width"
-													 mode="Keypress"
-													 i18n-placeholder
-													 [infoTooltip]="simpleSearchTooltipHTML"
-													 placeholder="Search"
-													 [(ngModel)]="simpleTextFilterForExistingItems"
-													 (onSearch)="dt4.filterGlobal($event, 'contains')"
-													 style="width:100%; padding-bottom:8px;"></ig-search-field>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
-										<p-table #dt4 [value]="newFolderItems"
-												 [globalFilterFields]="['Title']"
-												 selectionMode="multiple"
-												 [metaKeySelection]="true"
-												 [paginator]="true"
-												 paginatorDropdownAppendTo="body"
-												 [rows]="10"
-												 [rowsPerPageOptions]="defaultPagingOptions"
-												 [scrollable]="true">
-											<ng-template pTemplate="header">
-												<tr>
-													<th i18n>Existing Folder Items</th>
-													<th></th>
-												</tr>
+							</div>
+							<div class="table-content">
+								<ig-search-field class="search tooltip-full-width"
+												 mode="Keypress"
+												 i18n-placeholder
+												 [infoTooltip]="simpleSearchTooltipHTML"
+												 placeholder="Search"
+												 [(ngModel)]="simpleTextFilterForExistingItems"
+												 (onSearch)="dt4.filterGlobal($event, 'contains')"
+												 style="width:100%; padding-bottom:8px;"></ig-search-field>
+								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+									<p-table #dt4 [value]="newFolderItems"
+											 [globalFilterFields]="['Title']"
+											 selectionMode="multiple"
+											 [metaKeySelection]="true"
+											 [paginator]="true"
+											 paginatorDropdownAppendTo="body"
+											 [rows]="10"
+											 [rowsPerPageOptions]="defaultPagingOptions"
+											 [scrollable]="true"
+											 scrollHeight="420px">
+										<ng-template pTemplate="header">
+											<tr>
+												<th>Existing Folder Items</th>
+												<th></th>
+											</tr>
 
 											</ng-template>
 											<ng-template pTemplate="body" let-item>

@@ -61,6 +61,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	iconType = 'icon';
 	isInError: boolean = false;
 	newFolderItems: SiteNav[] = [];
+	selectedFolderItems: SiteNav[] = [];
 	folderModel: SiteNav;
 	selection: SiteNav = null;
 	folderForm: FormGroup;
@@ -113,6 +114,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.isLoading = true;
 		this.selection = null;
 		this.newFolderItems = new Array<SiteNav>();
+		this.selectedFolderItems = new Array<SiteNav>();
 		this.loadFolderItems();
 
 		this.folderForm = this.formBuilder.group({
@@ -415,7 +417,15 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		el.click();
 	}
 
-	addToSelectedFolderItems(items: SiteNav[]) {
+	addToSelectedFolderItems() {
+		if (this.selectedFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedFolderItems.length; j++) {
+				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedFolderItems[j].ObjectID && i.Object == this.selectedFolderItems[j].Object);
+				let newItem = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+				this.newFolderItems.push(newItem);
+			}
+			this.selectedFolderItems = new Array<SiteNav>();
+		}
 	}
 
 	removeFromSelectedFolderItems(items: SiteNav[]) {
