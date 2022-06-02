@@ -896,7 +896,7 @@ namespace d360.web.Controllers
             try
             {
 
-				var excludedProps = new string[] { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
+				var excludedProps = new[] { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
 				var claimMappings = getClaimMappings();
 				var propBuilder = new StringBuilder(string.Empty);
 
@@ -998,7 +998,7 @@ namespace d360.web.Controllers
 					}
 				}
 
-				Telemetry.TrackTrace("OpenId properties are: " + propBuilder.ToString(), SeverityLevel.Verbose);
+				Telemetry.TrackTrace("OpenId properties are: " + propBuilder, SeverityLevel.Verbose);
 				Telemetry.TrackTrace("OpenId => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
 
 				foreach (var prop in combinedClaims)
