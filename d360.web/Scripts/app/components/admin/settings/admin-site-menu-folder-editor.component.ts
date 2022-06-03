@@ -415,7 +415,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				let newItem = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 				this.newFolderItems.push(newItem);
 			}
-			this.selectedFolderItems = new Array<SiteNav>();
+			this.selectedFolderItems = [];
 		}
 	}
 
@@ -426,7 +426,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
 				this.availableItems.push(i);
 			}
-			this.selectedNewFolderItems = new Array<SiteNav>();
+			this.selectedNewFolderItems = [];
 		}
 	}
 
@@ -503,14 +503,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	selectAllAvailableFolderItems($event, table: Table) {
 		this.selectedFolderItems = [];
 		for (let i = 0; i < table.selection.length; i++) {
-			this.selectedFolderItems.push(this.availableItems.find((item) => item.ObjectID == table.selection[i].ObjectID));
+			let x = this.availableItems.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
+			this.selectedFolderItems.push(_.cloneDeep(this.availableItems[x]));
 		}
 	}
 
 	selectAllSelectedFolderItems($event, table: Table) {
 		this.selectedNewFolderItems = [];
 		for (let i = 0; i < table.selection.length; i++) {
-			this.selectedNewFolderItems.push(this.newFolderItems.find((item) => item.ObjectID == table.selection[i].ObjectID));
+			let x = this.newFolderItems.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
+			this.selectedNewFolderItems.push(_.cloneDeep(this.newFolderItems[x]));
 		}
 	}
 
