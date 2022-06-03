@@ -123,3 +123,5 @@
 
 # Ignore JetBrains IDEs
 /.idea
+/utilities/igx.ThemeMigration/bin/Debug
+/utilities/igx.ThemeMigration/obj/Debug
