@@ -85,9 +85,9 @@
                                     <ng-container i18n>Base Type</ng-container>
                                     <d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
                                 </th>
-                                <th *ngIf="showDisabled" style="width:100px">
+                                <th *ngIf="showDisabled" style="flex: 0 0 100px">
                                 </th>
-                                <th style="width: 5%" alignFrozen="right" pFrozenColumn></th>
+                                <th style="flex: 0 0 30px"></th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-item>
@@ -111,10 +111,10 @@
                                 </td>
                                 <td>{{item.priority}}</td>
                                 <td>{{(item.baseType == 0 ? '' : getBaseTypeText(item.baseType))}}</td>
-                                <td *ngIf="showDisabled" style="width:100px">
+                                <td *ngIf="showDisabled" style="flex: 0 0 100px">
                                     <span *ngIf="isDisabled(item.effectiveDate, item.updatedOn)"><ig-badge [text]="'Disabled'" [variant]="'disabled'"></ig-badge></span>
                                 </td>
-                                <td class="asset-grid-tools" style="width: 5%; " alignFrozen="right" pFrozenColumn>
+                                <td class="asset-grid-tools" style="flex: 0 0 30px" alignFrozen="right" pFrozenColumn>
                                     <div style="display:inline-block">
                                         <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); menu.toggle($event)"></button>
                                         <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #menu [tabIndex]="1"></ig-popup-menu>
