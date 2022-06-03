@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -33,6 +34,18 @@ namespace d360.extensions.search
             _source = source;
             _messages = new List<string>();
         }
+
+		public static readonly ReadOnlyCollection<string> ExcludedFieldTypes = new List<string> {
+			"DateTime",
+			"Color",
+			"FilteredLookup",
+			"ComplexRelationLookup",
+			"OwnershipLookup",
+			"Relationship",
+			"FieldFromRelationship",
+			"RefListRelationship",
+			"JSON"
+		}.AsReadOnly();
 
         private static readonly List<string> allowedClassesAndObjectTypes = new List<string> {
                 SystemObjects.Artifact.ToString(),
@@ -415,12 +428,25 @@ namespace d360.extensions.search
                 origin += ", asset type uid: " + assetTypeUid.ToString();
             }
             model.Origin = origin;
-            CreatePendingDBLog(assetClass, assetTypeUid);
-
-            queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+			if (!IsPendingOrActive(assetClass, assetTypeUid))
+			{
+				CreatePendingDBLog(assetClass, assetTypeUid);
+				queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), model);
+			}
         }
 
-        private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
+		private bool IsPendingOrActive(AssetTypeClass assetClass, Guid? assetTypeUid)
+		{
+			object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
+			int count = _context.QuerySingle<int>(@"SELECT COUNT(1) FROM [queue].[Search]
+				WHERE Class = @assetClass AND AssetTypeUid = @AssetTypeUid
+				AND (Active = 1 OR status = @status)
+				AND LastUpdate > DATEADD(MINUTE, -5, GETUTCDATE())
+			", param);
+			return count > 0;
+		}
+
+		private int CreatePendingDBLog(AssetTypeClass assetClass, Guid? assetTypeUid)
         {
             object param = new { assetClass, assetTypeUid = assetTypeUid ?? Guid.Empty, status = SearchJobStatus.Pending };
 
@@ -1107,7 +1133,7 @@ namespace d360.extensions.search
             string fieldsSql = @"select F.AssetID, FT.Name, F.FormattedValue from Field F " +
                 string.Join(" " + Environment.NewLine, fieldJoin.ToArray()) +
             " where F.FormattedValue is not null and F.FormattedValue <> '' and " +
-            " FT.[Type] not in('DateTime','Color','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
+            " FT.[Type] not in('" + string.Join("','", ExcludedFieldTypes.ToArray()) + "')";
             if (fieldWhere.Any())
             {
                 fieldsSql += " and " + string.Join(Environment.NewLine + " and ", fieldWhere.ToArray());
