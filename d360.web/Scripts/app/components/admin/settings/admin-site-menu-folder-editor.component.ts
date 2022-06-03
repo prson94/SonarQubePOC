@@ -436,8 +436,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
 				this.newFolderItems.splice(j, 0, this.newFolderItems.splice(x, 1)[0])
 			}
-			this.selectedNewFolderItems = new Array<SiteNav>();
-			this.cdRef.markForCheck();
 		}
 	}
 
@@ -448,13 +446,56 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		);
 	}
 
-	moveUp(items: SiteNav[]) {
+	disableBtnMoveUp() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
+		);
 	}
 
-	moveDown(items: SiteNav[]) {
+	moveUp() {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				this.newFolderItems.splice(x-1, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
+	}
+
+	disableBtnMoveDown() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex(
+				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
+		);
+	}
+
+	moveDown() {
+		if (this.selectedNewFolderItems.length > 0) {
+			debugger;
+			for (let j = this.selectedNewFolderItems.length-1; j >= 0; j--) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
+	}
+
+	disableBtnMoveToBottom() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex(
+				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
+		);
 	}
 
 	moveToBottom(items: SiteNav[]) {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let newPosition = this.newFolderItems.length - j;
+				this.newFolderItems.splice(newPosition - 1, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
 	}
 
 	lastLoadedEvent: any;

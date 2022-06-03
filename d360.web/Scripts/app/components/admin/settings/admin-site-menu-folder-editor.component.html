@@ -148,6 +148,7 @@
 											tooltipStyleClass="ig-tooltip"></button>
 									<button igButton
 											class="ig-lookup-grid-button rotateLeft"
+											[disabled]="disableBtnMoveUp()"
 											icon="fa-play"
 											(click)="moveUp()"
 											pTooltip="Move up"
@@ -155,6 +156,7 @@
 											tooltipStyleClass="ig-tooltip"></button>
 									<button igButton
 											class="ig-lookup-grid-button rotateRight"
+											[disabled]="disableBtnMoveDown()"											
 											icon="fa-play"
 											(click)="moveDown()"
 											pTooltip="Move down"
@@ -162,6 +164,7 @@
 											tooltipStyleClass="ig-tooltip"></button>
 									<button igButton
 											class="ig-lookup-grid-button rotateLeft"
+											[disabled]="disableBtnMoveToBottom()"
 											icon="fa-step-backward"
 											(click)="moveToBottom()"
 											pTooltip="Move to bottom"
