@@ -8,11 +8,11 @@
         cursor: default;
     }
     
-    &:hover > button > &__overlay {
+    &:not(&--uneditable):hover > button > &__overlay {
         opacity: .2;
     }
 
-    &:active > button > &__overlay {
+    &:not(&--uneditable):active > button > &__overlay {
         opacity: .4;
     }
     
