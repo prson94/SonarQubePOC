@@ -284,10 +284,10 @@ namespace d360.core.entities
         public List<DataProfileSampleDetail> percentileStatistics { get; set; }
 
 		[DataMember]
-		public List<DataProfileTextPatternDetail> textPatternDetail { get; set; }
+		public List<DataProfileTextPatternDetail> textPatternDetails { get; set; }
 
 		[DataMember]
-		public List<DataProfileSemanticAnalysisDetail> semanticAnalysisDetail { get; set; }
+		public List<DataProfileSemanticAnalysisDetail> semanticAnalysisDetails { get; set; }
 
 		[DataMember(Name = "totalCount")]
         public long? TotalCount { get; set; }
@@ -376,8 +376,8 @@ namespace d360.core.entities
             topK = samples.Where((s) => s.SampleType.Equals("topk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
             bottomK = samples.Where((s) => s.SampleType.Equals("bottomk", StringComparison.InvariantCultureIgnoreCase)).Select((sd) => sd.Value).ToList();
 
-			textPatternDetail = details?.Where(d => d.SampleType.Equals("textPatternDetail", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileTextPatternDetail>(d.Value))?.ToList() ?? null;
-			semanticAnalysisDetail = details?.Where(d => d.SampleType.Equals("semanticAnalysisDetail", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileSemanticAnalysisDetail>(d.Value))?.ToList() ?? null;
+			textPatternDetails = details?.Where(d => d.SampleType.Equals("textPatternDetails", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileTextPatternDetail>(d.Value))?.ToList() ?? null;
+			semanticAnalysisDetails = details?.Where(d => d.SampleType.Equals("semanticAnalysisDetails", StringComparison.InvariantCultureIgnoreCase))?.Select(d => JsonConvert.DeserializeObject<DataProfileSemanticAnalysisDetail>(d.Value))?.ToList() ?? null;
 
 			if (topK.Count == 0)
             {

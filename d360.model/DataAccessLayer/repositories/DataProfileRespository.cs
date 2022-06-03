@@ -958,8 +958,8 @@ namespace d360.model.DataAccessLayer
 								{(includeSamples ? ",JSON_QUERY(characterSpacingStatistics.[value]) as characterSpacingStatistics" : "")}
 								{(includeSamples ? ",JSON_QUERY(specialCharacterStatistics.[value]) as specialCharacterStatistics" : "")}
 								{(includeSamples ? ",JSON_QUERY(percentileStatistics.[value]) as percentileStatistics" : "")}
-								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(textStatistics.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as textPatternDetail" : "")}
-								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(semanticStatistics.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as semanticAnalysisDetail" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(textPatternDetails.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as textPatternDetails" : "")}
+								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(semanticAnalysisDetails.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as semanticAnalysisDetails" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
 								,ADP.TotalCount
@@ -1102,10 +1102,10 @@ namespace d360.model.DataAccessLayer
 															where
 																AssetDataProfileId = ADP.ID
 																and
-																lower(SampleType) = 'textPatternDetail'
+																lower(SampleType) = 'textPatternDetails'
 															for json path
 															) as [value]
-								) as textPatternDetail
+								) as textPatternDetails
 								outer apply (
 								
 													select  (
@@ -1114,10 +1114,10 @@ namespace d360.model.DataAccessLayer
 															where
 																AssetDataProfileId = ADP.ID
 																and
-																lower(SampleType) = 'semanticAnalysisDetail'
+																lower(SampleType) = 'semanticAnalysisDetails'
 															for json path
 															) as [value]
-								) as semanticAnalysisDetail
+								) as semanticAnalysisDetails
 "
 					: "")}";
 		}

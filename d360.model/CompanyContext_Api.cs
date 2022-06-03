@@ -12290,9 +12290,9 @@ EG.GroupUid
                             }
                         }
 
-						if (item.textPatternDetail != null)
+						if (item.textPatternDetails != null)
 						{
-							foreach (DataProfileTextPatternDetail stat in item?.textPatternDetail)
+							foreach (DataProfileTextPatternDetail stat in item?.textPatternDetails)
 							{
 								DataRow jsonRow = DataProfileSampleTable.NewRow();
 								jsonRow["ExecutionID"] = execution.ExecutionID;
@@ -12301,15 +12301,15 @@ EG.GroupUid
 								{
 									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
 								}
-								jsonRow["SampleType"] = "textPatternDetail";
+								jsonRow["SampleType"] = "textPatternDetails";
 								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
 								DataProfileSampleTable.Rows.Add(jsonRow);
 							}
 						}
 
-						if (item.semanticAnalysisDetail != null)
+						if (item.semanticAnalysisDetails != null)
 						{
-							foreach (DataProfileSemanticAnalysisDetail stat in item?.semanticAnalysisDetail)
+							foreach (DataProfileSemanticAnalysisDetail stat in item?.semanticAnalysisDetails)
 							{
 								DataRow jsonRow = DataProfileSampleTable.NewRow();
 								jsonRow["ExecutionID"] = execution.ExecutionID;
@@ -12318,7 +12318,7 @@ EG.GroupUid
 								{
 									jsonRow["ExecutionItemUid"] = item.ExecutionItemUid;
 								}
-								jsonRow["SampleType"] = "semanticAnalysisDetail";
+								jsonRow["SampleType"] = "semanticAnalysisDetails";
 								jsonRow["JsonValue"] = JsonConvert.SerializeObject(stat);
 								DataProfileSampleTable.Rows.Add(jsonRow);
 							}
