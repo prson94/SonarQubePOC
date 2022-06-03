@@ -194,9 +194,6 @@
 											 [(selection)]="selectedNewFolderItems"
 											 [metaKeySelection]="false"
   											 (onHeaderCheckboxToggle)="selectAllSelectedFolderItems($event, dt4)"
-											 [paginator]="true"
-											 paginatorDropdownAppendTo="body"
-											 [rows]="10"
 											 [rowsPerPageOptions]="defaultPagingOptions"
 											 [scrollable]="true"
 											 scrollHeight="420px">
@@ -216,11 +213,6 @@
 												</td>
 												<td>{{item.Title}}</td>
 											<tr>
-										</ng-template>
-										<ng-template pTemplate="summary">
-											<d3s-grid-paging-info [first]="dt4.first"
-																  [rows]="dt4.rows"
-																  [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
 										</ng-template>
 									</p-table>
 								</div>
