@@ -176,9 +176,7 @@ export class DataProfileService extends BaseObservableService {
             }
         }
 
-        if (!includeDisabled) {
-            url += `&_includeDisabled=false`;
-        }
+		url += `&_includeDisabled=${includeDisabled}`;
 
         if (isExport) {
             this.
