@@ -23,7 +23,6 @@ using d360.core.entities.Workflow;
 using d360.model.validators;
 using d360.core.entities.Metric;
 using d360.core;
-using System.Dynamic;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using AutoFixture;
@@ -31,18 +30,55 @@ using d360.model.helpers.filters;
 using MediatR;
 using d360.web.Controllers;
 using d360.web.Utilities;
+using FluentAssertions;
+using igx.UnitTests.V2ControllerTests;
 using LaunchDarkly.Sdk.Server;
+using Moq.Language;
+using Moq.Language.Flow;
 
 namespace igx.UnitTests
 {
     public abstract class BaseTest
     {
-        protected Fixture Fixture { get; }
+        protected IFixture Fixture { get; }
 
         protected BaseTest()
         {
-            Fixture = new Fixture();
-            Fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+            Fixture = FixtureProvider.Create();
+        }
+
+        protected TestException ThrowsTestExceptionAsync<TMock, TResult>(IReturns<TMock, Task<TResult>> mock) where TMock : class
+        {
+	        var exception = Fixture.Create<TestException>();
+	        mock.ThrowsAsync(exception);
+	        return exception;
+        }
+
+        protected TestException ThrowsTestException(IThrows mock)
+        {
+	        var exception = Fixture.Create<TestException>();
+	        mock.Throws(exception);
+	        return exception;
+        }
+
+        protected async Task VerifyTestExceptionAsync<TResult>(Task<TResult> task, TestException testException)
+        {
+	        // act
+	        try
+	        {
+		        await task;
+                Assert.False(true, $"Exception not thrown");
+	        }
+	        catch (Exception exception)
+	        {
+		        // assert
+		        exception.Should().Be(testException);
+	        }
+        }
+
+        protected Func<Task<TResult>> Act<TResult>(Task<TResult> task)
+        {
+	        return () => task;
         }
 
         #region Mock Interfaces

@@ -103,7 +103,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         }
 
         this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticDetails.qualifier, 1, 1, this.semanticDetails.threshold).subscribe((result) => {
-            this.assetCount = result.total;
+            this.assetCount = result?.total ?? 0;
             this.isLoading = false;
         });
         if (this.canViewUsers) {

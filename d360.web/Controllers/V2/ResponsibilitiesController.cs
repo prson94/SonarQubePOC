@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -14,15 +13,14 @@ using d360.core.enums;
 using d360.core.queue;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using d360.model.DataAccessLayer.repositories;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
+using d360.web.Utilities;
 using MediatR;
-
 using Microsoft.Web.Http;
-
 using Resources;
-
 using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.V2
@@ -40,17 +38,23 @@ namespace d360.web.Controllers.V2
         private readonly IAssetRepository AssetRepository;
         private IMediator Mediator { get; }
         private readonly IResponsibilityRepository ResponsibilityRepository;
+        private readonly IResourceRepository ResourceRepository;
+        private readonly IAssetService AssetService;
 
         public ResponsibilitiesController(ICoreComponentSet set,
             IAssetRepository assetRepository,
             IMediator mediator,
-            IResponsibilityRepository responsibilityRepository
+            IResponsibilityRepository responsibilityRepository,
+            IResourceRepository resourceRepository,
+            IAssetService assetService
             )
             : base(set)
         {
             Mediator = mediator;
             ResponsibilityRepository = responsibilityRepository;
+            ResourceRepository = resourceRepository;
             AssetRepository = assetRepository;
+            AssetService = assetService;
         }
 
         /// <summary>
@@ -1586,10 +1590,7 @@ namespace d360.web.Controllers.V2
             if (responsibilityTypeUid != null)
             {
 	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
-	            if (responsibilityType == null)
-	            {
-		            throw new ArgumentException("Specified responsibility type not found");
-	            }
+	            Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
             }
 
             var result = await ResponsibilityRepository.GetTypeBreakdownAsync(responsibilityTypeUid);
@@ -1607,28 +1608,41 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("breakdown/{resourceUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(IReadOnlyList<ResponsibilityGetBreakdownByResourceModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(ICollection<ResponsibilityGetBreakdownByResourceModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetResponsibilityBreakdownByResource(Guid resourceUid, [FromUri] Guid? responsibilityTypeUid = null)
+        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdownByResource(Guid resourceUid, [FromUri] Guid? responsibilityTypeUid = null)
         {
             ValidateParameters();
 
-            // create business logic request model
-            var request = new ResponsibilityGetBreakdownByResourceRequest()
+            var resource = await ResourceRepository.GetByUidAsync(resourceUid);
+            Condition.Require(resource, NotFoundBusinessLayerException.Create<GlobalReportingResource>);
+
+            if (responsibilityTypeUid != null)
             {
-                ResourceUid = resourceUid,
-                ResponsibilityTypeUid = responsibilityTypeUid
-            };
+	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
+	            Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
+            }
 
-            // call business logic
-            var response = await Mediator.Send(request);
+            var entities = await ResponsibilityRepository.GetTypeBreakdownByResourceAsync(resourceUid, responsibilityTypeUid);
 
-            // convert result to UI (API) representation.
-            var result = response.ItemCollection;
+            ResponsibilityGetBreakdownByResourceModel Convert(ResponsibilityBreakdownByResourceAggregate aggregate)
+            {
+	            var model = new ResponsibilityGetBreakdownByResourceModel
+	            {
+		            Name = AssetService.GetAssetName(aggregate.AssetType),
+		            Class = aggregate.AssetType.Class.ToString(),
+		            AssetTypeUid = aggregate.AssetType.uid,
+		            AssetCount = aggregate.AssetCount
+	            };
+
+	            return model;
+            }
+
+            ICollection<ResponsibilityGetBreakdownByResourceModel> result = entities.Select(Convert).ToList();
 
             return Ok(result);
         }
