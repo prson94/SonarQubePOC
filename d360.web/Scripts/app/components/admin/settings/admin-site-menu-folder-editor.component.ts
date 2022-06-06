@@ -21,6 +21,7 @@ import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Vali
 import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
 import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
 import { DataProfileService } from '../../../services/dataprofile.service';
+import { FormHelper } from '../../../models/form.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -331,22 +332,25 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 		this.iconType = 'image';
 		this.iconImage.file = files[0];
-		this.iconImage.setDataUrl();
-		if (this.formMode == FormMode.Editing) {
-			this.selection.IconPayload = this.iconImage.dataUrl;
-		} else if (this.formMode == FormMode.Adding) {
-			this.folderModel.IconPayload = this.iconImage.dataUrl;
-			this.folderModel.Icon = 'Custom';
-			if (!this.categories[0].label) {
-				this.categories[0].items = [{ label: 'Custom', path: this.iconImage.dataUrl, img: true }];
-			} else {
-				this.categories = [{
-					label: null,
-					items: [{ label: 'Custom', path: this.iconImage.dataUrl, img: true }]
-				}, ...this.categories
-				]
+		FormHelper.getDataUrl(files[0])
+			.then(dataUrl => {
+				if (this.formMode == FormMode.Editing) {
+					this.selection.IconPayload = dataUrl;
+				} else if (this.formMode == FormMode.Adding) {
+					this.folderModel.IconPayload = dataUrl;
+					this.folderModel.Icon = 'Custom';
+					if (!this.categories[0].label) {
+						this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
+					} else {
+						this.categories = [{
+							label: null,
+							items: [{ label: 'Custom', path: dataUrl, img: true }]
+						}, ...this.categories
+						]
+					}
+				}
 			}
-		}
+		)
 	}
 
 	loadFolderItems() {

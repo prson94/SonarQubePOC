@@ -37,24 +37,6 @@
 											</div>
 										</div>
 									</div>
-									<div class="col s1 m1 l1">
-										&nbsp;
-									</div>
-									<div class="col s12 m5 l5">
-										<div class="FieldName" i18n>Preview</div>
-										<div *ngIf="iconType == 'icon'" style="padding:10px">
-											<span style="font-size: 15px">
-												<img class="d3s-gov-icon" *ngIf="checkIfImg(folderModel.Icon)" [src]="folderModel.Icon" />
-												<i *ngIf="!checkIfImg(folderModel.Icon)" [class]="'fa ' + folderModel.Icon"></i>
-											</span>
-										</div>
-										<div *ngIf="iconType == 'image'" style="padding:10px">
-											<img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 15px; max-height: 15px;" />
-											<div *ngIf="iconImage.dataUrl != null">
-												<button pButton type="button" i18n-label label="Clear" (click)="clearIcon()"></button>
-											</div>
-										</div>
-									</div>
 								</div>
 							</div>
 						</div>
