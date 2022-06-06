@@ -93,6 +93,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	higlightedItem: any;
 	previewAssetUid: any;
 	previewAssetType: any;
+	categories: any[] = [];
 
 	private iconImage: CompanyImage = new CompanyImage();
 
@@ -340,13 +341,23 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 		}
 
-
+		this.iconType = 'image';
 		this.iconImage.file = files[0];
 		this.iconImage.setDataUrl();
 		if (this.formMode == FormMode.Editing) {
 			this.selection.IconPayload = this.iconImage.dataUrl;
 		} else if (this.formMode == FormMode.Adding) {
 			this.folderModel.IconPayload = this.iconImage.dataUrl;
+			this.folderModel.Icon = 'Custom';
+			if (!this.categories[0].label) {
+				this.categories[0].items = [{ label: 'Custom', path: this.iconImage.dataUrl, img: true }];
+			} else {
+				this.categories = [{
+					label: null,
+					items: [{ label: 'Custom', path: this.iconImage.dataUrl, img: true }]
+				}, ...this.categories
+				]
+			}
 		}
 	}
 

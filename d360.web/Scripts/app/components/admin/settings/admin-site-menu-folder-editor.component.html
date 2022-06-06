@@ -33,7 +33,7 @@
 												<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
 											</div>
 											<div style="padding-bottom: 10px;">
-												<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" ngDefaultControl></ig-icon-picker>
+												<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" [(categories)]="categories" ngDefaultControl></ig-icon-picker>
 											</div>
 										</div>
 									</div>

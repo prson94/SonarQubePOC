@@ -15,7 +15,7 @@
                 [placeholder]="(isRequired ? 'Required' : 'Optional')"
                 filterPlaceholder="Type to filter">
         <ng-template let-group pTemplate="group">
-            <span>{{group.label}}</span>
+            <span [class.noGroup] ="!group.label">{{group.label}}</span>
         </ng-template>
         <ng-template let-item pTemplate="selectedItem">
             <div class="iconfield-item-selected">
