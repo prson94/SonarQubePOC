@@ -7,7 +7,7 @@ namespace igx.UnitTests
 	{
 		public static IEnumerable<T> CreateEnumerable<T>(this IFixture fixture, int count = 3)
 		{
-			for (int i = 0; i < 3; i++)
+			for (var i = 0; i < count; i++)
 			{
 				yield return fixture.Create<T>();
 			}
