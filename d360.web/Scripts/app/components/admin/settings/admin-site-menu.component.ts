@@ -71,7 +71,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.loadNavItems();
 	}
 
-	loadNavItems(preselectModel = null) {
+	loadNavItems(preselectModel = null, preselectByName = null) {
 		this.isLoading = true;
 		this.siteMenuService.getSiteNavItems().subscribe((nav) => {
 			this.companySettings.SiteNav = nav;
@@ -79,6 +79,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			if (preselectModel) {
 				var folder: SiteNav = preselectModel.folder;
 				this.selection = this.companySettings.SiteNav.find((res) => res.Object === folder.Object && res.ObjectID === folder.ObjectID);
+			} else if (preselectByName) {
+				this.selection = this.companySettings.SiteNav.find((res) => res.Name === preselectByName);
 			}
 			this.setMenuOptions();
 			this.isLoading = false;
@@ -559,5 +561,14 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.loadFolderItems();
 		this.showAssetTypeModelDialog = false;
 		this.loadNavItems(model);
+	}
+
+	saveNavigationFolder(model) {
+		this.showFolderModalDialog = false;
+		this.stateService.reloadLeftNavMenu();
+		this.onSaveComplete.emit();
+		this.selection = null;
+		this.loadFolderItems();
+		this.loadNavItems(null, model.item);
 	}
 }

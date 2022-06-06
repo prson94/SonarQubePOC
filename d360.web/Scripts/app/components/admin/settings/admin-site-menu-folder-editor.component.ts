@@ -155,12 +155,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		return this.folderForm.valid;
 	}
 
-	onSubmit(addAnother: boolean = false) {
+	save() {
 		this.savingInProgress = true;
-
-		if (addAnother) {
-			this.savingInProgressWithAddNew = true;
-		}
 
 		this.clearInvalidFields();
 
@@ -181,9 +177,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			case FormMode.Adding:
 
 				this.folderModel.IconPayload = this.iconImage.dataUrl;
+				this.folderModel.Permissions = this.selectedPermissionAssets;
 				var model = {
 					folder: this.folderModel,
-					items: this.newFolderItems
+					items: this.newFolderItems,
 				};
 
 				this.siteMenuService.addFolder(model)
@@ -193,27 +190,18 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						this.isAvailableFolderItemsTableLoading = false;
 						this.stateService.reloadLeftNavMenu();
 						this.siteMenuService.setSiteNavPermissions(this.selection);
-						this.handleSaveComplete(result, addAnother);
+						this.handleSaveComplete(result);
 					});
 				break;
 		}
 	}
 
-	handleSaveComplete(res: any, addAnother: boolean = false) {
+	handleSaveComplete(res: any) {
 		if (!(res?.status)) {
-			let msg = `Successfully ${this.isEdit ? 'updated' : 'created'}`;
-			this.showMessageForResult(this.messagesService, res, msg);
-			this.savingInProgress = false;
-			this.savingInProgressWithAddNew = false;
-			if (addAnother) {
-				this.folderModel = new SiteNav();
-				this.folderForm.reset();
-			}
-			this.saveClick.emit({ item: res[0], action: `${this.isEdit ? 'edit' : 'new'}`, addAnother });
+			this.saveClick.emit({ item: this.folderModel.Name, action: `${this.isEdit ? 'edit' : 'new'}` });
 		}
 		else {
 			this.savingInProgress = false;
-			this.savingInProgressWithAddNew = false;
 			if (res?.status === 409) {
 				this.isDuplicateQualifier = true;
 			}
