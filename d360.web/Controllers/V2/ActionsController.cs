@@ -792,6 +792,8 @@ namespace d360.web.Controllers.V2
 								
 								DELETE FROM Issue Where IssueTypeID = @issueTypeId
 								
+								DELETE FROM FieldType WHERE object = 'IssueType' and objectid = @issueTypeId;
+
 								DELETE FROM IssueType Where uid = @uid";
 
 			var res = await Company.Database.Connection.ExecuteAsync(deleteSQL,
