@@ -278,7 +278,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                             this.scoresPointsDDL[0].value['isFirst'] = true;
                             this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
-                            this.scoresPointSelected = this.scoresPointsDDL[0].value;
+                            setTimeout(() => {
+                                this.scoresPointSelected = this.scoresPointsDDL[0].value;
+                            }, 0)
                         }
 
                         subject.next(true);
@@ -550,7 +552,6 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             this.scorePointsMaxHeight = 100;
 
         this.sidePanelHeight = this.panelHeight - 70;
-
         this.setDropdownHeader();
         this.cdRef.detectChanges();
 
