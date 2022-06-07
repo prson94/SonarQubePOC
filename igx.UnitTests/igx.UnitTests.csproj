@@ -58,6 +58,7 @@
     <Compile Include="CoreEnumTests\DataTypeTests.cs" />
     <Compile Include="CoreTests\PluralServiceHelperTests.cs" />
     <Compile Include="CoreTests\SystemObjectHelperTests.cs" />
+    <Compile Include="Core\AutoFixtureExtensions.cs" />
     <Compile Include="Core\BaseTestClass.cs" />
     <Compile Include="Core\DataConstants.cs" />
     <Compile Include="Core\FixtureProvider.cs" />
@@ -107,11 +108,8 @@
     <Compile Include="ServicesTests\Exceptions\RecoverableBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnauthorizedBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnrecoverableBusinessLayerExceptionTests.cs" />
-    <Compile Include="ServicesTests\ResponsibilityDeleteRulesRequestHandlerTests.cs" />
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
-    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.cs" />
-    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTests.DeleteResponsibilityRules.cs" />
     <Compile Include="V2ControllerTests\TestExtensions.cs" />
     <Compile Include="ValidatorTests\SurveyApiModelValidatorTests.cs" />
     <Compile Include="ValidatorTests\SemanticValidationTests.cs" />

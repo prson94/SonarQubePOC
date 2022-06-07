@@ -749,9 +749,6 @@
     <Compile Include="Services\IAssetService.cs" />
     <Compile Include="Services\Exceptions\NotFoundBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\RecoverableBusinessLayerException.cs" />
-    <Compile Include="Services\Models\ResponsibilityDeleteRulesRequest.cs" />
-    <Compile Include="Services\ResponsibilityDeleteRulesRequestHandler.cs" />
-    <Compile Include="Services\Models\ResponsibilityDeleteRulesResponse.cs" />
     <Compile Include="Services\Exceptions\UnauthorizedBusinessLayerException.cs" />
     <Compile Include="Services\Exceptions\UnrecoverableBusinessLayerException.cs" />
     <Compile Include="Utilities\ApplicationUriProvider.cs" />

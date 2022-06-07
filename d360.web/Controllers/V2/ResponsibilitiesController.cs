@@ -18,7 +18,6 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Services;
 using d360.web.Utilities;
-using MediatR;
 using Microsoft.Web.Http;
 using Resources;
 using Swashbuckle.Swagger.Annotations;
@@ -36,22 +35,19 @@ namespace d360.web.Controllers.V2
     public class ResponsibilitiesController : BaseV2ApiController
     {
         private readonly IAssetRepository AssetRepository;
-        private IMediator Mediator { get; }
         private readonly IResponsibilityRepository ResponsibilityRepository;
         private readonly IResourceRepository ResourceRepository;
         private readonly IAssetService AssetService;
 
         public ResponsibilitiesController(ICoreComponentSet set,
             IAssetRepository assetRepository,
-            IMediator mediator,
             IResponsibilityRepository responsibilityRepository,
             IResourceRepository resourceRepository,
             IAssetService assetService
             )
             : base(set)
         {
-            Mediator = mediator;
-            ResponsibilityRepository = responsibilityRepository;
+	        ResponsibilityRepository = responsibilityRepository;
             ResourceRepository = resourceRepository;
             AssetRepository = assetRepository;
             AssetService = assetService;
@@ -1531,121 +1527,115 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Deletes a list of ownership rules for the specified responsibility type..
-        /// </summary>
-        /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
-        /// <param name="responsibilityRulesDeletes">A list of responsibility rules you want to delete.</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            HttpDelete,
-            Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
-        ]
-        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] IReadOnlyList<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
-        {
-            ValidateParameters();
+		/// <summary>
+		/// Deletes a list of ownership rules for the specified responsibility type..
+		/// </summary>
+		/// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
+		/// <param name="responsibilityRulesDeletes">A list of responsibility rules you want to delete.</param>
+		/// <returns>An HTTP status code and message.</returns>
+		[
+			HttpDelete,
+			RequireAdminPermissions,
+			Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(ICollection<ResponsibilityRuleDeleteResponse>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody] IReadOnlyList<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
+		{
+			ValidateParameters();
 
-            // create business logic request model
-            var request = new ResponsibilityDeleteRulesRequest()
-            {
-                TypeUid = responsibilityTypeUid,
-                RuleDeleteUidCollection = responsibilityRulesDeletes.Select(x => x.Uid).ToList()
-            };
+			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+			Condition.Require(responsibility, NotFoundBusinessLayerException.Create<ResponsibilityType>);
 
-            // call business logic
-            var response = await Mediator.Send(request);
+			var rulesForDeletion = responsibilityRulesDeletes.Select(x => x.Uid).ToList();
+			var result = await ResponsibilityRepository.DeleteResponsibilityRulesAsync(responsibilityTypeUid, rulesForDeletion);
 
-            // convert result to UI (API) representation.
-            var result = response.Data;
+			return Ok(result);
+		}
 
-            return Ok(result);
-        }
+		/// <summary>
+		/// Gets the breakdown of responsibilities
+		/// </summary>
+		/// <param name="responsibilityTypeUid">Responsibility Type UID</param>
+		/// <returns>An Array of responsibility type breakdowns.</returns>
+		[
+			HttpGet,
+			Route("breakdown"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(ICollection<ResponsibilityBreakdownResponse>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? responsibilityTypeUid = null)
+		{
+			ValidateParameters();
 
-        /// <summary>
-        /// Gets the breakdown of responsibilities
-        /// </summary>
-        /// <param name="responsibilityTypeUid">Responsibility Type UID</param>
-        /// <returns>An Array of responsibility type breakdowns.</returns>
-        [
-            HttpGet,
-            Route("breakdown"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An Array of responsibility type breakdowns.", typeof(ICollection<ResponsibilityBreakdownResponse>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdown([FromUri] Guid? responsibilityTypeUid = null)
-        {
-            ValidateParameters();
-            
-            if (responsibilityTypeUid != null)
-            {
-	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
-	            Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
-            }
+			if (responsibilityTypeUid != null)
+			{
+				var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
+				Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
+			}
 
-            var result = await ResponsibilityRepository.GetTypeBreakdownAsync(responsibilityTypeUid);
+			var result = await ResponsibilityRepository.GetTypeBreakdownAsync(responsibilityTypeUid);
 
-            return Ok(result);
-        }
+			return Ok(result);
+		}
 
-        /// <summary>
-        /// Gets the breakdown of responsibilities
-        /// </summary>
-        /// <param name="resourceUid">Resource UID</param>
-        /// <param name="responsibilityTypeUid">Responsibility Type UID</param>
-        /// <returns>An Array of responsibility type breakdowns.</returns>
-        [
-            HttpGet,
-            Route("breakdown/{resourceUid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(ICollection<ResponsibilityGetBreakdownByResourceModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetResponsibilityTypeBreakdownByResource(Guid resourceUid, [FromUri] Guid? responsibilityTypeUid = null)
-        {
-            ValidateParameters();
+		/// <summary>
+		/// Gets the breakdown of responsibilities
+		/// </summary>
+		/// <param name="resourceUid">Resource UID</param>
+		/// <param name="responsibilityTypeUid">Responsibility Type UID</param>
+		/// <returns>An Array of responsibility type breakdowns.</returns>
+		[
+			HttpGet,
+			Route("breakdown/{resourceUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "An array of responsibilities per asset type.", typeof(ICollection<ResponsibilityGetBreakdownByResourceModel>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Unauthorized, "Authorization has been denied for this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, NOT_FOUND_GENERIC_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetResponsibilityTypeBreakdownByResource(Guid resourceUid, [FromUri] Guid? responsibilityTypeUid = null)
+		{
+			ValidateParameters();
 
-            var resource = await ResourceRepository.GetByUidAsync(resourceUid);
-            Condition.Require(resource, NotFoundBusinessLayerException.Create<GlobalReportingResource>);
+			var resource = await ResourceRepository.GetByUidAsync(resourceUid);
+			Condition.Require(resource, NotFoundBusinessLayerException.Create<GlobalReportingResource>);
 
-            if (responsibilityTypeUid != null)
-            {
-	            var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
-	            Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
-            }
+			if (responsibilityTypeUid != null)
+			{
+				var responsibilityType = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid.Value);
+				Condition.Require(responsibilityType, NotFoundBusinessLayerException.Create<ResponsibilityType>);
+			}
 
-            var entities = await ResponsibilityRepository.GetTypeBreakdownByResourceAsync(resourceUid, responsibilityTypeUid);
+			var entities = await ResponsibilityRepository.GetTypeBreakdownByResourceAsync(resourceUid, responsibilityTypeUid);
 
-            ResponsibilityGetBreakdownByResourceModel Convert(ResponsibilityBreakdownByResourceAggregate aggregate)
-            {
-	            var model = new ResponsibilityGetBreakdownByResourceModel
-	            {
-		            Name = AssetService.GetAssetName(aggregate.AssetType),
-		            Class = aggregate.AssetType.Class.ToString(),
-		            AssetTypeUid = aggregate.AssetType.uid,
-		            AssetCount = aggregate.AssetCount
-	            };
+			ResponsibilityGetBreakdownByResourceModel Convert(ResponsibilityBreakdownByResourceAggregate aggregate)
+			{
+				var model = new ResponsibilityGetBreakdownByResourceModel
+				{
+					Name = AssetService.GetAssetName(aggregate.AssetType),
+					Class = aggregate.AssetType.Class.ToString(),
+					AssetTypeUid = aggregate.AssetType.uid,
+					AssetCount = aggregate.AssetCount
+				};
 
-	            return model;
-            }
+				return model;
+			}
 
-            ICollection<ResponsibilityGetBreakdownByResourceModel> result = entities.Select(Convert).ToList();
+			ICollection<ResponsibilityGetBreakdownByResourceModel> result = entities.Select(Convert).ToList();
 
-            return Ok(result);
-        }
+			return Ok(result);
+		}
 
         /// <summary>
         /// Test a responsibility rule definition to see which assets it will apply to.
