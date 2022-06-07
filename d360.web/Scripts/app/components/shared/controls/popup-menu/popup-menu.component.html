@@ -5,7 +5,8 @@
 </div>
 
 <ng-template #menuItemsTemplate let-items let-class="class">
-    <ul class="menu-items {{(hasCheckboxes(items) || hasIcons(items) || hasSelectedboxes(items) ? 'no-left-padding' : 'default-padding')}} {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
+    <ul [igDataCy]="dataCy ? dataCy : ''"
+        class="menu-items {{(hasCheckboxes(items) || hasIcons(items) || hasSelectedboxes(items) ? 'no-left-padding' : 'default-padding')}} {{class}} {{(openToLeftSide ? ' open-left' : 'open-right')}} {{(openToBottomSide ? 'open-bottom' : 'open-top')}}">
         <li *ngFor="let item of items"
             pTooltip="{{item.tooltip}}" 
             tooltipPosition="top" 

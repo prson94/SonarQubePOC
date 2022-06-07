@@ -742,12 +742,14 @@
                                                 <td style="width: 20%;">
                                                     <input [ngModelOptions]="{standalone: true}"
                                                            type="text"
+                                                           [igDataCy]="'RelationLookup_DisplayNameOverride_' + d.FieldTypeName"
                                                            [(ngModel)]="d.OverrideDisplayName"
                                                            style="width:95%" />
                                                 </td>
                                                 <td style="width: 10%; max-width: 64px">
                                                     <p-checkbox binary="true"
                                                                 [(ngModel)]="d.Show"
+                                                                [igDataCy]="'RelationLookup_Show_' + d.FieldTypeName"
                                                                 label=""
                                                                 (ngModelChange)="d.Show=$event; anyDisplayFieldsSelected($event);"
                                                                 [ngModelOptions]="{standalone: true}"></p-checkbox>
@@ -755,12 +757,14 @@
                                                 <td style="width: 10%; max-width: 64px">
                                                     <input [ngModelOptions]="{standalone: true}"
                                                            type="number"
+                                                           [igDataCy]="'RelationLookup_ColumnWidth_' + d.FieldTypeName"
                                                            [(ngModel)]="d.Width"
                                                            style="width:95%" />
                                                 </td>
                                                 <td style="width: 10%; min-width: 64px">
                                                     <select [ngModelOptions]="{standalone: true}"
                                                             [(ngModel)]="d.DisplayOrder"
+                                                            [igDataCy]="'RelationLookup_ColumnOrder_' + d.FieldTypeName"
                                                             style="width:95%"
                                                             (ngModelChange)="changeDisplayOrder(d, i)">
                                                         <option *ngFor="let j of i.SortOrderList"
@@ -772,6 +776,7 @@
                                                 <td style="width: 10%; min-width: 64px">
                                                     <select [ngModelOptions]="{standalone: true}"
                                                             [(ngModel)]="d.SortOrder"
+                                                            [igDataCy]="'RelationLookup_SortOrder_' + d.FieldTypeName"
                                                             style="width:95%">
                                                         <option></option>
                                                         <option *ngFor="let j of i.SortOrderList"
@@ -783,6 +788,7 @@
                                                 <td style="width:15%; max-width: 100px">
                                                     <input [ngModelOptions]="{standalone: true}"
                                                            type="text"
+                                                           [igDataCy]="'RelationLookup_Filter_' + d.FieldTypeName"
                                                            [(ngModel)]="d.Filter"
                                                            style="width:95%" />
                                                 </td>

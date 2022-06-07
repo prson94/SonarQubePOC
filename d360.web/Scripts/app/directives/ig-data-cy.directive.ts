@@ -6,6 +6,8 @@ enum PrimeComponent {
     Editor = 'P-EDITOR',
     Table = 'P-TABLE',
     Checkbox = 'P-CHECKBOX',
+    Autocomplete = 'P-AUTOCOMPLETE',
+    TreeTableToggler = 'P-TREETABLETOGGLER',
 }
 
 @Directive({
@@ -35,7 +37,15 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
                 break;
             case PrimeComponent.Checkbox:
                 const checkboxLabel = nativeElement.querySelector('.p-checkbox-label');
-                this.setDataCyAttr(checkboxLabel, this.igDataCy);
+                this.setDataCyAttrToCheckbox(checkboxLabel);
+                break;
+            case PrimeComponent.Autocomplete:
+                const autocompleteInput = nativeElement.querySelector('.p-autocomplete-input');
+                this.setDataCyAttr(autocompleteInput, this.igDataCy);
+                break;
+            case PrimeComponent.TreeTableToggler:
+                const treeTableTogglerButton = nativeElement.querySelector('button');
+                this.setDataCyAttr(treeTableTogglerButton, this.igDataCy);
                 break;
             default:
                 this.setDataCyAttr(nativeElement, this.igDataCy);
@@ -44,6 +54,15 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
 
     private setDataCyAttr(el: HTMLElement, attrValue: string): void {
         this.renderer.setAttribute(el, this.attr, attrValue);
+    }
+
+    private setDataCyAttrToCheckbox(checkboxLabel: HTMLElement) {
+        if(checkboxLabel) {
+            this.setDataCyAttr(checkboxLabel, this.igDataCy);
+        } else {
+            const checkBox = this.el.nativeElement.querySelector('.p-checkbox-box');
+            this.setDataCyAttr(checkBox, this.igDataCy);
+        }
     }
 
     private setDataCyAttrToPaginator(nativeElement: HTMLElement): void {

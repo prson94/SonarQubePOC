@@ -79,12 +79,14 @@
                 <button *ngIf="!isScoringScreen"
                         class="tab"
                         [ngClass]="{'selected':AllClosed()}"
+                        [igDataCy]="area.tabTitle"
                         (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">
                     {{area.tabTitle}}
                 </button>
                 <button class="tab"
                         title="{{getTitle(item)}}"
                         [ngClass]="{'selected':item.active}"
+                        [igDataCy]="item.title"
                         *ngFor="let item of items | genericFilter: filterScoringTabHasNoValue; trackBy: trackById;"
                         (click)="itemClicked(item);">
                     {{item.title}}

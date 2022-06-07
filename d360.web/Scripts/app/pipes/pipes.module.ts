@@ -17,12 +17,14 @@ import { SimpleSearch } from './simple-search-pipe';
 import { AssetpathSeparatorPipe  } from './assetpath-separator.pipe';
 import { GenericFilter } from './generic-filter.pipe';
 import { EnumToSelectitemPipe } from './enum-to-selectitem.pipe';
+import { ReplaceStringPipe } from './replace.pipe';
 import { SanitizePipe } from './sanitize.pipe';
 
 @NgModule({
     imports: [CommonModule],
     declarations: [
         ArrayToSelectItemPipe,
+        ReplaceStringPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         MetricConditionDisabledFilterPipe,
@@ -42,6 +44,7 @@ import { SanitizePipe } from './sanitize.pipe';
     ],
     exports: [
         ArrayToSelectItemPipe,
+        ReplaceStringPipe,
         TreeSearchPipe,
         DropdownItemToSelectItemPipe,
         MetricConditionDisabledFilterPipe,
