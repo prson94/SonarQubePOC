@@ -19,7 +19,7 @@ namespace igx.functions.consumption.TelemetryInitializers
 
             if (telemetry is RequestTelemetry)
             {
-                if (telemetry.Context.GlobalProperties["HasError"].Equals("true", StringComparison.OrdinalIgnoreCase))
+                if (telemetry.Context.GlobalProperties.ContainsKey("HasError") && telemetry.Context.GlobalProperties["HasError"].Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
                     ((RequestTelemetry)telemetry).ResponseCode = "500";
                 }
