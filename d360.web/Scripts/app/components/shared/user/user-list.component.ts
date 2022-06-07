@@ -417,13 +417,13 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         return !this.IsCommunityUserResposibility;
     }
 
-    setStyleWidth(datafield: string) {
-        if (this.columnWidth > 0 && this.columnWidthOwnedItems > 0) {
+	setStyleFlex(datafield: string) {
+		if (this.columnWidth > 0 && this.columnWidthOwnedItems > 0) {
             if (datafield === "OwnedItemCount") {
-                return this.columnWidthOwnedItems + 'px';
+                return '0 0 ' + this.columnWidthOwnedItems + 'px';
             }
             else {
-                return this.columnWidth + 'px';
+                return '0 0 ' + this.columnWidth + 'px';
             }
         }
         else {
