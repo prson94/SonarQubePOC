@@ -219,7 +219,7 @@
                  [isModalVisible]="showDisableDialog"
                  [method]="'callback'"
                  (onCancel)="showDisableDialog=false;"
-                 [deleteButtonText]="{{disableButtonText}}">
+                 [deleteButtonText]="disableButtonText">
     <div *ngIf="!selectedType.isDisabled" prompt>
         <p i18n>
             Are you sure you want to disable this semantic type?
