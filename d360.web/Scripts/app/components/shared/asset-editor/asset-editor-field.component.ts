@@ -801,19 +801,22 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     onItemSelected(event) {
     }
 
+    onDropdownChange($event: {originalEvent: PointerEvent; value: any}): void {
+        if($event.value === null) {
+            this.lookupSelectedValue = [];
+        }
+    }
+
     //table extensions
     selectSingleItem(event: MouseEvent, item: SelectItem) {
         if (this.field?.MultiSelect) {
             this.field.Items = [...this.lookupSelectedValue];
-
             var value = this.lookupSelectedValue.map((s) => s.value);
-
             this.form.controls[this.field.FieldName].setValue(value);
-
         } else {
             this.lookupSelectedValue = [item];
-            this.field.Items = [item];
-            this.form.controls[this.field.FieldName].setValue(this.lookupSelectedValue[0].value);
+            this.dropdown.options = [item];
+            this.form.controls[this.field.FieldName].setValue(item.value);
             this.overlayPanel.hide();
         }
         if (event) {
