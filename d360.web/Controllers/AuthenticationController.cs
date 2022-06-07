@@ -999,7 +999,7 @@ namespace d360.web.Controllers
 				}
 
 				Telemetry.TrackTrace("OpenId properties are: " + propBuilder, SeverityLevel.Verbose);
-				Telemetry.TrackTrace("OpenId => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
+				Telemetry.TrackTrace($"OpenId => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
 
 				foreach (var prop in combinedClaims)
                 {

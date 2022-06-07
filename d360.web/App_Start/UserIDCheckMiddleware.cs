@@ -2,15 +2,18 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using d360.utils.company;
 using d360.web.Extensions;
@@ -23,6 +26,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Owin;
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web
 {
@@ -113,6 +117,8 @@ namespace d360.web
 			usercompany u = null;
 
 			var companyID = context.Get<int>("CompanyID");
+			var urlPrefix = context.Get<string>("CompanyDomain");
+			var mappingsKey = $"{companyID}_{urlPrefix}_ClaimMappings";
 
 			try
 			{
@@ -135,13 +141,129 @@ namespace d360.web
 					{
 						var jwtToken = authParts[1];
 
-						var claim = await ValidateJwt(jwtToken, context, jwtTelemetry);
+						var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+						var jwtSecurityToken = handler.ReadJwtToken(jwtToken);
+						var payload = jwtSecurityToken.Payload;
+						var jwtClaim = await ValidateJwt(jwtToken, context, jwtTelemetry);
+						var allClaims = jwtSecurityToken?.Claims?.ToList() ?? new List<System.Security.Claims.Claim>();
+						var claimMappings = Cache.GetItem<List<ClaimMapping>>(mappingsKey);
 
-						if (claim != null && claim.Identity != null && !string.IsNullOrEmpty(claim.Identity.Name))
+						string userName = null;
+						string firstName = null;
+						string lastName = null;
+						Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
+
+						try
 						{
-							jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {claim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
-							u = LoadUserFromDatabase(companyID, null, null, claim.Identity.Name);
-							
+							var excludedProps = new[] { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti", "name", "nonce", "preferred_username", "scp", "ver", "uid" };
+							var propBuilder = new StringBuilder(string.Empty);
+
+							foreach (var claim in claimMappings)
+							{
+								var type = claim.Path.Replace("$.", "").Split('.')[0];
+								var childPath = "$." + claim.Path.Replace("$.", "").Replace(type, "");
+								var isRootProperty = "$." == childPath;
+
+								var props = allClaims.Where(p => p.Type.ToLower() == type);
+
+								foreach (var prop in props)
+								{
+									string val = null;
+									List<string> vals = new List<string>();
+									JToken propToken = null;
+
+									propBuilder.Append($"{type}: {prop.Value}, ");
+
+									if (isRootProperty)
+									{
+										if (claim.IsArray)
+										{
+											if (payload.ContainsKey(type))
+											{
+												var propJsonString = JsonConvert.SerializeObject(payload[type]);
+												jwtTelemetry.TrackTrace($"JWT json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
+
+												propToken = JToken.Parse(propJsonString);
+												vals = propToken?.Select(s => (string)s)?.ToList();
+											}
+										}
+										else
+										{
+											val = prop.Value.ToString();
+										}
+
+									}
+									else
+									{
+										if (payload.ContainsKey(type))
+										{
+											var propJsonString = JsonConvert.SerializeObject(payload[type]);
+											jwtTelemetry.TrackTrace($"JWT json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
+
+											propToken = JToken.Parse(propJsonString);
+
+											if (claim.IsArray)
+											{
+												propToken = JToken.Parse(propJsonString);
+												vals = propToken?.SelectToken(childPath, false)?.Select(s => (string)s)?.ToList();
+											}
+											else
+											{
+												val = propToken?.SelectToken(childPath, false)?.ToString() ?? "";
+											}
+										}
+									}
+
+									if (!string.IsNullOrWhiteSpace(val))
+									{
+										switch (claim.ClaimType)
+										{
+											case ClaimType.Email:
+												userName = val;
+												break;
+											case ClaimType.FirstName:
+												firstName = val;
+												break;
+											case ClaimType.LastName:
+												lastName = val;
+												break;
+											case ClaimType.Groups:
+												if (claim.IsArray)
+												{
+													if (vals?.Any() ?? false)
+													{
+														if (!groups.ContainsKey(claim.PathHash))
+														{
+															groups.Add(claim.PathHash, new List<string>());
+														}
+														groups[claim.PathHash].AddRange(vals);
+													}
+												}
+												else
+												{
+													if (!groups.ContainsKey(claim.PathHash))
+													{
+														groups.Add(claim.PathHash, new List<string>());
+													}
+													groups[claim.PathHash].Add(val);
+												}
+
+												break;
+										}
+									}
+
+									allClaims.Remove(prop);
+								}
+							}
+
+							if (userName == null && jwtClaim != null && jwtClaim.Identity != null && !string.IsNullOrEmpty(jwtClaim.Identity.Name))
+							{
+								userName = jwtClaim.Identity.Name;
+							}
+
+							jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {jwtClaim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
+							u = LoadUserFromDatabase(companyID, null, null, jwtClaim.Identity.Name);
+
 							if (u != null)
 							{
 								if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
@@ -150,7 +272,18 @@ namespace d360.web
 								}
 
 								Users = cachedUsers;
+
+								await parseLoginInfoAndClaims(companyID, firstName, lastName, userName, groups, jwtTelemetry);
+
 							}
+
+							jwtTelemetry.TrackTrace("JWT properties are: " + propBuilder, SeverityLevel.Verbose);
+							jwtTelemetry.TrackTrace($"JWT => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
+
+						}
+						catch
+						{
+
 						}
 					}
 				}
@@ -356,5 +489,157 @@ namespace d360.web
 
 			return cnName;
 		}
+
+		private async Task<Resource> parseLoginInfoAndClaims(int companyId, string firstName, string lastName, string userName, Dictionary<string, List<string>> groups, Microsoft.ApplicationInsights.TelemetryClient telemetry)
+		{
+			Resource resource = null;
+			CompanyResource companyResource = null;
+
+			if (!string.IsNullOrEmpty(userName))
+			{
+				using (SqlConnection community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+				{
+					community.Open();
+					resource = await community.QuerySingleOrDefaultAsync<Resource>("select * from Resource where username = @userName", new { userName });
+					companyResource = await community.QuerySingleOrDefaultAsync<CompanyResource>("select * from CompanyResource where ResourceID = @resourceId and CompanyID = @companyId and [State] = @activeState"
+						, new { resourceId = resource.ID, companyId, activeState = CompanyResourceState.Active });
+
+
+					bool isValidResource = resource != null && companyResource != null && resource.ID > 0;
+
+					if (isValidResource)
+					{
+						List<string> updateFields = new List<string>();
+						bool updatedResource = false;
+
+						if (!string.IsNullOrEmpty(firstName))
+						{
+							if (resource.FirstName != firstName)
+							{
+								updatedResource = true;
+								updateFields.Add(" FirstName = @firstName ");
+								resource.FirstName = firstName;
+							}
+						}
+
+						if (!string.IsNullOrEmpty(lastName))
+						{
+							if (resource.LastName != lastName)
+							{
+								updatedResource = true;
+								resource.LastName = lastName;
+								updateFields.Add(" LastName = @lastName ");
+							}
+						}
+
+						if (updatedResource)
+						{
+							await community.ExecuteAsync($"update [Resource] set {string.Join(", ", updateFields)} where ID = @resourceID", new { resourceId = resource.ID });
+						}
+					}
+					else
+					{
+						return null;
+					}
+
+					using (SqlConnection company = new SqlConnection(CompanyConnectionUtils.GetCompanyConnectionString(companyId)))
+					{
+						company.Open();
+
+						if (groups?.Any() == true)
+						{
+							var governHasGroups = (await company.QueryFirstOrDefaultAsync<Group>("select * from Group where IsActiveDirectoryGroup = 1")) != null;
+
+							if (governHasGroups)
+							{
+								using (var trans = company.BeginTransaction())
+								{
+									try
+									{
+										SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans);
+										var dt = new DataTable();
+										dt.Columns.Add("Name", typeof(string));
+										dt.Columns.Add("Origin", typeof(string));
+
+										foreach (var key in groups.Keys)
+										{
+											groups[key].ForEach(g =>
+											{
+												var row = dt.NewRow();
+												row["Name"] = g.Trim();
+												row["Origin"] = string.IsNullOrWhiteSpace(key) ? null : key;
+												dt.Rows.Add(row);
+											});
+										}
+
+										sqlBulkCopy.ColumnMappings.Add("Name", "Name");
+										sqlBulkCopy.ColumnMappings.Add("Origin", "Origin");
+										sqlBulkCopy.DestinationTableName = "#ADGroups";
+										sqlBulkCopy.BulkCopyTimeout = 60;
+
+										company.Execute(
+											@"drop table if exists #ADGroups;
+                                            create table #ADGroups ([Name] nvarchar(max), [Origin] nvarchar(10), GroupID int, HasResourceGroup bit);"
+										, transaction: trans);
+
+										sqlBulkCopy.WriteToServer(dt);
+
+										company.Execute(
+											@"update A
+                                            set A.GroupID = G.ID,
+                                            HasResourceGroup = case when RG.ResourceID is not null then 1 else null end
+                                            from    #ADGroups A
+                                                    inner join [Group] G on G.IsActiveDirectoryGroup = 1 and G.[Name] = A.[name]
+                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId and (A.Origin is null or RG.Origin = A.Origin)
+
+                                            insert into ResourceGroup (ResourceID, GroupID, Origin)
+                                            select  @resourceId, GroupID, Origin
+                                            from    #ADGroups 
+                                            where   GroupID is not null and coalesce(HasResourceGroup, 0) = 0
+
+                                            delete  R
+                                            from    ResourceGroup R
+                                                    inner join [Group] G on G.ID = R.GroupID and G.IsActiveDirectoryGroup = 1
+                                            where   R.ResourceID = @resourceId and not exists (select 1 from #ADGroups where GroupID = R.GroupID and (Origin is null or Origin = R.Origin))"
+										, new { resourceID = resource.ID }
+										, transaction: trans);
+
+										trans.Commit();
+
+									}
+									catch (Exception e)
+									{
+										try
+										{
+											if (trans != null)
+											{
+												trans.Rollback();
+											}
+										}
+										catch
+										{
+											// Do nothing.
+										}
+
+										var properties = new Dictionary<string, string>
+										{
+											{"ResourceID", resource.ID.ToString() }
+										};
+										telemetry.TrackException(e, properties);
+									}
+								}
+							}
+						}
+
+					}
+				}
+			}
+
+			return resource;
+		}
+
+
+
+
 	}
 }
