@@ -191,8 +191,8 @@ namespace d360.core.entities
             {
                 CreatedBy = new GetUserModel
                 {
-                    FullName = createdBy.FullName,
-                    Uid = createdBy.Uid
+                    FullName = createdBy != null ? createdBy.FullName : "Unknown",
+                    Uid = createdBy != null ? createdBy.Uid : Guid.NewGuid()
                 },
                 CreatedOn = model.CreatedOn,
                 Name = model.Name,
@@ -216,8 +216,8 @@ namespace d360.core.entities
                 Uid = model.Uid,
                 UpdatedBy = new GetUserModel
                 {
-                    FullName = updatedBy.FullName,
-                    Uid = updatedBy.Uid
+                    FullName = updatedBy != null ? updatedBy.FullName : "Unknown",
+                    Uid = updatedBy != null ? updatedBy.Uid : Guid.NewGuid()
                 },
                 UpdatedOn = model.UpdatedOn
             };

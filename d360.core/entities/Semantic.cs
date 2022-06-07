@@ -271,16 +271,16 @@ namespace d360.core.entities
             return incomingValue;
         }
 
-        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource createdBy, GlobalReportingResource updatedBy, bool hasQualifiedAssets = false, List<string> effectiveDates = null)
+        public static GetSemantic ToGetModel(this Semantic model, GlobalReportingResource? createdBy, GlobalReportingResource? updatedBy, bool hasQualifiedAssets = false, List<string> effectiveDates = null)
         {
             return new GetSemantic
             {
                 BaseType = model.BaseType,
                 CreatedBy = new GetUserModel
                 {
-                    FullName = createdBy.FullName,
-                    Uid = createdBy.Uid
-                },
+					FullName = createdBy != null ? createdBy.FullName : "Unknown",
+					Uid = createdBy != null ? createdBy.Uid : Guid.Empty
+				},
                 CreatedOn = model.CreatedOn,
                 Description = model.Description,
                 EffectiveDate = model.EffectiveDate,
@@ -303,8 +303,8 @@ namespace d360.core.entities
                 Uid = model.Uid,
                 UpdatedBy = new GetUserModel
                 {
-                    FullName = updatedBy.FullName,
-                    Uid = updatedBy.Uid
+                    FullName = updatedBy != null ? updatedBy.FullName : "Unknown",
+                    Uid = updatedBy != null ? updatedBy.Uid : Guid.Empty
                 },
                 UpdatedOn = model.UpdatedOn,
                 ValidLocalesStructured = model.deserializeTextProperty<List<string>>(model.ValidLocales),
