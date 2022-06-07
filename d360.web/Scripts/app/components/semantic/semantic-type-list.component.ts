@@ -149,6 +149,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         ["Advanced%20\\(JSON\\)", "Advanced"],
         ["List%20of%20Values", "List"],
         ["Pattern%20in%20Data", "Pattern"],
+        ["Numbers", "Number"],
         ["True%2FFalse%20\\(Boolean\\)", "Boolean"],
         ["Number%20\\(Double\\)", "Double"],
         ["Number%20\\(Long\\)", "Long"],
