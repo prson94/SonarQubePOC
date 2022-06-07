@@ -214,18 +214,23 @@
                  [items]="selectedType"
                  [showAsModal]="true"
                  i18n-modalTitle
-                 modalTitle="Disable Semantic Type"
+                 modalTitle="{{isDisabled(selectedType.effectiveDate, selectedType.updatedOn) ? 'Enable' : 'Disable' }} Semantic Type"
                  [modalCssClasses]="'medium-dialog'"
                  [isModalVisible]="showDisableDialog"
                  [method]="'callback'"
                  (onCancel)="showDisableDialog=false;"
-                 [deleteButtonText]="'Disable'">
-    <div prompt>
+                 [deleteButtonText]="isDisabled(selectedType.effectiveDate, selectedType.updatedOn) ? 'Enable' : 'Disable'">
+    <div *ngIf="!isDisabled(selectedType.effectiveDate, selectedType.updatedOn)" prompt>
         <p i18n>
             Are you sure you want to disable this semantic type?
         </p>
         <p i18n>
             It will be disabled as of today and will no longer be used to classify assets based on Profiling data.
+        </p>
+    </div>
+    <div *ngIf="isDisabled(selectedType.effectiveDate, selectedType.updatedOn)" prompt>
+        <p i18n>
+            The Semantic Type will be enabled as of today (current date) and will be used to classify assets when profiling data is added to an asset.
         </p>
     </div>
 </d3s-delete-form>
