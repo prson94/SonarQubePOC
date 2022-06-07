@@ -43,8 +43,8 @@
                             <d3s-sortIcon [field]="'Group'"></d3s-sortIcon>
                         </th>
                         <th style="min-width: 300px" i18n>Context</th>
-                        <th style="flex: 0 0 40px"></th>
-                        <th style="flex: 0 0 40px"></th>
+                        <th style="flex: 0 0 60px"></th>
+                        <th style="flex: 0 0 60px"></th>
                     </tr>
                     <tr [hidden]="showSimpleFilter">
                         <th><d3s-column-filter [field]="'Responsibility'" [datatype]="'text'"></d3s-column-filter></th>
@@ -69,13 +69,13 @@
                         <td style="min-width: 300px">
                             <div *ngIf="item.Description" [innerHtml]="item.Description"></div>
                         </td>
-                        <td style="flex: 0 0 40px">
+                        <td style="flex: 0 0 60px">
                             <div [hidden]="true">{{item.ResponsibilityUid}}</div>
                             <div *ngIf="showEdit(item)" class="RowTools">
                                 <a (click)="edit(item)" style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
-                        <td style="flex: 0 0 40px">
+                        <td style="flex: 0 0 60px">
                             <div *ngIf="item.AssignedBy.toLowerCase()=='user' && hasDeleteResponsibilitiesPermissions() && showRowTools" class="RowTools">
                                 <a (click)="selectedRow = item; delete(item.ID)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                             </div>
