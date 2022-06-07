@@ -142,11 +142,13 @@
                                     styleClass="dropdown-lazy-load"
                                     igSize="full"
                                     [inputId]="field.FieldName + '_input_' + componentUid"
+                                    dataKey="value" optionValue="value"
                                     [formControlName]="field.FieldName"
                                     [attr.name]="field.FieldName"
                                     [attr.data-cy]="'Asset_Modal_Field_' + field.FieldName"
                                     [options]="field.Items"
                                     (onSelect)="onSelect($event)"
+                                    (onChange)="onDropdownChange($event)"
                                     [disabled]="isLookupFieldDisabled"
                                     [required]="field.Required"
                                     [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
@@ -166,21 +168,18 @@
                             <ng-template pTemplate>
                                 <p-table #dataTable
                                          tableStyleClass="ig-filter-table"
-                                         [metaKeySelection]="true"
                                          [value]="lookupValues"
                                          [(selection)]="lookupSelectedValue"
                                          [globalFilterFields]="['label']"
                                          dataKey="value"
                                          [scrollable]="true"
                                          [scrollHeight]="selectionScrollHeight"
-                                         [virtualRowHeight]="32"
                                          [rows]="20"
-                                         [virtualScroll]="true"
                                          [lazy]="true"
                                          selectionMode="multiple"
                                          [metaKeySelection]="false"
-                                         (onLazyLoad)="loadListLazy($event)"                                         
-                                         [loading]="isLookupValuesLoading"                                         
+                                         (onLazyLoad)="loadListLazy($event)"
+                                         [loading]="isLookupValuesLoading"
                                          [loadingIcon]="'fa fa-spinner fa-spin'">
                                     <ng-template pTemplate="emptymessage" let-columns>
                                         <tr>
