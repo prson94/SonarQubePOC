@@ -25,7 +25,7 @@ import { CompanySettingsService } from '../../services/settings.service';
                 <tr *ngFor="let nym of nyms" class="nym-row">
                     <td>{{nym.Name}}</td>
                     <td>
-                    <p-checkbox igCheckbox [(ngModel)]="nym.Enabled" [disabled]="readonly"></p-checkbox>
+                        <p-checkbox igCheckbox [(ngModel)]="nym.Enabled" [disabled]="readonly" [binary]="true"></p-checkbox>
                     </td>
                 </tr>
                 </tbody>
