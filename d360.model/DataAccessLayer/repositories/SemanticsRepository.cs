@@ -720,7 +720,7 @@ namespace d360.model.DataAccessLayer
 			var nonUpdatedableSemantics = new List<string>();
 			existingSemantics.ForEach(e =>
 			{
-				if (e.Source == core.enums.SemanticSource.BuiltIn)
+				if (e.Source == core.enums.SemanticSource.BuiltIn || e.CreatedOn != e.UpdatedOn)
 				{
 					nonUpdatedableSemantics.Add(e.Qualifier);
 				}
@@ -731,7 +731,7 @@ namespace d360.model.DataAccessLayer
 				throw new GenericException(
 					HttpStatusCode.Conflict,
 					"Semantics may not be updated.",
-					$"The following semantics are Built-in and may not be updated: {string.Join("; ", nonUpdatedableSemantics)}."
+					$"The following semantics are Built-in or disabled and may not be updated: {string.Join("; ", nonUpdatedableSemantics)}."
 					);
 			}
 
