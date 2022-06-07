@@ -112,7 +112,7 @@
                                 <td>{{item.priority}}</td>
                                 <td>{{(item.baseType == 0 ? '' : getBaseTypeText(item.baseType))}}</td>
                                 <td *ngIf="showDisabled" style="flex: 0 0 100px">
-                                    <span *ngIf="isDisabled(item.effectiveDate, item.updatedOn)"><ig-badge [text]="'Disabled'" [variant]="'disabled'"></ig-badge></span>
+                                    <span *ngIf="item.isDisabled"><ig-badge [text]="'Disabled'" [variant]="'disabled'"></ig-badge></span>
                                 </td>
                                 <td class="asset-grid-tools" style="flex: 0 0 30px" alignFrozen="right" pFrozenColumn>
                                     <div style="display:inline-block">
@@ -214,13 +214,13 @@
                  [items]="selectedType"
                  [showAsModal]="true"
                  i18n-modalTitle
-                 modalTitle="{{isDisabled(selectedType.effectiveDate, selectedType.updatedOn) ? 'Enable' : 'Disable' }} Semantic Type"
+                 modalTitle="{{disableModalTitle}}"
                  [modalCssClasses]="'medium-dialog'"
                  [isModalVisible]="showDisableDialog"
                  [method]="'callback'"
                  (onCancel)="showDisableDialog=false;"
-                 [deleteButtonText]="isDisabled(selectedType.effectiveDate, selectedType.updatedOn) ? 'Enable' : 'Disable'">
-    <div *ngIf="!isDisabled(selectedType.effectiveDate, selectedType.updatedOn)" prompt>
+                 [deleteButtonText]="{{disableButtonText}}">
+    <div *ngIf="!selectedType.isDisabled" prompt>
         <p i18n>
             Are you sure you want to disable this semantic type?
         </p>
@@ -228,7 +228,7 @@
             It will be disabled as of today and will no longer be used to classify assets based on Profiling data.
         </p>
     </div>
-    <div *ngIf="isDisabled(selectedType.effectiveDate, selectedType.updatedOn)" prompt>
+    <div *ngIf="selectedType.isDisabled" prompt>
         <p i18n>
             The Semantic Type will be enabled as of today (current date) and will be used to classify assets when profiling data is added to an asset.
         </p>

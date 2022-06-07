@@ -466,7 +466,11 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             });
     }
 
-    isDisabled(effectiveDate: Date, UpdatedOn: Date) {
-        return new Date(UpdatedOn) > new Date(effectiveDate);
-    }
+	get disableModalTitle() {
+		return this.selectedType.isDisabled ? $localize`Enable Semantic Type` : $localize`Disable Semantic Type`;
+	}
+	get disableButtonText() {
+		return this.selectedType.isDisabled ? $localize`Enable` : $localize`Disable`;
+	}
+	
 }
