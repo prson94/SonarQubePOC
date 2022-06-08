@@ -10,7 +10,8 @@ namespace d360.model
 {
     public interface ICommunityContext : IBaseContext
     {
-        DbSet<Client> Clients { get; set; }
+		DbSet<ClaimMapping> ClaimMappings { get; set; }
+		DbSet<Client> Clients { get; set; }
         
         DbSet<Company> Companies { get; set; }
         
@@ -28,7 +29,7 @@ namespace d360.model
         
         DbSet<DomainSetting> DomainSettings { get; set; }
         
-        DbSet<Resource> Resources { get; set; }
+        DbSet<Resource> Resources { get; set; }        
 
         new bool Add<T>(T item) where T : BaseObject;
         

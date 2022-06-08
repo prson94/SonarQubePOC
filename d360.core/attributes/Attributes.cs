@@ -163,7 +163,16 @@ namespace d360.core
         }
     }
 
-    public class AllowEditFromPredicateEditorAttribute : Attribute
+	public class AllowedActionsAttribute : Attribute
+	{
+		public ClaimAction[] Actions { get; private set; }
+		public AllowedActionsAttribute(params ClaimAction[] actions)
+		{
+			Actions = actions;
+		}
+	}
+
+	public class AllowEditFromPredicateEditorAttribute : Attribute
     {
         public bool Allowed { get; private set; }
 
@@ -191,6 +200,17 @@ namespace d360.core
             Allowed = allowed;
         }
     }
+
+	public class AllowMultipleAttribute: Attribute
+	{
+		public bool Allowed { get; private set; } = true;
+		public AllowMultipleAttribute(bool allowed)
+		{
+			Allowed = allowed;
+		}
+	}
+
+
 
     public class AllowMultiplePredicatesAttribute : Attribute
     {

@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
@@ -27,6 +28,8 @@ using d360.core.enums;
 using d360.core.helpers;
 using d360.extensions;
 using d360.extensions.azuregraph;
+using d360.extensions.caching;
+using d360.web.caching;
 using d360.web.Extensions;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -37,7 +40,8 @@ using IdentityModel.Client;
 
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Resources;
 
 namespace d360.web.Controllers
@@ -144,7 +148,7 @@ namespace d360.web.Controllers
 
         private ActionResult parseUserInfoAndLogin(
             string userName, string firstName, string lastName,
-            List<string> groups = null, Dictionary<string, string> customClaims = null,
+            Dictionary<string,List<string>> groups = null, Dictionary<string, string> customClaims = null,
             string relayState = null,
             System.Action customAction = null)
         {
@@ -196,10 +200,16 @@ namespace d360.web.Controllers
 
                 if (groups?.Any() == true)
                 {
+					List<string> allGroups = new List<string>();
+					foreach(var key in groups.Keys)
+					{
+						allGroups.AddRange(groups[key]);
+					}
+
                     isCompanyAdministrator = Community.CompanyDomainGroups.Any(g =>
                         g.CompanyID == Community.CurrentCompanyID &&
                         g.DomainSettingID == Community.CurrentDomainSettingID &&
-                        groups.Contains(g.GroupName) &&
+						allGroups.Contains(g.GroupName) &&
                         g.IsAdministrator);
                 }
 
@@ -383,21 +393,27 @@ namespace d360.web.Controllers
                                     SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(Company.Connection, SqlBulkCopyOptions.Default, trans);
                                     var dt = new System.Data.DataTable();
                                     dt.Columns.Add("Name", typeof(string));
+                                    dt.Columns.Add("Origin", typeof(string));
 
-                                    groups.ForEach(g =>
-                                    {
-                                        var row = dt.NewRow();
-                                        row["Name"] = g.Trim();
-                                        dt.Rows.Add(row);
-                                    });
+									foreach(var key in groups.Keys)
+									{
+										groups[key].ForEach(g =>
+										{
+											var row = dt.NewRow();
+											row["Name"] = g.Trim();
+											row["Origin"] = string.IsNullOrWhiteSpace(key) ? null : key;
+											dt.Rows.Add(row);
+										});
+									}
 
                                     sqlBulkCopy.ColumnMappings.Add("Name", "Name");
+                                    sqlBulkCopy.ColumnMappings.Add("Origin", "Origin");
                                     sqlBulkCopy.DestinationTableName = "#ADGroups";
                                     sqlBulkCopy.BulkCopyTimeout = 60;
 
                                     Company.Connection.Execute(
                                         @"drop table if exists #ADGroups;
-                                            create table #ADGroups ([Name] nvarchar(max), GroupID int, HasResourceGroup bit);"
+                                            create table #ADGroups ([Name] nvarchar(max), [Origin] nvarchar(10), GroupID int, HasResourceGroup bit);"
                                     , transaction: trans);
 
                                     sqlBulkCopy.WriteToServer(dt);
@@ -408,17 +424,17 @@ namespace d360.web.Controllers
                                             HasResourceGroup = case when RG.ResourceID is not null then 1 else null end
                                             from    #ADGroups A
                                                     inner join [Group] G on G.IsActiveDirectoryGroup = 1 and G.[Name] = A.[name]
-                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId
+                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId and (A.Origin is null or RG.Origin = A.Origin)
 
-                                            insert into ResourceGroup (ResourceID, GroupID)
-                                            select  @resourceId, GroupID
+                                            insert into ResourceGroup (ResourceID, GroupID, Origin)
+                                            select  @resourceId, GroupID, Origin
                                             from    #ADGroups 
                                             where   GroupID is not null and coalesce(HasResourceGroup, 0) = 0
 
                                             delete  R
                                             from    ResourceGroup R
                                                     inner join [Group] G on G.ID = R.GroupID and G.IsActiveDirectoryGroup = 1
-                                            where   R.ResourceID = @resourceId and not exists (select 1 from #ADGroups where GroupID = R.GroupID)"
+                                            where   R.ResourceID = @resourceId and not exists (select 1 from #ADGroups where GroupID = R.GroupID and (Origin is null or Origin = R.Origin))"
                                     , new { resourceID = resource.ID }
                                     , transaction: trans);
 
@@ -728,9 +744,10 @@ namespace d360.web.Controllers
                 string userName = null;
                 string firstName = null;
                 string lastName = null;
-                List<string> groups = null;
+				Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
 
                 var customClaims = new Dictionary<string, string>();
+				var claimMappings = getClaimMappings();
 
                 var submittedAttributes = "";
                 foreach (SAMLAttribute a in attributes)
@@ -743,29 +760,33 @@ namespace d360.web.Controllers
                     }
                     submittedAttributes += $"{attName}: {attValue}; ";
 
-                    switch (attName)
-                    {
-                        case "username":
-                        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name":
-                            userName = attValue;
-                            break;
-                        case "first":
-                        case "firstname":
-                        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname":
-                            firstName = attValue;
-                            break;
-                        case "last":
-                        case "lastname":
-                        case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname":
-                            lastName = attValue;
-                            break;
-                        case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
-                            groups = a.Values?.Select(v => v.Data.ToString())?.ToList();
-                            break;
-                        default:
-                            customClaims.Add(attName, attValue);
-                            break;
-                    }
+					var claim = claimMappings.FirstOrDefault(c => c.Path == attName);
+					if (claim != null)
+					{
+						switch(claim.ClaimType)
+						{
+							case ClaimType.Email:
+								userName = attValue;
+								break;
+							case ClaimType.FirstName:
+								firstName = attValue;
+								break;
+							case ClaimType.LastName:
+								lastName = attValue;
+								break;
+							case ClaimType.Groups:
+								if (!groups.ContainsKey(claim.PathHash))
+								{
+									groups.Add(claim.PathHash, new List<string>());
+								}
+								groups[claim.PathHash] = a.Values?.Select(v => v.Data.ToString())?.ToList();
+								break;
+						}
+					}
+					else
+					{
+						customClaims.Add(attName, attValue);
+					}
                 }
 
                 Telemetry.TrackTrace(new TraceTelemetry { Message = $"SAML Attributes are: {submittedAttributes}", SeverityLevel = SeverityLevel.Verbose });
@@ -849,6 +870,7 @@ namespace d360.web.Controllers
 
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
+			var payload = token.Payload;
             var accessToken = handler.ReadJwtToken(response.AccessToken);
             var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
 
@@ -864,74 +886,137 @@ namespace d360.web.Controllers
             string userName = null;
             string firstName = null;
             string lastName = null;
-            List<string> groups = new List<string>();
+			Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
 
             combinedClaims.AddRange(token.Claims); // ID token claims.
             combinedClaims.AddRange(accessToken.Claims.Except(token.Claims)); // Access token claims.
 
+			
+
             try
             {
-                foreach (var prop in combinedClaims)
+
+				var excludedProps = new List<string> { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
+				var claimMappings = getClaimMappings();
+				var propBuilder = new StringBuilder(string.Empty);
+
+				foreach(var claim in claimMappings)
+				{
+					var type = claim.Path.Replace("$.", "").Split('.')[0];
+					var childPath = "$." + claim.Path.Replace("$.", "").Replace(type, "");
+					var isRootProperty = "$." == childPath;
+
+					var props = combinedClaims.Where(p => p.Type.ToLower() == type);
+
+					foreach (var prop in props)
+					{
+						string val = null;
+						List<string> vals = new List<string>();
+						JToken propToken = null;
+
+						propBuilder.Append($"{type}: {prop.Value}, ");
+
+						if (isRootProperty)
+						{
+							if (claim.IsArray)
+							{
+								if (payload.ContainsKey(type))
+								{
+									var propJsonString = JsonConvert.SerializeObject(payload[type]);
+									Telemetry.TrackTrace($"OpenId json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
+
+									propToken = JToken.Parse(propJsonString);
+									vals = propToken?.Select(s => (string)s)?.ToList();
+								}
+							}
+							else
+							{
+								val = prop.Value.ToString();
+							}
+
+						}
+						else
+						{
+							if (payload.ContainsKey(type))
+							{
+								var propJsonString = JsonConvert.SerializeObject(payload[type]);
+								Telemetry.TrackTrace($"OpenId json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
+
+								propToken = JToken.Parse(propJsonString);
+
+								if (claim.IsArray)
+								{
+									propToken = JToken.Parse(propJsonString);
+									vals = propToken?.SelectToken(childPath, false)?.Select(s => (string)s)?.ToList();
+								}
+								else
+								{
+									val = propToken?.SelectToken(childPath, false)?.ToString() ?? "";
+								}
+							}
+						}
+
+						if (!string.IsNullOrWhiteSpace(val))
+						{
+							switch (claim.ClaimType)
+							{
+								case ClaimType.Email:
+									userName = val;
+									break;
+								case ClaimType.FirstName:
+									firstName = val;
+									break;
+								case ClaimType.LastName:
+									lastName = val;
+									break;
+								case ClaimType.Groups:
+									if (claim.IsArray)
+									{
+										if (vals?.Any() ?? false)
+										{
+											if (!groups.ContainsKey(claim.PathHash))
+											{
+												groups.Add(claim.PathHash, new List<string>());
+											}
+											groups[claim.PathHash].AddRange(vals);
+										}
+									}
+									else
+									{
+										if (!groups.ContainsKey(claim.PathHash))
+										{
+											groups.Add(claim.PathHash, new List<string>());
+										}
+										groups[claim.PathHash].Add(val);
+									}
+
+									break;
+							}
+						}
+
+						excludedProps.Add(prop.Type);
+					}
+				}
+
+				Telemetry.TrackTrace("OpenId properties are: " + propBuilder, SeverityLevel.Verbose);
+				Telemetry.TrackTrace($"OpenId => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
+
+				foreach (var prop in combinedClaims)
                 {
-                    switch (prop.Type.ToLower())
-                    {
-                        case "amr":
-                        case "aud":
-                        case "at_hash":
-                        case "auth_time":
-                        case "cid":
-                        case "exp":
-                        case "iat":
-                        case "idp":
-                        case "iss":
-                        case "jti":
-                        case "name":
-                        case "nonce":
-                        case "preferred_username":
-                        case "scp":
-                        case "ver":
-                        case "uid":
-                            break;
-                        case "sub":
-                        case "email":
-                            userName = prop.Value.ToString();
-                            break;
-                        case "givenname":
-                        case "given_name":
-                        case "firstname":
-                            firstName = prop.Value.ToString();
-                            break;
-                        case "family_name":
-                        case "lastname":
-                        case "surname":
-                            lastName = prop.Value.ToString();
-                            break;
-                        case "infogixgroup":
-                        case "infogixgroups":
-                        case "group":
-                        case "groups":
-                        case "securitygroups":
-                        case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
-                            if (groups == null)
-                            {
-                                groups = new List<string>();
-                            }
-                            groups.Add(prop.Value.ToString());
-                            break;
-                        default:
-                            customClaims.Add(prop.Type, prop.Value.ToString());
-                            break;
-                    }
-                }
+					if (!excludedProps.Contains(prop.Type) && !customClaims.ContainsKey(prop.Type))
+					{
+						customClaims.Add(prop.Type, prop.Value.ToString());
+					}
+				}
             }
-            catch
+            catch (Exception ex)
             {
-                //nothing
-            }
+				Telemetry.TrackException(ex);
+			}
 
-            #endregion
+			#endregion
 
-            string redirectUrl = openIdRequest.RedirectUrl;
+			string redirectUrl = openIdRequest.RedirectUrl;
 
             try
             {
@@ -2070,5 +2155,20 @@ namespace d360.web.Controllers
 
             return View("InactiveCompany");
         }
+
+		private List<ClaimMapping> getClaimMappings()
+		{
+			ICachingProvider cache;
+			if (ConfigurationManager.AppSettings["RedisEnabled"].ToString().ToLower() == "true")
+			{
+				cache = new RedisCachingProvider();
+			}
+			else
+			{
+				cache = new MemoryCachingProvider();
+			}
+
+			return cache.GetItem<List<ClaimMapping>>($"{Company.CurrentCompanyID}_{Company.CurrentCompanyDomain}_ClaimMappings") ?? new List<ClaimMapping>();
+		}
     }
 }

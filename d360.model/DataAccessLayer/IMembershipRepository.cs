@@ -34,5 +34,11 @@ namespace d360.model.DataAccessLayer
         Task<List<OrganizationModel>> GetOrganizationsByType(Guid organizationTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         
         Task<OrganizationDetailModel> GetOrganizationsDetails(Guid organizationUid);
-    }
+
+		Task AddClaim(ClaimPostApiModel claim);
+		Task UpdateClaim(int id, ClaimPutApiModel claim);
+		Task DeleteClaim(int id);
+		Task<IEnumerable<ClaimApiViewModel>> GetClaims();
+
+	}
 }

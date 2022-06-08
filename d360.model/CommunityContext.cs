@@ -44,8 +44,10 @@ namespace d360.model
         public CommunityContext(ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context)
             : this(constants.COMMUNITY_DATABASE_CONNECTION, caching, queueSource, context) { }
 
-        #region DbSets
-        public DbSet<Client> Clients { get; set; }
+		#region DbSets
+		public DbSet<ClaimMapping> ClaimMappings { get; set; }
+
+		public DbSet<Client> Clients { get; set; }
         
         public DbSet<Company> Companies { get; set; }
         
@@ -61,13 +63,13 @@ namespace d360.model
         
         public DbSet<DomainSetting> DomainSettings { get; set; }
         
-        public DbSet<Resource> Resources { get; set; }
+        public DbSet<Resource> Resources { get; set; }	
 
-        #endregion
+		#endregion
 
-        #region Generic methods
+		#region Generic methods
 
-        public override bool Add<T>(T item)
+		public override bool Add<T>(T item)
         {
             Set<T>().Add(item);
 

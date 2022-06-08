@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.ResourceGroup-v1">
+  <changeSet author="Core" id="Table.dbo.ResourceGroup-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,6 +16,7 @@ BEGIN
 	CREATE TABLE [dbo].[ResourceGroup](
 		[ResourceID] [int] NOT NULL,
 		[GroupID] [int] NOT NULL,
+		[Origin] char(6) NULL,
 		CONSTRAINT [PK_ResourceGroup] PRIMARY KEY CLUSTERED ( [ResourceID] ASC, [GroupID] ASC )
 	)
 
@@ -26,6 +27,12 @@ BEGIN
 	ALTER TABLE [dbo].[ResourceGroup] WITH CHECK ADD CONSTRAINT [FK_ResourceGroup_Group] FOREIGN KEY([GroupID]) REFERENCES [dbo].[Group] ([ID]) ON DELETE CASCADE
 	ALTER TABLE [dbo].[ResourceGroup] CHECK CONSTRAINT [FK_ResourceGroup_Group]
 END
+
+IF COL_LENGTH('ResourceGroup','Origin') IS NULL 
+BEGIN
+	alter table ResourceGroup add Origin char(6) NULL
+END
+
 		]]>
     </sql>
 	<rollback>

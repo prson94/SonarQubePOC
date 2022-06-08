@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -2287,6 +2288,169 @@ namespace d360.web.Controllers.V2
 				});
 
 				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
+			}
+		}
+
+		[HttpPost, Route("claims")]
+		public async Task<IHttpActionResult> PostClaimAsync(ClaimPostApiModel claim)
+		{
+			var prefix = $"Membership.PostClaimAsync => ";
+
+			try
+			{
+				if (Company.CurrentResourceIsAdmin == false)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+				var claimType = claim.ClaimType.GetType().GetMember(claim.ClaimType.ToString()).First();
+				var allowedActions = ((AllowedActionsAttribute)claimType.GetCustomAttribute(typeof(AllowedActionsAttribute))).Actions;
+
+				if (!allowedActions.Contains(claim.Action))
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest));
+				}
+
+				if (claim.Location == ClaimLocation.Default || claim.Location == ClaimLocation.Client)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+				if (claim.Path?.Length > 250)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest));
+				}
+
+				await membershipRepository.AddClaim(claim);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created));
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
+			}
+		}
+
+		[HttpPut, Route("claims/{id:int}")]
+		public async Task<IHttpActionResult> PutClaimAsync(int id, ClaimPutApiModel claim)
+		{
+			var prefix = $"Membership.PutClaimAsync => ";
+
+			try
+			{
+				if (Company.CurrentResourceIsAdmin == false)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+				var existingClaim = Community.ClaimMappings.FirstOrDefault(c => c.Id == id);
+
+				if (existingClaim == null)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound));
+				}
+
+				var claimType = existingClaim.ClaimType.GetType().GetMember(existingClaim.ClaimType.ToString()).First();
+				var allowedActions = ((AllowedActionsAttribute)claimType.GetCustomAttribute(typeof(AllowedActionsAttribute))).Actions;
+
+				if (!allowedActions.Contains(claim.Action))
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest));
+				}
+
+				if (existingClaim.Location == ClaimLocation.Default || existingClaim.Location == ClaimLocation.Client)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+				if (claim.Path?.Length > 250)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest));
+				}
+
+				await membershipRepository.UpdateClaim(id, claim);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
+			}
+		}
+
+		[HttpDelete, Route("claims/{id:int}")]
+		public async Task<IHttpActionResult> DeleteClaimAsync(int id)
+		{
+			var prefix = $"Membership.DeleteClaimAsync => ";
+
+			try
+			{
+				if (Company.CurrentResourceIsAdmin == false)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+				var existingClaim = Community.ClaimMappings.FirstOrDefault(c => c.Id == id);
+
+				if (existingClaim == null)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound));
+				}
+
+
+				if (existingClaim.Location == ClaimLocation.Default || existingClaim.Location == ClaimLocation.Client)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+
+				await membershipRepository.DeleteClaim(id);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
+			}
+		}
+
+		[HttpGet, Route("claims")]
+		public async Task<IHttpActionResult> GetClaimsAsync()
+		{
+			var prefix = $"Membership.GetClaimsAsync => ";
+
+			try
+			{
+				if (Company.CurrentResourceIsAdmin == false)
+				{
+					return ResponseMessage(Request.CreateResponse(HttpStatusCode.Forbidden));
+				}
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await membershipRepository.GetClaims()));
+			}
+			catch (Exception ex)
+			{
+				string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage);
 			}
 		}
 	}
