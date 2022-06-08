@@ -31,6 +31,13 @@ namespace ThemeMigration
 			var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings(ConfigurationManager.AppSettings["CommunityContext"]);
 			var StorageConnectionString = ConfigurationManager.AppSettings["AzureStorageConnectionString"];
 
+			var targetCompanies = !string.IsNullOrEmpty(ConfigurationManager.AppSettings["TargetCompanies"]) ? ConfigurationManager.AppSettings["TargetCompanies"].Split(',') : null;
+
+			if(targetCompanies != null)
+			{
+				companies = companies.FindAll(c => targetCompanies.Contains(c.CompanyID.ToString()));
+			}
+
 			BlobServiceClient serviceClient = new BlobServiceClient(StorageConnectionString);
 
 			var iconContainer = serviceClient.GetBlobContainerClient("company-icons");
@@ -55,12 +62,12 @@ namespace ThemeMigration
 
 #if DEBUG
 						var uid = new Guid();
-						if(x.CompanyID == DEBUG_COMPANY_ID)
+						if (x.CompanyID == DEBUG_COMPANY_ID)
 						{
 							uid = createCustomTheme(preciselyTheme, cnn);
-						}												
+						}
 #else
-						var uid = createCustomTheme(preciselyTheme, cnn);
+										var uid = createCustomTheme(preciselyTheme, cnn);
 #endif
 						if (uid == Guid.Empty)
 						{
@@ -71,20 +78,21 @@ namespace ThemeMigration
 						var themeContainer = serviceClient.GetBlobContainerClient("themes");
 						themeContainer.CreateIfNotExistsAsync();
 
-						#if DEBUG
+#if DEBUG
 						if (x.CompanyID == DEBUG_COMPANY_ID)
 						{
 							themeContainer.GetBlobs();
 							var list = themeContainer.GetBlobs(prefix: $"{x.CompanyID}").ToList();
 
-							list.ForEach(b => {
+							list.ForEach(b =>
+							{
 								Console.WriteLine("Deleting Blob {0}", b.Name);
 								var blobClient = themeContainer.GetBlobClient(b.Name);
 
 								blobClient.DeleteIfExists();
 							});
 						}
-						#endif
+#endif
 
 						items.ForEach(s =>
 						{
@@ -93,7 +101,7 @@ namespace ThemeMigration
 
 							Stream downloadStream = null;
 							var sourceFileName = s.Value.Split('/').Last();
-							
+
 							var fileSuffix = "";
 
 							switch ((Setting)s.ID)
@@ -116,7 +124,7 @@ namespace ThemeMigration
 								default:
 									return;
 							}
-								
+
 							if (downloadStream != null)
 							{
 								if (Setting.CustomCSSLocation == (Setting)s.ID)
@@ -125,24 +133,24 @@ namespace ThemeMigration
 
 									if (downloadStream != null)
 									{
-									#if DEBUG
-										if (x.CompanyID == DEBUG_COMPANY_ID)
+#if DEBUG
+														if (x.CompanyID == DEBUG_COMPANY_ID)
 										{
 											updateThemeCSS(downloadStream, cnn, uid);
-										}		
-									#else
-										updateThemeCSS(downloadStream, cnn, uid);
-									#endif
-									}
+										}
+#else
+														updateThemeCSS(downloadStream, cnn, uid);
+#endif
+													}
 								}
 								else
-								{									
+								{
 									var extension = $".{sourceFileName.Split('.').Last()}";
 
 									var fileName = $"{uid}_{fileSuffix}{extension}";
 
 									copyToThemeFolder(downloadStream, themeContainer, x.CompanyID, fileName);
-								}									
+								}
 							}
 						});
 
@@ -153,12 +161,12 @@ namespace ThemeMigration
 							if (uid != Guid.Empty)
 							{
 								cnn.Execute($@"
-									Update theme 
-										set isCurrent = 0;
+													Update theme 
+														set isCurrent = 0;
 
-									Update theme 
-										set isCurrent = 1
-										where uid = @uid;", new { uid });
+													Update theme 
+														set isCurrent = 1
+														where uid = @uid;", new { uid });
 							}
 						}
 						else
@@ -171,7 +179,6 @@ namespace ThemeMigration
 				{
 					Console.WriteLine($"\tError: {ex.Message}");
 				}
-
 				Console.WriteLine("-------------------------------------------------------------------");
 			});
 
