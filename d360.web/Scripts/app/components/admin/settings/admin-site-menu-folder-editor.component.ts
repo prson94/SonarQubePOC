@@ -1,0 +1,569 @@
+﻿import * as _ from 'lodash';
+import {
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	EventEmitter,
+	Input,
+	OnChanges,
+	OnInit,
+	Output,
+	ElementRef,
+	ViewEncapsulation,
+	ViewChildren,
+	QueryList,
+	HostListener,
+	AfterViewChecked,
+	SimpleChanges,
+	ViewChild
+} from '@angular/core';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { CompanySettings, CompanyImage, } from '../../../models/settings.model';
+import { SemanticMatchType, SemanticSource, SemanticType } from '../../../models/semantic-type.model';
+import { DataProfileService } from '../../../services/dataprofile.service';
+import { FormHelper } from '../../../models/form.model';
+import { FormMode } from '../../../models/form.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { BaseComponent } from '../../shared/base.component';
+import { LocaleService } from '../../../services/locale.service';
+import { PropertyGroupComponent } from '../../shared/controls/property-group/property-group.component';
+import { AppSettingsEnum } from '../../../models/settings.model';
+import { SiteNav } from '../../../models/site-menu.model';
+import { StateService } from '../../../services/state.service';
+import { SiteMenuService } from '../../../services/site-menu.service';
+import { Table } from 'primeng/table';
+
+@Component({
+	selector: 'folder-editor',
+	templateUrl: './admin-site-menu-folder-editor.component.html',
+	providers: [DataProfileService, SiteMenuService],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	encapsulation: ViewEncapsulation.None,
+	styleUrls: ['folder-editor.less']
+})
+
+export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit {
+	@Input() navigationFolder: SiteNav;
+	@Input() dataProfile: any = null;
+	@Output() closeClick = new EventEmitter();
+	@Output() saveClick = new EventEmitter();
+
+	availableItems: SiteNav[] = [];
+	isBuiltIn: boolean = false;
+	statuses: any[];
+	baseTypes: any;
+	baseTypeOptions: any[];
+	folderItems: SiteNav[] = [];
+	formMode = FormMode.Default;
+	matchTypes: any[];
+	savingInProgress: boolean = false;
+	hasHeader: boolean = false;
+	iconType = 'icon';
+	isInError: boolean = false;
+	newFolderItems: SiteNav[] = [];
+	selectedFolderItems: SiteNav[] = [];
+	selectedNewFolderItems: SiteNav[] = [];
+	folderModel: SiteNav;
+	selection: SiteNav = null;
+	folderForm: FormGroup;
+	hasFormChanged: boolean = false;
+	isInErrorMessage: string = "";
+	advancedJson: string = "";
+
+	locales: any[];
+	isEdit: boolean = false;
+	savingInProgressWithAddNew: boolean = false;
+	isDuplicateQualifier: boolean = false;
+	isJsonValid: boolean = true;
+	semanticHelpURL: string;
+	IsMenuPermissionsAdding: boolean = false;
+	permissionMode: FormMode = FormMode.Default;
+	simpleTextFilter: string = '';
+	simpleTextFilterForExistingItems: string = '';
+
+	//this contains user or groups selected (2nd table in permission property group)
+	selectedPermissionAssets: any[] = [];
+
+	permissionAssets: any[] = [];
+	permissionAssetsTotalCount: number;
+	_tempSelectedPermissionAssets: any[] = [];
+	_selectedPermissionAsset: any[] = [];
+	isAvailableFolderItemsTableLoading: boolean = false;
+	isPermissionAssetTableLoading: boolean = false;
+	higlightedItem: any;
+	previewAssetUid: any;
+	previewAssetType: any;
+	categories: any[] = [];
+
+	private iconImage: CompanyImage = new CompanyImage();
+
+	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
+
+	constructor(
+		private cdRef: ChangeDetectorRef,
+		private formBuilder: FormBuilder,
+		private messagesService: MessagesObservableService,
+		private dataProfileService: DataProfileService,
+		protected settingsService: CompanySettingsService,
+		private siteMenuService: SiteMenuService,
+		private stateService: StateService,
+		private localService: LocaleService,
+		private elRef: ElementRef
+	) {
+		super(settingsService);
+	}
+
+	ngOnInit(): void {
+		this.isAvailableFolderItemsTableLoading = true;
+		this.selection = null;
+		this.newFolderItems = new Array<SiteNav>();
+		this.selectedFolderItems = new Array<SiteNav>();
+		this.selectedNewFolderItems = new Array<SiteNav>();
+		this.loadFolderItems();
+
+		this.folderForm = this.formBuilder.group({
+			name: ['', [Validators.required, this.isEmptyString()]]
+		});
+		this.loadPermissionAssets();
+		setTimeout(() => {
+			this.folderForm.valueChanges.subscribe((change) => {
+				this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+			});
+			this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+		}, 500);
+	}
+
+	ngOnChanges(changes: SimpleChanges): void {
+		let c = changes;
+		if (this.navigationFolder) {
+			this.folderModel = _.cloneDeep(this.navigationFolder);
+			this.isEdit = true;
+		} else {
+			this.isEdit = false;
+			this.folderModel = new SiteNav();
+		}
+		this.cdRef.markForCheck();
+	}
+
+	populateModelFromDataProfile() {
+	}
+
+	public isFormValid(): boolean {
+		if (!this.folderForm) {
+			return false;
+		}
+		return this.folderForm.valid;
+	}
+
+	save() {
+		this.savingInProgress = true;
+
+		this.clearInvalidFields();
+
+		this.isAvailableFolderItemsTableLoading = true;
+
+		switch (this.formMode) {
+			case FormMode.Editing:
+				this.selection.IconPayload = this.iconImage.dataUrl;
+				this.siteMenuService.editFolder(this.selection)
+					.subscribe((result) => {
+						this.showMessageForResult(this.messagesService, result);
+						this.siteMenuService.setSiteNavPermissions(this.selection);
+						this.stateService.reloadLeftNavMenu();
+						this.isAvailableFolderItemsTableLoading = false;
+						this.formMode = FormMode.Default;
+					});
+				break;
+			case FormMode.Adding:
+
+				this.folderModel.IconPayload = this.iconImage.dataUrl;
+				this.folderModel.Permissions = this.selectedPermissionAssets;
+				var model = {
+					folder: this.folderModel,
+					items: this.newFolderItems,
+				};
+
+				this.siteMenuService.addFolder(model)
+					.subscribe((result) => {
+						this.showMessageForResult(this.messagesService, result);
+						this.formMode = FormMode.Default;
+						this.isAvailableFolderItemsTableLoading = false;
+						this.stateService.reloadLeftNavMenu();
+						this.siteMenuService.setSiteNavPermissions(this.selection);
+						this.handleSaveComplete(result);
+					});
+				break;
+		}
+	}
+
+	handleSaveComplete(res: any) {
+		if (!(res?.status)) {
+			this.saveClick.emit({ item: this.folderModel.Name, action: `${this.isEdit ? 'edit' : 'new'}` });
+		}
+		else {
+			this.savingInProgress = false;
+			if (res?.status === 409) {
+				this.isDuplicateQualifier = true;
+			}
+		}
+		this.cdRef.markForCheck();
+	}
+
+	isEmptyString(): ValidatorFn {
+		type NewType = AbstractControl;
+
+		return (control: NewType): { [key: string]: any } | null => {
+			if (control.value === null || (typeof control.value === 'undefined')) {
+				return {};
+			}
+			if ((control.value as string).trim() === '' && (control.value as string) !== '') {
+				return {
+					empty: { value: control.value }
+				};
+			}
+			return null;
+		};
+	}
+
+	isValid(): boolean {
+		return true;
+	}
+
+	getMatchTypeDescription(matchType: any) {
+		return this.matchTypes.filter((m) => (m.label === matchType.label))[0].description;
+	}
+
+	get cancelButtonText(): string {
+		if (!this.isEdit) {
+			return "Cancel";
+		}
+
+		if (this.hasFormChanged && this.isEdit) {
+			return "Discard Changes";
+		}
+
+		return "Close";
+	}
+
+	getBaseTypeOptions() {
+	}
+
+	clearInvalidFields() {
+		let allowedFields = ["name", "qualifier", "description", "threshold", "priority", "status", "matchType", "baseType", "source"];
+	}
+
+	validateMinMax() {
+		return true;
+	}
+
+	changeIconType(e: any) {
+		if (this.formMode === FormMode.Editing) {
+			if (this.iconType === 'icon') {
+				this.iconType = 'image';
+				this.selection.Icon = null;
+			} else {
+				this.iconType = 'icon';
+				this.selection.ImageIconUrl = null;
+				this.selection.IconPayload = null;
+				this.iconImage = new CompanyImage();
+			}
+		} else if (this.formMode === FormMode.Adding) {
+			if (this.iconType === 'icon') {
+				this.iconType = 'image';
+				this.folderModel.Icon = null;
+			} else {
+				this.iconType = 'icon';
+				this.folderModel.ImageIconUrl = null;
+				this.folderModel.IconPayload = null;
+				this.iconImage = new CompanyImage();
+			}
+		}
+
+	}
+
+	clearIcon() {
+		this.iconImage = new CompanyImage();
+		if (this.formMode == FormMode.Editing) {
+			this.selection.ImageIconUrl = null;
+		} else if (this.formMode == FormMode.Adding) {
+			this.folderModel.ImageIconUrl = null;
+		}
+		this.onFileChange(null);
+	}
+
+	checkIfImg(value: string) {
+		if (value && value.indexOf('/Content') !== -1) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	onFileChange(event): void {
+		if (this.iconImage == null) {
+			this.iconImage = new CompanyImage();
+		}
+
+		if (event == null) {
+			this.iconImage.file = null;
+			this.iconImage.setDataUrl();
+
+			if (this.formMode === FormMode.Editing) {
+				this.selection.IconPayload = null;
+			} else if (this.formMode === FormMode.Adding) {
+				this.folderModel.IconPayload = null;
+			}
+
+			return;
+		}
+
+		let target = event.target || event.srcElement;
+		let files = target.files;
+
+		if (files[0] != null) {
+			if (files[0].size > (1024 * 1024)) {
+				this.messagesService.showError('File too large.', `Navigation icon image upload failed - the file is too large. Please choose an image file (ideally in JPG format due to smaller file size) no bigger than 1MB. `);
+				target.value = null;
+				return;
+			}
+		}
+
+		this.iconType = 'image';
+		this.iconImage.file = files[0];
+		FormHelper.getDataUrl(files[0])
+			.then(dataUrl => {
+				if (this.formMode == FormMode.Editing) {
+					this.selection.IconPayload = dataUrl;
+				} else if (this.formMode == FormMode.Adding) {
+					this.folderModel.IconPayload = dataUrl;
+					this.folderModel.Icon = 'Custom';
+					if (!this.categories[0].label) {
+						this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
+					} else {
+						this.categories = [{
+							label: null,
+							items: [{ label: 'Custom', path: dataUrl, img: true }]
+						}, ...this.categories
+						]
+					}
+				}
+			}
+		)
+	}
+
+	loadFolderItems() {
+		this.isAvailableFolderItemsTableLoading = true;
+
+		if (this.selection == null || this.selection.ID == null) {
+			return this.siteMenuService.getAvailableItems()
+				.subscribe((r) => {
+					this.availableItems = r;
+					this.isAvailableFolderItemsTableLoading = false;
+					this.cdRef.markForCheck();
+				});
+		} else {
+
+			return this.siteMenuService.getAvailableItems()
+				.subscribe((r) => {
+					this.availableItems = r;
+					this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
+						.subscribe(s => {
+							this.folderItems = s;
+							this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
+							this.isAvailableFolderItemsTableLoading = false;
+							this.cdRef.markForCheck();
+						})
+				})
+		}
+	}
+
+	loadSiteNavPermissions(item: SiteNav) {
+		this.isLoading = true;
+		return this.siteMenuService.getSiteNavPermissions(item.ID)
+			.subscribe(r => {
+				item.Permissions = r;
+				this.isLoading = false;
+			});
+	}
+
+	menuPermissionsOnModeChange($event) {
+		this.permissionMode = $event;
+		this.IsMenuPermissionsAdding = ($event == FormMode.Adding);
+	}
+
+	addNewFolder(item: SiteNav) {
+		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+		this.newFolderItems.push(i);
+	}
+
+	deleteNewFolder(item: SiteNav) {
+		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+		this.availableItems.push(i);
+	}
+
+	imageUploadClick(event: any) {
+		event.preventDefault();
+		let el: HTMLElement = document.getElementById('imageUpload') as HTMLElement;
+		el.click();
+	}
+
+	addToSelectedFolderItems() {
+		if (this.selectedFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedFolderItems.length; j++) {
+				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedFolderItems[j].ObjectID && i.Object == this.selectedFolderItems[j].Object);
+				let newItem = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
+				this.newFolderItems.push(newItem);
+			}
+			this.selectedFolderItems = [];
+		}
+	}
+
+	removeFromSelectedFolderItems() {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
+				this.availableItems.push(i);
+			}
+			this.selectedNewFolderItems = [];
+		}
+	}
+
+	moveToTop(items: SiteNav[]) {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				this.newFolderItems.splice(j, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
+	}
+
+	disableBtnMoveToTop() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
+		);
+	}
+
+	disableBtnMoveUp() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex((i) => i.ObjectID == this.newFolderItems[0].ObjectID && i.Object == this.newFolderItems[0].Object) > -1
+		);
+	}
+
+	moveUp() {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				this.newFolderItems.splice(x-1, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
+	}
+
+	disableBtnMoveDown() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex(
+				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
+		);
+	}
+
+	moveDown() {
+		if (this.selectedNewFolderItems.length > 0) {
+			debugger;
+			for (let j = this.selectedNewFolderItems.length-1; j >= 0; j--) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
+	}
+
+	disableBtnMoveToBottom() {
+		return (!this.selectedNewFolderItems
+			|| this.selectedNewFolderItems.length === 0
+			|| this.selectedNewFolderItems.findIndex(
+				(i) => i.ObjectID == this.newFolderItems[this.newFolderItems.length - 1].ObjectID && i.Object == this.newFolderItems[this.newFolderItems.length - 1].Object) > -1
+		);
+	}
+
+	moveToBottom(items: SiteNav[]) {
+		if (this.selectedNewFolderItems.length > 0) {
+			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
+				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let newPosition = this.newFolderItems.length - j;
+				this.newFolderItems.splice(newPosition - 1, 0, this.newFolderItems.splice(x, 1)[0])
+			}
+		}
+	}
+
+	lastLoadedEvent: any;
+	loadPermissionAssets() {
+		this.isPermissionAssetTableLoading = true;
+		this.siteMenuService.getSiteNavPermissionsAssets()
+			.subscribe((res) => {
+				this.isPermissionAssetTableLoading = false;
+				this.permissionAssetsTotalCount = res["total"];
+				this.permissionAssets = res["results"];
+				this.cdRef.markForCheck();
+			});
+	}
+	addPermissionAssets() {
+		if (!this.selectedPermissionAssets) {
+			this.selectedPermissionAssets = [];
+		}
+		this._tempSelectedPermissionAssets.forEach((pa) => {
+			if (this.selectedPermissionAssets.indexOf(pa) === -1) {
+				this.selectedPermissionAssets.push(pa);
+				this.permissionAssets = this.permissionAssets.filter((x) => x !== pa);
+				if (pa.uid === this.previewAssetUid) {
+					this.previewAssetUid = '';
+				}
+			}
+		});
+		this.permissionAssetsTotalCount = this.permissionAssets.length;
+		this._tempSelectedPermissionAssets = [];
+
+		this.cdRef.markForCheck();
+	}
+
+	removePermissionAssets() {
+		this._selectedPermissionAsset.forEach((pa) => {
+			if (this.permissionAssets.indexOf(pa) === -1) {
+				this.permissionAssets.push(pa);
+				this.selectedPermissionAssets = this.selectedPermissionAssets.filter((x) => x !== pa);
+			}
+		});
+		this.permissionAssets = this.permissionAssets.sort((a, b) => a.Text.localeCompare(b.Text));
+		this.permissionAssetsTotalCount = this.permissionAssets.length;
+		this._selectedPermissionAsset = [];
+		this.cdRef.markForCheck();
+	}
+
+	selectAllAvailableFolderItems($event, table: Table) {
+		this.selectedFolderItems = [];
+		for (let i = 0; i < table.selection.length; i++) {
+			let x = this.availableItems.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
+			this.selectedFolderItems.push(_.cloneDeep(this.availableItems[x]));
+		}
+	}
+
+	selectAllSelectedFolderItems($event, table: Table) {
+		this.selectedNewFolderItems = [];
+		for (let i = 0; i < table.selection.length; i++) {
+			let x = this.newFolderItems.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
+			this.selectedNewFolderItems.push(_.cloneDeep(this.newFolderItems[x]));
+		}
+	}
+
+	headerSelectAll($event, table: Table) {
+		this._tempSelectedPermissionAssets = [];
+		for (let i = 0; i < table.selection.length; i++) {
+			this._tempSelectedPermissionAssets.push(this.permissionAssets.find((item) => item.uid == table.selection[i].uid));
+		}
+	}
+}

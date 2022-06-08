@@ -26,6 +26,7 @@ export class IconPickerComponent implements ControlValueAccessor {
     @Input() showGovIcons: boolean = false;
     @Input() required;
     @Input() style: any;
+	@Input() categories: any = [];
 
     @Output() ngModelChange = new EventEmitter();
 
@@ -33,7 +34,6 @@ export class IconPickerComponent implements ControlValueAccessor {
     onModelTouched: Function = () => { };
 
     protected isRequired = false;
-    protected categories: any = [];
     public isLoading: boolean = true;
 
     constructor(private iconService: IconService,

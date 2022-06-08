@@ -118,5 +118,8 @@ namespace d360.model.DataAccessLayer
         IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType);
 
         IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType);
-    }
+
+		Task<IEnumerable<AssetTypeSelectApiModel>> GetPossibleNavigationTypes();
+
+	}
 }

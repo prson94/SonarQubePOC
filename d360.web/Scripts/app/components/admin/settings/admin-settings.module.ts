@@ -17,6 +17,7 @@ import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
+import { AdminSiteMenuFolderEditorComponent } from './admin-site-menu-folder-editor.component';
 import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
 import { AdminHomeComponent } from './admin-home.component';
 
@@ -32,7 +33,13 @@ import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
 import { IgCheckboxModule } from '../../../directives/ig-checkbox-directive';
 import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect-grid.component';
-
+import { PopupMenuModule } from "../../shared/controls/popup-menu/popup-menu.component";
+import { SiteModalModule } from "../../shared/modal/gov-modal.module";
+import { TooltipModule } from 'primeng/tooltip';
+import { SearchFieldModule } from '../../shared/controls/search-field/search-field.component';
+import { AdminSiteMenuAssetTypeEditorComponent } from './admin-site-menu-asset-type.component';
+import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
+import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -50,6 +57,7 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         ColorPickerModule,
         TableModule,
         CheckboxModule,
+        TooltipModule,
 
         //d3s        
         CoreModule,        
@@ -63,13 +71,24 @@ import { ResourceMultiSelectGridModule } from '../../shared/resource-multiselect
         PipesModule,
         IgCheckboxModule,
         IgNumberFieldModule,
+        PopupMenuModule,
+        SiteModalModule,
+		IgNumberFieldModule,
+		TooltipModule,
+		SiteModalModule,
+		TableModule,
+		SearchFieldModule,
+		PropertyGroupModule,
+		AssetPreviewModule
     ],
     declarations: [
         AdminSettingsComponent,
         AdminSiteMenuComponent,
         AdminIpRestrictionComponent,
+		AdminSiteMenuFolderEditorComponent,
+		AdminSiteMenuAssetTypeEditorComponent,
         AdminSiteMenuPermissionsComponent,
-        AdminHomeComponent,
+		AdminHomeComponent
     ],
     providers: [
     ]

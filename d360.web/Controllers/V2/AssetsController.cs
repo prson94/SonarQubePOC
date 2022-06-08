@@ -2028,6 +2028,47 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
+		/// <summary>
+		/// Retrieves a list of possible asset types for site navigation.
+		/// </summary>
+		/// <returns>Returns a list of possible asset types for site navigation.</returns>
+		/// <returns>An HTTP status code and message.</returns>
+		[
+			HttpGet,
+			ApiExplorerSettings(IgnoreApi =true),
+			Route("possibleSiteNav"),
+			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypePossibleOwnersModel>)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleAssetTypesForNavigation()
+		{
+			var prefix = "Assets.GetPossibleAssetTypesForNavigation => ";
+			string errorMessage;
+
+			try
+			{
+				//if the user is not an admin make sure they cannot read this data as this is used only in site nav administration
+				if (!Company.CurrentResourceIsAdmin)				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.InvalidRequest, AssetsApiMessages.RestrictReadAssettype));
+				}
+
+				var assetTypes = await AssetRepository.GetPossibleNavigationTypes();
+
+				return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, assetTypes)));
+			}
+			catch (Exception ex)
+			{
+				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string>() {
+					{ ApiMessages.EndpointMethod, prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
+			}
+		}
+
 		#region Batch
 
 		/// <summary>

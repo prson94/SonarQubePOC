@@ -85,6 +85,22 @@ export class SiteMenuService extends BaseObservableService {
             );
     }
 
+    moveFolderToTop(id: number) {
+        return this.http.put(`navigation/MoveToTop?id=${id}`, null)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    moveFolderToBottom(id: number) {
+        return this.http.put(`navigation/MoveToBottom?id=${id}`, null)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     editFolder(folder: SiteNav): Observable<JsonResult> {
         return this.http.put('navigation/EditFolder', folder)
             .pipe(
@@ -184,7 +200,15 @@ export class SiteMenuService extends BaseObservableService {
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))
             );
-    }
+	}
+
+	getSiteNavPermissionsAssets(): Observable<any[]> {
+		return this.http.get(`navigation/permissions/get/list/?id=0&pagenum=0&pagesize=10000`)
+			.pipe(
+				map(response => <any[]>response),
+				catchError(err => this.handleError(err))
+			);
+	}
 
     getItemCount(url: string) {
 

@@ -2492,6 +2492,10 @@ div.home-image-title-text {
     }
   }
 
+  &.full-height {
+    height: 100%;
+  }
+
   &.large-dialog {
     width: 100%;
     max-width: 800px;
@@ -3756,6 +3760,24 @@ button.tab-scroller {
       background-color: @ig-lightblue-t5;
       border: 1px solid @ig-grey-t4;
       border-radius: 4px;
+    }
+  }
+
+  .info-block {
+    height: 40px;
+    background: @ig-grey-t5 0% 0% no-repeat padding-box;
+    border-radius: 4px;
+    opacity: 1;
+    width: 100%;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .fa {
+      margin: 6px;
+      position: relative;
+      top: -1px;
     }
   }
 }

@@ -174,7 +174,32 @@ namespace d360.web.Controllers
         public JsonNetResult GetSiteNavItems()
         {
             var allowSemantics = Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false);
-            var data = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
+
+			var data = Company.Query<SiteNav>(@"select * from dbo.SiteNav S
+				where S.ParentID is null and s.Name != '#Home' and s.Name != '#ASSET_TYPE'
+				union 
+				select s.ID, 
+					s.ParentID, 
+					s.Name, 
+					s.Route, 
+					s.SortOrder, 
+					s.ObjectID, 
+					s.Object, 
+					case when ats.Icon is not null 
+						then ats.Icon
+						else (
+						  select case 
+							  when at.Class = 1 or at.Class = 8 or at.Class = 7 then 'fa-book' 
+							  when at.Class = 2 then 'fa-sitemap' 
+							  when at.Class = 6 then 'fa-university' 
+							  end as value)
+						end as Icon,
+					at.Name as 'title', 
+					s.ImageIconUrl from dbo.SiteNav S
+				left join AssetType at on at.Object = s.Object and at.ObjectID = s.ObjectID
+				left join AssetTypeStyle ats on ats.id = at.ID
+				where S.ParentID is null and s.Name != '#Home' and s.Name = '#ASSET_TYPE'
+				order by SortOrder").ToList();
 
             if (!allowSemantics)
             {
@@ -487,13 +512,89 @@ namespace d360.web.Controllers
             };
         }
 
-        [HttpPut, Route("EditFolder")]
-        public async Task<JsonNetResult> EditFolder(SiteNav folder)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-            }
+		[HttpPut, Route("MoveToTop"), NonNullableParameters]
+		public JsonNetResult MoveToTop(int id)
+		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			}
+
+			var success = true;
+			string message;
+
+			try
+			{
+				var siteNav = Company.GetById<SiteNav>(id);
+
+				if (siteNav == null)
+				{
+					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+				}
+				
+				siteNav.SortOrder = 1;
+                foreach (var item in Company.SiteNav.Where(x => x.ID != siteNav.ID))
+                {
+					item.SortOrder++; 
+                }
+				Company.SaveChanges();
+				message = string.Format(FormControllerApiMessage.FolderMovedToTop, siteNav.Name);
+			}
+			catch (Exception ex)
+			{
+				success = false;
+				message = ex.GetFullExceptionData();
+			}
+			return new JsonNetResult
+			{
+				Data = new { success, message },
+				Formatting = Newtonsoft.Json.Formatting.None
+			};
+		}
+
+		[HttpPut, Route("MoveToBottom"), NonNullableParameters]
+		public JsonNetResult MoveToBottom(int id)
+		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			}
+
+			var success = true;
+			string message;
+
+			try
+			{
+				var siteNav = Company.GetById<SiteNav>(id);
+
+				if (siteNav == null)
+				{
+					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, id.ToString()));
+				}
+
+				siteNav.SortOrder = Company.SiteNav.Max(x => x.SortOrder) + 1;
+				Company.SaveChanges();
+				message = string.Format(FormControllerApiMessage.FolderMovedToBottom, siteNav.Name);
+			}
+			catch (Exception ex)
+			{
+				success = false;
+				message = ex.GetFullExceptionData();
+			}
+			return new JsonNetResult
+			{
+				Data = new { success, message },
+				Formatting = Newtonsoft.Json.Formatting.None
+			};
+		}
+
+		[HttpPut, Route("EditFolder")]
+		public async Task<JsonNetResult> EditFolder(SiteNav folder)
+		{
+			if (!Company.CurrentResourceIsAdmin)
+			{
+				return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			}
 
             var success = true;
             string message;
@@ -648,15 +749,16 @@ namespace d360.web.Controllers
                 hideUsersSql = " and (r.Email not like '%@data3sixty.com' and r.Email not like '%@infogix.com' and r.Email not like '%@precisely.com')";
             }
 
-            var querySql = @"
-					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type] from
+            var querySql = $@"
+					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type], uid from
 						(
-							select  g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'Group' as [Type] from [Group] g
+							select '{CommonNames.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{CommonNames.AssetTypeClass_Group}' as [Type], a.uid from [Group] g
+							inner join asset a on a.object ='Group' and a.objectid = g.id
 							where not exists (select 1 from SiteNavPermission where object='Group' and siteNavId =@id and objectId=g.id) 
 							union all
-							select  r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'User' as 'Type' from reporting.Global_Resource r
+							select '{CommonNames.AssetTypeClass_User}: ' + r.LastName + ' ' + r.FirstName as label, 'Resource|' + cast(r.ResourceID as varchar) as [Value],'{CommonNames.AssetTypeClass_User}' as 'Type', r.uid from reporting.Global_Resource r
 							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
-                            + hideUsersSql +
+							+ hideUsersSql +
                         ") as Sub";
 
 

@@ -254,6 +254,7 @@ namespace d360.core.entities
         }
         
         public string Title { get; set; }
+        public string url { get; set; }
     }
 
     public class NavigationItem

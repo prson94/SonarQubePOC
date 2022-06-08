@@ -15,13 +15,13 @@
                 [placeholder]="(isRequired ? 'Required' : 'Optional')"
                 filterPlaceholder="Type to filter">
         <ng-template let-group pTemplate="group">
-            <span>{{group.label}}</span>
+            <span [class.noGroup] ="!group.label">{{group.label}}</span>
         </ng-template>
         <ng-template let-item pTemplate="selectedItem">
             <div class="iconfield-item-selected">
                 <span class="iconfield-swatch">
                     <img [src]="item.path" *ngIf="item.img">
-                    <i [class]="'fa ' + item.value" *ngIf="!item.img"></i>
+                    <i [class]="'fa ' + item.value" *ngIf="!item.img" title="Clear"></i>
                 </span>
                 <span class="iconfield-item-label">
                     {{item.label}}
@@ -32,7 +32,7 @@
             <div class="iconfield-item">
                 <span class="iconfield-swatch">
                     <img [src]="item.path" *ngIf="item.img">
-                    <i [class]="'fa ' + item.value" *ngIf="!item.img"></i>
+                    <i [class]="'fa ' + item.value" *ngIf="!item.img" title="Clear2"></i>
                 </span>
                 <span class="iconfield-item-label">
                     {{item.label}}

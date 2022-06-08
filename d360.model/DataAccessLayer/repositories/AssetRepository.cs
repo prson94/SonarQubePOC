@@ -4540,5 +4540,40 @@ namespace d360.model.DataAccessLayer
 
 			return results;
 		}
-    }
+
+		public async Task<IEnumerable<AssetTypeSelectApiModel>> GetPossibleNavigationTypes()
+		{
+			List<int> allowedClasses = new List<int>() {
+				(int)AssetTypeClass.BusinessAsset,
+				(int)AssetTypeClass.TechnicalAsset,
+				(int)AssetTypeClass.Model,
+				(int)AssetTypeClass.Policy,
+				(int)AssetTypeClass.Rule
+			};
+			var results = (await CompanyContext.QueryAsync<AssetTypeSelectApiModel>(@$"select 
+				at.uid as value,
+				at.Class,
+				path.Path as title,
+				at.Object,
+				at.ObjectID
+				from AssetType at
+				cross apply GetAssetTypeTextPathById(at.id, ' > ')Path
+				left join sitenav sn on sn.object = at.object and sn.objectid = at.objectid
+				where at.class in @allowedClasses and sn.id is null", new { allowedClasses} ,ApiTimeout)).ToList();
+
+			results.ForEach((res) =>
+			{
+				switch (res.Class)
+				{
+					case AssetTypeClass.BusinessAsset: res.title = CommonNames.AssetTypeClass_Business + ": " + res.title; break;
+					case AssetTypeClass.TechnicalAsset: res.title = CommonNames.AssetTypeClass_Technical + ": " + res.title; break;
+					case AssetTypeClass.Model: res.title = CommonNames.AssetTypeClass_Model + ": " + res.title; break;
+					case AssetTypeClass.Policy: res.title = CommonNames.AssetTypeClass_Policy + ": " + res.title; break;
+					case AssetTypeClass.Rule: res.title = CommonNames.AssetTypeClass_Rule + ": " + res.title; break;
+					default: break;
+				}
+			});
+			return results.OrderBy(x=> x.title);
+		}
+	}
 }

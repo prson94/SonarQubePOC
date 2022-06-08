@@ -232,11 +232,14 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             break;
                         case '#Dashboards':
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
-                            break;
+							break;
+						case '#ASSET_TYPE':
+							menu.ngUrl = menu["url"];
+							break;
                         default:
                             //is it a custom menu?
                             if (menu.MenuID.startsWith('~')) {
-                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
+								if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
                             }
                             break;
                     }
