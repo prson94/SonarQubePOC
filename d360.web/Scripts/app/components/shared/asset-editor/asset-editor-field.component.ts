@@ -66,7 +66,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = $localize`The field doesnt meet the required pattern.`;
-    keyFieldError: string = "";
 
     private excludedRelationitems = {};
     private relationItemsLoading = false;
@@ -144,14 +143,24 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }, 25);
     }
 
+    get hasKeyFieldError () {
+        const formControl = this.form.get(this.field.FieldName);
+        if (formControl.errors == null) {
+            return false;
+        }
+        
+        return 'nonUniqueField' in formControl.errors || 'nonUniqueFieldCombination' in formControl.errors;
+    }
+
     //we do not want key fields error to disable submit button so we are handing this error differently
     public setKeyFieldsErrorMessage(isSingle: boolean) {
+        const formControl = this.form.get(this.field.FieldName);
         if (this.field.IsPartOfKey) {
             if (isSingle) {
-                this.keyFieldError = $localize`Please enter a unique value`;
+                formControl.setErrors({ nonUniqueField: true });
             }
             else {
-                this.keyFieldError = $localize`Please enter a unique combination of key field values`;
+                formControl.setErrors({ nonUniqueFieldCombination: true });
             }
             this.ref.markForCheck();
         }
@@ -359,7 +368,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         } else {
             this.field.Value = data;
         }
-        this.keyFieldError = "";
     }
 
     get isValid() {
@@ -528,6 +536,14 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (errors["invalidUrlStart"]) {
             message += $localize`Please start the URL with a protocol prefix eg.http:// or https://`;
+        }
+
+        if (errors["nonUniqueField"]) {
+            message += $localize`Please enter a unique value`;
+        }
+
+        if (errors["nonUniqueFieldCombination"]) {
+            message += $localize`Please enter a unique combination of key field values`;
         }
 
         return message;

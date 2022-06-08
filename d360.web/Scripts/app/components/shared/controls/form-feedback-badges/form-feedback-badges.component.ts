@@ -53,6 +53,12 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                     tap(() => this.delayedRefresh())
                 )
                 .subscribe();
+
+            this.igformGroup.statusChanges
+                .pipe(
+                    takeUntil(this.$destroy),
+                    tap(() => this.delayedRefresh())
+                ).subscribe();
         }
     }
 
