@@ -8,9 +8,9 @@
         <div *ngIf="theme.isDefaultTheme" class="class-name" i18n>Default theme</div>
         <br />
         <div>
-            <a (click)="linkClicked.emit('Edit')" *ngIf="theme.hasEditOption" i18n>Edit</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
-            <a (click)="linkClicked.emit('Duplicate')" *ngIf="theme.hasDuplicateOption" i18n>Duplicate</a> <span *ngIf="theme.hasDuplicateOption && theme.hasSetAsCurrentThemeOption" class="grey-delimiter">|</span>
-            <a (click)="linkClicked.emit('Set as Current Theme')" *ngIf="theme.hasSetAsCurrentThemeOption" i18n>Set as Current Theme</a>
+            <a (click)="linkClicked.emit(labelEdit)" *ngIf="theme.hasEditOption">{{labelEdit}}</a><span *ngIf="theme.hasEditOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit(labelDuplicate)" *ngIf="theme.hasDuplicateOption">{{labelDuplicate}}</a> <span *ngIf="theme.hasDuplicateOption && theme.hasSetAsCurrentThemeOption" class="grey-delimiter">|</span>
+            <a (click)="linkClicked.emit(labelCurrentTheme)" *ngIf="theme.hasSetAsCurrentThemeOption">{{labelCurrentTheme}}</a>
         </div>
     </div>
     <div class="windowtabs">
