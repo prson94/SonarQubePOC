@@ -316,12 +316,10 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             case $localize`Delete`.toLowerCase():
                 this.showDelete = true;
                 break;
-            case $localize`Disable`.toLowerCase():
+			case $localize`Disable`.toLowerCase():
+			case $localize`Enable`.toLowerCase():
                 this.showDisableDialog = true;
-                break;
-            case $localize`Enable`.toLowerCase():
-                this.changeSemanticDisabledStatus(item);
-                break;
+				break;
             case $localize`Edit`.toLowerCase():
                 this.isAdd = false;
                 this.showEditor = true;
@@ -468,7 +466,11 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             });
     }
 
-    isDisabled(effectiveDate: Date, UpdatedOn: Date) {
-        return new Date(UpdatedOn) > new Date(effectiveDate);
-    }
+	get disableModalTitle() {
+		return this.selectedType.isDisabled ? $localize`Enable Semantic Type` : $localize`Disable Semantic Type`;
+	}
+	get disableButtonText() {
+		return this.selectedType.isDisabled ? $localize`Enable` : $localize`Disable`;
+	}
+	
 }
