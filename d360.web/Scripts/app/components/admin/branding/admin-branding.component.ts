@@ -39,6 +39,9 @@ export class AdminBrandingComponent extends AdminBaseComponent implements OnInit
     isSetCurrentThemeVisible: boolean = false;
     settingCurrentThemeInProgress: boolean = false;
 
+	labelReplace = $localize`Replace or Rename the Theme`;
+	labelRename = $localize`Rename the Theme`;
+
     preselectThemeName: string = "";
 
     menuItemsDefaultOptions = [

@@ -19,7 +19,11 @@ export class ThemeDetailComponent implements OnChanges {
     @Output() linkClicked = new EventEmitter();
 
     categories: Category[] = new Array<Category>();
-    hasCustomCss: boolean = false;
+	hasCustomCss: boolean = false;
+
+	labelEdit = $localize`Edit`;
+	labelDuplicate = $localize`Duplicate`;
+	labelCurrentTheme = $localize`Set as Current Theme`;
 
     constructor(private brandingService: BrandingService,
         featureFlagService?: FeatureFlagsService) {
@@ -34,8 +38,8 @@ export class ThemeDetailComponent implements OnChanges {
 
     loadData() {
         this.categories = [];
-        this.theme.fillDefaultValues();
-        var header = new Category('Header Bar');
+		this.theme.fillDefaultValues();
+		var header = new Category($localize`Header Bar`);
         header.active = true;
         header.rows = [];
         header.rows.push(
@@ -50,7 +54,7 @@ export class ThemeDetailComponent implements OnChanges {
             { title: $localize`Button color`, value: this.theme.buttonBackColor, type: "color" }
         );
 
-        var navSidebar = new Category('Navigation Sidebar');
+		var navSidebar = new Category($localize`Navigation Sidebar`);
         navSidebar.rows.push(
             { title: $localize`Side menu color`, value: this.theme.navbarBackColor, type: "color" }
         );

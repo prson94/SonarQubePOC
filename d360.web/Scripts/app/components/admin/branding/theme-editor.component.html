@@ -27,15 +27,15 @@
                         </div>
                     </ig-property-group>
                 </div>
-                <ig-property-group [igformGroup]="formGroup" [title]="'Header Bar'" [shouldBePadded]="false" [showHeaderLine]="false">
+                <ig-property-group [igformGroup]="formGroup" i18n-title title="Header Bar" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
                             <label for="headerLogo" i18n>Header logo image</label>
-                            <image-picker [defaultImage]="getDefaultImage('headerLogo')" formControlName="headerLogo" [imageType]="'LOGO'" [maxHeight]="40" [message]="'Choose a PNG,JPG or GIF image (maximum display height: 40 pixels)'"></image-picker>
+                            <image-picker [defaultImage]="getDefaultImage('headerLogo')" formControlName="headerLogo" [imageType]="'LOGO'" [maxHeight]="40" i18n-message message="Choose a PNG,JPG or GIF image (maximum display height: 40 pixels)"></image-picker>
                         </div>
                         <div class="input-row">
                             <label for="icon" i18n>Browser logo ico</label>
-                            <image-picker [defaultImage]="getDefaultImage('icon')" formControlName="icon" [imageType]="'ICO'" [message]="'Choose an ICO file to display in the browser tab/taskbar'"></image-picker>
+                            <image-picker [defaultImage]="getDefaultImage('icon')" formControlName="icon" [imageType]="'ICO'" i18n-message message="Choose an ICO file to display in the browser tab/taskbar"></image-picker>
                         </div>
                         <div class="input-row">
                             <label for="headerBackColor">
@@ -79,7 +79,7 @@
                     </div>
                 </ig-property-group>
 
-                <ig-property-group [igformGroup]="formGroup" [title]="'Navigation Sidebar'" [shouldBePadded]="false" [showHeaderLine]="false">
+                <ig-property-group [igformGroup]="formGroup" i18n-title title="Navigation Sidebar" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
                             <label for="navbarBackColor">
@@ -121,13 +121,13 @@
                                    tooltipPosition="top"
                                    tooltipStyleClass="ig-tooltip"></i>
                             </label>
-                            <image-picker [defaultImage]="getDefaultImage('homeBackground')" formControlName="homeBackground" [maxSize]="1048576" [message]="'The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB.'"></image-picker>
+                            <image-picker [defaultImage]="getDefaultImage('homeBackground')" formControlName="homeBackground" [maxSize]="1048576" i18n-message message="The recommended image height is 300 px. The following formats are accepted: .GIF, .JPG, .PNG, up to a maximum file size of 1MB."></image-picker>
                         </div>
 
                     </div>
                 </ig-property-group>
 
-                <ig-property-group [igformGroup]="formGroup" [title]="'General'" [shouldBePadded]="false" [showHeaderLine]="false">
+                <ig-property-group [igformGroup]="formGroup" i18n-title title="General" [shouldBePadded]="false" [showHeaderLine]="false">
                     <div inputs>
                         <div class="input-row">
                             <label for="primaryButtonBackColor">
