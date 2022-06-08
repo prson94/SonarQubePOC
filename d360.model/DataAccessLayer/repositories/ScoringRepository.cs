@@ -595,7 +595,10 @@ namespace d360.model.DataAccessLayer
 							 {tables} {orderBySql} {offset} 
 						end";
 
-			var evidenceModelRequest = await companyContext.QueryMultipleAsync(sql, dbArgs);
+			// I've setup 120 seconds timeout as a hot fix for GOV-18554. 
+			// It will be revisited in GOV-18444
+			var evidenceModelRequest = await companyContext.QueryMultipleAsync(sql, dbArgs, 120);
+
 			var scoreItemExists = evidenceModelRequest.Read<bool>().Single();
 			var canReadAsset = evidenceModelRequest.Read<bool>().Single();
 			var isDq = evidenceModelRequest.Read<bool>().Single();
