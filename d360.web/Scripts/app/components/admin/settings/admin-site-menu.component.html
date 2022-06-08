@@ -34,7 +34,7 @@
 					</td>
 					<td width="40px" class="asset-grid-tools" (click)="selectRow(item)">
 						<div style="width: 100%; display: flex; flex-direction: row-reverse;">
-							<button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
+							<button igButton type="button" class="ig-button-dark" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
 							<ig-popup-menu [items]="item.menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>
 						</div>
 					</td>
