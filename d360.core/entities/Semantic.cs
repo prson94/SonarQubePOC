@@ -432,7 +432,20 @@ namespace d360.core.entities
                 ValidValuesStructured = model.ValidValuesStructured ?? existing.ValidValuesStructured
             };
 
-            repoModel.InvalidValues = repoModel.InvalidValuesStructured != null ? repoModel.serializeTextProperty(repoModel.InvalidValuesStructured) : existing.InvalidValues;
+			if ((model.BaseType.HasValue && model.BaseType == SemanticBaseType.Long) || (!model.BaseType.HasValue && existing.BaseType == SemanticBaseType.Long))
+			{
+				if(model.Maximum == null)
+				{
+					repoModel.Maximum = (long)existing.Maximum;
+				}
+
+				if (model.Minimum == null)
+				{
+					repoModel.Minimum = (long)existing.Minimum;
+				}
+			}
+
+			repoModel.InvalidValues = repoModel.InvalidValuesStructured != null ? repoModel.serializeTextProperty(repoModel.InvalidValuesStructured) : existing.InvalidValues;
             repoModel.JsonPayload = repoModel.JsonPayloadStructured != null ? repoModel.serializeTextProperty(repoModel.JsonPayloadStructured) : existing.JsonPayload;            
             repoModel.ValidLocales = repoModel.ValidLocalesStructured != null ? repoModel.serializeTextProperty(repoModel.ValidLocalesStructured) : existing.ValidLocales;
             repoModel.ValidValues = repoModel.ValidValuesStructured != null ? repoModel.serializeTextProperty(repoModel.ValidValuesStructured) : existing.ValidValues;
