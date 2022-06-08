@@ -155,7 +155,6 @@ namespace d360.web
 
 						try
 						{
-							var excludedProps = new[] { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti", "name", "nonce", "preferred_username", "scp", "ver", "uid" };
 							var propBuilder = new StringBuilder(string.Empty);
 
 							foreach (var claim in claimMappings)
@@ -251,8 +250,6 @@ namespace d360.web
 												break;
 										}
 									}
-
-									allClaims.Remove(prop);
 								}
 							}
 

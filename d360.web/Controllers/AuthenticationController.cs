@@ -896,7 +896,7 @@ namespace d360.web.Controllers
             try
             {
 
-				var excludedProps = new[] { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
+				var excludedProps = new List<string> { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
 				var claimMappings = getClaimMappings();
 				var propBuilder = new StringBuilder(string.Empty);
 
@@ -994,7 +994,7 @@ namespace d360.web.Controllers
 							}
 						}
 
-						combinedClaims.Remove(prop);
+						excludedProps.Add(prop.Type);
 					}
 				}
 
