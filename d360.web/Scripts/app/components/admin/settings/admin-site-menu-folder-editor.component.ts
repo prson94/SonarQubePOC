@@ -338,7 +338,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					this.selection.IconPayload = dataUrl;
 				} else if (this.formMode == FormMode.Adding) {
 					this.folderModel.IconPayload = dataUrl;
-					this.folderModel.Icon = 'Custom';
 					if (!this.categories[0].label) {
 						this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
 					} else {
@@ -348,6 +347,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						}, ...this.categories
 						]
 					}
+					this.folderModel.Icon = this.categories[0].items[0]; 
 				}
 			}
 		)
