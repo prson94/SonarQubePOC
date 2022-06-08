@@ -1003,20 +1003,20 @@ namespace d360.web.Controllers
 
 				foreach (var prop in combinedClaims)
                 {
-					if (!excludedProps.Contains(prop.Type.ToLower()))
+					if (!excludedProps.Contains(prop.Type) && !customClaims.ContainsKey(prop.Type))
 					{
 						customClaims.Add(prop.Type, prop.Value.ToString());
 					}
 				}
             }
-            catch
+            catch (Exception ex)
             {
-                //nothing
-            }
+				Telemetry.TrackException(ex);
+			}
 
-            #endregion
+			#endregion
 
-            string redirectUrl = openIdRequest.RedirectUrl;
+			string redirectUrl = openIdRequest.RedirectUrl;
 
             try
             {
