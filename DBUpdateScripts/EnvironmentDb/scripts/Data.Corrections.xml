@@ -1559,7 +1559,7 @@ drop table if exists #tempfieldid;
   </changeSet>
 
   
-  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18103-IntersectType">
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18103-IntersectType-v2">
   <comment>Clean up script IntersectType addition fields exists for missing IntersectType.</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1572,7 +1572,7 @@ declare @totalcount bigint = 0,
 
 drop table if exists #tempfieldid;
 
-create table #tempfieldid (id [bigint] IDENTITY(1,1) NOT NULL, FieldTypeId [bigint]);
+create table #tempfieldid (FieldTypeId [bigint]);
 
 insert into #tempfieldid (FieldTypeId)
 select ft.id
@@ -1583,35 +1583,15 @@ and not exists (select 1
 				where it.id = ft.ObjectID
 				);
 
-create nonclustered index cix_tempfieldid1 on #tempfieldid (id);
 create nonclustered index cix_tempfieldid2 on #tempfieldid (FieldTypeid);
-
-select @totalcount = count(id) from #tempfieldid;
-
-while (@runcount <= @totalcount)
-begin
-	set @runcount = @runcount + 1;
 	
-	set @fieldtypeid = null;
-	
-	select @fieldtypeid = tf.fieldtypeid 
-	from #tempfieldid tf
-	where id = @runcount
-	and exists (select 1 from field f
-				where f.fieldtypeid = tf.fieldtypeid);
-	
-	if (@fieldtypeid is not null)
-	begin
-		delete  f
-		from    Field f
-		where   f.fieldtypeid = @fieldtypeid;
-	end
-end;
+delete  f
+from    Field f
+inner join #tempfieldid t on f.fieldtypeid = t.fieldtypeid;
 
 delete	FT
 from	dbo.FieldType FT
-inner join #tempfieldid T on T.FieldTypeID = FT.ID
-where FT.object = 'IntersectType';
+inner join #tempfieldid T on T.FieldTypeID = FT.ID;
 
 drop table if exists #tempfieldid; 
 		]]>
