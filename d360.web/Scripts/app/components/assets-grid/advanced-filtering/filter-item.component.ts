@@ -256,11 +256,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     updateDynamicWidths() {
         try {
             var html = this.elRef.nativeElement as HTMLElement;
-            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
+            var scrollWrapper = html.getElementsByClassName("p-datatable-wrapper")[0];
             if (scrollWrapper) {
                 let width = 500 + 60;
 
-                var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
+                var tableWrapper = html.getElementsByClassName("p-datatable-wrapper")[0] as HTMLElement;
 
                 if (tableWrapper) {
                     var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
