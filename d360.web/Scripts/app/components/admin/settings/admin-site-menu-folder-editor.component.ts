@@ -205,7 +205,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	private getModel(): any {
-		let folder: any = {}
+		let folder: any = {};
 		folder.Id = this.folderModel.ID;
 		folder.Name = this.folderModel.Name;
 		folder.Icon = this.folderModel.Icon;
