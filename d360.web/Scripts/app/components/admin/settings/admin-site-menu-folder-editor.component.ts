@@ -97,6 +97,12 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	previewAssetType: any;
 	categories: any[] = [];
 
+	labelAddFolder = $localize`Add Folder`;
+	labelSaveChanges = $localize`Save Changes`;
+
+	labelClose = $localize`Close`;
+	labelDiscard = $localize`Discard Changes`;
+
 	private iconImage: CompanyImage = new CompanyImage();
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
@@ -186,6 +192,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
+
+				this._initialVersion = JSON.stringify(this.getModel());
 			});
 	}
 
@@ -196,36 +204,39 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		return this.folderForm.valid;
 	}
 
+	private getModel(): any {
+		let folder: any = {}
+		folder.Id = this.folderModel.ID;
+		folder.Name = this.folderModel.Name;
+		folder.Icon = this.folderModel.Icon;
+		if (this.folderModel.IconPayload) {
+			folder.IconPayload = this.folderModel.IconPayload;
+		}
+
+		if (this.folderModel.Icon && typeof this.folderModel.Icon !== "string") {
+			let path: string = this.folderModel.Icon["path"];
+			if (path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
+				folder.Icon = this.folderModel.ImageIconUrl;
+			}
+		}
+
+		folder.Items = this.newFolderItems;
+		folder.Permissions = [];
+
+		this.selectedPermissionAssets.forEach((p) => {
+			var legacyData = (p["Value"] as string).split('|');
+			folder.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID: 0 });
+		});
+		return folder;
+	}
+
 	save() {
 		this.savingInProgress = true;
 
 		this.clearInvalidFields();
 		switch (this.formMode) {
 			case FormMode.Editing:
-				let folder: any = {}
-				folder.Id = this.folderModel.ID;
-				folder.Name = this.folderModel.Name;
-				folder.Icon = this.folderModel.Icon;
-				if (this.folderModel.IconPayload) {
-					folder.IconPayload = this.folderModel.IconPayload;
-				}
-
-				if (this.folderModel.Icon && typeof this.folderModel.Icon !== "string") {
-					let path: string = this.folderModel.Icon["path"];
-					if (path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
-						folder.Icon = this.folderModel.ImageIconUrl;
-					}
-				}
-
-
-				folder.Items = this.newFolderItems;
-				folder.Permissions = [];
-
-				this.selectedPermissionAssets.forEach((p) => {
-					var legacyData = (p["Value"] as string).split('|');
-					folder.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID: 0 });
-				});
-
+				var folder = this.getModel();
 				this.siteMenuService.editFolder(folder)
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
@@ -602,5 +613,13 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		for (let i = 0; i < table.selection.length; i++) {
 			this._tempSelectedPermissionAssets.push(this.permissionAssets.find((item) => item.uid == table.selection[i].uid));
 		}
+	}
+
+	private _initialVersion: string = '';
+	get hasChanges(): boolean {
+		if (!this.isEdit) {
+			return false;
+		}
+		return this._initialVersion !== JSON.stringify(this.getModel());
 	}
 }
