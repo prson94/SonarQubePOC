@@ -358,7 +358,8 @@
 						i18n-label
 						label="Add Folder"
 						(click)="save()"
-						[disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
+						[loading]="savingInProgress"
+						[disabled]="savingInProgress || folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
 			</div>
 		</div>
 	</div>

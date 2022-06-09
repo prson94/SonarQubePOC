@@ -613,7 +613,7 @@ namespace d360.web.Controllers
                     throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.Id.ToString()));
                 }
 
-                string originalImage = siteNav.ImageIconUrl;
+                string originalImage = siteNav.ImageIconUrl ?? siteNav.Icon;
 
                 if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.Icon))
                 {
@@ -642,15 +642,18 @@ namespace d360.web.Controllers
                         var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                         await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-                        folder.ImageIconUrl = $"{imageFileName}";
-
+						siteNav.ImageIconUrl = $"{imageFileName}";
+						siteNav.Icon = null;
                     }
                 }
 
                 siteNav.Name = folder.Name;
-                siteNav.Icon = folder.Icon;
+				if (originalImage != folder.Icon)
+				{
+					siteNav.Icon = folder.Icon;
+					siteNav.ImageIconUrl = null;
+				}
                 siteNav.Title = folder.Name;
-                siteNav.ImageIconUrl = folder.ImageIconUrl;
 
 				//handle folder items
 				var existingItems = Company.SiteNav.Where(x => x.ParentID == folder.Id);

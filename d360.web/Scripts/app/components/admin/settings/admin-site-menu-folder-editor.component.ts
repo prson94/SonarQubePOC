@@ -150,6 +150,15 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.isAvailableFolderItemsTableLoading = true;
 		this.isPermissionAssetTableLoading = true;
 
+		if (this.folderModel.FullURL) {
+			this.categories = [{
+				label: null,
+				items: [{ label: 'Custom', path: this.folderModel.FullURL, img: true }]
+			}, ...this.categories
+			]
+			this.folderModel.Icon = this.categories[0].items[0];
+		}
+
 		forkJoin(this.siteMenuService.getSiteNavPermissions(this.navigationFolder.ID),
 			this.siteMenuService.getSiteNavFolderItems(this.navigationFolder.ID)
 		)
@@ -193,12 +202,22 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.clearInvalidFields();
 		switch (this.formMode) {
 			case FormMode.Editing:
-				this.folderModel.IconPayload = this.iconImage.dataUrl;
-
 				let folder: any = {}
 				folder.Id = this.folderModel.ID;
 				folder.Name = this.folderModel.Name;
-				folder.Icon = this.iconImage.dataUrl;
+				folder.Icon = this.folderModel.Icon;
+				if (this.folderModel.IconPayload) {
+					folder.IconPayload = this.folderModel.IconPayload;
+				}
+
+				if (this.folderModel.Icon && typeof this.folderModel.Icon !== "string") {
+					let path: string = this.folderModel.Icon["path"];
+					if (path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
+						folder.Icon = this.folderModel.ImageIconUrl;
+					}
+				}
+
+
 				folder.Items = this.newFolderItems;
 				folder.Permissions = [];
 
@@ -213,6 +232,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						this.stateService.reloadLeftNavMenu();
 						this.formMode = FormMode.Default;
 						this.handleSaveComplete(result);
+						this.savingInProgress = false;
 					});
 				break;
 			case FormMode.Adding:
@@ -221,7 +241,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.folderModel.Permissions = [];
 				this.selectedPermissionAssets.forEach((p) => {
 					var legacyData = (p["Value"] as string).split('|');
-					this.folderModel.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID:0 });
+					this.folderModel.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID: 0 });
 				});
 
 				var model = {
@@ -236,6 +256,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						this.stateService.reloadLeftNavMenu();
 						this.siteMenuService.setSiteNavPermissions(this.selection);
 						this.handleSaveComplete(result);
+						this.savingInProgress = false;
 					});
 				break;
 		}
@@ -329,7 +350,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	clearIcon() {
 		this.iconImage = new CompanyImage();
 		if (this.formMode == FormMode.Editing) {
-			this.selection.ImageIconUrl = null;
+			this.folderModel.ImageIconUrl = null;
 		} else if (this.formMode == FormMode.Adding) {
 			this.folderModel.ImageIconUrl = null;
 		}
@@ -355,7 +376,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.iconImage.setDataUrl();
 
 			if (this.formMode === FormMode.Editing) {
-				this.selection.IconPayload = null;
+				this.folderModel.IconPayload = null;
 			} else if (this.formMode === FormMode.Adding) {
 				this.folderModel.IconPayload = null;
 			}
@@ -378,23 +399,19 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.iconImage.file = files[0];
 		FormHelper.getDataUrl(files[0])
 			.then(dataUrl => {
-				if (this.formMode == FormMode.Editing) {
-					this.selection.IconPayload = dataUrl;
-				} else if (this.formMode == FormMode.Adding) {
-					this.folderModel.IconPayload = dataUrl;
-					if (!this.categories[0].label) {
-						this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
-					} else {
-						this.categories = [{
-							label: null,
-							items: [{ label: 'Custom', path: dataUrl, img: true }]
-						}, ...this.categories
-						]
-					}
-					this.folderModel.Icon = this.categories[0].items[0]; 
+				this.folderModel.IconPayload = dataUrl;
+				if (!this.categories[0].label) {
+					this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
+				} else {
+					this.categories = [{
+						label: null,
+						items: [{ label: 'Custom', path: dataUrl, img: true }]
+					}, ...this.categories
+					]
 				}
+				this.folderModel.Icon = this.categories[0].items[0];
 			}
-		)
+			)
 	}
 
 	loadTableData() {
@@ -490,7 +507,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(x-1, 0, this.newFolderItems.splice(x, 1)[0])
+				this.newFolderItems.splice(x - 1, 0, this.newFolderItems.splice(x, 1)[0])
 			}
 		}
 	}
@@ -506,7 +523,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	moveDown() {
 		if (this.selectedNewFolderItems.length > 0) {
 			debugger;
-			for (let j = this.selectedNewFolderItems.length-1; j >= 0; j--) {
+			for (let j = this.selectedNewFolderItems.length - 1; j >= 0; j--) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
 				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0])
 			}
