@@ -467,10 +467,10 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     }
 
 	get disableModalTitle() {
-		return this.selectedType.isDisabled ? $localize`Enable Semantic Type` : $localize`Disable Semantic Type`;
+		return this.selectedType && this.selectedType.isDisabled ? $localize`Enable Semantic Type` : $localize`Disable Semantic Type`;
 	}
 	get disableButtonText() {
-		return this.selectedType.isDisabled ? $localize`Enable` : $localize`Disable`;
+		return this.selectedType && this.selectedType.isDisabled ? $localize`Enable` : $localize`Disable`;
 	}
 	
 }
