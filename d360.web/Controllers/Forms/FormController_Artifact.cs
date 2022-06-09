@@ -389,20 +389,41 @@ namespace d360.web.Controllers
 
                 if (loadParentReferenceItemOptions)
                 {
-                    if (model.AssetType != null && model.AssetType.ObjectID > 0)
+					string sql = "";
+
+                    if (model.AssetType != null && model.AssetType.Uid != Guid.Empty)
                     {
-                        var parents = Company.Query<PrimeSelectItem>(@"select a.ObjectUid as value, a.Name as label from  assettype a where a.[object] = 'ReferenceItemType'  and a.objectid != @id
-                                                                    and  not exists(
-                                                                    select  1 from IntersectType i where i.object = 'ReferenceItemType' and i.SubjectId = @id and i.objectid = a.objectid)
-                                                                    order by Name", new { id = model.AssetType.ObjectID }).ToList();
-                        model.Parents = parents;
+						sql = $@"
+with h as (
+	select	A.Uid, I.Subject, I.SubjectID, cast(0 as int) as [Level] , A.Name, I.PredicateID
+	from	AssetType A
+			left join IntersectType I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject = 'ReferenceItemType'
+	where	A.Uid = @Uid
+	union all
+	select	A.Uid, I.Subject, I.SubjectID, h.Level+1 as [Level], A.Name, I.PredicateID
+	from	AssetType A
+			inner join h on h.Subject = A.Object and h.SubjectID = A.ObjectID
+			outer apply (
+			select	Subject, SubjectID, PredicateID 
+			from	IntersectType 
+					where Object = A.Object 
+					and ObjectID = A.ObjectID 
+					and Subject = 'ReferenceItemType' and A.Uid <> h.Uid
+			) I
+) 
+select	LOWER(CAST(uid AS char(36))) as value, 
+		Name as label 
+from	assettype 
+where	[Class] = 9 and Uid not in (select Uid from h where [Level] <> 1) 
+order by Name";
                     }
                     else
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select LOWER(CAST(uid AS char(36))) as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
-                        model.Parents = parents;
+						sql = $@"select LOWER(CAST(uid AS char(36))) as value, Name as label from assettype where [Class] = 9 order by Name";
                     }
-                    model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
+					
+					model.Parents = Company.Query<PrimeSelectItem>(sql, new { Uid = model.AssetType.Uid }).ToList();
+					model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
                 }
 
                 return new JsonNetResult
