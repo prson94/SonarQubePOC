@@ -220,7 +220,7 @@
                  [method]="'callback'"
                  (onCancel)="showDisableDialog=false;"
                  [deleteButtonText]="disableButtonText">
-    <div *ngIf="!selectedType.isDisabled" prompt>
+    <div *ngIf="selectedType && !selectedType.isDisabled" prompt>
         <p i18n>
             Are you sure you want to disable this semantic type?
         </p>
@@ -228,7 +228,7 @@
             It will be disabled as of today and will no longer be used to classify assets based on Profiling data.
         </p>
     </div>
-    <div *ngIf="selectedType.isDisabled" prompt>
+    <div *ngIf="selectedType && selectedType.isDisabled" prompt>
         <p i18n>
             The Semantic Type will be enabled as of today (current date) and will be used to classify assets when profiling data is added to an asset.
         </p>
