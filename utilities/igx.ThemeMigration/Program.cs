@@ -54,6 +54,12 @@ namespace ThemeMigration
 					var cnn = CompanyConnectionUtils.GetCompanyConnection(x.CompanyID, ConfigurationManager.AppSettings["CommunityContext"]);
 					var preciselyTheme = cnn.QueryFirstOrDefault<Theme>("select * from theme where Uid = @uid", new { uid = PRECISELY_THEME_UID });
 
+					if (preciselyTheme == null)
+					{
+						Console.WriteLine("Precisely Theme does not exist. Custom theme cannot be created.");
+						return;
+					}
+
 					var items = cnn.Query<CompanySetting>($"select ID, Value from setting where id in ({Convert.ToInt32(Setting.CompanyLogo)},{Convert.ToInt32(Setting.CompanyIcon)},{Convert.ToInt32(Setting.CustomCSSLocation)},{Convert.ToInt32(Setting.HomePageBackgroundImage)})", commandTimeout: 12000).ToList();
 
 					if (items.Count > 0)
@@ -67,11 +73,11 @@ namespace ThemeMigration
 							uid = createCustomTheme(preciselyTheme, cnn);
 						}
 #else
-										var uid = createCustomTheme(preciselyTheme, cnn);
+						var uid = createCustomTheme(preciselyTheme, cnn);
 #endif
 						if (uid == Guid.Empty)
 						{
-							Console.WriteLine($"\tTheme 'Custom Theme' already exist.");
+							Console.WriteLine($"\tTheme 'Custom Theme' already exist. The can be overwritten by updating configuration.");
 							return;
 						}
 
@@ -103,19 +109,23 @@ namespace ThemeMigration
 							var sourceFileName = s.Value.Split('/').Last();
 
 							var fileSuffix = "";
+							var imageColumn = "";
 
 							switch ((Setting)s.ID)
 							{
 								case Setting.CompanyLogo:
 									fileSuffix = "logo";
+									imageColumn = "HeaderLogoExtension";
 									downloadStream = getDownloadStream(sourceFileName, logoContainer);
 									break;
 								case Setting.CompanyIcon:
 									fileSuffix = "icon";
+									imageColumn = "BrowserIconExtension";
 									downloadStream = getDownloadStream(sourceFileName, iconContainer);
 									break;
 								case Setting.HomePageBackgroundImage:
 									fileSuffix = "background";
+									imageColumn = "HomePageBackgroundExtension";
 									downloadStream = getDownloadStream(sourceFileName, backgroundContainer);
 									break;
 								case Setting.CustomCSSLocation:
@@ -150,6 +160,19 @@ namespace ThemeMigration
 									var fileName = $"{uid}_{fileSuffix}{extension}";
 
 									copyToThemeFolder(downloadStream, themeContainer, x.CompanyID, fileName);
+
+#if DEBUG
+									if (companyID == DEBUG_COMPANY_ID)
+									{
+										cnn.Execute($@"Update theme 
+														set {imageColumn} = @extension
+													where uid = @uid;", new { extension, uid });
+									}
+#else
+									cnn.Execute($@"Update theme 
+														set {imageColumn} = @extension
+													where uid = @uid;", new { extension, uid });
+#endif
 								}
 							}
 						});
@@ -158,6 +181,7 @@ namespace ThemeMigration
 						if (preciselyTheme.IsCurrent == true)
 						{
 							Console.WriteLine("\tSetting theme as current.");
+
 							if (uid != Guid.Empty)
 							{
 								cnn.Execute($@"
@@ -297,7 +321,12 @@ namespace ThemeMigration
 			}
 			else
 			{
+				if(ConfigurationManager.AppSettings["AllowOverwrite"]!=null && bool.Parse(ConfigurationManager.AppSettings["AllowOverwrite"]) == true)
+				{
+					return existingTheme.Uid;
+				}
 				return new Guid();
+				
 			}			
 		}
 	}
