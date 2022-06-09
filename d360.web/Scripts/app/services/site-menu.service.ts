@@ -50,7 +50,15 @@ export class SiteMenuService extends BaseObservableService {
                 map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))
             );
-    }
+	}
+
+	editFolder(folder: any): Observable<JsonResult> {
+		return this.http.put('navigation/EditFolder', folder)
+			.pipe(
+				map(response => <JsonResult>response),
+				catchError(err => this.handleError(err))
+			);
+	}
 
     removeFolderItem(id: number) {
         return this.http.post(`navigation/RemoveFolderItem?id=${id}`, null)
@@ -97,14 +105,6 @@ export class SiteMenuService extends BaseObservableService {
         return this.http.put(`navigation/MoveToBottom?id=${id}`, null)
             .pipe(
                 map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    editFolder(folder: SiteNav): Observable<JsonResult> {
-        return this.http.put('navigation/EditFolder', folder)
-            .pipe(
-                map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))
             );
     }

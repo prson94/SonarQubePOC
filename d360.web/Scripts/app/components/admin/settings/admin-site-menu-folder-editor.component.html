@@ -177,6 +177,8 @@
 								<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
 									<p-table #dt4 
 											 [value]="newFolderItems"
+											 [loading]="isAvailableFolderItemsTableLoading"
+											 [loadingIcon]="'fa fa-spinner fa-spin'"
 											 [globalFilterFields]="['Title']"
 											 selectionMode="multiple"
 											 [(selection)]="selectedNewFolderItems"
