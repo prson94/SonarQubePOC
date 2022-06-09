@@ -256,11 +256,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     updateDynamicWidths() {
         try {
             var html = this.elRef.nativeElement as HTMLElement;
-            var scrollWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0];
+            var scrollWrapper = html.getElementsByClassName("p-datatable-wrapper")[0];
             if (scrollWrapper) {
                 let width = 500 + 60;
 
-                var tableWrapper = html.getElementsByClassName("p-datatable-scrollable-wrapper")[0] as HTMLElement;
+                var tableWrapper = html.getElementsByClassName("p-datatable-wrapper")[0] as HTMLElement;
 
                 if (tableWrapper) {
                     var selectionElement = html.getElementsByClassName("value-selection")[0] as HTMLElement;
@@ -546,14 +546,18 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         }
         this.condition.isNew = false;
 
-        if (this.uiCurrentOperatorsList) {
+		if (this.uiCurrentOperatorsList) {
+			let operator;
             if (this.condition.operator) {
-                this.currentOperator = this.condition.operator;
+				operator = this.condition.operator;
             }
             else {
-                this.currentOperator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
-            }
-            this.updateOperatorData();
+				operator = (this.uiCurrentOperatorsList[0] as SelectItem).value;
+			}
+			setTimeout(() => {
+				this.currentOperator = operator;
+				this.updateOperatorData();
+			}, 10);
         }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
