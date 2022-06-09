@@ -589,7 +589,7 @@ namespace d360.web.Controllers
 		}
 
 		[HttpPut, Route("EditFolder")]
-		public async Task<JsonNetResult> EditFolder(SiteNav folder)
+		public async Task<JsonNetResult> EditFolder(EditSiteNavModel folder)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
@@ -606,16 +606,16 @@ namespace d360.web.Controllers
                     throw new ArgumentNullException(FormControllerApiMessage.InvalidFolder);
                 }
 
-                var siteNav = Company.GetById<SiteNav>(folder.ID);
+                var siteNav = Company.GetById<SiteNav>(folder.Id);
 
                 if (siteNav == null)
                 {
-                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.ID.ToString()));
+                    throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.Id.ToString()));
                 }
 
-                string originalImage = siteNav.ImageIconUrl;
+                string originalImage = siteNav.ImageIconUrl ?? siteNav.Icon;
 
-                if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.ImageIconUrl))
+                if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.Icon))
                 {
                     try
                     {
@@ -642,17 +642,38 @@ namespace d360.web.Controllers
                         var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
                         await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
 
-                        folder.ImageIconUrl = $"{imageFileName}";
-
+						siteNav.ImageIconUrl = $"{imageFileName}";
+						siteNav.Icon = null;
                     }
                 }
 
                 siteNav.Name = folder.Name;
-                siteNav.Icon = folder.Icon;
-                siteNav.Title = folder.Title ?? folder.Name;
-                siteNav.ImageIconUrl = folder.ImageIconUrl;
+				if (originalImage != folder.Icon)
+				{
+					siteNav.Icon = folder.Icon;
+					siteNav.ImageIconUrl = null;
+				}
+                siteNav.Title = folder.Name;
+
+				//handle folder items
+				var existingItems = Company.SiteNav.Where(x => x.ParentID == folder.Id);
+				Company.SiteNav.RemoveRange(existingItems);
+				if (folder.Items.Count > 0)
+				{
+					folder.Items.ForEach(x=> x.ParentID = folder.Id);
+					Company.SiteNav.AddRange(folder.Items);
+				}
+
+				//handle permissions
+				var existingPermissions = Company.SiteNavPermissions.Where(x=> x.SiteNavID == folder.Id);
+				Company.SiteNavPermissions.RemoveRange(existingPermissions);
+				if (folder.Permissions.Count > 0)
+				{
+					folder.Permissions.ForEach(x => x.SiteNavID = folder.Id);
+					Company.SiteNavPermissions.AddRange(folder.Permissions);
+				}
+
                 Company.SaveChanges();
-                SetSiteNavPermissions(folder);
                 message = FormControllerApiMessage.FolderUpdated;
             }
             catch (Exception ex)
@@ -750,7 +771,7 @@ namespace d360.web.Controllers
             }
 
             var querySql = $@"
-					select Text,  [Value] + '|' + [Type] + ' :: ' + Text as [Value],[Type], uid from
+					select Text, [Value] ,[Type], uid from
 						(
 							select '{CommonNames.AssetTypeClass_Group}: ' + g.Name as Text, 'Group|' + cast(g.ID as varchar) as [Value],'{CommonNames.AssetTypeClass_Group}' as [Type], a.uid from [Group] g
 							inner join asset a on a.object ='Group' and a.objectid = g.id

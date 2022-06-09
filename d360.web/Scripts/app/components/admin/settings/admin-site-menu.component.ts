@@ -260,16 +260,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.selection = item;
 		this.editedMenuItem = item;
 		this.formMode = FormMode.Editing;
-		this.iconImage = new CompanyImage();
-		this.folderName = this.selection.Name;
-		if (this.selection.ImageIconUrl != null)
-			this.iconType = 'image';
-		else
-			this.iconType = 'icon';
-		this.loadFolderItems();
-		this.oldFolderItems = _.cloneDeep(this.folderItems);
-		this.oldFolderName = this.folderName;
-		this.loadSiteNavPermissions(this.selection);
+		this.showFolderModalDialog = true;
 	}
 
 	delete(item: SiteNav) {
@@ -492,14 +483,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		}
 	}
 
-	loadSiteNavPermissions(item: SiteNav) {
-		this.isLoading = true;
-		return this.siteMenuService.getSiteNavPermissions(item.ID)
-			.subscribe(r => {
-				item.Permissions = r;
-				this.isLoading = false;
-			});
-	}
+
 
 	menuPermissionsOnModeChange($event) {
 		this.permissionMode = $event;
