@@ -123,7 +123,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.loadFolderItems();
 
 		this.folderForm = this.formBuilder.group({
-			name: ['', [Validators.required, this.isEmptyString()]]
+			name: [null, [Validators.required, this.isEmptyString()]]
 		});
 		this.loadPermissionAssets();
 		setTimeout(() => {
@@ -132,6 +132,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			});
 			this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
 		}, 500);
+		this.folderForm.updateValueAndValidity();
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
