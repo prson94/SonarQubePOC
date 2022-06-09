@@ -33,6 +33,8 @@ import { SiteNav } from '../../../models/site-menu.model';
 import { StateService } from '../../../services/state.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { Table } from 'primeng/table';
+import { Subject } from 'rxjs';
+import { takeUntil, tap, startWith } from 'rxjs/operators';
 
 @Component({
 	selector: 'folder-editor',
@@ -79,6 +81,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	semanticHelpURL: string;
 	IsMenuPermissionsAdding: boolean = false;
 	permissionMode: FormMode = FormMode.Default;
+	requiredCount: number = 2;
 	simpleTextFilter: string = '';
 	simpleTextFilterForExistingItems: string = '';
 
@@ -99,6 +102,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	private iconImage: CompanyImage = new CompanyImage();
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
+
+	delayedRefresh = _.debounce(() => {
+		debugger;
+		this.setRequiredCount();
+		this.cdRef.markForCheck();
+	}, 200);
+
+	$destroy = new Subject();
 
 	constructor(
 		private cdRef: ChangeDetectorRef,
@@ -144,6 +155,20 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.isEdit = false;
 			this.folderModel = new SiteNav();
 		}
+
+		this.$destroy.next();
+		this.delayedRefresh.cancel();
+
+		if (this.folderForm) {
+			this.folderForm.valueChanges
+				.pipe(
+					startWith(null),
+					takeUntil(this.$destroy),
+					tap(() => this.delayedRefresh())
+				)
+				.subscribe();
+		}
+
 		this.cdRef.markForCheck();
 	}
 
@@ -398,12 +423,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
+		this.setRequiredCount();
 	}
 
 	deleteNewFolder(item: SiteNav) {
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
 		this.availableItems.push(i);
+		this.setRequiredCount();
 	}
 
 	imageUploadClick(event: any) {
@@ -420,6 +447,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.newFolderItems.push(newItem);
 			}
 			this.selectedFolderItems = [];
+			this.setRequiredCount();
 		}
 	}
 
@@ -431,6 +459,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.availableItems.push(i);
 			}
 			this.selectedNewFolderItems = [];
+			this.setRequiredCount();
 		}
 	}
 
@@ -502,6 +531,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
+	setRequiredCount() {
+		debugger;
+		this.requiredCount = 2;
+		if (this.folderModel.Name?.length > 0) {
+			this.requiredCount--;
+		}
+		if (this.newFolderItems?.length > 0) {
+			this.requiredCount--;
+		}
+	}
+
 	lastLoadedEvent: any;
 	loadPermissionAssets() {
 		this.isPermissionAssetTableLoading = true;
@@ -513,6 +553,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.cdRef.markForCheck();
 			});
 	}
+
 	addPermissionAssets() {
 		if (!this.selectedPermissionAssets) {
 			this.selectedPermissionAssets = [];

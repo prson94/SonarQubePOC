@@ -7,6 +7,15 @@
 			</header>
 			<div class="sub-header" *ngIf="!isLoading">
 				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
+				<span *ngIf="requiredCount > 0"
+					  class="requiredCount req noselect"
+					  tabindex="1"
+					  i18n-pTooltip
+					  tooltipPosition="top"
+					  tooltipStyleClass="ig-tooltip ig-tooltip-small"
+					  i18n>
+					{{requiredCount}} required
+				</span>
 			</div>
 		</div>
 		<div class="row" *ngIf="isInError">
@@ -22,6 +31,7 @@
 									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0" i18n>Folder Name</label>
 									<input igInput maxlength="250"
 											[ngClass]="{'invalid': folderForm.get('name')?.errors?.empty}"
+										    (change)="setRequiredCount()"
 											required tabindex="1" type="text" 
 											[(ngModel)]="folderModel.Name" style="width:30%" />
 								</div>
@@ -183,6 +193,7 @@
 													[(selection)]="selectedNewFolderItems"
 													[metaKeySelection]="false"
 													(onHeaderCheckboxToggle)="selectAllSelectedFolderItems($event, dt4)"
+												 	(onChange)="setRequiredCount()"
 													[rowsPerPageOptions]="defaultPagingOptions"
 													[scrollable]="true"
 													scrollHeight="420px">
