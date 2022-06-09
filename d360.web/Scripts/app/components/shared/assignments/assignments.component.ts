@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+﻿import { Component, OnInit, Output, EventEmitter, Input, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { WorkflowService } from '../../../services/workflow.service';
 import { ResourcesService } from '../../../services/resources.service';
@@ -28,7 +28,9 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
     constructor(
         private resourcesService: ResourcesService,
         protected settingsService: CompanySettingsService,
-        private workflowService: WorkflowService) {
+		private workflowService: WorkflowService,
+		private cdRef: ChangeDetectorRef
+	) {
         super(settingsService);
     }
 
@@ -51,12 +53,14 @@ export class AssignmentsComponent extends BaseComponent implements OnInit {
                                 this.resource = this.items[0];
                             }
                             this.isLoading = false;
-                            this.isLoaded = true;
+							this.isLoaded = true;
+							this.cdRef.detectChanges();
                         });
                 else {
                     this.isLoading = false;
-                    this.isLoaded = true;
-                }
+					this.isLoaded = true;
+					this.cdRef.detectChanges();
+				}				
             });
     }
 
