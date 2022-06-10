@@ -42,137 +42,17 @@
 			</ng-template>
 		</p-table>
 	</div>
-
-	<div *ngSwitchCase="FormMode.Deleting">
-		<header i18n>
-			Delete Folder
-		</header>
-		<div clas="row">
-			<div class="col s12" style="padding-bottom:10px" i18n>
-				Are you sure you want to delete the {{selection.Title}} folder?
-			</div>
-		</div>
-		<button pButton type="button" i18n-label label="Delete" (click)="save()"></button>
-		<button pButton type="button" i18n-label label="Cancel" (click)="formMode = FormMode.Default"></button>
-	</div>
-
-	<div *ngSwitchCase="FormMode.Adding">
-		<header>
-			Add Navigation Folder
-		</header>
-		<div *ngIf="!formIsLoading">
-			<div class="col s12">
-				<div class="FieldName" style="display:block;">Folder Name</div>
-				<input maxlength="250" type="text" [(ngModel)]="newFolder.Name" style="width:100%" />
-			</div>
-			<div class="row" style="margin-bottom:15px;">
-				<div class="row" style="padding-top:12px">
-					<div class="col s12 m6">
-						<div class="FieldName">Icon</div>
-						<div>
-							<div>
-								<input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
-							</div>
-							<div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
-								<ig-icon-picker [showGovIcons]="true" [(ngModel)]="newFolder.Icon" ngDefaultControl></ig-icon-picker>
-							</div>
-							<div>
-								<input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
-							</div>
-							<div *ngIf="iconType == 'image'">
-								<input #imageUpload type="file" (change)="onFileChange($event)" accept="image/gif,image/jpeg,image/png" />
-							</div>
-						</div>
-					</div>
-					<div class="col s12 m6">
-						<div class="FieldName">Preview</div>
-						<div *ngIf="iconType == 'icon'" style="padding:10px">
-							<span style="font-size: 15px">
-								<img class="d3s-gov-icon" *ngIf="checkIfImg(newFolder.Icon)" [src]="newFolder.Icon" />
-								<i *ngIf="!checkIfImg(newFolder.Icon)" [class]="'fa ' + newFolder.Icon"></i>
-							</span>
-						</div>
-						<div *ngIf="iconType == 'image'" style="padding:10px">
-							<img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 15px; max-height: 15px;" />
-							<div *ngIf="iconImage.dataUrl != null">
-								<button pButton type="button" label="Clear" (click)="clearIcon()"></button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col s12 m6">
-					<p-table #dt3 [value]="availableItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
-						<ng-template pTemplate="header">
-							<tr>
-								<th i18n>Available Folder Items</th>
-								<th></th>
-							</tr>
-						</ng-template>
-						<ng-template pTemplate="body" let-item>
-							<tr [pSelectableRow]="item">
-								<td>{{item.Title}}</td>
-								<td>
-									<div class="RowTools" style="height: initial;">
-										<a (click)="addNewFolder(item)" style="cursor:pointer;"><i class="fa fa-plus"></i></a>
-									</div>
-								</td>
-							</tr>
-						</ng-template>
-						<ng-template *ngIf="dt3.totalRecords" pTemplate="summary">
-							<d3s-grid-paging-info [first]="dt3.first" [rows]="dt3.rows" [totalRecords]="dt3.totalRecords"></d3s-grid-paging-info>
-						</ng-template>
-					</p-table>
-				</div>
-				<div class="col s12 m6">
-					<p-table #dt4 [value]="newFolderItems" selectionMode="single" [metaKeySelection]="true" [paginator]="true" [rows]="10">
-						<ng-template pTemplate="header">
-							<tr>
-								<th>Existing Folder Items</th>
-								<th></th>
-							</tr>
-
-						</ng-template>
-						<ng-template pTemplate="body" let-item>
-							<tr [pSelectableRow]="item">
-								<td>{{item.Name}}</td>
-								<td>
-									<div class="RowTools" style="height: initial;">
-										<a (click)="deleteNewFolder(item)" style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
-									</div>
-								</td>
-							</tr>
-						</ng-template>
-						<ng-template *ngIf="dt4.totalRecords" pTemplate="summary">
-							<d3s-grid-paging-info [first]="dt4.first" [rows]="dt4.rows" [totalRecords]="dt4.totalRecords"></d3s-grid-paging-info>
-						</ng-template>
-					</p-table>
-				</div>
-			</div>
-			<div class="row" style="padding-bottom:15px;">
-				<d3s-admin-site-menu-permissions [(siteNav)]="newFolder" (onModeChange)="menuPermissionsOnModeChange($event)">
-				</d3s-admin-site-menu-permissions>
-			</div>
-			<div class="row">
-				<div class="col s12" *ngIf="!IsMenuPermissionsAdding">
-					<button pButton type="button" label="Save" (click)="save()" [disabled]="newFolder == null || newFolder.Name == null || newFolder.Name == '' || newFolderItems == null || newFolderItems.length < 1 || permissionMode != FormMode.Default"></button>
-					<button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default"></button>
-				</div>
-			</div>
-		</div>
-	</div>
 </div>
 
 <d3s-modal additionalClasses="modal-dyn-editor large-dialog modal-extended asset-editor modal-max"
 		   (onClose)="showFolderModalDialog=false"
 		   [showTitle]="false"
 		   [isVisible]="showFolderModalDialog">
-		<folder-editor *ngIf="showFolderModalDialog"
-					   [navigationFolder]="formMode === FormMode.Editing  ? selection : null"
-					   (closeClick)="showFolderModalDialog=false"
-					   (saveClick)="saveNavigationFolder($event)">
-		</folder-editor>
+	<d3s-admin-site-menu-folder-editor *ngIf="showFolderModalDialog"
+				   [navigationFolder]="formMode === FormMode.Editing  ? selection : null"
+				   (closeClick)="showFolderModalDialog=false"
+				   (saveClick)="saveNavigationFolder($event)">
+	</d3s-admin-site-menu-folder-editor>
 </d3s-modal>
 
 <d3s-modal additionalClasses="large-dialog"
@@ -181,8 +61,19 @@
 		   title="Add Asset Type"
 		   subtitle="Site Navigation"
 		   [isVisible]="showAssetTypeModelDialog">
-	<d3s-admin-site-menu-asset-type-editor 
-										   (onSave)="onAssetTypeNavAdded($event)"
+	<d3s-admin-site-menu-asset-type-editor (onSave)="onAssetTypeNavAdded($event)"
 										   (onCancel)="showAssetTypeModelDialog = false">
 	</d3s-admin-site-menu-asset-type-editor>
 </d3s-modal>
+
+<d3s-modal additionalClasses="large-dialog"
+		   (onClose)="showDeleteFolderDialog=false"
+		   [showTitle]="false"
+		   [isVisible]="showDeleteFolderDialog">
+	<d3s-admin-site-menu-delete-folder *ngIf="showDeleteFolderDialog"
+				   [navigationFolderToDelete]="selection.Title"
+				   (onDelete)="onDeleteFolderConfirmed()"
+				   (onCancel)="showDeleteFolderDialog = false; formMode = FormMode.Default">
+	</d3s-admin-site-menu-delete-folder>
+</d3s-modal>
+

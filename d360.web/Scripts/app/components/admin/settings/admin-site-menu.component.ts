@@ -53,6 +53,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 	showFolderModalDialog: boolean = false;
 	showAssetTypeModelDialog: boolean = false;
+	showDeleteFolderDialog: boolean = false;
 
 	constructor(
 		headerBreadcrumbService: HeaderBreadcrumbService,
@@ -266,6 +267,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	delete(item: SiteNav) {
 		this.selection = item;
 		this.formMode = FormMode.Deleting;
+		this.showDeleteFolderDialog = true;
 	}
 
 	moveUp(item: SiteNav) {
@@ -407,19 +409,20 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.loadNavItems();
 					})
 				break;
-			case FormMode.Deleting:
-				this.isLoading = true;
-				this.siteMenuService.removeFolder(this.selection.ID)
-					.subscribe(res => {
-						this.showMessageForResult(this.messagesService, res);
-						this.stateService.reloadLeftNavMenu();
-						this.formMode = FormMode.Default;
-						this.isLoading = false;
-						this.onSaveComplete.emit();
-						this.loadNavItems();
-					});
-				break;
 		}
+	}
+
+	onDeleteFolderConfirmed() {
+		this.isLoading = true;
+		this.siteMenuService.removeFolder(this.selection.ID)
+			.subscribe(res => {
+				this.showDeleteFolderDialog = false;
+				this.stateService.reloadLeftNavMenu();
+				this.formMode = FormMode.Default;
+				this.isLoading = false;
+				this.onSaveComplete.emit();
+				this.loadNavItems();
+			});
 	}
 
 	cancel() {
