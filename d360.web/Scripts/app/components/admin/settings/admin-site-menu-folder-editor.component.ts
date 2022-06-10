@@ -64,7 +64,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	iconType = 'icon';
 	isInError: boolean = false;
 	newFolderItems: SiteNav[] = [];
-	selectedFolderItems: SiteNav[] = [];
+	_tempSelectedFolderItems: any[] = [];
 	selectedNewFolderItems: SiteNav[] = [];
 	folderModel: SiteNav;
 	selection: SiteNav = null;
@@ -128,7 +128,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.isAvailableFolderItemsTableLoading = true;
 		this.selection = null;
 		this.newFolderItems = new Array<SiteNav>();
-		this.selectedFolderItems = new Array<SiteNav>();
 		this.selectedNewFolderItems = new Array<SiteNav>();
 		this.loadFolderItems();
 
@@ -439,13 +438,13 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	addToSelectedFolderItems() {
-		if (this.selectedFolderItems.length > 0) {
-			for (let j = 0; j < this.selectedFolderItems.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedFolderItems[j].ObjectID && i.Object == this.selectedFolderItems[j].Object);
+		if (this._tempSelectedFolderItems.length > 0) {
+			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
+				let x = this.availableItems.findIndex((i) => i.ObjectID == this._tempSelectedFolderItems[j].ObjectID && i.Object == this._tempSelectedFolderItems[j].Object);
 				let newItem = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 				this.newFolderItems.push(newItem);
 			}
-			this.selectedFolderItems = [];
+			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
 		}
 	}
@@ -584,10 +583,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	selectAllAvailableFolderItems($event, table: Table) {
-		this.selectedFolderItems = [];
-		for (let i = 0; i < table.selection.length; i++) {
-			let x = this.availableItems.findIndex((item) => item.ObjectID == table.selection[i].ObjectID && item.Object == table.selection[i].Object);
-			this.selectedFolderItems.push(_.cloneDeep(this.availableItems[x]));
+		this._tempSelectedFolderItems = [];
+		for (let i = table.first; i < table.first + table.rows; i++) {
+			this._tempSelectedFolderItems.push(this.availableItems.find((item) => item.ID == table.selection[i].ID));
 		}
 	}
 
@@ -601,7 +599,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	headerSelectAll($event, table: Table) {
 		this._tempSelectedPermissionAssets = [];
-		for (let i = 0; i < table.selection.length; i++) {
+		for (let i = table.first; i < table.first + table.rows; i++) {
 			this._tempSelectedPermissionAssets.push(this.permissionAssets.find((item) => item.uid == table.selection[i].uid));
 		}
 	}
