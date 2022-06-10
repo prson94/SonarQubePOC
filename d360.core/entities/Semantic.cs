@@ -678,7 +678,6 @@ namespace d360.core.entities
 					{
 						dateRange.Add(new DateRange { StartDate = startDate, EndDate = enddate });
 						startDate = effectiveDate.Split('T')[0];
-						enddate = null;
 					}
 					var isPresent = effectiveDate == updateDate || updateDate.Split('T')[0] == DateTime.Now.ToString("yyyy-MM-dd");
 
