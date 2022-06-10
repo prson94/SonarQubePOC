@@ -104,7 +104,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
 
 	delayedRefresh = _.debounce(() => {
-		debugger;
 		this.setRequiredCount();
 		this.cdRef.markForCheck();
 	}, 200);
@@ -505,7 +504,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	moveDown() {
 		if (this.selectedNewFolderItems.length > 0) {
-			debugger;
 			for (let j = this.selectedNewFolderItems.length-1; j >= 0; j--) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
 				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0])
@@ -532,7 +530,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	setRequiredCount() {
-		debugger;
 		this.requiredCount = 2;
 		if (this.folderModel.Name?.length > 0) {
 			this.requiredCount--;
