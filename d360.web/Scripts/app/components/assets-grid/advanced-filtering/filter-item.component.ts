@@ -65,7 +65,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     rollbackValue2: any;
 
     maxNumberOfFilterCharacters: number = 2000;
-    selectionScrollHeight: string = "34px";
+    selectionScrollHeight: string = "320px";
 
     relationshipFieldIntersectTypeUid: string = "";
     relationshipFieldIntersectCardinality: string = "";
@@ -214,18 +214,18 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             let bottomPos: number = (this.elRef.nativeElement as HTMLElement).getBoundingClientRect().bottom;
 
             if (count < 10) {
-                calculatedHeight = count * 32;
+                calculatedHeight = count * 32 + 44; //44px is total height of search bar
                 if (calculatedHeight < 32) {
                     calculatedHeight = 32;
                 }
-
             }
             else {
                 calculatedHeight = maxHeight;
             }
 
-            var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
-            if (diff < 0) {
+			var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
+
+			if (diff < 0) {
                 calculatedHeight += diff;
             }
 
