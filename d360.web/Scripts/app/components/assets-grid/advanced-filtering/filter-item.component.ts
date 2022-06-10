@@ -224,8 +224,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             }
 
 			var diff = window.innerHeight - calculatedHeight - margins - bottomPos;
-			console.log(calculatedHeight);
-            if (diff < 0) {
+
+			if (diff < 0) {
                 calculatedHeight += diff;
             }
 
