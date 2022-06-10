@@ -720,7 +720,7 @@ namespace d360.model.DataAccessLayer
 			var nonUpdatedableSemantics = new List<string>();
 			existingSemantics.ForEach(e =>
 			{
-				if (e.Source == core.enums.SemanticSource.BuiltIn || e.CreatedOn != e.UpdatedOn)
+				if (e.Source == core.enums.SemanticSource.BuiltIn || e.EffectiveDate != e.UpdatedOn)
 				{
 					nonUpdatedableSemantics.Add(e.Qualifier);
 				}
