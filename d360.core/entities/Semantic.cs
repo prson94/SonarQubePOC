@@ -657,7 +657,8 @@ namespace d360.core.entities
             
             List<DateRange> dateRange = new List<DateRange>();
 
-            string startDate = null;
+			string startDate = null;
+			string enddate = null;
 
             foreach (var entry in effectiveDates)
             {
@@ -668,48 +669,40 @@ namespace d360.core.entities
 
                 if(entry == effectiveDates.First())
                 {
-                    startDate = effectiveDate.Split('T')[0];                    
-                }
+					startDate = effectiveDate.Split('T')[0];
+				}
 
                 if (entry == effectiveDates.Last())
-                {
-                    startDate ??= effectiveDate.Split('T')[0];
-                    var isPresent = effectiveDate == updateDate || updateDate.Split('T')[0] == DateTime.Now.ToString("yyyy-MM-dd");
-                    if (dateRange.Any(r=>r.EndDate == startDate))
-                    {
-                        var r = dateRange.Find(x => x.EndDate == startDate);
-                        startDate = r.StartDate;
-                        dateRange.Remove(r);
-                    }
-                    dateRange.Add(new DateRange { StartDate = startDate, EndDate = isPresent ? "Present" : updateDate.Split('T')[0] });
+                {                    				
+					if (enddate != null && effectiveDate == updateDate && enddate != effectiveDate.Split('T')[0])
+					{
+						dateRange.Add(new DateRange { StartDate = startDate, EndDate = enddate });
+						startDate = effectiveDate.Split('T')[0];
+					}
+					var isPresent = effectiveDate == updateDate || updateDate.Split('T')[0] == DateTime.Now.ToString("yyyy-MM-dd");
+
+					dateRange.Add(new DateRange { StartDate = startDate, EndDate = isPresent ? "Present" : updateDate.Split('T')[0] });                    
                     break;
                 }
                 else if(entry != effectiveDates.First())
                 {
-                    startDate ??= effectiveDate.Split('T')[0];                   
-                    if (effectiveDate != updateDate && !(effectiveDate.Split('T')[0] == updateDate.Split('T')[0] && dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0])))
-                    {
-                        if (!dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0]) && dateRange.Count>0)
-                        {
-                            startDate = effectiveDate.Split('T')[0];
-                        }
-                        dateRange.Add(new DateRange { StartDate = startDate, EndDate = updateDate.Split('T')[0] });                            
-                        startDate = null;                        
-                    }
+					if (effectiveDate != updateDate)
+					{
+						enddate = updateDate.Split('T')[0];
+					}
 
-                    //if disabled and renabled on the same day
-                    if (effectiveDate == updateDate && dateRange.Any(r => r.EndDate == effectiveDate.Split('T')[0]))
-                    {
-                        var r = dateRange.Find(x => x.EndDate == effectiveDate.Split('T')[0]);
-                        startDate = r.StartDate;
-                        dateRange.Remove(r);
-                    }
+					if (enddate != null && effectiveDate == updateDate && enddate != effectiveDate.Split('T')[0])
+					{
+						dateRange.Add(new DateRange { StartDate = startDate, EndDate = enddate });
+						startDate = effectiveDate.Split('T')[0];
+						enddate = null;
+					}					                    
                 }
             }
 
-            dateRange.Reverse();
-            return dateRange;
-        }
+			dateRange.Reverse();
+			return dateRange;
+		}
     }
 
     #endregion
