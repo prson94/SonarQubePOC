@@ -38,7 +38,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, tap, startWith } from 'rxjs/operators';
 
 @Component({
-	selector: 'folder-editor',
+	selector: 'd3s-admin-site-menu-folder-editor',
 	templateUrl: './admin-site-menu-folder-editor.component.html',
 	providers: [DataProfileService, SiteMenuService],
 	changeDetection: ChangeDetectionStrategy.OnPush,

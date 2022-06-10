@@ -23,7 +23,7 @@
 		<div class="row" *ngIf="!isLoading">
 			<div class="form-wrapper">
 				<div inputs class="inputs-wrapper">
-					<ig-property-group [igformGroup]="folderForm" title="General" i18n-title [expanded]="true" [shouldBePadded]="false">
+					<ig-property-group [igformGroup]="folderForm" title="General" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div inputs>
 							<div class="row">
 								<div class="col s12">
@@ -54,7 +54,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false">
+					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
 							<div class="folder-flex-grid">
 								<div class="table-content">
@@ -69,7 +69,7 @@
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length === 1" i18n>1 item selected</div>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length > 1" i18n>{{_tempSelectedFolderItems.length}} items selected</div>
 									</div>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+									<div class="table-wrapper" style="max-height: calc(100vh - 420px; min-height: 300px);">
 										<p-table #dt3
 													[globalFilterFields]="['Title']"
 													[loading]="isAvailableFolderItemsTableLoading"
@@ -183,7 +183,7 @@
 											 *ngIf="selectedNewFolderItems && selectedNewFolderItems.length > 0"
 											 i18n>{{selectedNewFolderItems.length}} item{{selectedNewFolderItems.length > 1 ? "s":""}} selected</div>
 									</div>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px); overflow:auto;">
+									<div class="table-wrapper" style="max-height: calc(100vh - 420px); min-height:300px">
 										<p-table #dt4
 													[value]="newFolderItems"
 													[globalFilterFields]="['Title']"
@@ -203,7 +203,7 @@
 													<th i18n>Selected Folder Items</th>
 												</tr>
 												<tr *ngIf="!newFolderItems || newFolderItems?.length == 0">
-													<th i18n class="invalid-table">Please select at least one item</th>
+													<div i18n class="invalid-table">Please select at least one item</div>
 												</tr>
 											</ng-template>
 											<ng-template pTemplate="body" let-item>
@@ -221,7 +221,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Permissions" i18n-title [expanded]="true" [shouldBePadded]="false">
+					<ig-property-group title="Permissions" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
 							<div class="info-block">
 								<i class="fa fa-info-circle"></i>
@@ -242,7 +242,7 @@
 										<div class="selected-count" *ngIf="_tempSelectedPermissionAssets && _tempSelectedPermissionAssets.length > 1" i18n>{{_tempSelectedPermissionAssets.length}} items selected</div>
 									</div>
 
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px);">
+									<div class="table-wrapper" style="max-height: calc(100vh - 420px); min-height: 300px">
 										<p-table #dt6
 													[value]="permissionAssets"
 													[globalFilterFields]="['Text']"
@@ -317,7 +317,7 @@
 														placeholder="Search"
 														(onSearch)="dt5.filterGlobal($event, 'contains')"
 														style="width:100%; padding-bottom:8px;"></ig-search-field>
-									<div class="table-wrapper" style="max-height: calc(100vh - 420px);">
+									<div class="table-wrapper" style="max-height: calc(100vh - 420px); min-height: 300px">
 										<p-table #dt5
 													[globalFilterFields]="['Text']"
 													[value]="selectedPermissionAssets"
