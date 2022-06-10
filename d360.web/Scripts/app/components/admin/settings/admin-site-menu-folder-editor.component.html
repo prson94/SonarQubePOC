@@ -2,9 +2,8 @@
 
 	<div class="add-folder-form {{savingInProgress ? 'saving-in-progress' : ''}} {{higlightedItem ? 'opened-side-panel' : ''}}">
 		<div class="form-header">
-			<header i18n>
-				Add Folder
-			</header>
+			<header *ngIf="!isEdit" i18n>Add Folder</header>
+			<header *ngIf="isEdit" i18n>Edit Folder</header>
 			<div class="sub-header" *ngIf="!isLoading">
 				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
 				<span *ngIf="requiredCount > 0"
@@ -357,16 +356,15 @@
 			<div class="action-bar" style="margin-top:16px;">
 				<button igButton
 						igAutoFocus
-						i18n-label
-						label="Cancel"
+						label="{{hasChanges ? labelDiscard : labelClose}}"
 						(click)="closeClick.emit();"></button>
 				<span class="grow"></span>
 				<button igButton
 						class="ig-button-primary"
-						i18n-label
-						label="Add Folder"
+						label="{{isEdit ? labelSaveChanges : labelAddFolder}}"
 						(click)="save()"
-						[disabled]="folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
+						[loading]="savingInProgress"
+						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
 			</div>
 		</div>
 	</div>

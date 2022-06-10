@@ -8,7 +8,6 @@
 	<ig-search-field class="search tooltip-full-width"
 					 mode="Keypress"
 					 i18n-placeholder
-					 [infoTooltip]="simpleSearchTooltipHTML"
 					 placeholder="Search"
 					 [(ngModel)]="simpleTextFilter"
 					 (onSearch)="dt.filterGlobal($event, 'contains')"

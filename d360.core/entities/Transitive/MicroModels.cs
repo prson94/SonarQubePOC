@@ -277,9 +277,21 @@ namespace d360.core.entities
         public List<SiteNav> Items { get; set; } = new List<SiteNav>();
     }
 
-    #region ResponsibilityRule Models
+	public class EditSiteNavModel
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Icon { get; set; }
+		public string IconPayload { get; set; }
+		public string ImageIconUrl { get; set; }
 
-    public class ObjectResult
+		public List<SiteNav> Items { get; set; } = new List<SiteNav>();
+		public List<SiteNavPermission> Permissions { get; set; } = new List<SiteNavPermission>();
+	}
+
+	#region ResponsibilityRule Models
+
+	public class ObjectResult
     {
         public Guid? uid { get; set; }
         
