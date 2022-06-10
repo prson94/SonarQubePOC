@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -668,7 +669,7 @@ namespace d360.web.Controllers
                     var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId,
                         responseType: "code",
-                        scope: "openid profile email infogix", //infogix
+                        scope: "openid profile email", //infogix
                         callbackUri,
                         state,
                         nonce,
@@ -871,8 +872,12 @@ namespace d360.web.Controllers
             var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
 			var payload = token.Payload;
-            var accessToken = handler.ReadJwtToken(response.AccessToken);
-            var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
+			JwtSecurityToken accessToken = null;
+			if (!string.IsNullOrEmpty(response.AccessToken))
+			{
+				accessToken = handler.ReadJwtToken(response.AccessToken);
+			}
+			var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
 
             if (openIdRequest.Nonce != incomingNonce)
             {
@@ -889,11 +894,12 @@ namespace d360.web.Controllers
 			Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
 
             combinedClaims.AddRange(token.Claims); // ID token claims.
-            combinedClaims.AddRange(accessToken.Claims.Except(token.Claims)); // Access token claims.
+			if (accessToken != null)
+			{
+				combinedClaims.AddRange(accessToken.Claims.Except(token.Claims)); // Access token claims.
+			}
 
-			
-
-            try
+			try
             {
 
 				var excludedProps = new List<string> { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
@@ -1030,9 +1036,9 @@ namespace d360.web.Controllers
             try
             {
                 var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
-                var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false });
+                var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false, ValidateIssuerName = false });
                 var discoDoc = disco.GetAsync().Result;
-                var keySet = await client.GetJsonWebKeySetAsync($"{baseUri}/keys");
+                var keySet = await client.GetJsonWebKeySetAsync(discoDoc.JwksUri);
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(authenticationSettings.nameClaimType,
                     authenticationSettings.audience, false,
