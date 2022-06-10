@@ -483,7 +483,17 @@ namespace d360.core.entities
             decimal minValue = -999999999999.999999m;
             decimal maxValue = 999999999999.999999m;
 
-            if (model.BaseType == SemanticBaseType.Long && model.Minimum.HasValue)
+			if (model.MatchType != SemanticMatchType.Number && model.Minimum.HasValue)
+			{
+				errors.Add("Since MatchType is not a Number, Minimum must not contain a value.");
+			}
+
+			if (model.MatchType != SemanticMatchType.Number && model.Maximum.HasValue)
+			{
+				errors.Add("Since MatchType is not a Number, Maximum must not contain a value.");
+			}
+
+			if (model.BaseType == SemanticBaseType.Long && model.Minimum.HasValue)
             {
                 if (!long.TryParse(model.Minimum.Value.ToString(), out _))
                 {
