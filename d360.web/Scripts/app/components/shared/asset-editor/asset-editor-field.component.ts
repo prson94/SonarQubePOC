@@ -145,7 +145,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     get hasKeyFieldError () {
         const formControl = this.form.get(this.field.FieldName);
-        if (formControl.errors == null) {
+        if (formControl?.errors == null) {
             return false;
         }
         
