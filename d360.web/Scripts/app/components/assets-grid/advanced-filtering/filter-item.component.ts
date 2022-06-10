@@ -557,7 +557,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 			setTimeout(() => {
 				this.currentOperator = operator;
 				this.updateOperatorData();
-			}, 10);
+			}, 50);
         }
 
         this.uiTooltipValue = this.condition.getTooltipValue();
