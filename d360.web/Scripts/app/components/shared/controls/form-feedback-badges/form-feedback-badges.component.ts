@@ -146,9 +146,13 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         if (inputElement.tagName === 'IG-DATE' || inputElement.tagName === 'IG-NUMBER-INPUT') {
             inputElement.querySelector('input').click();
         }
+        else if (inputElement.tagName === 'IG-REGEXP-INPUT') {
+            inputElement.querySelector('input').focus();
+        }
         else if (inputElement.tagName === 'P-DROPDOWN') {
             (inputElement.querySelectorAll('.p-dropdown-trigger')[0] as HTMLElement).click();
         }
+        
         inputElement.focus();
     }
 
