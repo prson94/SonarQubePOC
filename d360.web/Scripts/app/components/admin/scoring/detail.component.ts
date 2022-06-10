@@ -19,6 +19,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { StringConstants } from '../../../static/string-constants';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-allocation-detail',
@@ -32,6 +33,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     selectedRuleResultPath: MetricPathOptionViewModel = null;
     routeParamsSubscription: any;
     allocation: ScoreTypeAllocation = null;
+    allocationCopy: ScoreTypeAllocation;
     private allocationUid: string;
     private assetTypeUid: string;
     formattedScoreCalc: string;
@@ -86,6 +88,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
 
             this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {
                 this.allocation = res;
+                this.allocationCopy = _.cloneDeep(this.allocation);
                 this.formatScoreCalc();
                 this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
                 if (this.allocation.scoreType == 2 || res.scoreType.toString() == "DataQuality") {
@@ -205,7 +208,8 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                         const items = res.filter(x => { return x.uid == this.allocation.uid });
 
                         if (items.length > 0) {
-                            this.allocation = items[0];                           
+                            this.allocation = items[0];
+                            this.allocationCopy = _.cloneDeep(this.allocation);
                             this.formatScoreCalc();
                             this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
                                 .subscribe(f => {
