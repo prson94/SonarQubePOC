@@ -440,25 +440,29 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	addToSelectedFolderItems() {
 		if (this._tempSelectedFolderItems.length > 0) {
 			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
-				let x = this.availableItems.findIndex((i) => i.ObjectID == this._tempSelectedFolderItems[j].ObjectID && i.Object == this._tempSelectedFolderItems[j].Object);
-				let newItem = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
-				this.newFolderItems.push(newItem);
+				if (this.newFolderItems.indexOf(this._tempSelectedFolderItems[j]) === -1) {
+					this.newFolderItems.push(this._tempSelectedFolderItems[j]);
+					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j])
+				}
 			}
 			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
 		}
+		this.cdRef.markForCheck();
 	}
 
 	removeFromSelectedFolderItems() {
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
-				this.availableItems.push(i);
+				if (this.availableItems.indexOf(this.selectedNewFolderItems[j]) === -1) {
+					this.availableItems.push(this.selectedNewFolderItems[j]);
+					this.newFolderItems = this.newFolderItems.filter((x) => x != this.selectedNewFolderItems[j])
+				}
 			}
 			this.selectedNewFolderItems = [];
 			this.setRequiredCount();
 		}
+		this.cdRef.markForCheck();
 	}
 
 	moveToTop(items: SiteNav[]) {
