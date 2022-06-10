@@ -103,6 +103,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() diagramNodeKey: string = "";
 
     form: FormGroup;
+	initialFormValue: Object;
 
     action: string = "Edit";
     fields: EditorField[] = [];
@@ -419,8 +420,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.form = this.toFormGroup(this.fields);
 
             setTimeout(() => {
-                this.form.valueChanges.subscribe((change) => {
-                    if (this.selection) {
+				this.initialFormValue = this.form.value;
+				this.form.valueChanges.subscribe((change) => {
+					if (this.selection && !_.isEqual(this.initialFormValue, change)) {
                         this.hasUpdateFormChanged = true;
                     }
                 });
