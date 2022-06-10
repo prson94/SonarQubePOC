@@ -33,7 +33,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     selectedRuleResultPath: MetricPathOptionViewModel = null;
     routeParamsSubscription: any;
     allocation: ScoreTypeAllocation = null;
-    allocationCopy: any;
+    allocationCopy: ScoreTypeAllocation;
     private allocationUid: string;
     private assetTypeUid: string;
     formattedScoreCalc: string;
