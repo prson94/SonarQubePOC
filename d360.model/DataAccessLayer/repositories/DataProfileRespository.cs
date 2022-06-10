@@ -959,7 +959,7 @@ namespace d360.model.DataAccessLayer
 								{(includeSamples ? ",JSON_QUERY(specialCharacterStatistics.[value]) as specialCharacterStatistics" : "")}
 								{(includeSamples ? ",JSON_QUERY(percentileStatistics.[value]) as percentileStatistics" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(textPatternDetails.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as textPatternDetails" : "")}
-								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(semanticAnalysisDetails.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as semanticAnalysisDetails" : "")}
+								{(includeSamples ? $@",JSON_QUERY(REPLACE(REPLACE(semanticAnalysisDetails.value,'""value"":{{',''),'}}}}','}}')) as semanticAnalysisDetails" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(bottomK.value, '}}]',']'), '[{{','['), '""value"":',''), '}},{{',',')) as bottomK" : "")}
 								{(includeSamples ? $@",JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(topK.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as topK" : "")}
 								,ADP.TotalCount
@@ -1102,7 +1102,7 @@ namespace d360.model.DataAccessLayer
 															where
 																AssetDataProfileId = ADP.ID
 																and
-																lower(SampleType) = 'textPatternDetails'
+																lower(SampleType) = 'textpatterndetails'
 															for json path
 															) as [value]
 								) as textPatternDetails
@@ -1114,7 +1114,7 @@ namespace d360.model.DataAccessLayer
 															where
 																AssetDataProfileId = ADP.ID
 																and
-																lower(SampleType) = 'semanticAnalysisDetails'
+																lower(SampleType) = 'semanticAnalysisdetails'
 															for json path
 															) as [value]
 								) as semanticAnalysisDetails
