@@ -291,7 +291,7 @@ namespace d360.model.helpers.filters
         {
             if (fieldType.Type == "Path")
             {
-                return BaseRepository.GetPathColumnSql(fieldType);
+                return BaseRepository.GetPathSelectSql(fieldType);
             }
             else if (fieldType.Type == "Counter")
             {
