@@ -408,7 +408,7 @@ namespace d360.core.entities
                 CreatedBy = existing.CreatedBy,
                 CreatedOn = existing.CreatedOn,
                 Description = model.Description ?? existing.Description,
-                EffectiveDate = model.IsDisabled.HasValue && model.IsDisabled.Value ? existing.EffectiveDate : date,
+                EffectiveDate = model.IsDisabled.HasValue && model.IsDisabled.Value ? existing.EffectiveDate.AddSeconds(1) : date,
                 HeaderFilter = model.HeaderFilter ?? existing.HeaderFilter,
                 HeaderFilterConfidence = model.HeaderFilterConfidence ?? existing.HeaderFilterConfidence,
                 InvalidValuesStructured = model.InvalidValuesStructured ?? existing.InvalidValuesStructured,

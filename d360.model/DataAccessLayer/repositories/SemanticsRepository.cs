@@ -620,7 +620,7 @@ namespace d360.model.DataAccessLayer
 			#endregion
 
 			var repoModels = (
-				from u in semantics.FindAll(s=> s.IsDisabled==null || s.IsDisabled==false)
+				from u in semantics
 				join e in existingSemantics on u.Qualifier.ToLower() equals e.Qualifier.ToLower()
 				select u.ToRepositoryModel(e, CompanyContext.CurrentResourceID)
 				).ToList();
@@ -630,29 +630,7 @@ namespace d360.model.DataAccessLayer
 			{
 				s.Validate();
 				s.TransactionId = transactionId;
-			});
-
-            if (semantics.FindAll(s => s.IsDisabled == true).Count > 0)
-            {
-                var sql = $@";with s as (
-								select
-									*,
-									Row_number()
-									OVER ( 
-										partition BY qualifier 
-										ORDER BY UpdatedOn DESC) rn 
-								from 
-									Semantic 
-								where 
-									qualifier in @qualifiers   
-							)											
-							update s set
-							UpdatedOn = GETDATE(),
-							UpdatedBy = @resourceId,
-							transactionId= @transactionId
-							where rn=1";
-                await CompanyContext.Database.Connection.ExecuteAsync(sql, new { transactionId, qualifiers = semantics.FindAll(s => s.IsDisabled == true).Select(o => o.Qualifier).ToList(), resourceId = CompanyContext.CurrentResourceID }, commandTimeout: ApiTimeout);
-            }
+			});			
 
 			if (repoModels.Count > 0)
 			{

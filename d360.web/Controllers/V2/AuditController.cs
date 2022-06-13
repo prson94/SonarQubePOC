@@ -801,8 +801,11 @@ namespace d360.web.Controllers.V2
 				END as NewValue,
 				coalesce(AT.Class, AD.AssetTypeClass) as Class,
 				fa.[Version] as 'Version',
-				CASE WHEN ga.Action  = 'Tag Consolidate' THEN
+				CASE 
+				WHEN ga.Action  = 'Tag Consolidate' THEN
 					ga.ActionObjectName
+				WHEN ga.ActionObject='Semantic' AND ga.Action = 'Updated' THEN
+					fa.PreviousValue
 				ELSE
 					(select top 1 fa_sub.value as 'value'
 					from reporting.global_fieldaudit fa_sub
