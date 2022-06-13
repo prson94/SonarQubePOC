@@ -137,7 +137,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
         this.populateTypeLists();
     }
     ngOnChanges(changes: SimpleChanges): void {
-        let c = changes;
+		let c = changes;
         if (this.semanticType) {
             this.model = _.cloneDeep(this.semanticType);
             this.isBuiltIn = this.semanticType.source.toString() === SemanticSource[SemanticSource.BuiltIn];
@@ -230,30 +230,32 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
     }
 
     populateTypeLists() {
-        if (!this.matchTypes || !this.baseTypes || !this.statuses || !this.locales) {
-            this.isLoading = true;
-            this.dataProfileService.getSemanticLookupList("matchtypes", false, null, "none").subscribe((matchRes) => {
-                this.matchTypes = matchRes.map((matchType) => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description }; });
-                this.dataProfileService.getSemanticLookupList("basetypes").subscribe((baseRes) => {
-                    this.baseTypes = baseRes;
-                    this.getBaseTypeOptions();
-                    this.dataProfileService.getSemanticLookupList("statuses").subscribe((statusRes) => {
-                        this.statuses = statusRes.map((status) => { return { label: status.Name, value: status.Value }; });
-                        this.localService.getLocales().subscribe((locales) => {
+		if (!this.matchTypes || !this.baseTypes || !this.statuses || !this.locales) {
+			this.isLoading = true;
+			this.dataProfileService.getSemanticLookupList("matchtypes", false, null, "none").subscribe((matchRes) => {
+				this.matchTypes = matchRes.map((matchType) => { return { label: matchType.Name, value: matchType.Value, description: matchType.Description }; });
+				this.dataProfileService.getSemanticLookupList("basetypes").subscribe((baseRes) => {
+					this.baseTypes = baseRes;
+					this.getBaseTypeOptions();
+					this.dataProfileService.getSemanticLookupList("statuses").subscribe((statusRes) => {
+						this.statuses = statusRes.map((status) => { return { label: status.Name, value: status.Value }; });
+						this.localService.getLocales().subscribe((locales) => {
 
-                            this.locales = locales;
+							this.locales = locales;
 
-                            this.locales.forEach((i) => {
-                                i.label = i.locale;
-                                i.value = i.locale;
-                            });
-                            this.isLoading = false;
-                        });
-                    });
-                });
-            });
-        }
-        this.isLoading = false;
+							this.locales.forEach((i) => {
+								i.label = i.locale;
+								i.value = i.locale;
+							});
+							this.isLoading = false;
+						});
+					});
+				});
+			});
+		} else {
+			this.isLoading = false;
+		}
+        
     }
 
     isEmptyString(): ValidatorFn {
