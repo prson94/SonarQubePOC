@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.MergeAssetPaths-v1">
+  <changeSet author="Pappas" id="Procedure.api.MergeAssetPaths-v1.1">
     <comment>GOV-18632</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -234,7 +234,7 @@ begin
 						inner join Asset A on A.ID = H.ID and A.Object = 'Group'
 						inner join dbo.[Group] F on F.ID = A.ObjectID
 		end
-    else
+		else
 		begin
 			create nonclustered index CIX_TempHierarchy on #hierarchy (AssetTypeID)
 
@@ -349,7 +349,8 @@ begin
 		-- Merge paths
 		merge	AssetPath as T
 		using	(
-				select	I.ID,
+				select	distinct 
+						I.GroupID as ID,
 						SE.Segments
 				from	#ids I
 						cross apply (
