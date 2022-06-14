@@ -42,6 +42,8 @@ export class BaseComponent {
     public baseCrumbs: Breadcrumb[] = [];
     public baseTreeNodeArray: any[] = [];
 
+	public labelRequired: string = $localize`Value required`;
+
     public simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
     // sidebar
     sidebarSubscription: Subscription;
