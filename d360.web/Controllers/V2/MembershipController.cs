@@ -2291,7 +2291,28 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
-		[HttpPost, Route("claims")]
+		/// <summary>
+		/// Creates a new claim.
+		/// </summary>
+		/// <remarks>
+		/// NOTE: Only claims with a location of Idp or Environment can be added
+		/// 
+		/// Only certain claim types are valid based on the claim action:
+		/// 
+		///  - For the Lookup action the following claim types are allowed: Tenant, NameIdentifier, Username
+		///  - For the Replace action the following claim types are allowed: Email, FirstName, LastName, Group
+		///  - For the Append action the following claim types are allowed: Group
+		/// </remarks>
+		[
+			HttpPost,
+			MapToApiVersion("2.0"),
+			Route("claims"),
+			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.Created, "Claim was created successfully."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation."),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Claim could not be created due to an invalid path length or action."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
 		public async Task<IHttpActionResult> PostClaimAsync(ClaimPostApiModel claim)
 		{
 			var prefix = $"Membership.PostClaimAsync => ";
@@ -2336,7 +2357,30 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
-		[HttpPut, Route("claims/{id:int}")]
+		/// <summary>
+		/// Updates a claim for the given id.
+		/// </summary>
+		/// <param name="id">The id of the claim to be updated</param>
+		/// <remarks>
+		/// NOTE: Only claims with a location of Idp or Environment can be updated
+		/// 
+		/// Only certain claim types are valid based on the claim action:
+		/// 
+		///  - For the Lookup action the following claim types are allowed: Tenant, NameIdentifier, Username
+		///  - For the Replace action the following claim types are allowed: Email, FirstName, LastName, Group
+		///  - For the Append action the following claim types are allowed: Group
+		/// </remarks>
+		[
+			HttpPut,
+			MapToApiVersion("2.0"),
+			Route("claims/{id:int}"),
+			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Claim was updated successfully."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation."),
+			SwaggerResponse(HttpStatusCode.NotFound, "Claim with the given id was not found."),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Claim could not be updated due to an invalid path length or action."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
 		public async Task<IHttpActionResult> PutClaimAsync(int id, ClaimPutApiModel claim)
 		{
 			var prefix = $"Membership.PutClaimAsync => ";
@@ -2388,7 +2432,23 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
-		[HttpDelete, Route("claims/{id:int}")]
+		/// <summary>
+		/// Deletes a claim for the given id.
+		/// </summary>
+		/// <param name="id">The id of the claim to delete</param>
+		/// <remarks>
+		/// NOTE: Only claims with a location of Idp or Environment can be deleted
+		/// </remarks>
+		[
+			HttpDelete,
+			MapToApiVersion("2.0"),
+			Route("claims/{id:int}"),
+			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Claim was deleted successfully."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation."),
+			SwaggerResponse(HttpStatusCode.NotFound, "Claim with the given id was not found."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
 		public async Task<IHttpActionResult> DeleteClaimAsync(int id)
 		{
 			var prefix = $"Membership.DeleteClaimAsync => ";
@@ -2429,7 +2489,18 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
-		[HttpGet, Route("claims")]
+		/// <summary>
+		/// Retrieves a list of claims.
+		/// </summary>
+		[
+			HttpGet,
+			MapToApiVersion("2.0"),
+			Route("claims"),
+			SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Gets a list of claims.", typeof(ClaimApiViewModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
 		public async Task<IHttpActionResult> GetClaimsAsync()
 		{
 			var prefix = $"Membership.GetClaimsAsync => ";
