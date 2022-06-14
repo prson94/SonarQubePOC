@@ -5721,10 +5721,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     }
 
 									//call new procedure.
-									Connection.ExecuteAsync(
+									Connection.Execute(
 										"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
 										new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
-										transaction: trans);
+										transaction: trans, timeout);
 
 									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();
