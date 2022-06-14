@@ -140,16 +140,6 @@ namespace igx.UnitTests
                 Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
-            if (isGoodUID && numberOfassetInsertList > 0)
-            {
-                actionResult = await assetsController.PostAssetsAsync(assetUID, assetInsertList);
-                responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-                var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
-                AssertJSON.True<List<AssetApiModel>>(str);
-            }
-
             if (checkAsSendByJSONContent)
             {
 

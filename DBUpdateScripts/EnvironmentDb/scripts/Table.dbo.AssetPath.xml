@@ -1,0 +1,73 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.dbo.AssetPath-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetPath')
+BEGIN
+	CREATE TABLE [dbo].[AssetPath] (
+		[ID] [bigint] NOT NULL,
+		[Segments] [xml] NULL,
+		[DisplayPath]  AS ([dbo].[GetDisplayPath]([Segments],' > ',' / ')) PERSISTED,
+		[KeyPath]  AS ([dbo].[GetKeyPath]([Segments])) PERSISTED,
+		CONSTRAINT [PK_AssetPath] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.dbo.AssetPath-Indexes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [sys].[foreign_keys] WHERE name = 'FK_AssetPath_Asset')
+BEGIN
+	ALTER TABLE [dbo].[AssetPath]  WITH CHECK ADD  CONSTRAINT [FK_AssetPath_Asset] FOREIGN KEY([ID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetPath] CHECK CONSTRAINT [FK_AssetPath_Asset]
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_AssetPath_Segments_Primary')
+BEGIN
+	CREATE PRIMARY XML INDEX [IX_AssetPath_Segments_Primary] ON AssetPath ( [Segments] )
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_AssetPath_Segments_Path')
+BEGIN
+	CREATE XML INDEX [IX_AssetPath_Segments_Path] ON AssetPath ( [Segments] ) USING XML INDEX [IX_AssetPath_Segments_Primary] FOR PATH
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetPath_DisplayPath')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetPath_DisplayPath] ON [dbo].[AssetPath] (	[DisplayPath] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetPath_KeyPath')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetPath_KeyPath] ON [dbo].[AssetPath] (	[KeyPath] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

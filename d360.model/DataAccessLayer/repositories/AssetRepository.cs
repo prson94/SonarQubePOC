@@ -1246,7 +1246,7 @@ namespace d360.model.DataAccessLayer
 						left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 						left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 						{string.Join("\n", fieldJoins)}
-						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " left join graph.AssetNode Node on Node.ID = a.ID" : "")} 
+						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " inner join AssetPath Node on Node.ID = a.ID" : "")} 
 						{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 						{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 						{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1288,7 +1288,7 @@ namespace d360.model.DataAccessLayer
 				insert into #tempasset
 				select  A.ID
 				from    Asset A 
-				left join graph.AssetNode Node on Node.id = a.id 
+				inner join AssetPath Node on Node.ID = a.ID 
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{string.Join("\n", countJoins.Where(cj => cj.TrimStart().StartsWith("cross apply")))}
@@ -1333,7 +1333,7 @@ namespace d360.model.DataAccessLayer
 				{(useTempTableForResults ? " into #results " : "")}
 				from #tempasset TempA
 				inner join Asset A on TempA.AssetId = A.ID and TempA.ID Between {RecordStart} and {RecordEnd}
-				left join graph.AssetNode Node on Node.ID = a.ID
+				inner join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
 				{string.Join("\n", fieldJoins.Where(fj => fj.TrimStart().StartsWith("cross apply")))}
@@ -3386,9 +3386,9 @@ namespace d360.model.DataAccessLayer
 					A.Id
 				from Asset A
 				inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
+				inner join AssetPath Node on Node.ID = a.ID 
 				left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
 				left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
-				left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
 				left join AssetDisplayValue ADV on ADV.AssetID = A.ID
 				outer apply(
 								select FormattedValue = 
@@ -3840,7 +3840,7 @@ namespace d360.model.DataAccessLayer
 								A.[uid] as AssetUid,
 								A.AssetTypeId,
 								T.[uid] as AssetTypeUid,
-								P.[uid] as ParentAssetUid,
+								P.[Uid] as ParentAssetUid,
 								P.DisplayValue as ParentDisplayName,
 								A.CreatedOn,
 								A.UpdatedOn,
@@ -3850,18 +3850,16 @@ namespace d360.model.DataAccessLayer
 								{string.Join(",\n", fieldColumns)}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
-								left join graph.AssetNode Node on Node.ID = a.ID 
+								inner join AssetPath Node on Node.ID = a.ID 
 								cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ
 								outer apply (
-									select  T.[uid]
-									from    graph.AssetNode S,
-											graph.AssetEdge E,
-											graph.assetNode T
-									where   match (T-(E)->S)
-											and E.PredicateType in (3,4)
-											and S.[uid] = A.[uid]
-								) Parent
-								left join AssetDetail P on P.uid = Parent.uid
+									select	PA.Uid,
+											PD.DisplayValue
+									from	[Intersect] I
+											inner join Asset PA on PA.Object = I.Subject and PA.ObjectID = I.SubjectID
+											inner join AssetDisplayValue PD on PD.AssetID = PA.ID
+									where	I.Object = A.Object and I.ObjectID = A.ObjectID
+								) P 
 								{string.Join("\n", fieldJoins)}
 						where   A.[uid] = @assetUid";
 

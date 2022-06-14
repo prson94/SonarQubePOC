@@ -5385,18 +5385,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																			set     T.AssetID = S.ID, T.Uid = S.Uid
 																			from    api.ExecutionAsset T
 																					inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between @beginItemNumber and @endItemNumber;";
-                            string insertGraphAssetNode = $@"		
-																			insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-																				select  EA.AssetID,
-																						EA.Uid,
-																						@AssetTypeID,
-																						T.[Uid] as AssetTypeUid,
-																						1,
-																						@D
-																				from    api.ExecutionAsset EA
-																						inner join #ObjectMergeTableResult R on R.ItemNumber = EA.ItemNumber and R.[Operation] = 'INSERT'
-																						inner join AssetType T on T.ID = @AssetTypeID
-																				where EA.ExecutionID = @ExecutionID and not exists (select 1 from graph.AssetNode where [uid] = EA.Uid)";
 
                             #endregion
 
@@ -5477,9 +5465,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																	from    api.ExecutionAsset T
 																			inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-																	{updateAssetInfoOnExecutionRecordsSql}
-
-																	{insertGraphAssetNode}",
+																	{updateAssetInfoOnExecutionRecordsSql}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, R = CurrentResourceID, D = DateTime.UtcNow, @object = new DbString { Value = @object, Length = 50, IsAnsi = true } }, transaction: trans, commandTimeout: timeout);
                                                 AddMeasurement(metrics, $"AssetTypeClass.{@object} >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                             }
@@ -5734,8 +5720,14 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
-                                    // Must execute BEFORE the Success flag is updated below.
-                                    sw.Restart();
+									//call new procedure.
+									Connection.ExecuteAsync(
+										"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
+										new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
+										transaction: trans);
+
+									// Must execute BEFORE the Success flag is updated below.
+									sw.Restart();
                                     MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, at, timeout, isInsert);
                                     AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 

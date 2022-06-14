@@ -50,8 +50,6 @@ namespace d360.model
         
         DbSet<ApiService> ApiServices { get; set; }
         
-        DbSet<AssetApiModel> AssetApiModels { get; set; }
-        
         DbSet<AssetDetail> AssetDetails { get; set; }
         
         DbSet<Asset> Assets { get; set; }
