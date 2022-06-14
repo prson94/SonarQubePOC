@@ -209,7 +209,7 @@ export class SemanticEditorComponent extends BaseComponent implements OnChanges,
 
     handleSaveComplete(res: any, addAnother: boolean = false) {
         if (!(res?.status)) {
-            let msg = this.isEdit ? $localize`Successfully updated` : $localize`Successfully created'}`;
+            let msg = this.isEdit ? $localize`Successfully updated` : $localize`Successfully created`;
             this.showMessageForResult(this.messagesService, res, msg);
             this.savingInProgress = false;
             this.savingInProgressWithAddNew = false;
