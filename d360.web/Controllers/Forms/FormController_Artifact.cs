@@ -394,27 +394,45 @@ namespace d360.web.Controllers
                     if (model.AssetType != null && model.AssetType.Uid != Guid.Empty)
                     {
 						sql = $@"
-with h as (
+with u as (
 	select	A.Uid, I.Subject, I.SubjectID, cast(0 as int) as [Level] , A.Name, I.PredicateID
 	from	AssetType A
 			left join IntersectType I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject = 'ReferenceItemType'
 	where	A.Uid = @Uid
 	union all
-	select	A.Uid, I.Subject, I.SubjectID, h.Level+1 as [Level], A.Name, I.PredicateID
+	select	A.Uid, I.Subject, I.SubjectID, u.Level+1 as [Level], A.Name, I.PredicateID
 	from	AssetType A
-			inner join h on h.Subject = A.Object and h.SubjectID = A.ObjectID
+			inner join u on u.Subject = A.Object and u.SubjectID = A.ObjectID
 			outer apply (
 			select	Subject, SubjectID, PredicateID 
 			from	IntersectType 
 					where Object = A.Object 
 					and ObjectID = A.ObjectID 
-					and Subject = 'ReferenceItemType' and A.Uid <> h.Uid
+					and Subject = 'ReferenceItemType' and A.Uid <> u.Uid
+			) I
+), d as (
+	select	A.Uid, I.Object, I.ObjectID
+	from	AssetType A
+			inner join IntersectType I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object = 'ReferenceItemType'
+	where	A.Uid = @Uid
+	union all
+	select	A.Uid, I.Object, I.ObjectID
+	from	AssetType A
+			inner join d on d.Object = A.Object and d.ObjectID = A.ObjectID
+			outer apply (
+			select	Object, ObjectID
+			from	IntersectType 
+					where Subject = A.Object 
+					and SubjectID = A.ObjectID 
+					and Object = 'ReferenceItemType' and A.Uid <> d.Uid
 			) I
 ) 
 select	LOWER(CAST(uid AS char(36))) as value, 
 		Name as label 
 from	assettype 
-where	[Class] = 9 and Uid not in (select Uid from h where [Level] <> 1) 
+where	[Class] = 9 
+		and Uid not in (select Uid from u where [Level] <> 1) 
+		and Uid not in (select Uid from d) 
 order by Name";
                     }
                     else
