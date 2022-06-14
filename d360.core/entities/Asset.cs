@@ -45,17 +45,8 @@ namespace d360.core.entities
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Icon { get; set; }
 
-        [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
-        public string KeyHash { get; set; }
-
-        [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
-        public string FieldHash { get; set; }
-
         [IgnoreDataMember]
         public virtual AssetType AssetType { get; set; }
-
-        [DataMember]
-        public virtual ICollection<Field> Fields { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {
@@ -68,19 +59,6 @@ namespace d360.core.entities
                 ObjectTypeID = -1
             };
         }
-    }
-
-    [DataContract(Namespace = NAMESPACE)]
-    public class AssetApiModel : BaseObject
-    {
-        public long ID { get; set; }
-
-        public int AssetTypeID { get; set; }
-
-        public string SourceID { get; set; }
-
-        [DataMember, ForeignKey("AssetID")]
-        public virtual ICollection<FieldApiModel> Fields { get; set; }
     }
 
     public class AssetsApiViewModel : PagedApiBaseViewModel

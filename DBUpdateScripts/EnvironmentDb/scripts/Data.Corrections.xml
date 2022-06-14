@@ -1601,4 +1601,29 @@ drop table if exists #tempfieldid;
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-v1">
+  <comment>Copy segment data from graph table to dbo.AssetPath</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @c int;
+select @c = count(1) from AssetPath
+if (@c = 0)
+begin
+	insert into AssetPath
+		select	G.ID, G.Segments 
+		from	graph.AssetNode G
+				inner join Asset A on A.ID = G.ID
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

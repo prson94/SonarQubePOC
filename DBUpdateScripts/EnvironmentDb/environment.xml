@@ -33,6 +33,8 @@
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
+	<include file="scripts/Function.dbo.GetDisplayPath.xml"/>
+	<include file="scripts/Function.dbo.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
@@ -74,6 +76,7 @@
 	<include file="scripts/Table.dbo.AssetDataProfileSampleJson.xml"/>
 	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
+	<include file="scripts/Table.dbo.AssetPath.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.AttributeTypeCategory.xml"/>
 	<include file="scripts/Table.dbo.AttributeType.xml"/>
@@ -368,6 +371,7 @@
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.analytics.AddStatistic.xml"/>
 	<include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
+	<include file="scripts/Procedure.api.MergeAssetPaths.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateIntersectTypeColumn.xml"/>

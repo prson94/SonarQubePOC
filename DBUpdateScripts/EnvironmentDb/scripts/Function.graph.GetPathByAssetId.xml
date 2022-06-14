@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.graph.GetPathByAssetId-v2">
+  <changeSet author="Pappas" id="Function.graph.GetPathByAssetId-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,8 +21,8 @@ returns nvarchar(850)
 as
 begin
 	declare @segments xml
-	select @segments = Segments from graph.AssetNode where ID = @id;
-	return graph.GetPath(@segments, @levelDelimiter, @keyDelimiter)
+	select @segments = Segments from AssetPath where ID = @id;
+	return dbo.GetDisplayPath(@segments, @levelDelimiter, @keyDelimiter)
 end
 		]]>
     </sql>
@@ -34,28 +34,12 @@ create or alter function [graph].[GetPathByAssetId]
 	@levelDelimiter nvarchar(50),
 	@keyDelimiter nvarchar(50)
 )
-returns nvarchar(max)
+returns nvarchar(850)
 as
 begin
 	declare @segments xml
-
 	select @segments = Segments from graph.AssetNode where ID = @id;
-
-	declare @path nvarchar(max)
-
-	select	@path = string_agg(V, @levelDelimiter)
-	from	(
-			select	string_agg(Val, @keyDelimiter) within group(order by P) as  V
-			from	(
-					select	X.p.value('./@level', 'int') as L,
-							X.p.value('./@position', 'int') as P,
-							X.p.value('.', 'nvarchar(250)') as Val
-					from	@segments.nodes('/path/segment') X(p)
-					) O
-			group by L
-			) O
-
-	return @path
+	return graph.GetPath(@segments, @levelDelimiter, @keyDelimiter)
 end
 		]]>
 	</rollback>

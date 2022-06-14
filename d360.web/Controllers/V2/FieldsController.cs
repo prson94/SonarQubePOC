@@ -2391,14 +2391,14 @@ namespace d360.web.Controllers.V2
 								cast(a.uid as nvarchar(36)) as value,
 								coalesce(node.DisplayPath,'Path Missing') as text 
 								from Asset A
-								 inner join graph.AssetNode Node on Node.id = a.id
+									 inner join AssetPath Node on Node.ID = a.ID
 								where a.AssetTypeID = @parentAssetTypeId {whereQuery}
 								order by node.displaypath 
 								{pagingQuery}
 								option(recompile);
 
 								select count(*) from Asset A
-								 inner join graph.AssetNode Node on Node.ID = A.ID
+								 inner join AssetPath Node on Node.ID = A.ID
 								where A.AssetTypeID = @parentAssetTypeId {whereQuery};";
 					}
 					else
