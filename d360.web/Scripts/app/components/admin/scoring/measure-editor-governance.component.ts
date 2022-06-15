@@ -26,6 +26,14 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
     responsibilityTypes: any[] = [];
     testFieldConditions: FieldCondition[] = [];
 
+	//#region Localize placeholders
+
+	public labelPredicate: string = $localize`Choose a predicate`;
+	public labelRelType: string = $localize`Choose a relationship type`;
+	public labelResType: string = $localize`Choose a responsibility type`;
+
+	//#endregion
+
     //#region Local reference lists
 
     checkTypeOptions = [
@@ -82,7 +90,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         this.cdRef.markForCheck();
     }
 
-    ngOnInit() {
+	ngOnInit() {
         this.metricForm = this.fb.group({
             name: ['', [Validators.required, this.isEmptyString()]],
             description: null,
