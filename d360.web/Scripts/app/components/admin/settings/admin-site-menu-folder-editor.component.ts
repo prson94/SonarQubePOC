@@ -132,6 +132,13 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		super(settingsService);
 	}
 
+	private errorCallback() {
+		setTimeout(() => {
+			this.savingInProgress = false;
+			this.cdRef.markForCheck();
+		},10);
+	}
+
 	ngOnInit(): void {
 		this.selection = null;
 		this.newFolderItems = new Array<SiteNav>();
@@ -151,6 +158,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	ngOnChanges(changes: SimpleChanges): void {
 		let c = changes;
+		if (changes.navigationFolder && changes.navigationFolder.currentValue !== changes.navigationFolder.previousValue) {
+			this._initialVersion = "";
+		}
+
 		if (this.navigationFolder) {
 			this.folderModel = _.cloneDeep(this.navigationFolder);
 			this.isEdit = true;
@@ -262,7 +273,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		switch (this.formMode) {
 			case FormMode.Editing:
 				var folder = this.getModel();
-				this.siteMenuService.editFolder(folder)
+				this.siteMenuService.editFolder(folder, this.errorCallback.bind(this))
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
 						this.stateService.reloadLeftNavMenu();
@@ -285,7 +296,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					items: this.newFolderItems,
 				};
 
-				this.siteMenuService.addFolder(model)
+				this.siteMenuService.addFolder(model, this.errorCallback.bind(this))
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
 						this.formMode = FormMode.Default;
