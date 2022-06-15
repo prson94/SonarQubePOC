@@ -34,12 +34,14 @@ end
 		]]>
 	</rollback>
   </changeSet>
-    <changeSet author="Core" id="Table.dbo.ClaimMapping-Defaults">
+    <changeSet author="Core" id="Table.dbo.ClaimMapping-Defaults-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+		if not exists (select 1 from ClaimMapping)
+		begin
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.firstname',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.givenname',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.given_name',0, 2);
@@ -73,6 +75,7 @@ end
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',1, 2);
 
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',1, 2);
+		end
 		]]>
     </sql>
 	<rollback>

@@ -3,8 +3,8 @@
 	public enum ClaimLocation
 	{
 		Default = 0,
-		Environment = 1,
-		Client = 2,
+		Client = 1,
+		Environment = 2,
 		Idp = 3,
 	}
 }
