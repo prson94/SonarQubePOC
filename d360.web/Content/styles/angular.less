@@ -2516,6 +2516,16 @@ div.home-image-title-text {
         width: 400px;
         border-left: 1px solid @ig-grey-t4;
 
+        //side menu within popup cannot use position: absolute
+        &.position-relative {
+          position: relative;
+          left: 0px;
+
+          .resource-image {
+            right: 32px;
+          }
+        }
+
         .asset-detail {
           overflow: auto;
           max-height: calc(100% - 80px);
@@ -2699,6 +2709,10 @@ div.home-image-title-text {
     padding: 0;
     flex-grow: 1;
     align-items: end;
+  }
+
+  &.padding-top{
+      padding: 24px 0 0 0;
   }
 }
 

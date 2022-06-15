@@ -43,19 +43,19 @@
   }
 
   &.opened-side-panel {
-      width: calc(100% - 400px);
+    width: calc(100% - 400px);
   }
 
   .folder-flex-grid {
-      display: flex;
+    display: flex;
 
-      .buttons-grid {
-          padding: 0px 32px;
-      }
+    .buttons-grid {
+      padding: 0px 32px;
+    }
 
-      .table-content {
-          width: 100%;
-      }
+    .table-content {
+      width: 100%;
+    }
   }
 
   .form-header {
@@ -87,173 +87,173 @@
     height: calc(100vh - 340px);
 
     .dropdown-selected-value {
-        margin-top: -7px;
+      margin-top: -7px;
     }
 
     .col {
-        padding: 0;
+      padding: 0;
     }
 
     .FieldName {
-        color: @ig-black;
+      color: @ig-black;
     }
 
     .field-wrapper-type-Link {
-        .flex-grid-link {
-            display: flex;
-            flex-wrap: wrap;
-            padding: 8px 0 0 0;
+      .flex-grid-link {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 8px 0 0 0;
 
-            .link-input {
-                flex-grow: 1;
-            }
-
-            .label {
-                line-height: 32px;
-                padding-right: 16px;
-                width: 58px;
-            }
+        .link-input {
+          flex-grow: 1;
         }
 
-        .error-message {
-            margin-left: 58px;
+        .label {
+          line-height: 32px;
+          padding-right: 16px;
+          width: 58px;
         }
+      }
+
+      .error-message {
+        margin-left: 58px;
+      }
     }
 
     .required-field.empty-field {
-        .p-editor-content {
-            height: 150px;
-            background: @ig-lightblue-t4;
-            font-family: 'Precisely', sans-serif;
+      .p-editor-content {
+        height: 150px;
+        background: @ig-lightblue-t4;
+        font-family: 'Precisely', sans-serif;
 
-            .ql-blank::before {
-                font-style: normal;
-                font-size: 14px;
-                font-family: 'Precisely', sans-serif;
-            }
+        .ql-blank::before {
+          font-style: normal;
+          font-size: 14px;
+          font-family: 'Precisely', sans-serif;
         }
+      }
     }
 
     .ig-message-box {
-        width: 100%;
+      width: 100%;
     }
   }
 
-    .action-buttons {
-        padding: 24px 0 0 0;
+  .action-buttons {
+    padding: 24px 0 0 0;
+  }
+
+  .multi-select-lazy-load {
+    width: 100%;
+
+    .overlay-trigger {
+      width: 100%;
     }
 
-    .multi-select-lazy-load {
-        width: 100%;
-
-        .overlay-trigger {
-            width: 100%;
-        }
-
-        .p-multiselect-chip {
-            height: unset;
-        }
-
-        .p-dropdown-trigger,
-        .p-multiselect-trigger {
-            margin-top: 2px;
-            margin-right: 2px;
-        }
-
-        .ng-invalid {
-            .value-required {
-                background: @ig-lightblue-t4;
-            }
-        }
-
-        .p-multiselect-label {
-            max-width: unset;
-            position: relative;
-            padding: 2px;
-            height: unset !important;
-            line-height: 24px;
-            padding-bottom: 0;
-
-            &.p-placeholder {
-                padding-left: 8px;
-            }
-
-            .p-multiselect-token {
-                display: block;
-                background: @ig-grey-t5;
-                color: @ig-black;
-                border-radius: 4px;
-                margin: 0 2px 2px 0;
-                padding: 0 4px;
-                float: left;
-                height: 24px;
-
-                .p-multiselect-token-label {
-                    position: relative;
-                    top: -3px;
-                }
-
-                .p-multiselect-token-icon {
-                    font-size: 16px;
-                    padding: 4px;
-                }
-            }
-        }
+    .p-multiselect-chip {
+      height: unset;
     }
 
-    &.saving-in-progress {
-        .input-wrapper {
-            pointer-events: none;
-            opacity: 0.33;
-        }
+    .p-dropdown-trigger,
+    .p-multiselect-trigger {
+      margin-top: 2px;
+      margin-right: 2px;
     }
 
-    .buttons-vertical {
-        display: flex;
-        flex-direction: column;
-
-        .ig-button {
-            margin-bottom: 8px;
-        }
+    .ng-invalid {
+      .value-required {
+        background: @ig-lightblue-t4;
+      }
     }
 
-    .action-bar {
-        padding: 0;
-        padding-bottom: 0px !important;
-    }
+    .p-multiselect-label {
+      max-width: unset;
+      position: relative;
+      padding: 2px;
+      height: unset !important;
+      line-height: 24px;
+      padding-bottom: 0;
 
-    .invalid-table {
-        background: #e4f5f8;
-        border-color: #bdbfc6;
-        width: 100%;
-        padding-left: 10px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-    }
+      &.p-placeholder {
+        padding-left: 8px;
+      }
 
-    .requiredCount {
-        border: 1px solid rgba(0, 0, 0, 0);
+      .p-multiselect-token {
+        display: block;
+        background: @ig-grey-t5;
+        color: @ig-black;
         border-radius: 4px;
-        display: inline-block;
-        float: right;
+        margin: 0 2px 2px 0;
+        padding: 0 4px;
+        float: left;
         height: 24px;
-        line-height: 22px;
-        padding: 0 8px;
-        white-space: nowrap;
 
-        &:focus {
-            outline: none !important;
-            border: 1px solid @ig-lightblue;
+        .p-multiselect-token-label {
+          position: relative;
+          top: -3px;
         }
 
-        &.req {
-            background: @ig-lightblue-t2;
+        .p-multiselect-token-icon {
+          font-size: 16px;
+          padding: 4px;
         }
-
-        &.inv {
-            background: @ig-red-t4;
-        }
+      }
     }
+  }
+
+  &.saving-in-progress {
+    .input-wrapper {
+      pointer-events: none;
+      opacity: 0.33;
+    }
+  }
+
+  .buttons-vertical {
+    display: flex;
+    flex-direction: column;
+
+    .ig-button {
+      margin-bottom: 8px;
+    }
+  }
+
+  .action-bar {
+    padding: 0;
+    padding-bottom: 0px !important;
+  }
+
+  .invalid-table {
+    background: #e4f5f8;
+    border-color: #bdbfc6;
+    width: 100%;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .requiredCount {
+    border: 1px solid rgba(0, 0, 0, 0);
+    border-radius: 4px;
+    display: inline-block;
+    float: right;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 8px;
+    white-space: nowrap;
+
+    &:focus {
+      outline: none !important;
+      border: 1px solid @ig-lightblue;
+    }
+
+    &.req {
+      background: @ig-lightblue-t2;
+    }
+
+    &.inv {
+      background: @ig-red-t4;
+    }
+  }
 }
 
 .tooltip-icon {
@@ -291,8 +291,8 @@
 
 .info-block {
   padding: 16px !important;
-}
 
-.fa-info-circle {
-  margin-right: 8px !important;
+  .fa-info-circle {
+    margin-right: 8px !important;
+  }
 }
