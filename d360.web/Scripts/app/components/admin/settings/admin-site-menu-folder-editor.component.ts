@@ -60,6 +60,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	folderItems: SiteNav[] = [];
 	formMode = FormMode.Default;
 	matchTypes: any[];
+	checkBoxAllForNewFolderItemsDisabled: boolean = true;
 	savingInProgress: boolean = false;
 	hasHeader: boolean = false;
 	iconType = 'icon';
@@ -103,7 +104,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	labelAddFolder = $localize`Add Folder`;
 	labelSaveChanges = $localize`Save Changes`;
 
-	labelClose = $localize`Close`;
+	labelCancel = $localize`Cancel`;
 	labelDiscard = $localize`Discard Changes`;
 
 	private iconImage: CompanyImage = new CompanyImage();
@@ -479,6 +480,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
+		this.checkBoxAllForNewFolderItemsDisabled = false;
 		this.setRequiredCount();
 	}
 
@@ -503,8 +505,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j])
 				}
 			}
+			this.newFolderItems = this.newFolderItems.sort((a, b) => a.Title.localeCompare(b.Title));
 			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
+			this.checkBoxAllForNewFolderItemsDisabled = false;
 		}
 		this.cdRef.markForCheck();
 	}
@@ -512,11 +516,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	removeFromSelectedFolderItems() {
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				if (this.availableItems.indexOf(this.selectedNewFolderItems[j]) === -1) {
-					this.availableItems.push(this.selectedNewFolderItems[j]);
-					this.newFolderItems = this.newFolderItems.filter((x) => x != this.selectedNewFolderItems[j])
+				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let y = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				if (y > -1) {
+					let i = _.cloneDeep(this.newFolderItems.splice(y, 1)[0]);
+					if (x === -1) {
+						this.availableItems.push(i);
+					}
 				}
 			}
+			this.availableItems = this.availableItems.sort((a, b) => a.Title.localeCompare(b.Title));
 			this.selectedNewFolderItems = [];
 			this.setRequiredCount();
 		}
