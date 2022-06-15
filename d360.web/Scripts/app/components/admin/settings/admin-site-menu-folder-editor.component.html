@@ -5,7 +5,7 @@
 			<header *ngIf="!isEdit" i18n>Add Folder</header>
 			<header *ngIf="isEdit" i18n>Edit Folder</header>
 			<div class="sub-header" *ngIf="!isLoading">
-				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
+				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.title ? '> ' + navigationFolder?.title : '')}}
 				<span *ngIf="requiredCount > 0"
 					  class="requiredCount req noselect"
 					  tabindex="1"
@@ -29,10 +29,10 @@
 								<div class="col s12">
 									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0" i18n>Name</label>
 									<input igInput maxlength="250"
-											[ngClass]="{'invalid': folderForm.get('name')?.errors?.empty}"
+											[ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
 										    (change)="setRequiredCount()"
 											required tabindex="1" type="text" 
-											[(ngModel)]="folderModel.Name" style="width:30%" />
+											[(ngModel)]="folderModel.Title" style="width:30%" />
 								</div>
 							</div>
 							<div class="row" style="margin-bottom:15px;">
@@ -364,7 +364,7 @@
 						label="{{isEdit ? labelSaveChanges : labelAddFolder}}"
 						(click)="save()"
 						[loading]="savingInProgress"
-						[disabled]="isSaveDisabled"></button>
+						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Title == null || folderModel.Title == '' || newFolderItems == null || newFolderItems.length < 1"></button>
 			</div>
 		</div>
 	</div>
