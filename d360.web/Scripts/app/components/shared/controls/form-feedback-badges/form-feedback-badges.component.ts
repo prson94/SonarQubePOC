@@ -27,7 +27,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
     private requiredPos: number = 0;
     private invalidPos: number = 0;
 
-    delayedRefresh = _.debounce(() => {
+    delayedRefresh = _.throttle(() => {
         this.requiredCount = getRequiredCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.invalidCount = getInvalidCount({ formGroup: this.igformGroup, formContainer: this.inputContainer });
         this.ref.markForCheck();
@@ -152,7 +152,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         else if (inputElement.tagName === 'P-DROPDOWN') {
             (inputElement.querySelectorAll('.p-dropdown-trigger')[0] as HTMLElement).click();
         }
-        
+
         inputElement.focus();
     }
 
