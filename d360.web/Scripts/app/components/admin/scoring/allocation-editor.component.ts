@@ -7,6 +7,7 @@ import { AllocationService } from '../../../services/allocations.service';
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { AppSettingsEnum } from '../../../models/settings.model';
+import {Dropdown} from "primeng/dropdown";
 
 @Component({
     selector: 'allocation-editor',
@@ -25,6 +26,8 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     @Input() disabled: boolean = false;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
+	
+	@ViewChild('assetTypeDropdown') assetTypeDropdown: Dropdown;
 
     savingInProgress: boolean = false;
 
@@ -125,7 +128,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
                         this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
                     }
                     this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
-
+					this.assetTypeDropdown.writeValue(this.selection.assetTypeUid);
                 });
         }
     }

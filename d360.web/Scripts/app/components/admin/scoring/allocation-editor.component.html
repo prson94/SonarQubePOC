@@ -28,12 +28,11 @@
                 <div class="FieldName">
                     <span i18n>Asset Type</span>
                 </div>
-                <p-dropdown 
+                <p-dropdown #assetTypeDropdown
                             igDropdown 
                             igSize="full" 
                             [disabled]="disabled || !selection.scoreType" 
                             [options]="ddlAssetTypes" 
-                            [(ngModel)]="selection.assetTypeUid" 
                             filter="true" 
                             appendTo="body" 
                             [required]="true"  
