@@ -5,8 +5,13 @@
     <div *ngIf="!isLoading">
         <ng-container *ngIf="showHeader">
             <div class="asset-detail-header">
-                <div class="asset-name">
-                    {{semanticDetails.name}}
+                <div style="display:inline-flex; padding-bottom:5px">
+                    <div class="asset-name" style="padding-top:5px">
+                        {{semanticDetails.name}}
+                    </div>
+                    <div>
+                        <span *ngIf="isSidePanel && semanticDetails.isDisabled"><ig-badge [text]="'Disabled'" [variant]="'disabled'"></ig-badge></span>
+                    </div>
                 </div>
                 <div class="class-name" i18n>
                     Semantic Type
@@ -34,7 +39,7 @@
                             <div class="row {{(isSidePanel ? '' : 'definition-panel')}}">
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right:5px" i18n>Name</label>
-                                    <div class="ig-value">{{semanticDetails.name}}</div>
+                                    <div class="ig-value">{{semanticDetails.name}}</div>                                    
                                 </div>
                                 <div class="semantic-field">
                                     <label class="ig-label" style="margin-right: 5px" i18n>Qualifier</label>
