@@ -21,6 +21,8 @@
 				 [(selection)]="selectedAssetType"
 				 [pageLinks]="3"
 				 [paginator]="true"
+				 [loading]="areAssetTypesLoading"
+				 [loadingIcon]="'fa fa-spinner fa-spin'"
 				 paginatorDropdownAppendTo="body"
 				 [rows]="10"
 				 [rowsPerPageOptions]="defaultPagingOptions"

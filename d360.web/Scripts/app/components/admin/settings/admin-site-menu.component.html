@@ -62,6 +62,7 @@
 		   subtitle="Site Navigation"
 		   [isVisible]="showAssetTypeModelDialog">
 	<d3s-admin-site-menu-asset-type-editor (onSave)="onAssetTypeNavAdded($event)"
+										   [showAddAssetType]="showAssetTypeModelDialog"
 										   (onCancel)="showAssetTypeModelDialog = false">
 	</d3s-admin-site-menu-asset-type-editor>
 </d3s-modal>

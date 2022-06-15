@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ViewEncapsulation, OnDestroy } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, CompanyImage, AppSettingsEnum, } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
@@ -13,6 +13,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { FeatureFlagsService } from '../../../services/featureflags.service';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { Table } from 'primeng/table';
+import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'd3s-admin-site-menu-asset-type-editor',
@@ -20,20 +21,22 @@ import { Table } from 'primeng/table';
 	templateUrl: './admin-site-menu-asset-type.component.html'
 })
 
-export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent implements OnInit {
+export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent implements OnDestroy, OnChanges {
 	@Output() onSave = new EventEmitter();
 	@Output() onCancel = new EventEmitter();
+	@Input() showAddAssetType: boolean = false;
 
 	addAssetTypeHelpLink: string = '';
 	simpleTextFilter: string = '';
 
-	showAddAssetType: boolean = false;
 	areAssetTypesLoading: boolean = false;
 	selectedAssetType: any;
 	assetTypes: any[] = [];
 	addAssetTypeFolderSaving: boolean = false;
+	isTableLoading: boolean = false;
 
 	@ViewChild('dt', { static: true }) table: Table;
+	loadSub: Subscription;
 
 	constructor(
 		headerBreadcrumbService: HeaderBreadcrumbService,
@@ -50,8 +53,24 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 		this.addAssetTypeHelpLink = helpBaseUri + "Default.htm#d-admin/establishing-responsibilities.htm?TocPath=Administration%257CManaging%2520users%2520and%2520groups%257C_____3";
 	}
 
-	ngOnInit() {
-		this.assetTypeService.GetPossibleAssetTypeForSiteNav()
+	ngOnDestroy() {
+		if (this.loadSub) {
+			this.loadSub.unsubscribe();
+		}
+	}
+
+	ngOnChanges(changes: SimpleChanges) {
+		if (changes && changes.showAddAssetType.currentValue !== changes.showAddAssetType.previousValue && this.showAddAssetType) {
+			this.loadAvailableTypes();
+		}
+	}
+
+	loadAvailableTypes() {
+		if (this.loadSub) {
+			this.loadSub.unsubscribe();
+		}
+		this.areAssetTypesLoading = true;
+		this.loadSub = this.assetTypeService.GetPossibleAssetTypeForSiteNav()
 			.subscribe((res) => {
 				this.assetTypes = res;
 				this.areAssetTypesLoading = false;
@@ -60,7 +79,6 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 
 	addAssetType() {
 		this.showAddAssetType = true;
-		this.areAssetTypesLoading = true;
 	}
 
 	closeAddAssetType() {
@@ -90,6 +108,7 @@ export class AdminSiteMenuAssetTypeEditorComponent extends AdminBaseComponent im
 				this.showMessageForResult(this.messagesService, r);
 				this.closeAddAssetType();
 				this.onSave.emit(model);
+				this.loadAvailableTypes();
 			});
 	}
 }
