@@ -165,8 +165,8 @@
                             </a>
                         </div>
                     </td>
-                    <td style="flex: 0 0 30px" *ngIf="showDeleteButton && showDeleteButtonByFieldType(item)">
-                        <div class="RowTools">
+                    <td style="flex: 0 0 30px" *ngIf="showDeleteButton">
+                        <div class="RowTools" *ngIf="showDeleteButtonByFieldType(item)">
                             <a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;" [igDataCy]="dataCyPrefix + 'Remove'">
                                 <i class="fa fa-trash-o"></i>
                             </a>
