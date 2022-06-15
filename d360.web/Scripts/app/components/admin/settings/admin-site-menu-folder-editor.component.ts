@@ -60,6 +60,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	folderItems: SiteNav[] = [];
 	formMode = FormMode.Default;
 	matchTypes: any[];
+	checkBoxAllForNewFolderItemsDisabled: boolean = true;
 	savingInProgress: boolean = false;
 	hasHeader: boolean = false;
 	iconType = 'icon';
@@ -479,6 +480,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
+		this.checkBoxAllForNewFolderItemsDisabled = false;
 		this.setRequiredCount();
 	}
 
@@ -505,6 +507,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
+			this.checkBoxAllForNewFolderItemsDisabled = false;
 		}
 		this.cdRef.markForCheck();
 	}
