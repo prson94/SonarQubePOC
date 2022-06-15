@@ -690,6 +690,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	}
 
 	get isSaveDisabled(): boolean {
-		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel == null || this.folderModel.Title == null || this.folderModel.Title == '' || ((this.newFolderItems == null || this.newFolderItems.length < 1) && this.hasFolderItems);
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.newFolderItems === null || this.newFolderItems.length < 1) && this.hasFolderItems);
 	}
 }

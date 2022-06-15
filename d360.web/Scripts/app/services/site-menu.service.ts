@@ -52,7 +52,7 @@ export class SiteMenuService extends BaseObservableService {
 					if (errorCallback) {
 						errorCallback();
 					}
-					return this.handleError(err)
+					return this.handleError(err);
 				})
             );
 	}
@@ -65,7 +65,7 @@ export class SiteMenuService extends BaseObservableService {
 					if (errorCallback) {
 						errorCallback();
 					}
-					return this.handleError(err)
+					return this.handleError(err);
 				})
 			);
 	}
