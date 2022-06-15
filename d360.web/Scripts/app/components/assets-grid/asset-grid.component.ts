@@ -73,6 +73,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showCustomExport: boolean = false;
     isEditing: boolean = false;
     isMenuOpen: boolean = false;
+	isContainsSearchDefault: boolean = false;
     showCertificationStatus: boolean = false;
     certificationStatusIndex: string = null;
     deleteName: string = 'Artifact';
@@ -171,13 +172,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             mergeMap(
                 search => observableOf(search).pipe(delay(500))
             )
-        )
-            .subscribe(
-                data => {
-                    this.doSimpleSearch(me.dt, me.isLoading);
-                }
-            );
-    }
+        ).subscribe((data) => {
+			this.doSimpleSearch(me.dt, me.isLoading);
+		});
+		
+		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+	}
 
     ngOnInit() {
         this.setRowsPerPage();
@@ -357,7 +357,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
 
         if (this.stateService.artifactTypeFilters.simpleTextFilter && this.stateService.artifactTypeFilters.simpleTextFilter.length > 0) {
-            params._simpleFilter = encodeURIComponent(this.stateService.artifactTypeFilters.simpleTextFilter);
+            if (this.isContainsSearchDefault) {
+				params._simpleFilter = encodeURIComponent(
+					`*${this.stateService.artifactTypeFilters.simpleTextFilter}*`
+				);
+			} else {
+				params._simpleFilter = encodeURIComponent(this.stateService.artifactTypeFilters.simpleTextFilter);
+			}
         }
         else {
             delete params['_simpleFilter'];
