@@ -103,7 +103,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	labelAddFolder = $localize`Add Folder`;
 	labelSaveChanges = $localize`Save Changes`;
 
-	labelClose = $localize`Close`;
+	labelCancel = $localize`Cancel`;
 	labelDiscard = $localize`Discard Changes`;
 
 	private iconImage: CompanyImage = new CompanyImage();
