@@ -54,7 +54,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
+					<ig-property-group *ngIf="hasFolderItems" title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
 							<div class="folder-flex-grid">
 								<div class="table-content">
@@ -364,7 +364,7 @@
 						label="{{isEdit ? labelSaveChanges : labelAddFolder}}"
 						(click)="save()"
 						[loading]="savingInProgress"
-						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
+						[disabled]="isSaveDisabled"></button>
 			</div>
 		</div>
 	</div>

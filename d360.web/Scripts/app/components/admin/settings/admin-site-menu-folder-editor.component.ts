@@ -107,6 +107,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	labelCancel = $localize`Cancel`;
 	labelDiscard = $localize`Discard Changes`;
 
+	hasFolderItems: boolean = false;
+
 	private iconImage: CompanyImage = new CompanyImage();
 
 	@ViewChildren(PropertyGroupComponent) propertyGroups: QueryList<PropertyGroupComponent>;
@@ -160,6 +162,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		let c = changes;
 		if (changes.navigationFolder && changes.navigationFolder.currentValue !== changes.navigationFolder.previousValue) {
 			this._initialVersion = "";
+			if (!this.navigationFolder?.Name.startsWith("#")) {
+				this.hasFolderItems = true;
+			}
 		}
 
 		if (this.navigationFolder) {
@@ -228,7 +233,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
-
+				this.setRequiredCount();
 				this._initialVersion = JSON.stringify(this.getModel());
 			});
 	}
@@ -478,6 +483,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			if (this.navigationFolder) {
 				this.enrichFolderData();
 			}
+
 			this.cdRef.markForCheck();
 		})
 	}
@@ -615,7 +621,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.folderModel.Name?.length > 0) {
 			this.requiredCount--;
 		}
-		if (this.newFolderItems?.length > 0) {
+		if (this.newFolderItems?.length > 0 || !this.hasFolderItems) {
 			this.requiredCount--;
 		}
 	}
@@ -681,5 +687,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			return false;
 		}
 		return this._initialVersion !== JSON.stringify(this.getModel());
+	}
+
+	get isSaveDisabled(): boolean {
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel == null || this.folderModel.Title == null || this.folderModel.Title == '' || ((this.newFolderItems == null || this.newFolderItems.length < 1) && this.hasFolderItems);
 	}
 }
