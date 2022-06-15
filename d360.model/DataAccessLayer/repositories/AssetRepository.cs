@@ -2118,18 +2118,20 @@ namespace d360.model.DataAccessLayer
 				--GET ALL CHILDREN
 				;with family_cte as (
 				select a1.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
-				inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
-				inner join asset a1 on a1.uid = rel1.Uid
+				from asset a 
+				inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
 				cross apply GetAssetDisplayValueById(a1.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUid
 				union all
 				select a1.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
-				inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
-				inner join asset a1 on a1.uid = rel1.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Subject = an.Object and I.SubjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
 				cross apply GetAssetDisplayValueById(a1.ID)ADV
 				where an.Uid = fam.uid)
 				insert into #family 
@@ -2138,18 +2140,20 @@ namespace d360.model.DataAccessLayer
 				--GET ALL PARENT
 				;with family_cte as (
 				select a2.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from asset a 
+				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUid
 				union all
 				select a2.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
 				where an.Uid = fam.uid)
 				insert into #family 
