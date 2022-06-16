@@ -15,15 +15,17 @@ import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
-	selector: 'd3s-admin-site-menu-delete-folder',
+	selector: 'd3s-admin-site-menu-delete-dialog',
 	providers: [SiteMenuService],
-	templateUrl: './admin-site-menu-folder-delete.component.html'
+	templateUrl: './admin-site-menu-delete-dialog.component.html'
 })
 
-export class AdminSiteMenuFolderDeleteComponent extends BaseComponent implements OnInit {
+export class AdminSiteMenuDeleteDialogComponent extends BaseComponent implements OnInit {
 	@Output() onDelete = new EventEmitter();
 	@Output() onCancel = new EventEmitter();
-	@Input() navigationFolderToDelete: string;
+	@Input() siteNavigationItemTitle: string;
+	@Input() siteNavigationItemType: string;
+
 
 	constructor(
 		protected settingsService: CompanySettingsService,
