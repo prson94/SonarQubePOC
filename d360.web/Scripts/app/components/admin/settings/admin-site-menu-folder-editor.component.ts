@@ -134,13 +134,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		super(settingsService);
 	}
 
-	private errorCallback() {
-		setTimeout(() => {
-			this.savingInProgress = false;
-			this.cdRef.markForCheck();
-		},10);
-	}
-
 	ngOnInit(): void {
 		this.selection = null;
 		this.newFolderItems = new Array<SiteNav>();
@@ -278,13 +271,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		switch (this.formMode) {
 			case FormMode.Editing:
 				var folder = this.getModel();
-				this.siteMenuService.editFolder(folder, this.errorCallback.bind(this))
+				this.siteMenuService.editFolder(folder)
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
-						this.stateService.reloadLeftNavMenu();
-						this.formMode = FormMode.Default;
-						this.handleSaveComplete(result);
+						if (result?.type !== "error") {
+							this.stateService.reloadLeftNavMenu();
+							this.formMode = FormMode.Default;
+							this.handleSaveComplete(result);
+						}
 						this.savingInProgress = false;
+						this.cdRef.markForCheck();
 					});
 				break;
 			case FormMode.Adding:
@@ -301,14 +297,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					items: this.newFolderItems,
 				};
 
-				this.siteMenuService.addFolder(model, this.errorCallback.bind(this))
+				this.siteMenuService.addFolder(model)
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
-						this.formMode = FormMode.Default;
-						this.stateService.reloadLeftNavMenu();
-						this.siteMenuService.setSiteNavPermissions(this.selection);
-						this.handleSaveComplete(result);
+						if (result?.type !== "error") {
+							this.formMode = FormMode.Default;
+							this.stateService.reloadLeftNavMenu();
+							this.siteMenuService.setSiteNavPermissions(this.selection);
+							this.handleSaveComplete(result);
+						}
 						this.savingInProgress = false;
+						this.cdRef.markForCheck();
 					});
 				break;
 		}

@@ -380,7 +380,11 @@ namespace d360.web.Controllers
 
 				if (Company.SiteNav.Any(x=> x.Title == model.Folder.Title))
 				{
-					return jsonNetException(String.Format(FormControllerApiMessage.FolderNameAlreadyExists, model.Folder.Title), HttpStatusCode.BadRequest);
+					return new JsonNetResult
+					{
+						Data = new { type = "error", success = false, message = string.Format(FormControllerApiMessage.FolderNameAlreadyExists, model.Folder.Title) },
+						Formatting = Newtonsoft.Json.Formatting.None
+					};
 				}
 
 				if (!string.IsNullOrEmpty(model.Folder.IconPayload))
@@ -613,7 +617,11 @@ namespace d360.web.Controllers
 
 				if (Company.SiteNav.Any(x => x.ID != folder.Id && x.Title == folder.Title))
 				{
-					return jsonNetException(String.Format(FormControllerApiMessage.FolderNameAlreadyExists, folder.Title), HttpStatusCode.BadRequest);
+					return new JsonNetResult
+					{
+						Data = new { type = "error", success = false, message = string.Format(FormControllerApiMessage.FolderNameAlreadyExists, folder.Title) },
+						Formatting = Newtonsoft.Json.Formatting.None
+					};
 				}
 
 				var siteNav = Company.GetById<SiteNav>(folder.Id);
