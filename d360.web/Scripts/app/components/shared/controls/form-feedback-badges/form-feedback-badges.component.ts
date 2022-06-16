@@ -154,7 +154,10 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
             (inputElement.querySelector('.p-dropdown') as HTMLElement).click();
             return;
         }
-
+        else if (inputElement.tagName === 'P-EDITOR') {
+            (inputElement.querySelector('.ql-editor') as HTMLElement).focus();
+        }
+        
         inputElement.focus();
     }
 
