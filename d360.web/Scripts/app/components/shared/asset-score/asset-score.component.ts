@@ -278,9 +278,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                             this.scoresPointsDDL[0].value['isFirst'] = true;
                             this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
-                            setTimeout(() => {
-                                this.scoresPointSelected = this.scoresPointsDDL[0].value;
-                            }, 0)
+                            this.scoresPointSelected = this.scoresPointsDDL[0].value;
                         }
 
                         subject.next(true);

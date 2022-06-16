@@ -126,9 +126,9 @@
                             </div>
                         </ng-container>
                         <ng-template #linked>
-                            <a (click)="selectArtifact(item)"
-                               style="word-wrap: break-word; width: 100%">
-                                <d3s-dynamic-field-value [column]="col"
+                            <a style="word-wrap: break-word; width: 100%">
+                                <d3s-dynamic-field-value (click)="selectArtifact(item)"
+														 [column]="col"
                                                          [fields]="fields"
                                                          [item]="item"
                                                          [useApiName]="true"

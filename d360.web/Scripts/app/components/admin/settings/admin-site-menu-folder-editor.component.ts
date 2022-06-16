@@ -142,9 +142,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		});
 		setTimeout(() => {
 			this.folderForm.valueChanges.subscribe((change) => {
-				this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+				this.formMode = this.navigationFolder?.Title?.length > 0 ? FormMode.Editing : FormMode.Adding;
 			});
-			this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+			this.formMode = this.navigationFolder?.Title?.length > 0 ? FormMode.Editing : FormMode.Adding;
 		}, 500);
 		this.folderForm.updateValueAndValidity();
 	}
@@ -232,7 +232,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	private getModel(): any {
 		let folder: any = {};
 		folder.Id = this.folderModel.ID;
-		folder.Name = this.folderModel.Name;
+		folder.Title = this.folderModel.Title;
 		folder.Icon = this.folderModel.Icon;
 		if (this.folderModel.IconPayload) {
 			folder.IconPayload = this.folderModel.IconPayload;
@@ -300,7 +300,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	handleSaveComplete(res: any) {
 		if (!(res?.status)) {
-			this.saveClick.emit({ item: this.folderModel.Name, action: `${this.isEdit ? 'edit' : 'new'}` });
+			this.saveClick.emit({ item: this.folderModel.Title, action: `${this.isEdit ? 'edit' : 'new'}` });
 		}
 		else {
 			this.savingInProgress = false;
@@ -601,7 +601,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	setRequiredCount() {
 		this.requiredCount = 2;
-		if (this.folderModel.Name?.length > 0) {
+		if (this.folderModel.Title?.length > 0) {
 			this.requiredCount--;
 		}
 		if (this.newFolderItems?.length > 0) {

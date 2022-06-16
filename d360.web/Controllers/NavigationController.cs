@@ -373,7 +373,7 @@ namespace d360.web.Controllers
 
             try
             {
-                if (string.IsNullOrWhiteSpace(model.Folder.Name))
+                if (string.IsNullOrWhiteSpace(model.Folder.Name) && string.IsNullOrWhiteSpace(model.Folder.Title))
                 {
                     throw new ArgumentNullException(FormControllerApiMessage.FolderNameNotEmpty);
                 }
@@ -400,7 +400,7 @@ namespace d360.web.Controllers
                 model.Folder.SortOrder = 9999;
                 var folder = Company.SiteNav.Add(model.Folder);
 
-                folder.Title = model.Folder.Name;
+                folder.Title = folder.Name = model.Folder.Title ?? model.Folder.Name;
                 Company.SaveChanges();
                 model.Items.ForEach(i =>
                 {
@@ -647,13 +647,12 @@ namespace d360.web.Controllers
                     }
                 }
 
-                siteNav.Name = folder.Name;
 				if (originalImage != folder.Icon)
 				{
 					siteNav.Icon = folder.Icon;
 					siteNav.ImageIconUrl = null;
 				}
-                siteNav.Title = folder.Name;
+                siteNav.Title = folder.Title;
 
 				//handle folder items
 				var existingItems = Company.SiteNav.Where(x => x.ParentID == folder.Id);
