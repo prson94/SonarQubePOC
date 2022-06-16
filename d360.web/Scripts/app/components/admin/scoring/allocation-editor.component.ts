@@ -128,6 +128,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
                         this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
                     }
                     this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
+					this.assetTypeDropdown.options = this.ddlAssetTypes;
 					this.assetTypeDropdown.writeValue(this.selection.assetTypeUid);
                 });
         }
