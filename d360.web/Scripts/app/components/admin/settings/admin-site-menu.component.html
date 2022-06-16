@@ -68,13 +68,14 @@
 </d3s-modal>
 
 <d3s-modal additionalClasses="large-dialog"
-		   (onClose)="showDeleteFolderDialog=false"
+		   (onClose)="showDeleteDialog=false"
 		   [showTitle]="false"
-		   [isVisible]="showDeleteFolderDialog">
-	<d3s-admin-site-menu-delete-folder *ngIf="showDeleteFolderDialog"
-				   [navigationFolderToDelete]="selection.Title"
+		   [isVisible]="showDeleteDialog">
+	<d3s-admin-site-menu-delete-dialog *ngIf="showDeleteDialog"
+				   [siteNavigationItemTitle]="selection.Title"
+				   [siteNavigationItemType]="selection.Type"
 				   (onDelete)="onDeleteFolderConfirmed()"
-				   (onCancel)="showDeleteFolderDialog = false; formMode = FormMode.Default">
-	</d3s-admin-site-menu-delete-folder>
+				   (onCancel)="showDeleteDialog = false; formMode = FormMode.Default">
+	</d3s-admin-site-menu-delete-dialog>
 </d3s-modal>
 
