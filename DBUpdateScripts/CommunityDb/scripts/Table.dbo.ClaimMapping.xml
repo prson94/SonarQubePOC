@@ -34,7 +34,7 @@ end
 		]]>
 	</rollback>
   </changeSet>
-    <changeSet author="Core" id="Table.dbo.ClaimMapping-Defaults-v2">
+    <changeSet author="Core" id="Table.dbo.ClaimMapping-Defaults-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
