@@ -21,6 +21,7 @@ import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
 import { AddRelationshipComponent } from './add-relationship.component';
+import { PopupMenu } from "../controls/popup-menu/popup-menu.component";
 
 @Component({
     selector: 'gov-relationship-grid',
@@ -479,6 +480,17 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             };
         }
     }
+	
+	positionContextMenu(
+		item: any, $event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!item.isHierarchy && !assetGridTools.contains(<Node>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
 
     clickMenuItem(event: any, item: any) {
         let key = event.value.toLowerCase();
