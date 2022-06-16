@@ -2515,7 +2515,8 @@ namespace d360.web.Controllers.V2
 
 								select count(*) from Asset A
 								 inner join graph.AssetNode Node on Node.id = a.id
-								where a.AssetTypeID = @assetTypeId {whereQuery};";
+								where a.AssetTypeID = @assetTypeId {whereQuery}
+								OPTION(RECOMPILE);";
 
 					var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
 
