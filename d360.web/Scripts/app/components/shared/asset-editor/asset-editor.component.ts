@@ -181,6 +181,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
                     var height = pg.inputContainer.nativeElement.offsetHeight;
                     groupsHeight += height !== 0 ? (height + 34) : 34;
                 });
+				groupsHeight += 26; //form-wrapper bottom padding
             }
 
             this.modalFormMaxHeight = groupsHeight > maxHeight ? maxHeight : groupsHeight;
