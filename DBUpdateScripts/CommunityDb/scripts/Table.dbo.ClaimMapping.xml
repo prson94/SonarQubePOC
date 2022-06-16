@@ -40,8 +40,11 @@ end
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-		if not exists (select 1 from ClaimMapping)
-		begin
+			delete ClaimMapping where ClientID = 0 and CompanyID = 0 and DomainSettingID = 0;
+			
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 2, 'upn', 0, 0);
+			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 2, 'upn', 0, 0);
+		
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.firstname',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.givenname',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 5, '$.given_name',0, 2);
@@ -50,7 +53,6 @@ end
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 6, '$.family_name',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 6, '$.surname',0, 2);
 
-			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 4, '$.sub',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 4, '$.email',0, 2);
 
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.infogixgroup',0, 2);
@@ -59,7 +61,6 @@ end
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.groups',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.infogixgroup',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, '$.securitygroups',0, 2);
-			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 3, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',0, 2);
 
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 5, 'first',0, 2);
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 5, 'firstname',0, 2);
@@ -73,9 +74,6 @@ end
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 4, 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',0, 2);
 
 			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',1, 2);
-
-			insert into ClaimMapping (ClientID, CompanyID, DomainSettingID, AuthenticationType, ClaimType, [Path], IsArray, [Action]) values (0, 0, 0, 2, 7, 'http://schemas.microsoft.com/ws/2008/06/identity/claims/groups',1, 2);
-		end
 		]]>
     </sql>
 	<rollback>
