@@ -1,9 +1,16 @@
 ﻿<div class="row hierarchy-grid">
     <div class="col s12" style="display:flex">
         <div class="tile tile-detail main-panel">
-            <div *ngIf="!showDelete && assetType && assetType.Description && assetType.Description.length >0"
-                 [innerHtml]="assetType.Description"
-                 class="item-description"></div>
+            <ig-portal-content-provider name="asset-description" [template]="description">
+                <ng-template #description>
+                    <i *ngIf="assetType && assetType.Description && assetType.Description.length > 0"
+                        class="header-description fa fa-info-circle help-icon"
+                        [escape]="false"
+                        [pTooltip]="assetType.Description | sanitize"
+                        tooltipPosition="top"
+                        tooltipStyleClass="ig-tooltip"></i>
+                </ng-template>
+            </ig-portal-content-provider>
 
             <div class="grid-actions-header column-layout" *ngIf="!showDelete">
                 <div class="grid-actions-header-row">
