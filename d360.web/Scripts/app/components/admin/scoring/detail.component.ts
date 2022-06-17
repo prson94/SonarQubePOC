@@ -38,6 +38,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     private assetTypeUid: string;
     formattedScoreCalc: string;
     MatchType: MetricMatchType = MetricMatchType.All;
+    currentUrl: string;
 
     private conditions: MetricAssetVersionConditionItemViewModel[] = [];
     showEdit: boolean = false;
@@ -171,10 +172,25 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 }
             });
         });
+
+        this.currentUrl = this.router.url;
     }
 
     ngOnDestroy() {
-        this.clearSidebar();
+        this.clearSidebarOnDestroy();
+    }
+
+    clearSidebarOnDestroy(): void {
+        if(!this.isTheSamePageRoot()) {
+            this.clearSidebar();
+        }
+    }
+
+    isTheSamePageRoot(): boolean {
+        let nextUrl = this.router.routerState.snapshot.url;
+        let nextUrlSlice = nextUrl.substring(0, nextUrl.lastIndexOf('/'));
+        let currentUrlSlice = this.currentUrl.substring(0, this.currentUrl.lastIndexOf('/'));
+        return nextUrlSlice === currentUrlSlice;
     }
 
     private changeAssetType(event) {
