@@ -87,7 +87,9 @@
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                        <tr (dblclick)="selectRow(item)" [pSelectableRow]="item" (focus)="selectRow(item)"
+							(contextmenu)="positionContextMenu(item, $event, floatButton, floatMenu, assetGridTools);"
+							class="relationship-row">
                             <td width="50%" style="word-break: break-word;">
                                 {{item.RelationshipTypeName}}
                             </td>
@@ -97,7 +99,7 @@
                             <td *ngFor="let column of columns">
                                 <d3s-dynamic-field-value [column]="column" [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
                             </td>
-                            <td style="flex: 0 0 40px" class="asset-grid-tools">
+                            <td style="flex: 0 0 40px" class="asset-grid-tools" #assetGridTools>
                                 <div style="display:inline-block" *ngIf="!item.isHierarchy && item[menuKey] && item[menuKey].length !== 0">
                                     <button igButton class="ig-button-transparent" type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                                     <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
@@ -106,7 +108,10 @@
                                     <i class="fa fa-question-circle" pTooltip="This is a parent-child relationship which can neither be edited/deleted" tooltipPosition="top" tooltipStyleClass="ig-tooltip"></i>
                                 </div>
                             </td>
-                        </tr>
+							<button class="ig-float-popup-container" #floatButton>
+								<ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #floatMenu [tabIndex]="1"></ig-popup-menu>
+							</button>
+						</tr>
                     </ng-template>
                     <ng-template pTemplate="summary">
                         <d3s-grid-paging-info [first]="dt.first"
