@@ -6,10 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using d360.core;
-
+using d360.core.entities;
 using Dapper;
 
 using Microsoft.Owin;
+using Newtonsoft.Json;
 
 namespace d360.web
 {
@@ -24,6 +25,18 @@ namespace d360.web
 			public int DomainSettingID { get; set; }
 			
 			public string UrlPrefix { get; set; }
+
+			public string AuthenticationSettings { get; set; }
+
+			public CompanyOpenIdAuthenticationSettings StructuredAuthenticationSettings
+			{
+				get
+				{
+					return JsonConvert.DeserializeObject<CompanyOpenIdAuthenticationSettings>(
+						AuthenticationSettings ?? "{}"
+						);
+				}
+			}
 		}
 
 		private readonly Func<IDictionary<string, object>, Task> _next;
@@ -44,8 +57,9 @@ namespace d360.web
 				{
 					cnn.Open();
 					dict = (await cnn.QueryAsync<cd>(@"
-													select	E.ClientID, S.CompanyID, S.DomainSettingID, S.UrlPrefix 
+													select	E.ClientID, S.CompanyID, S.DomainSettingID, S.UrlPrefix, D.AuthenticationSettings 
 													from	CompanyDomainSetting S 
+															inner join DomainSetting D on D.ID = S.DomainSettingID
 															inner join Company E on E.ID = S.CompanyID and E.Status = 'Active'")).ToList();
 				}
 
@@ -83,6 +97,7 @@ namespace d360.web
 					context.Request.Set("ClientID", domainSetting.ClientID);
 					context.Request.Set("CompanyID", domainSetting.CompanyID);
 					context.Request.Set("DomainSettingID", domainSetting.DomainSettingID);
+					context.Request.Set("AuthenticationSettings", domainSetting.StructuredAuthenticationSettings);
 				}
 				else
 				{

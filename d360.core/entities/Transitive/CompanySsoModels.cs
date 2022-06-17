@@ -2,6 +2,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace d360.core.entities
 {
@@ -26,6 +27,8 @@ namespace d360.core.entities
         public string audience { get; set; }
         
         public string nameClaimType { get; set; }
+
+		public List<string> scopes { get; set; }
         
         public JObject extraParameters { get; set; }
     }
