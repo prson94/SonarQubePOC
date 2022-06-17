@@ -609,6 +609,17 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
+	setRequiredFromNameInput($event) {
+		this.requiredCount = 2;
+		if ($event.data?.length > 0) {
+			this.requiredCount--;
+		}
+		if (this.newFolderItems?.length > 0 || !this.hasFolderItems) {
+			this.requiredCount--;
+		}
+		this.cdRef.markForCheck();
+	}
+
 	lastLoadedEvent: any;
 	addPermissionAssets() {
 		if (!this.selectedPermissionAssets) {
