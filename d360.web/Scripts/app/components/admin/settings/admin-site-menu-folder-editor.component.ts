@@ -69,6 +69,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	_tempSelectedFolderItems: any[] = [];
 	selectedNewFolderItems: SiteNav[] = [];
 	folderModel: SiteNav;
+	folderNameIsFocused: boolean = false;
 	selection: SiteNav = null;
 	folderForm: FormGroup;
 	hasFormChanged: boolean = false;
@@ -618,6 +619,20 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			this.requiredCount--;
 		}
 		this.cdRef.markForCheck();
+	}
+
+	focusRequired(event) {
+		event.stopPropagation();
+		if (this.requiredCount == 0) {
+			return;
+		}
+		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {
+			this.elRef.nativeElement.querySelectorAll("[name = folderNameInput]")[0].focus();
+			this.folderNameIsFocused = true;
+		} else if (!this.newFolderItems || this.newFolderItems?.length == 0) {
+			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
+			this.folderNameIsFocused = false;
+		}
 	}
 
 	lastLoadedEvent: any;

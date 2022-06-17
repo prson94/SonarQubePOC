@@ -11,6 +11,7 @@
 					  tabindex="1"
 					  i18n-pTooltip
 					  tooltipPosition="top"
+					  (click)="focusRequired($event)"
 					  tooltipStyleClass="ig-tooltip ig-tooltip-small"
 					  i18n>
 					{{requiredCount}} required
@@ -29,10 +30,11 @@
 								<div class="col s12">
 									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0" i18n>Name</label>
 									<input igInput maxlength="250"
-											[ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
-										    (input)="setRequiredFromNameInput($event)"
-											required tabindex="1" type="text" 
-											[(ngModel)]="folderModel.Title" style="width:30%" />
+										   [ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
+										   (input)="setRequiredFromNameInput($event)"
+										   name="folderNameInput"
+										   required tabindex="1" type="text" 
+										   [(ngModel)]="folderModel.Title" style="width:30%" />
 								</div>
 							</div>
 							<div class="row" style="margin-bottom:15px;">
@@ -65,6 +67,7 @@
 														 placeholder="Search"
 														 [(ngModel)]="simpleTextFilter"
 														 (onSearch)="dt3.filterGlobal($event, 'contains')"
+														 name="availableFolderItemsSearchField"
 														 style="width:100%; padding-bottom:8px;"></ig-search-field>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length === 1" i18n>1 item selected</div>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length > 1" i18n>{{_tempSelectedFolderItems.length}} items selected</div>
