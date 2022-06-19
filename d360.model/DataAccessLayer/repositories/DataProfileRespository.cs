@@ -1126,5 +1126,10 @@ namespace d360.model.DataAccessLayer
 		{
 			return (await CompanyContext.QueryAsync<int>("select count(1) from AssetDataProfile where TypeQualifier = @typeQualifier", new { typeQualifier })).FirstOrDefault() > 0;
 		}
+
+		public async Task<bool> DoesSemanticTypeExist(string qualifier)
+		{
+			return (await CompanyContext.QueryAsync<int>("select count(1) from Semantic where qualifier = @qualifier", new { qualifier })).FirstOrDefault() > 0;
+		}
 	}
 }
