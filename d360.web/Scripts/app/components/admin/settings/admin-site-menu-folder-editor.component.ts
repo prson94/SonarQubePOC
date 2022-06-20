@@ -461,8 +461,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					]
 				}
 				this.folderModel.Icon = this.categories[0].items[0];
-			}
-			)
+				this.cdRef.markForCheck();
+			})
 	}
 
 	loadTableData() {
