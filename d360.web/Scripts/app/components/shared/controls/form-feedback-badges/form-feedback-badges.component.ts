@@ -111,13 +111,13 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
 
     getOrderedControls() {
         return Object.keys(this.igformGroup.controls)
-            .map(controlName => {
+            .map((controlName) => {
                 const control = this.igformGroup.get(controlName) as FormControl;
                 const element = this.getFormControlDomElement(controlName);
                 return { controlName, control, element };
             })
-            .filter(x => x.control != null)
-            .filter(x => x.element != null)
+            .filter((x) => x.control != null)
+            .filter((x) => x.element != null)
             .sort((a, b) => {
                 let position =  a.element.compareDocumentPosition(b.element);
                 if (position === Node.DOCUMENT_POSITION_PRECEDING) {
