@@ -29,5 +29,7 @@ namespace d360.model.DataAccessLayer
 
         Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false);
         Task<bool> DoesTypeQualifierExist(string typeQualifier);
-    }
+		Task<bool> DoesSemanticTypeExist(string qualifier);
+
+	}
 }

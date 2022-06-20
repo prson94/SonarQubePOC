@@ -955,7 +955,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.TypeQualifierInvalid)).ConfigureAwait(false);
                 }
 
-                if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier))
+				if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier) && !await DataProfiles.DoesSemanticTypeExist(typeQualifier))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, String.Format(DataProfileAPIMessages.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
                 }
