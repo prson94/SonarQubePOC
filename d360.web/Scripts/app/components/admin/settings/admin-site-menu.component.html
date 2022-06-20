@@ -67,10 +67,10 @@
 	</d3s-admin-site-menu-asset-type-editor>
 </d3s-modal>
 
-<d3s-modal additionalClasses="large-dialog"
+<d3s-modal additionalClasses="medium-dialog"
 		   (onClose)="showDeleteDialog=false"
-		   [showTitle]="false"
-		   [isVisible]="showDeleteDialog">
+		   [isVisible]="showDeleteDialog"
+		   title="Delete Folder">
 	<d3s-admin-site-menu-delete-dialog *ngIf="showDeleteDialog"
 				   [siteNavigationItemTitle]="selection.Title"
 				   [siteNavigationItemType]="selection.Type"
