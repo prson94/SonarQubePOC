@@ -2516,16 +2516,6 @@ div.home-image-title-text {
         width: 400px;
         border-left: 1px solid @ig-grey-t4;
 
-        //side menu within popup cannot use position: absolute
-        &.position-relative {
-          position: relative;
-          left: 0px;
-
-          .resource-image {
-            right: 32px;
-          }
-        }
-
         .asset-detail {
           overflow: auto;
           max-height: calc(100% - 80px);
@@ -2550,6 +2540,20 @@ div.home-image-title-text {
           font-stretch: normal;
           font-style: normal;
           line-height: 2;
+        }
+        //side menu within popup cannot use position: absolute
+        &.position-relative {
+          position: relative;
+          left: 0px;
+
+          .resource-image {
+            right: 32px;
+          }
+
+          .asset-detail {
+            overflow: auto;
+            max-height: calc(100vh - 220px);
+          }
         }
       }
     }
@@ -2711,8 +2715,8 @@ div.home-image-title-text {
     align-items: end;
   }
 
-  &.padding-top{
-      padding: 24px 0 0 0;
+  &.padding-top {
+    padding: 24px 0 0 0;
   }
 }
 
