@@ -273,6 +273,9 @@
   <data name="FolderMovedUp" xml:space="preserve">
     <value>Folder {0} moved up successfully.</value>
   </data>
+  <data name="FolderNameAlreadyExists" xml:space="preserve">
+    <value>Folder with name {0} already exists.</value>
+  </data>
   <data name="FolderNameNotEmpty" xml:space="preserve">
     <value>Folder name cannot be empty.</value>
   </data>
