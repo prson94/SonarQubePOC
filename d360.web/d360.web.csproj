@@ -25,7 +25,8 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
     <TargetFrameworkProfile />
-    <IISExpressSSLPort>443</IISExpressSSLPort>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -615,6 +616,10 @@
     <Compile Include="App_Start\ClaimMappingsMiddleware.cs" />
     <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
     <Compile Include="App_Start\CorsMiddleware.cs" />
+    <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\ApplicationExceptionLogger.cs" />
+    <Compile Include="Handlers\Exceptions\BadRequestWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\DefaultWebApi2ExceptionHandler.cs" />
     <Compile Include="App_Start\GovernAppInsightsTelemetryInitializer.cs" />
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
     <Compile Include="App_Start\ContractValidationMiddleware.cs" />
@@ -703,9 +708,18 @@
     <Compile Include="Filters\SwaggerOrderFilter.cs" />
     <Compile Include="Filters\SwaggerDescriptionAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
-    <Compile Include="Filters\ApplicationExceptionFilterAttribute.cs" />
     <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
-    <Compile Include="Handlers\ErrorMessageHandler.cs" />
+    <Compile Include="Handlers\Exceptions\ForbiddenWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Utilities\IRuntimeInfo.cs" />
+    <Compile Include="Handlers\Exceptions\IWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\NotFoundWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\ProblemDetailsResponse.cs" />
+    <Compile Include="Handlers\Exceptions\RestApiExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Utilities\RuntimeInfo.cs" />
+    <Compile Include="Handlers\Exceptions\UnauthorizedWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\WebApi2ExceptionHandlerBase.cs" />
+    <Compile Include="Handlers\Exceptions\WebApi2ExceptionHandlerMediator.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
     <Compile Include="Models\ApiResponses.cs" />
@@ -722,7 +736,6 @@
     <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\FeatureFlagUser.cs" />
-    <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\Formatters\GuidConverter.cs" />
@@ -1380,8 +1393,7 @@
       <Name>d360.utils.excel</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>

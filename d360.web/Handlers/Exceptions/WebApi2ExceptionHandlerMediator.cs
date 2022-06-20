@@ -31,9 +31,7 @@ namespace d360.web.Handlers.Exceptions
 				return;
 			}
 
-			// ReSharper disable once ReplaceWithSingleCallToFirstOrDefault
-			var exceptionHandler = ExceptionHandlers.Where(x => x.IsDefault == false && x.CanHandle(context.Exception)).FirstOrDefault() ?? defaultExceptionHandler;
-
+			var exceptionHandler = ExceptionHandlers.FirstOrDefault(x => x.IsDefault == false && x.CanHandle(context.Exception)) ?? defaultExceptionHandler;
 			await exceptionHandler.HandleAsync(context, cancellationToken);
 		}
 	}
