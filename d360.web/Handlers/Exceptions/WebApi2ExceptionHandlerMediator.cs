@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.ExceptionHandling;
-using System.Web.Http.Results;
 
 namespace d360.web.Handlers.Exceptions
 {
@@ -19,19 +17,39 @@ namespace d360.web.Handlers.Exceptions
 
 		private ICollection<IWebApi2ExceptionHandler> ExceptionHandlers { get; }
 
+		private IWebApi2ExceptionHandler GetDefaultHandler()
+		{
+			var list = ExceptionHandlers.Where(x => x.IsDefault).ToList();
+			switch (list.Count)
+			{
+				case 0:
+					throw new ConfigurationErrorsException($"{nameof(IWebApi2ExceptionHandler)} with {nameof(IWebApi2ExceptionHandler.IsDefault)} == true should be registered.");
+				case 1:
+					return list[0];
+				default:
+					throw new ConfigurationErrorsException($"Multiple {nameof(IWebApi2ExceptionHandler)} with {nameof(IWebApi2ExceptionHandler.IsDefault)} == true are not allowed.");
+			}
+		}
+
+		private IWebApi2ExceptionHandler GetConcreteExceptionHandler(Exception exception)
+		{
+			var list = ExceptionHandlers.Where(x => x.IsDefault == false && x.CanHandle(exception)).ToList();
+			switch (list.Count)
+			{
+				case 0:
+					return GetDefaultHandler();
+				case 1:
+					return list[0];
+				default:
+					var error = new ConfigurationErrorsException($"Multiple {nameof(IWebApi2ExceptionHandler)} can process exception {exception.GetType()}.");
+					error.Data.Add("exception-handler-duplicate", list.Select(x => x.GetType().FullName).ToList());
+					throw error;
+			}
+		}
+
 		public async Task HandleAsync(ExceptionHandlerContext context, CancellationToken cancellationToken)
 		{
-			var defaultExceptionHandler = ExceptionHandlers.FirstOrDefault(x => x.IsDefault);
-			if (defaultExceptionHandler == null)
-			{
-				var response = context.Request.CreateResponse();
-				response.StatusCode = HttpStatusCode.InternalServerError;
-				response.Content = new StringContent("Exception handler configuration error", Encoding.UTF8);
-				context.Result = new ResponseMessageResult(response);
-				return;
-			}
-
-			var exceptionHandler = ExceptionHandlers.FirstOrDefault(x => x.IsDefault == false && x.CanHandle(context.Exception)) ?? defaultExceptionHandler;
+			var exceptionHandler = GetConcreteExceptionHandler(context.Exception);
 			await exceptionHandler.HandleAsync(context, cancellationToken);
 		}
 	}
