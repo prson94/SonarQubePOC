@@ -1,4 +1,7 @@
-﻿using d360.core;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using d360.core;
 using d360.extensions;
 using d360.extensions.caching;
 using d360.extensions.info;
@@ -11,11 +14,15 @@ namespace d360.web
 {
     public class BaseMiddleware
     {
-        internal ICachingProvider Cache;
+	    protected Func<IDictionary<string, object>, Task> Next { get; }
 
-        public BaseMiddleware()
+	    internal ICachingProvider Cache;
+
+        public BaseMiddleware(Func<IDictionary<string, object>, Task> next)
         {
-            if (Config.GetValue<bool>("RedisEnabled"))
+	        Next = next;
+
+	        if (Config.GetValue<bool>("RedisEnabled"))
             {
                 Cache = new RedisCachingProvider();
             }

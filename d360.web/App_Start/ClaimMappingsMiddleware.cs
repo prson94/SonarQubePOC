@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,11 +15,9 @@ namespace d360.web
 	public class ClaimMappingsMiddleware : BaseMiddleware
 	{
 		private readonly int CLAIMS_CACHE_MINUTES = 15;
-		private readonly Func<IDictionary<string, object>, Task> _next;
 
-		public ClaimMappingsMiddleware(Func<IDictionary<string, object>, Task> next)
+		public ClaimMappingsMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
 		{
-			_next = next;
 		}
 
 		private async Task<List<ClaimMapping>> LoadMappings(string urlPrefix, int companyId)
@@ -67,7 +64,7 @@ namespace d360.web
 
 				telemetry.TrackException(e, properties);
 			}
-			await _next.Invoke(environment);
+			await Next(environment);
 		}
 	}
 }

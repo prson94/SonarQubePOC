@@ -4,16 +4,17 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-
 using d360.core;
 using d360.core.entities;
 using Dapper;
-
 using Microsoft.Owin;
+using Microsoft.Web.Infrastructure;
 using Newtonsoft.Json;
 
 namespace d360.web
 {
+
+
 	public class CompanyIDCheckMiddleware : BaseMiddleware
 	{
 		public class cd
@@ -39,11 +40,8 @@ namespace d360.web
 			}
 		}
 
-		private readonly Func<IDictionary<string, object>, Task> _next;
-		
-		public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
+		public CompanyIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
 		{
-			_next = next;
 		}
 
 		private async Task<List<cd>> loadCache()
@@ -144,7 +142,7 @@ namespace d360.web
 
 				telemetry.TrackException(e, properties);
 			}
-			await _next.Invoke(environment);
+			await Next(environment);
 		}
 	}
 }

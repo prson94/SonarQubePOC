@@ -50,11 +50,8 @@ namespace d360.web
 
 		}
 
-		private readonly Func<IDictionary<string, object>, Task> _next;
-
-		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
+		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
 		{
-			_next = next;
 		}
 
 		public ConcurrentBag<usercompany> Users
@@ -284,7 +281,7 @@ namespace d360.web
 				telemetry.TrackException(e, properties);
 			}
 
-			await _next.Invoke(environment);
+			await Next(environment);
 		}
 
 		public const string Authority = "http://localhost:5000";
