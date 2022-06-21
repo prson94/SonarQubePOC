@@ -689,7 +689,7 @@ namespace d360.core.entities
 						dateRange.Add(new DateRange { StartDate = startDate, EndDate = enddate });
 						startDate = effectiveDate.Split('T')[0];
 					}
-					var isPresent = effectiveDate == updateDate || updateDate.Split('T')[0] == DateTime.Now.ToString("yyyy-MM-dd");
+					var isPresent = effectiveDate == updateDate;
 
 					dateRange.Add(new DateRange { StartDate = startDate, EndDate = isPresent ? "Present" : updateDate.Split('T')[0] });                    
                     break;
