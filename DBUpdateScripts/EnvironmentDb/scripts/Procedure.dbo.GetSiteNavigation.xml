@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v7">
+  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v7.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -299,6 +299,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		left join AssetType at on at.Object = n.Object and at.ObjectID = n.ObjectID
 		left join AssetTypeStyle ats on ats.id = at.ID
 		WHERE n.Name = '#ASSET_TYPE' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		and not exists (select 1 from #tempNoReadAssetTypes nr where nr.AssetTypeId = at.ID)
 
 	order by sortorder
 END
