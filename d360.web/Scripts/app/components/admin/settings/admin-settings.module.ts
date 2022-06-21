@@ -12,6 +12,7 @@ import { HelpMenuModule } from '../../shared/helpmenu/helpmenu.module';
 import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { DayOfWeekInputModule } from "../../shared/small-widgets/dayofweek-input/dayofweek-input.component";
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-input.component";
 
 import { AdminSettingsComponent } from './admin-settings.component';
@@ -71,6 +72,7 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
         ResourceMultiSelectGridModule,
         PipesModule,
         IgCheckboxModule,
+		IgMessageBoxModule,
         IgNumberFieldModule,
         PopupMenuModule,
         SiteModalModule,
