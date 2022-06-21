@@ -586,6 +586,7 @@ namespace d360.model.DataAccessLayer
 							|| !string.IsNullOrEmpty(patchModel.RegularExpression)
 							|| patchModel.Status.HasValue
 							|| patchModel.Threshold.HasValue
+							|| patchModel.IsDisabled.HasValue && patchModel.IsDisabled.Value == true
 							|| patchModel.ValidLocalesStructured != null
 							|| patchModel.ValidValuesStructured != null)
 					{

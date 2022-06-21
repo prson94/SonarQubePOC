@@ -217,17 +217,21 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
                         i[this.menuKey].push({ title: $localize`Edit`, disabled: true, tooltip: $localize`Built-In semantic types cannot be deleted.` });
                         i[this.menuKey].push({ title: $localize`Enable` });
                     } else {
-                        i[this.menuKey].push({ title: $localize`Edit` });
-                        i[this.menuKey].push({ title: $localize`Disable` });
+						i[this.menuKey].push({ title: $localize`Edit` });
+						if (SemanticSource[i.source.toString()] === SemanticSource.BuiltIn) {
+							i[this.menuKey].push({ title: $localize`Disable`, disabled: true, tooltip: $localize`Built-In semantic types cannot be disabled.` });
+						} else {
+							i[this.menuKey].push({ title: $localize`Disable` });
+						}   						
                     }
 
-                    if (SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {
+					if (SemanticSource[i.source.toString()] === SemanticSource.UserDefined) {						
                         if (!i.hasQualifiedAssets) {
                             i[this.menuKey].push({ title: $localize`Delete` });
                         } else {
                             i[this.menuKey].push({ title: $localize`Delete`, disabled: true, tooltip: $localize`This semantic type cannot be removed as it has already been used for classifying assets.` });
                         }
-                    } else if (SemanticSource[i.source.toString()] === SemanticSource.BuiltIn) {
+					} else if (SemanticSource[i.source.toString()] === SemanticSource.BuiltIn) {						
                         i[this.menuKey].push({ title: $localize`Delete`, disabled: true, tooltip: $localize`Built-In semantic types cannot be deleted.` });
 
                     }                    
