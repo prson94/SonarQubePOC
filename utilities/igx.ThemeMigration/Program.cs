@@ -162,7 +162,7 @@ namespace ThemeMigration
 									copyToThemeFolder(downloadStream, themeContainer, x.CompanyID, fileName);
 
 #if DEBUG
-									if (companyID == DEBUG_COMPANY_ID)
+									if (x.CompanyID == DEBUG_COMPANY_ID)
 									{
 										cnn.Execute($@"Update theme 
 														set {imageColumn} = @extension
