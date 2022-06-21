@@ -44,4 +44,77 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="VLova" id="Table.dbo.Survey-GOV-18067-BringAssetTypeId">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			alter table dbo.Survey
+			add AssetID bigint null;
+
+GO
+			
+			update st
+			set st.AssetID = Asset.Id
+			from dbo.Survey st
+			join dbo.Asset asset 
+				on asset.Object = st.Object 
+				and asset.ObjectID = st.ObjectID;
+			
+			alter table dbo.Survey
+			alter column AssetID bigint not null;
+			
+			drop index [IX_Survey_ObjectType-ObjectID]
+			on dbo.Survey;
+			
+			alter table dbo.Survey
+			drop column Object;
+			
+			alter table dbo.Survey
+			drop column ObjectId;
+			
+			create nonclustered index [IX_Survey_AssetID] 
+			on [dbo].[Survey] ( 
+				[AssetID] asc
+			);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			alter table dbo.Survey
+			add [Object] [varchar](50) null;
+						
+			alter table dbo.Survey
+			add [ObjectID] [int] null;
+
+GO
+						
+			update st
+			set st.[Object] = Asset.[Object],
+				st.ObjectId = Asset.ObjectId
+			from dbo.Survey st
+			join dbo.Asset asset 
+				on asset.ID = st.AssetID;
+						
+			alter table dbo.Survey
+			alter column [Object] [varchar](50) not null;
+						
+			alter table dbo.Survey
+			alter column [ObjectID] [int] not null;
+						
+			drop index [IX_Survey_AssetID]
+			on dbo.Survey;
+						
+			alter table dbo.Survey
+			drop column AssetID;
+						
+			create nonclustered index [IX_Survey_ObjectType-ObjectID] 
+			on [dbo].[Survey] ( 
+				[Object] asc, 
+				[ObjectID] asc 
+			);
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
