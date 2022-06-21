@@ -583,6 +583,12 @@ namespace d360.model.DataAccessLayer
 										resourceId = Company.CurrentResourceID
 									}, transaction: trans);
 
+					//call new procedure.
+					conn.Execute(
+						"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
+						new { executionID = execution.ExecutionID, @class = (int)AssetTypeClass.Diagram, begin = 0, end = 0 },
+						transaction: trans, ApiTimeout);
+
 					trans.Commit();
 
 					execution.Processed = totalCount;
