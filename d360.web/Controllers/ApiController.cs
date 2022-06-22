@@ -2488,11 +2488,11 @@ namespace d360.web.Controllers
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor,
-										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '${CommonNames.AssetTypeClass_Business}'
-										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '${CommonNames.AssetTypeClass_Business}'
-										when c.[Object] = 'ReferenceItem' then '${CommonNames.AssetTypeClass_Reference}'
-										when c.[Object] = 'Taxonomy' then '${CommonNames.AssetTypeClass_Model}'
-										when c.[Object] = 'Policy' then '${CommonNames.AssetTypeClass_Policy}'
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '{CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '{CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'ReferenceItem' then '{CommonNames.AssetTypeClass_Reference}'
+										when c.[Object] = 'Taxonomy' then '{CommonNames.AssetTypeClass_Model}'
+										when c.[Object] = 'Policy' then '{CommonNames.AssetTypeClass_Policy}'
 										else	c.[Object] end [Displayobject],
 										Uid as AssetUid
 										from [dbo].AssetWithType c   
