@@ -137,9 +137,6 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	ngOnInit(): void {
 		this.selection = null;
-		this.newFolderItems = new Array<SiteNav>();
-		this.selectedNewFolderItems = new Array<SiteNav>();
-
 		this.folderForm = this.formBuilder.group({
 			name: [null, [Validators.required, this.isEmptyString()]]
 		});
