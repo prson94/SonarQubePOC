@@ -1336,8 +1336,8 @@ namespace d360.model.DataAccessLayer
 				inner join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", fieldJoins.Where(fj => fj.TrimStart().StartsWith("cross apply")))}
 				{string.Join("\n", fieldJoins.Where(fj => !fj.TrimStart().StartsWith("cross apply")))}
+				{string.Join("\n", fieldJoins.Where(fj => fj.TrimStart().StartsWith("cross apply")))}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
