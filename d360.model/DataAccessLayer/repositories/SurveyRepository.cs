@@ -110,7 +110,7 @@ namespace d360.model.DataAccessLayer
 			var countQuery = $@"select count(*)
 									from dbo.SurveyType ST
 										inner join Survey S on S.SurveyTypeID = ST.ID
-										inner join Asset A on A.Object = s.Object and A.ObjectID = S.ObjectID
+										inner join Asset A on A.ID = S.AssetID
 									where ST.Uid = @surveyTypeUID
 									{additionalWhereClause}
 									 ";
@@ -137,7 +137,7 @@ namespace d360.model.DataAccessLayer
 						
 						 from dbo.SurveyType ST
 							inner join Survey S on S.SurveyTypeID = ST.ID
-							inner join Asset A on A.Object = s.Object and A.ObjectID = S.ObjectID
+							inner join Asset A on A.ID = S.AssetID
 							inner join Asset U on U.Object = 'Resource' and U.ObjectID = S.ResourceID
 						where ST.Uid = @surveyTypeUID
 						{additionalWhereClause}
@@ -228,7 +228,7 @@ namespace d360.model.DataAccessLayer
 			var pagingSql = $"OFFSET (@pageSize * (@pageNum - 1)) ROWS FETCH NEXT @pageSize ROWS ONLY";
 
 			var countQuery = $@"select  count(*) from dbo.SurveyType ST 
-											inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
+											inner join AssetType AT on AT.ID = ST.AssetTypeID
 											left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
 												on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
 			response.total = companyContext.Query<int>(countQuery, sqlParams, ApiTimeout).FirstOrDefault();
@@ -263,7 +263,7 @@ namespace d360.model.DataAccessLayer
 									Responses as NumberOfResponses,
 									(select Uid, Name, Description, DisplayStyle, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
 								 from SurveyType ST
-								 inner join AssetType AT on AT.Object = ST.Object AND AT.ObjectID = ST.ObjectID 
+								 inner join AssetType AT on AT.ID = ST.AssetTypeID
 								 inner join Asset ACreate on ACreate.Object = 'Resource' AND ACreate.ObjectID = ST.CreatedBy
 								 inner join Asset AUpdate on AUpdate.Object = 'Resource' AND AUpdate.ObjectID = ST.UpdatedBy
 								 left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses on Responses.SurveyTypeId = ST.Id
@@ -357,7 +357,7 @@ namespace d360.model.DataAccessLayer
 			var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
 			var countWhereClause = whereClauses.Count > 0 ? "and " + string.Join(" and ", whereClauses) : "";
 			var countQuery = $@"select count(distinct A.uid) from Asset A
-								inner join Survey S ON A.Object = S.Object and A.ObjectID = S.ObjectID
+								inner join Survey S ON A.ID = S.AssetID
 								inner join SurveyType ST on S.SurveyTypeID = ST.ID
 								where ST.uid = @surveyTypeUid
 								{countWhereClause}";
@@ -374,7 +374,7 @@ namespace d360.model.DataAccessLayer
 									inner join Question Q on QO.QuestionID = Q.ID
 									inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
 									inner join Survey S on Q.SurveyID = S.ID
-									inner join Asset A on A.Object = S.Object and A.ObjectID = S.ObjectID
+									inner join Asset A on A.ID = S.AssetID
 									{additionalWhereClause}";
 
 			string QuestionsCTE = @"select 
@@ -390,7 +390,7 @@ namespace d360.model.DataAccessLayer
 									inner join QuestionTypeOption QTO on QTO.ID = QO.QuestionTypeOptionID
 									inner join Question Q on QO.QuestionId = Q.Id
 									inner join Survey S on S.ID = Q.SurveyID
-									inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
+									inner join Asset A on A.ID = S.AssetID
 									inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
 									group by QT.Uid, S.SurveyTypeID, A.Uid";
 
@@ -406,7 +406,7 @@ namespace d360.model.DataAccessLayer
 								for json path) AS Questions 
 							from SurveyType ST 
 							inner join Survey S on S.SurveyTypeID = ST.ID
-							inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
+							inner join Asset A on A.ID = S.AssetID
 							cross apply (select count(distinct SurveyUid) as Responders from AnswerData where AssetUid = A.uid)QD
 							cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn)First
 							cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn desc)Last
@@ -429,12 +429,12 @@ namespace d360.model.DataAccessLayer
 				@"select	ST.[uid] as SurveyTypeUid,
 							ST.[Name]
 					from	SurveyType ST
-							inner join AssetType T on T.[Object] = ST.[Object] and T.ObjectID = ST.ObjectID
+							inner join AssetType T on T.ID = ST.AssetTypeId
 							inner join Asset A on A.[uid] = @assetUid and A.AssetTypeID = T.ID
 					where	ST.ID not in (
 								select	SurveyTypeID 
 								from	Survey S
-										inner join Asset B on B.[Object] = S.[Object] and B.ObjectID = S.ObjectID
+										inner join Asset B on B.ID = S.AssetID
 								where	S.SurveyTypeID = ST.ID
 										and S.ResourceID = @resourceId
 										and S.CreatedOn > DATEADD(day, (ST.ValidForDays * -1), getdate())
@@ -482,7 +482,7 @@ namespace d360.model.DataAccessLayer
 					var assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
 					if (Guid.TryParse(assetUIDString, out Guid assetUid))
 					{
-						joins.Add("inner join Asset A on A.[Object]=S.[Object] and  A.ObjectID = S.ObjectID");
+						joins.Add("inner join Asset A on A.ID = S.AssetID");
 						whereStatements.Add("A.uid=@assetUid");
 						dbArgs.Add("assetUid", assetUid);
 					}
@@ -562,8 +562,7 @@ namespace d360.model.DataAccessLayer
 			var survey = new Survey
 			{
 				SurveyTypeID = surveyType.ID,
-				Object = asset.Object,
-				ObjectID = asset.ObjectID,
+				AssetID = asset.ID,
 				ResourceID = companyContext.CurrentResourceID,
 				CreatedOn = DateTime.UtcNow
 			};

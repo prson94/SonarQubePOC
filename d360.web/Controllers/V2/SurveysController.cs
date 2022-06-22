@@ -283,7 +283,7 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
 
-                    if (asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
+                    if (asset.AssetType.ID != survey.AssetTypeID)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, SurverysApiMessages.AssetTypeNotSurvey)).ConfigureAwait(false);
                     }
@@ -530,7 +530,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.ToString()))).ConfigureAwait(false);
             }
 
-            if (surveyType.Object != asset.AssetType.Object || surveyType.ObjectID != asset.AssetType.ObjectID)
+            if (surveyType.AssetTypeID != asset.AssetType.ID)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.BadRequest, SurverysApiMessages.SurveyInvalidForAssetType)).ConfigureAwait(false);
             }

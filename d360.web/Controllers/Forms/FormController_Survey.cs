@@ -159,15 +159,10 @@ namespace d360.web.Controllers
                     throw new NoFormDataException(FormControllerApiMessage.SurveyType);
                 }
 
-                var otVal = form["Object"].Split('|').ToList();
-                var ot = (SystemObjects)Enum.Parse(typeof(SystemObjects), otVal[0]);
-                var oid = int.Parse(otVal[1]);
-
                 var model = new SurveyType
                 {
                     Name = parseTextField(form, "Name"),
-                    Object = ot.ToString(),
-                    ObjectID = oid,
+					AssetTypeID = parseIntField(form, "AssetTypeID"),
                     ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1),
                     Description = parseTextField(form, "Description")
                 };
