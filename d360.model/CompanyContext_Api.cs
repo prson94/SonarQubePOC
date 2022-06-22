@@ -2815,7 +2815,8 @@ namespace d360.model
 				drop table if exists #delAssets
 				create table #delAssets(
 					uid uniqueidentifier,
-					ObjectID int
+					ObjectID int,
+					AssetID int
 				)
 
 				drop table if exists #delRel
@@ -2825,11 +2826,11 @@ namespace d360.model
 				)
 
 				insert into #delAssets
-				select fromuid, a.ObjectID from ProcessExpandedData pxd
+				select fromuid, a.ObjectID, a.id as AssetID from ProcessExpandedData pxd
 					inner join asset a on a.uid = pxd.diagramassetuid
 				where pxd.diagramassetuid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})
 				union 
-				select touid, a.ObjectID from ProcessExpandedData pxd
+				select touid, a.ObjectID, a.id as AssetID from ProcessExpandedData pxd
 					inner join asset a on a.uid = pxd.diagramassetuid
 				where pxd.diagramassetuid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})
 
@@ -2848,7 +2849,7 @@ namespace d360.model
 				delete from Field where ObjectType = 'Task' and ObjectID in (select ObjectId from #delAssets)
 				delete from asset where uid in (select uid from #delAssets)
 
-				delete from graph.AssetNode where uid in (select uid from #delAssets) and Class = 15
+				delete from assetpath where id in (select assetid from #delAssets) 
 ",
                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                 AddMeasurement(metrics, $"remove process assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -5619,35 +5620,12 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																							select  @ExecutionID, A.ItemNumber, 1, 1, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
 																							from    #ParentChildRelationships A
 																									inner join [Intersect] I on I.Uid = A.Uid
-																									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID;
-
-																						insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
-																							select  SG.$node_id,
-																									OG.$node_id,
-																									I.ID,
-																									I.[Uid],
-																									T.ID as IntersectTypeID,
-																									T.[Uid] as IntersectTypeUid,
-																									P.ID as PredicateID,
-																									P.Uid as PredicateUid,
-																									P.Type as PredicateType,
-																									'<props/>' as Properties,
-																									I.[State],
-																									coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
-																							from    [Intersect] I
-																									inner join #ParentChildRelationships R on R.[Uid] = I.[Uid] and R.[Operation] = 'INSERT'
-																									inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
-																									inner join graph.AssetNode SG on SG.ID = SA.ID
-																									inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
-																									inner join graph.AssetNode OG on OG.ID = OA.ID
-																									inner join IntersectType T on T.ID = I.IntersectTypeID
-																									inner join [Predicate] P on P.ID = T.PredicateID
-																							where   not exists (select 1 from graph.AssetEdge where [uid] = I.[Uid]);
+																									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID;;
 
 																						select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
-                                        AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                        AddMeasurement(metrics, $"Parent/Child Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
                                         // if its an intra type hierarchy models or policies and NOT an insert its possible that parent child relations are being removed IE an item moved to root
                                         if (predicateType == PredicateType.IntraTypeHierarchy && !isInsert)
@@ -5682,12 +5660,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 																delete  i
 																from    [intersect] i 
-																		inner join #DeletedRelationships d on d.ID = i.ID;
-
-																delete from graph.AssetEdge where ID in (select ID from #DeletedRelationships);",
+																		inner join #DeletedRelationships d on d.ID = i.ID;;",
                                                                 new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"Parent/Child Delete Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                            AddMeasurement(metrics, $"Parent/Child Delete Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         }
                                     }
 
