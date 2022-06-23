@@ -1,17 +1,14 @@
 ﻿using d360.core.entities;
-using d360.web.Controllers.V2;
 using igx.UnitTests.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using System.Web.Http.Results;
 using AutoFixture;
 using AutoFixture.Xunit2;
-using d360.model.DataAccessLayer;
+using d360.core.enums;
 using d360.web.Services;
 using FluentAssertions;
 using Moq;
@@ -19,100 +16,10 @@ using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
 {
-	public abstract class ResponsibilitiesControllerTestBase : BaseTest
-	{
-		protected ResponsibilitiesController responsibilitiesController;
-
-		protected readonly Mock<IResponsibilityRepository> mockResponsibilityRepository;
-		protected readonly Mock<IResourceRepository> mockResourceRepository;
-		protected readonly Mock<IAssetService> mockAssetService;
-
-		protected ResponsibilitiesControllerTestBase()
-		{
-			mockResponsibilityRepository = GetResponsibilityRepositoryMock();
-			mockResourceRepository = new Mock<IResourceRepository>();
-			mockAssetService = new Mock<IAssetService>();
-
-			responsibilitiesController = new ResponsibilitiesController(GetCoreComponentSet(), GetAssetRepository(), mockResponsibilityRepository.Object, mockResourceRepository.Object, mockAssetService.Object)
-			{
-				Request = new HttpRequestMessage(),
-				Configuration = new HttpConfiguration()
-			};
-		}
-	}
-
 	[Trait("Unit tests", "Responsibilities controller")]
 	public class ResponsibilitiesControllerTest : ResponsibilitiesControllerTestBase
 	{
-		[Fact]
-		public async void GetResponsibilityTypes()
-		{
-			var result = await responsibilitiesController.GetResponsibilityTypesAsync();
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeViewModel>>(str);
-		}
-
-		[Fact]
-		public async void GetResponsibilityTypesByAssetId()
-		{
-			var result = await responsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.Parse(DataConstants.ValidGUID));
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeViewModel>>(str);
-		}
-
-		[Fact]
-		public async void GetResponsibilityTypeAllocationsAsync()
-		{
-			var result = await responsibilitiesController.GetResponsibilityTypeAllocationsAsync(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
-		}
-
-		[Fact]
-		public async void GetResponsibilityTypeAllocationsByAssetAsync()
-		{
-			var result = await responsibilitiesController.GetResponsibilityTypeAllocationsByAssetAsync(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
-		}
-
-		[Fact]
-		public async void GetResponsibilityRulesForTypeAsync()
-		{
-			var result = await responsibilitiesController.GetResponsibilityRulesForTypeAsync(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeRuleViewModel>>(str);
-		}
-
-		[Fact]
-		public async void GetResponsibilityRulesStats()
-		{
-			var result = await responsibilitiesController.GetResponsibilityRulesStats(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<ResponsibilityTypeRuleStatsViewModel>(str);
-		}
-
-		[Fact]
-		public async void GetResponsibilities()
-		{
-			var result = await responsibilitiesController.GetResponsibilities();
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<AssetResponsibilitiesApiModel>(str);
-		}
+		#region GetResponsibilityTypeBreakdown
 
 		public class GetResponsibilityTypeBreakdown : ResponsibilitiesControllerTestBase
 		{
@@ -125,11 +32,11 @@ namespace igx.UnitTests.V2ControllerTests
 				var responsibilityType = Fixture.Create<ResponsibilityType>();
 				var businessLayerResponse = Fixture.Create<ICollection<ResponsibilityBreakdownResponse>>();
 
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Returns(responsibilityType);
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Returns(responsibilityType);
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
 
 				// act
-				var actualResponse = await responsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
+				var actualResponse = await ResponsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
 
 				// assert
 				var okResult = actualResponse.Should().BeOfType<OkNegotiatedContentResult<ICollection<ResponsibilityBreakdownResponse>>>().Subject;
@@ -145,13 +52,13 @@ namespace igx.UnitTests.V2ControllerTests
 				// assign
 				var businessLayerResponse = Fixture.Create<ICollection<ResponsibilityBreakdownResponse>>();
 
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Throws(testException);
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Throws(testException);
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
 
 				// act
 				try
 				{
-					await responsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
+					await ResponsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
 					Assert.False(true, $"Exception not thrown");
 				}
 				catch (Exception exception)
@@ -170,13 +77,13 @@ namespace igx.UnitTests.V2ControllerTests
 				// assign
 				var responsibilityType = Fixture.Create<ResponsibilityType>();
 
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Returns(responsibilityType);
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ThrowsAsync(testException);
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).Returns(responsibilityType);
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ThrowsAsync(testException);
 
 				// act
 				try
 				{
-					await responsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
+					await ResponsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
 					Assert.False(true, $"Exception not thrown");
 				}
 				catch (Exception exception)
@@ -193,11 +100,11 @@ namespace igx.UnitTests.V2ControllerTests
 				Guid? typeUid = null;
 				var businessLayerResponse = Fixture.Create<ICollection<ResponsibilityBreakdownResponse>>();
 
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsAsync(businessLayerResponse);
 
-				await responsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
+				await ResponsibilitiesController.GetResponsibilityTypeBreakdown(typeUid);
 
-				mockResponsibilityRepository.Verify(x => x.GetResponsibilityTypeByUID(It.IsAny<Guid>()), Times.Never);
+				MockResponsibilityRepository.Verify(x => x.GetResponsibilityTypeByUID(It.IsAny<Guid>()), Times.Never);
 			}
 
 			[Theory, AutoData]
@@ -206,16 +113,18 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsDefault();
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsNewValueAsync();
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsDefault();
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownAsync(typeUid)).ReturnsNewValueAsync();
 
 				// act
-				var act = responsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdown(typeUid));
+				var act = ResponsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdown(typeUid));
 
 				// assert
 				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
 			}
 		}
+
+		#endregion GetResponsibilityTypeBreakdown
 
 		#region GetResponsibilityTypeBreakdownByResource
 
@@ -230,13 +139,13 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
-				var aggregate = mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
-				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+				MockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				var aggregate = MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
 
 				// act
-				var actualResponse = await responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+				var actualResponse = await ResponsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
 
 				// assert
 				var actualResult = actualResponse.ShouldBeOKContent<ICollection<ResponsibilityGetBreakdownByResourceModel>>();
@@ -253,13 +162,13 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsDefaultAsync();
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
-				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+				MockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsDefaultAsync();
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
 
 				// act
-				var act = responsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid));
+				var act = ResponsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid));
 
 				// assert
 				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
@@ -272,13 +181,13 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsDefault();
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
-				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+				MockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsDefault();
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
 
 				// act
-				var act = responsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid));
+				var act = ResponsibilitiesController.Invoking(x => x.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid));
 
 				// assert
 				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
@@ -293,13 +202,13 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
-				var expectedException = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ThrowsTestException();
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
-				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+				MockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				var expectedException = MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ThrowsTestException();
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
 
 				// act
-				var act = responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+				var act = ResponsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
 
 				// assert
 				await VerifyTestExceptionAsync(act, expectedException);
@@ -312,13 +221,13 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				var expectedException = ThrowsTestExceptionAsync(mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)));
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
-				mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
-				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+				var expectedException = ThrowsTestExceptionAsync(MockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)));
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ReturnsNewValueAsync();
+				MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
 
 				// act
-				var act = responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+				var act = ResponsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
 
 				// assert
 				await VerifyTestExceptionAsync(act, expectedException);
@@ -331,13 +240,13 @@ namespace igx.UnitTests.V2ControllerTests
 			)
 			{
 				// assign
-				mockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
-				var expectedException = mockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ThrowsTestExceptionAsync();
-				mockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
+				MockResourceRepository.Setup(x => x.GetByUidAsync(resourceUid)).ReturnsNewValueAsync();
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(typeUid.Value)).ReturnsNewValue();
+				var expectedException = MockResponsibilityRepository.Setup(x => x.GetTypeBreakdownByResourceAsync(resourceUid, typeUid)).ThrowsTestExceptionAsync();
+				MockAssetService.Setup(x => x.GetAssetName(It.IsAny<AssetType>())).ReturnsNewValue();
 
 				// act
-				var act = responsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
+				var act = ResponsibilitiesController.GetResponsibilityTypeBreakdownByResource(resourceUid, typeUid);
 
 				// assert
 				await VerifyTestExceptionAsync(act, expectedException);
@@ -364,8 +273,8 @@ namespace igx.UnitTests.V2ControllerTests
 				ResponsibilityTypeUid = Fixture.Create<Guid>();
 				ResponsibilityRulesDeletes = Fixture.CreateEnumerable<ResponsibilityRuleDeleteModel>().ToArray();
 				RulesForDeletion = ResponsibilityRulesDeletes.Select(x => x.Uid).ToArray();
-				ResponsibilityType = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ReturnsNewValue();
-				ExpectedResult = mockResponsibilityRepository.Setup(x => x.DeleteResponsibilityRulesAsync(ResponsibilityTypeUid, RulesForDeletion)).ReturnsNewValueAsync();
+				ResponsibilityType = MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ReturnsNewValue();
+				ExpectedResult = MockResponsibilityRepository.Setup(x => x.DeleteResponsibilityRulesAsync(ResponsibilityTypeUid, RulesForDeletion)).ReturnsNewValueAsync();
 				// and in each test we only slightly change behavior of used services to check if method process it properly
 			}
 			#endregion Arrange "Happy Path"
@@ -378,7 +287,7 @@ namespace igx.UnitTests.V2ControllerTests
 				// arrange
 
 				// act
-				var actualResponse = await responsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
+				var actualResponse = await ResponsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
 
 				// assert
 				var content = actualResponse.ShouldBeOKContent<ICollection<ResponsibilityRuleDeleteResponse>>();
@@ -393,10 +302,10 @@ namespace igx.UnitTests.V2ControllerTests
 			public async Task NotFound_Test()
 			{
 				// arrange
-				mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ReturnsDefault();
+				MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ReturnsDefault();
 
 				// act
-				var act = responsibilitiesController.Invoking(x => x.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes));
+				var act = ResponsibilitiesController.Invoking(x => x.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes));
 
 				// assert
 				await act.Should().ThrowAsync<NotFoundBusinessLayerException>();
@@ -410,10 +319,10 @@ namespace igx.UnitTests.V2ControllerTests
 			public async Task Rethrow_ResponsibilityRepository_GetResponsibilityTypeByUID_Test()
 			{
 				// arrange
-				var testException = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ThrowsTestException();
+				var testException = MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypeByUID(ResponsibilityTypeUid)).ThrowsTestException();
 
 				// act
-				var act = responsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
+				var act = ResponsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
 
 				// assert
 				await VerifyTestExceptionAsync(act, testException);
@@ -423,10 +332,10 @@ namespace igx.UnitTests.V2ControllerTests
 			public async Task Rethrow_ResponsibilityRepository_DeleteResponsibilityRulesAsync_Test()
 			{
 				// arrange
-				var testException = mockResponsibilityRepository.Setup(x => x.DeleteResponsibilityRulesAsync(ResponsibilityTypeUid, RulesForDeletion)).ThrowsTestException();
+				var testException = MockResponsibilityRepository.Setup(x => x.DeleteResponsibilityRulesAsync(ResponsibilityTypeUid, RulesForDeletion)).ThrowsTestException();
 
 				// act
-				var act = responsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
+				var act = ResponsibilitiesController.DeleteResponsibilityRules(ResponsibilityTypeUid, ResponsibilityRulesDeletes);
 
 				// assert
 				await VerifyTestExceptionAsync(act, testException);
