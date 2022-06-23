@@ -1741,11 +1741,39 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Create the Excel document for export
-        /// </summary>
-        /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
+		[
+			HttpGet,
+			Route("possibleCreators"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Semantic Types."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleCreators()
+		{
+			var result = await SemanticsRepository.GetPossibleCreators();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+		}
+
+		[
+			HttpGet,
+			Route("possibleRedactors"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were editing Semantic Types."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetPossibleRedactors()
+		{
+			var result = await SemanticsRepository.GetPossibleRedactors();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+		}
+
+		/// <summary>
+		/// Create the Excel document for export
+		/// </summary>
+		/// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
+		private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
         {
             ExcelRow HeaderRow = new ExcelRow
                         {

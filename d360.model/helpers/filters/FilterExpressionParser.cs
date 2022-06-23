@@ -132,6 +132,12 @@ namespace d360.model.helpers
                 allowedDefaultFields.Add(new DefaultFilter("updatedOn", "CAST(UpdatedOn as DATE)", SqlFieldType.Date));
                 allowedDefaultFields.Add(new DefaultFilter("createdBy", "CreatedBy", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("updatedBy", "UpdatedBy", SqlFieldType.Text));
+
+				//I understand it is a copy of the item above.
+				//The reason to add a new one is to avoid side effects that may be caused by modifying the old thing.
+				//Also, I don't want to alter the UI component to send the `updatedBy` instead of the `lastModifiedBy` filter
+				//because there is no reason to send different filter titles for the same filter item.
+				allowedDefaultFields.Add(new DefaultFilter("lastModifiedBy", "UpdatedBy", SqlFieldType.Text));
             }
 
             if (parseType == FilterExpressionParseType.Tags)

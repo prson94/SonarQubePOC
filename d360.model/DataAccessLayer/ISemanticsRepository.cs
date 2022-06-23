@@ -22,5 +22,8 @@ namespace d360.model.DataAccessLayer
         Task<List<GetSemantic>> PutSemanticsAsync(List<PutSemantic> semantics);
         
         List<Semantic> GetSemanticsByQualifiers(List<string> qualifiers);
-    }
+
+		Task<IEnumerable<dynamic>> GetPossibleCreators();
+		Task<IEnumerable<dynamic>> GetPossibleRedactors();
+	}
 }
