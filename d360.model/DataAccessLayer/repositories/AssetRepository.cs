@@ -1279,6 +1279,7 @@ namespace d360.model.DataAccessLayer
 				RecordEnd = RecordStart + model.pageSize - 1;
 			}
 
+			var assetCountJoins = new AssetQueryJoins(countJoins);
 			var countSql = $@"
 				{TempTableScriptStr}
 
@@ -1291,8 +1292,7 @@ namespace d360.model.DataAccessLayer
 				inner join AssetPath Node on Node.ID = a.ID 
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", countJoins.Where(cj => cj.TrimStart().StartsWith("cross apply")))}
-				{string.Join("\n", countJoins.Where(cj => !cj.TrimStart().StartsWith("cross apply")))}
+				{assetCountJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1307,6 +1307,7 @@ namespace d360.model.DataAccessLayer
 				{(includeTotal ? "select count(1) from #tempasset" : "")}";
 
 
+			var assetFieldJoins = new AssetQueryJoins(fieldJoins);
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
@@ -1336,8 +1337,7 @@ namespace d360.model.DataAccessLayer
 				inner join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", fieldJoins.Where(fj => fj.TrimStart().StartsWith("cross apply")))}
-				{string.Join("\n", fieldJoins.Where(fj => !fj.TrimStart().StartsWith("cross apply")))}
+				{assetFieldJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
