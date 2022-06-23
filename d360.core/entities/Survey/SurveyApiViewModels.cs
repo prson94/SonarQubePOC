@@ -69,6 +69,30 @@ namespace d360.core.entities.SurveyModels
         public List<Option> Options { get; set; }
     }
 
+	public class SurveyTypeCreateApiModel
+	{
+		public Guid AssetTypeUid { get; set; }
+
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public int ValidForDays { get; set; }
+	}
+
+	public class SurveyTypeCreateResponseApiModel
+	{
+		public Guid Uid { get; set; }
+
+		public Guid AssetTypeUid { get; set; }
+
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public int ValidForDays { get; set; }
+	}
+
     public class SurveyTypeApiModel
     {
         public Guid Uid { get; set; }

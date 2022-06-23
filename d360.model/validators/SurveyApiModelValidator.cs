@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Net;
+using System.Threading.Tasks;
+using d360.core.entities.SurveyModels;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using SmartFormat;
 
 namespace d360.model.validators
 {
@@ -210,5 +213,62 @@ namespace d360.model.validators
 
             return null;
         }
-    }
+
+		public async Task<WorkHttpStatus> ValidateSurveyTypeCreateApiModel(SurveyTypeCreateApiModel surveyType)
+		{
+			if (string.IsNullOrEmpty(surveyType.Name))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					SurveyTypeErrors.NameShouldBeNotEmpty);
+			}
+
+			var maxNameLength = 250;
+			if (!(surveyType.Name.Length <= maxNameLength))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.NameIsTooBig, new { maxNameLength }));
+			}
+
+			var minValidForDays = 0;
+			if (!(surveyType.ValidForDays >= minValidForDays))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.ValidForDaysIsTooSmall, new { minValidForDays }));
+			}
+
+			var maxValidForDays = 365;
+			if (!(surveyType.ValidForDays <= maxValidForDays))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.ValidForDaysIsTooBig, new { maxValidForDays }));
+			}
+
+			var assetType = this.assetRepository.GetAssetTypeByUID(surveyType.AssetTypeUid);
+			if (assetType == null)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					AssetTypeErrors.NotFoundGeneric);
+			}
+
+			if (!await surveyRepository.IsUniqueSurveyTypeName(surveyType.Name, assetType.ID, surveyTypeUid: null))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.Conflict,
+					AssetTypeErrors.DuplicateFound,
+					SurveyTypeErrors.DuplicateName);
+			}
+
+			return null;
+		}
+	}
 }

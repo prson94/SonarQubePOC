@@ -9,7 +9,9 @@ namespace d360.model.DataAccessLayer
 {
     public interface ISurveyRepository
     {
-        SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+		Task<SurveyType> Create(SurveyType surveyType);
+
+		SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         
         SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         
@@ -26,5 +28,8 @@ namespace d360.model.DataAccessLayer
         Task PostSurveyResults(SurveyResultsApiModel model, Asset asset, SurveyType surveyType);
         
         Task<List<int>> GetSurveyQuestionResponses(Guid uid);
-    }
+
+		Task<bool> IsUniqueSurveyTypeName(string name, int assetTypeId, Guid? surveyTypeUid);
+
+	}
 }

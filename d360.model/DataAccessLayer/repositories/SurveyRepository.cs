@@ -22,6 +22,12 @@ namespace d360.model.DataAccessLayer
 			companyContext = context;
 		}
 
+		public async Task<SurveyType> Create(SurveyType surveyType) {
+			this.companyContext.Add(surveyType);
+			await this.companyContext.SaveChangesAsync();
+			return surveyType;
+		}
+
 		public SurveyType GetSurveyTypeByUid(Guid uid)
 		{
 			return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
@@ -592,6 +598,24 @@ namespace d360.model.DataAccessLayer
 						", new { questionId = q.ID, question.SurveyQuestionUid, value })).FirstOrDefault();
 				}
 			}
+		}
+
+		public async Task<bool> IsUniqueSurveyTypeName(string name, int assetTypeId, Guid? surveyTypeUid)
+		{
+			var sameNameSurveyTypes = await companyContext.QueryAsync<bool>(
+				@"
+					select top 1 1
+					from dbo.SurveyType st
+					where st.AssetTypeId = @assetTypeId
+						and st.Name = @name 
+						and (
+							@surveyTypeUid is null 
+							or st.Uid <> @surveyTypeUid
+						)
+				",
+				new { name, assetTypeId, surveyTypeUid });
+
+			return !sameNameSurveyTypes.Any();
 		}
 	}
 }

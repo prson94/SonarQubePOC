@@ -717,8 +717,6 @@ namespace d360.web.Controllers
 					return await AddReport(form);
 				case "SERVICE":
 					return AddService(form);
-				case "SURVEYTYPE":
-					return AddSurveyType(form);
 				case "TAXONOMYTYPELEVEL":
 					return AddTaxonomyTypeLevel(form);
 				case "VERSION":

@@ -144,44 +144,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddSurveyType")]
-        public JsonResult AddSurveyType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                }
-
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.SurveyType);
-                }
-
-                var model = new SurveyType
-                {
-                    Name = parseTextField(form, "Name"),
-					AssetTypeID = parseIntField(form, "AssetTypeID"),
-                    ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1),
-                    Description = parseTextField(form, "Description")
-                };
-                Company.Add(model);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, model.Name), model.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpDelete, Route("DeleteSurveyType")]
         public JsonResult DeleteSurveyType(FormCollection form)
         {

@@ -139,11 +139,49 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Returns defined survey types.          
-        /// </summary>        
-        /// <returns>A list of survey types</returns>
-        [
+		[
+			HttpPost, MapToApiVersion("2.0"), Route("types"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.Created, "Survey successfully created.", typeof(SurveyTypeCreateResponseApiModel)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Survey with the same name already exists for this asset type.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> AddSurveyType(SurveyTypeCreateApiModel surveyType)
+		{
+			var validationStatus = await this.validator.ValidateSurveyTypeCreateApiModel(surveyType);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var assetType = this.AssetRepository.GetAssetTypeByUID(surveyType.AssetTypeUid);
+
+			var createdSurveyType = await SurveyRepository.Create(new core.entities.SurveyType
+			{
+				AssetTypeID = assetType.ID,
+				Name = surveyType.Name,
+				Description = surveyType.Description,
+				ValidForDays = surveyType.ValidForDays
+			});
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new SurveyTypeCreateResponseApiModel
+			{
+				AssetTypeUid = surveyType.AssetTypeUid,
+				Name = createdSurveyType.Name,
+				Description = createdSurveyType.Description,
+				ValidForDays = createdSurveyType.ValidForDays,
+				Uid = createdSurveyType.Uid
+			}));
+		}
+
+		/// <summary>
+		/// Returns defined survey types.          
+		/// </summary>        
+		/// <returns>A list of survey types</returns>
+		[
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
