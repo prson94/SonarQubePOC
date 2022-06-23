@@ -345,6 +345,59 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
 		#endregion DeleteResponsibilityRules
+
+		#region GetClaimsAsync
+
+		public class GetClaimsAsync : ResponsibilitiesControllerTestBase
+		{
+			#region Arrange "Happy Path"
+
+			private ICollection<ClaimsViewModel> ExpectedResult;
+
+			public GetClaimsAsync()
+			{
+				// first of all we arrange happy path for tested method
+				ExpectedResult = MockResponsibilityRepository.Setup(x => x.GetClaimsAsync()).ReturnsNewValueAsync();
+				// and in each test we only slightly change behavior of used services to check if method process it properly
+			}
+			#endregion Arrange "Happy Path"
+
+			#region Ok
+
+			[Fact]
+			public async Task Ok_Test()
+			{
+				// arrange
+
+				// act
+				var actualResponse = await ResponsibilitiesController.GetClaimsAsync();
+
+				// assert
+				var content = actualResponse.ShouldBeOKContent<ICollection<ClaimsViewModel>>();
+				content.Should().BeEquivalentTo(ExpectedResult);
+			}
+
+			#endregion Happy Path
+
+			#region Exception rethrow
+
+			[Fact]
+			public async Task Rethrow_ResponsibilityRepository_GetClaimsAsync_Test()
+			{
+				// arrange
+				var testException = MockResponsibilityRepository.Setup(x => x.GetClaimsAsync()).ThrowsTestException();
+
+				// act
+				var act = ResponsibilitiesController.GetClaimsAsync();
+
+				// assert
+				await VerifyTestExceptionAsync(act, testException);
+			}
+
+			#endregion Rethrow
+		}
+
+		#endregion GetClaimsAsync
 	}
 
 }
