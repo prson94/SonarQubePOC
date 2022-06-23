@@ -2980,15 +2980,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 										and S.id between @struncount and @enruncount
 							);
 
-					delete	A
-					from	graph.AssetNode A
-					where   exists (
-								select  1
-								from    #tempassetid S
-								where   S.assetid = A.ID
-										and S.id between @struncount and @enruncount
-							);
-
 					set @runcount = @enruncount;
 				end;
 
@@ -3782,17 +3773,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
 												
-								-- Delete from graph tables.
-						        delete E
-						        from    graph.AssetEdge E
-								        inner join graph.AssetNode N on E.$from_id = N.$node_id
-								        inner join #deleteAssets D on N.Id = D.id;
-
-						        delete E
-						        from    graph.AssetEdge E
-								        inner join graph.AssetNode N on E.$to_id = N.$node_id
-								        inner join #deleteAssets D on N.Id = D.id;
-
 								-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
 								drop table if exists #Uids
 								create table #Uids (Uid uniqueidentifier)
@@ -3820,10 +3800,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 							        from	dbo.AssetResult T
 									        inner join #Uids S on S.Uid = T.Uid;
 						        end
-
-								delete	A
-								from	graph.AssetNode A
-										inner join #deleteAssets D on A.Id = D.id;
 
 					", new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
