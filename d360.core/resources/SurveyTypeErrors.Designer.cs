@@ -70,6 +70,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Another survey with the same name already exists for this asset type..
+        /// </summary>
+        public static string DuplicateNameWhenUpdating {
+            get {
+                return ResourceManager.GetString("DuplicateNameWhenUpdating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Name should not exceed {maxNameLength} characters..
         /// </summary>
         public static string NameIsTooBig {
@@ -84,6 +93,15 @@ namespace d360.core.resources {
         public static string NameShouldBeNotEmpty {
             get {
                 return ResourceManager.GetString("NameShouldBeNotEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Survey with the specified Uid was does not exist..
+        /// </summary>
+        public static string SurveyTypeNotFound {
+            get {
+                return ResourceManager.GetString("SurveyTypeNotFound", resourceCulture);
             }
         }
         

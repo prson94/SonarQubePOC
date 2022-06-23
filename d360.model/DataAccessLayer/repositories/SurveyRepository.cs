@@ -28,6 +28,13 @@ namespace d360.model.DataAccessLayer
 			return surveyType;
 		}
 
+		public async Task<SurveyType> Update(SurveyType surveyType)
+		{
+			this.companyContext.Update(surveyType);
+			await this.companyContext.SaveChangesAsync();
+			return surveyType;
+		}
+
 		public SurveyType GetSurveyTypeByUid(Guid uid)
 		{
 			return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);

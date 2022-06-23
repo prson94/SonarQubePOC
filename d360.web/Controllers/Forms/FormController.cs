@@ -622,8 +622,6 @@ namespace d360.web.Controllers
 					return await EditReport(form);
 				case "SERVICE":
 					return EditService(form);
-				case "SURVEYTYPE":
-					return EditSurveyType(form);
 				case "TAXONOMYTYPELEVEL":
 					return EditTaxonomyTypeLevel(form);
 				case "VERSION":

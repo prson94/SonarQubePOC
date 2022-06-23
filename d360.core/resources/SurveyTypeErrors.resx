@@ -120,11 +120,17 @@
   <data name="DuplicateName" xml:space="preserve">
     <value>Survey with the same name already exists for this asset type.</value>
   </data>
+  <data name="DuplicateNameWhenUpdating" xml:space="preserve">
+    <value>Another survey with the same name already exists for this asset type.</value>
+  </data>
   <data name="NameIsTooBig" xml:space="preserve">
     <value>Name should not exceed {maxNameLength} characters.</value>
   </data>
   <data name="NameShouldBeNotEmpty" xml:space="preserve">
     <value>Name should be not empty.</value>
+  </data>
+  <data name="SurveyTypeNotFound" xml:space="preserve">
+    <value>Survey with the specified Uid was does not exist.</value>
   </data>
   <data name="ValidForDaysIsTooBig" xml:space="preserve">
     <value>ValidForDays must be {maxValidForDays} days or less.</value>

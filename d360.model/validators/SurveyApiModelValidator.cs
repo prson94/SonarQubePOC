@@ -270,5 +270,64 @@ namespace d360.model.validators
 
 			return null;
 		}
+
+		public async Task<WorkHttpStatus> ValidateSurveyTypeUpdateApiModel(
+			Guid surveyTypeUid, 
+			SurveyTypeUpdateApiModel updateModel)
+		{
+			if (string.IsNullOrEmpty(updateModel.Name))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					SurveyTypeErrors.NameShouldBeNotEmpty);
+			}
+
+			var maxNameLength = 250;
+			if (!(updateModel.Name.Length <= maxNameLength))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.NameIsTooBig, new { maxNameLength }));
+			}
+
+			var minValidForDays = 0;
+			if (!(updateModel.ValidForDays >= minValidForDays))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.ValidForDaysIsTooSmall, new { minValidForDays }));
+			}
+
+			var maxValidForDays = 365;
+			if (!(updateModel.ValidForDays <= maxValidForDays))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.ValidForDaysIsTooBig, new { maxValidForDays }));
+			}
+
+			var existingSurveyType = this.surveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+			if (existingSurveyType == null)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					SurveyTypeErrors.SurveyTypeNotFound);
+			}
+
+			if (!await surveyRepository.IsUniqueSurveyTypeName(updateModel.Name, existingSurveyType.AssetTypeID, surveyTypeUid))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.Conflict,
+					AssetTypeErrors.DuplicateFound,
+					SurveyTypeErrors.DuplicateNameWhenUpdating);
+			}
+
+			return null;
+		}
 	}
 }

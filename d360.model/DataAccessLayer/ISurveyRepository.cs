@@ -11,6 +11,8 @@ namespace d360.model.DataAccessLayer
     {
 		Task<SurveyType> Create(SurveyType surveyType);
 
+		Task<SurveyType> Update(SurveyType surveyType);
+
 		SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         
         SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
@@ -30,6 +32,5 @@ namespace d360.model.DataAccessLayer
         Task<List<int>> GetSurveyQuestionResponses(Guid uid);
 
 		Task<bool> IsUniqueSurveyTypeName(string name, int assetTypeId, Guid? surveyTypeUid);
-
 	}
 }

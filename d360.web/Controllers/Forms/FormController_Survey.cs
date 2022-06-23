@@ -181,49 +181,6 @@ namespace d360.web.Controllers
             }
         }
 
-        [HttpPut, ValidateInput(false), Route("EditSurveyType")]
-        public JsonResult EditSurveyType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                }
-
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.SurveyType);
-                }
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<SurveyType>(id);
-
-                if (model == null)
-                {
-                    throw new NotFoundException(FormControllerApiMessage.SurveyType);
-                }
-
-                model.Name = parseTextField(form, "Name");
-                model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
-                model.Description = parseTextField(form, "Description");
-
-                Company.Update(model);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, model.Name), id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         #endregion
 
         #endregion

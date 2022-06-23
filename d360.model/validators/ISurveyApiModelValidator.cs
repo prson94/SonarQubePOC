@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.SurveyModels;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,5 +20,7 @@ namespace d360.model.validators
         WorkHttpStatus ValidateGetSurveyTypesRequest(IEnumerable<KeyValuePair<string, string>> queryParams);
 
 		Task<WorkHttpStatus> ValidateSurveyTypeCreateApiModel(SurveyTypeCreateApiModel surveyType);
+
+		Task<WorkHttpStatus> ValidateSurveyTypeUpdateApiModel(Guid surveyTypeUid, SurveyTypeUpdateApiModel surveyType);
 	}
 }
