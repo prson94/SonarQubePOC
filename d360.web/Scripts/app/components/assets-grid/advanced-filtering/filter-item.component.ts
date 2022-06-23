@@ -12,12 +12,13 @@ import { MultiInputField } from "../../shared/controls/multi-input-field/multi-i
 import { Table } from "primeng/table";
 import { AssetService } from "../../../services/asset.service";
 import { AdvancedFilteringService, AdvancedFilterUpdate } from "./advanced-filtering.service";
+import { DataProfileService } from "../../../services/dataprofile.service";
 
 @Component({
     selector: "filter-item",
     templateUrl: "filter-item.component.html",
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService, AssetTypeService, TagService, AssetService]
+	providers: [FieldsObservableService, AssetTypeService, TagService, AssetService, DataProfileService]
 })
 export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     @Input() assetTypeUid: string = "";
@@ -92,7 +93,8 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         private assetTypeService: AssetTypeService,
         private tagService: TagService,
         private assetService: AssetService,
-        private advFilterService: AdvancedFilteringService
+		private advFilterService: AdvancedFilteringService,
+		private dataProfileService: DataProfileService
     ) {
         setInterval(() => {
             this.updateTopPosition();
@@ -110,7 +112,7 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
-    ngOnInit() {
+	ngOnInit() {
         this.assetService.getAllColors().subscribe((x) => {
             this.defaultColorOptions = x;
             this.cdRef.markForCheck();
@@ -143,34 +145,50 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
         this.allFieldsDropdown = [];
 
-        if (this.fields && this.fields.length > 0) {
-            let assetFieldGroup: SelectItemGroup = { value: "asset-field", label: $localize`Asset Fields`, items: [] };
-            this.allFieldsDropdown.push(assetFieldGroup);
+		if (this.fields && this.fields.length > 0) {
+			let label: string;
+
+			if (this.isAssetType) {
+				label = $localize`Asset Fields`;
+			} else if (this.isSemanticTypes) {
+				label = $localize`Semantic Type Fields`;
+			}
+
+			let mainFieldGroup: SelectItemGroup = { value: "asset-field", label, items: [] };
+			this.allFieldsDropdown.push(mainFieldGroup);
 
             this.fields.filter((x) => x.IsSystemField !== true).forEach((f) => {
-                assetFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
+				mainFieldGroup.items.push({ value: f.Name, label: f.FriendlyName });
             });
         }
 
-        if (this.isAssetType) {
-            var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType);
-            if (systemFields.length > 0) {
-                let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: $localize`System Fields`, items: [] };
-                this.allFieldsDropdown.push(systemFieldsGroup);
+		if (this.isAssetType) {
+			this.addSystemFields();
 
-                systemFields.forEach((f) => {
-                    systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
-                });
-            }
+			if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
+				let relationshipGroup: SelectItemGroup = { value: "rel-field", label: $localize`Relationships`, items: [] };
+				this.allFieldsDropdown.push(relationshipGroup);
 
-            if (SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).length > 0) {
-                let relationshipGroup: SelectItemGroup = { value: "rel-field", label: $localize`Relationships`, items: [] };
-                this.allFieldsDropdown.push(relationshipGroup);
+				SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
+					relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
+				});
+			}
+		}
+		else if (this.isSemanticTypes)
+		{
+			this.addSystemFields();
+		}
+    }
 
-                SystemFields.GetRelationshipDefinition(this.relationshipTypes, this.assetTypeUid).forEach((f) => {
-                    relationshipGroup.items.push({ value: f.Name, label: f.FriendlyName });
-                });
-            }
+	private addSystemFields() {
+		var systemFields = SystemFields.GetSystemFieldDefinition(this.gridType, this.loadIdentifier);
+        if (systemFields.length > 0) {
+            let systemFieldsGroup: SelectItemGroup = { value: "system-field", label: $localize`System Fields`, items: [] };
+            this.allFieldsDropdown.push(systemFieldsGroup);
+
+            systemFields.forEach((f) => {
+                systemFieldsGroup.items.push({ value: f.Name, label: f.FriendlyName });
+            });
         }
     }
 
@@ -729,15 +747,21 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
                 this.isLookupValuesLoading = false;
                 this.cdRef.markForCheck();
             });
-
-
         }
     }
 
     loadLookupValuesForCreators(params: any) {
-        this.isLookupValuesLoading = true;
+		this.isLookupValuesLoading = true;
 
-        this.assetTypeService.GetAssetTypePossibleCreators(this.assetTypeUid).subscribe((res) => {
+		let possibleCreatorsLookup = () => {
+			if (this.isSemanticTypes) {
+				return this.dataProfileService.GetPossibleCreators();
+			}
+
+			return this.assetTypeService.GetAssetTypePossibleCreators(this.assetTypeUid);
+		};
+
+		possibleCreatorsLookup().subscribe((res) => {
             this.currentField.Values = [];
             res.map((creator) => {
                 if (params.filter) {
@@ -754,9 +778,17 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     loadLookupValuesForRedactors(params: any) {
-        this.isLookupValuesLoading = true;
+		this.isLookupValuesLoading = true;
 
-        this.assetTypeService.GetAssetTypePossibleRedactors(this.assetTypeUid).subscribe((res) => {
+		let possibleRedactorsLookup = () => {
+			if (this.isSemanticTypes) {
+				return this.dataProfileService.GetPossibleRedactors();
+			}
+
+			return this.assetTypeService.GetAssetTypePossibleRedactors(this.assetTypeUid);
+		};
+
+		possibleRedactorsLookup().subscribe((res) => {
             this.currentField.Values = [];
             res.map((redactor) => {
                 if (params.filter) {
@@ -774,8 +806,9 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
 
     loadLookupValuesForOwners() {
         if (!this.currentField.Values || this.currentField.Values.length === 0) {
-            this.isLookupValuesLoading = true;
-            this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
+			this.isLookupValuesLoading = true;
+
+			this.assetTypeService.GetAssetTypePossibleOwners(this.assetTypeUid).subscribe((res) => {
                 this.currentField.Values = [];
                 let mapped: any[] = [];
                 res.forEach((item) => {
@@ -1391,7 +1424,11 @@ export class FilterItemComponent implements OnInit, OnChanges, OnDestroy {
             return false;
         }
         return this.nonValueOperators.indexOf(this.condition.operator.toString()) !== -1;
-    }
+	}
+
+	get isSemanticTypes() {
+		return this.loadIdentifier.toLowerCase() === "SemanticTypes".toLowerCase();
+	}
 
     get isAssetType() {
         return this.loadIdentifier.length === 36 && !this.loadIdentifier.startsWith("RuleResults");
