@@ -6,6 +6,7 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { ApiErrorOrResponse } from '../models/ApiErrorOrResponse';
 
 @Injectable({
     providedIn: 'root'
@@ -57,11 +58,32 @@ export class SurveysService extends BaseObservableService {
     }
 
 
-    saveSurveyType(surveyType: SurveyType): Observable<JsonResult> {
-        if (surveyType.ID == undefined || !surveyType.ID) {
-            return this.postDynamic(this.http, 'surveytype', surveyType);
+    saveSurveyType(surveyType: SurveyType): Observable<SurveyType> {
+        const headers = new HttpHeaders({
+            'Content-Type': 'application/json'
+        });
+
+        if (surveyType.Uid == null) {
+            return this.http.post(
+                    '/api/v2/survey/types', 
+                    JSON.stringify(surveyType),
+                     {headers }
+                )
+                .pipe(
+                    map(res => res as SurveyType),
+                    catchError(err => this.handleError(err))
+                );
         }
-        return this.putDynamic(this.http, 'surveytype', surveyType);
+        
+        return this.http.put(
+            `/api/v2/survey/types/${surveyType.Uid}`, 
+            JSON.stringify(surveyType),
+            { headers }
+        )
+        .pipe(
+            map(res => res as SurveyType),
+            catchError(err => this.handleError(err))
+        );
     }
 
     saveSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Observable<JsonResult> {

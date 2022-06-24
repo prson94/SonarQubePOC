@@ -30,13 +30,13 @@ namespace d360.web.Controllers
             var items = new List<SelectListItem>();
 
             //artifacts
-            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Class).ThenBy(i => i.Name).Select(i => new { i.Object, i.ObjectID, i.Name, i.Class }).ToList().Select(i => new SelectListItem { Text = $"{i.Class.GetDisplayName()} :: {i.Name}", Value = $"{i.Object}|{i.ObjectID}" }));
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Class).ThenBy(i => i.Name).Select(i => new { i.uid, i.Name, i.Class }).ToList().Select(i => new SelectListItem { Text = $"{i.Class.GetDisplayName()} :: {i.Name}", Value = i.uid.ToString() }));
 
             //models
-            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { i.uid, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = i.uid.ToString() }));
 
             //rules
-            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.RuleType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Rule Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.RuleType.ToString(), i.ID) }));
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.RuleType.ToString()).OrderBy(i => i.Name).Select(i => new { i.uid, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Rule Type :: {0}", i.Name), Value = i.uid.ToString() }));
 
             var orderedItems = items.OrderBy(x => x.Text).ToList();
 
@@ -56,7 +56,7 @@ namespace d360.web.Controllers
                 Row = 1, 
                 Column = 2,
                 Required = true,
-                FieldName = "Object",
+                FieldName = "AssetTypeUid",
                 Name = "Assign Survey To",
                 FieldType = DataType.Lookup.ToString(), 
                 Items = orderedItems 
@@ -94,9 +94,9 @@ namespace d360.web.Controllers
 
             list.Add(new EditableField 
             { 
-                FieldName = "ID",
+                FieldName = "Uid",
                 FieldType = DataType.Hidden.ToString(), 
-                Value = a.ID.ToString() 
+                Value = a.Uid.ToString() 
             });
             
             list.Add(new EditableField 

@@ -136,18 +136,18 @@ export class AdminSurveysComponent extends AdminBaseComponent {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-                    this.surveys.splice(this.findSurveyTypeIndex(id), 1);
+                    this.surveys.splice(this.findSurveyTypeIndex(id as any /* TODO: fix this hack */), 1);
                     this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
                 }
                 this.showDelete = false;
             });
     }
 
-    findSurveyTypeIndex(id: number) {
+    findSurveyTypeIndex(uid: string) {
         var index: number = -1;
         for (var survey of this.surveys) {
             index++;
-            if (survey.ID == id) return index;
+            if (survey.Uid == uid) return index;
         }
     }
 
@@ -165,14 +165,23 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     saveSurvey(event) {
         this.surveysService.saveSurveyType(event.item)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
+                if (result == null) {
+                    return;
+                }
+                
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+
+                if (event.item.Uid == undefined) {
+                    event.item.Uid = result.Uid;
                     this.surveys[this.surveys.length] = event.item;
                 }
                 else {
-                    this.surveys[this.findSurveyTypeIndex(event.item.ID)] = event.item;
+                    this.surveys[this.findSurveyTypeIndex(event.item.Uid)] = event.item;
                 }
+
                 this.selected = event.item;
                 this.showEditor = false;
             });
