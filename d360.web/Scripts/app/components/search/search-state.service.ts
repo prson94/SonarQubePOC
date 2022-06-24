@@ -343,7 +343,7 @@ export class SearchStateService extends BaseObservableService {
                 if (initialQuery && res.ElapsedMS.Query === 0) {
                     initialQuery = false;
                 } else {
-                    const pageNumber = this._query.From ?? 0 / this._query.Size ?? 25;
+					const pageNumber = (this._query.From ?? 0) / (this._query.Size ?? 25);
                     this._resultCount.next(res.Matches);
                     this._pageNumber.next(pageNumber);
                     this._results.next(res.Results);
