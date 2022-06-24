@@ -1058,14 +1058,25 @@ namespace d360.web.Controllers
 					var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
 					var loopCount = 0;
 
+					List<GridField> parentGridFields = new List<GridField>();
 					//add the parent columns
 					while (parentRefType != null && loopCount < 20)
 					{
 						columns.Insert(0, new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
-						fields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "ParentDisplayName", type = "string" });
+						parentGridFields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "", type = "string" });
 						parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
 						loopCount++;
 					}
+
+					var idx = 0;
+					//parent fields were added starting from child element up, meaning we need to reverse this list to get correct index segment withing asset path
+					parentGridFields.Reverse();
+					foreach (var parent in parentGridFields)
+					{
+						parent.apiName = $"PATH_SEGMENT_IDX_{idx}";
+						idx++;
+					}
+					fields.AddRange(parentGridFields);
 
 					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
