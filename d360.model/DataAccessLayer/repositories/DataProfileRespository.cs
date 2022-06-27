@@ -154,6 +154,19 @@ namespace d360.model.DataAccessLayer
 									{whereConditions}
 									";
 
+			var dataProfileSamplesSql = "";
+			if (includeSamples)
+			{
+				dataProfileSamplesSql = $@"
+						;with rs_Data as(select distinct ID from #assetdataprofileids)
+						select adps.AssetDataProfileId,adps.SampleType,adps.[Key],adps.[Value]
+						into #tempADPS
+						from AssetDataProfile ADP
+						inner join rs_Data ids on ids.ID = ADP.ID
+						inner join AssetDataProfileSample adps on adps.AssetDataProfileId = ADP.ID;";
+
+			}
+
 			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples, "inner join #assetdataprofileids ids on ids.ID = ADP.ID");
 
 			dbArgs.Add("@startDate", startDate.Date);
@@ -161,9 +174,14 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@assetId", asset.ID);
 
 			string sql = $@"
+						drop table if exists #tempADPS;
+
 						{dataProfileIdsSql}
 						order by ADP.[ProfileSetDate] desc
 						{offset}
+
+						{dataProfileSamplesSql}
+
 						{dataProfileSQL}
 						order by ADP.[ProfileSetDate] desc
 						for Json Path";
@@ -238,7 +256,28 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includesamples").Value, out includeSamples);
 			}
 
-			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples);
+			var dataProfileIdsSql = $@"
+						drop table if exists #tempADPS;
+						drop table if exists #assetdataprofileids
+						create table #assetdataprofileids (
+							id bigint, 
+							ProfileSetDate Date
+						);
+
+						insert into #assetdataprofileids
+						select ADP.ID, ADP.[ProfileSetDate]
+						from AssetDataProfile ADP
+						{whereConditions}
+						order by ADP.[ProfileSetDate] desc
+						{offset}";
+
+			var dataProfileSamplesSql = $@"
+						select adps.AssetDataProfileId,adps.SampleType,adps.[Key],adps.[Value]
+						into #tempADPS
+						from #assetdataprofileids tempADP
+						inner join AssetDataProfileSample adps on adps.AssetDataProfileId = tempADP.ID;";
+
+			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples,"inner join #assetdataprofileids ids on ids.ID = ADP.ID");
 
 			dbArgs.Add("@profileIdentifier", profileIdentifier);
 
@@ -255,10 +294,12 @@ namespace d360.model.DataAccessLayer
             }
 
 			string sql = $@"
+						{dataProfileIdsSql}
+
+						{dataProfileSamplesSql}
+
 						{dataProfileSQL}
-						{whereConditions}
 						order by ADP.[ProfileSetDate] desc
-						{offset}
 						for Json Path";
 			var jsonStrings = await CompanyContext.QueryAsync<string>(sql, dbArgs, ApiTimeout);
 			var json = string.Join("", jsonStrings);
@@ -976,7 +1017,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (            
 									select  (
 											select [key], [value] as Count
-																from AssetDataProfileSample
+																from #tempADPS
 																where
 																	AssetDataProfileId = ADP.ID
 																	and
@@ -987,7 +1028,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -998,7 +1039,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1009,7 +1050,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1020,7 +1061,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1031,7 +1072,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1042,7 +1083,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1053,7 +1094,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1064,7 +1105,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [key], [value] as Count
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1075,7 +1116,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [value]
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and
@@ -1086,7 +1127,7 @@ namespace d360.model.DataAccessLayer
 									outer apply (
 													select  (
 															select [value]
-															from AssetDataProfileSample
+															from #tempADPS
 															where
 																AssetDataProfileId = ADP.ID
 																and

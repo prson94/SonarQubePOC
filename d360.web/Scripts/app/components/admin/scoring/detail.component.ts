@@ -19,6 +19,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { RelationshipsService } from '../../../services/relationships.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 import { StringConstants } from '../../../static/string-constants';
+import { finalize } from 'rxjs/operators';
 import * as _ from 'lodash';
 
 @Component({
@@ -87,7 +88,16 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             this.selectedMetric = null;
             this.isLoading = true;
 
-            this.metricsService.getAllocationByUid(this.allocationUid).subscribe(res => {
+            this.metricsService.getAllocationByUid(this.allocationUid).pipe(
+				finalize(() => {
+					this.assetTypeService.GetAssetTypeByUid(this.assetTypeUid).subscribe((res) => {
+						if (res) {
+							this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
+						}
+						this.changeAssetType(this.selectedAssetType);
+					});
+				})
+			).subscribe((res) => {
                 this.allocation = res;
                 this.allocationCopy = _.cloneDeep(this.allocation);
                 this.formatScoreCalc();
@@ -122,13 +132,6 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     this.screenReferences = { ...this.screenReferences };
                     this.cdRef.markForCheck();
                 }
-            });
-
-            this.assetTypeService.GetAssetTypeByUid(this.assetTypeUid).subscribe(res => {
-                if (res) {
-                    this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
-                }
-                this.changeAssetType(this.selectedAssetType);
             });
 
             this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe(f => {
@@ -220,6 +223,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocation.uid, res);
 
                     this.headerBreadcrumbService.showBreadcrumb(crumb);
+
                     if (res && res.length > 0) {
                         const items = res.filter(x => { return x.uid == this.allocation.uid });
 
