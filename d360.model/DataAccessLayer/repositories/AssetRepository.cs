@@ -1198,6 +1198,7 @@ namespace d360.model.DataAccessLayer
 
 				if (parentUidPopulated)
 				{
+					fieldsUsedInMainQuery.Add("HParent");
 					if (parentUid.HasValue)
 					{
 						dbArgs.Add("parentUid", parentUid.Value);
@@ -1275,7 +1276,7 @@ namespace d360.model.DataAccessLayer
 			#region Build Base Query
 			bool includeTreeGridQuery = isForTreeGrid && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("lvl."));
 			bool includeColorQuery = includeColor && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("acj."));
-			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent."));
+			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent."));
 
 			List<string> includedJoins = new List<string>();
