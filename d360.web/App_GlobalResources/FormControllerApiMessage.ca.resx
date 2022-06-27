@@ -264,8 +264,17 @@
   <data name="FolderMovedDown" xml:space="preserve">
     <value>Fôℓδèř {0} ₥ôƲèδ δôωñ ƨúççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨú</value>
   </data>
+  <data name="FolderMovedToBottom" xml:space="preserve">
+    <value>Fôℓδèř {0} ₥ôƲèδ ƭô βôƭƭô₥ ƨúççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨú₥ </value>
+  </data>
+  <data name="FolderMovedToTop" xml:space="preserve">
+    <value>Fôℓδèř {0} ₥ôƲèδ ƭô ƭôƥ ƨúççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨú₥</value>
+  </data>
   <data name="FolderMovedUp" xml:space="preserve">
     <value>Fôℓδèř {0} ₥ôƲèδ úƥ ƨúççèƨƨƒúℓℓ¥.£ôřè₥ ïƥƨ</value>
+  </data>
+  <data name="FolderNameAlreadyExists" xml:space="preserve">
+    <value>Fôℓδèř ωïƭλ ñá₥è {0} áℓřèáδ¥ èжïƨƭƨ.£ôřè₥ ïƥƨú</value>
   </data>
   <data name="FolderNameNotEmpty" xml:space="preserve">
     <value>Fôℓδèř ñá₥è çáññôƭ βè è₥ƥƭ¥.£ôřè₥ ïƥ</value>

@@ -391,4 +391,12 @@
   <data name="TypeQualifierNotFound" xml:space="preserve">
     <value>T¥ƥè Qúáℓïƒïèř '{0}' δôèƨ ñôƭ èжïƨƭ£ôřè₥ ïƥƨú</value>
   </data>
+  <data name="SemanticTypeDisabledColumn" xml:space="preserve">
+    <value>Ðïƨáβℓèδ£ô</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
+  <data name="SemanticTypeEffectiveRangeColumn" xml:space="preserve">
+    <value>ÉƒƒèçƭïƲè Ráñϱè£ôřè</value>
+    <comment>Used for Semantic Types exports</comment>
+  </data>
 </root>
