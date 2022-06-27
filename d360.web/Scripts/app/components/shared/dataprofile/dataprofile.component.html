@@ -29,7 +29,8 @@
                     </div>
                 </div>
                 <div *ngIf="dataProfile.profileSetDate" class="effectiveDate">
-                    <span class="ig-value" i18n>Effective Date: {{dataProfile.profileSetDate | utcDate | date: 'dd MMM yyyy'}}</span>
+                    <span class="ig-value" i18n>Effective Date: </span>
+                    <span>{{dataProfile.profileSetDate | utcDate | date: 'dd MMM yyyy'}}<br />{{dataProfile.profileSetDate | utcDate | date: 'h:mm:ss a'}}</span>
                 </div>
                 <div *ngIf="showSampleSummary">
                     <div>

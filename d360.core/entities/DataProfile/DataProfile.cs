@@ -144,8 +144,8 @@ namespace d360.core.entities
 
         [Required]
         [DataMember]
-        [DataType(System.ComponentModel.DataAnnotations.DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
+        [DataType(System.ComponentModel.DataAnnotations.DataType.DateTime)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddThh:mm:ss}")]
         public DateTime profileSetDate { get; set; }
 
         [DataMember]
