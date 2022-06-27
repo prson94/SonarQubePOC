@@ -1625,5 +1625,39 @@ end
 		]]>
 	</rollback>
   </changeSet>
+  
+    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v2">
+  <comment>Update Data for reports</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		update r
+		set r.AssetTypeId = at.ID
+		from report r
+		inner join AssetType AT on AT.Object = R.ObjectType AND at.ObjectID = r.ObjectID 
+
+			update r
+		set r.Location = Location.Value
+		from report r
+		outer apply (
+		select 
+			case when IsType.Value = 0 then 2
+			when ShowOnHomePage = 1 then 3
+			else 1
+			end as Value
+			from Report rep
+			outer apply (Select count(1) as Value from Report where id = r.ID and rep.ObjectType like '%Type')IsType
+			where rep.ID = r.ID
+		)Location
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
