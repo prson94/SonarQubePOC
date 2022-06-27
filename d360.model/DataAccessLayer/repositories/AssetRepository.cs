@@ -558,6 +558,7 @@ namespace d360.model.DataAccessLayer
 
 				fieldJoins.Add(joinSql);
 				countJoins.Add(joinCountSql);
+				fieldsUsedInMainQuery.Add(joinCountSql);
 			}
 
 			if (includeRelationships)
