@@ -36,7 +36,8 @@
       border-bottom: 2px solid @ig-grey-t5;
 
       &:hover:not(.score-tbl-header) {
-        background-color: @ig-purple-t5;
+        background: var(--tableRowBackColorHover);
+        color: var( --calculatedTableRowTextColor);
       }
     }
 
@@ -89,18 +90,21 @@
         cursor: pointer;
 
         &:hover {
-          background-color: @ig-purple-t5;
+          background: var(--tableRowBackColorHover);
+          color: var( --calculatedTableRowTextColor);
           font-weight: bold;
           cursor: pointer;
         }
 
         &.selected {
-          background-color: @ig-purple-t4;
+          color: var( --calculatedTableRowTextColor);
+          background: var(--tableRowBackColor);
           font-weight: bold;
         }
 
         &.selected:hover {
-          background-color: @ig-purple-t4;
+          color: var( --calculatedTableRowTextColor);
+          background: var(--tableRowBackColor);
           cursor: default;
         }
       }

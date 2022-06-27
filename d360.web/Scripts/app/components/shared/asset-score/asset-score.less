@@ -61,15 +61,15 @@
       background: @ig-grey-t5;
 
       &:hover {
-        background: @ig-purple-t3;
+        background: @ig-grey-t4;
       }
 
       &:active {
-        background: @ig-purple-t2;
+        background: var(--secondaryButtonSelectedBackColor);
       }
 
       &.ig-state-active {
-        background: @ig-purple-t4;
+        background: var(--secondaryButtonSelectedBackColor);
         color: @ig-black;
       }
     }
@@ -114,11 +114,13 @@
       }
 
       &:hover {
-        background: @ig-purple-t5;
+        background: var(--tableRowBackColorHover);
+        color: var( --calculatedTableRowTextColor);
       }
 
       &.selected {
-        background: @ig-purple-t4;
+        color: var( --calculatedTableRowTextColor);
+        background: var(--tableRowBackColor);
       }
 
       .expander {
