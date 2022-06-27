@@ -43,6 +43,7 @@ import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.compon
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
+import { Param } from "../../enums/param.enum";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -331,6 +332,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return this.fields.find(x => x.name == oldname).apiName;
     }
 
+	_oldParamsJSON: string = '';
     getParams() {
         let autoDisplayParentSetting = this.gridObject.AutoDisplayParent === null ? true : this.gridObject.AutoDisplayParent;
         var params = new V2ApiFilters();
@@ -408,11 +410,17 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
         else {
             delete params['usegraphforparent'];
-        }
+		}
 
         if (this.newAdvancedFilters) {
             this.newAdvancedFilters.applyFilters(params);
-        }
+		}
+
+		params._includeTotal = true;
+		let paramsJson: string = params.countUpdateFilters();
+		if (paramsJson === this._oldParamsJSON) {
+			params._includeTotal = false;
+		}
 
         return params;
     }
@@ -422,10 +430,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
-        }
-        this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, this.getParams(), true)
+		}
+		var params = this.getParams();
+		this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, params, true)
             .pipe(debounceTime(200))
-            .subscribe(res => {
+			.subscribe(res => {
+				this._oldParamsJSON = params.countUpdateFilters();
+
                 this.items = res.items;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
@@ -481,8 +492,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     return foundColorToken;
                 }).length > 0;
 
-
-                this.totalRecords = res.total;
+				if (params._includeTotal) {
+					this.totalRecords = res.total;
+				}
                 if (this.initialTotalRecords == null) {
                     this.initialTotalRecords = res.total;
                 }
