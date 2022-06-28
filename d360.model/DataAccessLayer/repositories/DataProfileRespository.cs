@@ -141,7 +141,7 @@ namespace d360.model.DataAccessLayer
 									drop table if exists #assetdataprofileids
 									create table #assetdataprofileids (
 										id bigint, 
-										ProfileSetDate Date
+										ProfileSetDate DateTime
 									);
 									{descendantsSQL}
 									insert into #assetdataprofileids
@@ -169,8 +169,8 @@ namespace d360.model.DataAccessLayer
 
 			string dataProfileSQL = GetDataProfilesBaseSQL(includeSamples, "inner join #assetdataprofileids ids on ids.ID = ADP.ID");
 
-			dbArgs.Add("@startDate", startDate.Date);
-			dbArgs.Add("@endDate", endDate.Date);
+			dbArgs.Add("@startDate", startDate);
+			dbArgs.Add("@endDate", endDate);
 			dbArgs.Add("@assetId", asset.ID);
 
 			string sql = $@"
@@ -261,7 +261,7 @@ namespace d360.model.DataAccessLayer
 						drop table if exists #assetdataprofileids
 						create table #assetdataprofileids (
 							id bigint, 
-							ProfileSetDate Date
+							ProfileSetDate DateTime
 						);
 
 						insert into #assetdataprofileids
