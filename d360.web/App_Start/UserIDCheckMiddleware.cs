@@ -297,18 +297,10 @@ namespace d360.web
 		{
 			string authority = await getJwtAuthority(context);			
 			var authenticationSettings = context.Request.Get<CompanyOpenIdAuthenticationSettings>("AuthenticationSettings");
-			var discoveryUri = authenticationSettings.discoveryUri ?? authority;
+			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
 			telemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Authority : {authority}", SeverityLevel = SeverityLevel.Verbose });
-
 			telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Starting", SeverityLevel = SeverityLevel.Verbose });
-
-			if (string.IsNullOrEmpty(authority))
-			{
-				telemetry.TrackTrace(new TraceTelemetry { Message = $"Jwt Authority Uri is not set cannot continue", SeverityLevel = SeverityLevel.Verbose });
-
-				return null;
-			}
 
 			var clientFactory = HttpClientFactory.Create(new HttpClientHandler
 			{
