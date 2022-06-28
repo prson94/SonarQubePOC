@@ -6551,7 +6551,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 															group by R.ExecutionID, R.ItemNumber
 															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 										end",
-                                        new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.ModifyRelationships }, commandTimeout: timeout);
+                                        new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.EditRelationships }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
 
                     #endregion
@@ -7203,7 +7203,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 												inner join	#temppremissionObj S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber
 										where T.ExecutionID= @ExecutionID;
 										end",
-                    new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.ModifyRelationships }, commandTimeout: timeout);
+                    new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.AddRelationships }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
 
                     #endregion
