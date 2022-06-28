@@ -19,8 +19,10 @@ namespace d360.core.entities
         public string baseUri { get; set; }
         
         public string discoveryUri { get; set; }
-        
-        public string clientId { get; set; }
+
+		public string jwtAuthorityUri { get; set; }
+
+		public string clientId { get; set; }
         
         public string clientSecret { get; set; }
         
