@@ -17,7 +17,7 @@
                              [debounce]="600"
                              (onSearch)="onSimpleSearch($event)"
                              [(ngModel)]="stateService.artifactTypeFilters.simpleTextFilter"
-                             [infoTooltip]="simpleSearchTooltipHTML">
+                             [infoTooltip]="isContainsSearchDefault ? null : simpleSearchTooltipHTML">
             </ig-search-field>
         </div>
         <div class="grid-action-buttons">
