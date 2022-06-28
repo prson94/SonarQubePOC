@@ -1626,7 +1626,7 @@ end
 	</rollback>
   </changeSet>
   
-    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v2">
+    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.4">
   <comment>Update Data for reports</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1638,7 +1638,7 @@ end
 		from report r
 		inner join AssetType AT on AT.Object = R.ObjectType AND at.ObjectID = r.ObjectID 
 
-			update r
+		update r
 		set r.Location = Location.Value
 		from report r
 		outer apply (
@@ -1651,6 +1651,20 @@ end
 			outer apply (Select count(1) as Value from Report where id = r.ID and rep.ObjectType like '%Type')IsType
 			where rep.ID = r.ID
 		)Location
+
+		update dbo.report set ReportType = 1 where ReportType = 'powerbi'
+		update dbo.report set ReportType = 2 where ReportType = 'sagacity'
+
+		update  r
+		set r.Definition = JSON.val
+		from dbo.Report r
+		outer apply (select PowerBIReportID as powerBiReportId,
+		PowerBIDatasetID as powerBiDatasetId,
+		[FileName] as fileName,
+		[url] as url
+		from dbo.Report
+		where id = r.ID
+		FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER)JSON(val)
 
 		]]>
     </sql>

@@ -42,6 +42,7 @@ namespace d360.model
             builder.RegisterType<DataProfileRepository>().As<IDataProfileRepository>().InstancePerRequest();
             builder.RegisterType<SemanticsRepository>().As<ISemanticsRepository>().InstancePerRequest();
             builder.RegisterType<ThemeRepository>().As<IThemeRepository>().InstancePerRequest();
+            builder.RegisterType<DashboardRepository>().As<IDashboardRepository>().InstancePerRequest();
 
             builder.RegisterType<AssetTypeDapperRepository>().As<IAssetTypeRepository>().InstancePerRequest();
         }

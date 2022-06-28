@@ -1,6 +1,6 @@
 ﻿import { Component, ElementRef, Input, OnChanges, SimpleChange } from "@angular/core";
 import * as pbi from "powerbi-client";
-import { Dashboard, DashboardTokens } from "../../../models/dashboard.model";
+import { DashboardModel, DashboardTokens } from "../../../models/dashboard.model";
 import { DashboardService } from "../../../services/dashboard.service";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { WebAnalyticsService } from "../../../services/web-analytics.service";
@@ -13,7 +13,7 @@ import { BaseComponent } from "../../shared/base.component";
 })
 
 export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
-    @Input() dashboard: Dashboard;
+	@Input() dashboard: DashboardModel;
 
     private powerBIDetails: DashboardTokens;
     private shouldRender = false;
@@ -88,44 +88,44 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
                     });
             });
 
-            this.logAction("open", "Report", this.dashboard.ID);
+			this.logAction("open", "Report", this.dashboard.uid);
         }
     }
 
     setPowerBiFilters(report: pbi.Report, objectIdTable: string, objectTable: string) {
-        if (objectTable && objectIdTable) {
-            report.removeFilters();
+        //if (objectTable && objectIdTable) {
+        //    report.removeFilters();
 
-            const newFilters: pbi.models.IBasicFilter[] = [
-                {
-                    $schema: "http://powerbi.com/product/schema#basic",
-                    target: {
-                        table: objectIdTable,
-                        column: "ObjectID"
-                    },
-                    operator: "In",
-                    values: [this.dashboard.ObjectID],
-                    filterType: 1
-                },
-                {
-                    $schema: "http://powerbi.com/product/schema#basic",
-                    target: {
-                        table: objectTable,
-                        column: "Object"
-                    },
-                    operator: "In",
-                    values: [this.dashboard.ObjectType],
-                    filterType: 1
-                }
-            ];
+        //    const newFilters: pbi.models.IBasicFilter[] = [
+        //        {
+        //            $schema: "http://powerbi.com/product/schema#basic",
+        //            target: {
+        //                table: objectIdTable,
+        //                column: "ObjectID"
+        //            },
+        //            operator: "In",
+        //            values: [this.dashboard.ObjectID],
+        //            filterType: 1
+        //        },
+        //        {
+        //            $schema: "http://powerbi.com/product/schema#basic",
+        //            target: {
+        //                table: objectTable,
+        //                column: "Object"
+        //            },
+        //            operator: "In",
+        //            values: [this.dashboard.ObjectType],
+        //            filterType: 1
+        //        }
+        //    ];
 
-            report.setFilters(newFilters);
-        }
+        //    report.setFilters(newFilters);
+        //}
     }
 
     loadTokens() {
-        this.isLoading = true;
-        this.dashboardService.getPowerBIReportTokens(this.dashboard.PowerBIReportID).subscribe(
+		this.isLoading = true;
+		this.dashboardService.getPowerBIReportTokens(this.dashboard.Definition.powerBiReportId).subscribe(
             (result) => {
                 this.shouldRender = true; /* make sure only one call to power bi per load of this. */
                 this.powerBIDetails = result;

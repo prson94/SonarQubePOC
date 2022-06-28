@@ -21,3 +21,20 @@ export class DashboardTokens {
     AccessToken: string;
     Report: PowerBIReport;
 }
+
+export class Definition {
+	url: string;
+	fileName: string;
+	powerBiReportId: string;
+	powerBiDatasetId: string;
+}
+
+export class DashboardModel {
+	uid: string;
+	AssetTypeUid: string;
+	Name: string;
+	Description: string;
+	DashboardType: string;
+	Location: string;
+	Definition: Definition;
+}

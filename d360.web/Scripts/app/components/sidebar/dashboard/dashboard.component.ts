@@ -2,7 +2,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { DashboardService } from '../../../services/dashboard.service';
-import { Dashboard } from '../../../models/dashboard.model'
+import { Dashboard, DashboardModel } from '../../../models/dashboard.model'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -17,10 +17,10 @@ import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
 })
 
 export class DashboardComponent extends BaseComponent implements OnInit, OnDestroy {
-    private sub: any;
-    dashboards: Dashboard[] = [];
-    dashboard: Dashboard;
-    selected: Dashboard;
+	private sub: any;
+	dashboards: DashboardModel[] = [];
+	dashboard: DashboardModel;
+	selected: DashboardModel;
     dashboardName: string;
     reportID: number;
     showSingle: boolean = false;
@@ -74,8 +74,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
             if (this.selected) {
                 let dashboardCrumb = new Breadcrumb(
-                    this.selected.Name,
-                    SiteUrlHelpers.getObjectUrl("Dashboard", this.selected.ID),
+					this.selected.Name,
+					SiteUrlHelpers.getObjectUrl("Dashboard", this.selected.uid),
                     false
                 );
                 this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
@@ -101,13 +101,13 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         }
     }
 
-    private loadAvailableDashboards() {
+	private loadAvailableDashboards() {
         this.isLoading = true;
-        if (this.reportID > 0) {
-            this.dashboardService.getDashboardByID(this.reportID).subscribe(
+		if (this.selected) {
+			this.dashboardService.getDashboardsV2(this.selected.uid).subscribe(
                 result => {
                     if (result) {
-                        this.selected = result;
+                        this.selected = result[0];
                         this.showSingle = true;
                     }
                     else {
@@ -123,24 +123,23 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                     this.isLoading = false;
                 }
             );
-        } else {
-            this.dashboardService.getDashboards(this.objectID, this.objectType).subscribe(
-                result => {
-                    this.dashboards = result;
-                    if (this.objectType && this.objectID && this.dashboardName) {
-                        this.selected = this.dashboards[0];
-                        this.showSingle = true;
-                    }
+		} else {
+			this.dashboardService.getDashboardsV2()
+				.subscribe((res) => {
+					this.dashboards = res;
+					if (this.objectType && this.objectID && this.dashboardName) {
+						this.selected = this.dashboards[0];
+						this.showSingle = true;
+					}
 
-                    if (this.showSingle || this.objectType == undefined) {
-                        this.buildBreadcrumb(true);
-                    } else {
-                        this.buildBreadcrumb(false);
-                    }
+					if (this.showSingle || this.objectType == undefined) {
+						this.buildBreadcrumb(true);
+					} else {
+						this.buildBreadcrumb(false);
+					}
 
-                    this.isLoading = false;
-                }
-            );
+					this.isLoading = false;
+				});
         }
     }
 

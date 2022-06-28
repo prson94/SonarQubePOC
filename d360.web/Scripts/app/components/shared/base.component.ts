@@ -125,7 +125,7 @@ export class BaseComponent {
         tileService.setTitle(`${this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix)} - ${area}`);
     }
 
-    logAction(actionName: string, objectName: string, objectId: number) {
+    logAction(actionName: string, objectName: string, objectId: number | string) {
         if (this.webAnalyticsService) {
             this.webAnalyticsService.logActivity({
                 Activity: actionName,

@@ -32,66 +32,7 @@ namespace d360.web.Controllers
 
         #endregion
 
-        private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
-        private static readonly string pbiPassword = ConfigurationManager.AppSettings["pbiPassword"];
-        private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
-        private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
-        private static readonly string pbiUrl = "https://api.powerbi.com";
-
-        [Route("powerbi/tokens/{reportId}")]
-        public async Task<JsonNetResult> GetPowerBITokens(string reportId)
-        {
-            var companySettings = SettingsRepository.GetSettings();
-            var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
-            var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
-
-            if (string.IsNullOrEmpty(groupId))
-            {
-                throw new ArgumentNullException(FormControllerApiMessage.PowerBINotSetupOnGovernEnvironment);
-            }
-
-            // Create a user password cradentials.
-            var credential = new UserPasswordCredential(pbiUsername, pbiPassword);
-
-            // Authenticate using created credentials
-            var authenticationContext = new AuthenticationContext(pbiAuthorityUrl);
-            var authenticationResult = await authenticationContext.AcquireTokenAsync(pbiResourceUrl, clientId, credential);
-
-            if (authenticationResult == null)
-            {
-                return jsonNetException(FormControllerApiMessage.AuthenticationFailed, HttpStatusCode.BadRequest);
-            }
-
-            var tokenCredentials = new TokenCredentials(authenticationResult.AccessToken, "Bearer");
-
-            using (var client = new PowerBIClient(new Uri(pbiUrl), tokenCredentials))
-            {
-                var reportsResponse = await client.Reports.GetReportsAsync(groupId);
-                var report = reportsResponse.Value.FirstOrDefault(r => string.Compare(r.Id, reportId, true) == 0);
-
-                if (report == null)
-                {
-                    return jsonNetException(FormControllerApiMessage.NoSuchReport, HttpStatusCode.BadRequest);
-                }
-
-                Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest generateTokenRequestParameters = new Microsoft.PowerBI.Api.V2.Models.GenerateTokenRequest(accessLevel: "view");
-
-                var tokenResponse = await client.Reports.GenerateTokenInGroupAsync(groupId, report.Id, generateTokenRequestParameters);
-
-                if (tokenResponse == null)
-                {
-                    return jsonNetException(FormControllerApiMessage.FailedGenerateToken, HttpStatusCode.BadRequest);
-                }
-
-                var viewModel = new PowerBIReportViewModel
-                {
-                    Report = report,
-                    AccessToken = tokenResponse.Token
-                };
-
-                return new JsonNetResult { Data = viewModel, Formatting = Newtonsoft.Json.Formatting.None };
-            }
-        }
+        
 
         [Route("reports")]
         public JsonNetResult GetReports()
