@@ -1293,6 +1293,8 @@ namespace d360.model.DataAccessLayer
 				includeParentUIDSelect = true;
 				includeParentQuery = includeParent;
 			}
+			includedJoins = includedJoins.Distinct().ToList();
+
 			var assetCountJoins = new AssetQueryJoins(includedJoins);
 			var filteredSelect = $@"select  A.ID
 				from    Asset A 
