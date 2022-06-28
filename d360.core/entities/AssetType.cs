@@ -129,6 +129,12 @@ namespace d360.core.entities
 		[DataMember]
 		public string Description { get; set; }
 
+		/// <summary>
+		/// Kept for backwards compatibility with Analyze.
+		/// </summary>
+		[DataMember]
+		public bool AutoDisplayDescription { get; set; } = true;
+
 		[DataMember]
 		public bool Hierarchical { get; set; }
 
