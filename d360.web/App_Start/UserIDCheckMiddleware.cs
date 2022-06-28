@@ -426,7 +426,7 @@ namespace d360.web
 
 						if (updatedResource)
 						{
-							await community.ExecuteAsync($"update [Resource] set {string.Join(", ", updateFields)} where ID = @resourceID", new { resourceId = resource.ID });
+							await community.ExecuteAsync($"update [Resource] set {string.Join(", ", updateFields)} where ID = @resourceID", new { resourceId = resource.ID, firstName, lastName });
 						}
 					}
 					else
