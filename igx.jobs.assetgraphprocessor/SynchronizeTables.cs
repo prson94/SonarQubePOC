@@ -70,19 +70,7 @@ namespace igx.jobs.assetgraphprocessor
                         {
                             const int timeout = 60 * 360; // 6 hours
 
-                            try
-                            {
-                                conn.Open();
-                                //await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
-                            }
-                            catch (Exception ex)
-                            {
-                                CoreFunction.AITrackException(functionName, ex, company.CompanyID);
-                            }
-                            finally
-                            {
-                                await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
-                            }
+                             await companyContext.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
                         }
                     }
 
