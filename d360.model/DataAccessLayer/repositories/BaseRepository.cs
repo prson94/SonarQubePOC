@@ -931,8 +931,7 @@ namespace d360.model.DataAccessLayer.repositories
 						List<string> sortStatements = new List<string>();
 						orderFields.ForEach(ft =>
 						{
-							fieldsUsedInMainQuery.AddRange(ft.Where(x=> x.Type != "Counter").Select(x => "F" + x.ID.ToString() + "."));
-							fieldsUsedInMainQuery.AddRange(ft.Where(x=> x.Type == "Counter").Select(x => "F" + x.ID.ToString()));
+							fieldsUsedInMainQuery.AddRange(ft.Select(x => "F" + x.ID.ToString()));
 							if (ft.Count() == 1)
 							{
 								var sortDirection = ft.FirstOrDefault().SortByAscending ? "asc" : "desc";
