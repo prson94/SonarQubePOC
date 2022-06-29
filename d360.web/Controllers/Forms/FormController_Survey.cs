@@ -142,47 +142,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Form Get/Post
-
-        [HttpDelete, Route("DeleteSurveyType")]
-        public JsonResult DeleteSurveyType(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                }
-
-                if (!form.HasKeys())
-                {
-                    throw new NoFormDataException(FormControllerApiMessage.SurveyType);
-                }
-
-                var id = parseIntField(form, "ID");
-
-                // delete this surveys questions..
-                Company.Delete<Question>(i => i.Survey.SurveyTypeID == id);
-                Company.Delete<Survey>(i => i.SurveyTypeID == id);
-                Company.Delete<QuestionType>(i => i.SurveyTypeID == id);
-                Company.Delete<SurveyType>(i => i.ID == id);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyRemoved, FormControllerApiMessage.Item), id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region QuestionType
