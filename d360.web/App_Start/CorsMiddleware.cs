@@ -12,11 +12,8 @@ namespace d360.web
 {
     public class CorsMiddleware : BaseMiddleware
     {
-        private readonly Func<IDictionary<string, object>, Task> _next;
-
-        public CorsMiddleware(Func<IDictionary<string, object>, Task> next)
+        public CorsMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
         {
-            _next = next;
         }
 
         public async Task Invoke(IDictionary<string, object> environment)
@@ -67,7 +64,7 @@ namespace d360.web
                 }
             }
 
-            await _next.Invoke(environment);
+            await Next(environment);
         }
     }
 }
