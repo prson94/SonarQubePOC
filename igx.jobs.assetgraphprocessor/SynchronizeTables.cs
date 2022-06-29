@@ -73,7 +73,7 @@ namespace igx.jobs.assetgraphprocessor
                             try
                             {
                                 conn.Open();
-                                await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
+                                //await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
                             }
                             catch (Exception ex)
                             {

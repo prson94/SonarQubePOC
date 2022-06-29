@@ -36,7 +36,7 @@ namespace igx.jobs.assetgraphprocessor
                 try
                 {
                     companyConnection.Open();
-                    await companyConnection.ExecuteAsync(@"graph.UpdateAssetEdge @uid", new { uid = info.Uid }, commandTimeout: timeout);
+                    //await companyConnection.ExecuteAsync(@"graph.UpdateAssetEdge @uid", new { uid = info.Uid }, commandTimeout: timeout);
                 }
                 catch (Exception ex)
                 {

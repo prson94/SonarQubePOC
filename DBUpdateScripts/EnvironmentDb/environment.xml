@@ -404,12 +404,6 @@
 	<include file="scripts/Procedure.graph.AssetBrowser_Impact.xml"/>
 	<include file="scripts/Procedure.graph.AssetBrowser_Lineage.xml"/>
 	<include file="scripts/Procedure.graph.PopulatePathsForAssetType.xml"/>
-	<include file="scripts/Procedure.graph.SynchronizeAssetExecution.xml"/>
-	<include file="scripts/Procedure.graph.SynchronizeRelationshipExecution.xml"/>
-	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
-	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
-	<include file="scripts/Procedure.graph.UpdateAssetNode.xml"/>
-	<include file="scripts/Procedure.graph.UpdateGraphTableHierarchyBy.xml"/>
 	<include file="scripts/Procedure.metrics.BuildDataQualityMeasureQuery.xml"/>
 	<include file="scripts/Procedure.metrics.CalculateRollups.xml"/>
 	<include file="scripts/Procedure.metrics.CleanupExecutions.xml"/>
