@@ -37,14 +37,31 @@ namespace d360.model.DataAccessLayer
 
 		#endregion
 
-		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync()
+		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location)
 		{
+			var dbArgs = new DynamicParameters();
+			List<string> whereStatements = new List<string>();
+
+			if (uid.HasValue)
+			{
+				dbArgs.Add("uid", uid);
+				whereStatements.Add("r.uid = @uid");
+			}
+
+			if (location.HasValue)
+			{
+				dbArgs.Add("location", (int)location);
+				whereStatements.Add("r.location = @location");
+			}
+
+			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);
 
 			return (await CompanyContext.Database.Connection
-				.QueryAsync<DashboardApiGetModel>(@"
+				.QueryAsync<DashboardApiGetModel>(@$"
 					select r.uid, r.Name, r.Description, at.uid as assetTypeUid, r.ReportType as DashboardType, r.Location, Definition as '_definitionJson'
 					from dbo.Report r
-					left join assettype at on at.id = r.AssetTypeID")).ToList();
+					left join assettype at on at.id = r.AssetTypeID
+					{whereSql}", dbArgs)).ToList();
 		}
 	}
 }

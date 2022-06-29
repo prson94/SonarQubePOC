@@ -30,7 +30,7 @@ export class DashboardService extends BaseObservableService {
 
 		return this
 			.http
-			.get(`reports/bycontext/${objectType}/${objectID}`)
+			.get(`reports_no/bycontext/${objectType}/${objectID}`)
 			.pipe(
 				map((response) => <Dashboard[]>response),
 				catchError((err) => this.handleError(err))
@@ -40,27 +40,22 @@ export class DashboardService extends BaseObservableService {
 	getDashboardByID(reportID: number): Observable<Dashboard> {
 		return this
 			.http
-			.get(`reports/byid/${reportID}`)
+			.get(`reports_no/byid/${reportID}`)
 			.pipe(
 				map(response => <Dashboard>response),
 				catchError(err => this.handleError(err))
 			);
 	}
 
-	getHomePageDashboards(): Observable<Dashboard[]> {
-		return this
-			.http
-			.get('reports/home')
-			.pipe(
-				map(response => <Dashboard[]>response),
-				catchError(err => this.handleError(err))
-			);
-	}
 
-	getDashboardsV2(dashboardUid: string = ''): Observable<DashboardModel[]> {
+
+	getDashboardsV2(dashboardUid: string = '', location: number = null): Observable<DashboardModel[]> {
 		var params = {};
 		if (dashboardUid) {
 			params["uid"] = dashboardUid;
+		}
+		if (location) {
+			params["location"] = location;
 		}
 		var qString = '';
 		if (params) {
@@ -77,6 +72,11 @@ export class DashboardService extends BaseObservableService {
 				catchError(err => this.handleError(err))
 			);
 	}
+
+	getHomePageDashboards(): Observable<DashboardModel[]> {
+		return this.getDashboardsV2('', 3);
+	}
+
 
 	getPowerBIReportTokens(reportId: string): Observable<DashboardTokens> {
 		return this

@@ -4,7 +4,7 @@ import { Title } from "@angular/platform-browser";
 
 import { Breadcrumb } from "../../models/breadcrumb.model";
 import { WorkflowType } from "../../models/workflow.model";
-import { Dashboard } from "../../models/dashboard.model";
+import { Dashboard, DashboardModel } from "../../models/dashboard.model";
 
 import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
 import { SecondaryNavService } from "../../services/right-sidebar.service";
@@ -51,7 +51,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public numTiles: number = 3;
     private colSize = 4;
     public hasResults = false;
-    public dashboard: Dashboard = null;
+    public dashboard: DashboardModel = null;
     private sub;
 
     constructor(

@@ -103,7 +103,7 @@ namespace d360.core.entities
 		DqPlus = 2
 	}
 
-	public enum Location
+	public enum DashboardLocation
 	{
 		List = 1,
 		Detail = 2,
@@ -123,7 +123,7 @@ namespace d360.core.entities
 		public DashboardType DashboardType { get; set; }
 		[DataMember]
 		[JsonConverter(typeof(StringEnumConverter))]
-		public Location Location { get; set; }
+		public DashboardLocation Location { get; set; }
 		[DataMember]
 		public DashboardDefinition Definition
 		{
