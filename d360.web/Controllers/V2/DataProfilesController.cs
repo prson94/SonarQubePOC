@@ -1746,7 +1746,8 @@ namespace d360.web.Controllers.V2
 			Route("possibleCreators"),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Semantic Types."),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetPossibleCreators()
 		{
@@ -1760,7 +1761,8 @@ namespace d360.web.Controllers.V2
 			Route("possibleRedactors"),
 			SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "A list of users who were editing Semantic Types."),
-			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetPossibleRedactors()
 		{
