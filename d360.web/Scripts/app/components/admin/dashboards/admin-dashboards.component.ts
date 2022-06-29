@@ -1,6 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ReportsService } from '../../../services/reports.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Report } from '../../../models/report.model';
@@ -9,19 +8,21 @@ import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { DashboardService } from '../../../services/dashboard.service';
+import { DashboardModel } from '../../../models/dashboard.model';
 
 @Component({
     selector: 'd3s-admin-dashboards-component',
-    providers: [ReportsService],
+	providers: [DashboardService],
     templateUrl: 'admin-dashboards.component.html'
 })
 
 export class AdminDashboardsComponent extends AdminBaseComponent implements OnDestroy, OnInit {
     showEditor: boolean = false;
     showDelete: boolean = false;
-    showCredentials: boolean = false;
-    reports: Report[] = [];
-    selected: Report;
+	showCredentials: boolean = false;
+	dashboards: DashboardModel[] = [];
+	selected: DashboardModel;
     theDeleteCallback: Function;
     powerBiUser: string;
     powerBiPassword: string;
@@ -32,8 +33,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     constructor(
         private stateService: StateService,
-        secondaryNavService: SecondaryNavService,
-        protected reportsService: ReportsService,
+		secondaryNavService: SecondaryNavService,
+		protected dashboardService: DashboardService,
         protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         protected settingsService: CompanySettingsService,
@@ -44,58 +45,57 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     }
 
     selectedItemChange() {
-        if (this.selected)
-            this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
+        //if (this.selected)
+        //    this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
     }
 
     ngOnInit() {
-        this.loadReports();
+		this.loadDashboards();
     }
 
     ngOnDestroy() {
         this.clearSidebar();
     }
 
-    private loadReports() {
-        this.isLoading = true;
-        this.reportsService.getReports().subscribe(result => {
+    private loadDashboards() {
+		this.isLoading = true;
+		this.dashboardService.getDashboardsV2().subscribe(result => {
             this.isLoading = false;
-            for (var report of result) {
-                if (report.ReportType == 'sagacity') report.DisplayType = 'Data360 DQ+';
-                else report.DisplayType = report.ReportType;
-            }
-            this.reports = result;
-            this.selected = (this.reports.length > 0 ? this.reports[0] : null);
+			this.dashboards = result;
+			this.dashboards.forEach((dashboard) => {
+				dashboard.TypeDisplayValue = dashboard.DashboardType === 'DqPlus' ? 'Data360 DQ+' : dashboard.DashboardType;
+			});
+			this.selected = (this.dashboards.length > 0 ? this.dashboards[0] : null);
             this.selectedItemChange();
         });
     }
 
-    findReportIndex(id: number) {
+    findReportIndex(uid: string) {
         var index: number = -1;
-        for (var report of this.reports) {
+		for (var dashboard of this.dashboards) {
             index++;
-            if (report.ID == id) return index;
+			if (dashboard.uid == uid) return index;
         }
     }
 
-    deleteReport(id: number) {
-        this.reportsService.deleteReport(id)
-            .subscribe(result => {
-                this.showDelete = false;
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.selected = this.reports.length > 0 ? this.reports[0] : null;
-                    this.reports.splice(this.findReportIndex(id), 1);
-                    this.selectedItemChange();
-                }
+    deleteReport(uid: string) {
+		//this.dashboardService.deleteReport(id)
+  //          .subscribe(result => {
+  //              this.showDelete = false;
+  //              this.showMessageForResult(this.messagesService, result);
+  //              if (result.type != 'error') {
+		//			this.selected = this.dashboards.length > 0 ? this.dashboards[0] : null;
+		//			this.dashboards.splice(this.findReportIndex(id), 1);
+  //                  this.selectedItemChange();
+  //              }
 
-                this.stateService.reloadLeftNavMenu();
-            });
+  //              this.stateService.reloadLeftNavMenu();
+  //          });
     }
 
     saveReport(event) {
         this.isLoading = true;
-        this.reportsService.saveReport(event.report, event.file)
+		this.dashboardService.saveReport(event.report, event.file)
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 let parts = event.report.ObjectType.split('|');
@@ -105,10 +105,10 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 }
                 if (event.report.ID == undefined) {
                     event.report.ID = Number(result.id);
-                    this.reports[this.reports.length] = event.report;
+					this.dashboards[this.dashboards.length] = event.report;
                 }
                 else {
-                    this.reports[this.findReportIndex(event.report.ID)] = event.report;
+					this.dashboards[this.findReportIndex(event.report.ID)] = event.report;
                 }
 
                 if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data360 DQ+';
@@ -130,7 +130,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     closeEditor() {
         this.showEditor = false;
         if (this.selected == null) {
-            this.selected = this.reports.length > 0 ? this.reports[0] : null;
+			this.selected = this.dashboards.length > 0 ? this.dashboards[0] : null;
             this.selectedItemChange();
         }
     }
@@ -143,7 +143,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     private onSubmitPowerCreds() {
         this.isLoading = true;
-        this.reportsService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
+		this.dashboardService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
             .subscribe(result => {
                 this.isLoading = false;
                 this.showMessageForResult(this.messagesService, result);

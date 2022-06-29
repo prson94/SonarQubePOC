@@ -1,17 +1,17 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import { ReportsService } from '../../../services/reports.service';
 import { Report } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { DashboardService } from '../../../services/dashboard.service';
 
 @Component({
     selector: 'd3s-admin-dashboards-editor',
-    templateUrl: 'admin-dashboards-editor.component.html',
-    providers: [ReportsService, ResponsibilityTypeService],
+	templateUrl: 'admin-dashboards-editor.component.html',
+	providers: [DashboardService, ResponsibilityTypeService],
 })
 
 export class AdminDashboardsEditor {
@@ -31,7 +31,7 @@ export class AdminDashboardsEditor {
     labelClose = $localize`Close`;
 
     constructor(
-        private reportsService: ReportsService,
+		private dashboardService: DashboardService,
         private responsibilityTypeService: ResponsibilityTypeService,
         protected settingsService: CompanySettingsService
     ) {
@@ -65,7 +65,7 @@ export class AdminDashboardsEditor {
 
     getReportTargets() {
         this.isTargetsLoading = true;
-        this.reportsService.getReportTargetTypes()
+		this.dashboardService.getReportTargetTypes()
             .subscribe(result => {
                 this.targetTypes = result;
                 this.isTargetsLoading = false;

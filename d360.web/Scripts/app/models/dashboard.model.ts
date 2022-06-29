@@ -37,4 +37,5 @@ export class DashboardModel {
 	DashboardType: string;
 	Location: string;
 	Definition: Definition;
+	TypeDisplayValue: string;
 }
