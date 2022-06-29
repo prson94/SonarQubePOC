@@ -16,6 +16,7 @@ namespace d360.model.helpers
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
         private readonly List<int> filteredFieldIDs = new List<int>();
+        public List<string> filteredCustomFields = new List<string>();
         private readonly FilterExpressionParseType parseType;
         private readonly List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
         private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
@@ -176,8 +177,9 @@ namespace d360.model.helpers
             try
             {
                 fieldIds = filteredFieldIDs;
+				filteredCustomFields.Clear();
 
-                sqlParams = new Dictionary<string, object>();
+				sqlParams = new Dictionary<string, object>();
                 if (string.IsNullOrEmpty(filterString))
                 {
                     return "";
@@ -310,13 +312,16 @@ namespace d360.model.helpers
                 if (allowedDefaultFields.Any(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant()))
                 {
                     DefaultFilter val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLowerInvariant() == fieldName.ToLowerInvariant());
-                    
-                    return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
+					filteredCustomFields.Add(fieldName);
+
+					return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
                 else if (registerTokensAsFields == true)
                 {
                     DefaultFilter val = new DefaultFilter(fieldName, fieldName, SqlFieldType.Text);
-                    return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
+					filteredCustomFields.Add(fieldName);
+
+					return new DefaultFieldToken(fdp, field, op, value, val, paramIdx);
                 }
                 else if (fieldName.StartsWith("$ownedbyandresponsibility"))
                 {

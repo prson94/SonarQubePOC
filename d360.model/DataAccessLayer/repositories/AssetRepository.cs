@@ -869,6 +869,7 @@ namespace d360.model.DataAccessLayer
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 					fieldsUsedInMainQuery.AddRange(filteredFields.Select(x => "F" + x));
+					fieldsUsedInMainQuery.AddRange(filterExpressionParser.filteredCustomFields);
 
 					// check if the advanced filter contains a filter by asset path
 					foreach (var fieldTypeId in filteredFields)
@@ -1277,7 +1278,7 @@ namespace d360.model.DataAccessLayer
 			bool includeTreeGridQuery = isForTreeGrid && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("lvl."));
 			bool includeColorQuery = includeColor && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("acj."));
 			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
-			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent."));
+			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			List<string> includedJoins = new List<string>();
 			fieldsUsedInMainQuery.ForEach(field =>
