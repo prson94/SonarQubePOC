@@ -48,8 +48,13 @@ export class SurveysService extends BaseObservableService {
             );
     }
 
-    deleteSurveyTypeById(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'surveytype', id);
+    deleteSurveyTypeById(uid: string): Observable<boolean> {
+        return this.http
+            .delete(`/api/v2/survey/types/${uid}`)
+            .pipe(
+                map(res => true),
+                catchError(err => this.handleError(err))
+            );
     }
 
 

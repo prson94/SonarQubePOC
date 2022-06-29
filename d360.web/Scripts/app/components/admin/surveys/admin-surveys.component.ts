@@ -60,7 +60,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
                             <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
-                                [itemId]="selected?.ID"
+                                [itemId]="selected?.Uid"
                                 [method]="'callback'"
                                 [prompt]="deletePromptText"                                         
                                 (onCancel)="showDelete=false;"
@@ -130,15 +130,23 @@ export class AdminSurveysComponent extends AdminBaseComponent {
             }, err => { this.error = err })
     }
 
-    deleteSurveyType(id: number) {
-        this.surveysService.deleteSurveyTypeById(id).
+    deleteSurveyType(uid: string) {
+        this.surveysService.deleteSurveyTypeById(uid).
             subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                //remove the template with this id from the grid
-                if (result.type != 'error') {
-                    this.surveys.splice(this.findSurveyTypeIndex(id as any /* TODO: fix this hack */), 1);
-                    this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
+                if (result !== true) {
+                    // error happened
+                    this.showDelete = false;
+                    return;
                 }
+                
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+
+                //remove the template with this id from the grid
+                this.surveys.splice(this.findSurveyTypeIndex(uid), 1);
+                this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
                 this.showDelete = false;
             });
     }
@@ -168,7 +176,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
                 if (result == null) {
                     return;
                 }
-                
+
                 this.messagesService.showInfoMessage(
                     null,
                     $localize`Success`
