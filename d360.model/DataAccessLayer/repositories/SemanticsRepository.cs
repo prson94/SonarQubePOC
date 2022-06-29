@@ -596,7 +596,7 @@ namespace d360.model.DataAccessLayer
 						}
 						if (patchModel.IsDisabled.HasValue && patchModel.IsDisabled.Value)
 						{
-							if(patchModel.Description.Length>0 || patchModel.Name.Length > 0)
+							if(patchModel.Description?.Length>0 || patchModel.Name?.Length > 0)
                             {
 								throw new GenericException(
 									HttpStatusCode.Conflict,
