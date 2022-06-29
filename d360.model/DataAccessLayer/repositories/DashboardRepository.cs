@@ -37,7 +37,7 @@ namespace d360.model.DataAccessLayer
 
 		#endregion
 
-		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location)
+		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id)
 		{
 			var dbArgs = new DynamicParameters();
 			List<string> whereStatements = new List<string>();
@@ -52,6 +52,12 @@ namespace d360.model.DataAccessLayer
 			{
 				dbArgs.Add("location", (int)location);
 				whereStatements.Add("r.location = @location");
+			}
+
+			if (id.HasValue)
+			{
+				dbArgs.Add("id", id.Value);
+				whereStatements.Add("r.id = @id");
 			}
 
 			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);

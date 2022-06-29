@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v7.1">
+  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -237,7 +237,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		n.Title as Title,
 		(
 		SELECT DISTINCT	R.name, 				
-				CONCAT('dashboard/',R.ID) As url,
+				CONCAT('dashboard/',R.Uid) As url,
 				0 as feature,
 				null AS items	
 		FROM	Report R

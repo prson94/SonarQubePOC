@@ -47,15 +47,23 @@ export class DashboardService extends BaseObservableService {
 			);
 	}
 
+	getDashboardById(id: number | string): Observable<DashboardModel[]> {
+		if (typeof id === 'number') {
+			return this.getDashboardsV2(null, null, id);
+		}
+		return this.getDashboardsV2(id, null, null);
+	}
 
-
-	getDashboardsV2(dashboardUid: string = '', location: number = null): Observable<DashboardModel[]> {
+	getDashboardsV2(dashboardUid: string = '', location: number = null, id: number = null): Observable<DashboardModel[]> {
 		var params = {};
 		if (dashboardUid) {
 			params["uid"] = dashboardUid;
 		}
 		if (location) {
 			params["location"] = location;
+		}
+		if (id) {
+			params["id"] = id;
 		}
 		var qString = '';
 		if (params) {

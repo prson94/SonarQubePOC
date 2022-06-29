@@ -21,8 +21,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 	dashboards: DashboardModel[] = [];
 	dashboard: DashboardModel;
 	selected: DashboardModel;
-    dashboardName: string;
-    reportID: number;
+	dashboardName: string;
+	reportID: number | string;
     showSingle: boolean = false;
     showError: boolean;
     private folderTitle: string;
@@ -50,7 +50,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.dashboardName = params['name'];
-            this.reportID = +params['reportID'];
+            this.reportID = params['reportID'];
             this.loadAvailableDashboards();
             if (this.objectType && !this.objectType.endsWith("Type")) {
                 this.buildSecondaryNavigationForObject(this.objectID, this.objectType, this.buildBreadcrumb.bind(this));
@@ -102,9 +102,9 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
 	private loadAvailableDashboards() {
-        this.isLoading = true;
-		if (this.selected) {
-			this.dashboardService.getDashboardsV2(this.selected.uid).subscribe(
+		this.isLoading = true;
+		if (this.reportID) {
+			this.dashboardService.getDashboardById(this.reportID).subscribe(
                 result => {
                     if (result) {
                         this.selected = result[0];

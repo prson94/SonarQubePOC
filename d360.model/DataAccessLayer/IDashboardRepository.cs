@@ -8,6 +8,6 @@ namespace d360.model.DataAccessLayer
 {
 	public interface IDashboardRepository
 	{
-		Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location);
+		Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id);
 	}
 }
