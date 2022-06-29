@@ -22,5 +22,7 @@ namespace d360.model.validators
 		Task<WorkHttpStatus> ValidateSurveyTypeCreateApiModel(SurveyTypeCreateApiModel surveyType);
 
 		Task<WorkHttpStatus> ValidateSurveyTypeUpdateApiModel(Guid surveyTypeUid, SurveyTypeUpdateApiModel surveyType);
+
+		Task<WorkHttpStatus> ValidateSurveyTypeDelete(Guid surveyTypeUid);
 	}
 }

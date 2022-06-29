@@ -35,6 +35,17 @@ namespace d360.model.DataAccessLayer
 			return surveyType;
 		}
 
+		public async Task DeleteSurveyType(Guid uid)
+		{
+			var surveyType = GetSurveyTypeByUid(uid);
+			var id = surveyType.ID;
+
+			await companyContext.DeleteAsync<d360.core.entities.Question>(i => i.Survey.SurveyTypeID == id);
+			await companyContext.DeleteAsync<Survey>(i => i.SurveyTypeID == id);
+			await companyContext.DeleteAsync<QuestionType>(i => i.SurveyTypeID == id);
+			await companyContext.DeleteAsync<SurveyType>(i => i.ID == id);
+		}
+
 		public SurveyType GetSurveyTypeByUid(Guid uid)
 		{
 			return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);

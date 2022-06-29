@@ -213,6 +213,34 @@ namespace d360.web.Controllers.V2
 			}));
 		}
 
+
+		/// <summary>
+		/// Deletes a survey type
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <returns>Nothing</returns>
+		[
+			HttpDelete, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Survey successfully removed."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> DeleteSurveyType(Guid surveyTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateSurveyTypeDelete(surveyTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			await this.SurveyRepository.DeleteSurveyType(surveyTypeUid);
+
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+		}
+
 		/// <summary>
 		/// Returns defined survey types.          
 		/// </summary>        
