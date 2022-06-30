@@ -242,6 +242,53 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
+		/// Create questions for a survey. Users will be prompted to periodically fill in a survey question on the asset.
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <returns>Object with uid of created question</returns>
+		[
+			HttpPost, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.Created, "Survey question successfully created.", typeof(QuestionTypeCreateResponseModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Question have invalid fields", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Question with the same name already exists for this survey type.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> AddQuestionType(Guid surveyTypeUid, QuestionTypeUpsertModel question)
+		{
+			var validationStatus = await this.validator.ValidateQuestionTypeCreate(surveyTypeUid, question);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var surveyType = this.SurveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+
+			var createdQuestionType = await this.SurveyRepository.CreateQuestionType(new core.entities.QuestionType
+			{
+				Name = question.Name,
+				SurveyTypeID = surveyType.ID,
+				DisplayStyle = question.DisplayStyle,
+				Description = question.Description,
+				QuestionTypeOptions = question.Options
+					.Select(item => new core.entities.QuestionTypeOption
+					{
+						Name = item.Name,
+						Value = item.Value
+					})
+					.ToList()
+			});
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new QuestionTypeCreateResponseModel
+			{
+				Uid = createdQuestionType.Uid
+			}));
+		}
+
+		/// <summary>
 		/// Returns defined survey types.          
 		/// </summary>        
 		/// <returns>A list of survey types</returns>

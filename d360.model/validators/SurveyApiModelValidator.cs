@@ -342,5 +342,126 @@ namespace d360.model.validators
 
 			return null;
 		}
+
+		public async Task<WorkHttpStatus> ValidateQuestionTypeCreate(Guid surveyTypeUid, QuestionTypeUpsertModel question)
+		{
+			return await ValidateQuestionTypeUpsertModel(surveyTypeUid, question, questionTypeUid: null);
+		}
+
+		private async Task<WorkHttpStatus> ValidateQuestionTypeUpsertModel(
+			Guid surveyTypeUid,
+			QuestionTypeUpsertModel question,
+			Guid? questionTypeUid)
+		{
+			if (string.IsNullOrEmpty(question.Name))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					SurveyTypeErrors.NameShouldBeNotEmpty);
+			}
+
+			var maxNameLength = 500;
+			var isValidNameLength = (question.Name.Length <= maxNameLength);
+			if (!isValidNameLength)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.NameIsTooBig, new { maxNameLength }));
+			}
+
+			var maxDescriptionLength = 2000;
+			var isValidDescriptionLength = question.Description == null
+				|| question.Description.Length <= maxDescriptionLength;
+
+			if (!isValidDescriptionLength)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					Smart.Format(SurveyTypeErrors.DescriptionTooBig, new { maxDescriptionLength }));
+			}
+
+			if (!Enum.IsDefined(typeof(core.QuestionDisplayStyle), question.DisplayStyle))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					SurveyTypeErrors.InvalidDisplayStyle);
+			}
+
+			if (question.Options == null || question.Options.Count == 0)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.BadRequest,
+					AssetTypeErrors.BadRequest,
+					SurveyTypeErrors.MissingQuestionOptions);
+			}
+
+			foreach (var (option, index) in question.Options.Select((opt, index) => (opt, index)))
+			{
+				if (string.IsNullOrEmpty(option.Name))
+				{
+					return new WorkHttpStatus(
+						HttpStatusCode.BadRequest,
+						AssetTypeErrors.BadRequest,
+						Smart.Format(SurveyTypeErrors.MissingQuestionOptionName, new { index }));
+				}
+			}
+
+			var nonUniqueNames = question.Options
+				.GroupBy(opt => opt.Name)
+				.Where(g => g.Count() > 1)
+				.Select(g => g.Key)
+				.ToHashSet();
+
+			foreach (var (option, index) in question.Options.Select((opt, index) => (opt, index)))
+			{
+				if (nonUniqueNames.Contains(option.Name))
+				{
+					return new WorkHttpStatus(
+						HttpStatusCode.BadRequest,
+						AssetTypeErrors.BadRequest,
+						Smart.Format(SurveyTypeErrors.DuplicateQuestionOptionName, new { index }));
+				}
+			}
+
+			var nonUniqueValues = question.Options
+				.GroupBy(opt => opt.Value)
+				.Where(g => g.Count() > 1)
+				.Select(g => g.Key)
+				.ToHashSet();
+
+			foreach (var (option, index) in question.Options.Select((opt, index) => (opt, index)))
+			{
+				if (nonUniqueValues.Contains(option.Value))
+				{
+					return new WorkHttpStatus(
+						HttpStatusCode.BadRequest,
+						AssetTypeErrors.BadRequest,
+						Smart.Format(SurveyTypeErrors.DuplicateQuestionOptionValue, new { index }));
+				}
+			}
+
+			var existingSurveyType = this.surveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+			if (existingSurveyType == null)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					SurveyTypeErrors.SurveyTypeNotFound);
+			}
+
+			if (!await surveyRepository.IsUniqueQuestionTypeName(question.Name, existingSurveyType.ID, questionTypeUid))
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.Conflict,
+					AssetTypeErrors.DuplicateFound,
+					SurveyTypeErrors.DuplicateQuestionNameWhenUpdating);
+			}
+
+			return null;
+		}
 	}
 }

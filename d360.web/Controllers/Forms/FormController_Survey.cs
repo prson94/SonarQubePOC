@@ -203,57 +203,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddQuestionType")]
-        public JsonResult AddQuestionType(QuestionTypeEditorModel model)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-                }
-
-                var val = model.Validation();
-
-                if (!val.Valid)
-                {
-                    throw new ConflictException(FormControllerApiMessage.ErrorOccurred, val.Message);
-                }
-
-                var qt = new QuestionType
-                {
-                    Name = model.Name,
-                    SurveyTypeID = model.SurveyTypeID,
-                    DisplayStyle = model.DisplayStyle,
-                    Description = model.Description,
-                    QuestionTypeOptions = new List<QuestionTypeOption>()
-                };
-
-                foreach (var item in model.Items)
-                {
-                    var itemVal = item.Validation();
-                    if (itemVal.Valid)
-                    {
-                        qt.QuestionTypeOptions.Add(new QuestionTypeOption { Name = item.Name, Value = item.Value });
-                    }
-                }
-
-                Company.Add(qt);
-
-                return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.SurveyQuestion), qt.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpDelete, Route("DeleteQuestionType")]
         public JsonResult DeleteQuestionType(FormCollection form)
         {

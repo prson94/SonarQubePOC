@@ -46,6 +46,13 @@ namespace d360.model.DataAccessLayer
 			await companyContext.DeleteAsync<SurveyType>(i => i.ID == id);
 		}
 
+		public async Task<QuestionType> CreateQuestionType(QuestionType questionType)
+		{
+			companyContext.Add(questionType);
+			await companyContext.SaveChangesAsync();
+			return questionType;
+		}
+
 		public SurveyType GetSurveyTypeByUid(Guid uid)
 		{
 			return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
@@ -299,7 +306,7 @@ namespace d360.model.DataAccessLayer
 			var itemsJson = string.Join("", companyContext.Query<string>(query, sqlParams, ApiTimeout).ToList());
 
 			response.items = JsonConvert.DeserializeObject<List<SurveyTypeApiModel>>(itemsJson) ?? new List<SurveyTypeApiModel>();
-			
+
 			return response;
 		}
 
@@ -443,7 +450,7 @@ namespace d360.model.DataAccessLayer
 			var itemsJson = string.Join("", companyContext.Query<string>(sql, new { surveyTypeUid }, ApiTimeout).ToList());
 
 			response.items = JsonConvert.DeserializeObject<List<SurveyResultSummaryApiModel>>(itemsJson) ?? new List<SurveyResultSummaryApiModel>();
-			
+
 			return response;
 		}
 
@@ -634,6 +641,24 @@ namespace d360.model.DataAccessLayer
 				new { name, assetTypeId, surveyTypeUid });
 
 			return !sameNameSurveyTypes.Any();
+		}
+
+		public async Task<bool> IsUniqueQuestionTypeName(string name, int surveyTypeId, Guid? questionTypeUid)
+		{
+			var sameNameQuestionTypes = await companyContext.QueryAsync<bool>(
+				@"
+					select top 1 1
+					from dbo.QuestionType qt
+					where qt.SurveyTypeID = @surveyTypeId
+						and qt.Name = @name 
+						and (
+							@questionTypeUid is null 
+							or qt.Uid <> @questionTypeUid
+						)
+				",
+				new { name, surveyTypeId, questionTypeUid });
+
+			return !sameNameQuestionTypes.Any();
 		}
 	}
 }

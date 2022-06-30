@@ -152,9 +152,25 @@ namespace d360.core.entities.SurveyModels
         public Guid Uid { get; set; }
 
         public List<Response> Responses { get; set; } = new List<Response>();
-    }
+	}
 
-    public class SurveyResultSummaryApiModel
+	public class QuestionTypeUpsertModel
+	{
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public QuestionDisplayStyle DisplayStyle { get; set; }
+
+		public List<Option> Options { get; set; }
+	}
+
+	public class QuestionTypeCreateResponseModel
+	{
+		public Guid Uid { get; set; }
+	}
+
+	public class SurveyResultSummaryApiModel
     {
         public Guid AssetUid { get; set; }
 

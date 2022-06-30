@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Description should not exceed {maxDescriptionLength} characters.
+        /// </summary>
+        public static string DescriptionTooBig {
+            get {
+                return ResourceManager.GetString("DescriptionTooBig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Survey with the same name already exists for this asset type..
         /// </summary>
         public static string DuplicateName {
@@ -75,6 +84,60 @@ namespace d360.core.resources {
         public static string DuplicateNameWhenUpdating {
             get {
                 return ResourceManager.GetString("DuplicateNameWhenUpdating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Question with the same name already exists for this survey type..
+        /// </summary>
+        public static string DuplicateQuestionNameWhenUpdating {
+            get {
+                return ResourceManager.GetString("DuplicateQuestionNameWhenUpdating", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter unique option value for option #{index}.
+        /// </summary>
+        public static string DuplicateQuestionOptionName {
+            get {
+                return ResourceManager.GetString("DuplicateQuestionOptionName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please enter unique option identifier for option #{index}.
+        /// </summary>
+        public static string DuplicateQuestionOptionValue {
+            get {
+                return ResourceManager.GetString("DuplicateQuestionOptionValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Display Style.
+        /// </summary>
+        public static string InvalidDisplayStyle {
+            get {
+                return ResourceManager.GetString("InvalidDisplayStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are missing a Name in option #{index}.
+        /// </summary>
+        public static string MissingQuestionOptionName {
+            get {
+                return ResourceManager.GetString("MissingQuestionOptionName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are missing one or more options..
+        /// </summary>
+        public static string MissingQuestionOptions {
+            get {
+                return ResourceManager.GetString("MissingQuestionOptions", resourceCulture);
             }
         }
         
