@@ -455,8 +455,6 @@ namespace d360.model
         
         void RebuildDisplayValuesRequest();
         
-        void RebuildAssetGraphRequest();
-        
         void RebuildIndexRequest();
         
         List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);

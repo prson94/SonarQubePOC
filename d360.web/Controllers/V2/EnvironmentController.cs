@@ -94,9 +94,6 @@ namespace d360.web.Controllers.V2
                 {
                     switch (model.Job)
                     {
-                        case CompanyRebuildJobToken.AssetGraph:
-                            Company.RebuildAssetGraphRequest();
-                            break;
                         case CompanyRebuildJobToken.DisplayValues:
                             Company.RebuildDisplayValuesRequest();
                             break;

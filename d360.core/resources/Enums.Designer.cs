@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Enums {
@@ -57,24 +57,6 @@ namespace d360.core.resources {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Asset Graph.
-        /// </summary>
-        public static string CompanyRebuildJobToken_AssetGraph {
-            get {
-                return ResourceManager.GetString("CompanyRebuildJobToken_AssetGraph", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Rebuild Visualization diagrams for assets. This request may take a significant amount of time to complete, depending on the number of assets contained within your environment. Additionally, this action has a performance impact on your environment..
-        /// </summary>
-        public static string CompanyRebuildJobToken_AssetGraph_Desc {
-            get {
-                return ResourceManager.GetString("CompanyRebuildJobToken_AssetGraph_Desc", resourceCulture);
             }
         }
         

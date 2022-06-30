@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CompanyRebuildJobToken_AssetGraph" xml:space="preserve">
-    <value>Asset Graph</value>
-  </data>
-  <data name="CompanyRebuildJobToken_AssetGraph_Desc" xml:space="preserve">
-    <value>Rebuild Visualization diagrams for assets. This request may take a significant amount of time to complete, depending on the number of assets contained within your environment. Additionally, this action has a performance impact on your environment.</value>
-  </data>
   <data name="CompanyRebuildJobToken_DisplayValues" xml:space="preserve">
     <value>Display Values</value>
   </data>
