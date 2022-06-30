@@ -1626,7 +1626,7 @@ end
 	</rollback>
   </changeSet>
   
-    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.62">
+    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.63">
   <comment>Update Data for reports</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1667,50 +1667,6 @@ end
 		from dbo.Report
 		where id = r.ID
 		FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER)JSON(val)
-		
-		IF COL_LENGTH('[dbo].[Report]', 'ObjectType') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.Report
-			DROP COLUMN ObjectType
-		END
-		
-		IF COL_LENGTH('[dbo].[Report]', 'ObjectID') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.Report
-			DROP COLUMN ObjectID
-		END
-		
-		IF COL_LENGTH('[dbo].[Report]', 'PowerBIReportID') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.Report
-			DROP COLUMN PowerBIReportID
-		END
-		
-		IF COL_LENGTH('[dbo].[Report]', 'PowerBIDatasetID') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.Report
-			DROP COLUMN PowerBIDatasetID
-		END
-		
-		IF COL_LENGTH('[dbo].[Report]', 'FileName') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.Report
-			DROP COLUMN FileName
-		END
-		
-		IF COL_LENGTH('[dbo].[Report]', 'Url') IS NOT NULL
-		BEGIN
-			ALTER TABLE dbo.Report
-			DROP COLUMN Url
-		END
-		
-		IF COL_LENGTH('[dbo].[Report]', 'ShowOnHomePage') IS NOT NULL
-		BEGIN
-			ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ShowOnHomePage;
-			ALTER TABLE dbo.Report
-			DROP COLUMN ShowOnHomePage
-		END
-
 		]]>
     </sql>
 	<rollback>
@@ -1718,26 +1674,4 @@ end
 		]]>
 	</rollback>
   </changeSet>
-
- <changeSet author="TDuric" id="Data.Corrections.GOV-18080-2.1">
-  <comment>Update Data for reports 2</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-		IF (OBJECT_ID('DF_Report_ReportType') IS NOT NULL)
-		begin
-				ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ReportType;
-				ALTER TABLE [dbo].[Report] ALTER COLUMN ReportType [int];
-		end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-		]]>
-	</rollback>
-  </changeSet>
-
-
 </databaseChangeLog>
