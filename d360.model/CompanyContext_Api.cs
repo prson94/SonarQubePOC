@@ -369,7 +369,7 @@ namespace d360.model
 								select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
 								into #tempreqfield
 								from api.ExecutionAsset A
-								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1
+								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1 and FT.DefaultValue is null
 								left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
 								left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
 								where A.executionid = @executionID 
