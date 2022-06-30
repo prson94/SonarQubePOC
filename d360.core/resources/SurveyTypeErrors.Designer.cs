@@ -160,6 +160,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Survey question with the specified Uid was does not exist..
+        /// </summary>
+        public static string QuestionTypeNotFound {
+            get {
+                return ResourceManager.GetString("QuestionTypeNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Question response already submitted by user and may no longer be updated. Only Description may be updated..
+        /// </summary>
+        public static string SubmittedQuestionCanChangeOnlyDescription {
+            get {
+                return ResourceManager.GetString("SubmittedQuestionCanChangeOnlyDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Survey with the specified Uid was does not exist..
         /// </summary>
         public static string SurveyTypeNotFound {

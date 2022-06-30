@@ -53,6 +53,44 @@ namespace d360.model.DataAccessLayer
 			return questionType;
 		}
 
+		public async Task UpdateQuestionType(QuestionType update)
+		{
+			var questionType = this.companyContext
+				.GetWithIncludes<QuestionType>(x => x.QuestionTypeOptions)
+				.FirstOrDefault(x => x.Uid == update.Uid);
+
+			questionType.Name = update.Name;
+			questionType.DisplayStyle = update.DisplayStyle;
+			questionType.Description = update.Description;
+
+			var options = Enumerable.Zip(
+				questionType.QuestionTypeOptions,
+				update.QuestionTypeOptions,
+				(existingOpt, updateOpt) => (existingOpt, updateOpt));
+
+			foreach (var (existingOpt, updateOpt) in options)
+			{
+				existingOpt.Name = updateOpt.Name;
+				existingOpt.Value = updateOpt.Value;
+			}
+
+			var addedOptions = update.QuestionTypeOptions.Where((opt, index) => index >= questionType.QuestionTypeOptions.Count);
+			foreach (var addedOption in addedOptions)
+			{
+				questionType.QuestionTypeOptions.Add(addedOption);
+			}
+
+			var deletedOptions = questionType.QuestionTypeOptions.Where((opt, index) => index >= update.QuestionTypeOptions.Count).ToList();
+			foreach (var deletedOption in deletedOptions)
+			{
+				companyContext.QuestionTypeOptions.Remove(deletedOption);
+			}
+
+			companyContext.Update(questionType);
+
+			await companyContext.SaveChangesAsync();
+		}
+
 		public SurveyType GetSurveyTypeByUid(Guid uid)
 		{
 			return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
@@ -659,6 +697,21 @@ namespace d360.model.DataAccessLayer
 				new { name, surveyTypeId, questionTypeUid });
 
 			return !sameNameQuestionTypes.Any();
+		}
+
+		public async Task<bool> QuestionHasAnswers(Guid questionTypeUid)
+		{
+			var answers = await companyContext.QueryAsync<bool>(
+				@"
+					select top 1 1
+					from QuestionType qt
+						inner join QuestionTypeOption qto on qt.ID = qto.QuestionTypeID
+						inner join QuestionOption qo on qo.QuestionTypeOptionID = qto.ID
+					where qt.Uid = @questionTypeUid
+				",
+				new { questionTypeUid });
+
+			return answers.Any();
 		}
 	}
 }

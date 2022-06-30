@@ -348,6 +348,79 @@ namespace d360.model.validators
 			return await ValidateQuestionTypeUpsertModel(surveyTypeUid, question, questionTypeUid: null);
 		}
 
+		public async Task<WorkHttpStatus> ValidateQuestionTypeUpdate(
+			Guid surveyTypeUid, 
+			Guid questionTypeUid, 
+			QuestionTypeUpsertModel question)
+		{
+			var commonValidation = await ValidateQuestionTypeUpsertModel(surveyTypeUid, question, questionTypeUid);
+			if (commonValidation != null)
+			{
+				return commonValidation;
+			}
+
+			var existingQuestionType = this.surveyRepository.GetSurveyQuestionTypeByUid(questionTypeUid);
+			if (existingQuestionType == null || existingQuestionType.SurveyType.Uid != surveyTypeUid)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					SurveyTypeErrors.QuestionTypeNotFound); 
+			}
+
+			if (!AreSameExceptDescription(existingQuestionType, question))
+			{
+				var hasAnswers = await this.surveyRepository.QuestionHasAnswers(questionTypeUid);
+				if (hasAnswers)
+				{
+					return new WorkHttpStatus(
+						HttpStatusCode.BadRequest,
+						AssetTypeErrors.BadRequest,
+						SurveyTypeErrors.SubmittedQuestionCanChangeOnlyDescription);
+				}
+			}
+
+			bool AreSameExceptDescription(core.entities.QuestionType existing, QuestionTypeUpsertModel update)
+			{
+				if (existing.Name != update.Name)
+				{
+					return false;
+				}
+
+				if (existing.DisplayStyle != update.DisplayStyle)
+				{
+					return false;
+				}
+
+				if (existing.QuestionTypeOptions.Count != update.Options.Count)
+				{
+					return false;
+				}
+
+				var options = Enumerable.Zip(
+					existing.QuestionTypeOptions,
+					update.Options, 
+					(existingOpt, updateOpt) => (existingOpt, updateOpt));
+
+				foreach (var (existingOpt, updateOpt) in options)
+				{
+					if (existingOpt.Name != updateOpt.Name)
+					{
+						return false;
+					}
+
+					if (existingOpt.Value != updateOpt.Value)
+					{
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			return null;
+		}
+
 		private async Task<WorkHttpStatus> ValidateQuestionTypeUpsertModel(
 			Guid surveyTypeUid,
 			QuestionTypeUpsertModel question,

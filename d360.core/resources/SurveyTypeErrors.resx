@@ -150,6 +150,12 @@
   <data name="NameShouldBeNotEmpty" xml:space="preserve">
     <value>Name should be not empty.</value>
   </data>
+  <data name="QuestionTypeNotFound" xml:space="preserve">
+    <value>Survey question with the specified Uid was does not exist.</value>
+  </data>
+  <data name="SubmittedQuestionCanChangeOnlyDescription" xml:space="preserve">
+    <value>Question response already submitted by user and may no longer be updated. Only Description may be updated.</value>
+  </data>
   <data name="SurveyTypeNotFound" xml:space="preserve">
     <value>Survey with the specified Uid was does not exist.</value>
   </data>

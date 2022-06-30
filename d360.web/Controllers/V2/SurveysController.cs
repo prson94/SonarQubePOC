@@ -289,6 +289,60 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
+		/// Once someone has submitted a response to a question, only the Description may be updated.
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="questionTypeUid">Uid of question type</param>
+		/// <returns>Nothing</returns>
+		[
+			HttpPut, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/{questionTypeUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Survey question successfully updated.", typeof(QuestionTypeCreateResponseModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Question have invalid fields", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, 
+				@"Survey with the specified Uid was does not exist.
+				  Survey question with the specified Uid was does not exist.", 
+				typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, 
+				@"Another survey question with the same name already exists for this survey type. 
+				  Question response already submitted by user and may no longer be updated. Only Description may be updated.", 
+				typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> UpdateQuestionType(
+			Guid surveyTypeUid, 
+			Guid questionTypeUid, 
+			QuestionTypeUpsertModel question)
+		{
+			var validationStatus = await this.validator.ValidateQuestionTypeUpdate(surveyTypeUid, questionTypeUid, question);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var surveyType = this.SurveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+
+			await this.SurveyRepository.UpdateQuestionType(new core.entities.QuestionType
+			{
+				SurveyTypeID = surveyType.ID,
+				Uid = questionTypeUid,
+				Name = question.Name,
+				DisplayStyle = question.DisplayStyle,
+				Description = question.Description,
+				QuestionTypeOptions = question.Options
+					.Select(item => new core.entities.QuestionTypeOption
+					{
+						Name = item.Name,
+						Value = item.Value
+					})
+					.ToList()
+			});
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+		}
+
+		/// <summary>
 		/// Returns defined survey types.          
 		/// </summary>        
 		/// <returns>A list of survey types</returns>

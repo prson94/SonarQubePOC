@@ -26,5 +26,7 @@ namespace d360.model.validators
 		Task<WorkHttpStatus> ValidateSurveyTypeDelete(Guid surveyTypeUid);
 
 		Task<WorkHttpStatus> ValidateQuestionTypeCreate(Guid surveyTypeUid, QuestionTypeUpsertModel question);
+
+		Task<WorkHttpStatus> ValidateQuestionTypeUpdate(Guid surveyTypeUid, Guid questionTypeUid, QuestionTypeUpsertModel question);
 	}
 }
