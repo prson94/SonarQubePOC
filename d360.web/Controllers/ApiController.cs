@@ -86,7 +86,7 @@ namespace d360.web.Controllers
 						           X.p.value('./@position', 'int') as P,
 						           X.p.value('./@assetTypeId', 'int') as AssetTypeId,
 						           (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
-					          FROM graph.AssetNode
+					          FROM AssetPath
 					         CROSS APPLY Segments.nodes('/path/segment') X(p)
 					         WHERE AssetNode.ID = @assetId
 					      ) s
