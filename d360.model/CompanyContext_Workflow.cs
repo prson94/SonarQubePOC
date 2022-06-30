@@ -3336,7 +3336,7 @@ namespace d360.model
 					item = GetObjectDetail(obj.ToString(), objectID);
 				}
 
-				string path = item?.UID == null ? null : Query<string>(@"select dbo.GetDisplayPath(P.Segments, ' > ', ' / ') from AssetPath P inner join Asset A on A.ID = P.ID where A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
+				string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from AssetPath P inner join Asset A on A.ID = P.ID where A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
 
 				result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
 			}
