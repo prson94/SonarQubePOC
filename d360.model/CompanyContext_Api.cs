@@ -12165,7 +12165,7 @@ EG.GroupUid
 							row["ExecutionItemUid"] = DBNull.Value;
 						}
 						row["AssetUid"] = item.assetUid;
-						row["ProfileSetDate"] = item.profileSetDate.Date;
+						row["ProfileSetDate"] = item.profileSetDate;
 						row["ProfileIdentifier"] = item.profileIdentifier ?? (object)DBNull.Value;
 
                         row["UniqueCount"] = item.uniqueCount ?? (object)DBNull.Value;
@@ -12608,7 +12608,7 @@ EG.GroupUid
 						
 						update	EDP
 						set		Success = 0,
-								[Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+								[Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 20)
 						from
 							api.ExecutionAssetDataProfile EDP
 							inner join 

@@ -170,4 +170,31 @@ ALTER COLUMN [StandardDeviation] FLOAT;
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetDataProfile-v9">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[api].[ExecutionAssetDataProfile]') 
+					 AND name = 'ProfileSetDate'
+			)
+			BEGIN
+
+			ALTER TABLE [api].[ExecutionAssetDataProfile] Alter Column [ProfileSetDate] DATETIME NOT NULL
+			
+			END
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		ALTER TABLE [api].[ExecutionAssetDataProfile] Alter Column [ProfileSetDate] DATE NOT NULL
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>
