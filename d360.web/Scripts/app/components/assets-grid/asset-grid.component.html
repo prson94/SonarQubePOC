@@ -113,7 +113,8 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="selectArtifact(item)" [pSelectableRow]="item" (focus)="selectRow(item)">
+                <tr (dblclick)="selectArtifact($event, item)" [pSelectableRow]="item" (focus)="selectRow(item)"
+					(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools);">
                     <td *ngFor="let col of columns; let i=index" [style.flex]="col.columnWidth ? flexGrow + ' 0 ' + col.columnWidth + 'px' : ''">
                         <ng-container *ngIf="i != linkColumnIndex; else linked">
                             <div style="display: block; word-wrap: break-word; width: 100%">
@@ -126,9 +127,9 @@
                             </div>
                         </ng-container>
                         <ng-template #linked>
-                            <a style="word-wrap: break-word; width: 100%">
-                                <d3s-dynamic-field-value (click)="selectArtifact(item)"
-														 [column]="col"
+                            <a style="word-wrap: break-word;" context-link
+							   [isOpenDefault]="true" (click)="selectArtifact($event, item)">
+								<d3s-dynamic-field-value [column]="col"
                                                          [fields]="fields"
                                                          [item]="item"
                                                          [useApiName]="true"
@@ -148,12 +149,16 @@
                                style="margin: 0 10px 0 5px"></i>
                         </div>
                     </td>
-                    <td class="asset-grid-tools" style="flex: 0 0 30px">
+                    <td class="asset-grid-tools" #assetGridTools style="flex: 0 0 30px">
                         <div style="display:inline-block">
                             <button igButton type="button" icon="fa-ellipsis-v" (click)="selectRow(item); linkMenu.toggle($event)"></button>
                             <ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #linkMenu [tabIndex]="1"></ig-popup-menu>
                         </div>
                     </td>
+					<button class="ig-float-popup-container" #floatButton>
+						<ig-popup-menu (onSelect)="clickMenuItem($event, item)" [items]="item[menuKey]" #floatMenu [tabIndex]="1">
+						</ig-popup-menu>
+					</button>
                 </tr>
             </ng-template>
             <ng-template pTemplate="summary">
