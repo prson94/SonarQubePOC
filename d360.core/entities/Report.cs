@@ -76,27 +76,6 @@ namespace d360.core.entities
 		[IgnoreDataMember, ForeignKey("ReportID")]
 		public virtual ICollection<ReportResponsibility> Responsibilities { get; set; }
 	}
-	//	{
-
-	// Definition: {
-	//  powerBiReportId: "",
-	//  powerBiDatasetId: "",
-	//  fileName: "",
-	//  parameters: [{
-	//   name: "",
-	//   valueToProvide: "--------TBD--------"
-	//  }]
-
-	//  // OR
-
-	//  url: "",
-	//  parameters:
-	//[{
-	//name: "",
-	//   valueToProvide: "--------TBD--------"
-	//  }]  
-	// }
-	//}
 	public enum DashboardType
 	{
 		PowerBi = 1,
@@ -112,6 +91,8 @@ namespace d360.core.entities
 
 	public class DashboardModel
 	{
+		[DataMember]
+		public int Id { get; set; }
 		[DataMember]
 		public Guid AssetTypeUid { get; set; }
 		[DataMember]
@@ -129,14 +110,15 @@ namespace d360.core.entities
 		{
 			get
 			{
-				if(_definitionJson == null)
+				if (_definitionJson == null)
 				{
 					return null;
 				}
 				return JsonConvert.DeserializeObject<DashboardDefinition>(_definitionJson);
 			}
 
-			set {
+			set
+			{
 				_definitionJson = JsonConvert.SerializeObject(value);
 			}
 		}
@@ -168,5 +150,10 @@ namespace d360.core.entities
 	{
 		[DataMember]
 		public Guid uid { get; set; }
+	}
+
+	public class DashboardApiPostModel : DashboardApiGetModel
+	{
+
 	}
 }

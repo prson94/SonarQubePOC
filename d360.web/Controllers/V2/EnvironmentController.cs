@@ -2101,6 +2101,7 @@ namespace d360.web.Controllers.V2
 
 		#endregion
 
+		#region Dashboard Endpoints
 		/// <summary>
 		/// Creates a theme.
 		/// </summary>
@@ -2201,6 +2202,104 @@ namespace d360.web.Controllers.V2
 			}
 		}
 
+		[
+			HttpGet,
+			ApiExplorerSettings(IgnoreApi = true),
+			Route("dashboards/targets")]
+		public IEnumerable<dynamic> GetReportTargetAreas()
+		{
+
+			var items = Company.Query<dynamic>($@"
+				select      *
+				from        (                 
+							select      convert(nvarchar(36), uid) as value,
+										'{CommonNames.AssetTypeClass_Business} : ' + Name as title
+							from        AssetType where [Class] = 1                       
+							union
+							select      convert(nvarchar(36), uid) as value,
+										'{CommonNames.AssetTypeClass_Technical} : ' + Name as title
+							from        AssetType where [Class] = 8                       
+							union 
+							select      convert(nvarchar(36), uid) + '|instance' as value,
+										'{CommonNames.AssetTypeClass_Business} {CommonNames.Instance}: ' + Name as title
+							from       AssetType where [Class] = 1   
+							union 
+							select      convert(nvarchar(36), uid) + '|instance' as value,
+										'{CommonNames.AssetTypeClass_Technical} {CommonNames.Instance}: ' + Name as title
+							from       AssetType where [Class] = 8  
+							union
+							select      '00000001-0000-0000-0000-A00000000011' as value,
+										'{CommonNames.AssetTypeClass_Resource}' as title
+							union
+							select      convert(nvarchar(36), uid) + '|instance' as value,
+										'{CommonNames.AssetTypeClass_Model} {CommonNames.Instance}: ' + Name as title
+							from         AssetType where [Class] = 2 
+							union
+							select      convert(nvarchar(36), uid) as value,
+										'{CommonNames.AssetTypeClass_ModelType} : ' + Name as title
+							from        AssetType where [Class] = 2 
+							union
+							select      convert(nvarchar(36), uid) + '|instance' as value,
+										'{CommonNames.AssetTypeClass_Policy} {CommonNames.Instance}: ' + Name as title
+							from         AssetType where [Class] = 6 
+							union
+							select      convert(nvarchar(36), uid) as value,
+										'{CommonNames.AssetTypeClass_PolicyType} : ' + Name as title
+							from        AssetType where [Class] = 6
+							union
+							select      convert(nvarchar(36), uid) as value,
+										'{CommonNames.AssetTypeClass_RuleType} : ' + Name as title
+							from         AssetType where [Class] = 7 
+							) O
+							order by    title
+							").ToList();
+
+			return items;
+		}
+
+		/// <summary>
+		/// Creates a dashboard.
+		/// </summary>
+		/// <remarks>
+		/// 
+		/// </remarks>
+		/// <param name="requestModel">An object containing the properties of the dashboard you want to create. See the example model for a list of all available properties.</param>
+		/// <returns>The created theme.</returns>
+		[
+			HttpPost,
+			Route("dashboards"),
+			SwaggerConsumes("application/json"),
+			SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.Created, "Returns the created dashboard.", typeof(DashboardApiGetModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> PostDashboard(DashboardApiPostModel requestModel)
+		{
+			try
+			{
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+				}
+
+				var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		#endregion
 		private bool IsDark(string htmlColor)
 		{
 			Color color = ColorTranslator.FromHtml(htmlColor);

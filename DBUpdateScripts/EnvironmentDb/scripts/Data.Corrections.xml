@@ -1626,7 +1626,7 @@ end
 	</rollback>
   </changeSet>
   
-    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.4">
+    <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.62">
   <comment>Update Data for reports</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1634,9 +1634,11 @@ end
             stripComments="false">
 		<![CDATA[
 		update r
-		set r.AssetTypeId = at.ID
+		set r.AssetTypeId = ISNULL(at.ID, A.AssetTypeID)
 		from report r
-		inner join AssetType AT on AT.Object = R.ObjectType AND at.ObjectID = r.ObjectID 
+		left join AssetType AT on AT.Object = R.ObjectType AND at.ObjectID = r.ObjectID 
+		left join Asset A on A.Object = R.ObjectType AND A.ObjectID = r.ObjectID 
+		WHERE at.id is not null or a.AssetTypeID is not null
 
 		update r
 		set r.Location = Location.Value
@@ -1665,6 +1667,49 @@ end
 		from dbo.Report
 		where id = r.ID
 		FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER)JSON(val)
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ObjectType') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN ObjectType
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ObjectID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN ObjectID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'PowerBIReportID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN PowerBIReportID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'PowerBIDatasetID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN PowerBIDatasetID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'FileName') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN FileName
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'Url') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN Url
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ShowOnHomePage') IS NOT NULL
+		BEGIN
+			ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ShowOnHomePage;
+			ALTER TABLE dbo.Report
+			DROP COLUMN ShowOnHomePage
+		END
 
 		]]>
     </sql>
@@ -1673,5 +1718,26 @@ end
 		]]>
 	</rollback>
   </changeSet>
+
+ <changeSet author="TDuric" id="Data.Corrections.GOV-18080-2.1">
+  <comment>Update Data for reports 2</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF (OBJECT_ID('DF_Report_ReportType') IS NOT NULL)
+		begin
+				ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ReportType;
+				ALTER TABLE [dbo].[Report] ALTER COLUMN ReportType [int];
+		end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
 
 </databaseChangeLog>

@@ -2261,61 +2261,6 @@ namespace d360.web.Controllers
 
 		#endregion
 
-		#region Reports
-
-		[Route("reports/targets")]
-		public IEnumerable<dynamic> GetReportTargetAreas()
-		{
-
-			var items = Company.Query<dynamic>($@"
-				select      *
-				from        (                 
-							select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
-										'Business Asset : ' + Name as title
-							from        AssetType where [object]='ArtifactType'  and [Class] = 1                       
-							union
-							select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
-										'Technical Asset : ' + Name as title
-							from        AssetType where [object]='ArtifactType'  and [Class] = 8                       
-							union 
-							select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
-										'Business Asset Instance : ' + Name as title
-							from       AssetType where [object]='ArtifactType' and [Class] = 1   
-							union 
-							select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
-										'Technical Asset Instance : ' + Name as title
-							from       AssetType where [object]='ArtifactType' and [Class] = 8  
-							union
-							select      'Resource|1' as value,
-										'Resource' as title
-							union
-							select      'Taxonomy|' + cast(ObjectId as varchar(15)) as value,
-										'Model Instance : ' + Name as title
-							from         AssetType where [object]='TaxonomyType' 
-							union
-							select      'TaxonomyType|' + cast(ObjectId as varchar(15)) as value,
-										'Model Type : ' + Name as title
-							from        AssetType where [object]='TaxonomyType' 
-							union
-							select      'Policy|' + cast(ObjectId as varchar(15)) as value,
-										'Policy Instance : ' + Name as title
-							from         AssetType where [object]='PolicyType' 
-							union
-							select      'PolicyType|' + cast(ObjectId as varchar(15)) as value,
-										'Policy Type : ' + Name as title
-							from        AssetType where [object]='PolicyType' 
-							union
-							select      'RuleType|' + cast(ObjectId as varchar(15)) as value,
-										'Rule Type : ' + Name as title
-							from         AssetType where [object]='RuleType' 
-							) O
-							order by    title
-							").ToList();
-
-			return items;
-		}
-
-		#endregion
 
 		#region Resources
 

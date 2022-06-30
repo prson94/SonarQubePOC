@@ -183,6 +183,9 @@
   <data name="CommonName_AssetType" xml:space="preserve">
     <value>Asset Type</value>
   </data>
+  <data name="Instance" xml:space="preserve">
+    <value>Instance</value>
+  </data>
   <data name="ReferenceItem" xml:space="preserve">
     <value>Reference Item</value>
   </data>

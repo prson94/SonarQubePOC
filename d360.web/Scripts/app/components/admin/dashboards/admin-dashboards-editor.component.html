@@ -10,7 +10,7 @@
                 <ng-container i18n>Report Type</ng-container>
             </div>
             <div>
-                <select required [(ngModel)]="editedReport.ReportType" name="reportType" #reportType="ngModel" (ngModelChange)="reportTypeChange()" style="width:100%;">
+                <select required [(ngModel)]="editedReport.DashboardType" name="reportType" #reportType="ngModel" (ngModelChange)="reportTypeChange()" style="width:100%;">
                     <option *ngFor="let p of reportTypes" [value]="p.value">{{p.title}}</option>
                 </select>
             </div>
@@ -32,7 +32,7 @@
                 <ng-container i18n>Target Type</ng-container>
             </div>
             <div>
-                <select required [ngModel]="editedReport.ObjectType" (ngModelChange)="editedReport.ObjectType=$event;objectTypeChanged($event);" name="targetType" #targetType="ngModel" style="width:100%;">
+                <select required [ngModel]="editedReport.SelectedObjectData" (ngModelChange)="editedReport.SelectedObjectData=$event;objectTypeChanged($event);" name="targetType" #targetType="ngModel" style="width:100%;">
                     <option *ngFor="let p of targetTypes" [value]="p.value">{{p.title}}</option>
                 </select>
             </div>
@@ -46,15 +46,15 @@
                 <input required style="width: 100%;" name="url" type="text" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
             </div>
         </div>
-        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity' || editedReport.ReportType == 'powerbi'">
+        <div class="col s12">
             <div class="FieldName">
                 <ng-container i18n>Show on Home Page?</ng-container>
             </div>
             <div>
-                <input name="showOnHomePage" type="checkbox" [(ngModel)]="editedReport.ShowOnHomePage" #name="ngModel" />
+                <input name="showOnHomePage" type="checkbox" [(ngModel)]="showOnHomePage" #name="ngModel" />
             </div>
         </div>
-        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi'">
+        <div class="col s12" *ngIf="editedReport.ReportType == 'PowerBi'">
             <div class="FieldName">
                 <ng-container i18n>File</ng-container>
             </div>
@@ -63,7 +63,7 @@
                 <ng-container i18n>File is required</ng-container>
             </div>
         </div>
-        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && !editedReport.ShowOnHomePage && editedReport.ObjectType">
+        <div class="col s12" *ngIf="editedReport.DashboardType == 'PowerBi' && !editedReport.ShowOnHomePage && editedReport.SelectedObjectData">
             <div class="FieldName">
                 <ng-container i18n>Restrict Visibility To</ng-container>
             </div>
@@ -77,7 +77,8 @@
         </div>
         <div class="col s12">&nbsp;</div>
         <div class="col s12">
-            <button pButton type="submit" [disabled]="!reportForm.form.valid || !isValid()" style="width: 150px;" label="{{labelSave}}"></button>
+            <button pButton type="submit" style="width: 150px;" label="{{labelSave}}"></button>
+            <!--<button pButton type="submit" [disabled]="!reportForm.form.valid || !isValid()" style="width: 150px;" label="{{labelSave}}"></button>-->
             <button pButton type="button" (click)="closeClick.emit();" label="{{labelClose}}" style="width: 150px;"></button>
         </div>
     </form>

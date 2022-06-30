@@ -37,6 +37,11 @@ namespace d360.model.DataAccessLayer
 
 		#endregion
 
+		public Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiPostModel postModel)
+		{
+			return Task.FromResult(new DashboardApiGetModel());
+		}
+
 		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id)
 		{
 			var dbArgs = new DynamicParameters();
@@ -64,7 +69,7 @@ namespace d360.model.DataAccessLayer
 
 			return (await CompanyContext.Database.Connection
 				.QueryAsync<DashboardApiGetModel>(@$"
-					select r.uid, r.Name, r.Description, at.uid as assetTypeUid, r.ReportType as DashboardType, r.Location, Definition as '_definitionJson'
+					select r.Id, r.uid, r.Name, r.Description, at.uid as assetTypeUid, r.ReportType as DashboardType, r.Location, Definition as '_definitionJson'
 					from dbo.Report r
 					left join assettype at on at.id = r.AssetTypeID
 					{whereSql}", dbArgs)).ToList();

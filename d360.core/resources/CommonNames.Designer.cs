@@ -259,6 +259,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Instance.
+        /// </summary>
+        public static string Instance {
+            get {
+                return ResourceManager.GetString("Instance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reference Item.
         /// </summary>
         public static string ReferenceItem {

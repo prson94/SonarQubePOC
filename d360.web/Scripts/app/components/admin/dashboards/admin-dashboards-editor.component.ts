@@ -7,6 +7,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { DashboardService } from '../../../services/dashboard.service';
+import { DashboardLocation, DashboardModel, DashboardType } from '../../../models/dashboard.model';
 
 @Component({
     selector: 'd3s-admin-dashboards-editor',
@@ -15,12 +16,12 @@ import { DashboardService } from '../../../services/dashboard.service';
 })
 
 export class AdminDashboardsEditor {
-    @Input() report: Report;
+    @Input() report: DashboardModel;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
     action: string = $localize`Edit`;
     error: any;
-    editedReport: Report;
+	editedReport: DashboardModel;
     isTargetsLoading: boolean = false;
     reportTypes: DropdownOption[] = [];
     targetTypes: DropdownOption[] = [];
@@ -30,26 +31,27 @@ export class AdminDashboardsEditor {
     labelSave = $localize`Save`;
     labelClose = $localize`Close`;
 
+	showOnHomePage: boolean = false;
+
     constructor(
 		private dashboardService: DashboardService,
         private responsibilityTypeService: ResponsibilityTypeService,
         protected settingsService: CompanySettingsService
     ) {
-        this.reportTypes.push({ value: "powerbi", title: "PowerBI" });
+		this.reportTypes.push({ value: "PowerBi", title: "PowerBI" });
     }
 
     ngOnInit() {
         let enableDqPlus = this.settingsService.getSettingById(CompanySettingEnum.EnableSagacity).BooleanSetting.Value;
         if (enableDqPlus) {
-            this.reportTypes.push({ value: "sagacity", title: "Data360 DQ+" });
+			this.reportTypes.push({ value: "DqPlus", title: "Data360 DQ+" });
         }
         if (this.report != undefined) {
             this.editedReport = _.cloneDeep(this.report);
-            this.editedReport.ObjectType = this.editedReport.ObjectType + '|' + this.editedReport.ObjectID.toString();
-            this.objectTypeChanged(this.editedReport.ObjectType, true);
+			this.objectTypeChanged(this.editedReport.AssetTypeUid, true);
         }
         else {
-            this.editedReport = new Report();
+            this.editedReport = new DashboardModel();
             this.action = $localize`New`;
         }
         this.getReportTargets();
@@ -59,7 +61,19 @@ export class AdminDashboardsEditor {
         this.file = null;
     }
 
-    onSubmit() {
+	onSubmit() {
+		console.log(this.editedReport);
+		var objectTypeData = this.editedReport.SelectedObjectData.split('|');
+		this.editedReport.Location = DashboardLocation.List;
+		this.editedReport.AssetTypeUid = objectTypeData[0];
+		if (objectTypeData[1]) {
+			this.editedReport.Location = DashboardLocation.Detail;
+		}
+		if (this.showOnHomePage) {
+			this.editedReport.Location = DashboardLocation.Homepage;
+		}
+		console.log(this.editedReport);
+		return;
         this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit", file: this.file });
     }
 
@@ -80,38 +94,31 @@ export class AdminDashboardsEditor {
         this.file = e.srcElement.files[0];
     }
 
-    private isValid(): boolean {
-        if (this.action === $localize`New` && this.editedReport.ReportType == "powerbi")
+	private isValid(): boolean {
+		if (this.action === $localize`New` && this.editedReport.DashboardType == DashboardType.PowerBi.toString())
             return this.file != null
         else
             return true;
     }
 
-    private objectTypeChanged(type: string, isInitialLoad?: boolean) {
-        let object = type.split("|");
-        if (!object || object.length < 2) {
-            console.log("ERROR - INVALID OBJECT INFO SPECIFIED.");
-            return;
-        }
+    private objectTypeChanged(assetTypeUid: string, isInitialLoad?: boolean) {
         if (!isInitialLoad) {
-            this.editedReport.VisibleToRoles = [];
+            this.editedReport.Responsibilities = [];
         }
-        let ot = object[0];
-        if (!ot.endsWith("Type"))
-            ot += "Type";
-        let otid: number = +object[1];
-        this.responsibilityTypeService.getRelationsByObjectType(ot, otid).
-            subscribe((res) => {
-                this.responsibilities = [];
-                res.forEach((o) => {
-                    this.responsibilities.push({
-                        label: o.ResponsibilityTypeName,
-                        value: o.ResponsibilityTypeID
-                    });
-                });
-                if (isInitialLoad && this.editedReport && this.editedReport.VisibleTo) {
-                    this.editedReport.VisibleToRoles = this.editedReport.VisibleTo.split(',');
-                }
-            });
+		
+
+        //this.responsibilityTypeService.getRelationsByObjectType(ot, otid).
+        //    subscribe((res) => {
+        //        this.responsibilities = [];
+        //        res.forEach((o) => {
+        //            this.responsibilities.push({
+        //                label: o.ResponsibilityTypeName,
+        //                value: o.ResponsibilityTypeID
+        //            });
+        //        });
+        //        if (isInitialLoad && this.editedReport && this.editedReport.Responsibilities) {
+        //            /*this.editedReport.Responsibilities = this.editedReport.VisibleTo.split(',');*/
+        //        }
+        //    });
     }
 }

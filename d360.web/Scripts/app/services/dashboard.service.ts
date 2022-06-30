@@ -60,14 +60,6 @@ export class DashboardService extends BaseObservableService {
         return this.putDynamic(this.http, 'report', report, file);
     }
 
-    getReportTargetTypes(): Observable<DropdownOption[]> {        
-        return this.http.get('api/reports/targets')
-            .pipe(
-            map((response) => <DropdownOption[]>response),
-                catchError((err) =>this.handleError(err))
-            );
-    }  
-
     setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
         let headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
@@ -129,4 +121,12 @@ export class DashboardService extends BaseObservableService {
 				catchError(err => this.handleError(err))
 			);
 	}
+
+	getReportTargetTypes(): Observable<DropdownOption[]> {
+		return this.http.get('/api/v2/environment/dashboards/targets')
+			.pipe(
+				map((response) => <DropdownOption[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}  
 }
