@@ -42,17 +42,17 @@ namespace d360.model.DataAccessLayer
 		private const string COMMENT_TABLE_COLUMNS = @"C.Uid, C.ID, C.ParentID, C.CommentType, iif(C.IsDeleted = 1, '[Comment removed]', C.Body) as Body, C.CreatedOn, C.CreatedBy, C.UpdatedBy, C.UpdatedOn, C.IsDeleted";
 		private const string TAGS_JSON_SQL = @"coalesce(
 			(
-			select	CRA.Uid as AssetUid,
-					CRA.AssetTypeUid,
-					AD.DisplayPath as [Path],
-					CRA.TypeName,
+			select	AD.Uid as AssetUid,
+					AD.AssetTypeUid,
+					AP.DisplayPath as [Path],
+					AD.TypeName,
 					U.Url,
-					CRA.BackColor as IconBackColor,
-					CRA.ForeColor as IconForeColor
+					AD.BackColor as IconBackColor,
+					AD.ForeColor as IconForeColor
 			from	CommentRelation CR
-					inner join AssetDetail CRA on CRA.ID = CR.AssetID and CR.CommentID = C.ID
-					inner join graph.AssetNode AD on AD.ID = CRA.ID
-					cross apply GetAssetUrlById(CRA.ID) U
+					inner join AssetDetail AD on AD.ID = CR.AssetID
+					inner join dbo.AssetPath AP on AD.ID = AP.ID
+					cross apply GetAssetUrlById(AD.ID) U
 			for		json path
 			), '[]') as TagsJson";
 		private const string EMOJIS_JSON_SQL = @"coalesce(
@@ -637,7 +637,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 								inner join P ON C.ID = P.ID
 								inner join Asset O on O.ID = P.AssetID
 								inner join AssetType T on T.ID = O.AssetTypeID
-								inner join graph.AssetNode AP on AP.ID = O.ID
+								inner join dbo.AssetPath AP on AP.ID = O.ID
 								outer apply [dbo].[GetAssetUrlById](O.ID) AUrl";
 
 			var countWhereSql = whereSql + (string.IsNullOrEmpty(whereSql) ? "where " : " and ") + "C.ParentID is null";
@@ -711,7 +711,7 @@ or (C.ID in (select ID from Comment where CreatedBy = @followerId))
 								inner join P ON C.ID = P.ID
 								inner join Asset O on O.ID = P.AssetID
 								inner join AssetType T on T.ID = O.AssetTypeID
-								inner join graph.AssetNode AP on AP.ID = O.ID
+								inner join dbo.AssetPath AP on AP.ID = O.ID
 								outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
 						ORDER BY	C.ParentID, C.CreatedOn DESC";
 
