@@ -1677,4 +1677,34 @@ values	(G.ID, G.Segments);
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
+  <comment>Intersect table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update	T
+set		T.SubjectAssetID = S.ID,
+		T.SubjectAssetTypeID = S.AssetTypeID
+from	[Intersect] T inner join Asset S on S.Object = T.Subject and S.ObjectId = T.SubjectID;
+
+update	T
+set		T.ObjectAssetID = S.ID,
+		T.ObjectAssetTypeID = S.AssetTypeID
+from	[Intersect] T inner join Asset S on S.Object = T.Object and S.ObjectId = T.ObjectID;
+
+update	T
+set		T.ObjectAssetID = 0,
+		T.ObjectAssetTypeID = S.ID
+from	[Intersect] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+
 </databaseChangeLog>

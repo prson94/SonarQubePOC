@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Table.api.ExecutionRelationship-v2">
+  <changeSet author="Pappas" id="Table.api.ExecutionRelationship-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -17,9 +17,13 @@ BEGIN
 		[ExecutionID] [uniqueidentifier] NOT NULL,
 		[ItemNumber] [int] NOT NULL,
 		[SubjectUid] [uniqueidentifier] NULL,
+		SubjectAssetID bigint constraint DF_ExecutionRelationship_SubjectAssetID default(0) not null,
+		SubjectAssetTypeID int constraint DF_ExecutionRelationship_SubjectAssetTypeID default(0) not null,
 		[Subject] [varchar](50) NULL,
 		[SubjectID] [int] NULL,
 		[ObjectUid] [uniqueidentifier] NULL,
+		ObjectAssetID bigint constraint DF_ExecutionRelationship_ObjectAssetID default(0) not null,
+		ObjectAssetTypeID int constraint DF_ExecutionRelationship_ObjectAssetTypeID default(0) not null,
 		[Object] [varchar](50) NULL,
 		[ObjectID] [int] NULL,
 		[IntersectID] [int] NULL,
@@ -31,6 +35,60 @@ BEGIN
 		[ExecutionItemUid] [uniqueidentifier] NULL,
 		CONSTRAINT [PK_ApiExecutionRelationship] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC )
 	)
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ExecutionRelationship' AND COLUMN_NAME = 'Owner')
+BEGIN
+  ALTER TABLE [api].[ExecutionRelationship] ADD Owner [nvarchar](100) NULL
+END
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionRelationship' and COLUMN_NAME = 'SubjectAssetID')
+begin
+	alter table [api].[ExecutionRelationship] add SubjectAssetID bigint null;
+	alter table [api].[ExecutionRelationship] add constraint DF_ExecutionRelationship_SubjectAssetID default(0) FOR SubjectAssetID;
+	alter table [api].[ExecutionRelationship] alter column SubjectAssetID bigint not null;
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionRelationship' and COLUMN_NAME = 'SubjectAssetTypeID')
+begin
+	alter table [api].[ExecutionRelationship] add SubjectAssetTypeID int null;
+	alter table [api].[ExecutionRelationship] add constraint DF_ExecutionRelationship_SubjectAssetTypeID default(0) FOR SubjectAssetTypeID;
+	alter table [api].[ExecutionRelationship] alter column SubjectAssetTypeID int not null;
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionRelationship' and COLUMN_NAME = 'ObjectAssetID')
+begin
+	alter table [api].[ExecutionRelationship] add ObjectAssetID bigint null;
+	alter table [api].[ExecutionRelationship] add constraint DF_ExecutionRelationship_ObjectAssetID default(0) FOR ObjectAssetID;
+	alter table [api].[ExecutionRelationship] alter column ObjectAssetID bigint not null;
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionRelationship' and COLUMN_NAME = 'ObjectAssetTypeID')
+begin
+	alter table [api].[ExecutionRelationship] add ObjectAssetTypeID int null;
+	alter table [api].[ExecutionRelationship] add constraint DF_ExecutionRelationship_ObjectAssetTypeID default(0) FOR ObjectAssetTypeID;
+	alter table [api].[ExecutionRelationship] alter column ObjectAssetTypeID int not null;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ExecutionRelationship' AND COLUMN_NAME = 'Owner')
+BEGIN
+  ALTER TABLE [api].[ExecutionRelationship] DROP COLUMN Owner
+END
+		]]>
+	</rollback>
+  </changeSet>
+
+  
+<changeSet author="Pappas" id="Table.api.ExecutionRelationship-Indices-v1">
+  <comment></comment>
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationship_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionRelationship_Uid] ON [api].[ExecutionRelationship] ( [ExecutionID] DESC, [Uid] ASC ) INCLUDE([ItemNumber])
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationship_ObjectUid')
@@ -46,32 +104,6 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationship_Success')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ApiExecutionRelationship_Success] ON [api].[ExecutionRelationship] ( [ExecutionID] DESC, [Success] ASC ) INCLUDE([ItemNumber])
-END
-
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ExecutionRelationship' AND COLUMN_NAME = 'Owner')
-BEGIN
-  ALTER TABLE [api].[ExecutionRelationship] ADD Owner [nvarchar](100) NULL
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ExecutionRelationship' AND COLUMN_NAME = 'Owner')
-BEGIN
-  ALTER TABLE [api].[ExecutionRelationship] DROP COLUMN Owner
-END
-		]]>
-	</rollback>
-  </changeSet>
-
-  
-<changeSet author="Puneet Gupta" id="Table.api.ExecutionRelationship-CreateIndexUid-v1">
-  <comment>GOV-15476</comment>
-  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
-<![CDATA[
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionRelationship_Uid')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_ApiExecutionRelationship_Uid] ON [api].[ExecutionRelationship] ( [ExecutionID] DESC, [Uid] ASC ) INCLUDE([ItemNumber])
 END
 ]]>
     </sql>

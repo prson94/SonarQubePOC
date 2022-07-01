@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.Intersect-v1">
+  <changeSet author="Core" id="Table.dbo.Intersect-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,23 +14,27 @@
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Intersect')
 BEGIN
 	CREATE TABLE [dbo].[Intersect](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[IntersectTypeID] [int] NOT NULL,
-		[Subject] [varchar](50) NOT NULL,
-		[SubjectID] [int] NOT NULL,
-		[Object] [varchar](50) NOT NULL,
-		[ObjectID] [int] NOT NULL,
-		[State] [int] CONSTRAINT [DF_Intersect_State] DEFAULT (1) NOT NULL,
-		[CreatedBy] [int] CONSTRAINT [DF_Intersect_CreatedBy] DEFAULT (0) NULL,
-		[CreatedOn] [datetime] CONSTRAINT [DF_Intersect_CreatedOn] DEFAULT (getutcdate()) NULL,
-		[UpdatedBy] [int] CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT (0) NULL,
-		[UpdatedOn] [datetime] CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) NULL,
-		[Owner] [varchar](100) NULL,
-		[Deleted] [bit] CONSTRAINT [DF_Intersect_Deleted] DEFAULT (0) NULL,
-		[Visible] [bit] CONSTRAINT [DF_Intersect_Visible] DEFAULT (1) NOT NULL,
-		[SourceID] [nvarchar](500) NULL,
-		[uid] [uniqueidentifier] CONSTRAINT [DF_Intersect_uid] DEFAULT (newid()) NOT NULL,
-		CONSTRAINT [PK_Intersect] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+		[ID] [int] IDENTITY(1,1) not null,
+		[IntersectTypeID] [int] not null,
+		SubjectAssetID bigint constraint DF_Intersect_SubjectAssetID default(0) not null,
+		SubjectAssetTypeID int constraint DF_Intersect_SubjectAssetTypeID default(0) not null,
+		ObjectAssetID bigint constraint DF_Intersect_ObjectAssetID default(0) not null,
+		ObjectAssetTypeID int constraint DF_Intersect_ObjectAssetTypeID default(0) not null,
+		[Subject] [varchar](50) not null,
+		[SubjectID] [int] not null,
+		[Object] [varchar](50) not null,
+		[ObjectID] [int] not null,
+		[State] [int] constraint DF_Intersect_State default(1) not null,
+		[CreatedBy] [int] constraint DF_Intersect_CreatedBy default(0) null,
+		[CreatedOn] [datetime] constraint DF_Intersect_CreatedOn default(getutcdate()) null,
+		[UpdatedBy] [int] constraint DF_Intersect_UpdatedBy default(0) null,
+		[UpdatedOn] [datetime] constraint DF_Intersect_UpdatedOn default(getutcdate()) null,
+		[Owner] [varchar](100) null,
+		[Deleted] [bit] constraint DF_Intersect_Deleted default(0) null,
+		[Visible] [bit] constraint DF_Intersect_Visible default(1) not null,
+		[SourceID] [nvarchar](500) null,
+		[uid] [uniqueidentifier] constraint DF_Intersect_uid default(newid()) not null,
+		constraint PK_Intersect primary key clustered ( [ID] ASC )
 	)
 END
 
@@ -40,30 +44,34 @@ BEGIN
 	ALTER TABLE [dbo].[Intersect] CHECK CONSTRAINT [FK_Intersect_IntersectType]
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Intersect')
-BEGIN
-	CREATE UNIQUE CLUSTERED INDEX [CIX_Intersect] ON [dbo].[Intersect] ( [IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC )
-END
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'SubjectAssetID')
+begin
+	alter table [dbo].[Intersect] add SubjectAssetID bigint null;
+	alter table [dbo].[Intersect] add constraint DF_Intersect_SubjectAssetID default(0) FOR SubjectAssetID;
+	alter table [dbo].[Intersect] alter column SubjectAssetID bigint not null;
+end
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_IntersectTypeID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID] ON [dbo].[Intersect] ( [IntersectTypeID] ASC )
-END
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'SubjectAssetTypeID')
+begin
+	alter table [dbo].[Intersect] add SubjectAssetTypeID int null;
+	alter table [dbo].[Intersect] add constraint DF_Intersect_SubjectAssetTypeID default(0) FOR SubjectAssetTypeID;
+	alter table [dbo].[Intersect] alter column SubjectAssetTypeID int not null;
+end
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_Object_IntersectType_Deleted')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Intersect_Object_IntersectType_Deleted] ON [dbo].[Intersect] ( [Object] ASC, [ObjectID] ASC, [IntersectTypeID] ASC, [Deleted] ASC ) INCLUDE([ID]) 
-END
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'ObjectAssetID')
+begin
+	alter table [dbo].[Intersect] add ObjectAssetID bigint null;
+	alter table [dbo].[Intersect] add constraint DF_Intersect_ObjectAssetID default(0) FOR ObjectAssetID;
+	alter table [dbo].[Intersect] alter column ObjectAssetID bigint not null;
+end
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_Subject_SubjectID_IntersectType')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Intersect_Subject_SubjectID_IntersectType] ON [dbo].[Intersect] ( [SubjectID] ASC, [Subject] ASC ) INCLUDE([IntersectTypeID]) 
-END
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'ObjectAssetTypeID')
+begin
+	alter table [dbo].[Intersect] add ObjectAssetTypeID int null;
+	alter table [dbo].[Intersect] add constraint DF_Intersect_ObjectAssetTypeID default(0) FOR ObjectAssetTypeID;
+	alter table [dbo].[Intersect] alter column ObjectAssetTypeID int not null;
+end
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_Uid')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Intersect_Uid] ON [dbo].[Intersect] ( [uid] ASC )
-END
 		]]>
     </sql>
 	<rollback>
@@ -73,53 +81,68 @@ END
 	</rollback>
   </changeSet>
 
-<changeSet author="Puneet Gupta" id="Table.dbo.Intersect-IX_Intersect_Uid-v1">
-<comment>GOV-15471</comment>
+<changeSet author="Pappas" id="Table.dbo.Intersect-Indices-v1.1">
+<comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 <![CDATA[
-declare @count int=0;
-
-select @count = count(1)
-from 
-(
-	select top 1 uid
-	from dbo.[intersect]
-	group by uid
-	having count(1)>1
-) a
-
-if (exists (select * from sys.indexes where name = 'IX_Intersect_Uid' and is_unique = 0) and @count = 0)
-begin
-	if exists (select * from sys.indexes si where name = 'IX_Intersect_Uid' and object_name(object_id) = 'Intersect' 
-	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
-	begin
-		drop INDEX [IX_Intersect_Uid] ON [dbo].[Intersect];
-	end
 	if not exists (select * from sys.indexes where name = 'IX_Intersect_Uid')
-		begin
-			CREATE UNIQUE NONCLUSTERED INDEX [IX_Intersect_Uid] ON [dbo].[Intersect] ([uid] asc)
-		end
-end
+	begin
+		create unique nonclustered index [IX_Intersect_Uid] on [dbo].[Intersect] ([uid] asc)
+	end
+
+	if exists (select * from sys.indexes where name = 'CIX_Intersect')
+	begin
+		drop index [CIX_Intersect] on [dbo].[Intersect] with ( ONLINE = ON );
+		alter table [dbo].[Intersect] drop constraint PK_Intersect;
+		alter table [dbo].[Intersect] add constraint [PK_Intersect] primary key clustered ( [ID] asc ) on [PRIMARY];
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_IntersectTypeID')
+	begin
+		create nonclustered index [IX_Intersect_IntersectTypeID] on [dbo].[Intersect] ( [IntersectTypeID] ASC )
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_Object_IntersectType_Deleted')
+	begin
+		create nonclustered index [IX_Intersect_Object_IntersectType_Deleted] on [dbo].[Intersect] ( [Object] ASC, [ObjectID] ASC, [IntersectTypeID] ASC, [Deleted] ASC ) INCLUDE([ID]) 
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_Subject_SubjectID_IntersectType')
+	begin
+		create nonclustered index [IX_Intersect_Subject_SubjectID_IntersectType] on [dbo].[Intersect] ( [SubjectID] ASC, [Subject] ASC ) INCLUDE([IntersectTypeID]) 
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_Object_ObjectID_IntersectType')
+	begin
+		create nonclustered index [IX_Intersect_Object_ObjectID_IntersectType] on [dbo].[Intersect] ( [ObjectID] asc, [Object] asc ) include ( [IntersectTypeID] ) 
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_SubjectAssetID_IntersectType')
+	begin
+		create nonclustered index [IX_Intersect_SubjectAssetID_IntersectType] on [dbo].[Intersect] ( SubjectAssetID asc ) include ( [IntersectTypeID] ) 
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_SubjectAssetTypeID_IntersectType')
+	begin
+		create nonclustered index [IX_Intersect_SubjectAssetTypeID_IntersectType] on [dbo].[Intersect] ( SubjectAssetTypeID asc ) include ( [IntersectTypeID] ) 
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_ObjectAssetID_IntersectType')
+	begin
+		create nonclustered index [IX_Intersect_ObjectAssetID_IntersectType] on [dbo].[Intersect] ( ObjectAssetID asc ) include ( [IntersectTypeID] ) 
+	end
+
+	if not exists (select * from sys.indexes where name = 'IX_Intersect_ObjectAssetTypeID_IntersectType')
+	begin
+		create nonclustered index [IX_Intersect_ObjectAssetTypeID_IntersectType] on [dbo].[Intersect] ( ObjectAssetTypeID asc ) include ( [IntersectTypeID] ) 
+	end
 ]]>
     </sql>
 	<rollback>
-<![CDATA[
-if exists (select * from sys.indexes where name = 'IX_Intersect_Uid' and is_unique = 1)
-begin
-	if exists (select * from sys.indexes si where name = 'IX_Intersect_Uid' and object_name(object_id) = 'Intersect' 
-	   and exists (select 1 from sys.objects so where so.object_id = si.object_id and schema_name(so.schema_id) = 'dbo'))
-	begin
-		drop INDEX [IX_Intersect_Uid] ON [dbo].[Intersect]
-	end
-	if not exists (select * from sys.indexes where name = 'IX_Intersect_Uid')
-		begin
-			CREATE NONCLUSTERED INDEX [IX_Intersect_Uid] ON [dbo].[Intersect] ([uid] asc)
-		end
-end
-]]>
+<![CDATA[]]>
 	</rollback>
   </changeSet>
 
