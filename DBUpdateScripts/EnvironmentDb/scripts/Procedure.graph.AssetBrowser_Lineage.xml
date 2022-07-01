@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Lineage-v2">
-    <comment>GOV-18269</comment>
+  <changeSet author="Puneet Gupta" id="Procedure.graph.AssetBrowser_Lineage-v3">
+    <comment>GOV-18610</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -301,7 +301,7 @@ begin
 				n.s.value('@assetId', 'bigint') as ID,
 				P.ID as ParentID
 		from	#hopAsset H
-				inner join graph.AssetNode A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
+				inner join dbo.AssetPath A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
 				cross apply A.Segments.nodes('/path/segment') n(s)
 				inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
 				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
@@ -461,15 +461,16 @@ begin
 				coalesce(DA.DisplayValue, DT.Name, 'No display value'),											--text
 				A.Uid,																							--assetUid
 				A.ID,																							--assetId
-				coalesce(A.AssetTypeID, DT.ID),																	--assetTypeId
-				coalesce(A.AssetTypeUid, DT.Uid),																--assetTypeUid
+				coalesce(AA.ID, DT.ID),																	--assetTypeId
+				coalesce(AA.Uid, DT.Uid),																--assetTypeUid
 				0,																								--backAmount
 				0																								--actionCount
 		from	#hopAsset H
 				left join #hopAsset P on P.Hop = H.Hop and P.ID = H.ParentID
 				left join AssetDisplayValue DA on DA.AssetID = H.ID and H.IsType = 0
 				left join AssetType DT on DT.ID = H.ID and H.IsType = 1
-				left join graph.AssetNode A on A.ID = H.ID and H.IsType = 0
+				left join Asset A on A.ID = H.ID and H.IsType = 0
+				left join AssetType AA on AA.ID = A.AssetTypeID 
 		where	H.IncludeInResult = 1;
 
 	-- Remove the current hop worth of assets IF this is not an initial load.
@@ -751,7 +752,7 @@ begin
 		assetTypeUid uniqueidentifier,
 		backAmount decimal(2,1),
 		back varchar(7),
-		icon varchar(25),
+		icon varchar(250),
 		class int,
 		actionCount int,
 		useAsTransformation bit default(0),
@@ -763,6 +764,24 @@ begin
 	create nonclustered index IX_TempNodes_Group on #nodes ([group] asc);
 	create nonclustered index IX_TempNodes_Key on #nodes ([key] asc);
 
+	-- Since this is a hop, and not initial, you need to remove any assets that do not have lineage.
+	if @currentHop > 1 
+	begin
+		delete	#assetsEditable 
+		where	Uid not in (
+							select	distinct 
+									T.Uid
+							from	#assetsEditable T
+									inner join Asset N on N.Uid = T.Uid
+									inner join PredicateIntersect E on E.Subject = N.Object and E.SubjectID = N.ObjectID and E.PredicateType in (1, 12, 13)
+							union
+							select	distinct 
+									T.Uid
+							from	#assetsEditable T
+									inner join Asset N on N.Uid = T.Uid
+									inner join PredicateIntersect E on E.Object = N.Object and E.ObjectID = N.ObjectID and E.PredicateType in (1, 12, 13)
+							)
+	end
 
 	-- BEGIN: Get focal point heirarchy (ascendancy/descendancy)
 		

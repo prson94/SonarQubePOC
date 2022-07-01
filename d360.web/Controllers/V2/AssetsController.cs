@@ -3528,8 +3528,8 @@ namespace d360.web.Controllers.V2
 
 			try
 			{
-				var query = $@" exec graph.UpdateAssetNode @assetuid,1
-						select DisplayPath from graph.AssetNode where Uid = @assetuid";
+				var query = $@" select ap.DisplayPath from Asset a inner join assetpath ap on ap.id = a.id 
+						where a.Uid = @assetuid";
 
 				var results = await Company.QueryAsync<dynamic>(query, new { assetUid });
 
