@@ -735,5 +735,22 @@ namespace d360.model.DataAccessLayer
 				})
 				.ToListAsync();
 		}
+
+		public async Task<List<QuestionOptionShortInfo>> GetSurveyQuestionValues(Guid questionTypeUid)
+		{
+			var options = await companyContext.QueryAsync<QuestionOptionShortInfo>(
+				@"
+					select 
+						opt.Name,
+						opt.[Value]
+					from dbo.QuestionTypeOption opt
+					join dbo.QuestionType question on question.ID = opt.QuestionTypeID
+					where question.Uid = @questionTypeUid
+					order by opt.ID
+				",
+				new { questionTypeUid });
+
+			return options.ToList();
+		}
 	}
 }

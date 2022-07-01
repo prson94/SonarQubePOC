@@ -253,7 +253,7 @@ namespace d360.web.Controllers.V2
 		/// <param name="surveyTypeUid">Uid of survey type</param>
 		/// <returns>List of questions under a survey</returns>
 		[
-			HttpGet, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions"),
+			HttpGet, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/"),
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<QuestionTypeShortInfo>)),
@@ -268,6 +268,32 @@ namespace d360.web.Controllers.V2
 			}
 
 			var questionTypes = await this.SurveyRepository.GetQuestionTypesBySurveyType(surveyTypeUid);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
+		}
+
+		/// <summary>
+		/// Gets a list of options for a specific question on a survey
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="questionTypeUid">Uid of question type</param>
+		/// <returns>List of options for a specific question on a survey</returns>
+		[
+			HttpGet, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/{questionTypeUid}/options"),
+			SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<ObjectSurveyQuestionValuesModel>)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey Type not found. Question not found.", typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> GetSurveyQuestionValues(Guid surveyTypeUid, Guid questionTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateGetSurveyQuestionValues(surveyTypeUid, questionTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var questionTypes = await this.SurveyRepository.GetSurveyQuestionValues(questionTypeUid);
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
 		}

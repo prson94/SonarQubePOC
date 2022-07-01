@@ -46,5 +46,7 @@ namespace d360.model.DataAccessLayer
 		Task<bool> QuestionHasAnswers(Guid questionTypeUid);
 
 		Task<List<QuestionTypeShortInfo>> GetQuestionTypesBySurveyType(Guid surveyTypeUid);
+
+		Task<List<QuestionOptionShortInfo>> GetSurveyQuestionValues(Guid questionTypeUid);
 	}
 }

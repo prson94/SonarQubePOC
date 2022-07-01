@@ -234,6 +234,13 @@ namespace d360.core.entities.SurveyModels
 		public int OptionCount { get; set; }
 	}
 
+	public class QuestionOptionShortInfo
+	{
+		public string Name { get; set; }
+
+		public int Value { get; set; }
+	}
+
     public class DateFormatConverter : IsoDateTimeConverter
     {
         public DateFormatConverter(string format)

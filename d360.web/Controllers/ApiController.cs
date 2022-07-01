@@ -5082,18 +5082,6 @@ where v.id = {0}", id)).FirstOrDefault();
 			return new CreateResponse { Message = "Created" };
 		}
 
-		[Route("surveys/question/{questionId}/values")]
-		public IEnumerable<ObjectSurveyQuestionValuesModel> GetSurveyQuestionValues(int questionId)
-		{
-			var sql = @"select 
-							ID,
-							Name,
-							[Value]
-						from questiontypeoption where questiontypeid = @id order by id";
-
-			return Company.Query<ObjectSurveyQuestionValuesModel>(sql, new { id = questionId });
-		}
-
 		#endregion
 
 		#region Taxonomy
