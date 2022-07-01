@@ -19,6 +19,8 @@ namespace d360.model.DataAccessLayer
 
 		Task UpdateQuestionType(QuestionType questionType);
 
+		Task DeleteQuestionType(Guid questionTypeUid);
+
 		SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         
         SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams);

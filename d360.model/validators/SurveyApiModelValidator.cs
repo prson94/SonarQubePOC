@@ -536,5 +536,28 @@ namespace d360.model.validators
 
 			return null;
 		}
+
+		public async Task<WorkHttpStatus> ValidateQuestionTypeDelete(Guid surveyTypeUid, Guid questionTypeUid)
+		{
+			var existingSurveyType = this.surveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+			if (existingSurveyType == null)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					SurveyTypeErrors.SurveyTypeNotFound);
+			}
+
+			var existingQuestionType = this.surveyRepository.GetSurveyQuestionTypeByUid(questionTypeUid);
+			if (existingQuestionType == null || existingQuestionType.SurveyType.Uid != surveyTypeUid)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					SurveyTypeErrors.QuestionTypeNotFound);
+			}
+
+			return null;
+		}
 	}
 }

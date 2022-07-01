@@ -91,6 +91,11 @@ namespace d360.model.DataAccessLayer
 			await companyContext.SaveChangesAsync();
 		}
 
+		public async Task DeleteQuestionType(Guid uid)
+		{
+			await companyContext.DeleteAsync<QuestionType>(i => i.Uid == uid);
+		}
+
 		public SurveyType GetSurveyTypeByUid(Guid uid)
 		{
 			return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
