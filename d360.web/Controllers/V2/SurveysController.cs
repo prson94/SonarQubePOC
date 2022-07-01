@@ -147,6 +147,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPost, MapToApiVersion("2.0"), Route("types"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.Created, "Survey successfully created.", typeof(SurveyTypeUpsertResponseApiModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
