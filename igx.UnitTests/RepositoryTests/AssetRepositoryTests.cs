@@ -522,7 +522,7 @@ namespace igx.UnitTests.RepositoryTests
             queryMustContain.Add("T.[Uid] = @uid"); //by uid
             queryMustContain.Add("T.[UseAsTransformation] = @uat"); //filter by is transformation
             queryMustContain.Add("select T.ID from AssetType T"); //is from type filter
-            queryMustContain.Add("AssetPath N"); //main select
+            queryMustContain.Add("graph.AssetNode N"); //main select
 
             mockCompanyContext.Setup(x => x.QueryAsync<AssetsByPathItemApiViewModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
                      .Returns((string sql, object param, int timeout) =>
