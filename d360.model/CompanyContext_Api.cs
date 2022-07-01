@@ -621,7 +621,7 @@ namespace d360.model
 							update V
 							set isfound = 4
 							from #tempdata V
-							inner join AssetType att on att.[Subject] = V.[Subject] AND V.SubjectID = 0 and {assetrefJoin}
+							inner join AssetType att on att.[Object] = V.[Subject] AND V.SubjectID = 0 and {assetrefJoin}
 							where isfound = 0;
 						end;
 
