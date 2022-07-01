@@ -238,7 +238,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.lookups.ReferenceTypes = this.fieldsService.getReferenceTypes();
         this.lookups.Field_JsonDataTypes.unshift({ label: this.chooseLabel, value: null });
         this.lookups.Field_JsonFields.unshift({ label: this.chooseLabel, value: null });
-        this.lookups.DataTypes.unshift({ label: this.chooseLabel, value: null });
+		this.lookups.DataTypes.unshift({ label: this.chooseLabel, value: "Empty" });
     };
 
     private getFormDataHandler = (responseGetFormData) => {

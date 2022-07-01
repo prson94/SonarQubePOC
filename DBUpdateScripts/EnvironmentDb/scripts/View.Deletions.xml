@@ -36,4 +36,46 @@ drop view if exists [graph].[AssetNodeKeyPath]
 	<rollback></rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="View.Deletions.ReportingSpecificAssetType.v1">
+  <comment>GOV-18455</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DECLARE @ViewName nvarchar(255);
+DECLARE cursorDropView CURSOR
+LOCAL STATIC
+FOR
+select	TABLE_NAME
+from	[INFORMATION_SCHEMA].[VIEWS] 
+where	TABLE_SCHEMA = 'reporting' 
+and (
+	TABLE_NAME like 'BusinessAsset_%' 
+	OR TABLE_NAME like 'Model_%'
+	OR TABLE_NAME like 'Policy_%'
+	)
+and (
+	TABLE_NAME not like '%_All'
+	and	TABLE_NAME not like '%_Fields'
+	and	TABLE_NAME not like 'ModelInterRelationships'
+	);
+
+OPEN cursorDropView;
+
+FETCH NEXT FROM cursorDropView INTO @ViewName;
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	EXEC('drop view if exists [reporting].' + @ViewName);
+    FETCH NEXT FROM cursorDropView INTO @ViewName;
+END;
+CLOSE cursorDropView; 
+DEALLOCATE cursorDropView;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+</rollback>
+  </changeSet>
 </databaseChangeLog>

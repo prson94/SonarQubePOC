@@ -5,7 +5,7 @@ using System.Web.Routing;
 
 using Autofac.Integration.Mvc;
 using Autofac.Integration.WebApi;
-
+using d360.web.Handlers.Exceptions;
 using d360.web.Models.Attributes;
 
 using Microsoft.Owin;

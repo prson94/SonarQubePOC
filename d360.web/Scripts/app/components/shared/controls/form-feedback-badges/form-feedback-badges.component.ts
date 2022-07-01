@@ -67,25 +67,20 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         let found = false;
         const fcCount = this.getFormControlCount("errors");
         let idx = 0;
-        for (const x of Object.keys(this.igformGroup.controls)) {
-            let control = <FormControl>this.igformGroup.get(x);
-            if (control && control.errors && !found) {
+        for (const { control, element } of this.getOrderedControls()) {
+            if (control.errors && !found) {
                 let invFound = Object.keys(control.errors).filter((x) => x !== "required").length > 0;
                 if (invFound) {
-                    let elem = this.getFormControlDomElement(x);
-
-                    if (elem) {
-                        idx++;
-                        if ((idx > this.invalidPos)) {
-                            this.invalidPos++;
-                            if (this.invalidPos >= fcCount) {
-                                this.invalidPos = 0;
-                            }
-
-                            this.expandAndActivateInput(elem);
-
-                            found = true;
+                    idx++;
+                    if ((idx > this.invalidPos)) {
+                        this.invalidPos++;
+                        if (this.invalidPos >= fcCount) {
+                            this.invalidPos = 0;
                         }
+
+                        this.expandAndActivateInput(element);
+
+                        found = true;
                     }
                 }
             }
@@ -97,25 +92,44 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
         let found = false;
         let fcCount = this.getFormControlCount("required");
         let idx = 0;
-        for (const x of Object.keys(this.igformGroup.controls)) {
-            let control = <FormControl>this.igformGroup.get(x);
-            if (control && control.errors && control.errors["required"] === true && !found) {
-                let elem = <HTMLElement>this.getFormControlDomElement(x);
-                if (elem) {
-                    idx++;
-                    if ((idx > this.requiredPos)) {
-                        this.requiredPos++;
-                        if (this.requiredPos >= fcCount) {
-                            this.requiredPos = 0;
-                        }
-
-                        this.expandAndActivateInput(elem);
-
-                        found = true;
+        for (const { control, element } of this.getOrderedControls()) {
+            if (control.errors && control.errors["required"] === true && !found) {
+                idx++;
+                if ((idx > this.requiredPos)) {
+                    this.requiredPos++;
+                    if (this.requiredPos >= fcCount) {
+                        this.requiredPos = 0;
                     }
+
+                    this.expandAndActivateInput(element);
+
+                    found = true;
                 }
             }
         }
+    }
+
+    getOrderedControls() {
+        return Object.keys(this.igformGroup.controls)
+            .map((controlName) => {
+                const control = this.igformGroup.get(controlName) as FormControl;
+                const element = this.getFormControlDomElement(controlName);
+                return { controlName, control, element };
+            })
+            .filter((x) => x.control != null)
+            .filter((x) => x.element != null)
+            .sort((a, b) => {
+                let position =  a.element.compareDocumentPosition(b.element);
+                if (position === Node.DOCUMENT_POSITION_PRECEDING) {
+                    return 1;
+                }
+
+                if (position === Node.DOCUMENT_POSITION_FOLLOWING) {
+                    return -1;
+                }
+
+                throw new Error(`Unknown code returned by Node.compareDocumentPosition: ${position}`);
+            })
     }
 
     private expandAndActivateInput(inputElement: HTMLElement) {
@@ -150,14 +164,19 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
             inputElement.querySelector('input').focus();
         }
         else if (inputElement.tagName === 'P-DROPDOWN') {
+            inputElement.scrollIntoView();
             inputElement.querySelector('input').focus();
-            (inputElement.querySelector('.p-dropdown') as HTMLElement).click();
+            
+            setTimeout(() => {
+                (inputElement.querySelector('.p-dropdown-label') as HTMLElement).click();
+            }, 10);
+
             return;
         }
         else if (inputElement.tagName === 'P-EDITOR') {
             (inputElement.querySelector('.ql-editor') as HTMLElement).focus();
         }
-        
+
         inputElement.focus();
     }
 

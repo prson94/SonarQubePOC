@@ -28,7 +28,7 @@ namespace d360.web.Models
 			{
 				var type = claim.Path.Replace("$.", "").Split('.')[0];
 
-				var props = combinedClaims.Where(p => p.Type.ToLower() == type);
+				var props = combinedClaims.Where(p => p.Type.ToLower() == type.ToLower());
 
 				foreach (var prop in props)
 				{

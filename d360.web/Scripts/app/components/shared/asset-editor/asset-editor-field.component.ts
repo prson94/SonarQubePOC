@@ -54,7 +54,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @Input() assetUid: string;
     @Input() assetTypeUid: string;
     @Input() diagramNodeKey: string;
-    selectionScrollHeight: string = "34px";
+    selectionScrollHeight: string = "320px";
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;

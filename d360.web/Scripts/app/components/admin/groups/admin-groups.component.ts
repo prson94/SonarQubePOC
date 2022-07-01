@@ -18,6 +18,7 @@ import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.com
 import { Table } from 'primeng/table';
 import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
+import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
 
 declare var CurrentResourceID;
 @Component({
@@ -58,8 +59,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     loadSub: Subscription;
 
     deleteInProgress: boolean = false;
+	isContainsSearchDefault: boolean = false;
 
-    hrefSub: Subscription;
+	hrefSub: Subscription;
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
@@ -83,7 +85,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         protected messagesService: MessagesObservableService,
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
-        private linkClickInterceptor: LinkClickInterceptor
+        private linkClickInterceptor: LinkClickInterceptor,
+		private featureFlagService: FeatureFlagsService
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
@@ -96,7 +99,9 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
             this.linkClickInterceptor.handleEvent(this, ev);
         });
-    }
+		
+		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+	}
 
     ngOnInit() {
         this.load();
@@ -114,8 +119,10 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         if (this.loadSub) {
             this.loadSub.unsubscribe();
         }
+		
+		const simpleTextFilter = this.isContainsSearchDefault ? `*${this.simpleTextFilter}*` : this.simpleTextFilter;
 
-        this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroups(this.simpleTextFilter))
+        this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroups(simpleTextFilter))
             .subscribe((res) => {
                 var result = res[0];
                 var d = res[1];

@@ -955,7 +955,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, DataProfileAPIMessages.TypeQualifierInvalid)).ConfigureAwait(false);
                 }
 
-                if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier))
+				if (!await DataProfiles.DoesTypeQualifierExist(typeQualifier) && !await DataProfiles.DoesSemanticTypeExist(typeQualifier))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, String.Format(DataProfileAPIMessages.TypeQualifierNotFound, typeQualifier))).ConfigureAwait(false);
                 }
@@ -1045,13 +1045,13 @@ namespace d360.web.Controllers.V2
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfilingNotSupportAssetClass, asset.AssetType.Class.ToString()));
                 }
 
-                var profileSetDate = model.profileSetDate.Date;
-                var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && DbFunctions.TruncateTime(x.ProfileSetDate) == profileSetDate);
+                var profileSetDate = model.profileSetDate;
+                var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && x.ProfileSetDate == profileSetDate);
 
                 //check insert
                 if (recordExists && IsInsert)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.Date.ToString("yyyy-MM-dd")));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddThh:mm:ss")));
                 }
 
                 //check update
@@ -1741,11 +1741,41 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Create the Excel document for export
-        /// </summary>
-        /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
+		[
+			HttpGet,
+			Route("possibleCreators"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Semantic Types."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public async Task<IHttpActionResult> GetPossibleCreators()
+		{
+			var result = await SemanticsRepository.GetPossibleCreators();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+		}
+
+		[
+			HttpGet,
+			Route("possibleRedactors"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were editing Semantic Types."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public async Task<IHttpActionResult> GetPossibleRedactors()
+		{
+			var result = await SemanticsRepository.GetPossibleRedactors();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+		}
+
+		/// <summary>
+		/// Create the Excel document for export
+		/// </summary>
+		/// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
+		private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
         {
             ExcelRow HeaderRow = new ExcelRow
                         {

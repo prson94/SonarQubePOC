@@ -44,11 +44,13 @@ export class SiteMenuService extends BaseObservableService {
             );
     }
 
-    addFolder(model: any): Observable<JsonResult> {
+	addFolder(model: any): Observable<JsonResult> {
         return this.http.post('navigation/AddFolder', model)
             .pipe(
                 map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+				catchError((err) => {
+					return this.handleError(err);
+				})
             );
 	}
 
@@ -56,7 +58,9 @@ export class SiteMenuService extends BaseObservableService {
 		return this.http.put('navigation/EditFolder', folder)
 			.pipe(
 				map(response => <JsonResult>response),
-				catchError(err => this.handleError(err))
+				catchError((err) => {
+					return this.handleError(err);
+				})
 			);
 	}
 

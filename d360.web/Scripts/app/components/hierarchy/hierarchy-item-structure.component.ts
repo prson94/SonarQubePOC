@@ -124,7 +124,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     ];
     secondarySidePanel: string = "detail";
 
-    exportTooltip: string;
     resourceUid: string;
 
     constructor(
@@ -147,7 +146,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     ) {
         super(settingsService);
 
-        this.exportTooltip = this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
         this.webAnalyticsService = webAnalyticsService;
         this.secondaryNavService = secondaryNavService;
 
@@ -158,7 +156,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     get assetEditorTitle(): string {
         return this.selected ? $localize`Edit Asset` : $localize`Create New Asset`;
-    }
+	}
+
+	get exportTooltip(): string {
+		return this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${this.maxExportRows} rows`;
+	}
 
     ngOnInit() {
         this.type = this.route.parent.snapshot.data.type;

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Xml.Linq;
 
 using d360.core.entities.Contracts;
@@ -288,4 +289,47 @@ namespace d360.core.entities
 
         public Guid? ParentUid { get; set; }
     }
+
+	public class AssetQueryJoins
+	{
+		private List<AssetQueryJoinData> assetQueryJoinData { get; set; } = new List<AssetQueryJoinData>();
+
+		public AssetQueryJoins(List<string> statements)
+		{
+			statements.ForEach(statement =>
+			{
+				assetQueryJoinData.Add(new AssetQueryJoinData { SQLStatement = statement });
+			});
+		} 
+
+		public string SQLJoinStatement { get {
+				var sb = new StringBuilder();
+				foreach(var statement in assetQueryJoinData.OrderBy(x=> x.Sort))
+				{
+					sb.AppendLine(statement.SQLStatement);
+				}
+				return sb.ToString(); 
+			} 
+		}
+	}
+
+	public class AssetQueryJoinData
+	{
+		public string SQLStatement { get; set; }
+
+		public int Sort
+		{
+			get
+			{
+				switch (SQLStatement.ToLowerInvariant().TrimStart())
+				{
+					case string sql when sql.StartsWith("inner"): return 10;
+					case string sql when sql.StartsWith("cross apply"): return 20;
+					case string sql when sql.StartsWith("left"): return 30;
+					case string sql when sql.StartsWith("outer apply"): return 40;
+					default: return 99;
+				}
+			}
+		}
+	}
 }

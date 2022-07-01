@@ -1424,7 +1424,9 @@ namespace d360.web.Controllers.V2
                 css.AppendCssVariable("navbarBackColorSelected", theme.NavBarBackSelectedColor);
                 css.AppendCssVariable("navbarBackColorSelectedHover", hexToRGBA(theme.NavBarBackSelectedColor, 0.35f));
                 css.AppendCssVariable("primaryButtonBackColor", theme.PrimaryButtonBackColor);
-                css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
+				//secondary button select color is derived from primary button color
+				css.AppendCssVariable("secondaryButtonSelectedBackColor", hexToRGBA(theme.PrimaryButtonBackColor, 0.35f));
+				css.AppendCssVariable("tableHeaderBackColor", theme.TableHeaderBackColor);
                 css.AppendCssVariable("tableRowBackColor", theme.TableRowBackSelectedColor);
                 css.AppendCssVariable("tableRowBackColorHover", hexToRGBA(theme.TableRowBackSelectedColor, 0.35f));
                 css.AppendCssVariable("tabLinkColor", theme.TabLinkColor);

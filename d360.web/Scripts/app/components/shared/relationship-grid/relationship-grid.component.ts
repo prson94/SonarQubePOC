@@ -21,6 +21,7 @@ import { AdvancedFilteringComponent } from '../../assets-grid/advanced-filtering
 import { AdvancedFilterFieldType, Filters, LookupValuesAPIModel, LookupValuesAPIParameters } from '../../assets-grid/advanced-filtering/advanced-filtering.models';
 import { BaseComponent } from '../base.component';
 import { AddRelationshipComponent } from './add-relationship.component';
+import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
 import { PopupMenu } from "../controls/popup-menu/popup-menu.component";
 
 @Component({
@@ -54,8 +55,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     isLoading: boolean = false;
     areTypesLoaded: boolean = false;
+	isContainsSearchDefault: boolean = false;
 
-    sidePanelOpen: string = '';
+	sidePanelOpen: string = '';
     sidePanelTab: string = 'filters';
     sidePanelStorageKey: string = '';
 
@@ -146,7 +148,8 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         private gridDefinitionService: GridDefinitionService,
         private linkClickInterceptor: LinkClickInterceptor,
         private messagesService: MessagesObservableService,
-        private permissionService: PermissionsService
+        private permissionService: PermissionsService,
+		private featureFlagService: FeatureFlagsService
     ) {
         super(settingsService);
         this.sidePanelStorageKey = "relationship-detail";
@@ -157,7 +160,9 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             this.selectedRelAsset = this.selectedRelationship = null;
             this.linkClickInterceptor.handleEvent(this, ev);
         });
-    }
+
+		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+	}
 
 
     //advanced filters component may change when only one relationship type is filtered
@@ -421,7 +426,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
         }
 
         if (this.simpleFilter) {
-            params._simpleFilter = this.simpleFilter;
+            params._simpleFilter = this.isContainsSearchDefault ? `*${this.simpleFilter}*` : this.simpleFilter;
         }
 
         if (this.singleSelectedRelationship) {

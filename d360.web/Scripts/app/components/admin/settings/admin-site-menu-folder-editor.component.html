@@ -11,6 +11,7 @@
 					  tabindex="1"
 					  i18n-pTooltip
 					  tooltipPosition="top"
+					  (click)="focusRequired($event)"
 					  tooltipStyleClass="ig-tooltip ig-tooltip-small"
 					  i18n>
 					{{requiredCount}} required
@@ -27,12 +28,13 @@
 						<div inputs>
 							<div class="row">
 								<div class="col s12">
-									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0" i18n>Name</label>
+									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0px; margin-bottom: 4px" i18n>Name</label>
 									<input igInput maxlength="250"
-											[ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
-										    (change)="setRequiredCount()"
-											required tabindex="1" type="text" 
-											[(ngModel)]="folderModel.Title" style="width:30%" />
+										   [ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
+										   (input)="setRequiredFromNameInput($event)"
+										   name="folderNameInput"
+										   required tabindex="1" type="text" 
+										   [(ngModel)]="folderModel.Title" style="width:30%" />
 								</div>
 							</div>
 							<div class="row" style="margin-bottom:15px;">
@@ -54,7 +56,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
+					<ig-property-group *ngIf="hasFolderItems" title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
 							<div class="folder-flex-grid">
 								<div class="table-content">
@@ -65,6 +67,7 @@
 														 placeholder="Search"
 														 [(ngModel)]="simpleTextFilter"
 														 (onSearch)="dt3.filterGlobal($event, 'contains')"
+														 name="availableFolderItemsSearchField"
 														 style="width:100%; padding-bottom:8px;"></ig-search-field>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length === 1" i18n>1 item selected</div>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length > 1" i18n>{{_tempSelectedFolderItems.length}} items selected</div>
@@ -223,11 +226,10 @@
 
 					<ig-property-group title="Permissions" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
-							<div class="info-block">
-								<i class="fa fa-info-circle"></i>
-								<span class="text-value">
+							<div style="margin-bottom: 16px">
+								<ig-message-box>
 									<ng-container i18n>By default all users can see each navigation folder. If there are any permissions defined, only those users/groups will see the folder on their navigation.</ng-container>
-								</span>
+								</ig-message-box>
 							</div>
 							<div class="folder-flex-grid">
 								<div class="table-content">

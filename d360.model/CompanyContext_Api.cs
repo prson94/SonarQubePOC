@@ -369,7 +369,7 @@ namespace d360.model
 								select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
 								into #tempreqfield
 								from api.ExecutionAsset A
-								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1
+								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1 and FT.DefaultValue is null
 								left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
 								left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
 								where A.executionid = @executionID 
@@ -567,48 +567,84 @@ namespace d360.model
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
             string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
-            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
+            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "Cast(AD.DisplayValue as nvarchar(4000)) = V.[value]";
+			string assetrefJoin = lookupFieldsPassedByValue ? "att.ObjectID = try_cast(V.[value] as int)" : "att.Name = V.[value]";
 
-            string sql = $@"
-					update	T
-					set		T.Success = 0,
-							T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
-					from	{targetTable} T
-							inner join	(
-										select		A.ExecutionID,
-													A.ItemNumber,
-													STRING_AGG(FT.Name+'='+left(F.FieldValue,250), ', ') as Names
-										from		{targetTable} A
-													inner join FieldType FT on FT.Object = @obj
-														and FT.ObjectID = @objID
-														and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
-													inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
-													cross apply string_split(F.FieldValue, ',') V								                    
-													inner join IntersectType IT on IT.ID = FT.LookupObjectID
-													left join (
-														select	S.ID,
-																S.DisplayValue,
-																S.[Object], 
-																S.ObjectID, 
-																S.[Type], 
-																S.TypeID 
-														from	AssetDetail S 
-														union all
-														select	T.ID,
-																T.[Name] as DisplayValue,
-																T.[Object],
-																T.ObjectID,
-																T.[Object] as [Type],
-																0 as TypeID 
-														from	AssetType T
-														where	T.[Object] = 'ReferenceItemType'
-													) AD on {assetJoin} 
-														and ((AD.[Type] = IT.[Object] AND AD.TypeID = IT.ObjectID) 
-														or (AD.[Type] = IT.[Subject] AND AD.TypeID = IT.SubjectID))
-										where       A.ExecutionID = @executionID and AD.ID IS NULL
-										group by	A.ExecutionID, A.ItemNumber
-										) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-					";
+			string sql = $@"
+
+						drop table if exists #tempdata;
+						drop table if exists #tempfinaldata;
+
+						select  A.ExecutionID,               
+						A.ItemNumber,               
+						FT.NAME FTNAME,
+						F.FieldValue,
+						F.FieldTypeID,
+						v.value [Value],
+						IT.[Object],
+						IT.ObjectID,
+						IT.[Subject],
+						IT.SubjectID,
+						0 ISFound
+						into #tempdata
+						from  {targetTable} A               
+						inner join FieldType FT on FT.Object = @obj and FT.ObjectID = @objID and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'               
+						inner join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null 
+									and (F.FieldValue != '' or FT.IsRequired = 1)               
+						cross apply string_split(F.FieldValue, ',') V                                           
+						inner join IntersectType IT on IT.ID = FT.LookupObjectID
+						where A.ExecutionID = @executionID;
+					
+						update V
+						set isfound = 1
+						from #tempdata V
+						inner join AssetDetail ad on AD.[Type] = V.[object] AND AD.TypeID = V.objectID and {assetJoin} 
+						where isfound = 0;
+
+						update V
+						set isfound = 2
+						from #tempdata V
+						inner join AssetDetail ad on AD.[Type] = V.[Subject] AND AD.TypeID = V.SubjectID and {assetJoin} 
+						where isfound = 0;
+
+						if exists(Select 1 from #tempdata t where t.Object = 'ReferenceItemType'  and isfound = 0)
+						begin
+							update V
+							set isfound = 3
+							from #tempdata V
+							inner join AssetType att on att.[Object] = V.[object] AND V.objectID = 0 and {assetrefJoin}
+							where isfound = 0;
+						end
+
+						if exists(Select 1 from #tempdata t where t.Subject = 'ReferenceItemType' and isfound = 0)
+						begin
+							update V
+							set isfound = 4
+							from #tempdata V
+							inner join AssetType att on att.[Object] = V.[Subject] AND V.SubjectID = 0 and {assetrefJoin}
+							where isfound = 0;
+						end;
+
+						WITH RS_DATA AS(SELECT ExecutionID,ItemNumber,FTName,MAX(FieldValue) FieldValue,MIN(isfound) isfound 
+										FROM #tempdata GROUP BY ExecutionID,ItemNumber,FTName)
+						select  S.ExecutionID,
+						S.ItemNumber,
+						MIN(S.isfound) isfound,
+						STRING_AGG(S.FTName+'='+left(S.FieldValue,250), ', ') as Names    
+						into #tempfinaldata        
+						from  RS_DATA S 
+						group by S.ExecutionID,S.ItemNumber;
+
+						delete from #tempfinaldata where isfound > 0
+
+						create index ix_tempfinaldata on #tempfinaldata (ExecutionID,ItemNumber);
+
+						update	T
+						set		T.Success = 0,
+								T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
+						from	{targetTable} T
+								inner join	#tempfinaldata S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+					    ";
 
             Connection.Execute(sql, new { executionID, obj = new DbString { Value = obj, Length = 50, IsAnsi = true }, objID }, commandTimeout: timeout);
         }
@@ -6515,7 +6551,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 															group by R.ExecutionID, R.ItemNumber
 															) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 										end",
-                                        new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.ModifyRelationships }, commandTimeout: timeout);
+                                        new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.EditRelationships }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
 
                     #endregion
@@ -7167,7 +7203,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 												inner join	#temppremissionObj S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber
 										where T.ExecutionID= @ExecutionID;
 										end",
-                    new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.ModifyRelationships }, commandTimeout: timeout);
+                    new { execution.ExecutionID, execution.ResourceID, p = (int)Permission.AddRelationships }, commandTimeout: timeout);
                     AddMeasurement(metrics, "Permissions Validation", sw.ElapsedMilliseconds, ++step);
 
                     #endregion
@@ -12129,7 +12165,7 @@ EG.GroupUid
 							row["ExecutionItemUid"] = DBNull.Value;
 						}
 						row["AssetUid"] = item.assetUid;
-						row["ProfileSetDate"] = item.profileSetDate.Date;
+						row["ProfileSetDate"] = item.profileSetDate;
 						row["ProfileIdentifier"] = item.profileIdentifier ?? (object)DBNull.Value;
 
                         row["UniqueCount"] = item.uniqueCount ?? (object)DBNull.Value;
@@ -12572,7 +12608,7 @@ EG.GroupUid
 						
 						update	EDP
 						set		Success = 0,
-								[Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+								[Message] = coalesce([Message] + '; ', '') + 'Record already exists with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 20)
 						from
 							api.ExecutionAssetDataProfile EDP
 							inner join 
