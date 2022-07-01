@@ -246,6 +246,32 @@ namespace d360.web.Controllers.V2
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
 		}
 
+
+		/// <summary>
+		/// Gets a list of questions under a survey
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <returns>List of questions under a survey</returns>
+		[
+			HttpGet, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions"),
+			SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<QuestionTypeShortInfo>)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey Type not found.", typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> GetQuestionTypesBySurveyType(Guid surveyTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateGetQuestionTypesBySurveyType(surveyTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var questionTypes = await this.SurveyRepository.GetQuestionTypesBySurveyType(surveyTypeUid);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
+		}
+
 		/// <summary>
 		/// Create questions for a survey. Users will be prompted to periodically fill in a survey question on the asset.
 		/// </summary>

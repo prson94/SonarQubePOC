@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -717,6 +718,22 @@ namespace d360.model.DataAccessLayer
 				new { questionTypeUid });
 
 			return answers.Any();
+		}
+
+		public async Task<List<QuestionTypeShortInfo>> GetQuestionTypesBySurveyType(Guid surveyTypeUid)
+		{
+			return await this.companyContext
+				.GetWithIncludes<QuestionType>(x => x.QuestionTypeOptions)
+				.Where(x => x.SurveyType.Uid == surveyTypeUid)
+				.Select(i => new QuestionTypeShortInfo
+				{
+					Uid = i.Uid,
+					Name = i.Name,
+					OptionCount = i.QuestionTypeOptions.Count,
+					DisplayStyle = i.DisplayStyle,
+					Description = i.Description
+				})
+				.ToListAsync();
 		}
 	}
 }

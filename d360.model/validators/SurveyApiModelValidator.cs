@@ -559,5 +559,19 @@ namespace d360.model.validators
 
 			return null;
 		}
+
+		public async Task<WorkHttpStatus> ValidateGetQuestionTypesBySurveyType(Guid surveyTypeUid)
+		{
+			var existingSurveyType = this.surveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+			if (existingSurveyType == null)
+			{
+				return new WorkHttpStatus(
+					HttpStatusCode.NotFound,
+					AssetTypeErrors.NotFound,
+					SurveyTypeErrors.SurveyTypeNotFound);
+			}
+
+			return null;
+		}
 	}
 }

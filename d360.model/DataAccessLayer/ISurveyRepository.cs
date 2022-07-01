@@ -44,5 +44,7 @@ namespace d360.model.DataAccessLayer
 		Task<bool> IsUniqueQuestionTypeName(string name, int surveyTypeId, Guid? questionTypeUid);
 
 		Task<bool> QuestionHasAnswers(Guid questionTypeUid);
+
+		Task<List<QuestionTypeShortInfo>> GetQuestionTypesBySurveyType(Guid surveyTypeUid);
 	}
 }

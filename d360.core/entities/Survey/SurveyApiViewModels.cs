@@ -220,6 +220,20 @@ namespace d360.core.entities.SurveyModels
         public string Comments { get; set; }
     }
 
+	public class QuestionTypeShortInfo
+	{
+		public Guid Uid { get; set; }
+
+		[JsonConverter(typeof(StringEnumConverter))]
+		public QuestionDisplayStyle DisplayStyle { get; set; }
+
+		public string Description { get; set; }
+
+		public string Name { get; set; }
+
+		public int OptionCount { get; set; }
+	}
+
     public class DateFormatConverter : IsoDateTimeConverter
     {
         public DateFormatConverter(string format)
