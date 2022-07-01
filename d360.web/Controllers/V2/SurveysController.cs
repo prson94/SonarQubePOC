@@ -139,6 +139,11 @@ namespace d360.web.Controllers.V2
             }
         }
 
+		/// <summary>
+		/// Create surveys that are targeted to a specific type of asset. Users will be prompted to periodically fill in a survey on the asset.
+		/// </summary>
+		/// <param name="surveyType">Survey to create</param>
+		/// <returns>Created survey with uid</returns>
 		[
 			HttpPost, MapToApiVersion("2.0"), Route("types"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -177,6 +182,12 @@ namespace d360.web.Controllers.V2
 			}));
 		}
 
+		/// <summary>
+		/// Updates existing survey type
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="updateModel">Update model</param>
+		/// <returns>Nothing</returns>
 		[
 			HttpPut, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
