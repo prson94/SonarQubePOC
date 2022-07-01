@@ -148,7 +148,7 @@ namespace d360.web.Controllers.V2
 			HttpPost, MapToApiVersion("2.0"), Route("types"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
-			SwaggerResponse(HttpStatusCode.Created, "Survey successfully created.", typeof(SurveyTypeUpsertResponseApiModel)),
+			SwaggerResponse(HttpStatusCode.Created, "Survey successfully created.", typeof(SurveyTypeCreateResponseApiModel)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found.", typeof(ErrorResponse)),
@@ -173,7 +173,7 @@ namespace d360.web.Controllers.V2
 				ValidForDays = surveyType.ValidForDays
 			});
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new SurveyTypeUpsertResponseApiModel
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new SurveyTypeCreateResponseApiModel
 			{
 				AssetTypeUid = surveyType.AssetTypeUid,
 				Name = createdSurveyType.Name,
@@ -192,7 +192,7 @@ namespace d360.web.Controllers.V2
 		[
 			HttpPut, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerResponse(HttpStatusCode.OK, "Survey successfully updated.", typeof(SurveyTypeUpsertResponseApiModel)),
+			SwaggerResponse(HttpStatusCode.OK, "Survey successfully updated."),
 			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
@@ -213,16 +213,9 @@ namespace d360.web.Controllers.V2
 			surveyType.Description = updateModel.Description;
 			surveyType.ValidForDays = updateModel.ValidForDays;
 
-			var updatedSurveyType = await SurveyRepository.Update(surveyType);
+			await SurveyRepository.Update(surveyType);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new SurveyTypeUpsertResponseApiModel
-			{
-				AssetTypeUid = surveyType.AssetType.uid,
-				Name = updatedSurveyType.Name,
-				Description = updatedSurveyType.Description,
-				ValidForDays = updatedSurveyType.ValidForDays,
-				Uid = updatedSurveyType.Uid
-			}));
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
 		}
 
 

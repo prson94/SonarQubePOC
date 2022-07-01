@@ -80,7 +80,7 @@ namespace d360.core.entities.SurveyModels
 		public int ValidForDays { get; set; }
 	}
 
-	public class SurveyTypeUpsertResponseApiModel
+	public class SurveyTypeCreateResponseApiModel
 	{
 		public Guid Uid { get; set; }
 

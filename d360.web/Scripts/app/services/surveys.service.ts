@@ -86,7 +86,7 @@ export class SurveysService extends BaseObservableService {
             { headers }
         )
         .pipe(
-            map(res => res as SurveyType),
+            map(res => surveyType),
             catchError(err => this.handleError(err))
         );
     }
