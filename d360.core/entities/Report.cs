@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 using d360.core.entities.Contracts;
+using d360.core.exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -30,19 +31,6 @@ namespace d360.core.entities
 		[Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ReportObjectType_Name", Description = "ReportObjectType_Description")]
 		public int ObjectID { get; set; }
 
-		private const string DEFAULT_REPORT_TYPE = "legacy";
-		private string _reportType = DEFAULT_REPORT_TYPE;
-
-		[DataMember]
-		[Column(TypeName = "varchar"), StringLength(25)]
-		public string ReportType
-		{
-			get => _reportType;
-			set
-			{
-				_reportType = value;
-			}
-		}
 
 		[DataMember]
 		[Column(TypeName = "varchar"), StringLength(50)]
@@ -75,11 +63,23 @@ namespace d360.core.entities
 
 		[IgnoreDataMember, ForeignKey("ReportID")]
 		public virtual ICollection<ReportResponsibility> Responsibilities { get; set; }
+
+		[DataMember]
+		public string Definition { get; set; }
+		[DataMember]
+		public int AssetTypeID { get; set; }
+
+		[DataMember]
+		public DashboardType ReportType { get; set; }
+
+		[DataMember]
+		public DashboardLocation Location { get; set; }
 	}
 	public enum DashboardType
 	{
 		PowerBi = 1,
-		DqPlus = 2
+		DqPlus = 2,
+		Legacy = 3
 	}
 
 	public enum DashboardLocation
@@ -92,7 +92,8 @@ namespace d360.core.entities
 	public class DashboardModel
 	{
 		[DataMember]
-		public int Id { get; set; }
+		public List<Guid> Responsibilities { get; set; }
+
 		[DataMember]
 		public Guid AssetTypeUid { get; set; }
 		[DataMember]
@@ -101,10 +102,10 @@ namespace d360.core.entities
 		public string Description { get; set; }
 		[DataMember]
 		[JsonConverter(typeof(StringEnumConverter))]
-		public DashboardType DashboardType { get; set; }
+		public DashboardType? DashboardType { get; set; }
 		[DataMember]
 		[JsonConverter(typeof(StringEnumConverter))]
-		public DashboardLocation Location { get; set; }
+		public DashboardLocation? Location { get; set; }
 		[DataMember]
 		public DashboardDefinition Definition
 		{
@@ -149,11 +150,18 @@ namespace d360.core.entities
 	public class DashboardApiGetModel : DashboardModel
 	{
 		[DataMember]
+		public int Id { get; set; }
+		[DataMember]
 		public Guid uid { get; set; }
 	}
 
-	public class DashboardApiPostModel : DashboardApiGetModel
+	public class DashboardApiPostModel : DashboardModel
 	{
 
+	}
+	public class DashboardApiPutModel : DashboardApiPostModel
+	{
+		[DataMember]
+		public Guid uid { get; set; }
 	}
 }

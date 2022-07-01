@@ -58,14 +58,14 @@ export class AdminDashboardsEditor {
     }
 
     reportTypeChange() {
-        this.file = null;
+		this.file = null;
+		this.editedReport.Responsibilities = [];
     }
 
 	onSubmit() {
-		console.log(this.editedReport);
 		var objectTypeData = this.editedReport.SelectedObjectData.split('|');
-		this.editedReport.Location = DashboardLocation.List;
 		this.editedReport.AssetTypeUid = objectTypeData[0];
+		this.editedReport.Location = DashboardLocation.List;
 		if (objectTypeData[1]) {
 			this.editedReport.Location = DashboardLocation.Detail;
 		}
@@ -105,20 +105,18 @@ export class AdminDashboardsEditor {
         if (!isInitialLoad) {
             this.editedReport.Responsibilities = [];
         }
-		
+		var objectTypeData = this.editedReport.SelectedObjectData.split('|');
+		this.editedReport.AssetTypeUid = objectTypeData[0];
 
-        //this.responsibilityTypeService.getRelationsByObjectType(ot, otid).
-        //    subscribe((res) => {
-        //        this.responsibilities = [];
-        //        res.forEach((o) => {
-        //            this.responsibilities.push({
-        //                label: o.ResponsibilityTypeName,
-        //                value: o.ResponsibilityTypeID
-        //            });
-        //        });
-        //        if (isInitialLoad && this.editedReport && this.editedReport.Responsibilities) {
-        //            /*this.editedReport.Responsibilities = this.editedReport.VisibleTo.split(',');*/
-        //        }
-        //    });
+		this.responsibilityTypeService.getAdminResponsibilityTypes(this.editedReport.AssetTypeUid)
+			.subscribe((res) => {
+				this.responsibilities = [];
+				res.forEach((o) => {
+					this.responsibilities.push({
+						label: o.Name,
+						value: o.uid
+					});
+				});
+			});
     }
 }

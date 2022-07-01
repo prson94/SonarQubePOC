@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
 using d360.extensions;
@@ -37,8 +38,63 @@ namespace d360.model.DataAccessLayer
 
 		#endregion
 
-		public Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiPostModel postModel)
+
+		public Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiPostModel model)
 		{
+			if (model.AssetTypeUid == null || model.AssetTypeUid == Guid.Empty)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(FieldErrors.InvalidAssetTypeUid, model.AssetTypeUid));
+			}
+
+			var assetType = CompanyContext.AssetTypes.Where(x => x.uid == model.AssetTypeUid).Select(x => new { x.uid, x.ID, x.Class }).FirstOrDefault();
+
+			if (assetType == null)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeNotFound, model.AssetTypeUid));
+			}
+
+			var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.User };
+			if (!allowedClasses.Contains(assetType.Class))
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
+			}
+
+			if (model.DashboardType == null)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.InvalidDashboardType);
+			}
+
+			if (model.Location == null)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.InvalidDashboardLocation);
+			}
+
+			if (string.IsNullOrEmpty(model.Name))
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Messages.Error_Name_Required);
+			}
+
+			if (CompanyContext.Reports.Any(x => x.Name == model.Name))
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.NameExists);
+			}
+
+			var report = new Report();
+			report.Name = model.Name;
+			report.Description = model.Description;
+			report.AssetTypeID = assetType.ID;
+			if (model.Definition != null)
+			{
+				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
+			}
+			report.ReportType = model.DashboardType.Value;
+			report.Location = model.Location.Value;
+
+			CompanyContext.Add(report);
+
+			CompanyContext.SaveChanges();
+
+
 			return Task.FromResult(new DashboardApiGetModel());
 		}
 

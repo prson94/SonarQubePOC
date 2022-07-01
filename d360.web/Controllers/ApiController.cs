@@ -1329,7 +1329,7 @@ namespace d360.web.Controllers
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
-				bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
+				bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != DashboardType.Legacy).Any();
 				model.Add("HasDashboards", hasDashboards);
 
 				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
@@ -2405,7 +2405,7 @@ namespace d360.web.Controllers
 					{ "HasCustomExportTemplates", hasCustomExports },
 					{ "HasWorkflow", (bool)row.HasWorkflow },
 					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-					{ "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
+					{ "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != DashboardType.Legacy) },
 					{ "AssetTypeUID", row.uid }
 				}
 			);
@@ -4058,12 +4058,12 @@ namespace d360.web.Controllers
 
 						var reportType = "";
 
-						switch (report.ReportType ?? "")
+						switch (report.ReportType)
 						{
-							case "powerbi":
+							case DashboardType.PowerBi:
 								reportType = "Power BI";
 								break;
-							case "sagacity":
+							case DashboardType.DqPlus:
 								reportType = "Data3Sixty Foundation";
 								break;
 							default:

@@ -40,7 +40,7 @@
                 <ng-container i18n>A target type is required</ng-container>
             </div>
         </div>
-        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity'">
+        <div class="col s12" *ngIf="editedReport.DashboardType == 'DqPlus'">
             <div class="FieldName">Url</div>
             <div>
                 <input required style="width: 100%;" name="url" type="text" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
@@ -54,7 +54,7 @@
                 <input name="showOnHomePage" type="checkbox" [(ngModel)]="showOnHomePage" #name="ngModel" />
             </div>
         </div>
-        <div class="col s12" *ngIf="editedReport.ReportType == 'PowerBi'">
+        <div class="col s12" *ngIf="editedReport.DashboardType == 'PowerBi'">
             <div class="FieldName">
                 <ng-container i18n>File</ng-container>
             </div>
@@ -67,7 +67,7 @@
             <div class="FieldName">
                 <ng-container i18n>Restrict Visibility To</ng-container>
             </div>
-            <div><p-multiSelect [options]="responsibilities" placeholder="Choose" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities" selectedItemsLabel="{0} items selected"></p-multiSelect></div>
+            <div><p-multiSelect [options]="responsibilities" placeholder="Choose" [(ngModel)]="editedReport.Responsibilities" [style]="{'width':'100%'}" name="responsibilities" selectedItemsLabel="{0} items selected"></p-multiSelect></div>
         </div>
         <div class="col s12">
             <div class="FieldName">
