@@ -1281,6 +1281,8 @@ namespace d360.model.DataAccessLayer
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			List<string> includedJoins = new List<string>();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
 				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
