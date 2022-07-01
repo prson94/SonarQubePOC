@@ -4924,22 +4924,6 @@ where v.id = {0}", id)).FirstOrDefault();
 			return Company.Table<SurveyType>();
 		}
 
-		[Route("surveys/{typeID:int}/questions")]
-		public HttpResponseMessage GetQuestionTypesBySurveyType(int typeID)
-		{
-			var list = Company.Filter<QuestionType>(i => i.SurveyTypeID == typeID, i => i.QuestionTypeOptions)
-				.ToList()
-				.Select(i => new
-				{
-					i.ID,
-					i.Name,
-					OptionCount = i.QuestionTypeOptions.Count,
-					DisplayStyle = i.DisplayStyle.GetDescription(),
-					Description = i.Description
-				});
-			return Request.CreateResponse(HttpStatusCode.OK, list);
-		}
-
 		[Route("surveys/{typeID:int}/{assetId}/report")]
 		public JObject GetSurveyReport(int typeID, long assetId)
 		{
