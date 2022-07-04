@@ -20,8 +20,9 @@ using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
+using d360.web.Handlers.Exceptions;
 using d360.web.Models;
-
+using d360.web.Utilities;
 using Dapper;
 
 using LaunchDarkly.Sdk;
@@ -269,23 +270,49 @@ namespace d360.web.Controllers
 
         #region Error Handling Helper
 
-        [System.Runtime.Serialization.DataContract(Name = "Error")]
-        public class GenericHttpError
-        {
-            public string Message { get; set; }
-
-            public HttpStatusCode Code { get; set; }
-        }
-
+		/// <summary>
+		/// <remarks>for some reason all api errors which have not title specified should be bad request...</remarks>
+		/// </summary>
+		/// <param name="status"></param>
+		/// <param name="message"></param>
+		/// <returns></returns>
+        [Obsolete("You should throw appropriate exception instead of this method.")]
         protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
         {
-            var acceptHeaders = Request.Headers.Accept;
-            var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
-
-            return Request.CreateResponse(status, new GenericHttpError { Code = status, Message = message }, asJson ? "application/json" : "application/xml");
+	        return ReturnApiError(status, OthersMessages.BadRequestSubmitted, message);
         }
 
-        public class StatusCodeErrorMessage
+        [Obsolete("You should throw appropriate exception instead of this method.")]
+        protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string title, string message)
+        {
+	        // moved some code from exception handler (until this method will be removed)
+	        var runtimeInfo = DependencyResolver.Current.GetService<IRuntimeInfo>();
+	        var problem = new ProblemDetailsResponse
+	        {
+		        Type = "error",
+		        Status = (int)status,
+		        Detail = message,
+		        Title = title,
+		        Method = Request.Method.ToString(),
+		        Instance = Request.RequestUri.ToString()
+	        };
+	        if (runtimeInfo.IsReleaseBuild == false || runtimeInfo.IsDebuggerAttached)
+	        {
+		        problem.Extra.Add("messages", new[] { message });
+		        problem.Extra.Add("stack_trace", Environment.StackTrace?.Split(new[]
+		        {
+			        "\r\n"
+		        }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
+	        }
+
+	        var json = JsonConvert.SerializeObject(problem, Formatting.Indented);
+	        var response = Request.CreateResponse();
+	        response.StatusCode = status;
+	        response.Content = new StringContent(json, Encoding.UTF8, "application/problem+json");
+	        return response;
+        }
+
+		public class StatusCodeErrorMessage
         {
             public HttpStatusCode Status { get; set; }
             public string ErrorMessage { get; set; }
@@ -348,12 +375,7 @@ namespace d360.web.Controllers
 
         protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
-            return ResponseMessage(
-                Request.CreateResponse(
-                    status,
-                    new ErrorResponse { title = title, message = message }
-                )
-            );
+	        return ResponseMessage(ReturnApiError(status, title, message));
         }
 
         protected internal IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)
