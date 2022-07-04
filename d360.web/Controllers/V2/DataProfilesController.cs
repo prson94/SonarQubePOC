@@ -480,16 +480,16 @@ namespace d360.web.Controllers.V2
 		/// Removes Data Profile results for a given asset. 
 		/// </summary>
 		/// <param name="assetUid">The unique identifier of an asset.</param>
-		/// <param name="_startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
-		/// <param name="_endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-dd</param>
+		/// <param name="_startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-ddThh:mm:ss</param>
+		/// <param name="_endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-ddThh:mm:ss</param>
 		/// <param name="_cascade">True/false flag used to indicate if assets children should be deleted.</param>
 		/// <returns>Results response with the count of records deleted.</returns>
 		[
 			HttpDelete,
 			Route("{assetUID:Guid}"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-			SwaggerParameter("_startDate", "Start date to get data profile data for. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is before oldest profiling record.", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_endDate", "End date to get data profile data for. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is after most recent profiling record.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_startDate", "Start date of data profile data to be deleted. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is before oldest profiling record.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_endDate", "End date of data profile data to be deleted. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is after most recent profiling record.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("_cascade", "True/false flag used to indicate if assets children should be deleted.", DataType = "boolean", ParameterType = "query", Required = false),
 			SwaggerResponse(HttpStatusCode.OK, "Count of Data Profile Records Deleted.", typeof(int)),
 			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
