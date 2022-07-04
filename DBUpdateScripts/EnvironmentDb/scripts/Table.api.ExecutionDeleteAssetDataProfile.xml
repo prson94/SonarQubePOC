@@ -39,5 +39,22 @@
 		]]>
 	</rollback>
   </changeSet>
-
+	<changeSet author="bquinlivan" id="Table.api.ExecutionDeleteAssetDataProfile-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] Alter Column [StartDate] DATETIME NOT NULL
+			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] Alter Column [EndDate] DATETIME NOT NULL		
+		]]>
+    </sql>
+	<rollback>	
+		<![CDATA[			
+		
+			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] Alter Column [StartDate] DATE NOT NULL
+			ALTER TABLE [api].[ExecutionDeleteAssetDataProfile] Alter Column [EndDate] DATE NOT NULL
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

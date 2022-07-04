@@ -17,7 +17,9 @@ namespace d360.model.DataAccessLayer
 
         List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
 
-        Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
+		List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 
         Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 

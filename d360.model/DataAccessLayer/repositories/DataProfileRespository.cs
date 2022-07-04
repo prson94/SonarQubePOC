@@ -1172,5 +1172,41 @@ namespace d360.model.DataAccessLayer
 		{
 			return (await CompanyContext.QueryAsync<int>("select count(1) from Semantic where qualifier = @qualifier", new { qualifier })).FirstOrDefault() > 0;
 		}
+
+		public List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var startDate = new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
+			var endDate = DateTime.MaxValue;
+			var cascade = false;
+
+			var hasStartDate = false;
+			var hasEndDate = false;
+
+			if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate" || k.Key.ToLower() == "_enddate"))
+			{
+				if (queryParams.ToList().Any(k => k.Key.ToLower() == "_startdate"))
+				{
+					hasStartDate = DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_startdate").Value, out startDate);
+				}
+
+				if (queryParams.ToList().Any(k => k.Key.ToLower() == "_enddate"))
+				{
+					hasEndDate = DateTime.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_enddate").Value, out endDate);
+				}
+			}
+
+			if(!hasStartDate && !hasEndDate)
+			{
+				var profile = CompanyContext.AssetDataProfile.OrderByDescending(adp => adp.ProfileSetDate).First(adp => adp.AssetId == asset.ID);
+				startDate = endDate = profile.ProfileSetDate;
+			}
+
+			if (queryParams.Any(qp => qp.Key.ToLower() == "_cascade"))
+			{
+				bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_cascade").Value, out cascade);				
+			}
+
+			return DeleteDataProfiles(asset, startDate, endDate, execution, cascade);
+		}
 	}
 }

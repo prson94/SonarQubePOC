@@ -13406,14 +13406,14 @@ EG.GroupUid
                             row["ExecutionItemUid"] = DBNull.Value;
                         }
                         row["AssetUid"] = item.AssetUid;
-                        row["StartDate"] = item.StartDate.Date;
+                        row["StartDate"] = item.StartDate;
 
                         if (item.StartDate == DateTime.MinValue)
                         {
                             errorMessages.Add("Startdate is a required field");
                         }
 
-                        row["EndDate"] = item.EndDate.Date;
+                        row["EndDate"] = item.EndDate;
 
                         if (item.EndDate == DateTime.MinValue)
                         {
@@ -13537,24 +13537,24 @@ EG.GroupUid
 								create table #child (
 									itemnumber int,
 									assetID bigint,
-									startDate date,
-									endDate date
+									startDate datetime,
+									endDate datetime
 								)
 
 								drop table if exists #parent
 								create table #parent (
 									itemnumber int,
 									assetID bigint,
-									startDate date,
-									endDate date
+									startDate datetime,
+									endDate datetime
 								)
 
 								drop table if exists #deleteAssetDataProfile
 								create table #deleteAssetDataProfile (
 									itemnumber int,
 									assetID bigint,
-									startDate date,
-									endDate date
+									startDate datetime,
+									endDate datetime
 								)
 
 								insert into #parent
