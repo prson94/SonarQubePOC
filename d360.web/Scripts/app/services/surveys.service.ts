@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SurveyType, SurveyQuestionType, SurveyTypeDetails, SurveyQuestionTypeDetails, SurveyResultsApiModel, Survey } from '../models/survey.model';
+import { SurveyType, SurveyQuestionType, SurveyTypeDetails, SurveyQuestionTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -15,10 +15,13 @@ export class SurveysService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getSurveyTypes(): Observable<SurveyType[]> {
-        return this.http.get(`api/surveys`)
+    getSurveyTypes({ pageNum, pageSize }: { 
+        pageNum: number; 
+        pageSize: number;
+    }): Observable<SurveyTypesResponse> {
+        return this.http.get(`api/v2/survey/types?_pageNum=${pageNum}&_pageSize=${pageSize}`)
             .pipe(
-                map(response => <SurveyType[]>response),
+                map(response => response as SurveyTypesResponse),
                 catchError(err => this.handleError(err))
             );
     }

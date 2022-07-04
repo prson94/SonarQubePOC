@@ -3,7 +3,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SurveysService } from '../../../services/surveys.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
-import { SurveyType } from '../../../models/survey.model';
+import { SurveyTypeV2 } from '../../../models/survey.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
@@ -89,8 +89,8 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AdminSurveysComponent extends AdminBaseComponent {
-    surveys: SurveyType[] = [];
-    selected: SurveyType;
+    surveys: SurveyTypeV2[] = [];
+    selected: SurveyTypeV2;
 
     error: any;
 
@@ -122,9 +122,9 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     getTemplates() {
         this.isLoading = true;
         this.surveysService
-            .getSurveyTypes()
+            .getSurveyTypes({ pageNum: 1, pageSize: 100000 })
             .subscribe(res => {
-                this.surveys = res.sort((a, b) => a.Name.localeCompare(b.Name));
+                this.surveys = res.items.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
             }, err => { this.error = err })

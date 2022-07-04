@@ -5,10 +5,19 @@ export enum SurveyTypeDisplayStyle {
     Rating = 2,
     CheckList = 3,
 }
+
+export enum SurveyTypeDisplayStyleV2 {
+    Radio = 'Radio',
+    Rating = 'Rating',
+    CheckList = 'CheckList',
+}
+
 export class Survey {
     Name: string;
     SurveyTypeUid: string;
 }
+
+// TODO: drop it
 export class SurveyType {
     //legacy IDs for admin section
     ID: number;
@@ -20,6 +29,35 @@ export class SurveyType {
     Uid: string;
     AssetTypeUid: string;
     ValidForDays: number;
+}
+
+interface QuestionTypeV2 {
+    Uid: string;
+    Name: string;
+    Description: string;
+    DisplayStyle: SurveyTypeDisplayStyleV2;
+    Options: { Name: string, Value: number }[]
+}
+
+export interface SurveyTypeV2 {
+    Uid: string;
+    AssetTypeUid: string;
+    Name: string;
+    Description: string;
+    ValidForDays: number;
+    CreatedOn: string;
+    CreatedByUid: string;
+    UpdatedOn: string;
+    UpdatedByUid: string;
+    NumberOfResponses: number;
+    Questions: QuestionTypeV2[]
+}
+
+export interface SurveyTypesResponse {
+    pageSize: number;
+    pageNum: number;
+    total: number;
+    items: SurveyTypeV2[]
 }
 
 export class SurveyTypeDetails {
