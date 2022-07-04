@@ -43,7 +43,7 @@
         <div class="col s12" *ngIf="editedReport.DashboardType == 'DqPlus'">
             <div class="FieldName">Url</div>
             <div>
-                <input required style="width: 100%;" name="url" type="text" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
+                <input required style="width: 100%;" name="url" type="text" [(ngModel)]="editedReport.Definition.url" #name="ngModel" maxlength="500">
             </div>
         </div>
         <div class="col s12">

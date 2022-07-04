@@ -61,6 +61,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dashboard with provided Uid not found.
+        /// </summary>
+        public static string DashboardNotFound {
+            get {
+                return ResourceManager.GetString("DashboardNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dashboard removed.
+        /// </summary>
+        public static string DashboardRemoved {
+            get {
+                return ResourceManager.GetString("DashboardRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Location. Valid values are List, Detail or Homepage.
         /// </summary>
         public static string InvalidDashboardLocation {
@@ -75,6 +93,15 @@ namespace d360.core.resources {
         public static string InvalidDashboardType {
             get {
                 return ResourceManager.GetString("InvalidDashboardType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Uid provided..
+        /// </summary>
+        public static string InvalidDashboardUid {
+            get {
+                return ResourceManager.GetString("InvalidDashboardUid", resourceCulture);
             }
         }
         

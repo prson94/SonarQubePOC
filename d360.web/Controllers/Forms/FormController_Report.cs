@@ -25,117 +25,119 @@ namespace d360.web.Controllers
 		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReport")]
 		public async Task<JsonResult> AddReport(FormCollection form)
 		{
-			try
-			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-				}
+			return jsonException(new Exception("AddReport commented out"), HttpStatusCode.InternalServerError);
 
-				if (!form.HasKeys())
-				{
-					throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-				}
+			//try
+			//{
+			//	if (!Company.CurrentResourceIsAdmin)
+			//	{
+			//		return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+			//	}
 
-				var objectType = form["ObjectType"].Split('|').ToArray();
+			//	if (!form.HasKeys())
+			//	{
+			//		throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+			//	}
 
-				if (objectType.Length == 2)
-				{
-					var fileCount = HttpContext.Request.Files.Count;
-					var reportType = parseTextField(form, "ReportType");
-					var name = parseTextField(form, "Name");
-					var showOnHomePage = reportType == "legacy" ? false : parseBooleanField(form, "ShowOnHomePage");
-					string powerBIID = string.Empty;
-					string datasetID = string.Empty;
-					string filename = string.Empty;
+			//	var objectType = form["ObjectType"].Split('|').ToArray();
 
-					if (fileCount > 0 && reportType == "powerbi")
-					{
-						var file = HttpContext.Request.Files[0];
+			//	if (objectType.Length == 2)
+			//	{
+			//		var fileCount = HttpContext.Request.Files.Count;
+			//		var reportType = parseTextField(form, "ReportType");
+			//		var name = parseTextField(form, "Name");
+			//		var showOnHomePage = reportType == "legacy" ? false : parseBooleanField(form, "ShowOnHomePage");
+			//		string powerBIID = string.Empty;
+			//		string datasetID = string.Empty;
+			//		string filename = string.Empty;
+
+			//		if (fileCount > 0 && reportType == "powerbi")
+			//		{
+			//			var file = HttpContext.Request.Files[0];
 
 
-						if (file.ContentLength > 0)
-						{
-							var importResult = await uploadPowerBIReport(file, name);
+			//			if (file.ContentLength > 0)
+			//			{
+			//				var importResult = await uploadPowerBIReport(file, name);
 
-							if (importResult.ImportState == "Failed")
-							{
-								throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
-							}
+			//				if (importResult.ImportState == "Failed")
+			//				{
+			//					throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
+			//				}
 
-							datasetID = importResult.Datasets.FirstOrDefault().Id;
-							powerBIID = importResult.Reports.FirstOrDefault().Id.ToString();
-							filename = file.FileName;
-						}
-					}
-					else if (reportType == "powerbi" && fileCount == 0)
-					{
-						throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
-					}
+			//				datasetID = importResult.Datasets.FirstOrDefault().Id;
+			//				powerBIID = importResult.Reports.FirstOrDefault().Id.ToString();
+			//				filename = file.FileName;
+			//			}
+			//		}
+			//		else if (reportType == "powerbi" && fileCount == 0)
+			//		{
+			//			throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
+			//		}
 
-					var model = new Report
-					{
-						Name = parseTextField(form, "Name"),
-						Description = parseTextField(form, "Description"),
-						ObjectType = objectType[0],
-						ObjectID = int.Parse(objectType[1]),
-						ReportType = (DashboardType)Enum.Parse(typeof(DashboardType), parseTextField(form, "ReportType")),
-						PowerBIReportID = string.IsNullOrEmpty(powerBIID) ? null : powerBIID,
-						PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID,
-						Url = parseTextField(form, "Url"),
-						ShowOnHomePage = showOnHomePage,
-						FileName = filename
-					};
+			//		var model = new Report
+			//		{
+			//			Name = parseTextField(form, "Name"),
+			//			Description = parseTextField(form, "Description"),
+			//			ObjectType = objectType[0],
+			//			ObjectID = int.Parse(objectType[1]),
+			//			ReportType = (DashboardType)Enum.Parse(typeof(DashboardType), parseTextField(form, "ReportType")),
+			//			PowerBIReportID = string.IsNullOrEmpty(powerBIID) ? null : powerBIID,
+			//			PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID,
+			//			Url = parseTextField(form, "Url"),
+			//			ShowOnHomePage = showOnHomePage,
+			//			FileName = filename
+			//		};
 
-					var visibleTo = form["VisibleTo"];
+			//		var visibleTo = form["VisibleTo"];
 
-					if (!string.IsNullOrEmpty(visibleTo))
-					{
-						model.Responsibilities = new List<ReportResponsibility>();
+			//		if (!string.IsNullOrEmpty(visibleTo))
+			//		{
+			//			model.Responsibilities = new List<ReportResponsibility>();
 
-						var visibleToResponsibilityTypes = visibleTo.Split(',').Select(x => int.Parse(x));
+			//			var visibleToResponsibilityTypes = visibleTo.Split(',').Select(x => int.Parse(x));
 
-						//add any new responsibilities
-						foreach (var newResponsibilityType in visibleToResponsibilityTypes)
-						{
-							model.Responsibilities.Add(new ReportResponsibility
-							{
-								ReportID = model.ID,
-								ResponsibilityTypeID = newResponsibilityType
-							});
-						}
-					}
+			//			//add any new responsibilities
+			//			foreach (var newResponsibilityType in visibleToResponsibilityTypes)
+			//			{
+			//				model.Responsibilities.Add(new ReportResponsibility
+			//				{
+			//					ReportID = model.ID,
+			//					ResponsibilityTypeID = newResponsibilityType
+			//				});
+			//			}
+			//		}
 
-					if (showOnHomePage)
-					{
-						var existing = Company.Filter<Report>(r => r.ShowOnHomePage).FirstOrDefault();
+			//		if (showOnHomePage)
+			//		{
+			//			var existing = Company.Filter<Report>(r => r.ShowOnHomePage).FirstOrDefault();
 
-						if (existing != null)
-						{
-							existing.ShowOnHomePage = false;
-							Company.Update(existing);
-						}
-					}
+			//			if (existing != null)
+			//			{
+			//				existing.ShowOnHomePage = false;
+			//				Company.Update(existing);
+			//			}
+			//		}
 
-					Company.Add(model);
+			//		Company.Add(model);
 
-					return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.Dashboard), model.ID.ToString(), "add", HttpStatusCode.Created);
-				}
-				else
-				{
-					throw new MissingPropertiesException(FormControllerApiMessage.Report);
-				}
-			}
-			catch (BaseException ex)
-			{
-				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				SendException(ex);
+			//		return jsonSuccess(string.Format(ApiMessages.SucessfullyCreated, FormControllerApiMessage.Dashboard), model.ID.ToString(), "add", HttpStatusCode.Created);
+			//	}
+			//	else
+			//	{
+			//		throw new MissingPropertiesException(FormControllerApiMessage.Report);
+			//	}
+			//}
+			//catch (BaseException ex)
+			//{
+			//	return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+			//}
+			//catch (Exception ex)
+			//{
+			//	SendException(ex);
 
-				return jsonException(ex, HttpStatusCode.InternalServerError);
-			}
+			//	return jsonException(ex, HttpStatusCode.InternalServerError);
+			//}
 		}
 
 		private static readonly string pbiUsername = ConfigurationManager.AppSettings["pbiUsername"];
@@ -144,275 +146,280 @@ namespace d360.web.Controllers
 		[HttpDelete, Route("DeleteReport")]
 		public async Task<JsonResult> DeleteReport(FormCollection form)
 		{
-			try
-			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-				}
+			return jsonException(new Exception("DelteReport commented out"), HttpStatusCode.InternalServerError);
+			//try
+			//{
+			//	if (!Company.CurrentResourceIsAdmin)
+			//	{
+			//		return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+			//	}
 
-				if (!form.HasKeys())
-				{
-					throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-				}
+			//	if (!form.HasKeys())
+			//	{
+			//		throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+			//	}
 
-				var id = parseIntField(form, "ID");
-				var model = Company.GetById<Report>(id);
+			//	var id = parseIntField(form, "ID");
+			//	var model = Company.GetById<Report>(id);
 
-				if (model == null)
-				{
-					throw new NotFoundException(FormInfo.NoFormData_FieldType);
-				}
+			//	if (model == null)
+			//	{
+			//		throw new NotFoundException(FormInfo.NoFormData_FieldType);
+			//	}
 
-				//delete any power bi reports
-				if (model.ReportType == DashboardType.PowerBi  && !string.IsNullOrEmpty(model.PowerBIDatasetID))
-				{
-					var companySettings = SettingsRepository.GetSettings();
-					var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
-					var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
+			//	//delete any power bi reports
+			//	if (model.ReportType == DashboardType.PowerBi  && !string.IsNullOrEmpty(model.PowerBIDatasetID))
+			//	{
+			//		var companySettings = SettingsRepository.GetSettings();
+			//		var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
+			//		var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
 
-					if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-					{
-						throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
-					}
+			//		if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+			//		{
+			//			throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+			//		}
 
-					try
-					{
-						await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, model.PowerBIDatasetID);
-					}
-					catch { } // ok we cant delete the report delete the reference to it at least
-				}
+			//		try
+			//		{
+			//			await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, model.PowerBIDatasetID);
+			//		}
+			//		catch { } // ok we cant delete the report delete the reference to it at least
+			//	}
 
-				Company.Delete(model);
+			//	Company.Delete(model);
 
-				return jsonSuccess(string.Format(ApiMessages.SucessfullyDeleted, FormControllerApiMessage.Dashboard), id.ToString(), "delete", HttpStatusCode.OK);
-			}
-			catch (BaseException ex)
-			{
-				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				SendException(ex);
+			//	return jsonSuccess(string.Format(ApiMessages.SucessfullyDeleted, FormControllerApiMessage.Dashboard), id.ToString(), "delete", HttpStatusCode.OK);
+			//}
+			//catch (BaseException ex)
+			//{
+			//	return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+			//}
+			//catch (Exception ex)
+			//{
+			//	SendException(ex);
 
-				return jsonException(ex, HttpStatusCode.InternalServerError);
-			}
+			//	return jsonException(ex, HttpStatusCode.InternalServerError);
+			//}
 		}
 
 		[HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPowerBICredentials")]
 		public async Task<JsonResult> AddPowerBICredentials(FormCollection form)
 		{
-			try
-			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-				}
+			return jsonException(new Exception("AddPowerBICredentials commented out"), HttpStatusCode.InternalServerError);
 
-				if (!form.HasKeys())
-				{
-					throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-				}
+			//try
+			//{
+			//	if (!Company.CurrentResourceIsAdmin)
+			//	{
+			//		return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			//	}
 
-				//get username / password
-				var user = parseTextField(form, "Username");
-				var pwd = parseTextField(form, "Password");
+			//	if (!form.HasKeys())
+			//	{
+			//		throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+			//	}
 
-				if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pwd))
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
-				}
+			//	//get username / password
+			//	var user = parseTextField(form, "Username");
+			//	var pwd = parseTextField(form, "Password");
 
-				var companySettings = SettingsRepository.GetSettings();
-				var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
-				var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
+			//	if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pwd))
+			//	{
+			//		throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
+			//	}
 
-				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
-				}
+			//	var companySettings = SettingsRepository.GetSettings();
+			//	var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
+			//	var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
 
-				// if the workspace id is null create a new one and update the companysettings
-				groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+			//	if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+			//	{
+			//		throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+			//	}
 
-				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
-				{
-					throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
-				}
+			//	// if the workspace id is null create a new one and update the companysettings
+			//	groupId = await checkPowerBIValidWorkspace(groupId, clientId);
 
-				//save password in this workspace for all ds's
-				await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, user, pwd);
+			//	if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+			//	{
+			//		throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+			//	}
 
-				return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.PowerBICredentials), "", "add", HttpStatusCode.Created);
-			}
-			catch (BaseException ex)
-			{
-				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				SendException(ex);
+			//	//save password in this workspace for all ds's
+			//	await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, user, pwd);
 
-				return jsonException(ex, HttpStatusCode.InternalServerError);
-			}
+			//	return jsonSuccess(string.Format(ApiMessages.SucessfullyUpdated, FormControllerApiMessage.PowerBICredentials), "", "add", HttpStatusCode.Created);
+			//}
+			//catch (BaseException ex)
+			//{
+			//	return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+			//}
+			//catch (Exception ex)
+			//{
+			//	SendException(ex);
+
+			//	return jsonException(ex, HttpStatusCode.InternalServerError);
+			//}
 		}
 
 		[HttpPut, ValidateInput(false), Route("EditReport")]
 		public async Task<JsonResult> EditReport(FormCollection form)
 		{
-			try
-			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-				}
+			return jsonException(new Exception("EditReport commented out"), HttpStatusCode.InternalServerError);
 
-				if (!form.HasKeys())
-				{
-					throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-				}
+			//try
+			//{
+			//	if (!Company.CurrentResourceIsAdmin)
+			//	{
+			//		return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+			//	}
 
-				var id = parseIntField(form, "ID");
-				var model = Company.GetById<Report>(id);
+			//	if (!form.HasKeys())
+			//	{
+			//		throw new NoFormDataException(FormInfo.NoFormData_FieldType);
+			//	}
 
-				if (model == null)
-				{
-					throw new NotFoundException(FormInfo.NoFormData_FieldType);
-				}
+			//	var id = parseIntField(form, "ID");
+			//	var model = Company.GetById<Report>(id);
 
-				var fileCount = HttpContext.Request.Files.Count;
-				var reportType = parseTextField(form, "ReportType");
-				var name = parseTextField(form, "Name");
-				var showOnHomePage = reportType == "legacy" ? false : parseBooleanField(form, "ShowOnHomePage");
-				string powerBIID = string.Empty;
-				string datasetID = string.Empty;
-				string filename = string.Empty;
-				string url = parseTextField(form, "Url");
+			//	if (model == null)
+			//	{
+			//		throw new NotFoundException(FormInfo.NoFormData_FieldType);
+			//	}
 
-				if (fileCount > 0 && reportType == "powerbi")
-				{
-					var file = HttpContext.Request.Files[0];
+			//	var fileCount = HttpContext.Request.Files.Count;
+			//	var reportType = parseTextField(form, "ReportType");
+			//	var name = parseTextField(form, "Name");
+			//	var showOnHomePage = reportType == "legacy" ? false : parseBooleanField(form, "ShowOnHomePage");
+			//	string powerBIID = string.Empty;
+			//	string datasetID = string.Empty;
+			//	string filename = string.Empty;
+			//	string url = parseTextField(form, "Url");
 
-					if (file.ContentLength > 0)
-					{
-						var importResult = await uploadPowerBIReport(file, name, model.PowerBIDatasetID);
+			//	if (fileCount > 0 && reportType == "powerbi")
+			//	{
+			//		var file = HttpContext.Request.Files[0];
 
-						if (importResult.ImportState == "Failed")
-						{
-							throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
-						}
+			//		if (file.ContentLength > 0)
+			//		{
+			//			var importResult = await uploadPowerBIReport(file, name, model.PowerBIDatasetID);
 
-						datasetID = importResult.Datasets.FirstOrDefault().Id;
+			//			if (importResult.ImportState == "Failed")
+			//			{
+			//				throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
+			//			}
 
-						var rpt = importResult.Reports.FirstOrDefault();
+			//			datasetID = importResult.Datasets.FirstOrDefault().Id;
 
-						if (rpt != null)
-						{
-							powerBIID = rpt.Id.ToString();
-						}
+			//			var rpt = importResult.Reports.FirstOrDefault();
 
-						filename = file.FileName;
-					}
-				}
-				else if (reportType == "powerbi" && string.IsNullOrEmpty(model.FileName))
-				{
-					throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
-				}
+			//			if (rpt != null)
+			//			{
+			//				powerBIID = rpt.Id.ToString();
+			//			}
 
-				var visibleTo = form["VisibleTo"];
+			//			filename = file.FileName;
+			//		}
+			//	}
+			//	else if (reportType == "powerbi" && string.IsNullOrEmpty(model.FileName))
+			//	{
+			//		throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
+			//	}
 
-				if (!string.IsNullOrEmpty(visibleTo))
-				{
-					var visibleToResponsibilityTypes = visibleTo.Split(',').Select(x => int.Parse(x));
+			//	var visibleTo = form["VisibleTo"];
 
-					//delete any removed responsibilities
-					foreach (var responsibility in model.Responsibilities.ToList())
-					{
-						if (!visibleToResponsibilityTypes.Contains(responsibility.ResponsibilityTypeID))
-						{
-							Company.ReportResponsibilities.Remove(responsibility);
-						}
-					}
+			//	if (!string.IsNullOrEmpty(visibleTo))
+			//	{
+			//		var visibleToResponsibilityTypes = visibleTo.Split(',').Select(x => int.Parse(x));
 
-					//add any new responsibilities
-					foreach (var newResponsibilityType in visibleToResponsibilityTypes)
-					{
-						if (!model.Responsibilities.Any(x => x.ResponsibilityTypeID == newResponsibilityType))
-						{
-							model.Responsibilities.Add(new ReportResponsibility
-							{
-								ReportID = model.ID,
-								ResponsibilityTypeID = newResponsibilityType
-							});
-						}
-					}
-				}
-				else
-				{
-					foreach (var responsibility in model.Responsibilities.ToList())
-					{
-						Company.ReportResponsibilities.Remove(responsibility);
-					}
-				}
+			//		//delete any removed responsibilities
+			//		foreach (var responsibility in model.Responsibilities.ToList())
+			//		{
+			//			if (!visibleToResponsibilityTypes.Contains(responsibility.ResponsibilityTypeID))
+			//			{
+			//				Company.ReportResponsibilities.Remove(responsibility);
+			//			}
+			//		}
 
-				// Static fields
-				var objectType = form["ObjectType"].Split('|').ToArray();
+			//		//add any new responsibilities
+			//		foreach (var newResponsibilityType in visibleToResponsibilityTypes)
+			//		{
+			//			if (!model.Responsibilities.Any(x => x.ResponsibilityTypeID == newResponsibilityType))
+			//			{
+			//				model.Responsibilities.Add(new ReportResponsibility
+			//				{
+			//					ReportID = model.ID,
+			//					ResponsibilityTypeID = newResponsibilityType
+			//				});
+			//			}
+			//		}
+			//	}
+			//	else
+			//	{
+			//		foreach (var responsibility in model.Responsibilities.ToList())
+			//		{
+			//			Company.ReportResponsibilities.Remove(responsibility);
+			//		}
+			//	}
 
-				if (objectType.Length == 2)
-				{
-					model.Name = name;
-					model.Description = parseTextField(form, "Description");
-					model.ObjectType = objectType[0];
-					model.ObjectID = int.Parse(objectType[1]);
-					//model.ReportType = reportType;
-					model.Url = url;
-					model.ShowOnHomePage = showOnHomePage;
+			//	// Static fields
+			//	var objectType = form["ObjectType"].Split('|').ToArray();
 
-					if (!string.IsNullOrEmpty(datasetID))
-					{
-						model.PowerBIDatasetID = datasetID;
-					}
+			//	if (objectType.Length == 2)
+			//	{
+			//		model.Name = name;
+			//		model.Description = parseTextField(form, "Description");
+			//		model.ObjectType = objectType[0];
+			//		model.ObjectID = int.Parse(objectType[1]);
+			//		//model.ReportType = reportType;
+			//		model.Url = url;
+			//		model.ShowOnHomePage = showOnHomePage;
 
-					if (!string.IsNullOrEmpty(powerBIID))
-					{
-						model.PowerBIReportID = powerBIID;
-					}
+			//		if (!string.IsNullOrEmpty(datasetID))
+			//		{
+			//			model.PowerBIDatasetID = datasetID;
+			//		}
 
-					if (!string.IsNullOrEmpty(filename))
-					{
-						model.FileName = filename;
-					}
+			//		if (!string.IsNullOrEmpty(powerBIID))
+			//		{
+			//			model.PowerBIReportID = powerBIID;
+			//		}
 
-					if (showOnHomePage)
-					{
-						var existing = Company.Filter<Report>(r => r.ShowOnHomePage).FirstOrDefault();
+			//		if (!string.IsNullOrEmpty(filename))
+			//		{
+			//			model.FileName = filename;
+			//		}
 
-						if (existing != null)
-						{
-							existing.ShowOnHomePage = false;
-							Company.Update(existing);
-						}
-					}
+			//		if (showOnHomePage)
+			//		{
+			//			var existing = Company.Filter<Report>(r => r.ShowOnHomePage).FirstOrDefault();
 
-					Company.Update(model);
+			//			if (existing != null)
+			//			{
+			//				existing.ShowOnHomePage = false;
+			//				Company.Update(existing);
+			//			}
+			//		}
 
-					return jsonSuccess(string.Format(ApiMessages.SucessfullyEdited, FormControllerApiMessage.Dashboard), id.ToString(), "edit", HttpStatusCode.OK);
-				}
-				else
-				{
-					throw new MissingPropertiesException(FormControllerApiMessage.Report);
-				}
-			}
-			catch (BaseException ex)
-			{
-				return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-			}
-			catch (Exception ex)
-			{
-				SendException(ex);
+			//		Company.Update(model);
 
-				return jsonException(ex, HttpStatusCode.InternalServerError);
-			}
+			//		return jsonSuccess(string.Format(ApiMessages.SucessfullyEdited, FormControllerApiMessage.Dashboard), id.ToString(), "edit", HttpStatusCode.OK);
+			//	}
+			//	else
+			//	{
+			//		throw new MissingPropertiesException(FormControllerApiMessage.Report);
+			//	}
+			//}
+			//catch (BaseException ex)
+			//{
+			//	return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
+			//}
+			//catch (Exception ex)
+			//{
+			//	SendException(ex);
+
+			//	return jsonException(ex, HttpStatusCode.InternalServerError);
+			//}
 		}
 
 		private async Task<string> checkPowerBIValidWorkspace(string groupId, string clientId)

@@ -98,6 +98,27 @@ namespace d360.model.DataAccessLayer
 			return Task.FromResult(new DashboardApiGetModel());
 		}
 
+		public async Task<bool> DeleteDashboard(Guid? uid)
+		{
+			if (uid == null || uid == Guid.Empty)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.InvalidDashboardUid);
+			}
+
+			var dashboard = CompanyContext.Reports.FirstOrDefault(x => x.uid == uid);
+			if (dashboard == null)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.DashboardNotFound);
+			}
+
+
+			await CompanyContext.Database.Connection
+				.QueryAsync(@"
+					delete from ReportResponsibility where ReportId = @reportId;
+					delete from Report where Id = @reportId", new { reportId = dashboard.ID });
+			return await Task.FromResult(true);
+		}
+
 		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id)
 		{
 			var dbArgs = new DynamicParameters();

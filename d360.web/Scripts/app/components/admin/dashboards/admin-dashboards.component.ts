@@ -12,148 +12,121 @@ import { DashboardService } from '../../../services/dashboard.service';
 import { DashboardModel } from '../../../models/dashboard.model';
 
 @Component({
-    selector: 'd3s-admin-dashboards-component',
+	selector: 'd3s-admin-dashboards-component',
 	providers: [DashboardService],
-    templateUrl: 'admin-dashboards.component.html'
+	templateUrl: 'admin-dashboards.component.html'
 })
 
 export class AdminDashboardsComponent extends AdminBaseComponent implements OnDestroy, OnInit {
-    showEditor: boolean = false;
-    showDelete: boolean = false;
+	showEditor: boolean = false;
+	showDelete: boolean = false;
 	showCredentials: boolean = false;
 	dashboards: DashboardModel[] = [];
 	selected: DashboardModel;
-    theDeleteCallback: Function;
-    powerBiUser: string;
-    powerBiPassword: string;
+	theDeleteCallback: Function;
+	powerBiUser: string;
+	powerBiPassword: string;
 
-    searchText = $localize`Search...`;
-    labelSave = $localize`Save`;
-    labelClose = $localize`Close`;
+	searchText = $localize`Search...`;
+	labelSave = $localize`Save`;
+	labelClose = $localize`Close`;
 
-    constructor(
-        private stateService: StateService,
+	constructor(
+		private stateService: StateService,
 		secondaryNavService: SecondaryNavService,
 		protected dashboardService: DashboardService,
-        protected messagesService: MessagesObservableService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService,
-        titleService: Title) {
-        super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-        this.areaName = StringConstants.Section_Dashboards;
-        this.theDeleteCallback = this.deleteReport.bind(this);
-    }
+		protected messagesService: MessagesObservableService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
+		protected settingsService: CompanySettingsService,
+		titleService: Title) {
+		super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
+		this.areaName = StringConstants.Section_Dashboards;
+		this.theDeleteCallback = this.deleteReport.bind(this);
+	}
 
-    selectedItemChange() {
-        //if (this.selected)
-        //    this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
-    }
+	selectedItemChange() {
+		//if (this.selected)
+		//    this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
+	}
 
-    ngOnInit() {
+	ngOnInit() {
 		this.loadDashboards();
-    }
+	}
 
-    ngOnDestroy() {
-        this.clearSidebar();
-    }
+	ngOnDestroy() {
+		this.clearSidebar();
+	}
 
-    private loadDashboards() {
+	private loadDashboards() {
 		this.isLoading = true;
 		this.dashboardService.getDashboardsV2().subscribe(result => {
-            this.isLoading = false;
+			this.isLoading = false;
 			this.dashboards = result;
 			this.dashboards.forEach((dashboard) => {
 				dashboard.TypeDisplayValue = dashboard.DashboardType === 'DqPlus' ? 'Data360 DQ+' : dashboard.DashboardType;
 			});
 			this.selected = (this.dashboards.length > 0 ? this.dashboards[0] : null);
-            this.selectedItemChange();
-        });
-    }
+			this.selectedItemChange();
+		});
+	}
 
-    findReportIndex(uid: string) {
-        var index: number = -1;
+	findReportIndex(uid: string) {
+		var index: number = -1;
 		for (var dashboard of this.dashboards) {
-            index++;
+			index++;
 			if (dashboard.uid == uid) return index;
-        }
-    }
+		}
+	}
 
-    deleteReport(uid: string) {
-		//this.dashboardService.deleteReport(id)
-  //          .subscribe(result => {
-  //              this.showDelete = false;
-  //              this.showMessageForResult(this.messagesService, result);
-  //              if (result.type != 'error') {
-		//			this.selected = this.dashboards.length > 0 ? this.dashboards[0] : null;
-		//			this.dashboards.splice(this.findReportIndex(id), 1);
-  //                  this.selectedItemChange();
-  //              }
+	deleteReport(uid: string) {
+		this.dashboardService.deleteDashboard(uid)
+			.subscribe(result => {
+				this.messagesService.showInfoMessage($localize`Success`, $localize`Dashboard successfully deleted`);
+				this.showDelete = false;
+				this.selected = null;
+				this.loadDashboards();
+				this.stateService.reloadLeftNavMenu();
+			});
+	}
 
-  //              this.stateService.reloadLeftNavMenu();
-  //          });
-    }
+	saveReport(event) {
+		this.isLoading = true;
+		this.dashboardService.saveDashboard(event.report, event.file)
+			.subscribe(result => {
+				this.loadDashboards();
+				this.selectedItemChange();
 
-    saveReport(event) {
-        this.isLoading = true;
-		this.dashboardService.saveReport(event.report, event.file)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                let parts = event.report.ObjectType.split('|');
-                if (parts.length > 0) {
-                    event.report.ObjectType = parts[0];
-                    event.report.ObjectID = Number(parts[1]);
-                }
-                if (event.report.ID == undefined) {
-                    event.report.ID = Number(result.id);
-					this.dashboards[this.dashboards.length] = event.report;
-                }
-                else {
-					this.dashboards[this.findReportIndex(event.report.ID)] = event.report;
-                }
+				this.stateService.reloadLeftNavMenu();
+			});
+	}
 
-                if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data360 DQ+';
-                else event.report.DisplayType = event.report.ReportType;
-
-                if (result.type == "error") {
-                    this.showEditor = true;
-                } else {
-                    this.showEditor = false;
-                }
-                this.isLoading = false;
-                this.selected = event.report;
-                this.selectedItemChange();
-
-                this.stateService.reloadLeftNavMenu();
-            });
-    }
-
-    closeEditor() {
-        this.showEditor = false;
-        if (this.selected == null) {
+	closeEditor() {
+		this.showEditor = false;
+		if (this.selected == null) {
 			this.selected = this.dashboards.length > 0 ? this.dashboards[0] : null;
-            this.selectedItemChange();
-        }
-    }
+			this.selectedItemChange();
+		}
+	}
 
-    add() {
-        this.showEditor = true;
-        this.selected = null;
-        this.selectedItemChange();
-    }
+	add() {
+		this.showEditor = true;
+		this.selected = null;
+		this.selectedItemChange();
+	}
 
-    private onSubmitPowerCreds() {
-        this.isLoading = true;
+	private onSubmitPowerCreds() {
+		this.isLoading = true;
 		this.dashboardService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
-            .subscribe(result => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.showCredentials = false;
-                }
-            });
-    }
+			.subscribe(result => {
+				this.isLoading = false;
+				this.showMessageForResult(this.messagesService, result);
+				if (result.type != 'error') {
+					this.showCredentials = false;
+				}
+			});
+	}
 
-    get deleteDashboardModalTitle(): string {
-        return $localize`Are you sure you want to delete the dashboard [${this.selected?.Name}]?`;
-    }
+	get deleteDashboardModalTitle(): string {
+		return $localize`Are you sure you want to delete the dashboard [${this.selected?.Name}]?`;
+	}
 }

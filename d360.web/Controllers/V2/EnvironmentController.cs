@@ -2151,7 +2151,7 @@ namespace d360.web.Controllers.V2
 		/// 
 		/// </remarks>
 		/// <param name="requestModel">An object containing the properties of the dashboard you want to create. See the example model for a list of all available properties.</param>
-		/// <returns>The created theme.</returns>
+		/// <returns>The created dashboard.</returns>
 		[
 			HttpPost,
 			Route("dashboards"),
@@ -2160,7 +2160,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.Created, "Returns the created dashboard.", typeof(DashboardApiGetModel)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the dashboard is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
 		public async Task<IHttpActionResult> PostDashboard(DashboardApiPostModel requestModel)
@@ -2183,6 +2183,45 @@ namespace d360.web.Controllers.V2
 			catch
 			{
 				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		const string DASHBOARD_NOT_FOUND = "The dashboard was not found based on the provided unique identifier.";
+
+		/// <summary>
+		/// Deletes a dashboard.
+		/// </summary>
+		/// <param name="uid">The unique identifier of the dashboard.</param>
+		/// <returns>A confirmation response.</returns>
+		[
+			HttpDelete,
+			Route("dashboards/{uid:Guid}"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, DASHBOARD_NOT_FOUND, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Request to remove this dashboard is invalid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public IHttpActionResult DeleteDashboard(Guid uid)
+		{
+			try
+			{
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+				}
+
+				DashboardRepository.DeleteDashboard(uid);
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = core.resources.Dashboards.DashboardRemoved }));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 

@@ -10,5 +10,6 @@ namespace d360.model.DataAccessLayer
 	{
 		Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id);
 		Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiPostModel postModel);
+		Task<bool> DeleteDashboard(Guid? uid);
 	}
 }

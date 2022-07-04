@@ -7,7 +7,7 @@ import { ResponsibilityTypeService } from '../../../services/responsibility-type
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
 import { DashboardService } from '../../../services/dashboard.service';
-import { DashboardLocation, DashboardModel, DashboardType } from '../../../models/dashboard.model';
+import { DashboardDefinition, DashboardLocation, DashboardModel, DashboardType } from '../../../models/dashboard.model';
 
 @Component({
     selector: 'd3s-admin-dashboards-editor',
@@ -51,7 +51,8 @@ export class AdminDashboardsEditor {
 			this.objectTypeChanged(this.editedReport.AssetTypeUid, true);
         }
         else {
-            this.editedReport = new DashboardModel();
+			this.editedReport = new DashboardModel();
+			this.editedReport.Definition = new DashboardDefinition();
             this.action = $localize`New`;
         }
         this.getReportTargets();
@@ -66,14 +67,14 @@ export class AdminDashboardsEditor {
 		var objectTypeData = this.editedReport.SelectedObjectData.split('|');
 		this.editedReport.AssetTypeUid = objectTypeData[0];
 		this.editedReport.Location = DashboardLocation.List;
+		
 		if (objectTypeData[1]) {
 			this.editedReport.Location = DashboardLocation.Detail;
 		}
 		if (this.showOnHomePage) {
 			this.editedReport.Location = DashboardLocation.Homepage;
 		}
-		console.log(this.editedReport);
-		return;
+
         this.saveClick.emit({ report: this.editedReport, action: this.report ? "new" : "edit", file: this.file });
     }
 

@@ -22,7 +22,7 @@ export class DashboardTokens {
 	Report: PowerBIReport;
 }
 
-export class Definition {
+export class DashboardDefinition {
 	url: string;
 	fileName: string;
 	powerBiReportId: string;
@@ -37,7 +37,7 @@ export class DashboardModel {
 	Description: string;
 	DashboardType: DashboardType;
 	Location: DashboardLocation;
-	Definition: Definition;
+	Definition: DashboardDefinition;
 	TypeDisplayValue: string;
 	Responsibilities: string[];
 

@@ -52,7 +52,7 @@
             </span>
             <d3s-delete-form *ngIf="showDelete"
                              [callback]="theDeleteCallback"
-                             [itemId]="selected?.ID"
+                             [itemId]="selected?.uid"
                              [method]="'callback'"
                              [prompt]="deleteDashboardModalTitle"
                              (onCancel)="showDelete=false;"></d3s-delete-form>

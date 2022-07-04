@@ -7,7 +7,7 @@ import { Dashboard, DashboardModel, DashboardTokens } from '../models/dashboard.
 
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
-import { Report, ReportTile, ReportLayout } from '../models/report.model';
+import { Report  } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 
@@ -39,39 +39,27 @@ export class DashboardService extends BaseObservableService {
 			);
 	}
 
-	    getReports(): Observable<Report[]> {
-        return this.http.get('reports/reports')
-            .pipe(
-                map((response) => <Report[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
+	getReports(): Observable<Report[]> {
+		return this.http.get('reports/reports')
+			.pipe(
+				map((response) => <Report[]>response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
-    deleteReport(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'report', id);
-    }
 
-    saveReport(report: Report, file?: File): Observable<JsonResult> {
-        if (report.VisibleToRoles != null && !report.ShowOnHomePage && report.VisibleToRoles.length > 0) report.VisibleTo = report.VisibleToRoles.join(",");
-        else report.VisibleTo = null;
-        if (report.ID == undefined || !report.ID) {
-            return this.postDynamic(this.http, 'report', report, file, false);
-        }
-        return this.putDynamic(this.http, 'report', report, file);
-    }
+	setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
+		let headers = new HttpHeaders({
+			'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+		});
 
-    setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-        });
-        
-        return this.http
-            .post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
-            .pipe(
-            map((response) => response),
-               catchError((err) => this.handleError(err))
-            );
-    }
+		return this.http
+			.post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
+			.pipe(
+				map((response) => response),
+				catchError((err) => this.handleError(err))
+			);
+	}
 
 	getDashboardById(id: number | string): Observable<DashboardModel[]> {
 		if (typeof id === 'number') {
@@ -128,5 +116,50 @@ export class DashboardService extends BaseObservableService {
 				map((response) => <DropdownOption[]>response),
 				catchError((err) => this.handleError(err))
 			);
-	}  
+	}
+
+	saveDashboard(report: DashboardModel, file?: File): Observable<DashboardModel> {
+		const httpOptions = {
+			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+		};
+
+		if (report.uid) {
+			return this
+				.http
+				.put(`api/v2/assets/${report.uid}`, report, httpOptions)
+				.pipe(
+					map((res: DashboardModel[]) => {
+						return res[0];
+					}),
+					catchError(err => this.handleError(err))
+				);
+		}
+		else {
+			return this
+				.http
+				.post(`api/v2/environment/dashboards`, report, httpOptions)
+				.pipe(
+					map((res: DashboardModel[]) => {
+						return res[0];
+					}),
+					catchError(err => this.handleError(err))
+				);
+		}
+	}
+
+	public deleteDashboard(uid: string): Observable<any> {
+
+		const httpOptions = {
+			headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+			body: [{ Uid: uid, Cascade: true }]
+		};
+
+		return this
+			.http
+			.delete(`api/v2/environment/dashboards/${uid}`, httpOptions)
+			.pipe(
+				map(res => <any>res),
+				catchError(err => this.handleError(err))
+			);
+	}
 }
