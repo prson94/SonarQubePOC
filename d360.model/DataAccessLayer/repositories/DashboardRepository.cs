@@ -171,13 +171,29 @@ namespace d360.model.DataAccessLayer
 			}
 
 			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);
-
-			return (await CompanyContext.Database.Connection
-				.QueryAsync<DashboardApiGetModel>(@$"
-					select r.Id, r.uid, r.Name, r.Description, at.uid as assetTypeUid, r.ReportType as DashboardType, r.Location, Definition as '_definitionJson'
+			var data = (await CompanyContext.Database.Connection
+				.QueryAsync<DashboardApiGetModel>(@$"select r.Id, 
+					r.uid, 
+					r.Name, 
+					r.Description, 
+					at.uid as assetTypeUid, 
+					r.ReportType as DashboardType, 
+					r.Location, 
+					Definition as '_definitionJson',
+					Responsibilities.val as '_responsibilities'
 					from dbo.Report r
 					left join assettype at on at.id = r.AssetTypeID
+					outer apply (select string_agg(cast(uid as nvarchar(36)),',') from ResponsibilityType rt 
+								inner join dbo.ReportResponsibility rrt on rrt.ResponsibilityTypeID = rt.ID and rrt.ReportID = r.ID
+								)Responsibilities(val)
 					{whereSql}", dbArgs)).ToList();
+
+			data.ForEach(data =>
+			{
+				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x=> Guid.Parse(x)).ToList();
+			});
+
+			return data;
 		}
 
 		private void UpdateReportResponsibilities(DashboardApiUpsertModel model, Report report)

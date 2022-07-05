@@ -117,6 +117,8 @@ namespace d360.core.entities
 		}
 		[JsonIgnore]
 		public string _definitionJson { get; set; }
+		[JsonIgnore]
+		public string _responsibilities { get; set; }
 	}
 
 	public class DashboardDefinition
