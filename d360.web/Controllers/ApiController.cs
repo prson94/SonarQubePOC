@@ -2676,6 +2676,9 @@ namespace d360.web.Controllers
 					var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
 
 					return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+				case SystemObjects.SurveyType:
+					objectId = Company.SurveyTypes.FirstOrDefault(s => s.Uid == uid).ID;
+					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
 				default:
 					var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 

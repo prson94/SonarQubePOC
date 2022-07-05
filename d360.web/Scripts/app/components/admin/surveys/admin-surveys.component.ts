@@ -71,7 +71,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <object-detail [objectType]="'SurveyType'" [objectID]="selected?.ID"></object-detail>
+                                    <object-detail [objectType]="'SurveyType'" [objectUID]="selected?.Uid"></object-detail>
                                 </div>
                             </div>
                         </div>
