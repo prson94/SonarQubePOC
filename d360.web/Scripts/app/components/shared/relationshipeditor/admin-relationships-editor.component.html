@@ -61,54 +61,54 @@
             </div>
         </div>
 
-            <div class="row">
-                <div class="col l4 m4 s12">
-                    <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
-                    <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Subject Cardinality</div>
-                    <p-dropdown igDropdown
-                                igSize="full"
-                                [igDataCy]="'Relationship_Dropdown_Subject_Cardinality'"
-                                i18n-placeholder
-                                placeholder="Select Cardinality"
-                                *ngIf="!isLoadingCardinality"
-                                panelStyleClass="dropdown-z-correction"
-                                filter="true"
-                                name="subjectCardinality"
-                                #subjectCardinality="ngModel"
-                                [options]="subjectCardinalityOptions"
-                                [(ngModel)]="relationshipType.Subject.Cardinality"
-                                [disabled]="!canChangeCardinality" required></p-dropdown>
-                </div>
-                <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br /><ng-container i18n>to</ng-container></div>
-                <div class="col l4 m4 s12">
-                    <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
-                    <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Object Cardinality</div>
-                    <p-dropdown igDropdown
-                                igSize="full"
-                                [igDataCy]="'Relationship_Dropdown_Object_Cardinality'"
-                                i18n-placeholder
-                                placeholder="Select Cardinality"
-                                *ngIf="!isLoadingCardinality"
-                                filter="true"
-                                name="objectCardinality"
-                                #objectCardinality="ngModel"
-                                [options]="objectCardinalityOptions"
-                                [(ngModel)]="relationshipType.Object.Cardinality"
-                                [disabled]="!canChangeCardinality"
-                                required></p-dropdown>
-                </div>
+        <div class="row">
+            <div class="col l4 m4 s12">
+                <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
+                <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Subject Cardinality</div>
+                <p-dropdown igDropdown
+                            igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Subject_Cardinality'"
+                            i18n-placeholder
+                            placeholder="Select Cardinality"
+                            *ngIf="!isLoadingCardinality"
+                            panelStyleClass="dropdown-z-correction"
+                            filter="true"
+                            name="subjectCardinality"
+                            #subjectCardinality="ngModel"
+                            [options]="subjectCardinalityOptions"
+                            [(ngModel)]="relationshipType.Subject.Cardinality"
+                            [disabled]="!canChangeCardinality" required></p-dropdown>
             </div>
-
-            <div class="row">
-                <div class="col s12">&nbsp;</div>
+            <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br /><ng-container i18n>to</ng-container></div>
+            <div class="col l4 m4 s12">
+                <d3s-loading [isLoading]="isLoadingCardinality"></d3s-loading>
+                <div *ngIf="!isLoadingCardinality" class="FieldName" i18n>Object Cardinality</div>
+                <p-dropdown igDropdown
+                            igSize="full"
+                            [igDataCy]="'Relationship_Dropdown_Object_Cardinality'"
+                            i18n-placeholder
+                            placeholder="Select Cardinality"
+                            *ngIf="!isLoadingCardinality"
+                            filter="true"
+                            name="objectCardinality"
+                            #objectCardinality="ngModel"
+                            [options]="objectCardinalityOptions"
+                            [(ngModel)]="relationshipType.Object.Cardinality"
+                            [disabled]="!canChangeCardinality"
+                            required></p-dropdown>
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col s12">
-                    <button pButton type="submit" [disabled]="!relationshipEditorForm.form.valid" style="width: 150px;" i18n-label label="Save"></button>
-                    <button pButton type="button" (click)="closeClick.emit();" label="Close" i18n-label style="width: 150px;"></button>
-                </div>
+        <div class="row">
+            <div class="col s12">&nbsp;</div>
+        </div>
+
+        <div class="row">
+            <div class="col s12">
+                <button pButton type="submit" [disabled]="!relationshipEditorForm.form.valid" style="width: 150px;" i18n-label label="Save"></button>
+                <button pButton type="button" (click)="closeClick.emit();" label="Close" i18n-label style="width: 150px;"></button>
             </div>
+        </div>
 
-</form>
+    </form>
 </div>

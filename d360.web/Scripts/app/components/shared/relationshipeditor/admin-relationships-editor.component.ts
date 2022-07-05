@@ -136,7 +136,7 @@ export class AdminRelationshipsEditor {
 
 
 	private loadPredicates(subjectUid: string, objectUid?: string, predicateUid?: string, Loadpredicate?: boolean) {
-		if (Loadpredicate != undefined) {
+		if (Loadpredicate) {
 			this.isLoadingPredicate = Loadpredicate;
 		}
         this.relationshipsService
