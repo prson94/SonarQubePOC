@@ -41,6 +41,7 @@ export class DashboardModel {
 	TypeDisplayValue: string;
 	Responsibilities: string[];
 
+	FileContent: string;
 	//only for ui
 	SelectedObjectData: string;
 }

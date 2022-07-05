@@ -7,7 +7,7 @@ import { Dashboard, DashboardModel, DashboardTokens } from '../models/dashboard.
 
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
-import { Report  } from '../models/report.model';
+import { Report } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 
@@ -118,18 +118,18 @@ export class DashboardService extends BaseObservableService {
 			);
 	}
 
-	saveDashboard(report: DashboardModel, file?: File): Observable<DashboardModel> {
-		const httpOptions = {
-			headers: new HttpHeaders({ 'Content-Type': 'application/json' })
-		};
+	saveDashboard(report: DashboardModel, file?: File): Observable<any> {
+		var form = new FormData();
+		form.append("model", JSON.stringify(report));
+		form.append("file", file);
 
 		if (report.uid) {
 			return this
 				.http
-				.put(`api/v2/assets/${report.uid}`, report, httpOptions)
+				.put(`api/v2/environment/dashboards/${report.uid}`, form)
 				.pipe(
-					map((res: DashboardModel[]) => {
-						return res[0];
+					map((res: any) => {
+						return res;
 					}),
 					catchError(err => this.handleError(err))
 				);
@@ -137,10 +137,10 @@ export class DashboardService extends BaseObservableService {
 		else {
 			return this
 				.http
-				.post(`api/v2/environment/dashboards`, report, httpOptions)
+				.post(`api/v2/environment/dashboards`, form)
 				.pipe(
-					map((res: DashboardModel[]) => {
-						return res[0];
+					map((res: any) => {
+						return res;
 					}),
 					catchError(err => this.handleError(err))
 				);

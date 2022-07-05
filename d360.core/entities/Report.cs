@@ -59,6 +59,14 @@ namespace d360.core.entities
 				return JsonConvert.DeserializeObject<DashboardDefinition>(Definition);
 			}
 		}
+
+		public DashboardApiGetModel ToApiDashboardGetModel()
+		{
+			var model = new DashboardApiGetModel();
+			model.Id = this.ID;
+			model.Name = this.Name;
+			return model;
+		}
 	}
 	public enum DashboardType
 	{
@@ -80,7 +88,7 @@ namespace d360.core.entities
 		public List<Guid> Responsibilities { get; set; }
 
 		[DataMember]
-		public Guid AssetTypeUid { get; set; }
+		public Guid? AssetTypeUid { get; set; }
 		[DataMember]
 		public string Name { get; set; }
 		[DataMember]
@@ -102,7 +110,6 @@ namespace d360.core.entities
 				}
 				return JsonConvert.DeserializeObject<DashboardDefinition>(_definitionJson);
 			}
-
 			set
 			{
 				_definitionJson = JsonConvert.SerializeObject(value);
@@ -119,9 +126,9 @@ namespace d360.core.entities
 		[DataMember]
 		public string fileName { get; set; }
 		[DataMember]
-		public Guid? powerBiReportId { get; set; }
+		public string powerBiReportId { get; set; }
 		[DataMember]
-		public Guid? powerBiDatasetId { get; set; }
+		public string powerBiDatasetId { get; set; }
 		[DataMember]
 		public List<DashboardDefinitionParameter> parameters { get; set; }
 	}
@@ -140,13 +147,12 @@ namespace d360.core.entities
 		public Guid uid { get; set; }
 	}
 
-	public class DashboardApiPostModel : DashboardModel
+	public class DashboardApiUpsertModel : DashboardModel
 	{
-
-	}
-	public class DashboardApiPutModel : DashboardApiPostModel
-	{
-		[DataMember]
-		public Guid uid { get; set; }
+		[NotMapped]
+		public int AssetTypeId { get; set; }
+		[NotMapped]
+		public string FileContent { get; set; }
+		public Guid? Uid { get; set; }
 	}
 }

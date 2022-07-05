@@ -422,44 +422,7 @@ namespace d360.web.Controllers
 			//}
 		}
 
-		private async Task<string> checkPowerBIValidWorkspace(string groupId, string clientId)
-		{
-			groupId = (groupId ?? "").Trim();
 
-			if (string.IsNullOrEmpty(groupId) && !string.IsNullOrEmpty(clientId))
-			{
-				var groupName = $"D3S{Company.CurrentCompanyID}";
-				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
-				SettingsRepository.UpsertSetting(core.enums.Setting.PowerBIGroupId, res.Id.ToString());
-
-				return res.Id.ToString();
-			}
-
-			return groupId;
-		}
-
-		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFileBase file, string name, string datasetId = "")
-		{
-			var companySettings = SettingsRepository.GetSettings();
-			var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
-			var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
-
-			if (string.IsNullOrEmpty(clientId))
-			{
-				throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
-			}
-
-			// if the workspace id is null create a new one and update the companysettings
-			groupId = await checkPowerBIValidWorkspace(groupId, clientId);
-
-			// if an existing one exists delete it
-			if (!string.IsNullOrEmpty(datasetId))
-			{
-				await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, datasetId);
-			}
-
-			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
-		}
 
 		#endregion
 

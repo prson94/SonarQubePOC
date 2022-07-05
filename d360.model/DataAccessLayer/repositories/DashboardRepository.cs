@@ -39,7 +39,53 @@ namespace d360.model.DataAccessLayer
 		#endregion
 
 
-		public Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiPostModel model)
+		public Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiUpsertModel model)
+		{
+			ValidateDashboardModel(model);
+
+			var report = new Report();
+			report.Name = model.Name;
+			report.Description = model.Description;
+			report.AssetTypeID = model.AssetTypeId;
+			if (model.Definition != null)
+			{
+				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
+			}
+			report.ReportType = model.DashboardType.Value;
+			report.Location = model.Location.Value;
+
+			CompanyContext.Add(report);
+			CompanyContext.SaveChanges();
+
+			UpdateReportResponsibilities(model, report);
+
+			return Task.FromResult(report.ToApiDashboardGetModel());
+		}
+
+
+		public Task<DashboardApiGetModel> PutDashboardAsync(DashboardApiUpsertModel model)
+		{
+			ValidateDashboardModel(model);
+
+			var report = CompanyContext.Reports.FirstOrDefault(x => x.uid == model.Uid);
+			report.Name = model.Name;
+			report.Description = model.Description;
+			report.AssetTypeID = model.AssetTypeId;
+			if (model.Definition != null)
+			{
+				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
+			}
+			report.ReportType = model.DashboardType.Value;
+			report.Location = model.Location.Value;
+
+			CompanyContext.SaveChanges();
+
+			UpdateReportResponsibilities(model, report);
+
+			return Task.FromResult(report.ToApiDashboardGetModel());
+		}
+
+		public void ValidateDashboardModel(DashboardApiUpsertModel model)
 		{
 			if (model.AssetTypeUid == null || model.AssetTypeUid == Guid.Empty)
 			{
@@ -52,7 +98,7 @@ namespace d360.model.DataAccessLayer
 			{
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeNotFound, model.AssetTypeUid));
 			}
-
+			model.AssetTypeId = assetType.ID;
 			var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.User };
 			if (!allowedClasses.Contains(assetType.Class))
 			{
@@ -74,31 +120,13 @@ namespace d360.model.DataAccessLayer
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Messages.Error_Name_Required);
 			}
 
-			if (CompanyContext.Reports.Any(x => x.Name == model.Name))
+			if (CompanyContext.Reports.Any(x => x.Name == model.Name && x.uid != model.Uid))
 			{
 				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.NameExists);
 			}
-
-			var report = new Report();
-			report.Name = model.Name;
-			report.Description = model.Description;
-			report.AssetTypeID = assetType.ID;
-			if (model.Definition != null)
-			{
-				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
-			}
-			report.ReportType = model.DashboardType.Value;
-			report.Location = model.Location.Value;
-
-			CompanyContext.Add(report);
-
-			CompanyContext.SaveChanges();
-
-
-			return Task.FromResult(new DashboardApiGetModel());
 		}
 
-		public async Task<bool> DeleteDashboard(Guid? uid)
+		public bool DeleteDashboard(Guid? uid)
 		{
 			if (uid == null || uid == Guid.Empty)
 			{
@@ -112,11 +140,11 @@ namespace d360.model.DataAccessLayer
 			}
 
 
-			await CompanyContext.Database.Connection
-				.QueryAsync(@"
+			CompanyContext.Database.Connection
+				.Query(@"
 					delete from ReportResponsibility where ReportId = @reportId;
 					delete from Report where Id = @reportId", new { reportId = dashboard.ID });
-			return await Task.FromResult(true);
+			return true;
 		}
 
 		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id)
@@ -150,6 +178,17 @@ namespace d360.model.DataAccessLayer
 					from dbo.Report r
 					left join assettype at on at.id = r.AssetTypeID
 					{whereSql}", dbArgs)).ToList();
+		}
+
+		private void UpdateReportResponsibilities(DashboardApiUpsertModel model, Report report)
+		{
+			var responsibilities = model.Responsibilities ?? new List<Guid>();
+			CompanyContext.Database.Connection.Query(@"
+					delete from dbo.ReportResponsibility where ReportID = @reportId
+					insert into dbo.ReportResponsibility (ReportID, ResponsibilityTypeID)
+					select @reportId, rt.ID as responsibilitytypeid from dbo.ResponsibilityType rt
+					where rt.uid in @Responsibilities",
+				new { reportId = report.ID, responsibilities });
 		}
 	}
 }

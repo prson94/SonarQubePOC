@@ -4096,7 +4096,7 @@ namespace d360.web.Controllers
 							});
 						}
 
-						if (!string.IsNullOrEmpty(report.DashboardDefinition.fileName))
+						if (!string.IsNullOrEmpty(report.DashboardDefinition?.fileName))
 						{
 							model.rows.Add(new DetailReadOnlyRowModel
 							{

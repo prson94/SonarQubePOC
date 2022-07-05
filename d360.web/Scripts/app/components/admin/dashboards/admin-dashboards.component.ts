@@ -93,10 +93,17 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 		this.isLoading = true;
 		this.dashboardService.saveDashboard(event.report, event.file)
 			.subscribe(result => {
-				this.loadDashboards();
-				this.selectedItemChange();
+				if (result) {
+					this.messagesService.showInfoMessage($localize`Success`, event.report.uid ? $localize`Dashboard successfully updated` : $localize`Dashboard successfully added`);
 
-				this.stateService.reloadLeftNavMenu();
+					this.loadDashboards();
+					this.selectedItemChange();
+					this.selected = null;
+					this.showEditor = false;
+
+					this.stateService.reloadLeftNavMenu();
+				}
+				this.isLoading = false;
 			});
 	}
 

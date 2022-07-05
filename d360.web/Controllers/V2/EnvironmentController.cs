@@ -30,6 +30,8 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
 using Microsoft.PowerBI.Api.V2;
+using d360.web.Extensions;
+using System.Net.Http.Formatting;
 
 namespace d360.web.Controllers.V2
 {
@@ -53,6 +55,7 @@ namespace d360.web.Controllers.V2
 		private static readonly string pbiAuthorityUrl = "https://login.microsoftonline.com/02292cae-2fe6-4371-8da1-b03d14808575";
 		private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
 		private static readonly string pbiUrl = "https://api.powerbi.com";
+
 
 		public EnvironmentController(ICoreComponentSet set, IThemeRepository themeRepository, IDashboardRepository dashboardRepository, IStorageProvider storage) : base(set)
 		{
@@ -2161,9 +2164,16 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Created, "Returns the created dashboard.", typeof(DashboardApiGetModel)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the dashboard is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerParameter("name", "Dashboard name", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("assettypeuid", "Asset Type Uid", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("description", "Description", DataType = "string", ParameterType = "formData", Required = false),
+			SwaggerParameter("location", "Location (List, Detail, Homepage)", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("DashboardType", "Type (DqPlus, PowerBi)", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+
 		]
-		public async Task<IHttpActionResult> PostDashboard(DashboardApiPostModel requestModel)
+		public async Task<IHttpActionResult> PostDashboard()
 		{
 			try
 			{
@@ -2172,7 +2182,148 @@ namespace d360.web.Controllers.V2
 					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
+				var requestModel = new DashboardApiUpsertModel();
+
+				if (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["model"]))
+				{
+					requestModel = Newtonsoft.Json.JsonConvert.DeserializeObject<DashboardApiUpsertModel>(HttpContext.Current.Request.Form["model"]);
+				}
+
+				DashboardRepository.ValidateDashboardModel(requestModel);
+
+				HttpPostedFile file = null;
+
+				if (HttpContext.Current.Request.Files.Count > 0)
+				{
+					file = HttpContext.Current.Request.Files[0];
+				}
+				var definition = new DashboardDefinition();
+
+				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
+				{
+					var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
+
+					if (importResult.ImportState == "Failed")
+					{
+						throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
+					}
+
+					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
+
+					var rpt = importResult.Reports.FirstOrDefault();
+
+					if (rpt != null)
+					{
+						definition.powerBiReportId = rpt.Id.ToString();
+					}
+
+					definition.fileName = file.FileName;
+
+					requestModel.Definition = definition;
+				}
+				else if (requestModel.DashboardType == DashboardType.PowerBi && file == null)
+				{
+					throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
+				}
+
 				var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+		/// <summary>
+		/// Updates a dashboard.
+		/// </summary>
+		/// <remarks>
+		/// 
+		/// </remarks>
+		/// <param name="requestModel">An object containing the properties of the dashboard you want to create. See the example model for a list of all available properties.</param>
+		/// <returns>The created dashboard.</returns>
+		[
+			HttpPut,
+			Route("dashboards/{dashboardUid}"),
+			SwaggerConsumes("application/json"),
+			SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.Created, "Returns the created dashboard.", typeof(DashboardApiGetModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the dashboard is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerParameter("name", "Dashboard name", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("assettypeuid", "Asset Type Uid", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("description", "Description", DataType = "string", ParameterType = "formData", Required = false),
+			SwaggerParameter("location", "Location (List, Detail, Homepage)", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("DashboardType", "Type (DqPlus, PowerBi)", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+
+		]
+		public async Task<IHttpActionResult> PutDashboard(Guid dashboardUid)
+		{
+			try
+			{
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+				}
+
+				var requestModel = new DashboardApiUpsertModel();
+
+				if (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["model"]))
+				{
+					requestModel = Newtonsoft.Json.JsonConvert.DeserializeObject<DashboardApiUpsertModel>(HttpContext.Current.Request.Form["model"]);
+				}
+
+				if (requestModel.Uid.HasValue)
+				{
+					if (!Company.Reports.Any(x => x.uid == requestModel.Uid))
+					{
+						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, "Dashboard with uid provided does not exists");
+					}
+				}
+
+				DashboardRepository.ValidateDashboardModel(requestModel);
+
+				HttpPostedFile file = null;
+
+				if (HttpContext.Current.Request.Files.Count > 0)
+				{
+					file = HttpContext.Current.Request.Files[0];
+				}
+				var definition = new DashboardDefinition();
+
+				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
+				{
+					var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
+
+					if (importResult.ImportState == "Failed")
+					{
+						throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
+					}
+
+					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
+
+					var rpt = importResult.Reports.FirstOrDefault();
+
+					if (rpt != null)
+					{
+						definition.powerBiReportId = rpt.Id.ToString();
+					}
+
+					definition.fileName = file.FileName;
+
+					requestModel.Definition = definition;
+				}
+
+				var responseModel = await DashboardRepository.PutDashboardAsync(requestModel);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
@@ -2369,6 +2520,45 @@ namespace d360.web.Controllers.V2
 			svg.AppendLine("</text>");
 			svg.AppendLine("</svg>");
 			return svg.ToString();
+		}
+
+		private async Task<string> checkPowerBIValidWorkspace(string groupId, string clientId)
+		{
+			groupId = (groupId ?? "").Trim();
+
+			if (string.IsNullOrEmpty(groupId) && !string.IsNullOrEmpty(clientId))
+			{
+				var groupName = $"D3S{Company.CurrentCompanyID}";
+				var res = await PowerBI.CreateWorkspace(pbiUsername, pbiPassword, clientId, groupName);
+				SettingsRepository.UpsertSetting(core.enums.Setting.PowerBIGroupId, res.Id.ToString());
+
+				return res.Id.ToString();
+			}
+
+			return groupId;
+		}
+
+		private async Task<Microsoft.PowerBI.Api.V2.Models.Import> uploadPowerBIReport(HttpPostedFile file, string name, string datasetId = "")
+		{
+			var companySettings = SettingsRepository.GetSettings();
+			var groupId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIGroupId).Value;
+			var clientId = companySettings.First(s => s.ID == core.enums.Setting.PowerBIClientId).Value;
+
+			if (string.IsNullOrEmpty(clientId))
+			{
+				throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+			}
+
+			// if the workspace id is null create a new one and update the companysettings
+			groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+
+			// if an existing one exists delete it
+			if (!string.IsNullOrEmpty(datasetId))
+			{
+				await PowerBI.DeleteDataset(pbiUsername, pbiPassword, clientId, groupId, datasetId);
+			}
+
+			return await PowerBI.ImportPbix(pbiUsername, pbiPassword, clientId, groupId, name, file.InputStream);
 		}
 	}
 }
