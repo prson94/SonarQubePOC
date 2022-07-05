@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -320,6 +321,7 @@ namespace d360.web.Controllers
 
         #endregion
 
+		[Obsolete("Don't use this method. Throw exceptions directly")]
         protected internal IHttpActionResult DetermineUnhandledException(Exception ex, string errorHeading, List<StatusCodeErrorMessage> errorMessages, Dictionary<string, string> methodProperties)
         {
             if (errorMessages == null)
@@ -327,38 +329,37 @@ namespace d360.web.Controllers
                 errorMessages = new List<StatusCodeErrorMessage>();
             }
 
-            if (ex is ConflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
+            if (ex is ConflictException conflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
             {
-                return errorMessageResponse((ex as ConflictException).StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
+	            throw new GenericException(conflictException.StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
             }
-            else if (ex is NotFoundException && errorMessages.Any(e => e.Status == (ex as NotFoundException).StatusCode))
+
+            if (ex is NotFoundException notFoundException && errorMessages.Any(e => e.Status == notFoundException.StatusCode))
             {
-                return errorMessageResponse((ex as NotFoundException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as NotFoundException).StatusCode).ErrorMessage);
+	            throw new GenericException(notFoundException.StatusCode, errorHeading, errorMessages.First(e => e.Status == notFoundException.StatusCode).ErrorMessage);
             }
-            else if (ex is StatusCodeException && errorMessages.Any(e => e.Status == (ex as StatusCodeException).StatusCode))
+
+            if (ex is StatusCodeException statusCodeException && errorMessages.Any(e => e.Status == statusCodeException.StatusCode))
             {
-                return errorMessageResponse((ex as StatusCodeException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as StatusCodeException).StatusCode).ErrorMessage);
+	            throw new GenericException(statusCodeException.StatusCode, errorHeading, errorMessages.First(e => e.Status == statusCodeException.StatusCode).ErrorMessage);
             }
-            else if (ex is GenericException)
+
+            if (ex is GenericException genericException)
             {
-                return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).StatusDescription);
+	            throw new GenericException(genericException.StatusCode, errorHeading, genericException.StatusDescription);
             }
-            else
+
+            if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("invalid filter expression"))
             {
-                if (ex.Message.ToLower().Contains("invalid filter expression"))
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}");
-                }
-                else if (ex.Message.ToLower().Contains("conversion failed when converting from"))
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, ApiMessages.InvalidFilterExpressionUsedMessage);
-                }
-                else
-                {
-                    SendException(ex, methodProperties);
-                    return errorMessageResponse(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
-                }
+	            throw new ArgumentException($"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}", ex);
             }
+
+            if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("conversion failed when converting from"))
+            {
+	            throw new ArgumentException(ApiMessages.InvalidFilterExpressionUsedMessage, ex);
+            }
+
+            throw new GenericException(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
         }
 
         protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
