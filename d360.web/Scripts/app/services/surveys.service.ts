@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SurveyType, SurveyQuestionType, SurveyTypeDetails, SurveyQuestionTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse } from '../models/survey.model';
+import { SurveyType, SurveyTypeDetails, SurveyQuestionTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse, SurveyTypeV2 } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -43,14 +43,6 @@ export class SurveysService extends BaseObservableService {
             );
     }
 
-    getSurveyTypeQuestions(survey: SurveyType): Observable<SurveyQuestionType[]> {
-        return this.http.get(`api/surveys/${survey.ID}/questions`)
-            .pipe(
-                map(response => <SurveyQuestionType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     deleteSurveyTypeById(uid: string): Observable<boolean> {
         return this.http
             .delete(`/api/v2/survey/types/${uid}`)
@@ -61,8 +53,13 @@ export class SurveysService extends BaseObservableService {
     }
 
 
-    deleteSurveyQuestionType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'surveyquestiontype', id);
+    deleteSurveyQuestionType({ surveyTypeUid, questionTypeUid }: { surveyTypeUid: string; questionTypeUid: string; }): Observable<JsonResult> {
+        return this.http
+            .delete(`/api/v2/survey/types/${surveyTypeUid}/questions/${questionTypeUid}`)
+            .pipe(
+                map(res => true),
+                catchError(err => this.handleError(err))
+            );
     }
 
 

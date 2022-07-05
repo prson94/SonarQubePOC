@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
-import { Survey, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
+import { Survey, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 

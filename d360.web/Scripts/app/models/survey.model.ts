@@ -31,7 +31,7 @@ export class SurveyType {
     ValidForDays: number;
 }
 
-interface QuestionTypeV2 {
+export interface QuestionTypeV2 {
     Uid: string;
     Name: string;
     Description: string;
@@ -82,14 +82,6 @@ export class Option {
     Name: string;
     Value: number;
     IsChecked: boolean = false;
-}
-
-export class SurveyQuestionType {
-    ID: number;
-    Name: string;
-    DisplayStyle: string;
-    OptionCount: number;
-    Description: string;
 }
 
 export class SurveyQuestionOption {
