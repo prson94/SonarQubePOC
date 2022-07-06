@@ -612,8 +612,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
     }
 
     get fullRelationshipNameAsHTML(): string {
-        return `${this.assetDetail.DisplayValue} - <strong>& nbsp;${this.selectedRelAsset.name}& nbsp; </strong> - ${this.selectedRelAsset.target}`;
-
+        return `${this.assetDetail.DisplayValue} - <strong>&nbsp;${this.selectedRelAsset.name}&nbsp; </strong> - ${this.selectedRelAsset.target}`;
     }
     get selectionScrollHeight(): string {
         var filterFieldHeight = this.elRef.nativeElement.getElementsByClassName('grid-actions-header')[0].getBoundingClientRect().height;
