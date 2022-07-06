@@ -813,7 +813,7 @@ namespace d360.model.DataAccessLayer.repositories
 									}
 									else
 									{
-										fieldsUsedInMainQuery.Add($"F{field.ID}.");
+										fieldsUsedInMainQuery.Add($"F{field.ID}");
 										if (field.Type == "JsonElement")
 										{
 											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
@@ -837,12 +837,10 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else if (field.Type == "Score")
 										{
-											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.[Value] {orderDirection}";
 										}
 										else if (field.Type == "Counter")
 										{
-											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
 										}
 										else
