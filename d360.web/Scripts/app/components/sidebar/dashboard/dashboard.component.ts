@@ -51,10 +51,17 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 			this.dashboardName = params['name'];
 			this.assetTypeUid = params['assetTypeUid'];
 			this.assetUid = params['assetUid'];
-			console.log(this.assetUid);
 			this.loadAvailableDashboards();
 			if (this.assetUid) {
-				this.buildSecondaryNavigation(this.assetUid, null, null, null, null, this.buildBreadcrumb.bind(this));
+				this.buildSecondaryNavigation(this.assetUid,
+					null,
+					null,
+					null,
+					null,
+					this.buildBreadcrumb.bind(this),
+					null,
+					null,
+					true);
 			}
 		});
 	}
@@ -125,7 +132,15 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 				}
 			);
 		} else {
-			this.dashboardService.getDashboardsV2(null, 1, null, this.assetTypeUid)
+			var locationFilter = null;
+			if (this.assetTypeUid) {
+				locationFilter = 1;
+				if (this.assetUid) {
+					locationFilter = 2;
+				}
+			}
+			
+			this.dashboardService.getDashboardsV2(null, locationFilter, null, this.assetTypeUid)
 				.subscribe((res) => {
 					this.dashboards = res;
 					if (this.objectType && this.objectID && this.dashboardName) {

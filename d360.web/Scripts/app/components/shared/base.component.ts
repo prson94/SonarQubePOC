@@ -804,7 +804,7 @@ export class BaseComponent {
         this.secondaryNavService.refreshStats();
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null) {
+	buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null, forceRefresh: boolean = false) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         data.Class = assetClass;
@@ -835,15 +835,11 @@ export class BaseComponent {
             data.PreloadData = true;
         }
 
-        if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined)) {
+		if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined) && !forceRefresh) {
             return;
 		}
 
-
-		this.baseAssetUid = data.AssetUid;
-		this.baseAssetTypeUid = data.AssetTypeUid;
-
-        if (this.isSidebarLoadedForCurrentObject(data)) {
+		if (this.isSidebarLoadedForCurrentObject(data) && !forceRefresh) {
             this.refreshObjectStats();
             return;
         }
@@ -854,6 +850,10 @@ export class BaseComponent {
 			this.uid = r.Uid;
             this.objectType = r.Object;
 			this.objectID = r.ObjectID;
+
+			this.baseAssetUid = r.Uid;
+			this.baseAssetTypeUid = r.Artifact?.AssetTypeUid
+
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
 
