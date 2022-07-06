@@ -50,7 +50,7 @@ namespace d360.model.DataAccessLayer
 					AD.BackColor as IconBackColor,
 					AD.ForeColor as IconForeColor
 			from	CommentRelation CR
-					inner join AssetDetail AD on AD.ID = CR.AssetID
+					inner join AssetDetail AD on AD.ID = CR.AssetID and CR.CommentID = C.ID
 					inner join dbo.AssetPath AP on AD.ID = AP.ID
 					cross apply GetAssetUrlById(AD.ID) U
 			for		json path
