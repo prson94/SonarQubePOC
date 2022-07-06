@@ -23,19 +23,19 @@ namespace d360.core.enums
         [Name("Modify asset"), Description("Add or update an asset's properties."), Category("M")]
         ModifyAsset = AddAsset | EditAsset,
 
-        [Name("Read responsibilties"), Description("Read an asset's roles and responsibilities."), Category("R")]
+        [Name("Read responsibilities"), Description("Read an asset's roles and responsibilities."), Category("R")]
         ReadResponsibilities = 32,
         
-        [Name("Create responsibilties"), Description("Add roles and responsibilities to an asset."), Category("A")]
+        [Name("Create responsibilities"), Description("Add roles and responsibilities to an asset."), Category("A")]
         AddResponsibilities = 64,
         
-        [Name("Remove responsibilties"), Description("Remove an asset's roles and responsibilities."), Category("D")]
+        [Name("Remove responsibilities"), Description("Remove an asset's roles and responsibilities."), Category("D")]
         DeleteResponsibilities = 128,
         
-        [Name("Modify responsibilties"), Description("Modify an asset's roles and responsibilities."), Category("E")]
+        [Name("Modify responsibilities"), Description("Modify an asset's roles and responsibilities."), Category("E")]
         EditResponsibilities = 256,
 
-        [Name("Modify responsibilties"), Description("Add or modify an asset's roles and responsibilities."), Category("M")]
+        [Name("Modify responsibilities"), Description("Add or modify an asset's roles and responsibilities."), Category("M")]
         ModifyResponsibilities = AddResponsibilities | EditResponsibilities,
 
         [Name("Read relationships"), Description("Read an asset's relationships."), Category("R")]
