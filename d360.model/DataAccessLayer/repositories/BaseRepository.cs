@@ -875,6 +875,7 @@ namespace d360.model.DataAccessLayer.repositories
 						{
 							if (assetType.Object == "ReferenceItemType" && key == "code")
 							{
+								fieldsUsedInMainQuery.Add("RI.");
 								whereStatements.Add($"RI.[Code] = @code");
 								dbArgs.Add($"@code", q.Value);
 							}
@@ -887,6 +888,7 @@ namespace d360.model.DataAccessLayer.repositories
 									switch (field.Type)
 									{
 										case "JsonElement":
+											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
 											whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
@@ -895,6 +897,7 @@ namespace d360.model.DataAccessLayer.repositories
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
 										default:
+											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
