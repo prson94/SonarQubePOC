@@ -2187,6 +2187,7 @@ namespace d360.web.Controllers.V2
 				NameValueCollection data = HttpContext.Current.Request.Form;
 				var requestModel = new DashboardApiUpsertModel();
 				requestModel.FillDataFromFormData(data);
+				requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
 
 				DashboardRepository.ValidateDashboardModel(requestModel);
 
@@ -2277,6 +2278,7 @@ namespace d360.web.Controllers.V2
 				NameValueCollection data = HttpContext.Current.Request.Form;
 				var requestModel = new DashboardApiUpsertModel();
 				requestModel.FillDataFromFormData(data);
+				requestModel.Description = HttpUtility.HtmlDecode(requestModel.Description);
 
 				if (requestModel.Uid.HasValue)
 				{

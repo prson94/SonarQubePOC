@@ -10,6 +10,7 @@ using d360.core.exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Linq;
+using System.Web;
 
 namespace d360.core.entities
 {
