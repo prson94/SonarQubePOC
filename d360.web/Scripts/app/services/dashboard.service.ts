@@ -30,7 +30,7 @@ export class DashboardService extends BaseObservableService {
 		return this.getDashboardsV2(id, null, null);
 	}
 
-	getDashboardsV2(dashboardUid: string = '', location: number = null, id: number = null, assetTypeUid: string = null): Observable<DashboardModel[]> {
+	getDashboardsV2(dashboardUid: string = '', location: number = null, id: number = null, assetTypeUid: string = null, assetUid: string = null): Observable<DashboardModel[]> {
 		var params = {};
 		if (dashboardUid) {
 			params["uid"] = dashboardUid;
@@ -43,6 +43,9 @@ export class DashboardService extends BaseObservableService {
 		}
 		if (assetTypeUid) {
 			params["assetTypeUid"] = assetTypeUid;
+		}
+		if (assetUid) {
+			params["assetUid"] = assetUid;
 		}
 		var qString = '';
 		if (params) {

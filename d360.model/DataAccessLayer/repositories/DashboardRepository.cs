@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using d360.core.entities;
+using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.resources;
@@ -143,10 +144,13 @@ namespace d360.model.DataAccessLayer
 			return true;
 		}
 
-		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id, Guid? assetTypeUid)
+		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id, Guid? assetTypeUid, Guid? assetUid)
 		{
 			var dbArgs = new DynamicParameters();
 			List<string> whereStatements = new List<string>();
+			bool isTypePage = false;
+			Asset asset = null;
+			int assetTypeId = 0;
 
 			if (uid.HasValue)
 			{
@@ -170,6 +174,16 @@ namespace d360.model.DataAccessLayer
 			{
 				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
 				whereStatements.Add("at.uid = @assetTypeUid");
+				isTypePage = true;
+			}
+
+			if (assetUid.HasValue)
+			{
+				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == assetUid);
+				assetTypeId = asset.AssetTypeID;
+				dbArgs.Add("assetTypeId", assetTypeId);
+				whereStatements.Add("at.id = @assetTypeId");
+				isTypePage = false;
 			}
 
 			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);
@@ -192,10 +206,66 @@ namespace d360.model.DataAccessLayer
 
 			data.ForEach(data =>
 			{
-				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x=> Guid.Parse(x)).ToList();
+				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x => Guid.Parse(x)).ToList();
 			});
 
+			if (!CompanyContext.CurrentResourceIsAdmin)
+			{
+				FilterDashboardsByResponsibilities(isTypePage, asset, assetTypeId, data);
+			}
+
 			return data;
+		}
+
+		private void FilterDashboardsByResponsibilities(bool isTypePage, Asset asset, int assetTypeId, List<DashboardApiGetModel> data)
+		{
+			List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
+
+			if (!isTypePage)
+			{
+				currentUserResponsibilityTypeList = CompanyContext.ResponsibilityDetails.Where(x => x.AssetTypeID == assetTypeId && x.ResourceID == CompanyContext.CurrentResourceID).ToList();
+
+				if (asset != null)
+				{
+					currentUserResponsibilityTypeList.AddRange(CompanyContext.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == CompanyContext.CurrentResourceID).ToList());
+				}
+			}
+			else
+			{
+				currentUserResponsibilityTypeList = CompanyContext.ResponsibilityDetails.Where(x => x.AssetTypeID == assetTypeId && x.ResourceID == CompanyContext.CurrentResourceID).ToList();
+			}
+
+			var currentUserResponsibilityTypeIDList = new List<int>();
+
+			if (currentUserResponsibilityTypeList != null && currentUserResponsibilityTypeList.Count() > 0)
+			{
+				currentUserResponsibilityTypeIDList = currentUserResponsibilityTypeList.Select(i => i.ResponsibilityTypeID).ToList();
+			}
+
+			//check that the current user has access to the current report
+			for (int i = data.Count - 1; i >= 0; i--)
+			{
+				var report = data[i];
+
+				if (report.Responsibilities != null && report.Responsibilities.Count > 0)
+				{
+					bool userHasAccess = false;
+
+					foreach (var responsibility in report.Responsibilities)
+					{
+						if (currentUserResponsibilityTypeIDList.Contains(responsibility.ResponsibilityTypeID))
+						{
+							userHasAccess = true;
+							break;
+						}
+					}
+
+					if (!userHasAccess)
+					{
+						data.RemoveAt(i);
+					}
+				}
+			}
 		}
 
 		private void UpdateReportResponsibilities(DashboardApiUpsertModel model, Report report)

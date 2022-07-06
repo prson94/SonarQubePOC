@@ -2125,16 +2125,11 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> GetDashboards(Guid? uid = null, DashboardLocation? location = null, int? id = null, Guid? assetTypeUid = null)
+		public async Task<IHttpActionResult> GetDashboards(Guid? uid = null, DashboardLocation? location = null, int? id = null, Guid? assetTypeUid = null, Guid? assetUid)
 		{
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
-				}
-
-				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id, assetTypeUid);
+				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id, assetTypeUid, assetUid);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}

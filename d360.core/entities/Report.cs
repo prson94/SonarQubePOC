@@ -199,14 +199,7 @@ namespace d360.core.entities
 			}
 			if (!string.IsNullOrEmpty(formData["responsibilities"]))
 			{
-				if (formData["responsibilities"] == "[]")
-				{
-					this.Responsibilities = null;
-				}
-				else
-				{
-					this.Responsibilities = formData["responsibilities"].Split(',').Select(x => Guid.Parse(x)).ToList();
-				}
+				this.Responsibilities = JsonConvert.DeserializeObject<List<Guid>>(formData["responsibilities"]);
 			}
 		}
 	}
