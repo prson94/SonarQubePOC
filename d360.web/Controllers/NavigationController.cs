@@ -1298,7 +1298,7 @@ namespace d360.web.Controllers
 				responseModel.Uid = tag.uid;
 			}
 
-			if (model.AssetUid != null)
+			if (model.AssetUid != null && model.ObjectType != SystemObjects.Report.ToString())
 			{
 				var asset = Company.Assets.FirstOrDefault(x => x.uid == model.AssetUid);
 
@@ -1319,15 +1319,17 @@ namespace d360.web.Controllers
 					var resource = Company.GlobalReportingResources.SingleOrDefault(x => x.Uid == model.AssetUid);
 					FillResponseModelForResource(asset, resource);
 				}
+			}
 
-				if (model.ObjectType == "Report")
-				{
-					execProcedure = true;
-					responseModel.DisplayValue = "Dashboards";
-					responseModel.MainTabTitle = "Dashboards";
-					responseModel.Items.HasAudit = true;
-					responseModel.Uid = model.AssetUid.Value;
-				}
+
+			if (model.ObjectType == SystemObjects.Report.ToString())
+			{
+				execProcedure = false;
+				responseModel.DisplayValue = "Dashboards";
+				responseModel.MainTabTitle = "Dashboards";
+				responseModel.Items.HasAudit = true;
+				responseModel.Object = SystemObjects.Report.ToString();
+				responseModel.Uid = model.AssetUid.Value;
 			}
 
 			if (model.ObjectType == SystemObjects.SemanticType.ToString() && Ld.BoolVariation(FeatureFlags.PERM_SEMANTIC_TYPES_UI, GetSdkFeatureFlagUser(), false))

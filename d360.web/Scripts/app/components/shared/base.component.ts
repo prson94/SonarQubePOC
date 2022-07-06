@@ -836,8 +836,8 @@ export class BaseComponent {
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
             this.objectType = r.Object;
-            this.objectID = r.ObjectID;
-
+			this.objectID = r.ObjectID;
+			debugger;
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
 

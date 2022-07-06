@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -8,6 +9,7 @@ using d360.core.entities.Contracts;
 using d360.core.exceptions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Linq;
 
 namespace d360.core.entities
 {
@@ -153,8 +155,58 @@ namespace d360.core.entities
 	{
 		[NotMapped]
 		public int AssetTypeId { get; set; }
-		[NotMapped]
-		public string FileContent { get; set; }
+
 		public Guid? Uid { get; set; }
+
+		public void FillDataFromFormData(NameValueCollection formData)
+		{
+			if (!string.IsNullOrEmpty(formData["assettypeuid"]))
+			{
+				Guid value;
+				Guid.TryParse(formData["assettypeuid"], out value);
+				this.AssetTypeUid = value;
+			}
+			if (!string.IsNullOrEmpty(formData["dashboardtype"]))
+			{
+				DashboardType value;
+				Enum.TryParse(formData["dashboardtype"], out value);
+				this.DashboardType = value;
+			}
+			if (!string.IsNullOrEmpty(formData["definition"]))
+			{
+				this.Definition = JsonConvert.DeserializeObject<DashboardDefinition>(formData["definition"]);
+			}
+			if (!string.IsNullOrEmpty(formData["description"]))
+			{
+				this.Description = formData["description"];
+			}
+			if (!string.IsNullOrEmpty(formData["uid"]))
+			{
+				Guid value;
+				Guid.TryParse(formData["uid"], out value);
+				this.Uid = value;
+			}
+			if (!string.IsNullOrEmpty(formData["location"]))
+			{
+				DashboardLocation value;
+				Enum.TryParse(formData["location"], out value);
+				this.Location = value;
+			}
+			if (!string.IsNullOrEmpty(formData["name"]))
+			{
+				this.Name = formData["name"];
+			}
+			if (!string.IsNullOrEmpty(formData["responsibilities"]))
+			{
+				if (formData["responsibilities"] == "[]")
+				{
+					this.Responsibilities = null;
+				}
+				else
+				{
+					this.Responsibilities = formData["responsibilities"].Split(',').Select(x => Guid.Parse(x)).ToList();
+				}
+			}
+		}
 	}
 }

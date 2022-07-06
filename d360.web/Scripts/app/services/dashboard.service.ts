@@ -10,6 +10,8 @@ import { BaseObservableService } from "./baseObservable.service";
 import { Report } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
+import { HTML } from '../models/fieldtype-api.model';
+import { escapeHTML } from 'core-js/fn/string';
 
 @Injectable({
 	providedIn: 'root'
@@ -22,31 +24,6 @@ export class DashboardService extends BaseObservableService {
 	) {
 		super(messagesService);
 	}
-
-	getDashboards(
-		objectID: number,
-		objectType: string
-	): Observable<Dashboard[]> {
-		if (!objectType || objectType == '') objectType = 'Home';
-		if (!objectID || objectID == 0) objectID = 0;
-
-		return this
-			.http
-			.get(`reports_no/bycontext/${objectType}/${objectID}`)
-			.pipe(
-				map((response) => <Dashboard[]>response),
-				catchError((err) => this.handleError(err))
-			);
-	}
-
-	getReports(): Observable<Report[]> {
-		return this.http.get('reports/reports')
-			.pipe(
-				map((response) => <Report[]>response),
-				catchError((err) => this.handleError(err))
-			);
-	}
-
 
 	setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
 		let headers = new HttpHeaders({
@@ -120,7 +97,16 @@ export class DashboardService extends BaseObservableService {
 
 	saveDashboard(report: DashboardModel, file?: File): Observable<any> {
 		var form = new FormData();
-		form.append("model", JSON.stringify(report));
+		Object.keys(report).forEach((key) => {
+			if (typeof report[key] === 'object') {
+				form.append(key, JSON.stringify(report[key]));
+			}
+			else {
+				form.append(key, escapeHTML(report[key]));
+			}
+		}
+		);
+
 		form.append("file", file);
 
 		if (report.uid) {

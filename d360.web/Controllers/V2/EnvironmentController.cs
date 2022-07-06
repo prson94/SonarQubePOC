@@ -32,6 +32,7 @@ using System.Xml.Linq;
 using Microsoft.PowerBI.Api.V2;
 using d360.web.Extensions;
 using System.Net.Http.Formatting;
+using System.Collections.Specialized;
 
 namespace d360.web.Controllers.V2
 {
@@ -2177,17 +2178,15 @@ namespace d360.web.Controllers.V2
 		{
 			try
 			{
+
 				if (!Company.CurrentResourceIsAdmin)
 				{
 					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
+				NameValueCollection data = HttpContext.Current.Request.Form;
 				var requestModel = new DashboardApiUpsertModel();
-
-				if (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["model"]))
-				{
-					requestModel = Newtonsoft.Json.JsonConvert.DeserializeObject<DashboardApiUpsertModel>(HttpContext.Current.Request.Form["model"]);
-				}
+				requestModel.FillDataFromFormData(data);
 
 				DashboardRepository.ValidateDashboardModel(requestModel);
 
@@ -2275,12 +2274,9 @@ namespace d360.web.Controllers.V2
 					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
+				NameValueCollection data = HttpContext.Current.Request.Form;
 				var requestModel = new DashboardApiUpsertModel();
-
-				if (!string.IsNullOrEmpty(HttpContext.Current.Request.Form["model"]))
-				{
-					requestModel = Newtonsoft.Json.JsonConvert.DeserializeObject<DashboardApiUpsertModel>(HttpContext.Current.Request.Form["model"]);
-				}
+				requestModel.FillDataFromFormData(data);
 
 				if (requestModel.Uid.HasValue)
 				{
