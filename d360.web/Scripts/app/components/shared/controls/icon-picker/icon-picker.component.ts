@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
 import { DropdownModule } from 'primeng/dropdown';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+import { DirectivesModule } from "../../../../directives/directives.module";
 
 export const ICON_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -111,6 +112,7 @@ export class IconPickerComponent implements ControlValueAccessor {
         FormsModule,
         ReactiveFormsModule,
         DropdownModule,
+		DirectivesModule
     ],
     providers: [IconService]
 })
