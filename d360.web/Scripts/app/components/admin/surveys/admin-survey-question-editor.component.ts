@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, ViewChild } from '@angular/core';
 import { SurveysService } from '../../../services/surveys.service';
-import { SurveyQuestionTypeDetails } from '../../../models/survey.model';
+import { QuestionTypeV2 } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
 import { NgForm, FormGroup } from '@angular/forms';
@@ -34,7 +34,7 @@ import { NgForm, FormGroup } from '@angular/forms';
                             <span class="FieldName col l11 s11" i18n>Question Options</span>
                             <span class="right-align col l1 s1" (click)="addItem();"><i class="fa fa-plus" aria-hidden="true"></i></span>
                         </div>
-                        <div *ngFor="let option of editedQuestion?.Items; let i = index">
+                        <div *ngFor="let option of editedQuestion?.Options; let i = index">
                             <div class="row">
                                 <div class="col s6">
                                     <input style="width: 100%;margin-bottom:5px;" required [name]="'item_' + i" type="text" [(ngModel)]="option.Name" maxlength="250">
@@ -59,41 +59,32 @@ import { NgForm, FormGroup } from '@angular/forms';
 })
 
 export class AdminSurveyQuestionEditorEditor {
-    @Input() questionId: number = 0;
-    @Input() surveyTypeId: number = 0;
+    @Input() question: QuestionTypeV2;
+    @Input() surveyTypeUid: string;
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
     action: string = "Edit";
     error: any;
-    editedQuestion: SurveyQuestionTypeDetails = new SurveyQuestionTypeDetails();
+    editedQuestion?: QuestionTypeV2 = null;
     isLoading: boolean = false;
 
-    displayStyles: DropdownOption[] = [{ title: $localize`Radio List`, value: "1" }, { title: $localize`Check List`, value: "3" }];
+    displayStyles: DropdownOption[] = [{ title: $localize`Radio List`, value: "Radio" }, { title: $localize`Check List`, value: "CheckList" }];
 
     @ViewChild('questionEditorForm', { static: true }) formGroup: NgForm;
-    constructor(private surveysService: SurveysService) {
-    }
 
     ngOnInit() {
-
-        if (this.questionId > 0) {
-            this.isLoading = true;
-            this.surveysService.getSurveyTypeQuestionDetails(this.questionId, this.surveyTypeId)
-                .subscribe(result => {
-                    this.editedQuestion = result;
-                    this.isLoading = false;
-                });
+        if (this.question != null) {
+            this.editedQuestion = { ...this.question };
         }
         else {
-            this.editedQuestion = new SurveyQuestionTypeDetails();
-            this.editedQuestion.SurveyTypeID = this.surveyTypeId;
-            this.editedQuestion.Items = [];
-            this.editedQuestion.Items.push({
-                ID: -1,
-                Name: '',
-                Value: 0,
-                IsChecked: false,
-            });
+            this.editedQuestion = {
+                Uid: null,
+                Description: null,
+                DisplayStyle: null,
+                Name: null,
+                Options: [ { Name: '', Value: 0 } ]
+            }
+
             this.action = "New";
         }
 
@@ -102,11 +93,15 @@ export class AdminSurveyQuestionEditorEditor {
 
     onSubmit() {
         //save the item back to the save or edit url        
-        this.saveClick.emit({ question: this.editedQuestion, action: this.questionId > 0 ? "new" : "edit" });
+        this.saveClick.emit({ 
+            surveyTypeUid: this.surveyTypeUid,
+            question: this.editedQuestion, 
+            action: this.question != null ? "new" : "edit" 
+        });
     }
 
     addItem() {
-        this.editedQuestion.Items.push({ Name: '', Value: 0, ID: 0, IsChecked: false });
+        this.editedQuestion.Options.push({ Name: '', Value: 0, });
     }
 
     private duplicatesValidator(form: FormGroup) {

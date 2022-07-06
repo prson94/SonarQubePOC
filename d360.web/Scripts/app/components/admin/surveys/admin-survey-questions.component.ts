@@ -67,14 +67,18 @@ import { CompanySettingsService } from '../../../services/settings.service';
                     [prompt]="deletePromptText"                                         
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
-                <d3s-admin-survey-question-editor *ngIf="showEditor" [questionId]="selected?.Uid" [surveyTypeId]="survey?.Uid" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
+                <d3s-admin-survey-question-editor *ngIf="showEditor" [question]="selected" [surveyTypeUid]="survey?.Uid" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
                 `
 })
 
 export class AdminSurveyQuestionsComponent extends BaseComponent implements OnChanges {
     @Input() survey: SurveyTypeV2 = null;
     error: any;
-    questions: QuestionTypeV2[] = [];
+
+    get questions() {
+        return this.survey?.Questions;
+    }
+    
     showEditor: boolean = false;
     showDelete: boolean = false;
 
@@ -98,12 +102,6 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
             this.showEditor = false;
             this.showDelete = false;
         }
-
-        if (this.survey != null) this.getQuestions();
-    }
-
-    getQuestions() {
-        this.questions = this.survey.Questions;
     }
 
     deleteQuestion(uid: string) {
@@ -122,7 +120,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
                 );
                 
                 this.showDelete = false;
-                this.questions.splice(this.findQuestionById(uid), 1);
+                this.survey.Questions.splice(this.findQuestionById(uid), 1);
             });
     }
 
@@ -138,17 +136,34 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     }
 
     findQuestionById(uid: string) {
-        return this.questions.findIndex(x => x.Uid === uid);
+        return this.survey.Questions.findIndex(x => x.Uid === uid);
     }
 
     saveQuestion(event) {
-        this.surveysService.saveSurveyTypeQuestion(event.question)
+        this.surveysService.saveSurveyTypeQuestion(event.surveyTypeUid, event.question)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.getQuestions(); // incompatible types reload
+                if (result == null) {
+                    return;
+                }
+
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+                
+                this.updateQuestion(event.question, result);
                 this.showEditor = false;
             });
     }
+
+    updateQuestion(question: QuestionTypeV2, saveResponse: { Uid: string }) {
+        if (question.Uid === null) {
+            question.Uid = saveResponse.Uid;
+            this.survey.Questions.push(question);
+        } else {
+            this.survey.Questions[this.findQuestionById(question.Uid)] = question;
+        }
+    } 
 }
 
 
