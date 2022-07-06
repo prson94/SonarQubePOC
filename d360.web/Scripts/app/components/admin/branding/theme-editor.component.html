@@ -51,19 +51,15 @@
                             </div>
                         </div>
                         <div class="input-row">
-                            <label for="breadcrumbLinkColor" style="width: 180px; padding-right: 20px; display: inline-flex;">
-                                <span>
-                                    <ng-container i18n style="overflow-wrap:break-word">
+                            <label for="breadcrumbLinkColor">
+                                    <ng-container i18n>
                                         Asset type breadcrumb link color
                                     </ng-container>
-                                </span>
-                                <span>
                                     <i class="fa fa-question-circle help-icon"
                                        [escape]="false"
                                        [pTooltip]="getTooltip('breadcrumbLinkColor')"
                                        tooltipPosition="top"
                                        tooltipStyleClass="ig-tooltip"></i>
-                                </span>                                
                             </label>
                             <div class="color-picker-wrapper">
                                 <color-selector formControlName="breadcrumbLinkColor" [appendTo]="'body'"></color-selector>
