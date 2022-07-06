@@ -3,14 +3,12 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
-import { Dashboard, DashboardModel, DashboardTokens } from '../models/dashboard.model'
+import { DashboardModel, DashboardTokens } from '../models/dashboard.model'
 
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
-import { Report } from '../models/report.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { HTML } from '../models/fieldtype-api.model';
 import { escapeHTML } from 'core-js/fn/string';
 
 @Injectable({
@@ -25,19 +23,6 @@ export class DashboardService extends BaseObservableService {
 		super(messagesService);
 	}
 
-	setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
-		let headers = new HttpHeaders({
-			'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
-		});
-
-		return this.http
-			.post(`form/AddPowerBICredentials`, `Username=${user}&Password=${password}`, { headers: headers })
-			.pipe(
-				map((response) => response),
-				catchError((err) => this.handleError(err))
-			);
-	}
-
 	getDashboardById(id: number | string): Observable<DashboardModel[]> {
 		if (typeof id === 'number') {
 			return this.getDashboardsV2(null, null, id);
@@ -45,7 +30,7 @@ export class DashboardService extends BaseObservableService {
 		return this.getDashboardsV2(id, null, null);
 	}
 
-	getDashboardsV2(dashboardUid: string = '', location: number = null, id: number = null): Observable<DashboardModel[]> {
+	getDashboardsV2(dashboardUid: string = '', location: number = null, id: number = null, assetTypeUid: string = null): Observable<DashboardModel[]> {
 		var params = {};
 		if (dashboardUid) {
 			params["uid"] = dashboardUid;
@@ -55,6 +40,9 @@ export class DashboardService extends BaseObservableService {
 		}
 		if (id) {
 			params["id"] = id;
+		}
+		if (assetTypeUid) {
+			params["assetTypeUid"] = assetTypeUid;
 		}
 		var qString = '';
 		if (params) {
@@ -112,7 +100,7 @@ export class DashboardService extends BaseObservableService {
 		if (report.uid) {
 			return this
 				.http
-				.put(`api/v2/environment/dashboards/${report.uid}`, form)
+				.put(`api/v2/environment/dashboards`, form)
 				.pipe(
 					map((res: any) => {
 						return res;
@@ -145,6 +133,21 @@ export class DashboardService extends BaseObservableService {
 			.delete(`api/v2/environment/dashboards/${uid}`, httpOptions)
 			.pipe(
 				map(res => <any>res),
+				catchError(err => this.handleError(err))
+			);
+	}
+
+
+	setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
+		var model = { Username: user, Password: password };
+
+		return this
+			.http
+			.put(`api/v2/environment/dashboards/power-bi-credentials`, model)
+			.pipe(
+				map((res: any) => {
+					return res;
+				}),
 				catchError(err => this.handleError(err))
 			);
 	}

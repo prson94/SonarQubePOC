@@ -2125,7 +2125,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> GetDashboards(Guid? uid = null, DashboardLocation? location = null, int? id = null)
+		public async Task<IHttpActionResult> GetDashboards(Guid? uid = null, DashboardLocation? location = null, int? id = null, Guid? assetTypeUid = null)
 		{
 			try
 			{
@@ -2134,7 +2134,7 @@ namespace d360.web.Controllers.V2
 					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
-				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id);
+				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id, assetTypeUid);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
@@ -2249,7 +2249,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>The created dashboard.</returns>
 		[
 			HttpPut,
-			Route("dashboards/{dashboardUid}"),
+			Route("dashboards"),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
@@ -2265,7 +2265,7 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
 
 		]
-		public async Task<IHttpActionResult> PutDashboard(Guid dashboardUid)
+		public async Task<IHttpActionResult> PutDashboard()
 		{
 			try
 			{
@@ -2361,6 +2361,68 @@ namespace d360.web.Controllers.V2
 
 				DashboardRepository.DeleteDashboard(uid);
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = core.resources.Dashboards.DashboardRemoved }));
+			}
+			catch (GenericException ex)
+			{
+				throw ex;
+			}
+			catch
+			{
+				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
+			}
+		}
+
+
+		/// <summary>
+		/// Updates Power BI Credentials.
+		/// </summary>
+		/// <param name="credentials">Power Bi Credentials.</param>
+		/// <returns>A confirmation response.</returns>
+		[
+			HttpPut,
+			Route("dashboards/power-bi-credentials"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, SUCCESS_MESSAGE, typeof(ConfirmResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, DASHBOARD_NOT_FOUND, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Request to update Power Bi credentials is invalid.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> UpdatePowerBiCredentials(PowerBiCredentials credentials)
+		{
+			try
+			{
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+				}
+
+				if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
+				{
+					throw new ArgumentNullException(FormControllerApiMessage.PleaseSpecifyUserNamePassword);
+				}
+
+				var companySettings = SettingsRepository.GetSettings();
+				var groupId = companySettings.First(s => s.ID == Setting.PowerBIGroupId).Value;
+				var clientId = companySettings.First(s => s.ID == Setting.PowerBIClientId).Value;
+
+				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+				{
+					throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+				}
+
+				// if the workspace id is null create a new one and update the companysettings
+				groupId = await checkPowerBIValidWorkspace(groupId, clientId);
+
+				if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(groupId))
+				{
+					throw new ArgumentNullException(FormControllerApiMessage.UnableToFindPowerBISettings);
+				}
+
+				//save password in this workspace for all ds's
+				//await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Power Bi credentials updated" }));
 			}
 			catch (GenericException ex)
 			{

@@ -37,7 +37,11 @@ export class BaseComponent {
     assetTypeID: number;
     objectID: number;
     objectType: string;
-    objectName: string;
+	objectName: string;
+
+	baseAssetTypeUid: string;
+	baseAssetUid: string;
+
     public preloadedTreeData: any[] = [];
     public baseCrumbs: Breadcrumb[] = [];
     public baseTreeNodeArray: any[] = [];
@@ -303,12 +307,20 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
-            if (opts.hasDashboard) {
+			if (opts.hasDashboard) {
+				let url: string = '/dashboard/';
+				if (this.baseAssetUid) {
+					url += `${this.baseAssetTypeUid}/${this.baseAssetUid}`;
+				}
+				else {
+					url += this.baseAssetTypeUid;
+				}
+
                 this.dashboardSidebar = new SecondaryNavItem(
                     $localize`Dashboards`,
                     'dashboards',
                     ['fa-tachometer'],
-                    `/dashboard${this.objectContextUrl()}`, null, 5
+                    url, null, 5
                 );
 
                 this.secondaryNavService.showItem(this.dashboardSidebar);
@@ -825,7 +837,12 @@ export class BaseComponent {
 
         if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined)) {
             return;
-        }
+		}
+
+
+		this.baseAssetUid = data.AssetUid;
+		this.baseAssetTypeUid = data.AssetTypeUid;
+
         if (this.isSidebarLoadedForCurrentObject(data)) {
             this.refreshObjectStats();
             return;
@@ -834,10 +851,9 @@ export class BaseComponent {
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
-            this.uid = r.Uid;
+			this.uid = r.Uid;
             this.objectType = r.Object;
 			this.objectID = r.ObjectID;
-			debugger;
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
 

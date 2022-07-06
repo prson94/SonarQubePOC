@@ -11,9 +11,9 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
 
 @Component({
-    selector: 'd3s-dashboard',
-    templateUrl: './dashboard.component.html',
-    providers: [DashboardService],
+	selector: 'd3s-dashboard',
+	templateUrl: './dashboard.component.html',
+	providers: [DashboardService],
 })
 
 export class DashboardComponent extends BaseComponent implements OnInit, OnDestroy {
@@ -23,108 +23,109 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 	selected: DashboardModel;
 	dashboardName: string;
 	reportID: number | string;
-    showSingle: boolean = false;
-    showError: boolean;
-    private folderTitle: string;
+	assetTypeUid: string;
+	assetUid: string;
+	showSingle: boolean = false;
+	showError: boolean;
+	private folderTitle: string;
 
-    constructor(
-        protected dashboardService: DashboardService,
-        private route: ActivatedRoute,
-        private headerBreadcrumbService: HeaderBreadcrumbService,
-        private titleAndTabsService: TitleAndTabsService,
-        secondaryNavService: SecondaryNavService,
-        private router: Router,
-        breadcrumbService: HeaderBreadcrumbService,
-        protected settingsService: CompanySettingsService
-    ) {
-        super(settingsService);
-        this.secondaryNavService = secondaryNavService;
-        this.breadcrumbsService = breadcrumbService;
-    }
+	constructor(
+		protected dashboardService: DashboardService,
+		private route: ActivatedRoute,
+		private headerBreadcrumbService: HeaderBreadcrumbService,
+		private titleAndTabsService: TitleAndTabsService,
+		secondaryNavService: SecondaryNavService,
+		private router: Router,
+		breadcrumbService: HeaderBreadcrumbService,
+		protected settingsService: CompanySettingsService
+	) {
+		super(settingsService);
+		this.secondaryNavService = secondaryNavService;
+		this.breadcrumbsService = breadcrumbService;
+	}
 
-    ngOnInit() {
-        this.showSingle = false;
-        this.sub = this.route.params.subscribe(params => {
-            this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Dashboards`);
+	ngOnInit() {
+		this.showSingle = false;
+		this.sub = this.route.params.subscribe(params => {
+			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Dashboards`);
+			this.dashboardName = params['name'];
+			this.assetTypeUid = params['assetTypeUid'];
+			this.assetUid = params['assetUid'];
+			console.log(this.assetUid);
+			this.loadAvailableDashboards();
+			if (this.assetUid) {
+				this.buildSecondaryNavigation(this.assetUid, null, null, null, null, this.buildBreadcrumb.bind(this));
+			}
+		});
+	}
 
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
-            this.dashboardName = params['name'];
-            this.reportID = params['reportID'];
-            this.loadAvailableDashboards();
-            if (this.objectType && !this.objectType.endsWith("Type")) {
-                this.buildSecondaryNavigationForObject(this.objectID, this.objectType, this.buildBreadcrumb.bind(this));
-            }
-        });
-    }
 
+	private buildBreadcrumb(clearInfo: boolean) {
 
-    private buildBreadcrumb(clearInfo: boolean) {
+		this.headerBreadcrumbService.clearBreadcrumbs();
 
-        this.headerBreadcrumbService.clearBreadcrumbs();
+		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then(res => {
+			this.folderTitle = res
+			let areaBreadcrumb = new Breadcrumb(
+				this.folderTitle ? this.folderTitle : 'Dashboards',
+				'/dashboard',
+				false
+			);
+			this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
 
-        this.headerBreadcrumbService.getFolderTitle('#Dashboards').then(res => {
-            this.folderTitle = res
-            let areaBreadcrumb = new Breadcrumb(
-                this.folderTitle ? this.folderTitle : 'Dashboards',
-                '/dashboard',
-                false
-            );
-            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-
-            if (this.selected) {
-                let dashboardCrumb = new Breadcrumb(
+			if (this.selected) {
+				let dashboardCrumb = new Breadcrumb(
 					this.selected.Name,
 					SiteUrlHelpers.getObjectUrl("Dashboard", this.selected.uid),
-                    false
-                );
-                this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
-            }
-            if (clearInfo) {
-                this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                    this.clearSidebar();
-                    this.secondaryNavService.setCurrentArea(res, icon, $localize`Dashboards`);
-                    this.secondaryNavService.clearCurrentObject();
-                    this.secondaryNavService.clearButtons();
-                    this.secondaryNavService.showHeader(false);
-                });
-            }
+					false
+				);
+				this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
+			}
+			if (clearInfo) {
+				this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
+					this.clearSidebar();
+					this.secondaryNavService.setCurrentArea(res, icon, $localize`Dashboards`);
+					this.secondaryNavService.clearCurrentObject();
+					this.secondaryNavService.clearButtons();
+					this.secondaryNavService.showHeader(false);
+				});
+			}
 
-        });
-    }
+		});
+	}
 
-    ngOnDestroy() {
-        this.secondaryNavService.resetSecondaryNavActiveItem();
+	ngOnDestroy() {
+		this.secondaryNavService.resetSecondaryNavActiveItem();
 
-        if (this.sub) {
-            this.sub.unsubscribe();
-        }
-    }
+		if (this.sub) {
+			this.sub.unsubscribe();
+		}
+	}
 
 	private loadAvailableDashboards() {
 		this.isLoading = true;
 		if (this.reportID) {
 			this.dashboardService.getDashboardById(this.reportID).subscribe(
-                result => {
-                    if (result) {
-                        this.selected = result[0];
-                        this.showSingle = true;
-                    }
-                    else {
-                        this.showError = true;
-                    }
+				result => {
+					if (result) {
+						this.selected = result[0];
+						this.showSingle = true;
+					}
+					else {
+						this.showError = true;
+					}
 
-                    if (this.showSingle || this.objectType == undefined) {
-                        this.buildBreadcrumb(true);
-                    } else {
-                        this.buildBreadcrumb(false);
-                    }
+					if (this.showSingle || this.objectType == undefined) {
+						this.buildBreadcrumb(true);
+					} else {
+						this.buildBreadcrumb(false);
+					}
 
-                    this.isLoading = false;
-                }
-            );
+					this.isLoading = false;
+				}
+			);
 		} else {
-			this.dashboardService.getDashboardsV2()
+			this.dashboardService.getDashboardsV2(null, 1, null, this.assetTypeUid)
 				.subscribe((res) => {
 					this.dashboards = res;
 					if (this.objectType && this.objectID && this.dashboardName) {
@@ -140,11 +141,11 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
 					this.isLoading = false;
 				});
-        }
-    }
+		}
+	}
 
-    setSelected(dashboard) {
-        this.selected = dashboard;
-        this.buildBreadcrumb(false);
-    }
+	setSelected(dashboard) {
+		this.selected = dashboard;
+		this.buildBreadcrumb(false);
+	}
 }

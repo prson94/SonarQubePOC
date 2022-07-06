@@ -1330,7 +1330,7 @@ namespace d360.web.Controllers
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 				var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.Object == "ArtifactType" && x.ObjectID == typeID)?.ID;
 
-				bool hasDashboards = Company.Filter<Report>(x => x.AssetTypeID == assetTypeId && x.ReportType != DashboardType.Legacy).Any();
+				bool hasDashboards = Company.Filter<Report>(x => x.AssetTypeID == assetTypeId && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List).Any();
 				model.Add("HasDashboards", hasDashboards);
 
 				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";

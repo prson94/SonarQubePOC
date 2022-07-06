@@ -1,6 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import { Report } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';

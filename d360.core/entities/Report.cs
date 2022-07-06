@@ -209,4 +209,12 @@ namespace d360.core.entities
 			}
 		}
 	}
+
+	public class PowerBiCredentials
+	{
+		[DataMember]
+		public string Username { get; set; }
+		[DataMember]
+		public string Password { get; set; }
+	}
 }

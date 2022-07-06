@@ -1,12 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
-
-using d360.core;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.exceptions;
@@ -147,7 +143,7 @@ namespace d360.model.DataAccessLayer
 			return true;
 		}
 
-		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id)
+		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id, Guid? assetTypeUid)
 		{
 			var dbArgs = new DynamicParameters();
 			List<string> whereStatements = new List<string>();
@@ -168,6 +164,12 @@ namespace d360.model.DataAccessLayer
 			{
 				dbArgs.Add("id", id.Value);
 				whereStatements.Add("r.id = @id");
+			}
+
+			if (assetTypeUid.HasValue)
+			{
+				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+				whereStatements.Add("at.uid = @assetTypeUid");
 			}
 
 			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);
