@@ -12,18 +12,31 @@ using Newtonsoft.Json.Linq;
 using d360.core.enums;
 using System.Threading;
 using System.Net;
+using System.Threading.Tasks;
 using d360.core;
+using d360.web.Utilities;
+using Moq;
+
 namespace igx.UnitTests.V2ControllerTests
 {
     [Trait("Unit tests", "Relationship controller")]
     public class RelationshipControllerTest : BaseTest
     {
-
-        internal RelationshipsController relationshipsController;
+	    private readonly TestDependencyResolver DependencyResolver;
+	    private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
+		internal RelationshipsController relationshipsController;
 
         public RelationshipControllerTest()
         {
-            this.relationshipsController = new RelationshipsController(GetCoreComponentSet(), GetQueue(), GetStorage(), GetRelationshipRepository(), GetFieldsRepository(), GetAssetRepository())
+	        RuntimeInfoMock = new Mock<IRuntimeInfo>();
+	        RuntimeInfoMock.Setup(x => x.IsDebuggerAttached).Returns(true);
+	        RuntimeInfoMock.Setup(x => x.IsReleaseBuild).Returns(true);
+
+	        DependencyResolver = new TestDependencyResolver();
+	        DependencyResolver.AddService(RuntimeInfoMock.Object);
+	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
+
+	        this.relationshipsController = new RelationshipsController(GetCoreComponentSet(), GetQueue(), GetStorage(), GetRelationshipRepository(), GetFieldsRepository(), GetAssetRepository())
             {
                 Request = new HttpRequestMessage()
                 {
@@ -202,19 +215,17 @@ namespace igx.UnitTests.V2ControllerTests
         [InlineData(DataConstants.InvalidGUID)]
         [InlineData("adfadfaadf-asdfasdf-asdfadfa")]
         [InlineData("ab129a23-91b3-468d-b318-4ea0d5c5641k")]
-        public async void GetRelationshipsAsyncInvalidPredicateUid(string guid)
+        public async Task GetRelationshipsAsyncInvalidPredicateUid(string guid)
         {
             var qs = new Dictionary<string, string>();
             qs.Add("PredicateUid", guid);
             relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
 
-            var actionResult = relationshipsController.GetRelationshipsAsync();
+            var actionResult = await relationshipsController.GetRelationshipsAsync();
+            var str = await actionResult.Content.ReadAsStringAsync();
 
-            var str = await actionResult.Result.Content.ReadAsStringAsync();
-
-            Assert.True(!actionResult.Result.IsSuccessStatusCode);
-            Assert.True(actionResult.Result.StatusCode == HttpStatusCode.BadRequest);
-
+            Assert.True(!actionResult.IsSuccessStatusCode);
+            Assert.True(actionResult.StatusCode == HttpStatusCode.BadRequest);
         }
 
         [Fact]

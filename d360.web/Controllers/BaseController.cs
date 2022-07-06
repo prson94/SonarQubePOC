@@ -294,7 +294,7 @@ namespace d360.web.Controllers
 		        Detail = message,
 		        Title = title,
 		        Method = Request.Method.ToString(),
-		        Instance = Request.RequestUri.ToString()
+		        Instance = Request.RequestUri?.ToString()
 	        };
 	        if (runtimeInfo.IsReleaseBuild == false || runtimeInfo.IsDebuggerAttached)
 	        {
