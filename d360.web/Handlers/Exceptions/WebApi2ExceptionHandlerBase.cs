@@ -32,7 +32,7 @@ namespace d360.web.Handlers.Exceptions
 		{
 			var exception = context.Exception;
 			var problem = new ProblemDetailsResponse();
-			problem.Type = exception.GetType().FullName;
+			problem.Type = "error";
 			problem.Title = "Error";
 			problem.Method = context.Request.Method.ToString();
 			problem.Instance = context.Request.RequestUri.ToString();
