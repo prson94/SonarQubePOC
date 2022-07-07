@@ -60,66 +60,8 @@ export class PowerBIViewerComponent extends BaseComponent implements OnChanges {
             const reportContainer = document.getElementById("biContainer") as HTMLElement;
 
             const powerbi = new pbi.service.Service(pbi.factories.hpmFactory, pbi.factories.wpmpFactory, pbi.factories.routerFactory);
-            this.report = powerbi.embed(reportContainer, config) as pbi.Report;
-
-            const report = this.report;
-            
-            report.on("loaded", () => {
-                report.getFilters()
-                    .then((filters) => {
-                        let objectIdTable = "";
-                        let objectTable = "";
-                        for (const filter of filters) {
-                            const target = filter.target as pbi.models.IFilterColumnTarget;
-
-                            if (!target) {
-                                continue;
-                            }
-
-                            if (target.column === "ObjectID") {
-                                objectIdTable = target.table;
-                            }
-                            else if (target.column === "Object") {
-                                objectTable = target.table;
-                            }
-                        }
-
-                        this.setPowerBiFilters(report, objectIdTable, objectTable);
-                    });
-            });
-
+            this.report = powerbi.embed(reportContainer, config) as pbi.Report;            
 			this.logAction("open", "Report", this.dashboard.uid);
-        }
-    }
-
-    setPowerBiFilters(report: pbi.Report, objectIdTable: string, objectTable: string) {
-        if (objectTable && objectIdTable) {
-            report.removeFilters();
-
-            const newFilters: pbi.models.IBasicFilter[] = [
-                {
-                    $schema: "http://powerbi.com/product/schema#basic",
-                    target: {
-                        table: objectIdTable,
-                        column: "ObjectID"
-                    },
-                    operator: "In",
-                    values: [this.dashboard.ObjectID],
-                    filterType: 1
-                },
-                {
-                    $schema: "http://powerbi.com/product/schema#basic",
-                    target: {
-                        table: objectTable,
-                        column: "Object"
-                    },
-                    operator: "In",
-                    values: [this.dashboard.ObjectType],
-                    filterType: 1
-                }
-            ];
-
-            report.setFilters(newFilters);
         }
     }
 
