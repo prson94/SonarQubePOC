@@ -220,7 +220,6 @@ namespace d360.model.DataAccessLayer
 
 		private void FilterDashboardsByResponsibilities(bool isTypePage, Asset asset, int assetTypeId, List<DashboardApiGetModel> data)
 		{
-			List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
 			string responsibilityWhereStatement = "";
 			var dbArgs = new DynamicParameters();
 

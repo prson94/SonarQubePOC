@@ -50,16 +50,17 @@ export class DashboardService extends BaseObservableService {
 		var qString = '';
 		if (params) {
 			qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-			if (qString)
+			if (qString) {
 				qString = '?' + qString;
+			}
 		}
 
 		return this
 			.http
 			.get('/api/v2/environment/dashboards' + qString)
 			.pipe(
-				map(response => <DashboardModel[]>response),
-				catchError(err => this.handleError(err))
+				map((response) => <DashboardModel[]>response),
+				catchError((err) => this.handleError(err))
 			);
 	}
 
@@ -73,8 +74,8 @@ export class DashboardService extends BaseObservableService {
 			.http
 			.get(`/api/v2/environment/dashboards/${reportId}/powerbi-tokens`)
 			.pipe(
-				map(response => <DashboardTokens>response),
-				catchError(err => this.handleError(err))
+				map((response) => <DashboardTokens>response),
+				catchError((err) => this.handleError(err))
 			);
 	}
 
@@ -108,7 +109,7 @@ export class DashboardService extends BaseObservableService {
 					map((res: any) => {
 						return res;
 					}),
-					catchError(err => this.handleError(err))
+					catchError((err) => this.handleError(err))
 				);
 		}
 		else {
@@ -119,7 +120,7 @@ export class DashboardService extends BaseObservableService {
 					map((res: any) => {
 						return res;
 					}),
-					catchError(err => this.handleError(err))
+					catchError((err) => this.handleError(err))
 				);
 		}
 	}
@@ -135,8 +136,8 @@ export class DashboardService extends BaseObservableService {
 			.http
 			.delete(`api/v2/environment/dashboards/${uid}`, httpOptions)
 			.pipe(
-				map(res => <any>res),
-				catchError(err => this.handleError(err))
+				map((res) => <any>res),
+				catchError((err) => this.handleError(err))
 			);
 	}
 
@@ -151,7 +152,7 @@ export class DashboardService extends BaseObservableService {
 				map((res: any) => {
 					return res;
 				}),
-				catchError(err => this.handleError(err))
+				catchError((err) => this.handleError(err))
 			);
 	}
 }

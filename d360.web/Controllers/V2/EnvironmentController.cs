@@ -2488,7 +2488,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				//save password in this workspace for all ds's
-				//await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
+				await PowerBI.UpdateConnectionCredentials(pbiUsername, pbiPassword, clientId, groupId, credentials.Username, credentials.Password);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = "Power Bi credentials updated" }));
 			}

@@ -60,7 +60,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
 	private loadDashboards() {
 		this.isLoading = true;
-		this.dashboardService.getDashboardsV2().subscribe(result => {
+		this.dashboardService.getDashboardsV2().subscribe((result) => {
 			this.isLoading = false;
 			this.dashboards = result;
 			this.dashboards.forEach((dashboard) => {
@@ -75,7 +75,9 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 		var index: number = -1;
 		for (var dashboard of this.dashboards) {
 			index++;
-			if (dashboard.uid == uid) return index;
+			if (dashboard.uid === uid) {
+				return index;
+			}
 		}
 	}
 

@@ -109,7 +109,7 @@ export class AdminDashboardsEditor {
 	}
 
 	private isValid(): boolean {
-		if (this.action === $localize`New` && this.editedReport.DashboardType == DashboardType.PowerBi.toString())
+		if (this.action === $localize`New` && this.editedReport.DashboardType === DashboardType.PowerBi.toString())
 			return this.file != null
 		else
 			return true;
