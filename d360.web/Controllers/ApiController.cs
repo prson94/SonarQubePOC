@@ -2987,17 +2987,21 @@ namespace d360.web.Controllers
 							}
 
 							var groupOwners = GetCompanyResources().Where(i => groupOwnerIDs.Contains(i.ID)).ToList();
-							var row = new DetailReadOnlyRowModel
+
+							var row = new DetailReadOnlyRowModel();
+							ReadOnlyField primaryRow = null;
+							ReadOnlyField secondaryRow = null;
+							row.columns = groupOwners.Count();
+
+							if (group.PrimaryOwnerResourceID.HasValue)
 							{
-								columns = 2,
-								FirstColumnFields = new List<ReadOnlyField>
+								primaryRow = new ReadOnlyField
 								{
-									new ReadOnlyField {
-										Name = group.GetName(i => i.PrimaryOwnerResourceID),
-										FieldName = "GroupOwner",
-										FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID),
-										Value = "values",
-										Values = new List<ReadOnlyFieldValue>{
+									Name = group.GetName(i => i.PrimaryOwnerResourceID),
+									FieldName = "GroupOwner",
+									FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID),
+									Value = "values",
+									Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
 												Value= groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName(),
 												TooltipType="Resource",
@@ -3006,21 +3010,19 @@ namespace d360.web.Controllers
 												HideTooltip = true
 											}
 										},
-										DataType = DataType.Lookup.ToString()
-									}
-								}
-							};
+									DataType = DataType.Lookup.ToString()
+								};
+							}
 
 							if (group.SecondaryOwnerResourceID.HasValue)
 							{
-								row.SecondColumnFields = new List<ReadOnlyField>
+								secondaryRow = new ReadOnlyField
 								{
-									new ReadOnlyField {
-										Name = group.GetName(i => i.SecondaryOwnerResourceID),
-										FieldName = "GroupOwner",
-										FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
-										Value = "values",
-										Values = new List<ReadOnlyFieldValue>{
+									Name = group.GetName(i => i.SecondaryOwnerResourceID),
+									FieldName = "GroupOwner",
+									FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
+									Value = "values",
+									Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
 												Value= groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName(),
 												TooltipType="Resource",
@@ -3029,11 +3031,19 @@ namespace d360.web.Controllers
 												HideTooltip = true
 											}
 										},
-										DataType = DataType.Lookup.ToString()
-									}
+									DataType = DataType.Lookup.ToString()
 								};
 							}
 
+							if (row.columns == 1)
+							{
+								row.FirstColumnFields = new List<ReadOnlyField> { primaryRow ?? secondaryRow };
+							}
+							else if(row.columns == 2)
+							{
+								row.FirstColumnFields = new List<ReadOnlyField> { primaryRow };
+								row.SecondColumnFields = new List<ReadOnlyField> { secondaryRow };
+							}
 
 							model.rows.Add(row);
 						}

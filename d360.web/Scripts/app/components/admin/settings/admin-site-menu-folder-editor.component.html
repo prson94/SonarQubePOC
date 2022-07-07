@@ -27,28 +27,26 @@
 					<ig-property-group [igformGroup]="folderForm" title="General" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div inputs>
 							<div class="row">
-								<div class="col s12">
+								<div class="col s12 m5 l3">
 									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0px; margin-bottom: 4px" i18n>Name</label>
 									<input igInput maxlength="250"
 										   [ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
 										   (input)="setRequiredFromNameInput($event)"
 										   name="folderNameInput"
 										   required tabindex="1" type="text" 
-										   [(ngModel)]="folderModel.Title" style="width:30%" />
+										   [(ngModel)]="folderModel.Title" />
 								</div>
 							</div>
-							<div class="row" style="margin-bottom:15px;">
-								<div class="row" style="padding-top:12px">
-									<div class="col s12 m5 l5">
-										<div class="FieldName" i18n>Icon</div>
+							<div class="row" style="margin-bottom: 15px; padding-top: 12px">
+								<div class="col s12 m5 l3">
+									<div class="FieldName" i18n>Icon</div>
+									<div>
 										<div>
-											<div>
-												<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
-												<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
-											</div>
-											<div style="padding-bottom: 10px;">
-												<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" [(categories)]="categories" ngDefaultControl></ig-icon-picker>
-											</div>
+											<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
+											<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
+										</div>
+										<div style="padding-bottom: 10px;">
+											<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" [(categories)]="categories" ngDefaultControl></ig-icon-picker>
 										</div>
 									</div>
 								</div>
@@ -339,7 +337,7 @@
 											</ng-template>
 											<ng-template pTemplate="body" let-item>
 												<tr [pSelectableRow]="item">
-													<td style="max-width: 28px; height: 32px">
+													<td style="max-width: 28px; height: 40px">
 														<p-tableCheckbox [value]="item"></p-tableCheckbox>
 													</td>
 													<td>{{item.Text}}</td>

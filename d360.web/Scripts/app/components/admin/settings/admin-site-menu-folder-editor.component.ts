@@ -43,7 +43,7 @@ import { takeUntil, tap, startWith } from 'rxjs/operators';
 	providers: [DataProfileService, SiteMenuService],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None,
-	styleUrls: ['folder-editor.less']
+	styleUrls: ['admin-site-menu-folder-editor.component.less']
 })
 
 export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit {

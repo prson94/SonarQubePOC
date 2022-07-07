@@ -31,19 +31,6 @@ namespace igx.jobs.assetgraphprocessor
             log.WriteLine(triggerMessage);
             CoreFunction.AITrackEvent(functionName, triggerMessage, new Dictionary<string, string> { { "uid", info.Uid.ToString() } }, info.CompanyID);
 
-            using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(info.CompanyID))
-            {
-                try
-                {
-                    companyConnection.Open();
-                    await companyConnection.ExecuteAsync(@"graph.UpdateAssetEdge @uid", new { uid = info.Uid }, commandTimeout: timeout);
-                }
-                catch (Exception ex)
-                {
-                    CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() { { "uid", info.Uid.ToString() } });
-                }
-            }
-
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
         }

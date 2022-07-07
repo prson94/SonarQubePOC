@@ -50,10 +50,8 @@ namespace d360.web
             public string End { get; set; }
         }
 
-        private readonly Func<IDictionary<string, object>, Task> _next;
-        public IpRestrictionMiddleware(Func<IDictionary<string, object>, Task> next)
+        public IpRestrictionMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
         {
-            _next = next;
         }
 
         public async Task Invoke(IDictionary<string, object> environment)
@@ -121,7 +119,7 @@ namespace d360.web
                 telemetry.TrackException(e, properties);
             }
 
-            await _next.Invoke(environment);
+            await Next(environment);
         }
     }
 }

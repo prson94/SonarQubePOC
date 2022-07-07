@@ -16,7 +16,7 @@ import { FieldType } from '../../models/fieldtype-api.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { StringConstants } from '../../static/string-constants';
 import { SemanticBaseComponent } from './semantics-base.component';
-import { FeatureFlagsService } from '../../services/featureflags.service';
+import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
@@ -51,7 +51,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
     sortField: string;
     sortOrder: number;
     isExportInProgress: boolean = false;
-    theDeleteCallback: Function;
+	isContainsSearchDefault: boolean = false;
+	theDeleteCallback: Function;
     theDisableCallback: Function;
 
     filterFields$: Observable<AdvancedFilterFieldType[]>;
@@ -120,20 +121,6 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             Category: "",
             ValueLoader: this.getFilterValues.bind(this, "source"),
             RemovePopulatedOperator: true
-        },
-        {
-            Name: 'CreatedOn',
-            FriendlyName: $localize`Date Created`,
-            Type: new FieldType("Date"),
-            Category: "",
-            RemovePopulatedOperator: true
-        },
-        {
-            Name: 'UpdatedOn',
-            FriendlyName: $localize`Date Last Modified`,
-            Type: new FieldType("Date"),
-            Category: "",
-            RemovePopulatedOperator: true
         }
     ]
 
@@ -180,7 +167,8 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
         super(headerBreadcrumbService, settingsService, router, featureFlagService, secondaryNavService, webAnalyticsService);
         this.theDeleteCallback = this.deleteSemanticType.bind(this);
         this.theDisableCallback = this.changeSemanticDisabledStatus.bind(this);
-    }
+		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+	}
 
     ngOnInit() {
 
@@ -195,8 +183,9 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
 
     getData(selectedIndex: number = 0, autoSelect: boolean = true) {
         this.isLoading = true;        
-        
-        this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null, this.showDisabled).subscribe((p) => {
+		const simpleFilter = this.isContainsSearchDefault ? `*${this.simpleFilter}*` : this.simpleFilter;
+		
+        this.dataProfileService.getSemanticTypes(this.currentPageNumber, this.rowsPerPage, simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, false, null, this.showDisabled).subscribe((p) => {
             this.semanticTypes = p.items;
             this.semanticsTotal = p.total;
             if (this.semanticTypes && !this.selectedType || !p.items.some((x) => (x.uid === this.selectedType.uid))) {

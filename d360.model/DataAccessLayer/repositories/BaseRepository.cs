@@ -813,7 +813,7 @@ namespace d360.model.DataAccessLayer.repositories
 									}
 									else
 									{
-										fieldsUsedInMainQuery.Add($"F{field.ID}.");
+										fieldsUsedInMainQuery.Add($"F{field.ID}");
 										if (field.Type == "JsonElement")
 										{
 											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
@@ -837,8 +837,11 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else if (field.Type == "Score")
 										{
-											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.[Value] {orderDirection}";
+										}
+										else if (field.Type == "Counter")
+										{
+											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
 										}
 										else
 										{
@@ -872,6 +875,7 @@ namespace d360.model.DataAccessLayer.repositories
 						{
 							if (assetType.Object == "ReferenceItemType" && key == "code")
 							{
+								fieldsUsedInMainQuery.Add("RI.");
 								whereStatements.Add($"RI.[Code] = @code");
 								dbArgs.Add($"@code", q.Value);
 							}
@@ -884,6 +888,7 @@ namespace d360.model.DataAccessLayer.repositories
 									switch (field.Type)
 									{
 										case "JsonElement":
+											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
 											whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
@@ -892,6 +897,7 @@ namespace d360.model.DataAccessLayer.repositories
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
 										default:
+											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
@@ -926,7 +932,7 @@ namespace d360.model.DataAccessLayer.repositories
 						List<string> sortStatements = new List<string>();
 						orderFields.ForEach(ft =>
 						{
-							fieldsUsedInMainQuery.AddRange(ft.Select(x => "F" + x.ID.ToString() + "."));
+							fieldsUsedInMainQuery.AddRange(ft.Select(x => "F" + x.ID.ToString()));
 							if (ft.Count() == 1)
 							{
 								var sortDirection = ft.FirstOrDefault().SortByAscending ? "asc" : "desc";

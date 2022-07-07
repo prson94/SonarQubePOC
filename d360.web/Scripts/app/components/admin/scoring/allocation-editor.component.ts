@@ -74,7 +74,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     }
 
     ngOnChanges(change: SimpleChanges) {
-		this.assetTypeDropdown.writeValue(this.selection.assetTypeUid);
+		this.assetTypeDropdown?.writeValue(this.selection.assetTypeUid);
         this.populateAssetTypesDDL();
         this.updateRanges();
 
@@ -143,9 +143,9 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     }
 
     hasModelChanged() {
-        if (this.originalSelection) {
+		this.selection.assetTypeUid = this.assetTypeDropdown?.value;
+		if (this.originalSelection) {
             this.modelChanged = (JSON.stringify(this.originalSelection, (k, v) => v === undefined || v === null ? "" : v) !== JSON.stringify(this.selection, (k, v) => v === undefined || v === null ? "" : v));
-            this.selection.assetTypeUid = this.assetTypeDropdown.value;
 			if (this.isEdit) {
                 if (this.modelChanged) {
                     this.closeLabel = $localize`Discard Changes`;

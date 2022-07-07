@@ -869,6 +869,7 @@ namespace d360.model.DataAccessLayer
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 					fieldsUsedInMainQuery.AddRange(filteredFields.Select(x => "F" + x));
+					fieldsUsedInMainQuery.AddRange(filterExpressionParser.filteredCustomFields);
 
 					// check if the advanced filter contains a filter by asset path
 					foreach (var fieldTypeId in filteredFields)
@@ -1198,6 +1199,7 @@ namespace d360.model.DataAccessLayer
 
 				if (parentUidPopulated)
 				{
+					fieldsUsedInMainQuery.Add("HParent");
 					if (parentUid.HasValue)
 					{
 						dbArgs.Add("parentUid", parentUid.Value);
@@ -1275,10 +1277,12 @@ namespace d360.model.DataAccessLayer
 			#region Build Base Query
 			bool includeTreeGridQuery = isForTreeGrid && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("lvl."));
 			bool includeColorQuery = includeColor && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("acj."));
-			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent."));
-			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent."));
+			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
+			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			List<string> includedJoins = new List<string>();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
 				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
@@ -1293,7 +1297,9 @@ namespace d360.model.DataAccessLayer
 				includeParentUIDSelect = true;
 				includeParentQuery = includeParent;
 			}
-			var assetCountJoins = new AssetQueryJoins(countJoins);
+			includedJoins = includedJoins.Distinct().ToList();
+
+			var assetCountJoins = new AssetQueryJoins(includedJoins);
 			var filteredSelect = $@"select  A.ID
 				from    Asset A 
 				inner join AssetPath Node on Node.ID = a.ID 
@@ -2392,21 +2398,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -2640,21 +2631,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{

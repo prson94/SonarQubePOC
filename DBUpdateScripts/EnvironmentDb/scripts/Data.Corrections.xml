@@ -1142,32 +1142,6 @@ inner join [workflow].[EventRegistration] ER ON ER.ChangeType = 7 AND ER.TypeID 
     </sql>
   </changeSet>
 
-  <changeSet author="TKlok" id="Data.Corrections.GOV-13242">
-		<sql dbms="mssql" splitStatements="false" stripComments="false">
-<![CDATA[
-BEGIN
-	DECLARE @typeId int
-	DECLARE TypeCursor CURSOR
-	FOR SELECT ID
-	FROM dbo.assettype
-	WHERE class = 15;
-
-	OPEN TypeCursor
-
-	FETCH NEXT FROM TypeCursor INTO @typeId
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		EXEC graph.UpdateGraphTableHierarchyBy null, @typeId, null
-		FETCH NEXT FROM TypeCursor INTO @typeId
-	END
-
-	CLOSE TypeCursor
-	DEALLOCATE TypeCursor
-END
-]]>
-		</sql>
-	</changeSet>
-	
 	<changeSet author="Pappas" id="Data.Corrections.GOV-13496">
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
@@ -1602,22 +1576,73 @@ drop table if exists #tempfieldid;
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-v1">
-  <comment>Copy segment data from graph table to dbo.AssetPath</comment>
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class1-v1.2">
+  <comment>Copy Business Asset segment data from graph table to dbo.AssetPath</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-declare @c int;
-select @c = count(1) from AssetPath
-if (@c = 0)
-begin
-	insert into AssetPath
+merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
+using	(
 		select	G.ID, G.Segments 
 		from	graph.AssetNode G
-				inner join Asset A on A.ID = G.ID
-end
+				inner join Asset A on A.ID = G.ID and G.[Class] = 1
+		) G 
+on		(G.ID = P.ID)
+when	not matched by target then
+insert	(ID, Segments)
+values	(G.ID, G.Segments);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class2-v1.2">
+  <comment>Copy Technical Asset segment data from graph table to dbo.AssetPath</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
+using	(
+		select	G.ID, G.Segments 
+		from	graph.AssetNode G
+				inner join Asset A on A.ID = G.ID and G.[Class] = 8
+		) G 
+on		(G.ID = P.ID)
+when	not matched by target then
+insert	(ID, Segments)
+values	(G.ID, G.Segments);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class_AllOthers-v1.2">
+  <comment>Copy Non-Business and non-Technical segment data from graph table to dbo.AssetPath</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
+using	(
+		select	G.ID, G.Segments 
+		from	graph.AssetNode G
+				inner join Asset A on A.ID = G.ID and G.[Class] not in (1,8)
+		) G 
+on		(G.ID = P.ID)
+when	not matched by target then
+insert	(ID, Segments)
+values	(G.ID, G.Segments);
 		]]>
     </sql>
 	<rollback>
