@@ -133,7 +133,17 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
         this.isLoading = true;
         this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
-            this.items = result.items;
+			this.items = result.items;
+
+			this.items.forEach((asset) => {
+				if (asset.DisplayPath) {
+					let pathSegments = (asset.DisplayPath as string).split('>').map((item) => item.trim());
+					for (let i = 0; i < pathSegments.length; i++) {
+						asset["PATH_SEGMENT_IDX_" + i] = pathSegments[i];
+					}
+				}
+			});
+
             this.totalRecords = result.total;
 
             if (this.items.length > 0) {

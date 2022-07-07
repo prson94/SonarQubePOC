@@ -785,6 +785,10 @@ namespace d360.model.DataAccessLayer.repositories
 												orderBy = $"Parent.DisplayValue {orderDirection}";
 												fieldsUsedInMainQuery.Add("Parent.DisplayValue");
 												break;
+											case string order when order.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_"):
+												var segment_idx = int.Parse(order.ToUpperInvariant().Replace("PATH_SEGMENT_IDX_", "")) + 1;
+												orderBy = $"Node.Segments.value('(/path/segment)[{segment_idx}]', 'nvarchar(800)') {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
+												break;
 											default:
 												orderBy = $"A.ID {orderDirection}";
 												break;
