@@ -132,8 +132,14 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 				}
 			);
 		} else {
-
-			this.dashboardService.getDashboardsV2(null, null, null, this.assetTypeUid, this.assetUid)
+			var location = null;
+			if (this.assetTypeUid) {
+				location = 1;
+			}
+			if (this.assetUid) {
+				location = 2;
+			}
+			this.dashboardService.getDashboardsV2(null, location, null, this.assetTypeUid, this.assetUid)
 				.subscribe((res) => {
 					this.dashboards = res;
 					if (this.objectType && this.objectID && this.dashboardName) {

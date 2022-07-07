@@ -123,6 +123,18 @@
   <data name="DashboardRemoved" xml:space="preserve">
     <value>Dashboard removed</value>
   </data>
+  <data name="ErrorOnCreate" xml:space="preserve">
+    <value>Error adding dashboard</value>
+  </data>
+  <data name="ErrorOnDelete" xml:space="preserve">
+    <value>Error deleting dashboard</value>
+  </data>
+  <data name="ErrorOnGet" xml:space="preserve">
+    <value>Error retrieving dashboard</value>
+  </data>
+  <data name="ErrorOnUpdate" xml:space="preserve">
+    <value>Error updating dashboard</value>
+  </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
     <value>Invalid Location. Valid values are List, Detail or Homepage</value>
   </data>

@@ -104,12 +104,12 @@ namespace d360.model.DataAccessLayer
 
 			if (model.DashboardType == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.InvalidDashboardType);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardType);
 			}
 
 			if (model.Location == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.InvalidDashboardLocation);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardLocation);
 			}
 
 			if (string.IsNullOrEmpty(model.Name))
@@ -119,7 +119,7 @@ namespace d360.model.DataAccessLayer
 
 			if (CompanyContext.Reports.Any(x => x.Name == model.Name && x.uid != model.Uid))
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.NameExists);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.NameExists);
 			}
 		}
 
@@ -127,13 +127,13 @@ namespace d360.model.DataAccessLayer
 		{
 			if (uid == null || uid == Guid.Empty)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.InvalidDashboardUid);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardUid);
 			}
 
 			var dashboard = CompanyContext.Reports.FirstOrDefault(x => x.uid == uid);
 			if (dashboard == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, Dashboards.DashboardNotFound);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
 			}
 
 
@@ -152,6 +152,23 @@ namespace d360.model.DataAccessLayer
 			Asset asset = null;
 			int assetTypeId = 0;
 
+			if (assetTypeUid.HasValue)
+			{
+				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+				assetTypeId = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid.Value).ID;
+				whereStatements.Add("at.uid = @assetTypeUid");
+				isTypePage = true;
+			}
+
+			if (assetUid.HasValue)
+			{
+				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == assetUid);
+				assetTypeId = asset.AssetTypeID;
+				dbArgs.Add("assetTypeId", assetTypeId);
+				whereStatements.Add("at.id = @assetTypeId");
+				isTypePage = false;
+			}
+
 			if (uid.HasValue)
 			{
 				dbArgs.Add("uid", uid);
@@ -168,22 +185,6 @@ namespace d360.model.DataAccessLayer
 			{
 				dbArgs.Add("id", id.Value);
 				whereStatements.Add("r.id = @id");
-			}
-
-			if (assetTypeUid.HasValue)
-			{
-				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
-				whereStatements.Add("at.uid = @assetTypeUid");
-				isTypePage = true;
-			}
-
-			if (assetUid.HasValue)
-			{
-				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == assetUid);
-				assetTypeId = asset.AssetTypeID;
-				dbArgs.Add("assetTypeId", assetTypeId);
-				whereStatements.Add("at.id = @assetTypeId");
-				isTypePage = false;
 			}
 
 			string whereSql = whereStatements.Count == 0 ? "" : " where " + string.Join(" and ", whereStatements);
@@ -209,7 +210,7 @@ namespace d360.model.DataAccessLayer
 				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x => Guid.Parse(x)).ToList();
 			});
 
-			if (!CompanyContext.CurrentResourceIsAdmin)
+			if (assetTypeUid.HasValue || assetUid.HasValue)
 			{
 				FilterDashboardsByResponsibilities(isTypePage, asset, assetTypeId, data);
 			}
@@ -220,27 +221,26 @@ namespace d360.model.DataAccessLayer
 		private void FilterDashboardsByResponsibilities(bool isTypePage, Asset asset, int assetTypeId, List<DashboardApiGetModel> data)
 		{
 			List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
+			string responsibilityWhereStatement = "";
+			var dbArgs = new DynamicParameters();
+
+			dbArgs.Add("assettypeid", assetTypeId);
+			dbArgs.Add("resourceid", CompanyContext.CurrentResourceID);
+			dbArgs.Add("assetid", asset?.ID);
 
 			if (!isTypePage)
 			{
-				currentUserResponsibilityTypeList = CompanyContext.ResponsibilityDetails.Where(x => x.AssetTypeID == assetTypeId && x.ResourceID == CompanyContext.CurrentResourceID).ToList();
-
-				if (asset != null)
-				{
-					currentUserResponsibilityTypeList.AddRange(CompanyContext.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == CompanyContext.CurrentResourceID).ToList());
-				}
+				responsibilityWhereStatement = "(rd.assettypeid = @assettypeid and rd.resourceid = @resourceid and rd.assetid = 0) or (rd.assetid = @assetid and rd.assettypeid = @assettypeid and rd.resourceid = @resourceid)";
 			}
 			else
 			{
-				currentUserResponsibilityTypeList = CompanyContext.ResponsibilityDetails.Where(x => x.AssetTypeID == assetTypeId && x.ResourceID == CompanyContext.CurrentResourceID).ToList();
+				responsibilityWhereStatement = "rd.assettypeid = @assettypeid and rd.resourceid = @resourceid";
 			}
 
-			var currentUserResponsibilityTypeIDList = new List<int>();
+			var responsibilitySQL = @$"select distinct rt.uid from dbo.responsibilitydetail rd
+inner join dbo.ResponsibilityType rt on rt.ID = rd.ResponsibilityTypeID where {responsibilityWhereStatement}";
 
-			if (currentUserResponsibilityTypeList != null && currentUserResponsibilityTypeList.Count() > 0)
-			{
-				currentUserResponsibilityTypeIDList = currentUserResponsibilityTypeList.Select(i => i.ResponsibilityTypeID).ToList();
-			}
+			var currentUserResponsibilityTypeUidList = CompanyContext.Database.Connection.Query<Guid>(responsibilitySQL, dbArgs).ToList();
 
 			//check that the current user has access to the current report
 			for (int i = data.Count - 1; i >= 0; i--)
@@ -253,7 +253,7 @@ namespace d360.model.DataAccessLayer
 
 					foreach (var responsibility in report.Responsibilities)
 					{
-						if (currentUserResponsibilityTypeIDList.Contains(responsibility.ResponsibilityTypeID))
+						if (currentUserResponsibilityTypeUidList.Contains(responsibility))
 						{
 							userHasAccess = true;
 							break;

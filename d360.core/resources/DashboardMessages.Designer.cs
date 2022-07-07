@@ -22,14 +22,14 @@ namespace d360.core.resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Dashboards {
+    public class DashboardMessages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Dashboards() {
+        internal DashboardMessages() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace d360.core.resources {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("d360.core.resources.Dashboards", typeof(Dashboards).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("d360.core.resources.DashboardMessages", typeof(DashboardMessages).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -75,6 +75,42 @@ namespace d360.core.resources {
         public static string DashboardRemoved {
             get {
                 return ResourceManager.GetString("DashboardRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error adding dashboard.
+        /// </summary>
+        public static string ErrorOnCreate {
+            get {
+                return ResourceManager.GetString("ErrorOnCreate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error deleting dashboard.
+        /// </summary>
+        public static string ErrorOnDelete {
+            get {
+                return ResourceManager.GetString("ErrorOnDelete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error retrieving dashboard.
+        /// </summary>
+        public static string ErrorOnGet {
+            get {
+                return ResourceManager.GetString("ErrorOnGet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error updating dashboard.
+        /// </summary>
+        public static string ErrorOnUpdate {
+            get {
+                return ResourceManager.GetString("ErrorOnUpdate", resourceCulture);
             }
         }
         

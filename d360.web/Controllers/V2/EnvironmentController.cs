@@ -2107,28 +2107,72 @@ namespace d360.web.Controllers.V2
 
 		#region Dashboard Endpoints
 		/// <summary>
-		/// Creates a theme.
+		/// Gets a list of dashboards in an environment.
 		/// </summary>
-		/// <remarks>
-		/// 
-		/// </remarks>
-		/// <param name="requestModel">An object containing the properties of the theme you want to create. See the example model for a list of all available properties.</param>
-		/// <returns>The created theme.</returns>
+		/// <returns>A list of dashboards defined in your environment.</returns>
 		[
 			HttpGet,
 			Route("dashboards"),
 			SwaggerConsumes("application/json"),
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
-			SwaggerResponse(HttpStatusCode.Created, "Returns the created theme.", typeof(DashboardApiGetModel)),
+			SwaggerResponse(HttpStatusCode.Created, "Returns a list of dashboards.", typeof(DashboardApiGetModel)),
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the theme is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
+			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerParameter("uid", "Filter by dashboard uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("location", "Filter by dashboard UI location", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("assetTypeUid", "Filter by Asset Type Uid", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("assetUid", "Filter by Asset Uid", DataType = "string", ParameterType = "query", Required = false),
+
 		]
-		public async Task<IHttpActionResult> GetDashboards(Guid? uid = null, DashboardLocation? location = null, int? id = null, Guid? assetTypeUid = null, Guid? assetUid)
+		public async Task<IHttpActionResult> GetDashboards()
 		{
 			try
 			{
+				Guid? uid = null;
+				DashboardLocation? location = null;
+				int? id = null;
+				Guid? assetTypeUid = null;
+				Guid? assetUid = null;
+				var queryParams = Request.GetQueryNameValuePairs();
+
+				if (queryParams != null)
+				{
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "uid"))
+					{
+						Guid _uid;
+						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value, out _uid);
+						uid = _uid;
+					}
+
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "location"))
+					{
+						DashboardLocation _location;
+						Enum.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value, out _location);
+						location = _location;
+					}
+
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assettypeuid"))
+					{
+						Guid _uid;
+						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value, out _uid);
+						assetTypeUid = _uid;
+					}
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid"))
+					{
+						Guid _uid;
+						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value, out _uid);
+						assetUid = _uid;
+					}
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id"))
+					{
+						int _id;
+						int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value, out _id);
+						id = _id;
+					}
+				}
+
 				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id, assetTypeUid, assetUid);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
@@ -2139,7 +2183,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2166,6 +2210,19 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("description", "Description", DataType = "string", ParameterType = "formData", Required = false),
 			SwaggerParameter("location", "Location (List, Detail, Homepage)", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("DashboardType", "Type (DqPlus, PowerBi)", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("definition", @"<pre>
+    ""url"": ""string"",
+	""fileName"": ""string"",
+	""powerBiReportId"": ""string"",
+	""powerBiDatasetId"": ""string"",
+	""parameters"": [
+      {
+        ""name"": ""string"",
+        ""valueToProvide"": ""string""
+
+	  }
+    ]
+  <pre>", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
 
 		]
@@ -2176,7 +2233,7 @@ namespace d360.web.Controllers.V2
 
 				if (!Company.CurrentResourceIsAdmin)
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
 				NameValueCollection data = HttpContext.Current.Request.Form;
@@ -2231,7 +2288,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2241,7 +2298,7 @@ namespace d360.web.Controllers.V2
 		/// <remarks>
 		/// 
 		/// </remarks>
-		/// <param name="requestModel">An object containing the properties of the dashboard you want to create. See the example model for a list of all available properties.</param>
+		/// <param name="requestModel">An object containing the properties of the dashboard you updated. See the example model for a list of all available properties.</param>
 		/// <returns>The created dashboard.</returns>
 		[
 			HttpPut,
@@ -2253,11 +2310,25 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Request to insert the dashboard is invalid, given the reason specified in the error message.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerParameter("uid", "Uid of edited Dashboard", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("name", "Dashboard name", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("assettypeuid", "Asset Type Uid", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("description", "Description", DataType = "string", ParameterType = "formData", Required = false),
 			SwaggerParameter("location", "Location (List, Detail, Homepage)", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("DashboardType", "Type (DqPlus, PowerBi)", DataType = "string", ParameterType = "formData", Required = true),
+			SwaggerParameter("definition", @"<pre>
+    ""url"": ""string"",
+	""fileName"": ""string"",
+	""powerBiReportId"": ""string"",
+	""powerBiDatasetId"": ""string"",
+	""parameters"": [
+      {
+        ""name"": ""string"",
+        ""valueToProvide"": ""string""
+
+	  }
+    ]
+  <pre>", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
 
 		]
@@ -2267,7 +2338,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Company.CurrentResourceIsAdmin)
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
+					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
 				NameValueCollection data = HttpContext.Current.Request.Form;
@@ -2279,7 +2350,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (!Company.Reports.Any(x => x.uid == requestModel.Uid))
 					{
-						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, "Dashboard with uid provided does not exists");
+						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
 					}
 				}
 
@@ -2326,7 +2397,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2353,11 +2424,11 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Company.CurrentResourceIsAdmin)
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
 				DashboardRepository.DeleteDashboard(uid);
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = core.resources.Dashboards.DashboardRemoved }));
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse { message = DashboardMessages.DashboardRemoved }));
 			}
 			catch (GenericException ex)
 			{
@@ -2365,7 +2436,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2391,7 +2462,7 @@ namespace d360.web.Controllers.V2
 			{
 				if (!Company.CurrentResourceIsAdmin)
 				{
-					return errorMessageResponse(HttpStatusCode.Forbidden, ThemeErrors.ErrorOnDelete, ApiMessages.EndpointNotAuthorizedMessage);
+					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnUpdate, ApiMessages.EndpointNotAuthorizedMessage);
 				}
 
 				if (string.IsNullOrEmpty(credentials.Username) || string.IsNullOrEmpty(credentials.Password))
@@ -2427,7 +2498,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, ThemeErrors.ErrorOnDelete, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnUpdate, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 
