@@ -484,7 +484,7 @@ namespace d360.web.Controllers.V2
 					}
 
 					var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken, previousCount: total);
-					if (results.total != null)
+					if (results != null && results.total != null)
 					{
 						Cache.SetItem(countCacheKey, results.total, false, 5);
 					}
