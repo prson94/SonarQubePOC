@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+﻿import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { BaseComponent } from '../../shared/base.component';
@@ -11,8 +11,7 @@ import { Artifacts } from '../../../models/artifacts.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { debounceTime } from 'rxjs/operators';
-import { ObjectStatistics } from '../../../models/object-statistics.model';
-import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { ObjectStatisticChildItem, ObjectStatistics } from '../../../models/object-statistics.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -22,14 +21,13 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class ArtifactItemChildGridComponent extends BaseComponent implements OnChanges {
-    @Input() artifactTypeId: number;
+	@Input() selected: ObjectStatisticChildItem;
     @Input() parentId: number;
     @Input() parentUid: string;
     @Input() showFilter: boolean;
     @Input() assetTypeUid: string;
     @Input() objectTypeUid: string;
     @Input() displayName: string;
-    @Input() assettypename: string;
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -47,7 +45,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     currentPage: number = 1;
     sortField: string;
     sortOrder: SortOrder;
-    filter: string;
+    filter: string = "";
     statistics: ObjectStatistics;
     isLoading: boolean = false;
     subjectUid: string;
@@ -59,9 +57,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     constructor(
         protected router: Router,
         protected gridDefinitionService: GridDefinitionService,
-        protected artifactService: ArtifactService,
         protected assetService: AssetService,
-        protected objectStatisticsService: ObjectStatisticsService,
         protected settingsService: CompanySettingsService,
         private ref: ChangeDetectorRef
     ) {
@@ -69,8 +65,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['artifactTypeId'] && this.artifactTypeId > 0) {
+        if (changes['selected'] && this.selected.TypeID > 0) {
             if (this.artifacts) this.artifacts = undefined;
+			this.useGraph = this.selected.Count > 1000;
             this.getFieldsDefinition();
         }
     }
@@ -85,9 +82,11 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
          */
 
         this.filter = "";
-        for (var key in event.filters) {
-            this.filter = event.filters[key].value;
-            break;
+        for (const key in event.filters) {
+			if (event.filters.hasOwnProperty(key)) {
+				this.filter = event.filters[key].value;
+				break;
+			}
         }
 
         this.sortOrder = event.sortOrder;
@@ -99,11 +98,11 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 
     getData() {
         this.isLoading = true;
-        this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
+        this.assetService.getArtifactType(this.selected.TypeID).subscribe((i) => {
             this.subjectUid = i.uid;
 
             this.assetService.getAssets(i.uid, this.getParams()).pipe(
-                debounceTime(500)).subscribe(res => {
+                debounceTime(500)).subscribe((res) => {
                     this.totalRecords = res.total;
                     this.artifacts = res;
                     if (this.scoreAllocations && this.scoreAllocations.length > 0) {
@@ -112,10 +111,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                                 i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
                             });
                         });
-                    }
-
-                    if (this.totalRecords < 1000) {
-                        this.useGraph = false;
                     }
 
                     this.isLoading = false;
@@ -167,8 +162,8 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 
     getFieldsDefinition() {
         this.isLoading = true;
-        this.gridDefinitionService.getGridDefinition(this.artifactTypeId, "ArtifactType").subscribe(
-            result => {
+        this.gridDefinitionService.getGridDefinition(this.selected.TypeID, "ArtifactType").subscribe(
+			(result) => {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
                 /* remove name we want it to be a cool link with tooltip we know its there! */
                 this.fields = result.Fields;
@@ -216,7 +211,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         return this.totalRecords <= this.maxExportRows;
     }
     export() {
-        var FileName = this.assettypename.charAt(0).toUpperCase() + this.assettypename.substring(1).toLowerCase();
+        const FileName = this.selected.Name.charAt(0).toUpperCase() + this.selected.Name.substring(1).toLowerCase();
         this.isLoading = true;
         this.assetService
             .downloadAssetsExcel(
