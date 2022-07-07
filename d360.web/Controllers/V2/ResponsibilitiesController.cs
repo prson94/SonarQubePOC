@@ -132,46 +132,29 @@ namespace d360.web.Controllers.V2
             }
         }
 
+		/// <summary>
+		/// Get a list of all claims that are available for assignment.
+		/// </summary>
+		/// <returns>Returns a list of claims for assignment</returns>
+		[
+			HttpGet,
+			Route("claims"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of claims for assignment.", typeof(ICollection<ClaimsViewModel>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<IHttpActionResult> GetClaimsAsync()
+		{
+			var claims = await ResponsibilityRepository.GetClaimsAsync();
+			return Ok(claims);
+		}
 
-        /// <summary>
-        /// Get a list of all claims that are available for assignment.
-        /// </summary>
-        /// <returns>Returns a list of claims for assignment</returns>
-        [
-            HttpGet,
-            Route("claims"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of claims for assignment.", typeof(List<ClaimsViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
-        ]
-        public async Task<HttpResponseMessage> GetClaimsAsync()
-        {
-            var prefix = "Responsibilities.GetClaimsAsync => ";
-            string errorMessage;
-
-            try
-            {
-                var claims = await ResponsibilityRepository.GetClaims();
-
-                return Request.CreateResponse(HttpStatusCode.OK, claims);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
-
-        /// <summary>
-        /// Retrieves a list of responsibility types that are applicable for the specified AssetTypeUid.
-        /// </summary>
-        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <returns>Returns a list of responsibility types.</returns>
-        [
+		/// <summary>
+		/// Retrieves a list of responsibility types that are applicable for the specified AssetTypeUid.
+		/// </summary>
+		/// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+		/// <returns>Returns a list of responsibility types.</returns>
+		[
             HttpGet,
             Route("types/{assetTypeUid:guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
