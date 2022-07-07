@@ -46,33 +46,52 @@ END
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'SubjectAssetID')
 begin
-	alter table [dbo].[Intersect] add SubjectAssetID bigint null;
-	alter table [dbo].[Intersect] add constraint DF_Intersect_SubjectAssetID default(0) FOR SubjectAssetID;
-	alter table [dbo].[Intersect] alter column SubjectAssetID bigint not null;
+	alter table [dbo].[Intersect] add SubjectAssetID bigint null
 end
+
+if not exists (select * from [sys].[default_constraints] where name = 'DF_Intersect_SubjectAssetID')
+begin
+	alter table [dbo].[Intersect] add constraint DF_Intersect_SubjectAssetID default(0) FOR SubjectAssetID
+end
+
+alter table [dbo].[Intersect] alter column SubjectAssetID bigint not null;
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'SubjectAssetTypeID')
 begin
-	alter table [dbo].[Intersect] add SubjectAssetTypeID int null;
-	alter table [dbo].[Intersect] add constraint DF_Intersect_SubjectAssetTypeID default(0) FOR SubjectAssetTypeID;
-	alter table [dbo].[Intersect] alter column SubjectAssetTypeID int not null;
+	alter table [dbo].[Intersect] add SubjectAssetTypeID int null
 end
+
+if not exists (select * from [sys].[default_constraints] where name = 'DF_Intersect_SubjectAssetTypeID')
+begin
+	alter table [dbo].[Intersect] add constraint DF_Intersect_SubjectAssetTypeID default(0) FOR SubjectAssetTypeID
+end
+
+alter table [dbo].[Intersect] alter column SubjectAssetTypeID int not null;
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'ObjectAssetID')
 begin
-	alter table [dbo].[Intersect] add ObjectAssetID bigint null;
-	alter table [dbo].[Intersect] add constraint DF_Intersect_ObjectAssetID default(0) FOR ObjectAssetID;
-	alter table [dbo].[Intersect] alter column ObjectAssetID bigint not null;
+	alter table [dbo].[Intersect] add ObjectAssetID bigint null
 end
+
+if not exists (select * from [sys].[default_constraints] where name = 'DF_Intersect_ObjectAssetID')
+begin
+	alter table [dbo].[Intersect] add constraint DF_Intersect_ObjectAssetID default(0) FOR ObjectAssetID
+end
+
+alter table [dbo].[Intersect] alter column ObjectAssetID bigint not null;
 
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Intersect' and COLUMN_NAME = 'ObjectAssetTypeID')
 begin
-	alter table [dbo].[Intersect] add ObjectAssetTypeID int null;
-	alter table [dbo].[Intersect] add constraint DF_Intersect_ObjectAssetTypeID default(0) FOR ObjectAssetTypeID;
-	alter table [dbo].[Intersect] alter column ObjectAssetTypeID int not null;
+	alter table [dbo].[Intersect] add ObjectAssetTypeID int null
 end
 
-		]]>
+if not exists (select * from [sys].[default_constraints] where name = 'DF_Intersect_ObjectAssetTypeID')
+begin
+	alter table [dbo].[Intersect] add constraint DF_Intersect_ObjectAssetTypeID default(0) FOR ObjectAssetTypeID
+end
+
+alter table [dbo].[Intersect] alter column ObjectAssetTypeID int not null;
+]]>
     </sql>
 	<rollback>
 		<![CDATA[	
