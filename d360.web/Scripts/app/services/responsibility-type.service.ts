@@ -149,14 +149,6 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getRelationsByObjectType(type: string, id: number): Observable<ResponsibilityTypeRelation[]> {
-        return this.http.get(`api/ownership/${type}/${id}/responsibilitytypes`)
-            .pipe(
-                map((response) => <ResponsibilityTypeRelation[]>response),
-                catchError((err) => this.handleError(err))
-            );
-    }
-
     getRelationsByResponsibilityType(id: number): Observable<ResponsibilityTypeRelation[]> {
         return this.http.get(`api/ownership/types/${id}/relations`)
             .pipe(

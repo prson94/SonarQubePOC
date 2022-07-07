@@ -647,7 +647,14 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
-        public IMetricsRepository GetMetricsRepository()
+		public IDashboardRepository GetDashboardRepository()
+		{
+			var mockRepo = new Mock<IDashboardRepository>();
+
+			return mockRepo.Object;
+		}
+
+		public IMetricsRepository GetMetricsRepository()
         {
             var mock = new Mock<IMetricsRepository>();
             mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetEditModel>()))
