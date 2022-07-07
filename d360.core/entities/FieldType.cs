@@ -1167,9 +1167,28 @@ namespace d360.core.entities
 
         [DataMember]
         public List<FieldTypeApiEditModel> Fields { get; set; }
-    }
 
-    public class FieldTypeApiDeleteModel
+		public FieldTypesApiEditModel()
+		{
+		}
+
+		public FieldTypesApiEditModel(FieldTypesApiUpdateModel model) 
+		{
+			Action = FieldTypesApiEditAction.Merge;
+			Fields = model.Fields;
+			ActionTypeUid = model.ActionTypeUid;
+			AssetTypeUid = model.AssetTypeUid;
+			RelationshipTypeUid = model.RelationshipTypeUid;
+		}
+	}
+
+	public class FieldTypesApiUpdateModel : BaseFieldTypesApiModel
+	{
+		[DataMember]
+		public List<FieldTypeApiEditModel> Fields { get; set; }
+	}
+
+	public class FieldTypeApiDeleteModel
     {
         [DataMember]
         public string Name { get; set; }

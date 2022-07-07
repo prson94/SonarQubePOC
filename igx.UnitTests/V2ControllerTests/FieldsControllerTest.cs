@@ -110,5 +110,25 @@ namespace igx.UnitTests
             Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid, "Invalid Uid returned!");
             Assert.True(bool.Parse(data.GetValue("Success").ToString()), "Invalid Success returned!");
         }
-    }
+
+		[Fact]
+		public async void PatchFields()
+		{
+			FieldTypesApiUpdateModel model = new FieldTypesApiUpdateModel();
+			model.Fields = new List<FieldTypeApiEditModel>();
+			model.AssetTypeUid = Guid.Parse(DataConstants.ValidGUID);
+			var results = await fieldsController.PatchFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
+			var content = await results.Content.ReadAsStringAsync();
+
+			var data = JsonConvert.DeserializeObject<JObject>(content);
+
+			Assert.True(results.IsSuccessStatusCode, XMsg.BadResponseCode);
+			Assert.True(data != null, XMsg.InvalidJSON);
+			Assert.True(data.GetValue("Uid") != null, "Uid field missing from response");
+			Assert.True(data.GetValue("Success") != null, "Success field missing from response");
+			Assert.True(data.GetValue("Message") != null, "Message field missing from response");
+			Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid, "Invalid Uid returned!");
+			Assert.True(bool.Parse(data.GetValue("Success").ToString()), "Invalid Success returned!");
+		}
+	}
 }
