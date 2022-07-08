@@ -30,6 +30,7 @@ import { SemanticType } from '../../models/semantic-type.model';
 import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-category.service';
 import { AppConstants } from '../../static/constants';
 import { takeUntil } from 'rxjs/operators';
+import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
 
 declare var CurrentResourceID;
 
@@ -272,6 +273,25 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         }
     }
 
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') return true;
+			element = element.parentElement;
+		}
+		return false;
+	}
+
     get panelApplies(): boolean {
         if (this.selected == null || this.selected.data == null || this.sidePanelTab === 'detail') {
             return true;
@@ -286,9 +306,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         let key = event.value.toLowerCase();
 
         if (key === $localize`Open`.toLowerCase()) {
-            this.showHierarchy(item.data);
+            this.showHierarchy(event, item.data);
         } else if (key === $localize`Open in New Tab`.toLowerCase()) {
-            this.showHierarchy(item.data, true);
+            this.showHierarchy(event, item.data, true);
         } else if (key === $localize`Edit`.toLowerCase()) {
             this.selectAsset(item);
             this.showEditor = true;
@@ -613,15 +633,29 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             return 'good';
     }
 
-    private showHierarchy(asset, newTab: boolean = false) {
+	showHierarchy($event, asset, newTab: boolean = false) {
         this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
             .subscribe((res) => {
                 let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
-                if (newTab) {
-                    window.open(url, '_blank');
-                } else {
-                    this.router.navigateByUrl(url);
-                }
+				if ($event['from-context-method']) {
+					this.linkClickInterceptor.sendEvent($event, {
+						Values: [{
+							TooltipContext: "Preview",
+							TooltipID: res.ObjectId,
+							TooltipType: "Artifact",
+							Value: asset.Name,
+							assetTypeUid: asset.AssetTypeUid,
+							uid: asset.AssetUid,
+						}],
+						DataType: 'Lookup'
+					}, url);
+				} else {
+					if (newTab) {
+						window.open(url, '_blank');
+					} else {
+						this.router.navigateByUrl(url);
+					}
+				}
             });
     }
 
