@@ -238,7 +238,7 @@ namespace d360.model.DataAccessLayer
 		}
 
 		//UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
-		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null)
+		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null)
 		{
 			if (cancellationToken == null)
 			{
@@ -1330,6 +1330,11 @@ namespace d360.model.DataAccessLayer
 
 			var countSQL = $@"{(includeTotal ? $"select count(1) from ({filteredSelect}) as sub_query" : "")}";
 
+			if (previousCount.HasValue) 
+			{
+				countSQL = "";
+			}
+
 			var pagingQuery = $" and TempA.ID Between {RecordStart} and {RecordEnd}";
 			if (!includeTotal)
 			{
@@ -1392,11 +1397,23 @@ namespace d360.model.DataAccessLayer
 
 			bool hasOwnershipData = !string.IsNullOrEmpty(selectOwnershipSQL);
 
+			if (previousCount.HasValue)
+			{
+				includeTotal = false;
+			}
+
 			var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
-			if (includeTotal)
+			if (previousCount.HasValue)
 			{
-				model.total = assetsResult.total;
+				model.total = previousCount.Value;
+			}
+			else
+			{
+				if (includeTotal)
+				{
+					model.total = assetsResult.total;
+				}
 			}
 			var results = assetsResult.items.ToList();
 

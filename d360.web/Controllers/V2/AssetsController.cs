@@ -56,7 +56,8 @@ namespace d360.web.Controllers.V2
 	public class AssetsController : BaseV2ApiController
 	{
 		#region DI
-
+		
+		private readonly ICachingProvider Cache;
 		private readonly IQueueSource QueueSource;
 		private readonly IStorageProvider Storage;
 		private readonly ITagRepository tagRepository;
@@ -68,6 +69,7 @@ namespace d360.web.Controllers.V2
 		private IAssetTypeRepository AssetTypeRepository { get; }
 
 		public AssetsController(
+			ICachingProvider cache,
 			ICoreComponentSet set,
 			IStorageProvider storage,
 			IQueueSource queueSource,
@@ -78,6 +80,7 @@ namespace d360.web.Controllers.V2
 			IAssetTypeRepository assetTypeRepository
 		) : base(set)
 		{
+			Cache = cache;
 			QueueSource = queueSource;
 			Storage = storage;
 			AssetTypeRepository = assetTypeRepository;
@@ -183,6 +186,25 @@ namespace d360.web.Controllers.V2
 
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}
+		}
+
+		string calculateCacheKeyForGetAssetsTotal(int assetTypeId, IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			var clonedList = queryParams.CloneThis().ToList();
+			clonedList.RemoveAll(kvp => kvp.Key.In(
+				"_loadPermissionDetails", "_includeParent", "_onlyListableFields", "_includeTotal", 
+				"_includeFields", "_includeColor", "_exporttemplateuid", "_includeCreatedModifiedBy", "_listColorsAsJSON",
+				"_includeOwnershipLookup", "_includeProfilingCheck", "useTypeLevelDefaultSorts", "_pageSize", "_pageNum"
+				));
+			clonedList = clonedList.OrderBy(kvp => kvp.Key).ToList();
+
+			var queryStringToHash = string.Join("|", clonedList.Select(kvp => kvp.Value));
+			if (string.IsNullOrEmpty(queryStringToHash))
+			{
+				queryStringToHash = "-";
+			}
+			queryStringToHash = queryStringToHash.GetD3sHashString();
+			return $"{Company.CurrentCompanyID}_{assetTypeId}_{queryStringToHash}";
 		}
 
 		/// <summary>
@@ -443,7 +465,30 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken);
+					var countCacheKey = calculateCacheKeyForGetAssetsTotal(assetType.ID, queryParams);
+					int? total = null;
+					int pageNum = 1;
+					if (queryParams.Any(k => k.Key == "_pageNum"))
+					{
+						if (int.TryParse(queryParams.First(k => k.Key == "_pageNum").Value, out pageNum))
+						{ 
+						
+						}
+					}
+					if (pageNum > 1) {
+						total = Cache.GetItem<int?>(countCacheKey); 
+						if (total.HasValue && total < 1000) 
+						{
+							total = null;
+						}
+					}
+
+					var results = await AssetRepository.GetAssets(assetType, queryParams, cancellationToken: cancellationToken, previousCount: total);
+					if (results != null && results.total != null)
+					{
+						Cache.SetItem(countCacheKey, results.total, false, 5);
+					}
+
 					response = Request.CreateResponse(HttpStatusCode.OK, results);
 				}
 
