@@ -1,5 +1,5 @@
 ﻿export class WebAnalyticsActivity {
     Activity: string;
-    ObjectId: number;    
+    ObjectId: number | string;    
     ObjectName: string;
 }

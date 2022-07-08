@@ -1281,6 +1281,8 @@ namespace d360.model.DataAccessLayer
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			List<string> includedJoins = new List<string>();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
 				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
@@ -2396,21 +2398,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -2644,21 +2631,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{

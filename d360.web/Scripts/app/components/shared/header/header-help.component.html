@@ -28,7 +28,7 @@
 
                     <ul>
                         <li><b i18n>Build Version:</b> {{environment.version}}</li>
-                        <li><b i18n>Build Date:</b> {{environment.timeStamp | date:'short'}}</li>
+                        <li><b i18n>Build Date:</b>&nbsp;<span *ngIf="environment.timeStamp !== $any('{BUILD_TIMESTAMP}')">{{environment.timeStamp | date:'short'}}</span></li>
                         <li><b i18n>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
                         <li><a class="thirdPartyLicence" (click)="showThirdparty()" i18n>Third Party Licenses</a></li>
                         <li><b i18n>Usage information:</b> <br /></li>
@@ -41,7 +41,7 @@
                         <d3s-loading [isLoading]="isLoading"></d3s-loading>
                     </ul>
                     <br />
-                    <p i18n>Copyright 2014, {{environment.timeStamp | date:'yyyy'}} Precisely.</p>
+                    <p i18n>Copyright 2014, <span *ngIf="environment.timeStamp !== $any('{BUILD_TIMESTAMP}')">{{environment.timeStamp | date:'yyyy'}}</span> Precisely.</p>
                 </div>
             </div>
         </div>

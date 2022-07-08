@@ -634,7 +634,6 @@
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
     <Compile Include="Controllers\Forms\FormController_Organization.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
-    <Compile Include="Controllers\Forms\FormController_Report.cs" />
     <Compile Include="Controllers\Forms\FormController_Resource.cs" />
     <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
     <Compile Include="Controllers\Forms\FormController_Survey.cs" />
@@ -678,7 +677,6 @@
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Forms\FormController.cs" />
     <Compile Include="Controllers\DiagramsController.cs" />
-    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MonitorController.cs">
@@ -766,6 +764,7 @@
     <Compile Include="Services\Exceptions\UnrecoverableBusinessLayerException.cs" />
     <Compile Include="Utilities\ApplicationUriProvider.cs" />
     <Compile Include="Utilities\Condition.cs" />
+    <Compile Include="Utilities\ExceptionFactory.cs" />
     <Compile Include="Utilities\IApplicationUriProvider.cs" />
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
     <Compile Include="Utilities\IRequestValidator.cs" />
@@ -897,6 +896,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\DataProfileAPIMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

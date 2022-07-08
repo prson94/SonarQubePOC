@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
+using d360.web.Utilities;
+using Moq;
 using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
@@ -14,10 +16,20 @@ namespace igx.UnitTests.V2ControllerTests
     public class WorkflowControllerTest : BaseTest
     {
         internal WorkflowController workflowController;
+        private readonly TestDependencyResolver DependencyResolver;
+        private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
-        public WorkflowControllerTest()
+		public WorkflowControllerTest()
         {
-            this.workflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
+	        RuntimeInfoMock = new Mock<IRuntimeInfo>();
+	        RuntimeInfoMock.Setup(x => x.IsDebuggerAttached).Returns(true);
+	        RuntimeInfoMock.Setup(x => x.IsReleaseBuild).Returns(true);
+
+	        DependencyResolver = new TestDependencyResolver();
+	        DependencyResolver.AddService(RuntimeInfoMock.Object);
+	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
+
+	        this.workflowController = new WorkflowController(GetCoreComponentSet(), GetWorkflowRepository(), GetWorkflowApiModelValidator())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

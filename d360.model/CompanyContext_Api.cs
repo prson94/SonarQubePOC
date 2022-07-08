@@ -369,7 +369,7 @@ namespace d360.model
 								select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
 								into #tempreqfield
 								from api.ExecutionAsset A
-								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1
+								inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1 and FT.DefaultValue is null
 								left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
 								left join {ApiExecutionFieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
 								where A.executionid = @executionID 
@@ -621,7 +621,7 @@ namespace d360.model
 							update V
 							set isfound = 4
 							from #tempdata V
-							inner join AssetType att on att.[Subject] = V.[Subject] AND V.SubjectID = 0 and {assetrefJoin}
+							inner join AssetType att on att.[Object] = V.[Subject] AND V.SubjectID = 0 and {assetrefJoin}
 							where isfound = 0;
 						end;
 
@@ -13407,14 +13407,14 @@ EG.GroupUid
                             row["ExecutionItemUid"] = DBNull.Value;
                         }
                         row["AssetUid"] = item.AssetUid;
-                        row["StartDate"] = item.StartDate.Date;
+                        row["StartDate"] = item.StartDate;
 
                         if (item.StartDate == DateTime.MinValue)
                         {
                             errorMessages.Add("Startdate is a required field");
                         }
 
-                        row["EndDate"] = item.EndDate.Date;
+                        row["EndDate"] = item.EndDate;
 
                         if (item.EndDate == DateTime.MinValue)
                         {
@@ -13538,24 +13538,24 @@ EG.GroupUid
 								create table #child (
 									itemnumber int,
 									assetID bigint,
-									startDate date,
-									endDate date
+									startDate datetime,
+									endDate datetime
 								)
 
 								drop table if exists #parent
 								create table #parent (
 									itemnumber int,
 									assetID bigint,
-									startDate date,
-									endDate date
+									startDate datetime,
+									endDate datetime
 								)
 
 								drop table if exists #deleteAssetDataProfile
 								create table #deleteAssetDataProfile (
 									itemnumber int,
 									assetID bigint,
-									startDate date,
-									endDate date
+									startDate datetime,
+									endDate datetime
 								)
 
 								insert into #parent

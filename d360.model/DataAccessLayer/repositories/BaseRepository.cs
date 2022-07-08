@@ -785,6 +785,10 @@ namespace d360.model.DataAccessLayer.repositories
 												orderBy = $"Parent.DisplayValue {orderDirection}";
 												fieldsUsedInMainQuery.Add("Parent.DisplayValue");
 												break;
+											case string order when order.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_"):
+												var segment_idx = int.Parse(order.ToUpperInvariant().Replace("PATH_SEGMENT_IDX_", "")) + 1;
+												orderBy = $"Node.Segments.value('(/path/segment)[{segment_idx}]', 'nvarchar(800)') {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
+												break;
 											default:
 												orderBy = $"A.ID {orderDirection}";
 												break;
@@ -813,7 +817,7 @@ namespace d360.model.DataAccessLayer.repositories
 									}
 									else
 									{
-										fieldsUsedInMainQuery.Add($"F{field.ID}.");
+										fieldsUsedInMainQuery.Add($"F{field.ID}");
 										if (field.Type == "JsonElement")
 										{
 											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
@@ -837,12 +841,10 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else if (field.Type == "Score")
 										{
-											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.[Value] {orderDirection}";
 										}
 										else if (field.Type == "Counter")
 										{
-											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
 										}
 										else
@@ -877,6 +879,7 @@ namespace d360.model.DataAccessLayer.repositories
 						{
 							if (assetType.Object == "ReferenceItemType" && key == "code")
 							{
+								fieldsUsedInMainQuery.Add("RI.");
 								whereStatements.Add($"RI.[Code] = @code");
 								dbArgs.Add($"@code", q.Value);
 							}
@@ -889,6 +892,7 @@ namespace d360.model.DataAccessLayer.repositories
 									switch (field.Type)
 									{
 										case "JsonElement":
+											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
 											whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
@@ -897,6 +901,7 @@ namespace d360.model.DataAccessLayer.repositories
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
 										default:
+											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;

@@ -1,6 +1,6 @@
 ﻿<div class="content">
 	<div class="info-block ng-star-inserted">
-		<i class="fa fa-info-circle"></i>
+		<i class="fa fa-info-circle" style="margin-left: 8px; margin-right: 8px;"></i>
 		<span class="text-value">
 			<ng-container i18n>Users will only see asset types when they have appropriate permissions.</ng-container>  <a href="{{addAssetTypeHelpLink}}" target="_blank" i18n> Learn more</a>
 		</span>
@@ -38,7 +38,7 @@
 						 let-item>
 				<tr [pSelectableRow]="item">
 					<td class="rel-name">
-						<p-tableRadioButton [pSelectableRow]="item" [value]="item"></p-tableRadioButton>
+						<p-tableRadioButton [pSelectableRow]="item" [value]="item" style="margin-right: 4px;"></p-tableRadioButton>
 
 						<span class="rel-text">
 							{{item.title}}

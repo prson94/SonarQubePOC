@@ -356,7 +356,9 @@ namespace d360.core.validators
 				}
 			}
 
-			return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLowerInvariant());
+			bool isOrderByPathSegment = fieldName.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_");
+
+			return isOrderByPathSegment || doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLowerInvariant());
 		}
 
 		public bool IsValidOrderDirectionGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)

@@ -354,7 +354,7 @@ namespace d360.model.DataAccessLayer
 				{
 					case "globalsearch":
 						dbArgs.Add("global", $"%{qitem.Value.ToLower()}%");
-						whereClauses.Add("Path.Diagram like @global");
+						whereClauses.Add("an.DisplayPath like @global");
 						whereClauses.Add("Type.AssetTypeName like @global");
 						whereClauses.Add("STR(Count) like @global");
 
@@ -365,7 +365,7 @@ namespace d360.model.DataAccessLayer
 						if (!string.IsNullOrEmpty(qitem.Value))
 						{
 							dbArgs.Add("diagram", $"%{qitem.Value.ToLower()}%");
-							whereClauses.Add("Path.Diagram like @diagram");
+							whereClauses.Add("an.DisplayPath like @diagram");
 						}
 
 						break;
@@ -387,7 +387,7 @@ namespace d360.model.DataAccessLayer
 					case "sortby":
 						if (qitem.Value.ToLower() == "diagram")
 						{
-							sortField = "Path.Diagram";
+							sortField = "an.DisplayPath";
 						}
 
 						if (qitem.Value.ToLower() == "assettypename")
@@ -428,29 +428,27 @@ namespace d360.model.DataAccessLayer
 								select DiagramAssetUid, count(*) as count from dbo.processexpandeddata ped
 								where ped.labeluid = @labelUid
 								group by ped.DiagramAssetUid)
-								select
-								Path.Diagram,
-								Count as Occurrences,
-								u.diagramassetuid as AssetUid,
-								an.ID as AssetId,
-								'asset/' + lower(cast(an.uid as nvarchar(36))) as url,
-								Type.AssetTypeName,
-								a.Object,
-								a.ObjectID
-								from usage u
-								inner join graph.assetnode an on an.uid = u.diagramassetuid
-								inner join asset a on a.uid = an.uid
-								inner join assettype ast on a.assettypeid = ast.id
-								cross apply (select graph.GetPath(an.Segments, ' > ', ' / ') as Diagram)Path
+								select	an.DisplayPath as Diagram,
+										Count as Occurrences,
+										u.diagramassetuid as AssetUid,
+										a.ID as AssetId,
+										'asset/' + lower(cast(an.uid as nvarchar(36))) as url,
+										Type.AssetTypeName,
+										a.Object,
+										a.ObjectID
+								from	usage u
+										inner join asset a on a.uid = u.diagramassetuid
+										inner join AssetPath an on an.ID = a.ID
+										inner join assettype ast on a.assettypeid = ast.id
 								cross apply (
 									select 
-										CASE 
-											WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()}' + ' > ' +  AST.Name
-											WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()}'+  ' > ' + AST.Name
-											WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'+  ' > ' + AST.Name
-											WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()}'+  ' > ' + AST.Name
-											WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()}'+  ' > ' + AST.Name
-											ELSE ''+ AST.Name
+										CASE AST.[Class]
+											WHEN 2 THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()}' + ' > ' +  AST.Name
+											WHEN 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 6 THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()}'+  ' > ' + AST.Name
+											WHEN 7 THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()}'+  ' > ' + AST.Name
+											ELSE '' + AST.Name
 									   END AS AssetTypeName)Type
 								{whereClause}
 								{sortClause}";

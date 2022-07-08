@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Messages {
@@ -57,6 +57,24 @@ namespace d360.core.resources {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type Class invalid. Allowed classes are {0}.
+        /// </summary>
+        public static string AssetTypeInvalidClass {
+            get {
+                return ResourceManager.GetString("AssetTypeInvalidClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type with Uid {0} not found.
+        /// </summary>
+        public static string AssetTypeNotFound {
+            get {
+                return ResourceManager.GetString("AssetTypeNotFound", resourceCulture);
             }
         }
         
