@@ -8,6 +8,10 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { LazyLoadEvent } from 'primeng/api';
+import { SortOrder } from '../../../models/enums.model';
+import { V2ApiFilters } from '../../../models/asset-search.model';
+import { AdvancedFiltersHelper } from '../../../static/advanced-filter-helpers';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -18,10 +22,26 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Surveys</ng-container>
                             <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <span *ngIf="!isLoading && !showDelete && !showEditor">
+                            <span *ngIf="!showDelete && !showEditor">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="surveys" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ValidForDays']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                                <p-table #dt 
+                                    [value]="surveys" 
+                                    selectionMode="single"
+                                    [metaKeySelection]="true" 
+                                    [globalFilterFields]="['Name','ValidForDays']" 
+                                    [sortField]="sortField" 
+                                    [sortOrder]="sortOrder" 
+                                    [pageLinks]="3" 
+                                    [paginator]="true" 
+                                    [rows]="rowsPerPage"
+                                    [(selection)]="selected"
+                                    [first]="0"
+                                    [lazy]="true"
+                                    (onLazyLoad)="loadSurveyTypesLazy($event)"
+                                    [totalRecords]="totalRecords"
+                                    [loading]="isLoading"
+                                    [loadingIcon]="'fa fa-spinner fa-spin'"
+                                    >                                  
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'" style="width: 25%">
@@ -92,6 +112,14 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     surveys: SurveyTypeV2[] = [];
     selected: SurveyTypeV2;
 
+    pageNum = 0;
+    rowsPerPage = 10;
+    sortOrder: number = 1;
+    sortField: string = 'Name';
+    simpleTextFilter: string = '';
+    filters: LazyLoadEvent['filters'] = {};
+    totalRecords: number;
+
     error: any;
 
     showDelete: boolean = false;
@@ -122,12 +150,62 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     getTemplates() {
         this.isLoading = true;
         this.surveysService
-            .getSurveyTypes({ pageNum: 1, pageSize: 100000 })
+            .getSurveyTypes(this.getSurveyTypesParams())
             .subscribe(res => {
+                this.totalRecords = res.total;
                 this.surveys = res.items.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
             }, err => { this.error = err })
+    }
+    
+    getSurveyTypesParams() {
+        const params = new V2ApiFilters();
+        params._pageNum = this.pageNum + 1;
+
+        params._pageSize = this.rowsPerPage;
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+
+        if (this.sortOrder !== SortOrder.None) {
+            params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+        }
+
+        if (this.simpleTextFilter && this.simpleTextFilter.length > 0) {
+            params._simpleFilter = encodeURIComponent(this.simpleTextFilter);
+        }
+        
+        const advancedFilter = AdvancedFiltersHelper.parseFiltersFromTableFilters(this.filters, [
+            {
+                apiName: 'Name',
+                fieldType: 'text',
+                name: 'Name',
+                type: 'text'
+            },
+            {
+                apiName: 'ValidForDays',
+                fieldType: 'number',
+                name: 'ValidForDays',
+                type: 'number'
+            }
+        ]);
+
+        if (advancedFilter.length > 0) {
+            params['_filter'] = advancedFilter;
+        }
+
+        return params;
+    }
+
+    loadSurveyTypesLazy(event: LazyLoadEvent) {
+        this.pageNum = event.first / event.rows;
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField;
+        this.rowsPerPage = event.rows;
+        this.simpleTextFilter = event.globalFilter;
+        this.filters = event.filters;
+        this.getTemplates();
     }
 
     deleteSurveyType(uid: string) {

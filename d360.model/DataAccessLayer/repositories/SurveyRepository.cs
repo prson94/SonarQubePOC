@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.entities.SurveyModels;
 using d360.model.DataAccessLayer.repositories;
-
+using d360.model.helpers.filters;
 using Dapper;
 
 using Newtonsoft.Json;
@@ -235,6 +235,7 @@ namespace d360.model.DataAccessLayer
 			response.total = 0;
 
 			string orderByClause = "order by ST.CreatedOn";
+			string orderByDirection = "asc";
 			List<string> whereClauses = new List<string>();
 			foreach (var param in queryParams)
 			{
@@ -285,12 +286,46 @@ namespace d360.model.DataAccessLayer
 					case "_order":
 						switch (param.Value.ToLower())
 						{
-							case "name": orderByClause = "order by ST.Name"; break;
-							case "validfordays": orderByClause = "order by ST.ValidForDays desc"; break;
-							case "createdon": orderByClause = "order by ST.CreatedOn"; break;
-							case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
-							case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
+							case "name": orderByClause = "order by ST.Name"; orderByDirection = "asc"; break;
+							case "validfordays": orderByClause = "order by ST.ValidForDays"; orderByDirection = "desc"; break;
+							case "createdon": orderByClause = "order by ST.CreatedOn"; orderByDirection = "asc"; break;
+							case "updatedon": orderByClause = "order by ST.UpdatedOn"; orderByDirection = "asc"; break;
+							case "numberofresponses": orderByClause = "order by NumberOfResponses"; orderByDirection = "desc"; break;
 						}
+						break;
+					case "_direction":
+						switch (param.Value.ToLower())
+						{
+							case "asc": orderByDirection = "asc"; break;
+							case "desc": orderByDirection = "desc"; break;
+						}
+						break;
+					case "_simplefilter":
+						whereClauses.Add("ST.Name like @simpleFilter or ST.ValidForDays like @simpleFilter");
+						sqlParams.Add("@simpleFilter", companyContext.GetEscapedFilterString(param.Value, isContains: true));
+						break;
+					case "_filter":
+						var fieldList = new List<DefaultFilter>
+						{
+							new DefaultFilter("name", "ST.Name", SqlFieldType.Text),
+							new DefaultFilter("validForDays", "ST.ValidForDays", SqlFieldType.Number),
+							new DefaultFilter("createdon", "ST.CreatedOn", SqlFieldType.DateTime),
+							new DefaultFilter("updatedon", "ST.CreatedOn", SqlFieldType.DateTime),
+							new DefaultFilter("numberofresponses", "NumberOfResponses", SqlFieldType.Number)
+						};
+
+						companyContext.ParseAdvancedFilterQueryParameter(
+							queryParams,
+							fieldList, 
+							out DynamicParameters advFilterArgs, 
+							out List<string> advFilterStatements);
+
+						if (advFilterArgs != null && advFilterStatements != null)
+						{
+							sqlParams.AddDynamicParams(advFilterArgs);
+							whereClauses.AddRange(advFilterStatements);
+						}
+
 						break;
 				}
 			}
@@ -343,7 +378,7 @@ namespace d360.model.DataAccessLayer
 								 inner join Asset AUpdate on AUpdate.Object = 'Resource' AND AUpdate.ObjectID = ST.UpdatedBy
 								 left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses on Responses.SurveyTypeId = ST.Id
 								{additionalWhereClause}
-								{orderByClause}
+								{orderByClause} {orderByDirection}
 								{pagingSql}
 								for json path";
 

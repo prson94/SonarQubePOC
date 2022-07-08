@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 import { ApiErrorOrResponse } from '../models/ApiErrorOrResponse';
+import { V2ApiFilters } from '../models/asset-search.model';
 
 @Injectable({
     providedIn: 'root'
@@ -15,11 +16,10 @@ export class SurveysService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getSurveyTypes({ pageNum, pageSize }: { 
-        pageNum: number; 
-        pageSize: number;
-    }): Observable<SurveyTypesResponse> {
-        return this.http.get(`api/v2/survey/types?_pageNum=${pageNum}&_pageSize=${pageSize}`)
+    getSurveyTypes(params: V2ApiFilters): Observable<SurveyTypesResponse> {
+        const queryString = '?' + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+
+        return this.http.get(`api/v2/survey/types${queryString}`)
             .pipe(
                 map(response => response as SurveyTypesResponse),
                 catchError(err => this.handleError(err))

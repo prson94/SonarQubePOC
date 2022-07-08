@@ -115,6 +115,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid value for direction parameter. Use asc|desc..
+        /// </summary>
+        public static string InvalidDirection {
+            get {
+                return ResourceManager.GetString("InvalidDirection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Display Style.
         /// </summary>
         public static string InvalidDisplayStyle {

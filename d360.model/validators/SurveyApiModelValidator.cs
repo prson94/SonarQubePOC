@@ -205,6 +205,16 @@ namespace d360.model.validators
 								return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidOrderSurvey);
 						}
 						break;
+					case "_direction":
+						switch (param.Value.ToLowerInvariant())
+						{
+							case "asc":
+							case "desc":
+								break;
+							default:
+								return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.BadRequest, OthersError.InvalidOrderSurvey);
+						}
+						break;
 					default:
 						//Nothing to do here.
 						break;
