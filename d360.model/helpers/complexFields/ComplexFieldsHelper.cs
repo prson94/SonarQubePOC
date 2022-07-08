@@ -58,39 +58,44 @@ namespace d360.model.helpers
                 int idx = 1;
                 foreach (var rel in definition.Relations)
                 {
-
                     if (definition.Relations.IndexOf(rel) == 0)
                     {
                         if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
                         {
-                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
-                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-                        }
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+
+						}
                         else
                         {
-                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
-                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$to_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-                        }
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
                     }
                     else
                     {
                         if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
                         {
-                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$from_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
-                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$to_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-                        }
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
                         else
                         {
-                            joins.Add($"inner join graph.AssetEdge R{idx} on R{idx}.$to_id = H{(idx == 1 ? idx : idx - 1)}.$node_id and R{idx}.IntersectTypeUID = '{rel.IntersectTypeUid}'");
-                            joins.Add($"inner join graph.AssetNode {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.$node_id = R{idx}.$from_id {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-                        }
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
                     }
+
                     idx++;
                 }
 
 
-                var sql = $@"select distinct count(*)
-                                from graph.AssetNode H1
+                var sql = $@"select distinct count(1)
+                                from [Asset] H1
                                 {string.Join("\n", joins)};";
 
                 model.SQL = sql;
