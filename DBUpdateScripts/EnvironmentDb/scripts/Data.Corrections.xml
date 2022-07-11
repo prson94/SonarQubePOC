@@ -1652,26 +1652,57 @@ values	(G.ID, G.Segments);
   </changeSet>
 
   <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
+  <validCheckSum>7:295c472b9c68f533e2b8929af6797c49</validCheckSum>
   <comment>Intersect table new column data updates</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DISABLE TRIGGER ALL ON [dbo].[Intersect];
+		
 update	T
 set		T.SubjectAssetID = S.ID,
 		T.SubjectAssetTypeID = S.AssetTypeID
-from	[Intersect] T inner join Asset S on S.Object = T.Subject and S.ObjectId = T.SubjectID;
+from	[Intersect] T inner join Asset S on S.Object = T.Subject and S.ObjectId = T.SubjectID
+where   T.SubjectAssetID is null;
 
 update	T
 set		T.ObjectAssetID = S.ID,
 		T.ObjectAssetTypeID = S.AssetTypeID
-from	[Intersect] T inner join Asset S on S.Object = T.Object and S.ObjectId = T.ObjectID;
+from	[Intersect] T inner join Asset S on S.Object = T.Object and S.ObjectId = T.ObjectID
+where	T.ObjectAssetID is null;
 
 update	T
 set		T.ObjectAssetID = 0,
 		T.ObjectAssetTypeID = S.ID
-from	[Intersect] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID;
+from	[Intersect] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID
+where	T.ObjectAssetID is null;
+
+ENABLE TRIGGER ALL ON [dbo].[Intersect];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TKlok" id="Data.Corrections.GOV-18612.2">
+  <comment>Intersect table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DISABLE TRIGGER ALL ON [dbo].[Intersect];
+
+update	T
+set		T.SubjectAssetID = 0,
+		T.SubjectAssetTypeID = S.ID
+from	[Intersect] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID
+where	T.SubjectAssetID is null;
+
+ENABLE TRIGGER ALL ON [dbo].[Intersect];
 		]]>
     </sql>
 	<rollback>
