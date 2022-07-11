@@ -144,6 +144,9 @@
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>Invalid Uid provided.</value>
   </data>
+  <data name="InvalidDefinitionValue" xml:space="preserve">
+    <value>Invalid JSON value for field 'Definition'</value>
+  </data>
   <data name="NameExists" xml:space="preserve">
     <value>Dashboard with same name already exists</value>
   </data>

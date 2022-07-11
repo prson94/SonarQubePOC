@@ -142,6 +142,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid JSON value for field &apos;Definition&apos;.
+        /// </summary>
+        public static string InvalidDefinitionValue {
+            get {
+                return ResourceManager.GetString("InvalidDefinitionValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Dashboard with same name already exists.
         /// </summary>
         public static string NameExists {

@@ -2211,19 +2211,17 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("location", "Location (List, Detail, Homepage)", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("DashboardType", "Type (DqPlus, PowerBi)", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("definition", @"<pre>
-    ""url"": ""string"",
-	""fileName"": ""string"",
-	""powerBiReportId"": ""string"",
-	""powerBiDatasetId"": ""string"",
-	""parameters"": [
-      {
-        ""name"": ""string"",
-        ""valueToProvide"": ""string""
-
-	  }
-    ]
-  <pre>", DataType = "string", ParameterType = "formData", Required = true),
-			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+	{
+		""url"": ""string"",
+		""parameters"": [
+			{
+				""name"": ""string"",
+				""valueToProvide"": ""string""
+			}
+		]
+	}
+<pre>", DataType = "string", ParameterType = "formData", Required = false),
+			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = false),
 
 		]
 		public async Task<IHttpActionResult> PostDashboard()
@@ -2317,19 +2315,17 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("location", "Location (List, Detail, Homepage)", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("DashboardType", "Type (DqPlus, PowerBi)", DataType = "string", ParameterType = "formData", Required = true),
 			SwaggerParameter("definition", @"<pre>
-    ""url"": ""string"",
-	""fileName"": ""string"",
-	""powerBiReportId"": ""string"",
-	""powerBiDatasetId"": ""string"",
-	""parameters"": [
-      {
-        ""name"": ""string"",
-        ""valueToProvide"": ""string""
-
-	  }
-    ]
-  <pre>", DataType = "string", ParameterType = "formData", Required = true),
-			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = true),
+	{
+		""url"": ""string"",
+		""parameters"": [
+			{
+				""name"": ""string"",
+				""valueToProvide"": ""string""
+			}
+		]
+	}
+<pre>", DataType = "string", ParameterType = "formData", Required = false),
+			SwaggerParameter("file", "File to be uploaded", DataType = "file", ParameterType = "formData", Required = false),
 
 		]
 		public async Task<IHttpActionResult> PutDashboard()
