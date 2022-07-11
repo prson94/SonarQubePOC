@@ -452,7 +452,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return params;
     }
 
-    getData(autoSelect: boolean = true) {
+    getData(autoSelect: boolean = true, edit?: boolean) {
         this.isLoading = true;
         this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
@@ -467,36 +467,42 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.items = res.items;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
-                this.items.forEach((i) => {
+                this.items.forEach((item) => {
 
-                    i[this.menuKey] = [
+                    item[this.menuKey] = [
                         { title: $localize`Open` },
                         { title: $localize`Open in New Tab` },
                     ];
 
-                    if (i.Permissions.ModifyAsset) {
-                        i[this.menuKey].push({ title: $localize`Edit` });
+                    if (item.Permissions.ModifyAsset) {
+                        item[this.menuKey].push({ title: $localize`Edit` });
                     }
 
-                    if (i.Permissions.DeleteAsset) {
-                        i[this.menuKey].push({ title: $localize`Delete` });
+                    if (item.Permissions.DeleteAsset) {
+                        item[this.menuKey].push({ title: $localize`Delete` });
                     }
 
                     if (hasScoring) {
                         this.scoreAllocations.forEach((s) => {
-                            i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
+                            item[s.Name + '_threshold'] = this.getThreshold(item[s.Name], s.LowerThreshold, s.UpperThreshold);
                         });
                     }
 
                     if (this.selected != null && autoSelect) {
-                        if (i.AssetId === this.selected.AssetId) {
-                            this.selectRow(i);
+                        if (item.AssetId === this.selected.AssetId) {
+                            this.selectRow(item);
+                        }
+                    }
+
+                    if (this.selected != null && edit) {
+                        if (item.AssetId === this.selected.AssetId) {
+                            this.selectRow(item);
                         }
                     }
 
                 });
 
-                if (autoSelect) {
+                if (autoSelect && !edit) {
                     if (this.items && this.items.length > 0) {
                         this.selectRow(this.items[0]);
                     } else {
@@ -641,7 +647,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             this.router.navigateByUrl(newUrl);
         }
         else {
-            this.getData();
+            this.getData(true, true);
             this.isLoading = false;
             this.isLoadingChange.emit(false);
             this.showEditor = false;
