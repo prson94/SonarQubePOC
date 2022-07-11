@@ -72,7 +72,6 @@ import { SidePanelModule } from '../shared/sidepanel/side-panel.module';
 import { GalleryCodeAreaComponent } from './gallery.codearea.component';
 import { CodeAreaModule } from '../shared/controls/codearea/codearea.component';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
-import { GalleryLocaleComponent } from './gallery.locale.component';
 import { GalleryImagePickerComponent } from './gallery.image-picker.component';
 import { ImagePickerModule } from '../shared/controls/image-picker/image-picker.component';
 import { GalleryRegexpInputComponent } from './gallery.regexp-input.component';
@@ -169,7 +168,6 @@ import { DropdownBadgeModule } from '../shared/controls/dropdown-badge/dropdown-
         GalleryModalComponent,
         GalleryModalDrawerComponent,
         GalleryCodeAreaComponent,
-        GalleryLocaleComponent,
         GalleryImagePickerComponent,
         GalleryRegexpInputComponent,
         GalleryColorSelectorComponent,
