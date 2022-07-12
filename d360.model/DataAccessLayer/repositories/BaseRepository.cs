@@ -349,18 +349,16 @@ namespace d360.model.DataAccessLayer.repositories
 
 								 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID}";
+									select I.ObjectAssetId  as SourceAssetID, I.SubjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
 								 break;
 							 case SplitFilterCriteriaRelationship.Subject:
 								 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
 
 								 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID}";
+									select I.SubjectAssetId  as SourceAssetID, I.ObjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
 								 break;
 							 default:
 								 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
@@ -368,17 +366,14 @@ namespace d360.model.DataAccessLayer.repositories
 								 temptableScript = $@" 
 									drop table if exists {temptablename};
 									select * into {temptablename} from (
-									select S.ID SourceAssetID, O.Id as TargetAssetId 
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} 
+									select I.SubjectAssetId as SourceAssetID, I.ObjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
 									union
-									select S.ID SourceAssetID, O.Id as TargetAssetId 
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} 
+									select I.ObjectAssetId as SourceAssetID, I.SubjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
 									) a;";
 								 break;
 						 }
-
 
 						 if (!TempTableNameList.Contains(temptablename))
 						 {
@@ -392,8 +387,8 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else
 					 {
-						 assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-						 assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+						 assetIdBackwardQuery = $@"select I.ObjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
+						 assetIdForwardQuery = $@"select I.SubjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id";
 						 assetIdBothQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
 					 }
 
@@ -484,43 +479,39 @@ namespace d360.model.DataAccessLayer.repositories
 
 						 if (IsCreateTempTable)
 						 {
-							 if (filtercond == SplitFilterCriteriaRelationship.Object)
+							 switch (filtercond)
 							 {
-								 temptablename = $@"#TempGraphBack{f.LookupObjectID}";
+								 case SplitFilterCriteriaRelationship.Object:
+									 temptablename = $@"#TempGraphBack{f.LookupObjectID}";
 
-								 temptableScript = $@" 
+									 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID}";
+									select I.ObjectAssetId  as SourceAssetID, I.SubjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
+									 break;
+								 case SplitFilterCriteriaRelationship.Subject:
+									 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
 
-							 }
-							 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
-							 {
-								 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
+									 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select I.SubjectAssetId  as SourceAssetID, I.ObjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
+									 break;
+								 default:
+									 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
 
-								 temptableScript = $@" 
+									 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID}";
-							 }
-							 else
-							 {
-								 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
-								 temptableScript = $@" 
-									drop table if exists {temptablename};
-											    
 									select * into {temptablename} from (
-									select S.ID SourceAssetID, O.Id as TargetAssetId 
-									FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-									WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID}
+									select I.SubjectAssetId as SourceAssetID, I.ObjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
 									union
-									select S.ID SourceAssetID, O.Id as TargetAssetId
-									FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-									WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID}
-									)a;";
+									select I.ObjectAssetId as SourceAssetID, I.SubjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
+									) a;";
+									 break;
 							 }
+
 							 if (!TempTableNameList.Contains(temptablename))
 							 {
 								 TempTableNameList.Add(temptablename);
@@ -532,28 +523,25 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 if (filtercond == SplitFilterCriteriaRelationship.Object)
 							 {
-								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-
+								 assetIdQuery = $@"
+									select I.SubjectAssetId as TargetAssetId from [Intersect] I 
+									where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id";
 							 }
 							 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
 							 {
 
-								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id";
-
+								 assetIdQuery = $@"
+									select I.ObjectAssetId as TargetAssetId from [Intersect] I 
+									where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
 							 }
 							 else
 							 {
-								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id
+								 assetIdQuery = $@"
+												select I.SubjectAssetId as TargetAssetId from [Intersect] I 
+												where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id
 												union
-												SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+												select I.ObjectAssetId as TargetAssetId from [Intersect] I 
+												where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
 							 }
 						 }
 						 assetIdFinalQuery = $@" outer apply (

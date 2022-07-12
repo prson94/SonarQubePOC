@@ -268,7 +268,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     }
 
-    updateCountData() {
+	updateCountData(shouldLoadRelationships: boolean = false) {
         this.relationshipService.getRelationshipsCountsForAsset(this.assetUid)
             .subscribe((data) => {
                 this.relationshipCounts = data;
@@ -276,7 +276,10 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
                 if (this.addRelationshipComponent) {
                     //trigger count update in child
                     this.addRelationshipComponent.initialLoad();
-                }
+				}
+				if (shouldLoadRelationships) {
+					this.loadRelationshipLazy(null);
+				}
                 this.cdRef.detectChanges();
             });
     }
@@ -552,14 +555,12 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     saveItem($event) {
         this.showEditor = false;
-        this.loadRelationshipLazy(null);
-        this.updateCountData();
+        this.updateCountData(true);
     }
 
     onAddComplete($event) {
         this.isAddVisible = false;
-        this.loadRelationshipLazy(null);
-        this.updateCountData();
+        this.updateCountData(true);
     }
 
 

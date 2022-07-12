@@ -89,8 +89,8 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
-            if ((p === 'assetUid' || p === 'assetTypeUid') && this.assetUid && this.assetTypeUid) {
+		for (let p in changes) {
+			if ((p === 'isVisible') || (p === 'assetUid' || p === 'assetTypeUid') && this.assetUid && this.assetTypeUid) {
                 this.initialLoad();
             }
         }
@@ -138,6 +138,9 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
         if (this.loadTypesSub) {
             this.loadTypesSub.unsubscribe();
         }
+
+		this.selectedAssets = [];
+		this.fieldValues = {};
 
         this.loadTypesSub = forkJoin(
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
