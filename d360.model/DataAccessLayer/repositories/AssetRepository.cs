@@ -1611,20 +1611,29 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@pageSize", pageSize);
 			dbArgs.Add("@offset", pageSize * pageNum);
 
+
+
 			var sql = $@"
-				select	P.[uid],
-						P.[keypath] as [path]  
-				from	graph.AssetNode P		                
-				where P.assetTypeId = @assetTypeId
-				order by P.ID
+				select	A.[uid],
+						AP.[keypath] as [path]
+				from	
+					Asset A
+					inner join 
+					AssetPath AP on a.ID=ap.ID
+				where A.assetTypeId = @assetTypeId
+				order by A.ID
 				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
 			int? total = null;
 			if (includeTotal)
 			{
-				var countSql = $@"select count(1) 
-				from	graph.AssetNode P		                
-				where P.assetTypeId = @assetTypeId";
+				var countSql = $@"
+				select 
+					count(1)
+				from 
+					Asset A	                
+				where 
+					A.assetTypeId = @assetTypeId";
 
 				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
 			}
