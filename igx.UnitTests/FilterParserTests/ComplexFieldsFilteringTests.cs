@@ -168,10 +168,8 @@ namespace igx.UnitTests.FilterExpressionTests
             Assert.True(sqlParams.Count == 2);
             Assert.True(sqlParams["@intersectFilter1"].ToString() == DataConstants.ValidGUID);
             Assert.True(sqlParams["@intersectAssetFilter1"].ToString() == DataConstants.ValidGUID2);
-            Assert.Contains(@"IntersectTypeUid = @intersectFilter1", sql);
-            Assert.Contains(@"O.Uid = @intersectAssetFilter1", sql);
-            Assert.Contains(@"MATCH(S <- (E) - O)", sql);
-            Assert.Contains(@"MATCH(S - (E) -> O)", sql);
+            Assert.Contains(@"IT.Uid = @intersectFilter1", sql);
+            Assert.Contains(@"@intersectAssetFilter1", sql);
         }
 
         [Theory]
