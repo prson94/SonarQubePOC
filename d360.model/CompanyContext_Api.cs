@@ -5655,7 +5655,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																									T.UpdatedBy = @R
 																						when not matched by target then
 																							insert  (IntersectTypeID, SubjectAssetTypeID, SubjectAssetID, Subject, SubjectID, ObjectAssetTypeID, ObjectAssetID, Object, ObjectID, CreatedBy, UpdatedBy)
-																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, S.ParentObject, S.ObjectAssetTypeID, S.ParentObjectID, S.AssetID, S.Object, S.ObjectID, @R, @R)
+																							values  (S.IntersectTypeID, S.SubjectAssetTypeID, S.ParentAssetID, S.ParentObject, S.ParentObjectID, S.ObjectAssetTypeID, S.AssetID, S.Object, S.ObjectID, @R, @R)
 																						output $action, inserted.[uid], S.ItemNumber into #ParentChildRelationships;
 
 																						-- Log the parent removals into Dependent Change table
