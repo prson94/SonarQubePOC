@@ -35,6 +35,7 @@ import { AdvancedFiltersModule } from "./advanced-filtering/advanced-filtering.m
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 import { SiteModalModule } from "../shared/modal/gov-modal.module";
 import { PortalsModule } from "../shared/portals/portals.module";
+import { InfoTooltipModule } from "../shared/tooltip/info-tooltip.component";
 
 @NgModule({
     imports: [
@@ -72,7 +73,8 @@ import { PortalsModule } from "../shared/portals/portals.module";
         WorkflowModule,
         AdvancedFiltersModule,
         SearchFieldModule,
-        PortalsModule
+		PortalsModule,
+		InfoTooltipModule
     ],
     declarations: [
         AssetGridCustomExportComponent,
