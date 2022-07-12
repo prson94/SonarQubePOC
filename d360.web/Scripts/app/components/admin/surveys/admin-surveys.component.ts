@@ -77,7 +77,7 @@ import { AdvancedFiltersHelper } from '../../../static/advanced-filter-helpers';
                                     </ng-template>
                                 </p-table>
                             </span>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
+                            <d3s-dynamic-editor *ngIf="showEditor" [useObjectUidForDefinition]="true" [objectUid]="selected?.Uid" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
                             <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.Uid"
