@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System.Linq;
 using System.Web;
+using d360.core.resources;
 
 namespace d360.core.entities
 {
@@ -169,13 +170,25 @@ namespace d360.core.entities
 			}
 			if (!string.IsNullOrEmpty(formData["dashboardtype"]))
 			{
-				DashboardType value;
-				Enum.TryParse(formData["dashboardtype"], out value);
-				this.DashboardType = value;
+				try
+				{
+					this.DashboardType = (DashboardType)Enum.Parse(typeof(DashboardType), formData["dashboardtype"], true);
+				}
+				catch
+				{
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardType);
+				}
 			}
 			if (!string.IsNullOrEmpty(formData["definition"]))
 			{
-				this.Definition = JsonConvert.DeserializeObject<DashboardDefinition>(formData["definition"]);
+				try
+				{
+					this.Definition = JsonConvert.DeserializeObject<DashboardDefinition>(formData["definition"]);
+				}
+				catch
+				{
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDefinitionValue);
+				}
 			}
 			if (!string.IsNullOrEmpty(formData["description"]))
 			{
@@ -189,9 +202,14 @@ namespace d360.core.entities
 			}
 			if (!string.IsNullOrEmpty(formData["location"]))
 			{
-				DashboardLocation value;
-				Enum.TryParse(formData["location"], out value);
-				this.Location = value;
+				try
+				{
+					this.Location = (DashboardLocation)Enum.Parse(typeof(DashboardLocation), formData["location"], true);
+				}
+				catch
+				{
+					throw new GenericException(System.Net.HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.InvalidDashboardLocation);
+				}
 			}
 			if (!string.IsNullOrEmpty(formData["name"]))
 			{
