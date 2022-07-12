@@ -1,12 +1,9 @@
 <d3s-loading [isLoading]="isEditing || !isDefinitionLoaded"></d3s-loading>
 <ig-portal-content-provider name="asset-description" [template]="description">
     <ng-template #description>
-        <i *ngIf="isDefinitionLoaded && gridObject && gridObject.Description"
-            class="header-description fa fa-info-circle help-icon"
-            [escape]="false"
-            [pTooltip]="gridObject.Description | sanitize"
-            tooltipPosition="top"
-            tooltipStyleClass="ig-tooltip"></i>
+        <d3s-info-tooltip [titleValue]="infoIconHtmlString" *ngIf="isDefinitionLoaded && gridObject && gridObject.Description">
+            <div [innerHtml]="gridObject.Description | sanitize"></div>
+        </d3s-info-tooltip>
     </ng-template>
 </ig-portal-content-provider>
 

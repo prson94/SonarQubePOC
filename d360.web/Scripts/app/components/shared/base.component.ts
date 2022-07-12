@@ -41,6 +41,7 @@ export class BaseComponent {
 
 	baseAssetTypeUid: string;
 	baseAssetUid: string;
+	infoIconHtmlString: string = `<i class='fa fa-info-circle help-icon'></i>`;
 
     public preloadedTreeData: any[] = [];
     public baseCrumbs: Breadcrumb[] = [];

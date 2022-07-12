@@ -3,12 +3,9 @@
         <div class="tile tile-detail main-panel">
             <ig-portal-content-provider name="asset-description" [template]="description">
                 <ng-template #description>
-                    <i *ngIf="assetType && assetType.Description && assetType.Description.length > 0"
-                        class="header-description fa fa-info-circle help-icon"
-                        [escape]="false"
-                        [pTooltip]="assetType.Description | sanitize"
-                        tooltipPosition="top"
-                        tooltipStyleClass="ig-tooltip"></i>
+                    <d3s-info-tooltip [titleValue]="infoIconHtmlString" *ngIf="assetType && assetType.Description && assetType.Description.length > 0">
+                        <div [innerHtml]="assetType.Description | sanitize"></div>
+                    </d3s-info-tooltip>
                 </ng-template>
             </ig-portal-content-provider>
 
