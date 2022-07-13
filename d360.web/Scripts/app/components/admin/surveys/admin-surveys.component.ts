@@ -233,7 +233,9 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var survey of this.surveys) {
             index++;
-            if (survey.Uid == uid) return index;
+            if (survey.Uid == uid) {
+                return index;
+            }
         }
     }
 

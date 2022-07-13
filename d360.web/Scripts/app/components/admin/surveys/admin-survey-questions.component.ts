@@ -109,7 +109,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
             .deleteSurveyQuestionType({ 
                 surveyTypeUid: this.survey.Uid, 
                 questionTypeUid: uid 
-            }).subscribe(result => {
+            }).subscribe((result) => {
                 if (result == null) {
                     return;
                 }
@@ -136,7 +136,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     }
 
     findQuestionById(uid: string) {
-        return this.survey.Questions.findIndex(x => x.Uid === uid);
+        return this.survey.Questions.findIndex((x) => x.Uid === uid);
     }
 
     saveQuestion(event) {
