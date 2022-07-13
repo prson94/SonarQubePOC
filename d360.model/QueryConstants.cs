@@ -1,4 +1,5 @@
 ﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using d360.core.resources;
 
@@ -475,7 +476,7 @@ namespace d360.model
 					[dbo].[nym] s	
 				where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1";
 
-		public static readonly string TaxonomySettingsItem = @"
+		public static readonly string TaxonomySettingsItem = $@"
 				select	
 					T.ObjectID as ID,
 					T.Name,
@@ -485,7 +486,7 @@ namespace d360.model
 					T.UpdatedBy,	
 					S.AllowSynonyms,
 					T.Uid,
-					(select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
+					(select cast(count(1) as bit) from report r where r.assettypeid = T.Id and r.ReportType != {(int)DashboardType.Legacy}) as HasDashboards	
 				from	AssetType T		
 						cross apply (
 									select	case 
