@@ -2173,18 +2173,20 @@ namespace d360.model.DataAccessLayer
 				--GET ALL CHILDREN
 				;with family_cte as (
 				select a1.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
-				inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
-				inner join asset a1 on a1.uid = rel1.Uid
+				from asset a 
+				inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
 				cross apply GetAssetDisplayValueById(a1.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUid
 				union all
 				select a1.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
-				inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
-				inner join asset a1 on a1.uid = rel1.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Subject = an.Object and I.SubjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
 				cross apply GetAssetDisplayValueById(a1.ID)ADV
 				where an.Uid = fam.uid)
 				insert into #family 
@@ -2193,18 +2195,20 @@ namespace d360.model.DataAccessLayer
 				--GET ALL PARENT
 				;with family_cte as (
 				select a2.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from asset a 
+				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUid
 				union all
 				select a2.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
 				where an.Uid = fam.uid)
 				insert into #family 
@@ -2217,37 +2221,31 @@ namespace d360.model.DataAccessLayer
 
 		private List<Guid> GetAllParentsAssetUid(List<Guid> uids)
 		{
-			var sql = $@"drop table if exists #family
-				create table #family(
-				 AssetUid uniqueidentifier
-				)
-				--GET ALL PARENT
-				;with family_cte as (
+			var sql = $@";with family_cte as (
 				select a2.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from asset a 
+				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUids
 				union all
 				select a2.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
 				where an.Uid = fam.uid)
-				insert into #family 
-				select 
-				uid as AssetUid from family_cte
-				select * from #family";
+				select uid as AssetUid from family_cte";
 
 			List<Guid> parentUids = new List<Guid>();
 			var pages = uids.Count() / 2000;
 			for (int i = 0; i <= pages; i++)
 			{
-				parentUids.AddRange(CompanyContext.Query<Guid>(sql, new { assetUid = uids.Skip(i * 2000).Take(2000) }, ApiTimeout).AsList());
+				parentUids.AddRange(CompanyContext.Query<Guid>(sql, new { assetUids = uids.Skip(i * 2000).Take(2000) }, ApiTimeout).AsList());
 			}
 
 			return parentUids;
@@ -2337,24 +2335,27 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(prefilterSql))
 			{
-				prefilterSql = $"and N.AssetTypeID in ({prefilterSql})";
+				prefilterSql = $"and AT.Id in ({prefilterSql})";
 			}
 
 			var countSql = $@"
 							select	count(1)
-							from	graph.AssetNode N
+							from	AssetPath N
+							inner join Asset A on A.Id = N.Id
+							inner join AssetType AT on AT.Id = A.AssetTypeId
 							where	N.DisplayPath like @phrase {prefilterSql}
 							";
 
-			var sql = $@"
-							select	N.Uid,
-									N.AssetTypeUid,
-									T.Name as AssetTypeName,
+										var sql = $@"
+							select	A.Uid,
+									AT.Uid as AssetTypeUid,
+									AT.Name as AssetTypeName,
 									coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
 									N.Segments as SegmentsXml
-							from	graph.AssetNode N
-									inner join AssetType T on T.ID = N.AssetTypeID
-									left join AssetTypeStyle S on S.ID = T.ID
+							from	AssetPath N
+									inner join Asset A on A.Id = N.Id
+									inner join AssetType AT on AT.ID = A.AssetTypeID
+									left join AssetTypeStyle S on S.ID = AT.ID
 							where	N.DisplayPath like @phrase {prefilterSql}
 							order by N.DisplayPath asc
 							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
@@ -3439,9 +3440,10 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids)
 		{
-			var sql = $@"SELECT an.Uid, graph.GetPathAsJson(an.Segments) as JsonPath
-			FROM  graph.AssetNode an
-			inner join @uids U on U.Uid = an.Uid";
+			var sql = $@"
+				select a.Uid, graph.GetPathAsJson(ap.Segments) as JsonPath from Asset A
+				inner join @uids U on U.Uid = a.Uid
+				inner join AssetPath AP on AP.ID = a.ID";
 
 			var results = await CompanyContext.QueryAsync<(Guid Uid, string JsonPath)>(sql, new
 			{
@@ -3925,13 +3927,12 @@ namespace d360.model.DataAccessLayer
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
 								outer apply (
-									select  T.[uid]
-									from    graph.AssetNode S,
-											graph.AssetEdge E,
-											graph.assetNode T
-									where   match (T-(E)->S)
-											and E.PredicateType in (3,4)
-											and S.[uid] = A.[uid]
+									select SA.uid from Asset A
+									inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+									inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
+									inner join [Predicate] P on P.Id = IT.PredicateID and P.Type in (3,4)
+									inner join [Asset] SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+									where A.uid = @assetuid
 								) Parent
 								left join AssetDetail P on P.uid = Parent.uid
 								{string.Join(Environment.NewLine, fieldJoins)}

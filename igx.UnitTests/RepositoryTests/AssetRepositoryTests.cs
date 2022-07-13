@@ -257,7 +257,6 @@ namespace igx.UnitTests.RepositoryTests
             pars.Add(new KeyValuePair<string, string>("_ownedby", "cee303f2-9c99-46b4-9ec3-116634049d17"));
             pars.Add(new KeyValuePair<string, string>("_notownedby", "cee303f2-9c99-46b4-9ec3-116634049d17"));
             pars.Add(new KeyValuePair<string, string>("_parentuid", "cee303f2-9c99-46b4-9ec3-116634049d17"));
-            pars.Add(new KeyValuePair<string, string>("isForTreeGrid", "true"));
 
             var result = assetRepository.GetAssets(assetType, pars);
 
@@ -522,7 +521,7 @@ namespace igx.UnitTests.RepositoryTests
             queryMustContain.Add("T.[Uid] = @uid"); //by uid
             queryMustContain.Add("T.[UseAsTransformation] = @uat"); //filter by is transformation
             queryMustContain.Add("select T.ID from AssetType T"); //is from type filter
-            queryMustContain.Add("graph.AssetNode N"); //main select
+            queryMustContain.Add("AssetPath N"); //main select
 
             mockCompanyContext.Setup(x => x.QueryAsync<AssetsByPathItemApiViewModel>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
                      .Returns((string sql, object param, int timeout) =>

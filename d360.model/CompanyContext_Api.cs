@@ -2857,7 +2857,8 @@ namespace d360.model
 				drop table if exists #delAssets
 				create table #delAssets(
 					uid uniqueidentifier,
-					ObjectID int
+					ObjectID int,
+					AssetID int
 				)
 
 				drop table if exists #delRel
@@ -2867,11 +2868,11 @@ namespace d360.model
 				)
 
 				insert into #delAssets
-				select fromuid, a.ObjectID from ProcessExpandedData pxd
+				select fromuid, a.ObjectID, a.id as AssetID from ProcessExpandedData pxd
 					inner join asset a on a.uid = pxd.diagramassetuid
 				where pxd.diagramassetuid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})
 				union 
-				select touid, a.ObjectID from ProcessExpandedData pxd
+				select touid, a.ObjectID, a.id as AssetID from ProcessExpandedData pxd
 					inner join asset a on a.uid = pxd.diagramassetuid
 				where pxd.diagramassetuid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})
 
@@ -2890,7 +2891,7 @@ namespace d360.model
 				delete from Field where ObjectType = 'Task' and ObjectID in (select ObjectId from #delAssets)
 				delete from asset where uid in (select uid from #delAssets)
 
-				delete from graph.AssetNode where uid in (select uid from #delAssets) and Class = 15
+				delete from assetpath where id in (select assetid from #delAssets) 
 ",
                 new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                 AddMeasurement(metrics, $"remove process assets>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
@@ -3018,15 +3019,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 								select  1
 								from    #tempassetid S
 								where   S.assetid = N.ID
-										and S.id between @struncount and @enruncount
-							);
-
-					delete	A
-					from	graph.AssetNode A
-					where   exists (
-								select  1
-								from    #tempassetid S
-								where   S.assetid = A.ID
 										and S.id between @struncount and @enruncount
 							);
 
@@ -3823,17 +3815,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								create clustered index CIX_TempDeleteAssetsIds on #deleteAssets (id)
 												
-								-- Delete from graph tables.
-						        delete E
-						        from    graph.AssetEdge E
-								        inner join graph.AssetNode N on E.$from_id = N.$node_id
-								        inner join #deleteAssets D on N.Id = D.id;
-
-						        delete E
-						        from    graph.AssetEdge E
-								        inner join graph.AssetNode N on E.$to_id = N.$node_id
-								        inner join #deleteAssets D on N.Id = D.id;
-
 								-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
 								drop table if exists #Uids
 								create table #Uids (Uid uniqueidentifier)
@@ -3861,10 +3842,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 							        from	dbo.AssetResult T
 									        inner join #Uids S on S.Uid = T.Uid;
 						        end
-
-								delete	A
-								from	graph.AssetNode A
-										inner join #deleteAssets D on A.Id = D.id;
 
 					", new { deleteCount = SqlBulkAssetDeleteSize, assetTypeUid = at.uid, at.AssetTypeId, at.Object, at.ObjectId, at.IntersectTypeId, executionUid = execution.ExecutionID, itemNumber, resource = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
         }
@@ -5668,7 +5645,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																						select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
-                                        AddMeasurement(metrics, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                        AddMeasurement(metrics, $"Parent/Child Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
 
                                         // if its an intra type hierarchy models or policies and NOT an insert its possible that parent child relations are being removed IE an item moved to root
                                         if (predicateType == PredicateType.IntraTypeHierarchy && !isInsert)
@@ -5706,7 +5683,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																		inner join #DeletedRelationships d on d.ID = i.ID;",
                                                                 new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
-                                            AddMeasurement(metrics, $"Parent/Child Delete Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                            AddMeasurement(metrics, $"Parent/Child Delete Relationship >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         }
                                     }
 
@@ -11608,14 +11585,7 @@ EG.GroupUid
 						INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
 				WHERE M.[Action] = 'INSERT';
 
-				INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-				SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], coalesce(A.UpdatedOn, getutcdate()) 
-				FROM	#mergeResultTable M
-				INNER JOIN [Group] G on G.ID = M.GroupID
-				INNER JOIN Asset A ON A.Object = 'Group' and A.ObjectID = G.ID
-				INNER JOIN  AssetType AT ON AT.Object = 'GroupType' and AT.ObjectID = 1
-				WHERE M.[Action] = 'INSERT' AND NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = A.Uid);
-
+				
 															INSERT INTO [ResourceGroup](GroupID,[ResourceID])
 															SELECT G.ID, G.PrimaryOwnerResourceID
 															FROM [Group] G
