@@ -58,17 +58,35 @@ namespace d360.model.helpers
 				int idx = 1;
 				foreach (var rel in definition.Relations)
 				{
-					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
+					if (definition.Relations.IndexOf(rel) == 0)
 					{
-						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
+						{
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
+						else
+						{
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
 					}
 					else
 					{
-						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
+						{
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
+						else
+						{
+							joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+							joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+							joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						}
 					}
 					idx++;
 				}
@@ -109,31 +127,30 @@ namespace d360.model.helpers
 				{
 					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
 					{
-						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
-
+						joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 					else
 					{
-						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 				}
 				else
 				{
 					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
 					{
-						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 					else
 					{
-						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
-						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 				}
 
@@ -257,7 +274,7 @@ namespace d360.model.helpers
 					if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
 					{
 						selects.Add($"h{f.RelationIndex + 1}p.displaypath AS [H{f.RelationIndex + 1}__assetPath]");
-						joins.Add($"LEFT JOIN [AssetNode] H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
+						joins.Add($"LEFT JOIN dbo.[AssetPath] H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
 					}
 
 					if (f.FieldTypeName.ToLowerInvariant() == "code")
