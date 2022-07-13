@@ -5,12 +5,69 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.graph.CheckCircularRelationshipCollision-v1">
+  <changeSet author="Puneet Gupta" id="Function.graph.CheckCircularRelationshipCollision-v2">
+  <comment>GOV-18610</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+CREATE OR ALTER FUNCTION [graph].[CheckCircularRelationshipCollision]
+(
+	 @sourceUid uniqueidentifier,
+	 @targetUid uniqueidentifier,
+	 @predicateType int
+)
+RETURNS bit
+AS
+BEGIN
+		declare @maxLevel int = 20;
+		declare @willCauseCircularRef bit = 0;
+
+		;WITH TraverseForward as (
+			select S.Uid, 0 as Level
+				from Asset S
+				where S.Uid = @sourceUid
+			union all
+				select T.Uid, AN.Level + 1 as Level
+				from TraverseForward AN
+				inner join Asset S on S.Uid = AN.Uid
+				inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID and I.PredicateType = @predicateType 
+				inner join Asset T on T.Object = I.Object and T.ObjectID = I.ObjectID
+			where AN.Level < @maxLevel
+		)
+		select @willCauseCircularRef = 1
+			from TraverseForward
+			where Uid = @targetUid
+		OPTION (MAXRECURSION 100)
+
+		IF @willCauseCircularRef = 0
+			BEGIN
+					;with TraverseBackward as (
+							select S.Uid, 0 as Level
+								from Asset S
+								where S.Uid = @sourceUid
+							union all
+								select T.Uid, AN.Level + 1 as Level
+								from TraverseBackward AN
+								inner join Asset S on S.Uid = AN.Uid
+								inner join PredicateIntersect I on I.Object = S.Object and I.ObjectID = S.ObjectID and I.PredicateType = @predicateType 
+								inner join Asset T on T.Object = I.Subject and T.ObjectID = I.SubjectID
+							where AN.Level < @maxLevel
+						)
+						select @willCauseCircularRef = 1
+							from TraverseBackward 
+							where Uid = @targetUid
+						OPTION (MAXRECURSION 100)
+			END
+
+
+		return @willCauseCircularRef
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [graph].[CheckCircularRelationshipCollision]
 (
 	 @sourceUid uniqueidentifier,
@@ -59,11 +116,6 @@ BEGIN
 
 		return @willCauseCircularRef
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

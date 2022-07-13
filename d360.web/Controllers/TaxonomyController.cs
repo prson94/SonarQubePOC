@@ -31,7 +31,7 @@ namespace d360.web.Controllers
 							A.DisplayValue as TextPath,
 							P.SubjectID as ParentID,
 							A.ID as AssetID,        
-							CASE WHEN EXISTS (select 1 from report where [objecttype] = 'Taxonomy' and [objectid] = A.TypeID)    
+							CASE WHEN EXISTS (select 1 from report where assettypeid = AT.ID)    
 								THEN 1  
 								ELSE 0 
 							END AS 'HasDashboards',

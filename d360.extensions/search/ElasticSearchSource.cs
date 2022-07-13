@@ -159,7 +159,10 @@ namespace d360.extensions.search
         private const string D3S_FIELD = "d3s";
         public static readonly string D3S_FIELD_PREFIX = D3S_FIELD + ".";
 
-        private readonly string CommunityConnectionString;
+		private const string NGRAM_FIELD = "ngram";
+		public static readonly string NGRAM_FIELD_PREFIX = NGRAM_FIELD + ".";
+
+		private readonly string CommunityConnectionString;
 
         public ElasticSearchSource()
         {
@@ -349,9 +352,16 @@ namespace d360.extensions.search
                                 )
                             )
                             .Tokenizers(t => t
-                                .NGram("d3s_ngram", ng => ng
-                                    .MinGram(NGramMin)
-                                    .MaxGram(NGramMax)
+								/* nGram Tokenizer cannot have min/max value of 0. When nGram is not enabled (min/max is 0) default to 99
+								 * The tokenizer as well as the tokenized ngram.Name field will be defined in all mappings, and the ngram.Name field will
+								 * be searched on any search.
+								 * Only when the nGram feature is enabled (nGram min != 0) will the Name value be copied to the ngram.Name field, and that search
+								 * possibly return results.
+								 * Because searches of ngram.Name field will be analyzed with the nGram tokenizer, it has to be valid.
+								 */
+								.NGram("d3s_ngram", ng => ng // 
+                                    .MinGram(NGramMin == 0 ? 99 : NGramMin)
+                                    .MaxGram(NGramMax == 0 ? 99 : NGramMax)
                                     .TokenChars( new[] { TokenChar.Letter, TokenChar.Digit } )
                                 )
                             )
@@ -384,11 +394,20 @@ namespace d360.extensions.search
                                                     .IgnoreAbove(256)
                                                 )
                                             )
-                                            .Analyzer(NGramMin == 0 ? "default" : "default_ngram")
-                                            .SearchAnalyzer("default")
+											.CopyTo(ct => NGramMin == 0 ? null : ct.Field(NGRAM_FIELD_PREFIX + "Name"))
                                         )
                                     )
                                 )
+								.Object<dynamic>(o => o
+									.Dynamic(false)
+									.Name(NGRAM_FIELD)
+									.Properties(p => p
+										.Text(t => t
+											.Name("Name")
+											.Analyzer("default_ngram")
+										)
+									)
+								)
                                 .Object<dynamic>(o => o
                                     .Name(D3S_FIELD)
                                     .Properties(p => p
@@ -495,35 +514,37 @@ namespace d360.extensions.search
 			return IndexHasLatestFeatures(client, companyID);
 		}
 
-
 		private static bool IndexHasLatestFeatures(IElasticClient client, int companyID)
 		{
-			var indexName = GetCompanyIndexName(companyID);
+			bool hasLatest = false;
 			//Latest feature is 'underscore2space' char filter converting period to space, so the number of mappings should be 2
-			var response = client.GetIndexSettings(i => i.Index(indexName));
-            if(!response.IsValid)
-            {
-				throw new SearchException(response.OriginalException);
-			}
-			var state = response.Indices[indexName];
+			var state = GetIndexSettings(client, companyID);
 			if (state.Settings.Analysis?.CharFilters?.ContainsKey("underscore2space") ?? false)
 			{
 				var filter = (MappingCharFilter)state.Settings.Analysis.CharFilters["underscore2space"];
 				if(filter.Mappings.Count() == 2)
 				{
-					return true;
+					hasLatest = true;
 				}
-			}	
-			return false;
+			}
+
+			//If nGram is enabled, the fields.Name field should be copied to the ngram.Name field
+			if(hasLatest && (state.Settings.Analysis?.Tokenizers?.ContainsKey("d3s_ngram") ?? false))
+			{
+				var ngram = (NGramTokenizer)state.Settings.Analysis.Tokenizers["d3s_ngram"];
+				if(ngram.MinGram != 0 && ngram.MinGram != 99)
+				{
+					var mapstate = GetIndexMapping(client, companyID);
+					var fields = (ObjectProperty)mapstate.Mappings["_doc"].Properties.Where(p => p.Key == "fields").FirstOrDefault().Value;
+					var name = (TextProperty)fields.Properties.Where(p => p.Key == "Name").FirstOrDefault().Value;
+
+					hasLatest = (name.CopyTo?.Count() > 0);
+				}
+			}
+			return hasLatest;
 		}
 
-		public static int GetIndexTotalFieldsLimit(string serverUrl, int companyID)
-		{
-			var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
-			return GetIndexTotalFieldsLimit(client, companyID);
-		}
-
-		private static int GetIndexTotalFieldsLimit(IElasticClient client, int companyID)
+		private static IndexState GetIndexSettings(IElasticClient client, int companyID)
 		{
 			var indexName = GetCompanyIndexName(companyID);
 			var response = client.GetIndexSettings(i => i.Index(indexName));
@@ -531,7 +552,30 @@ namespace d360.extensions.search
 			{
 				throw new SearchException(response.OriginalException);
 			}
-			var state = response.Indices[indexName];
+			return response.Indices[indexName];
+		}
+
+		private static IndexMappings GetIndexMapping(IElasticClient client, int companyID)
+		{
+			var indexName = GetCompanyIndexName(companyID);
+			var response = client.GetMapping<object>(m => m.Index(indexName).AllTypes());
+			if (!response.IsValid)
+			{
+				throw new SearchException(response.OriginalException);
+			}
+			return response.Indices[indexName];
+		}
+
+
+	public static int GetIndexTotalFieldsLimit(string serverUrl, int companyID)
+		{
+			var client = new ElasticClient(new ConnectionSettings(new Uri("http://" + serverUrl)));
+			return GetIndexTotalFieldsLimit(client, companyID);
+		}
+
+		private static int GetIndexTotalFieldsLimit(IElasticClient client, int companyID)
+		{
+			var state = GetIndexSettings(client, companyID);
 			if(state.Settings.ContainsKey("index.mapping.total_fields.limit"))
 			{
 				return int.Parse(state.Settings["index.mapping.total_fields.limit"].ToString());
@@ -547,13 +591,7 @@ namespace d360.extensions.search
 
 		private static int GetIndexFieldMappingCount(IElasticClient client, int companyID)
 		{
-			var indexName = GetCompanyIndexName(companyID);
-			var response = client.GetMapping<object>(m => m.Index(indexName).AllTypes());
-			if (!response.IsValid)
-			{
-				throw new SearchException(response.OriginalException);
-			}
-			var state = response.Indices[indexName];
+			var state = GetIndexMapping(client, companyID);
 			var fields = (ObjectProperty)state.Mappings["_doc"].Properties.Where(p => p.Key == "fields").FirstOrDefault().Value;
 			return fields.Properties?.Count() ?? 0;
 		}
@@ -1128,6 +1166,11 @@ namespace d360.extensions.search
                         Query = phrase,
                         Type = MapStrategyToType(_strategy[2])
                     });
+					//nGram query
+					mainQueries.Add(new MatchQuery {
+						Field = NGRAM_FIELD_PREFIX + "Name",
+						Query = phrase
+					});
 
                     if (_strategy[1] != '9') //Augment search with boost 0.5
                     {

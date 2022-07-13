@@ -256,7 +256,7 @@ export class AdvancedFilteringComponent implements OnChanges {
             }
         });
 
-        SystemFields.GetSystemFieldDefinition(this.gridType).forEach((f) => {
+		SystemFields.GetSystemFieldDefinition(this.gridType, this.loadIdentifier).forEach((f) => {
             var fModel = f as FieldTypeAPIModelFieldAdvancedCondition;
             fModel.IsSystemField = true;
             tempFields.push(fModel);

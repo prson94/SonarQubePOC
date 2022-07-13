@@ -2417,8 +2417,8 @@ namespace d360.model
 				}
 				else if (f.Type == DataType.Path.ToString())
 				{
-					columnbuilder.Append($@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ");
-					joinbuilder.Append($@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ");
+					columnbuilder.Append($@"{name}_GAN.DisplayPath as [{(useFriendlyName ? friendlyName : name)}], ");
+					joinbuilder.Append($@" inner join AssetPath {name}_GAN on {name}_GAN.ID = A.ID ");
 				}
 				else if (f.Type == DataType.Score.ToString())
 				{

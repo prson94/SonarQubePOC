@@ -90,8 +90,7 @@ namespace d360.model.DataAccessLayer.repositories
 		}
 		#endregion
 
-
-		public static string GetPathColumnSql(FieldType fieldType)
+		public static string GetPathSelectSql(FieldType fieldType)
 		{
 			var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(fieldType.Definition);
 			if (pathDefinition?.AssetTypeUid == null)
@@ -100,8 +99,17 @@ namespace d360.model.DataAccessLayer.repositories
 			}
 			else
 			{
+				return $@"F{fieldType.ID}.FormattedValue";
+			}
+		}
+
+		public static string GetPathJoinSql(FieldType fieldType)
+		{
+			var pathDefinition = JsonConvert.DeserializeObject<FieldTypeDataTypePathApiViewModel_Definition>(fieldType.Definition);
+			if (pathDefinition?.AssetTypeUid != null)
+			{
 				return $@"
-					(SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
+					outer apply (SELECT TOP 1 string_agg(Val, ' / ') within group(order by P)
 					         FROM (
 					         SELECT *
 					           FROM (
@@ -113,9 +121,11 @@ namespace d360.model.DataAccessLayer.repositories
 					           ) s
 					           JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = '{pathDefinition.AssetTypeUid}'
 					         ) segmentPath
-					      )
+					      )F{fieldType.ID}(FormattedValue)
 				";
 			}
+			
+			return "";
 		}
 
 		protected string AddColumnAlias(string columnSql, string alias, bool strict = true)
@@ -134,7 +144,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 			fieldTypes.OrderBy(x => x.ID).ToList().ForEach(f =>
 			 {
-                 var defaultVal = f.DefaultFormattedValue;
+				 var defaultVal = f.DefaultFormattedValue;
 				 var joinPrefix = "left";
 				 var tableAlias = $"F{f.ID}";
 				 var columnName = f.Name;
@@ -204,8 +214,8 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else if (f.Type == "Path")
 					 {
-						 fieldColumns.Add(AddColumnAlias(GetPathColumnSql(f), columnName));
-                     }
+						 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName));
+					 }
 					 else if (f.Type == "Score")
 					 {
 						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -245,7 +255,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Path")
 						 {
-                             fieldColumns.Add(AddColumnAlias(GetPathColumnSql(f), columnName));
+							 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName));
 						 }
 						 else if (f.Type == "Score")
 						 {
@@ -291,9 +301,9 @@ namespace d360.model.DataAccessLayer.repositories
 
 							 dbArgs.Add($"@F{f.ID}_AllValue", AllowAllLabelValue);
 						 }
-                         else if (f.Type == "Path")
-                         {
-                             fieldColumns.Add(AddColumnAlias(GetPathColumnSql(f), columnName));
+						 else if (f.Type == "Path")
+						 {
+							 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName));
 						 }
 						 else if (f.Type == "Score")
 						 {
@@ -339,18 +349,16 @@ namespace d360.model.DataAccessLayer.repositories
 
 								 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID}";
+									select I.ObjectAssetId  as SourceAssetID, I.SubjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
 								 break;
 							 case SplitFilterCriteriaRelationship.Subject:
 								 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
 
 								 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID}";
+									select I.SubjectAssetId  as SourceAssetID, I.ObjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
 								 break;
 							 default:
 								 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
@@ -358,17 +366,14 @@ namespace d360.model.DataAccessLayer.repositories
 								 temptableScript = $@" 
 									drop table if exists {temptablename};
 									select * into {temptablename} from (
-									select S.ID SourceAssetID, O.Id as TargetAssetId 
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} 
+									select I.SubjectAssetId as SourceAssetID, I.ObjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
 									union
-									select S.ID SourceAssetID, O.Id as TargetAssetId 
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} 
+									select I.ObjectAssetId as SourceAssetID, I.SubjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
 									) a;";
 								 break;
 						 }
-
 
 						 if (!TempTableNameList.Contains(temptablename))
 						 {
@@ -382,8 +387,8 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else
 					 {
-						 assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-						 assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+						 assetIdBackwardQuery = $@"select I.ObjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
+						 assetIdForwardQuery = $@"select I.SubjectAssetId as TargetAssetId from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id";
 						 assetIdBothQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
 					 }
 
@@ -474,43 +479,39 @@ namespace d360.model.DataAccessLayer.repositories
 
 						 if (IsCreateTempTable)
 						 {
-							 if (filtercond == SplitFilterCriteriaRelationship.Object)
+							 switch (filtercond)
 							 {
-								 temptablename = $@"#TempGraphBack{f.LookupObjectID}";
+								 case SplitFilterCriteriaRelationship.Object:
+									 temptablename = $@"#TempGraphBack{f.LookupObjectID}";
 
-								 temptableScript = $@" 
+									 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID}";
+									select I.ObjectAssetId  as SourceAssetID, I.SubjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
+									 break;
+								 case SplitFilterCriteriaRelationship.Subject:
+									 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
 
-							 }
-							 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
-							 {
-								 temptablename = $@"#TempGraphFwd{f.LookupObjectID}";
+									 temptableScript = $@" 
+									drop table if exists {temptablename};
+									select I.SubjectAssetId  as SourceAssetID, I.ObjectAssetId as TargetAssetId into {temptablename}
+									from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID}";
+									 break;
+								 default:
+									 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
 
-								 temptableScript = $@" 
+									 temptableScript = $@" 
 									drop table if exists {temptablename};
-									select S.ID SourceAssetID, O.Id as TargetAssetId into {temptablename}
-									from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O 
-									where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID}";
-							 }
-							 else
-							 {
-								 temptablename = $@"#TempGraphBoth{f.LookupObjectID}";
-								 temptableScript = $@" 
-									drop table if exists {temptablename};
-											    
 									select * into {temptablename} from (
-									select S.ID SourceAssetID, O.Id as TargetAssetId 
-									FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-									WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID}
+									select I.SubjectAssetId as SourceAssetID, I.ObjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
 									union
-									select S.ID SourceAssetID, O.Id as TargetAssetId
-									FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-									WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID}
-									)a;";
+									select I.ObjectAssetId as SourceAssetID, I.SubjectAssetId as TargetAssetId  
+										from [Intersect] I where I.IntersectTypeID = {f.LookupObjectID} 
+									) a;";
+									 break;
 							 }
+
 							 if (!TempTableNameList.Contains(temptablename))
 							 {
 								 TempTableNameList.Add(temptablename);
@@ -519,34 +520,31 @@ namespace d360.model.DataAccessLayer.repositories
 							 assetIdQuery = $@"select S.TargetAssetId from {temptablename} S where S.SourceAssetID = A.Id";
 						 }
 						 else
-                         {
- 							 if (filtercond == SplitFilterCriteriaRelationship.Object)
+						 {
+							 if (filtercond == SplitFilterCriteriaRelationship.Object)
 							 {
-								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
-
+								 assetIdQuery = $@"
+									select I.SubjectAssetId as TargetAssetId from [Intersect] I 
+									where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id";
 							 }
 							 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
 							 {
 
-								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id";
-
+								 assetIdQuery = $@"
+									select I.ObjectAssetId as TargetAssetId from [Intersect] I 
+									where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
 							 }
 							 else
 							 {
-								 assetIdQuery = $@"SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id
+								 assetIdQuery = $@"
+												select I.SubjectAssetId as TargetAssetId from [Intersect] I 
+												where I.IntersectTypeID = {f.LookupObjectID} AND I.ObjectAssetId = A.Id
 												union
-												SELECT O.Id as TargetAssetId
-												FROM graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-												WHERE MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+												select I.ObjectAssetId as TargetAssetId from [Intersect] I 
+												where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
 							 }
 						 }
-						assetIdFinalQuery = $@" outer apply (
+						 assetIdFinalQuery = $@" outer apply (
 							select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
 							{(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
 							where AD.ID in (
@@ -554,7 +552,7 @@ namespace d360.model.DataAccessLayer.repositories
 							having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
 							) {tableAlias} ";
 
-						fieldJoins.Add(assetIdFinalQuery);
+						 fieldJoins.Add(assetIdFinalQuery);
 					 }
 				 }
 				 else if (f.Type == "RefListRelationship")
@@ -695,6 +693,14 @@ namespace d360.model.DataAccessLayer.repositories
 				 {
 					 fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}");
 				 }
+				 else if (f.Type == "Path")
+				 {
+					 string pathJoinStatement = GetPathJoinSql(f);
+					 if (!string.IsNullOrEmpty(pathJoinStatement))
+					 {
+						 fieldJoins.Add(pathJoinStatement);
+					 }
+				 }
 				 else
 				 {
 					 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
@@ -703,7 +709,7 @@ namespace d360.model.DataAccessLayer.repositories
 			);
 		}
 
-		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
+		protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams, List<string> fieldsUsedInMainQuery)
 		{
 			if (queryParams != null)
 			{
@@ -744,6 +750,7 @@ namespace d360.model.DataAccessLayer.repositories
 								else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "color")
 								{
 									orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"ACJ.ColorJson {orderDirection} ";
+									fieldsUsedInMainQuery.Add("ACJ.ColorJson");
 								}
 								else
 								{
@@ -764,6 +771,11 @@ namespace d360.model.DataAccessLayer.repositories
 												break;
 											case "parentdisplayname":
 												orderBy = $"Parent.DisplayValue {orderDirection}";
+												fieldsUsedInMainQuery.Add("Parent.DisplayValue");
+												break;
+											case string order when order.ToUpperInvariant().Contains("PATH_SEGMENT_IDX_"):
+												var segment_idx = int.Parse(order.ToUpperInvariant().Replace("PATH_SEGMENT_IDX_", "")) + 1;
+												orderBy = $"Node.Segments.value('(/path/segment)[{segment_idx}]', 'nvarchar(800)') {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
 												break;
 											default:
 												orderBy = $"A.ID {orderDirection}";
@@ -781,6 +793,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 									if (!string.IsNullOrEmpty(fieldDataType))
 									{
+										fieldsUsedInMainQuery.Add($"F{field.ID}.");
 										if (fieldDataType == "bit")
 										{
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(case when F{field.ID}.{valueColumn} is null then null when F{field.ID}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) {orderDirection}";
@@ -792,8 +805,10 @@ namespace d360.model.DataAccessLayer.repositories
 									}
 									else
 									{
+										fieldsUsedInMainQuery.Add($"F{field.ID}");
 										if (field.Type == "JsonElement")
 										{
+											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
 											FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(field.Definition);
 
 											if (jsonElementDefinition.DataType == "decimal")
@@ -807,18 +822,18 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else if (field.Type == "Path")
 										{
-											if (field.Definition.Equals("{}", StringComparison.OrdinalIgnoreCase))
-											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
-											}
-											else
-											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"[{field.Name}] {orderDirection}";
-											}
+											var orderStatement = GetPathSelectSql(field);
+											fieldsUsedInMainQuery.Add(orderStatement);
+
+											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"{orderStatement} {orderDirection}";
 										}
 										else if (field.Type == "Score")
 										{
 											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.[Value] {orderDirection}";
+										}
+										else if (field.Type == "Counter")
+										{
+											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
 										}
 										else
 										{
@@ -852,6 +867,7 @@ namespace d360.model.DataAccessLayer.repositories
 						{
 							if (assetType.Object == "ReferenceItemType" && key == "code")
 							{
+								fieldsUsedInMainQuery.Add("RI.");
 								whereStatements.Add($"RI.[Code] = @code");
 								dbArgs.Add($"@code", q.Value);
 							}
@@ -864,6 +880,7 @@ namespace d360.model.DataAccessLayer.repositories
 									switch (field.Type)
 									{
 										case "JsonElement":
+											fieldsUsedInMainQuery.Add($"FJP{field.ID}");
 											whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
@@ -872,6 +889,7 @@ namespace d360.model.DataAccessLayer.repositories
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
 										default:
+											fieldsUsedInMainQuery.Add($"F{field.ID}");
 											whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
 											dbArgs.Add($"@field{field.ID}", q.Value);
 											break;
@@ -896,6 +914,7 @@ namespace d360.model.DataAccessLayer.repositories
 						.GroupBy(x => x.SortOrder)
 						.ToList();
 
+
 					if (orderFields.Count == 0)
 					{
 						orderBySql = "order by A.ID ";
@@ -905,6 +924,7 @@ namespace d360.model.DataAccessLayer.repositories
 						List<string> sortStatements = new List<string>();
 						orderFields.ForEach(ft =>
 						{
+							fieldsUsedInMainQuery.AddRange(ft.Select(x => "F" + x.ID.ToString()));
 							if (ft.Count() == 1)
 							{
 								var sortDirection = ft.FirstOrDefault().SortByAscending ? "asc" : "desc";
@@ -953,7 +973,7 @@ namespace d360.model.DataAccessLayer.repositories
 		{
 			if (ft.Type == DataType.Path.ToString())
 			{
-				return GetPathColumnSql(ft);
+				return GetPathSelectSql(ft);
 			}
 
 			if (ft.Type == "Score")
@@ -961,7 +981,7 @@ namespace d360.model.DataAccessLayer.repositories
 				return $"F{ft.ID}.Value";
 			}
 			else
-			{ 
+			{
 				var fieldType = getFieldDataType(ft);
 
 				if (!string.IsNullOrEmpty(fieldType))
@@ -983,10 +1003,10 @@ namespace d360.model.DataAccessLayer.repositories
 					}
 				}
 
-				return $"F{ft.ID}.FormattedValue";			
+				return $"F{ft.ID}.FormattedValue";
 			}
 		}
-		
+
 		protected string getFieldDataType(FieldType field)
 		{
 			switch (field?.Type)
@@ -1004,7 +1024,7 @@ namespace d360.model.DataAccessLayer.repositories
 					return "";
 			}
 		}
-		
+
 		protected void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
 		{
 			var valueString = value?.ToString() ?? "";

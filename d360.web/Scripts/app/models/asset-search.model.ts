@@ -93,4 +93,14 @@ export class V2ApiFilters {
     _listColorsAsJSON: boolean;
     _isHierachyItem: boolean;
     _includeProfilingCheck: boolean;
+	_includeTotal: boolean;
+
+	public countUpdateFilters(): any{
+		return JSON.stringify({
+			_filter: this._filter,
+			_simpleFilter: this._simpleFilter,
+			_relationFilter: this._relationFilter,
+			_ownedBy: this._ownedBy
+		});
+	}
 }

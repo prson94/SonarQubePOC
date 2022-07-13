@@ -32,9 +32,9 @@
             </div>
         </div>
         <div class="tile tile-detail" *ngIf="selected">
-            <d3s-powerbi-viewer *ngIf="selected.ReportType =='powerbi'"
+            <d3s-powerbi-viewer *ngIf="selected.DashboardType == 'PowerBi'"
                                 [dashboard]="selected"></d3s-powerbi-viewer>
-            <d3s-sagacity-viewer *ngIf="selected.ReportType =='sagacity'"
+            <d3s-sagacity-viewer *ngIf="selected.DashboardType == 'DqPlus'"
                                  [dashboard]="selected"></d3s-sagacity-viewer>
         </div>
         <div *ngIf="!selected"

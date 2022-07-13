@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,8 +21,9 @@ using d360.extensions;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.utils.excel;
+using d360.web.Handlers.Exceptions;
 using d360.web.Models;
-
+using d360.web.Utilities;
 using Dapper;
 
 using LaunchDarkly.Sdk;
@@ -269,23 +271,49 @@ namespace d360.web.Controllers
 
         #region Error Handling Helper
 
-        [System.Runtime.Serialization.DataContract(Name = "Error")]
-        public class GenericHttpError
-        {
-            public string Message { get; set; }
-
-            public HttpStatusCode Code { get; set; }
-        }
-
+		/// <summary>
+		/// <remarks>for some reason all api errors which have not title specified should be bad request...</remarks>
+		/// </summary>
+		/// <param name="status"></param>
+		/// <param name="message"></param>
+		/// <returns></returns>
+        [Obsolete("You should throw appropriate exception instead of this method.")]
         protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string message)
         {
-            var acceptHeaders = Request.Headers.Accept;
-            var asJson = !acceptHeaders.Any(i => i.MediaType == "application/xml");
-
-            return Request.CreateResponse(status, new GenericHttpError { Code = status, Message = message }, asJson ? "application/json" : "application/xml");
+	        return ReturnApiError(status, OthersMessages.BadRequestSubmitted, message);
         }
 
-        public class StatusCodeErrorMessage
+        [Obsolete("You should throw appropriate exception instead of this method.")]
+        protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string title, string message)
+        {
+	        // moved some code from exception handler (until this method will be removed)
+	        var runtimeInfo = DependencyResolver.Current.GetService<IRuntimeInfo>();
+	        var problem = new ProblemDetailsResponse
+	        {
+		        Type = "error",
+		        Status = (int)status,
+		        Detail = message,
+		        Title = title,
+		        Method = Request.Method.ToString(),
+		        Instance = Request.RequestUri?.ToString()
+	        };
+	        if (runtimeInfo.IsReleaseBuild == false || runtimeInfo.IsDebuggerAttached)
+	        {
+		        problem.Extra.Add("messages", new[] { message });
+		        problem.Extra.Add("stack_trace", Environment.StackTrace?.Split(new[]
+		        {
+			        "\r\n"
+		        }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>());
+	        }
+
+	        var json = JsonConvert.SerializeObject(problem, Formatting.Indented);
+	        var response = Request.CreateResponse();
+	        response.StatusCode = status;
+	        response.Content = new StringContent(json, Encoding.UTF8, "application/problem+json");
+	        return response;
+        }
+
+		public class StatusCodeErrorMessage
         {
             public HttpStatusCode Status { get; set; }
             public string ErrorMessage { get; set; }
@@ -293,6 +321,7 @@ namespace d360.web.Controllers
 
         #endregion
 
+		[Obsolete("Don't use this method. Throw exceptions directly")]
         protected internal IHttpActionResult DetermineUnhandledException(Exception ex, string errorHeading, List<StatusCodeErrorMessage> errorMessages, Dictionary<string, string> methodProperties)
         {
             if (errorMessages == null)
@@ -300,38 +329,37 @@ namespace d360.web.Controllers
                 errorMessages = new List<StatusCodeErrorMessage>();
             }
 
-            if (ex is ConflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
+            if (ex is ConflictException conflictException && errorMessages.Any(e => e.Status == HttpStatusCode.Conflict))
             {
-                return errorMessageResponse((ex as ConflictException).StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
+	            throw new GenericException(conflictException.StatusCode, errorHeading, errorMessages.First(e => e.Status == HttpStatusCode.Conflict).ErrorMessage);
             }
-            else if (ex is NotFoundException && errorMessages.Any(e => e.Status == (ex as NotFoundException).StatusCode))
+
+            if (ex is NotFoundException notFoundException && errorMessages.Any(e => e.Status == notFoundException.StatusCode))
             {
-                return errorMessageResponse((ex as NotFoundException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as NotFoundException).StatusCode).ErrorMessage);
+	            throw new GenericException(notFoundException.StatusCode, errorHeading, errorMessages.First(e => e.Status == notFoundException.StatusCode).ErrorMessage);
             }
-            else if (ex is StatusCodeException && errorMessages.Any(e => e.Status == (ex as StatusCodeException).StatusCode))
+
+            if (ex is StatusCodeException statusCodeException && errorMessages.Any(e => e.Status == statusCodeException.StatusCode))
             {
-                return errorMessageResponse((ex as StatusCodeException).StatusCode, errorHeading, errorMessages.First(e => e.Status == (ex as StatusCodeException).StatusCode).ErrorMessage);
+	            throw new GenericException(statusCodeException.StatusCode, errorHeading, errorMessages.First(e => e.Status == statusCodeException.StatusCode).ErrorMessage);
             }
-            else if (ex is GenericException)
+
+            if (ex is GenericException genericException)
             {
-                return errorMessageResponse((ex as GenericException).StatusCode, errorHeading, (ex as GenericException).StatusDescription);
+	            throw new GenericException(genericException.StatusCode, errorHeading, genericException.StatusDescription);
             }
-            else
+
+            if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("invalid filter expression"))
             {
-                if (ex.Message.ToLower().Contains("invalid filter expression"))
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, $"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}");
-                }
-                else if (ex.Message.ToLower().Contains("conversion failed when converting from"))
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, errorHeading, ApiMessages.InvalidFilterExpressionUsedMessage);
-                }
-                else
-                {
-                    SendException(ex, methodProperties);
-                    return errorMessageResponse(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
-                }
+	            throw new ArgumentException($"{ApiMessages.InvalidFilterExpressionUsed}{ex.Message.Replace(ApiMessages.InvalidFilterExpression, "")}", ex);
             }
+
+            if (ex.Message.ToLower(CultureInfo.InvariantCulture).Contains("conversion failed when converting from"))
+            {
+	            throw new ArgumentException(ApiMessages.InvalidFilterExpressionUsedMessage, ex);
+            }
+
+            throw new GenericException(HttpStatusCode.InternalServerError, errorHeading, ApiMessages.UnknownErrorInvestigatingMessage);
         }
 
         protected internal void SendException(Exception ex, IDictionary<string, string> properties, IDictionary<string, double> metrics = null)
@@ -353,12 +381,7 @@ namespace d360.web.Controllers
 
 		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
-            return ResponseMessage(
-                Request.CreateResponse(
-                    status,
-                    new ErrorResponse { title = title, message = message }
-                )
-            );
+	        return ResponseMessage(ReturnApiError(status, title, message));
         }
 
         protected internal IHttpActionResult successMessageResponse(HttpStatusCode status, string title, string message)

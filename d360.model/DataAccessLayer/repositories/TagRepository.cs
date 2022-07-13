@@ -1049,7 +1049,7 @@ namespace d360.model.DataAccessLayer
 						from Tag T
 							inner join AssetTag AT on AT.TagID = T.ID
 							inner join Asset A ON A.ID = AT.AssetID
-							inner join graph.AssetNode Node on Node.id = a.id
+							inner join AssetPath Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
 							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
 							{(addtagasstingfilter ? $" {tagsCrossApply} " : "")}
@@ -1084,7 +1084,7 @@ namespace d360.model.DataAccessLayer
 							inner join AssetTag AT on AT.TagID = T.ID
 							inner join reporting.Global_Resource grc ON AT.CreatedBy = grc.ResourceID
 							inner join Asset A ON A.ID = AT.AssetID
-							inner join graph.AssetNode Node on Node.id = a.id
+							inner join AssetPath Node on Node.id = a.id
 							inner join AssetType AST ON AST.Id = A.AssetTypeId
 							cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
 							{tagsCrossApply}

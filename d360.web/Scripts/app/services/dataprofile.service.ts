@@ -417,5 +417,25 @@ export class DataProfileService extends BaseObservableService {
                 }),
                 catchError((err) => this.handleError(err))
             );
-    }
+	}
+
+	GetPossibleCreators(): Observable<any[]> {
+		return this
+			.http
+			.get(`api/v2/dataprofiles/possibleCreators`)
+			.pipe(
+				map((response) => { return <any[]>response; }),
+				catchError((err) => this.handleError(err))
+			);
+	}
+
+	GetPossibleRedactors(): Observable<any[]> {
+		return this
+			.http
+			.get(`api/v2/dataprofiles/possibleRedactors`)
+			.pipe(
+				map((response) => { return <any[]>response; }),
+				catchError((err) => this.handleError(err))
+			);
+	}
 }

@@ -3,12 +3,9 @@
         <div class="tile tile-detail main-panel">
             <ig-portal-content-provider name="asset-description" [template]="description">
                 <ng-template #description>
-                    <i *ngIf="assetType && assetType.Description && assetType.Description.length > 0"
-                        class="header-description fa fa-info-circle help-icon"
-                        [escape]="false"
-                        [pTooltip]="assetType.Description | sanitize"
-                        tooltipPosition="top"
-                        tooltipStyleClass="ig-tooltip"></i>
+                    <d3s-info-tooltip [titleValue]="infoIconHtmlString" *ngIf="assetType && assetType.Description && assetType.Description.length > 0">
+                        <div [innerHtml]="assetType.Description | sanitize"></div>
+                    </d3s-info-tooltip>
                 </ng-template>
             </ig-portal-content-provider>
 
@@ -18,8 +15,7 @@
                         <ig-search-field mode="Keypress"
                                          [debounce]="600"
                                          (onSearch)="loadNodes()"
-                                         [(ngModel)]="simpleFilterValue"
-                                         [infoTooltip]="simpleSearchTooltipHTML">
+                                         [(ngModel)]="simpleFilterValue">
                         </ig-search-field>
                     </div>
                     <div class="grid-action-buttons">
@@ -36,7 +32,7 @@
                                 (click)="showAdd(0)">
                         </button>
     
-                        <div pTooltip="exportTooltip"
+                        <div [pTooltip]="exportTooltip"
                              tooltipPosition="left"
                              tooltipStyleClass="ig-tooltip">
                             <button igButton
@@ -85,19 +81,21 @@
                                 <p-treeTableSortIcon *ngIf="column.sortable === true" [field]="column.datafield"></p-treeTableSortIcon>
                             </th>
                             <th style="width: 40px"></th>
+							<th style="width: 0; padding: 0"></th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body"
                                  let-rowNode
                                  let-item="rowData">
-                        <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)">
+                        <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)"
+							(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools);">
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
                                 <p-treeTableToggler [rowNode]="rowNode"
                                                     style="margin-right: 8px;"
                                                     [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
                                                     *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">
-                                    <a (click)="showHierarchy(item)"
+                                    <a (click)="showHierarchy($event, item)" context-link [isOpenDefault]="true"
                                        [ngStyle]="setTreeNodeStyles(rowNode.node)"
                                        [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
                                         <d3s-dynamic-field-value [column]="column"
@@ -118,7 +116,7 @@
                                                              [interceptLinkClick]="true"></d3s-dynamic-field-value>
                                 </ng-container>
                             </td>
-                            <td class="asset-grid-tools">
+                            <td class="asset-grid-tools" #assetGridTools>
                                 <div>
                                     <button igButton
                                             type="button"
@@ -132,6 +130,15 @@
                                                    [tabIndex]="1"></ig-popup-menu>
                                 </div>
                             </td>
+							<button class="ig-float-popup-container" #floatButton
+									[igDataCy]="'Hierarchy_Menu_Button_' + item.AssetUid">
+								<ig-popup-menu (onSelect)="clickMenuItem($event, rowNode.node)"
+											   [items]="item[menuKey]"
+											   [dataCy]="'Hierarchy_Menu_Popup_' + item.AssetUid"
+											   #floatMenu
+											   [tabIndex]="1">
+								</ig-popup-menu>
+							</button>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="summary">

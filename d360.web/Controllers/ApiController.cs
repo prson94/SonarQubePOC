@@ -86,7 +86,7 @@ namespace d360.web.Controllers
 						           X.p.value('./@position', 'int') as P,
 						           X.p.value('./@assetTypeId', 'int') as AssetTypeId,
 						           (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
-					          FROM graph.AssetNode
+					          FROM AssetPath
 					         CROSS APPLY Segments.nodes('/path/segment') X(p)
 					         WHERE AssetNode.ID = @assetId
 					      ) s
@@ -1058,14 +1058,25 @@ namespace d360.web.Controllers
 					var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
 					var loopCount = 0;
 
+					List<GridField> parentGridFields = new List<GridField>();
 					//add the parent columns
 					while (parentRefType != null && loopCount < 20)
 					{
 						columns.Insert(0, new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
-						fields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "ParentDisplayName", type = "string" });
+						parentGridFields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "", type = "string" });
 						parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
 						loopCount++;
 					}
+
+					var idx = 0;
+					//parent fields were added starting from child element up, meaning we need to reverse this list to get correct index segment withing asset path
+					parentGridFields.Reverse();
+					foreach (var parent in parentGridFields)
+					{
+						parent.apiName = $"PATH_SEGMENT_IDX_{idx}";
+						idx++;
+					}
+					fields.AddRange(parentGridFields);
 
 					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
 
@@ -1328,8 +1339,9 @@ namespace d360.web.Controllers
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
+				var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.Object == "ArtifactType" && x.ObjectID == typeID)?.ID;
 
-				bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
+				bool hasDashboards = Company.Filter<Report>(x => x.AssetTypeID == assetTypeId && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List).Any();
 				model.Add("HasDashboards", hasDashboards);
 
 				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
@@ -2261,61 +2273,6 @@ namespace d360.web.Controllers
 
 		#endregion
 
-		#region Reports
-
-		[Route("reports/targets")]
-		public IEnumerable<dynamic> GetReportTargetAreas()
-		{
-
-			var items = Company.Query<dynamic>($@"
-				select      *
-				from        (                 
-							select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
-										'Business Asset : ' + Name as title
-							from        AssetType where [object]='ArtifactType'  and [Class] = 1                       
-							union
-							select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
-										'Technical Asset : ' + Name as title
-							from        AssetType where [object]='ArtifactType'  and [Class] = 8                       
-							union 
-							select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
-										'Business Asset Instance : ' + Name as title
-							from       AssetType where [object]='ArtifactType' and [Class] = 1   
-							union 
-							select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
-										'Technical Asset Instance : ' + Name as title
-							from       AssetType where [object]='ArtifactType' and [Class] = 8  
-							union
-							select      'Resource|1' as value,
-										'Resource' as title
-							union
-							select      'Taxonomy|' + cast(ObjectId as varchar(15)) as value,
-										'Model Instance : ' + Name as title
-							from         AssetType where [object]='TaxonomyType' 
-							union
-							select      'TaxonomyType|' + cast(ObjectId as varchar(15)) as value,
-										'Model Type : ' + Name as title
-							from        AssetType where [object]='TaxonomyType' 
-							union
-							select      'Policy|' + cast(ObjectId as varchar(15)) as value,
-										'Policy Instance : ' + Name as title
-							from         AssetType where [object]='PolicyType' 
-							union
-							select      'PolicyType|' + cast(ObjectId as varchar(15)) as value,
-										'Policy Type : ' + Name as title
-							from        AssetType where [object]='PolicyType' 
-							union
-							select      'RuleType|' + cast(ObjectId as varchar(15)) as value,
-										'Rule Type : ' + Name as title
-							from         AssetType where [object]='RuleType' 
-							) O
-							order by    title
-							").ToList();
-
-			return items;
-		}
-
-		#endregion
 
 		#region Resources
 
@@ -2451,6 +2408,8 @@ namespace d360.web.Controllers
 			var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
 			int objectId = int.Parse(row.ID.ToString());
 			var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
+			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.Object == "RuleType" && x.ObjectID == id).ID;
+			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy);
 
 			return Request.CreateResponse<dynamic>(
 				new Dictionary<string, object>() {
@@ -2460,7 +2419,7 @@ namespace d360.web.Controllers
 					{ "HasCustomExportTemplates", hasCustomExports },
 					{ "HasWorkflow", (bool)row.HasWorkflow },
 					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-					{ "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
+					{ "HasDashboards", hasDashboards },
 					{ "AssetTypeUID", row.uid }
 				}
 			);
@@ -2488,11 +2447,11 @@ namespace d360.web.Controllers
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
 										c.BackColor as IconBackColor,
-										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '${CommonNames.AssetTypeClass_Business}'
-										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '${CommonNames.AssetTypeClass_Business}'
-										when c.[Object] = 'ReferenceItem' then '${CommonNames.AssetTypeClass_Reference}'
-										when c.[Object] = 'Taxonomy' then '${CommonNames.AssetTypeClass_Model}'
-										when c.[Object] = 'Policy' then '${CommonNames.AssetTypeClass_Policy}'
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then '{CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then '{CommonNames.AssetTypeClass_Business}'
+										when c.[Object] = 'ReferenceItem' then '{CommonNames.AssetTypeClass_Reference}'
+										when c.[Object] = 'Taxonomy' then '{CommonNames.AssetTypeClass_Model}'
+										when c.[Object] = 'Policy' then '{CommonNames.AssetTypeClass_Policy}'
 										else	c.[Object] end [Displayobject],
 										Uid as AssetUid
 										from [dbo].AssetWithType c   
@@ -3042,17 +3001,21 @@ namespace d360.web.Controllers
 							}
 
 							var groupOwners = GetCompanyResources().Where(i => groupOwnerIDs.Contains(i.ID)).ToList();
-							var row = new DetailReadOnlyRowModel
+
+							var row = new DetailReadOnlyRowModel();
+							ReadOnlyField primaryRow = null;
+							ReadOnlyField secondaryRow = null;
+							row.columns = groupOwners.Count();
+
+							if (group.PrimaryOwnerResourceID.HasValue)
 							{
-								columns = 2,
-								FirstColumnFields = new List<ReadOnlyField>
+								primaryRow = new ReadOnlyField
 								{
-									new ReadOnlyField {
-										Name = group.GetName(i => i.PrimaryOwnerResourceID),
-										FieldName = "GroupOwner",
-										FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID),
-										Value = "values",
-										Values = new List<ReadOnlyFieldValue>{
+									Name = group.GetName(i => i.PrimaryOwnerResourceID),
+									FieldName = "GroupOwner",
+									FieldDescription = group.GetDescription(i => i.PrimaryOwnerResourceID),
+									Value = "values",
+									Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
 												Value= groupOwners.Single(i => i.ID == group.PrimaryOwnerResourceID.Value).FormatDisplayName(),
 												TooltipType="Resource",
@@ -3061,21 +3024,19 @@ namespace d360.web.Controllers
 												HideTooltip = true
 											}
 										},
-										DataType = DataType.Lookup.ToString()
-									}
-								}
-							};
+									DataType = DataType.Lookup.ToString()
+								};
+							}
 
 							if (group.SecondaryOwnerResourceID.HasValue)
 							{
-								row.SecondColumnFields = new List<ReadOnlyField>
+								secondaryRow = new ReadOnlyField
 								{
-									new ReadOnlyField {
-										Name = group.GetName(i => i.SecondaryOwnerResourceID),
-										FieldName = "GroupOwner",
-										FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
-										Value = "values",
-										Values = new List<ReadOnlyFieldValue>{
+									Name = group.GetName(i => i.SecondaryOwnerResourceID),
+									FieldName = "GroupOwner",
+									FieldDescription = group.GetDescription(i => i.SecondaryOwnerResourceID),
+									Value = "values",
+									Values = new List<ReadOnlyFieldValue>{
 											new ReadOnlyFieldValue {
 												Value= groupOwners.Single(i => i.ID == group.SecondaryOwnerResourceID.Value).FormatDisplayName(),
 												TooltipType="Resource",
@@ -3084,11 +3045,19 @@ namespace d360.web.Controllers
 												HideTooltip = true
 											}
 										},
-										DataType = DataType.Lookup.ToString()
-									}
+									DataType = DataType.Lookup.ToString()
 								};
 							}
 
+							if (row.columns == 1)
+							{
+								row.FirstColumnFields = new List<ReadOnlyField> { primaryRow ?? secondaryRow };
+							}
+							else if(row.columns == 2)
+							{
+								row.FirstColumnFields = new List<ReadOnlyField> { primaryRow };
+								row.SecondColumnFields = new List<ReadOnlyField> { secondaryRow };
+							}
 
 							model.rows.Add(row);
 						}
@@ -4116,12 +4085,12 @@ namespace d360.web.Controllers
 
 						var reportType = "";
 
-						switch (report.ReportType ?? "")
+						switch (report.ReportType)
 						{
-							case "powerbi":
+							case DashboardType.PowerBi:
 								reportType = "Power BI";
 								break;
-							case "sagacity":
+							case DashboardType.DqPlus:
 								reportType = "Data3Sixty Foundation";
 								break;
 							default:
@@ -4151,14 +4120,14 @@ namespace d360.web.Controllers
 							});
 						}
 
-						if (!string.IsNullOrEmpty(report.FileName))
+						if (!string.IsNullOrEmpty(report.DashboardDefinition?.fileName))
 						{
 							model.rows.Add(new DetailReadOnlyRowModel
 							{
 								columns = 1,
 								FirstColumnFields = new List<ReadOnlyField>
 								{
-									new ReadOnlyField { Name = "File Name", FieldName = "FileName", Value = report.FileName }
+									new ReadOnlyField { Name = "File Name", FieldName = "FileName", Value = report.DashboardDefinition.fileName }
 								}
 							});
 						}
@@ -4194,47 +4163,20 @@ namespace d360.web.Controllers
 
 						var sql = "";
 
-						switch (report.ObjectType)
-						{
-							case "Artifact":
-								sql = "select case when Class = 1 then 'Business Asset Instance : ' + Name when Class = 8 then 'Technical Asset Instance : ' + Name END, Class from AssetType where objectid = @id and [Object]='ArtifactType'";
-								break;
-							case "ArtifactType":
-								sql = "select case when Class = 1 then 'Business Asset : ' + Name when Class = 8 then 'Technical Asset : ' + Name END, Class from AssetType where objectid = @id and [Object]='ArtifactType'";
-								break;
-							case "Resource":
-								sql = "select 'Resource Instance'";
-								break;
-							case "Policy":
-								sql = "select 'Policy Instance : ' + Name from AssetType where objectid = @id and [Object]='PolicyType'";
-								break;
-							case "PolicyType":
-								sql = "select 'Policy Type : ' + Name from AssetType where objectid = @id and [Object]='PolicyType'";
-								break;
-							case "Rule":
-								sql = "select 'Rule Instance : ' + Name from AssetType where objectid = @id and [Object]='RuleType'";
-								break;
-							case "RuleType":
-								sql = "select 'Rule Type : ' + Name from AssetType where objectid = @id and [Object]='RuleType'";
-								break;
-							case "Taxonomy":
-								sql = "select 'Model Instance : ' + Name from AssetType where objectid = @id and [Object]='TaxonomyType'";
-								break;
-							case "TaxonomyType":
-								sql = "select 'Model Type : ' + Name from AssetType where objectid = @id and [Object]='TaxonomyType'";
-								break;
-						}
+						var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == report.AssetTypeID);
 
-						var objectName = (!string.IsNullOrEmpty(sql)) ?
-							Company.Query<string>(sql, new { id = report.ObjectID }).SingleOrDefault() :
-							"Not found.";
+						string objectName = assetType.Class.GetDisplayName();
+						if(report.Location == DashboardLocation.Detail) {
+							objectName += " Instance: ";
+						}
+						objectName += assetType.Name;
 
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
 							columns = 1,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Row = 3, Column = 2, Name = report.GetName(i => i.ObjectType), FieldName = "ReportObjectType", FieldDescription = report.GetDescription(i => i.ObjectType), Value = objectName }
+								new ReadOnlyField { Row = 3, Column = 2, Name = assetType.Class.GetDisplayName(), FieldName = "ReportObjectType", FieldDescription = assetType.Class.GetDisplayName(), Value = objectName }
 							}
 						});
 					}

@@ -89,15 +89,15 @@ namespace d360.model.helpers.filters
 				stringBuilder.Append($@"(
 				  exists (
 					SELECT top 1 *
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND S.Uid = A.Uid
+					FROM   [Intersect] I
+					inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
+					WHERE  IT.Uid = @intersectFilter{parameterIdx} AND I.SubjectAssetId = A.Id
 				)
 				or exists (
 					SELECT top 1 *
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND O.Uid = A.Uid
+					FROM   [Intersect] I
+					inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
+					WHERE  IT.Uid = @intersectFilter{parameterIdx} AND I.ObjectAssetId = A.Id
 				)
 				)");
 			}
@@ -107,15 +107,15 @@ namespace d360.model.helpers.filters
 				stringBuilder.Append($@"(
 				 not exists (
 					SELECT top 1 *
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND S.Uid = A.Uid
+					FROM   [Intersect] I
+					inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
+					WHERE  IT.Uid = @intersectFilter{parameterIdx} AND I.SubjectAssetId = A.Id
 				)
 				and not exists (
 					SELECT top 1 *
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND O.Uid = A.Uid
+					FROM   [Intersect] I
+					inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
+					WHERE  IT.Uid = @intersectFilter{parameterIdx} AND I.ObjectAssetId = A.Id
 				)
 				)");
 			}
@@ -127,29 +127,33 @@ namespace d360.model.helpers.filters
 		{
 			if (filterCond == SplitFilterCriteriaRelationship.Subject)
 			{
-				stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{parameterIdx})");
+				stringBuilder.Append($@"{condition}(SELECT TargetAsset.Uid as TargetAssetId
+					FROM  [Intersect] I
+					Inner join [IntersectType] IT ON IT.ID = I.IntersectTypeId
+					inner join [Asset] TargetAsset on TargetAsset.uid = @intersectAssetFilter{parameterIdx}
+					WHERE IT.Uid = @intersectFilter{parameterIdx} AND I.ObjectAssetId = A.Id and I.SubjectAssetId = TargetAsset.Id)");
 			}
 			else if (filterCond == SplitFilterCriteriaRelationship.Object)
 			{
-				stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S - (E) -> O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{parameterIdx})");
+				stringBuilder.Append($@"{condition}(SELECT TargetAsset.Uid as TargetAssetId
+					FROM  [Intersect] I
+					Inner join [IntersectType] IT ON IT.ID = I.IntersectTypeId
+					inner join [Asset] TargetAsset on TargetAsset.uid = @intersectAssetFilter{parameterIdx}
+					WHERE IT.Uid = @intersectFilter{parameterIdx} AND I.SubjectAssetId = A.Id and I.ObjectAssetId = TargetAsset.Id)");
 			}
 			else
 			{
-				stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{parameterIdx}
+				stringBuilder.Append($@"{condition}(SELECT TargetAsset.Uid as TargetAssetId
+					FROM  [Intersect] I
+					Inner join [IntersectType] IT ON IT.ID = I.IntersectTypeId
+					inner join [Asset] TargetAsset on TargetAsset.uid = @intersectAssetFilter{parameterIdx}
+					WHERE IT.Uid = @intersectFilter{parameterIdx} AND I.ObjectAssetId = A.Id and I.SubjectAssetId = TargetAsset.Id
 					UNION
-					SELECT       O.Uid as TargetAssetId
-					FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-					WHERE        MATCH(S - (E) -> O)  AND IntersectTypeUid = @intersectFilter{parameterIdx}
-							  AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{parameterIdx})");
+					SELECT TargetAsset.Uid as TargetAssetId
+					FROM  [Intersect] I
+					Inner join [IntersectType] IT ON IT.ID = I.IntersectTypeId
+					inner join [Asset] TargetAsset on TargetAsset.uid = @intersectAssetFilter{parameterIdx}
+					WHERE IT.Uid = @intersectFilter{parameterIdx} AND I.SubjectAssetId = A.Id and I.ObjectAssetId = TargetAsset.Id)");
 			}
 		}
 

@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.SecondaryNavSettings-v7">
-    <comment>GOV-14655</comment>
+  <changeSet author="TDuric" id="Procedure.dbo.SecondaryNavSettings-v8">
+    <comment>GOV-18079</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -126,7 +126,7 @@ begin
 		--dashboard
 		if exists(select a.uid from Asset A 
 					inner join AssetType T on T.ID = A.AssetTypeID
-					inner join Report R on R.ObjectType = A.Object and R.ObjectID = T.ObjectID
+					inner join Report R on R.AssetTypeId = T.Id and R.Location = 2
 					where A.uid = @assetUid
 		)
 		begin

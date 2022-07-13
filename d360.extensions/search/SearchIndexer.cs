@@ -369,10 +369,10 @@ namespace d360.extensions.search
 	            att.Name as TypeName,
 	            a.uid as Uid,
                 att.uid as AssetTypeUid,
-	            an.Segments
+	            ap.Segments
             from [dbo].[Asset] a
             inner join [dbo].[AssetType] att on a.AssetTypeID = att.id
-            inner join [graph].[AssetNode] an on a.ID = an.id
+            inner join [dbo].[AssetPath] ap on a.ID = ap.id
             inner join @ids i on a.ID = i.Id 
             where an.segments is not null";
 
@@ -622,12 +622,12 @@ namespace d360.extensions.search
                             att.uid as AssetTypeUid,
 	                        a.uid as Uid,
                             {UrlMethod} as 'Url',
-                            an.Segments as Segments
+                            ap.Segments as Segments
                         from
 	                        [dbo].Asset a
 	                        inner join [dbo].assettype att on a.assettypeid = att.id
 	                        inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
-                            left outer join [graph].[AssetNode] an on a.ID = an.ID
+                            left outer join [dbo].[AssetPath] ap on a.ID = ap.ID
                             {joinBatchTable}
                         where
 	                          {whereCondition}

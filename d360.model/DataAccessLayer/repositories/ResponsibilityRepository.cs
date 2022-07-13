@@ -642,8 +642,10 @@ namespace d360.model.DataAccessLayer
 			return result;
 		}
 
-		public Task<IEnumerable<ClaimsViewModel>> GetClaims()
+		public async Task<ICollection<ClaimsViewModel>> GetClaimsAsync()
 		{
+			await Task.CompletedTask;
+
 			var permissions = Permission.ReadResponsibilities.GetList();
 			var claims = permissions.Select(x => new ClaimsViewModel()
 			{
@@ -653,7 +655,7 @@ namespace d360.model.DataAccessLayer
 				Description = x.Description
 			}).ToList();
 
-			return Task.FromResult<IEnumerable<ClaimsViewModel>>(claims);
+			return claims;
 		}
 
 		public ResponsibilityTypeAllocationResponseModel AddAllocation(ResponsibilityType responsibiltyType, AssetType assetType, IEnumerable<int> permissionsBitMask)

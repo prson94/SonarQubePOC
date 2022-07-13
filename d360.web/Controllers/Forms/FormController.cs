@@ -633,8 +633,6 @@ namespace d360.web.Controllers
 					return PutOrganizationInvitation(form);
 				case "POLICYTYPELEVEL":
 					return EditPolicyTypeLevel(form);
-				case "REPORT":
-					return await EditReport(form);
 				case "SERVICE":
 					return EditService(form);
 				case "TAXONOMYTYPELEVEL":
@@ -674,8 +672,6 @@ namespace d360.web.Controllers
 					return DeleteOrganizationDomain(objectID);
 				case "ORGANIZATIONINVITATION":
 					return DeleteOrganizationInvitation(objectID);
-				case "REPORT":
-					return await DeleteReport(form);
 				case "POLICYTYPELEVEL":
 					return DeletePolicyTypeLevel(form);
 				case "SERVICE":
@@ -722,8 +718,6 @@ namespace d360.web.Controllers
 					return PostOrganizationInvitation(form);
 				case "POLICYTYPELEVEL":
 					return AddPolicyTypeLevel(form);
-				case "REPORT":
-					return await AddReport(form);
 				case "SERVICE":
 					return AddService(form);
 				case "TAXONOMYTYPELEVEL":

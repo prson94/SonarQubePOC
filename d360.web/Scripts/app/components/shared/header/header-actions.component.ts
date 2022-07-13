@@ -8,6 +8,9 @@ import { FavoriteApiModel, FavoriteViewModel } from '../../../models/favorite.mo
 import * as _ from 'lodash';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { CompanySettingEnum } from '../../../models/settings.model';
+import { HeaderBreadcrumbService } from "../../../services/header-breadcrumb.service";
+import { HeaderActions } from "../../../models/header.model";
+import { Subscription } from "rxjs";
 
 
 @Component({
@@ -49,7 +52,8 @@ export class HeaderActionsComponent {
     public showShoppingCart: boolean = false;
 
     private routerSub;
-    private subObjectChange: any;
+	private subObjectChange: any;
+	private subShowFollow: Subscription;
     private subFavorites: any;
 
     private favItems: FavoriteViewModel[] = [];
@@ -65,6 +69,7 @@ export class HeaderActionsComponent {
 
     constructor(
         public headerActionsService: HeaderActionsService,
+		private headerBreadcrumbService: HeaderBreadcrumbService,
         private secondaryNavService: SecondaryNavService,
         protected settingsService: CompanySettingsService,
         private favoritesService: FavoritesService,
@@ -166,6 +171,12 @@ export class HeaderActionsComponent {
                 setTimeout(() => { this.calculateControlWidth(); }, 250);
             }
         });
+		
+		this.subShowFollow = this.headerBreadcrumbService.currentObjectInfo$.subscribe((currentObject) => {
+			let headerActions = new HeaderActions();
+			headerActions.showFollow = currentObject.type && currentObject.id > 0;
+			this.headerActionsService.setCurrentHeaderActions(headerActions);
+		});
 
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
@@ -201,9 +212,8 @@ export class HeaderActionsComponent {
 
         this.showShoppingCart = this.settingsService.getSettingById(CompanySettingEnum.EnableShoppingCart).BooleanSetting.Value;
 
-        this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe(x => {
+        this.headerActionsSub = this.headerActionsService.onHeaderActionsChange$.subscribe((x) => {
             this.headerActionsService.showFollow = x.showFollow;
-
         });
 
     }
@@ -236,6 +246,7 @@ export class HeaderActionsComponent {
         if (this.headerActionsSub) {
             this.headerActionsSub.unsubscribe();
         }
+		this.subShowFollow?.unsubscribe();
     }
 }
 

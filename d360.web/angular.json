@@ -14,25 +14,7 @@
       "sourceRoot": "Scripts",
       "prefix": "d3s",
       "i18n": {
-        "sourceLocale": "en",
-        "locales": {
-          "fr": {
-            "translation": "locale/messages.fr.xlf",
-            "baseHref": ""
-          },
-          "de": {
-            "translation": "locale/messages.de.xlf",
-            "baseHref": ""
-          },
-          "en-gb": {
-            "translation": "locale/messages.en-gb.xlf",
-            "baseHref": ""
-          },
-          "ca": {
-            "translation": "locale/messages.ca.xlf",
-            "baseHref": ""
-          }
-        }
+        "sourceLocale": "en"
       },
       "architect": {
         "build": {
@@ -78,26 +60,6 @@
                   "maximumWarning": "4mb",
                   "maximumError": "6mb"
                 }
-              ]
-            },
-            "fr": {
-              "localize": [
-                "fr"
-              ]
-            },
-            "de": {
-              "localize": [
-                "de"
-              ]
-            },
-            "en-gb": {
-              "localize": [
-                "en-gb"
-              ]
-            },
-            "ca": {
-              "localize": [
-                "ca"
               ]
             }
           },

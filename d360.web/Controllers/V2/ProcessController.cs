@@ -621,16 +621,15 @@ namespace d360.web.Controllers.V2
 
 			var results = await Company.QueryAsync<dynamic>($@"
 					select a.uid,
-						graph.GetPath(an.Segments, ' > ', ' / ') as assetPath,
+						an.DisplayPath as assetPath,
 						P.Path as typePath
 						from asset a
-							inner join AssetProcessDiagram apd on a.ID = apd.AssetID
-							inner join graph.assetnode an on an.uid = a.uid
-							inner join AssetType at on at.id = @assettypeid
-							cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' > ') P
+							inner join AssetProcessDiagram apd on a.ID = apd.AssetID and a.AssetTypeID = @assettypeid
+							inner join AssetPath an on an.ID = a.ID
+							cross apply dbo.GetAssetTypeTextPathById(a.AssetTypeID, ' > ') P
 						where a.AssetTypeID = @assetTypeId and apd.Diagram is not null and a.uid <> @currentAssetuid
-						order by graph.GetPath(an.Segments, ' > ', ' / ')
-					", new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
+						order by an.DisplayPath", 
+						new { currentAssetUid = asset.uid, assetTypeId = asset.AssetTypeID });
 
 			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
 		}

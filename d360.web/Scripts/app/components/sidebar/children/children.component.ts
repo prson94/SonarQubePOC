@@ -1,6 +1,6 @@
-﻿import {Input, Component, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../../shared/base.component';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../../shared/base.component';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { ObjectStatisticChildItem } from '../../../models/object-statistics.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
@@ -28,9 +28,9 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             </div>
                         </div>
                         <div class="col l9 s12" *ngIf="parentUid">
-                            <d3s-artifact-item-child-grid [parentUid]="parentUid" [displayName]="displayName"
-                                                          [artifactTypeId]="selected?.TypeID"
-                                                          [assettypename]="selected?.Name"></d3s-artifact-item-child-grid>
+                            <d3s-artifact-item-child-grid
+								[selected]="selected" [parentUid]="parentUid" [displayName]="displayName">
+							</d3s-artifact-item-child-grid>
                         </div>
                     </div>
                 </div>
