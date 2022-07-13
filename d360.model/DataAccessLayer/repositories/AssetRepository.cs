@@ -39,9 +39,9 @@ namespace d360.model.DataAccessLayer
 		internal ICommunityContext Community;
 
 		public AssetRepository(
-			ICompanyContext companyContext, 
-			IQueueSource queueSource, 
-			IStorageProvider storageProvider, 
+			ICompanyContext companyContext,
+			IQueueSource queueSource,
+			IStorageProvider storageProvider,
 			ICommunityContext community)
 			: base(companyContext)
 		{
@@ -157,7 +157,7 @@ namespace d360.model.DataAccessLayer
 					var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
-						extraJoins += @" cross apply (select count(1) as [Count] from Report where ObjectType = A.Object and ObjectID = A.ObjectID) D ";
+						extraJoins += @" cross apply (select count(1) as [Count] from Report where AssetTypeId = A.ID) D ";
 						extraColumns += @", cast(iif(D.[Count] = 1, 1, 0) as bit) as HasDashboards";
 					}
 					else
@@ -238,7 +238,7 @@ namespace d360.model.DataAccessLayer
 		}
 
 		//UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
-		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null)
+		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null)
 		{
 			if (cancellationToken == null)
 			{
@@ -389,6 +389,7 @@ namespace d360.model.DataAccessLayer
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
 			List<string> TempTableScriptList = new List<string>();
+			List<string> fieldsUsedInMainQuery = new List<string>();
 			string TempTableScriptStr = " ";
 
 			var dbArgs = new DynamicParameters();
@@ -557,6 +558,7 @@ namespace d360.model.DataAccessLayer
 
 				fieldJoins.Add(joinSql);
 				countJoins.Add(joinCountSql);
+				fieldsUsedInMainQuery.Add(joinCountSql);
 			}
 
 			if (includeRelationships)
@@ -764,7 +766,7 @@ namespace d360.model.DataAccessLayer
 					whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
 				}
 			}
-			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
+			getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams, fieldsUsedInMainQuery);
 
 			var OrderMainQuery = pagingSql.Count > 0 ? pagingSql[0] : "a.id";
 
@@ -797,8 +799,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			bool includeParent = false;
-			bool includeParentInCount = false;
-			bool includeAssetPathInCount = false;
+
 			string parentFieldSQL = @" Parent.uid as ParentAssetUid,
 					Parent.DisplayValue as ParentDisplayName,";
 			string parentApplySQL = $@"left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
@@ -867,12 +868,8 @@ namespace d360.model.DataAccessLayer
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
-
-					// advanced filter contains a filter on the parent.  Technically this parent join should be an Inner join because the parent MUST be one of the values and not null
-					if (value.Contains("ParentDisplayName") || value.Contains("ParentUid"))
-					{
-						includeParentInCount = true;
-					}
+					fieldsUsedInMainQuery.AddRange(filteredFields.Select(x => "F" + x));
+					fieldsUsedInMainQuery.AddRange(filterExpressionParser.filteredCustomFields);
 
 					// check if the advanced filter contains a filter by asset path
 					foreach (var fieldTypeId in filteredFields)
@@ -882,7 +879,6 @@ namespace d360.model.DataAccessLayer
 						if (fieldType != null && fieldType.Type == "Path")
 						{
 							includeSegments = true;
-							includeAssetPathInCount = true;
 						}
 					}
 
@@ -999,9 +995,8 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add(simpleFilterTagSql);
 						}
 						else if (ft.Type == DataType.Path.ToString())
-                        {
-                            simpleFilters.Add($"{GetPathColumnSql(ft)} like @simpleFilter");
-                            includeAssetPathInCount = true; // asset path field and simple filter must include asset path in join for count
+						{
+							simpleFilters.Add($"{GetPathSelectSql(ft)} like @simpleFilter");
 						}
 						else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
 						{
@@ -1046,7 +1041,6 @@ namespace d360.model.DataAccessLayer
 					if (includeParent && !isForTreeGrid)
 					{
 						simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
-						includeParentInCount = true; // simple filter AND the asset has a parent which posibly impacts the count
 					}
 
 					if (assetType.Class == AssetTypeClass.Reference)
@@ -1205,6 +1199,7 @@ namespace d360.model.DataAccessLayer
 
 				if (parentUidPopulated)
 				{
+					fieldsUsedInMainQuery.Add("HParent");
 					if (parentUid.HasValue)
 					{
 						dbArgs.Add("parentUid", parentUid.Value);
@@ -1279,34 +1274,75 @@ namespace d360.model.DataAccessLayer
 				RecordEnd = RecordStart + model.pageSize - 1;
 			}
 
-			var countSql = $@"
+			#region Build Base Query
+			bool includeTreeGridQuery = isForTreeGrid && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("lvl."));
+			bool includeColorQuery = includeColor && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("acj."));
+			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
+			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
+
+			List<string> includedJoins = new List<string>();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
+			fieldsUsedInMainQuery.ForEach(field =>
+			{
+				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				includedJoins.AddRange(joins);
+			});
+
+			if (dbArgs.ParameterNames.Contains("simpleFilter"))
+			{
+				includedJoins = countJoins;
+				includeTreeGridQuery = isForTreeGrid;
+				includeColorQuery = includeColor;
+				includeParentUIDSelect = true;
+				includeParentQuery = includeParent;
+			}
+			includedJoins = includedJoins.Distinct().ToList();
+
+			var assetCountJoins = new AssetQueryJoins(includedJoins);
+			var filteredSelect = $@"select  A.ID
+				from    Asset A 
+				inner join AssetPath Node on Node.ID = a.ID 
+				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
+				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
+				{assetCountJoins.SQLJoinStatement}
+				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
+				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
+				{(includePermissionDetails ? permissionDetailSQL : "")}
+				{(includeParentUIDSelect ? hierarchyParentUidSelect : "")}
+				{(includeParentQuery ? parentApplySQL : "")}
+				{whereSql}";
+
+			var baseSQL = $@"
 				{TempTableScriptStr}
 
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
 
 				insert into #tempasset
-				select  A.ID
-				from    Asset A 
-				inner join AssetPath Node on Node.ID = a.ID 
-				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
-				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", countJoins.Where(cj => cj.TrimStart().StartsWith("cross apply")))}
-				{string.Join("\n", countJoins.Where(cj => !cj.TrimStart().StartsWith("cross apply")))}
-				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
-				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
-				{(includePermissionDetails ? permissionDetailSQL : "")}
-				{(includeProfilingCheck ? profilingCheckSql : "")}
-				{hierarchyParentUidSelect}
-				{(includeParent ? parentApplySQL : "")}
-				{whereSql}
+				{filteredSelect}
 				{OrderMainQuery}
+				{pagingSql[1]};
 
-				create index ix_tempasset on #tempasset	(id);
+				create index ix_tempasset on #tempasset	(id);";
 
-				{(includeTotal ? "select count(1) from #tempasset" : "")}";
+			#endregion
 
+			var countSQL = $@"{(includeTotal ? $"select count(1) from ({filteredSelect}) as sub_query" : "")}";
 
+			if (previousCount.HasValue) 
+			{
+				countSQL = "";
+			}
+
+			var pagingQuery = $" and TempA.ID Between {RecordStart} and {RecordEnd}";
+			if (!includeTotal)
+			{
+				//if includeTotal is set to false, all results will be already filtered and paged in basesql
+				pagingQuery = "";
+			}
+
+			var assetFieldJoins = new AssetQueryJoins(fieldJoins);
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
@@ -1332,12 +1368,11 @@ namespace d360.model.DataAccessLayer
 					{hierarchyParentUidCol}
 				{(useTempTableForResults ? " into #results " : "")}
 				from #tempasset TempA
-				inner join Asset A on TempA.AssetId = A.ID and TempA.ID Between {RecordStart} and {RecordEnd}
+				inner join Asset A on TempA.AssetId = A.ID
 				inner join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{string.Join("\n", fieldJoins.Where(fj => fj.TrimStart().StartsWith("cross apply")))}
-				{string.Join("\n", fieldJoins.Where(fj => !fj.TrimStart().StartsWith("cross apply")))}
+				{assetFieldJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1353,7 +1388,7 @@ namespace d360.model.DataAccessLayer
 				model.total = null;
 			}
 
-			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {countSql} {sql} OPTION(RECOMPILE)";
+			var getAllQuery = $"{populatePremissionAssetTableSQL} {populateOwnershipLookupTableSQL} {baseSQL} {countSQL} {sql} OPTION(RECOMPILE)";
 
 			if (!string.IsNullOrEmpty(selectOwnershipSQL))
 			{
@@ -1362,11 +1397,23 @@ namespace d360.model.DataAccessLayer
 
 			bool hasOwnershipData = !string.IsNullOrEmpty(selectOwnershipSQL);
 
+			if (previousCount.HasValue)
+			{
+				includeTotal = false;
+			}
+
 			var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
-			if (includeTotal)
+			if (previousCount.HasValue)
 			{
-				model.total = assetsResult.total;
+				model.total = previousCount.Value;
+			}
+			else
+			{
+				if (includeTotal)
+				{
+					model.total = assetsResult.total;
+				}
 			}
 			var results = assetsResult.items.ToList();
 
@@ -1524,7 +1571,7 @@ namespace d360.model.DataAccessLayer
 
 			model.items = results;
 
-            return model;
+			return model;
 		}
 
 		public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -1564,21 +1611,29 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@pageSize", pageSize);
 			dbArgs.Add("@offset", pageSize * pageNum);
 
+
+
 			var sql = $@"
 				select	A.[uid],
-						P.[keypath] as [path]  
-				from	Asset A	 
-				inner join AssetPath P on P.Id = A.Id
+						AP.[keypath] as [path]
+				from	
+					Asset A
+					inner join 
+					AssetPath AP on a.ID=ap.ID
 				where A.assetTypeId = @assetTypeId
-				order by P.ID
+				order by A.ID
 				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
 			int? total = null;
 			if (includeTotal)
 			{
-				var countSql = $@"select count(1) 
-				from	Asset A		                
-				where A.assetTypeId = @assetTypeId";
+				var countSql = $@"
+				select 
+					count(1)
+				from 
+					Asset A	                
+				where 
+					A.assetTypeId = @assetTypeId";
 
 				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
 			}
@@ -1650,11 +1705,11 @@ namespace d360.model.DataAccessLayer
 			{
 				fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
-                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-            }
-            else
-            {
-                fields.Add(new FieldType { Type = "string", Name = "Name", FriendlyName = assetType.Name + " Name" });
+				fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+			}
+			else
+			{
+				fields.Add(new FieldType { Type = "string", Name = "Name", FriendlyName = assetType.Name + " Name" });
 
 				fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() != "name").OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
@@ -2370,21 +2425,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -2618,21 +2658,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -2860,9 +2885,11 @@ namespace d360.model.DataAccessLayer
 				// Close execution record.
 				execution.Processed = results.Count;
 				execution.Error = results.Count(i => !i.Success);
-				if (execution.Error > 0) {
+				if (execution.Error > 0)
+				{
 					var error = string.Join(",", results.Where(x => !string.IsNullOrEmpty(x.Message)).Select(x => x.Message).ToArray());
-					if (error.Length > constants.ERROR_MESSAGE_CHARACTER_LIMIT) { 
+					if (error.Length > constants.ERROR_MESSAGE_CHARACTER_LIMIT)
+					{
 						error = error.Substring(0, constants.ERROR_MESSAGE_CHARACTER_LIMIT);
 					}
 					execution.ErrorMessage = error;
@@ -3428,7 +3455,7 @@ namespace d360.model.DataAccessLayer
 			return results.Where(r => r.JsonPath != "[ERROR: KEY_FIELDS_NULL]").ToDictionary(r => r.Uid, r =>
 			{
 				var x = JsonConvert.DeserializeObject<List<PathComponent>>(r.JsonPath);
-				
+
 				return x;
 			});
 		}
@@ -3566,9 +3593,9 @@ namespace d360.model.DataAccessLayer
 										where a.AssetTypeID = @AssetTypeID
 										{assetTypePermissionWhere}
 									end";
-			
+
 			int count = (await CompanyContext.QueryAsync<int>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, p = (int)Permission.ReadAsset, assetTypeUid }, ApiTimeout)).FirstOrDefault();
-			
+
 			return new AssetCountsModel { count = count };
 		}
 
@@ -3699,7 +3726,7 @@ namespace d360.model.DataAccessLayer
 			var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
 
 			List<DatabaseBulkAssetResult> results = null;
-			bool finished = ((dbExecutionItem.Processed + dbExecutionItem.Error) >= dbExecutionItem.Total) 
+			bool finished = ((dbExecutionItem.Processed + dbExecutionItem.Error) >= dbExecutionItem.Total)
 				|| (dbExecutionItem.CompletedOn.HasValue);
 
 			if (includeResults && finished)
@@ -4414,8 +4441,8 @@ namespace d360.model.DataAccessLayer
 
 			var results = CompanyContext
 							.Query<dynamic>(
-								sql, 
-								new { id = assetType.ObjectID, assetType.Object }, 
+								sql,
+								new { id = assetType.ObjectID, assetType.Object },
 								ApiTimeout);
 
 			return results;
@@ -4515,21 +4542,21 @@ namespace d360.model.DataAccessLayer
 			return results;
 		}
 
-        public IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType)
-        {
+		public IEnumerable<dynamic> GetPossibleCreatorsForAssetType(AssetType assetType)
+		{
 			var sql = @"select distinct Asset.CreatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
 						from dbo.Asset
 							join reporting.Global_Resource globalResource on globalResource.ResourceID = Asset.CreatedBy
 						where Asset.AssetTypeID = @assetTypeId
 						order by globalResource.FirstName + ' ' + globalResource.LastName";
 
-			var results = CompanyContext.Query<dynamic>(sql, new { assetTypeId = assetType.ID}, ApiTimeout);
+			var results = CompanyContext.Query<dynamic>(sql, new { assetTypeId = assetType.ID }, ApiTimeout);
 
 			return results;
-        }
+		}
 
-        public IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType)
-        {
+		public IEnumerable<dynamic> GetPossibleRedactorsForAssetType(AssetType assetType)
+		{
 			var sql = @"select distinct Asset.UpdatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
 						from dbo.Asset
 							join reporting.Global_Resource globalResource on globalResource.ResourceID = Asset.UpdatedBy
@@ -4559,7 +4586,7 @@ namespace d360.model.DataAccessLayer
 				from AssetType at
 				cross apply GetAssetTypeTextPathById(at.id, ' > ')Path
 				left join sitenav sn on sn.object = at.object and sn.objectid = at.objectid
-				where at.class in @allowedClasses and sn.id is null", new { allowedClasses} ,ApiTimeout)).ToList();
+				where at.class in @allowedClasses and sn.id is null", new { allowedClasses }, ApiTimeout)).ToList();
 
 			results.ForEach((res) =>
 			{
@@ -4573,7 +4600,7 @@ namespace d360.model.DataAccessLayer
 					default: break;
 				}
 			});
-			return results.OrderBy(x=> x.title);
+			return results.OrderBy(x => x.title);
 		}
 	}
 }

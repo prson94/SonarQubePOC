@@ -32,7 +32,7 @@ namespace d360.model.DataAccessLayer
         
         ResponsibilityTypeDeleteResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypeDelete);
         
-        Task<IEnumerable<ClaimsViewModel>> GetClaims();
+        Task<ICollection<ClaimsViewModel>> GetClaimsAsync();
         
         Task<dynamic> GetResponsibilityType(Guid uid);
         

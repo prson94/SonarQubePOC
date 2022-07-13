@@ -10,6 +10,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import { AssetService } from '../../../services/asset.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { Router } from '@angular/router';
+import { drop } from 'lodash';
 
 @Component({
     selector: 'd3s-asset-score',
@@ -278,9 +279,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
 
                             this.scoresPointsDDL[0].value['isFirst'] = true;
                             this.scoresPointsDDL[this.scoresPointsDDL.length - 1].value['isLast'] = true;
-                            setTimeout(() => {
-                                this.scoresPointSelected = this.scoresPointsDDL[0].value;
-                            }, 0)
+                            this.scoresPointSelected = this.scoresPointsDDL[0].value;
                         }
 
                         subject.next(true);
@@ -426,8 +425,12 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
         return sum;
     }
 
-    private setDropdownHeader() {
-        var dropdown = document.getElementsByClassName('scoring-picker-dropdown')[0];
+	private setDropdownHeader() {
+		var dropdown = document.getElementsByClassName('scoring-picker-dropdown')[0];
+		if (!dropdown) {
+			return;
+		}
+
         var panel = dropdown.getElementsByClassName('p-dropdown-panel').length > 0 ? dropdown.getElementsByClassName('p-dropdown-panel')[0] : null;
         if (panel) {
             if (panel.getElementsByClassName('score-dropdown-header').length == 0) {

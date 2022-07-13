@@ -17,7 +17,9 @@ namespace d360.model.DataAccessLayer
 
         List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, DateTime startDate, DateTime endDate, ApiExecution execution, bool cascade = false);
 
-        Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
+		List<DataProfileDeleteResponse> DeleteDataProfiles(Asset asset, ApiExecution execution, IEnumerable<KeyValuePair<string, string>> queryParams);
+
+		Task<ApiExecutionInfo> PostBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 
         Task<ApiExecutionInfo> PutBatchDataProfiles(List<DataProfileUpsertModel> models, ApiExecution execution);
 
@@ -29,5 +31,7 @@ namespace d360.model.DataAccessLayer
 
         Task<AssetDataProfileByTypeQualifierApiViewModel> GetAssetsByTypeQualifier(string typeQualifier, decimal minConfidence, IEnumerable<KeyValuePair<string, string>> queryParams, bool isExport = false);
         Task<bool> DoesTypeQualifierExist(string typeQualifier);
-    }
+		Task<bool> DoesSemanticTypeExist(string qualifier);
+
+	}
 }

@@ -43,6 +43,8 @@ import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.compon
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
+import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
+import { LinkClickInterceptor } from "../../services/href-click-service";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -73,6 +75,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showCustomExport: boolean = false;
     isEditing: boolean = false;
     isMenuOpen: boolean = false;
+	isContainsSearchDefault: boolean = false;
     showCertificationStatus: boolean = false;
     certificationStatusIndex: string = null;
     deleteName: string = 'Artifact';
@@ -153,7 +156,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
         private route: ActivatedRoute,
-        private featureFlagService: FeatureFlagsService
+        private featureFlagService: FeatureFlagsService,
+		private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
 
@@ -171,13 +175,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             mergeMap(
                 search => observableOf(search).pipe(delay(500))
             )
-        )
-            .subscribe(
-                data => {
-                    this.doSimpleSearch(me.dt, me.isLoading);
-                }
-            );
-    }
+        ).subscribe((data) => {
+			this.doSimpleSearch(me.dt, me.isLoading);
+		});
+		
+		this.isContainsSearchDefault = this.featureFlagService.flags[FeatureFlags.ContainsSearchDefaultUiFlag];
+	}
 
     ngOnInit() {
         this.setRowsPerPage();
@@ -220,15 +223,34 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         let key = event.value.toLowerCase();
 
         if (key === $localize`Open`.toLowerCase()) {
-            this.selectArtifact(item);
+            this.selectArtifact(event, item);
         } else if (key === $localize`Open in New Tab`.toLowerCase()) {
-            this.selectArtifact(item, true);
+            this.selectArtifact(event, item, true);
         } else if (key === $localize`Edit`.toLowerCase()) {
             this.onEdit(item);
         } else if (key === $localize`Delete`.toLowerCase()) {
             this.onDelete(item);
         }
     }
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+	
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') return true;
+			element = element.parentElement;
+		}
+		return false;
+	}
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['gridObject'] && this.gridObject != null) {
@@ -331,6 +353,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return this.fields.find(x => x.name == oldname).apiName;
     }
 
+	_oldParamsJSON: string = '';
     getParams() {
         let autoDisplayParentSetting = this.gridObject.AutoDisplayParent === null ? true : this.gridObject.AutoDisplayParent;
         var params = new V2ApiFilters();
@@ -357,7 +380,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
 
         if (this.stateService.artifactTypeFilters.simpleTextFilter && this.stateService.artifactTypeFilters.simpleTextFilter.length > 0) {
-            params._simpleFilter = encodeURIComponent(this.stateService.artifactTypeFilters.simpleTextFilter);
+            if (this.isContainsSearchDefault) {
+				params._simpleFilter = encodeURIComponent(
+					`*${this.stateService.artifactTypeFilters.simpleTextFilter}*`
+				);
+			} else {
+				params._simpleFilter = encodeURIComponent(this.stateService.artifactTypeFilters.simpleTextFilter);
+			}
         }
         else {
             delete params['_simpleFilter'];
@@ -408,11 +437,17 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         }
         else {
             delete params['usegraphforparent'];
-        }
+		}
 
         if (this.newAdvancedFilters) {
             this.newAdvancedFilters.applyFilters(params);
-        }
+		}
+
+		params._includeTotal = true;
+		let paramsJson: string = params.countUpdateFilters();
+		if (paramsJson === this._oldParamsJSON) {
+			params._includeTotal = false;
+		}
 
         return params;
     }
@@ -422,10 +457,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
-        }
-        this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, this.getParams(), true)
+		}
+		var params = this.getParams();
+		this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, params, true)
             .pipe(debounceTime(200))
-            .subscribe(res => {
+			.subscribe(res => {
+				this._oldParamsJSON = params.countUpdateFilters();
+
                 this.items = res.items;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
 
@@ -481,8 +519,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     return foundColorToken;
                 }).length > 0;
 
-
-                this.totalRecords = res.total;
+				if (params._includeTotal) {
+					this.totalRecords = res.total;
+				}
                 if (this.initialTotalRecords == null) {
                     this.initialTotalRecords = res.total;
                 }
@@ -613,8 +652,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    selectArtifact(artifact, newTab: boolean = false) {
-
+    selectArtifact($event, artifact, newTab: boolean = false) {
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
                 if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
@@ -626,11 +664,25 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     console.warn("onRightClick => Invalid object type");
                 }
-                if (newTab) {
-                    window.open(this.itemUrl, '_blank');
-                } else {
-                    this.router.navigateByUrl(this.itemUrl);
-                }
+				if ($event['from-context-method']) {
+					this.linkClickInterceptor.sendEvent($event, {
+						Values: [{
+							TooltipContext: "Preview",
+							TooltipID: res.ObjectId,
+							TooltipType: "Artifact",
+							Value: artifact.Name,
+							assetTypeUid: artifact.AssetTypeUid,
+							uid: artifact.AssetUid,
+						}],
+						DataType: 'Lookup'
+					}, this.itemUrl);
+				} else {
+					if (newTab) {
+						window.open(this.itemUrl, '_blank');
+					} else {
+						this.router.navigateByUrl(this.itemUrl);
+					}
+				}
             });
 
     }

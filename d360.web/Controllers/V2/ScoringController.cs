@@ -17,7 +17,8 @@ using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-
+using d360.web.Services;
+using d360.web.Utilities;
 using Microsoft.Web.Http;
 
 using Resources;
@@ -590,6 +591,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>List of asset types that have not been allocated to the provided score type.</returns>
 		[
 			HttpGet,
+			RequireAdminPermissions,
 			ApiExplorerSettings(IgnoreApi = true),
 			Route("unallocatedAssetTypes/{scoreType}"),
 			SwaggerProduces("application/json"),
@@ -600,32 +602,21 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> GetUnallocatedAssetTypesForScoreType(string scoreType)
 		{
+			if (!Enum.TryParse(scoreType, true, out ScoreType sc))
+			{
+				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+			}
+
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					throw new StatusCodeException(HttpStatusCode.Unauthorized);
-				}
-
-				if (!Enum.TryParse(scoreType, true, out ScoreType sc))
-				{
-					throw new StatusCodeException(HttpStatusCode.BadRequest);
-				}
-
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await ScoringRepository.GetUnallocatedAssetTypes(sc)));
 			}
 			catch (Exception ex)
 			{
-				var messages = new List<StatusCodeErrorMessage>
-				{
-					new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.InvalidScoreType },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.Unauthorized, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
-				};
-
 				return DetermineUnhandledException(
 					ex,
 					ScoreApiMessages.ErrorUnallocatedAssetType,
-					messages,
+					null,
 					new Dictionary<string, string> { { "Method Name", "GetUnallocatedAssetTypesForScoreType" } }
 				);
 			}
@@ -644,6 +635,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>List of results.</returns>
 		[
 			HttpPost,
+			RequireAdminPermissions,
 			Route("{scoreType}/externalresults"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
 			SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultApiResponseModel>)),
@@ -653,34 +645,22 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult PostExternalResultsByScoreType(string scoreType, List<ExternalScoreResultApiRequestModel> model)
 		{
+			if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
+			{
+				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+			}
+
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					throw new StatusCodeException(HttpStatusCode.Forbidden);
-				}
-
-				if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
-				{
-					throw new StatusCodeException(HttpStatusCode.BadRequest);
-				}
-
 				var execution = getApiExecution(model.Count);
-
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution)));
 			}
 			catch (Exception ex)
 			{
-				var messages = new List<StatusCodeErrorMessage>
-				{
-					new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.InvalidScoreType },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
-				};
-
 				return DetermineUnhandledException(
 					ex,
 					ApiMessages.ErrorAddingScoreResultsHeading,
-					messages,
+					null,
 					new Dictionary<string, string> { { "Method Name", "PostExternalResultsByScoreType" } }
 				);
 			}
@@ -698,6 +678,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>The results.</returns>
 		[
 			HttpPost,
+			RequireAdminPermissions,
 			Route("{scoreType}/results"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<InternalScoreResultApiResponseModel>)),
@@ -707,39 +688,27 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult PostScoreResultsByScoreType(string scoreType, List<InternalScoreResultApiRequestModel> model)
 		{
+			if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
+			{
+				throw new ArgumentException(ApiMessages.InvalidScoreType, nameof(scoreType));
+			}
+
+			if (model == null || model.Count < 1)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					throw new StatusCodeException(HttpStatusCode.Forbidden);
-				}
-
-				if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
-				{
-					throw new StatusCodeException(HttpStatusCode.BadRequest);
-				}
-
-				if (model == null || model.Count < 1)
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
-				}
-
 				var execution = getApiExecution(model.Count);
-
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
 			}
 			catch (Exception ex)
 			{
-				var messages = new List<StatusCodeErrorMessage>
-				{
-					new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = ApiMessages.InvalidScoreType },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
-				};
-
 				return DetermineUnhandledException(
 					ex,
 					ApiMessages.ErrorAddingScoreResultsHeading,
-					messages,
+					null,
 					new Dictionary<string, string> { { "Method Name", "PostScoreResultsByScoreType" } }
 				);
 			}
@@ -753,6 +722,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>List of results.</returns>
 		[
 			HttpPost,
+			RequireAdminPermissions,
 			Route("{allocationUid:Guid}/externalresults"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
 			SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultApiResponseModel>)),
@@ -762,40 +732,35 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult PostExternalResultsByAllocation(Guid allocationUid, List<ExternalScoreResultApiRequestModel> model)
 		{
+			if (model == null || model.Count < 1)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			foreach (var m in model)
+			{
+				var isDistinct = m.measures.GroupBy(i => i.measureUid).Select(g => g.Key).ToList();
+
+				if (isDistinct.Count() != m.measures.Count())
+				{
+					throw new GenericException(HttpStatusCode.BadRequest, ScoreApiMessages.DuplicateMesaureUid);
+				}
+			}
+
+			var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
+
+			if (allocation == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
+			}
+
+			if (!allocation.IsExternallyCalculated)
+			{
+				throw new ArgumentException(string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid), nameof(allocationUid));
+			}
+
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					throw new StatusCodeException(HttpStatusCode.Forbidden);
-				}
-
-				if (model == null || model.Count < 1)
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
-				}
-
-				foreach (var m in model)
-				{
-					var isDistinct = m.measures.GroupBy(i => i.measureUid).Select(g => g.Key).ToList();
-
-					if (isDistinct.Count() != m.measures.Count())
-					{
-						throw new GenericException(HttpStatusCode.BadRequest, ScoreApiMessages.DuplicateMesaureUid);
-					}
-				}
-
-				var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
-
-				if (allocation == null)
-				{
-					throw new StatusCodeException(HttpStatusCode.NotFound);
-				}
-
-				if (!allocation.IsExternallyCalculated)
-				{
-					throw new StatusCodeException(HttpStatusCode.BadRequest);
-				}
-
 				var execution = getApiExecution(model.Count);
 
 				return ResponseMessage(
@@ -807,17 +772,10 @@ namespace d360.web.Controllers.V2
 			}
 			catch (Exception ex)
 			{
-				var messages = new List<StatusCodeErrorMessage>
-				{
-					new StatusCodeErrorMessage { Status = HttpStatusCode.NotFound, ErrorMessage = string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid.ToString()) },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.BadRequest, ErrorMessage = string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid.ToString()) },
-					new StatusCodeErrorMessage { Status = HttpStatusCode.Forbidden, ErrorMessage = ApiMessages.EndpointNotAuthorizedMessage }
-				};
-
 				return DetermineUnhandledException(
 					ex,
 					ApiMessages.ErrorAddingScoreResultsHeading,
-					messages,
+					null,
 					new Dictionary<string, string> { { "Method Name", "PostExternalResultsByAllocation" } }
 				);
 			}
@@ -831,6 +789,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>The results.</returns>
 		[
 			HttpPost,
+			RequireAdminPermissions,
 			Route("{allocationUid:Guid}/results"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<InternalScoreResultApiResponseModel>)),
@@ -840,29 +799,26 @@ namespace d360.web.Controllers.V2
 		]
 		public IHttpActionResult PostScoreResultsByAllocation(Guid allocationUid, List<InternalScoreResultApiRequestModel> model)
 		{
+			if (model == null || model.Count < 1)
+			{
+				throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
+			}
+
+			var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
+
+			if (allocation == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
+			}
+
+			if (!allocation.IsExternallyCalculated)
+			{
+				throw new ArgumentException(string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid), nameof(allocationUid));
+			}
+
 			try
 			{
-				if (!Company.CurrentResourceIsAdmin)
-				{
-					throw new StatusCodeException(HttpStatusCode.Forbidden);
-				}
 
-				if (model == null || model.Count < 1)
-				{
-					throw new GenericException(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
-				}
-
-				var allocation = Company.GetByUid<MetricAllocation>(allocationUid);
-
-				if (allocation == null)
-				{
-					throw new StatusCodeException(HttpStatusCode.NotFound);
-				}
-
-				if (allocation.IsExternallyCalculated)
-				{
-					throw new StatusCodeException(HttpStatusCode.BadRequest);
-				}
 
 				var execution = getApiExecution(model.Count);
 

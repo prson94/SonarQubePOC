@@ -16,10 +16,8 @@ namespace d360.web
 {
     public class ContractValidationMiddleware : BaseMiddleware
     {
-        private readonly Func<IDictionary<string, object>, Task> _next;
-        public ContractValidationMiddleware(Func<IDictionary<string, object>, Task> next)
+	    public ContractValidationMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
         {
-            _next = next;
         }
 
         private async Task<bool> getValidationStatus(int companyId, int resourceId)
@@ -202,7 +200,7 @@ namespace d360.web
                 context.Set("ContractsValidated", true);
             }
 
-            await _next.Invoke(environment);
+            await Next(environment);
         }
     }
 }

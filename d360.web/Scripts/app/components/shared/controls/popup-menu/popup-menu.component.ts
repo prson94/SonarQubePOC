@@ -160,7 +160,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
     }
 
     @HostListener('document:click', ['$event'])
-    clickout(event) {
+    clickout(event: MouseEvent) {
         if (!this.popupEl.nativeElement.contains(event.target)) {
             if (this.isVisible && !this.toggleInProgress) {
                 this.isVisible = false;
@@ -168,6 +168,16 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             }
         }
     }
+
+	@HostListener('document:contextmenu', ['$event'])
+	handleRightClick(event: MouseEvent) {
+		if (!this.popupEl.nativeElement.contains(event.target)) {
+			if (this.isVisible && !this.toggleInProgress) {
+				this.isVisible = false;
+				this.reset();
+			}
+		}
+	}
 
     @HostListener('document:keyup', ['$event'])
     handleKeyUp(event: KeyboardEvent) {

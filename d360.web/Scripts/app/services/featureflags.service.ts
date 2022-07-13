@@ -13,6 +13,7 @@ export enum FeatureFlags {
     BrandingThemeUiTemp = "GovernBrandingUiTemp20220531",
     DataProfilingUiFlag = "GovernDataProfileUiPerm",
     SemanticTypesUiFlag = "GovernSemanticTypesUiPerm",
+	ContainsSearchDefaultUiFlag = "GovernContainsSearchDefaultUiPerm",
 }
 
 @Injectable({
@@ -32,7 +33,8 @@ export class FeatureFlagsService extends BaseObservableService {
             "GovernBrandingCustomCssPerm": false,
             "GovernBrandingUiTemp20220531": false,
             "GovernDataProfileUiPerm": false,
-            "GovernSemanticTypesUiPerm": false
+            "GovernSemanticTypesUiPerm": false,
+			"GovernContainsSearchDefaultUiPerm": false
         };
     }
 

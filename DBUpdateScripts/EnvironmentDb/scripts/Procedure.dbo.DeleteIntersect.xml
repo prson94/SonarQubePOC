@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteIntersect-v2">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteIntersect-v3">
+  <comment>GOV-18610</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -55,7 +56,6 @@ BEGIN
 		exec utility.AddAuditEntry @Subject, @SubjectID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 		exec utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 
-		delete graph.AssetEdge	where ID = @ID;
 		delete [Intersect]		where ID = @ID;
 
 		if @trancount = 0
@@ -103,12 +103,6 @@ BEGIN
 			RAISERROR('Item is used in other relationships.', 16, 1);
 		END
 
-		if exists(select 1 from [Attribute] where ObjectType = 'Intersect' and ObjectID = @ID)
-		begin
-			DELETE	[Attribute]
-			WHERE	ObjectType = 'Intersect' and ObjectID = @ID
-		end
-
 		declare @oNodeID int,
 				@date datetime,
 				@Subject varchar(50),
@@ -128,9 +122,8 @@ BEGIN
 		exec utility.AddAuditEntry @Subject, @SubjectID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 		exec utility.AddAuditEntry @Object, @ObjectID, @ResourceID, @date, 'Removed', 'Intersect', @ID
 
-		
-		delete	[Intersect]
-		where	ID = @ID
+		delete graph.AssetEdge	where ID = @ID;
+		delete [Intersect]		where ID = @ID;
 
 		if @trancount = 0
 			commit;

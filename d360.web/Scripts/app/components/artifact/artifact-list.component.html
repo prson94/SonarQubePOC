@@ -12,7 +12,7 @@
                             (isDefinitionLoadedChange)="definitionLoaded=$event"></d3s-asset-grid>
         </div>
         <div class="tile tile-detail side-panel" *ngIf="!gridLoading && !isLoading && definitionLoaded && (!showEditor || (showEditor && selection != null))">
-            <side-panel (expandedChange)="sidePanelOpen=$event"
+            <side-panel [(expanded)]="sidePanelOpen"
                         (selectedPanelChange)="sidePanelTab=$event"
                         [hasSelectedItem]="selection ? true : false"
                         [panelApplies]="panelApplies"

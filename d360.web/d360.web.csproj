@@ -401,210 +401,105 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_GlobalResources\ActionApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ActionApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\ActionApiMessages.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ActionApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\ApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ApiMessages.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\ApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ApiMessages.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\AssetsApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AssetsApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\AssetsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AssetsApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\CommentsAPIMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>CommentsAPIMessages.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\CommentsAPIMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>CommentsAPIMessages.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\ConnectorLabelAPIMessage.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ConnectorLabelAPIMessage.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\ConnectorLabelAPIMessage.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ConnectorLabelAPIMessage.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\Core.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Core.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\Core.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Core.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\DataProfileAPIMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>DataProfileAPIMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\DataProfileAPIMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DataProfileAPIMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\FieldInfo.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FieldInfo.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\FieldInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FieldInfo.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\FormControllerApiMessage.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FormControllerApiMessage.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\FormControllerApiMessage.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FormControllerApiMessage.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\FormInfo.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FormInfo.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\FormInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FormInfo.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\MetricsApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MetricsApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\MetricsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MetricsApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\OthersMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>OthersMessages.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\OthersMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>OthersMessages.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\RelationshipsApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>RelationshipsApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\RelationshipsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>RelationshipsApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\ResponsibilityApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ResponsibilityApiMessages.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\ResponsibilityApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ResponsibilityApiMessages.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\ScoreApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ScoreApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\ScoreApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ScoreApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\SearchApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SearchApiMessages.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\SearchApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SearchApiMessages.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\SurverysApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SurverysApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\SurverysApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SurverysApiMessages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\Swagger.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Swagger.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\Swagger.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Swagger.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\TagsApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>TagsApiMessages.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\TagsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TagsApiMessages.resx</DependentUpon>
     </Compile>
-    <Compile Include="App_GlobalResources\Validation.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Validation.ca.resx</DependentUpon>
-    </Compile>
     <Compile Include="App_GlobalResources\Validation.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
-    </Compile>
-    <Compile Include="App_GlobalResources\WorkflowApiMessages.ca.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>WorkflowApiMessages.ca.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\WorkflowApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -615,6 +510,10 @@
     <Compile Include="App_Start\ClaimMappingsMiddleware.cs" />
     <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
     <Compile Include="App_Start\CorsMiddleware.cs" />
+    <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\ApplicationExceptionLogger.cs" />
+    <Compile Include="Handlers\Exceptions\BadRequestWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\DefaultWebApi2ExceptionHandler.cs" />
     <Compile Include="App_Start\GovernAppInsightsTelemetryInitializer.cs" />
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
     <Compile Include="App_Start\ContractValidationMiddleware.cs" />
@@ -630,7 +529,6 @@
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
     <Compile Include="Controllers\Forms\FormController_Organization.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
-    <Compile Include="Controllers\Forms\FormController_Report.cs" />
     <Compile Include="Controllers\Forms\FormController_Resource.cs" />
     <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
     <Compile Include="Controllers\Forms\FormController_Survey.cs" />
@@ -674,7 +572,6 @@
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Forms\FormController.cs" />
     <Compile Include="Controllers\DiagramsController.cs" />
-    <Compile Include="Controllers\ReportsController.cs" />
     <Compile Include="Controllers\QueriesController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MonitorController.cs">
@@ -703,9 +600,18 @@
     <Compile Include="Filters\SwaggerOrderFilter.cs" />
     <Compile Include="Filters\SwaggerDescriptionAttribute.cs" />
     <Compile Include="Filters\SwaggerParameterAttribute.cs" />
-    <Compile Include="Filters\ApplicationExceptionFilterAttribute.cs" />
     <Compile Include="Handlers\ChunkLocaleJSHandler.cs" />
-    <Compile Include="Handlers\ErrorMessageHandler.cs" />
+    <Compile Include="Handlers\Exceptions\ForbiddenWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\GenericExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Utilities\IRuntimeInfo.cs" />
+    <Compile Include="Handlers\Exceptions\IWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\NotFoundWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\ProblemDetailsResponse.cs" />
+    <Compile Include="Handlers\Exceptions\RestApiExceptionWebApi2ExceptionHandler.cs" />
+    <Compile Include="Utilities\RuntimeInfo.cs" />
+    <Compile Include="Handlers\Exceptions\UnauthorizedWebApi2ExceptionHandler.cs" />
+    <Compile Include="Handlers\Exceptions\WebApi2ExceptionHandlerBase.cs" />
+    <Compile Include="Handlers\Exceptions\WebApi2ExceptionHandlerMediator.cs" />
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
     <Compile Include="Models\ApiResponses.cs" />
@@ -722,13 +628,13 @@
     <Compile Include="Models\FeatureFlagExtensions.cs" />
     <Compile Include="Models\Diagram Models.cs" />
     <Compile Include="Models\FeatureFlagUser.cs" />
-    <Compile Include="Models\Attributes\AiExceptionFilterAttribute.cs" />
     <Compile Include="Models\Attributes\AiHandleErrorAttribute.cs" />
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\Formatters\GuidConverter.cs" />
     <Compile Include="Models\RestApiException.cs" />
     <Compile Include="Models\SwaggerExampleModels.cs" />
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />
+    <Compile Include="Models\UserAuthentication.cs" />
     <Compile Include="Models\Viewer Models.cs" />
     <Compile Include="Models\Attributes\FileDownloadAttribute.cs" />
     <Compile Include="Models\ModelMetadataExtensions.cs" />
@@ -753,6 +659,7 @@
     <Compile Include="Services\Exceptions\UnrecoverableBusinessLayerException.cs" />
     <Compile Include="Utilities\ApplicationUriProvider.cs" />
     <Compile Include="Utilities\Condition.cs" />
+    <Compile Include="Utilities\ExceptionFactory.cs" />
     <Compile Include="Utilities\IApplicationUriProvider.cs" />
     <Compile Include="Utilities\InternationalizationUtilities.cs" />
     <Compile Include="Utilities\IRequestValidator.cs" />
@@ -864,16 +771,6 @@
     <Content Include="Content\styles\Tooltip.min.css">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
-    <EmbeddedResource Include="App_GlobalResources\ActionApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ActionApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\ApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\ApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ApiMessages.Designer.cs</LastGenOutput>
@@ -884,6 +781,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\DataProfileAPIMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -906,49 +804,9 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\CommentsAPIMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>CommentsAPIMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\ConnectorLabelAPIMessage.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ConnectorLabelAPIMessage.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\Core.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Core.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\DataProfileAPIMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>DataProfileAPIMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\FieldInfo.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>FieldInfo.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>FormControllerApiMessage.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FormControllerApiMessage.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\FormInfo.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>FormInfo.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>MetricsApiMessages.ca.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.resx">
@@ -956,19 +814,9 @@
       <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\OthersMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>OthersMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\OthersMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>OthersMessages.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>RelationshipsApiMessages.ca.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">
@@ -982,54 +830,9 @@
       <LastGenOutput>Swagger.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\AssetsApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>AssetsApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\ResponsibilityApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ResponsibilityApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\ScoreApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>ScoreApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SearchApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>SearchApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\SearchApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>SearchApiMessages.Designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>SurverysApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\Swagger.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Swagger.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\TagsApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>TagsApiMessages.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\Validation.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Validation.ca.designer.cs</LastGenOutput>
-      <CustomToolNamespace>Resources</CustomToolNamespace>
-    </EmbeddedResource>
-    <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.ca.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>WorkflowApiMessages.ca.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.resx">
@@ -1379,8 +1182,7 @@
       <Name>d360.utils.excel</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
@@ -1437,7 +1239,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62325</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://integration.eng.data3sixty.local/</IISUrl>
+          <IISUrl>http://integration.eng.data3sixty.local</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

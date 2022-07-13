@@ -17,7 +17,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.utils.company;
 using d360.web.Extensions;
-
+using d360.web.Models;
 using Dapper;
 
 using IdentityModel.Client;
@@ -50,11 +50,8 @@ namespace d360.web
 
 		}
 
-		private readonly Func<IDictionary<string, object>, Task> _next;
-
-		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next)
+		public UserIDCheckMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
 		{
-			_next = next;
 		}
 
 		public ConcurrentBag<usercompany> Users
@@ -148,139 +145,28 @@ namespace d360.web
 						var allClaims = jwtSecurityToken?.Claims?.ToList() ?? new List<System.Security.Claims.Claim>();
 						var claimMappings = Cache.GetItem<List<ClaimMapping>>(mappingsKey);
 
-						string userName = null;
-						string firstName = null;
-						string lastName = null;
-						Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
+						var userAuth = new UserAuthentication();
+						userAuth.ParseClaims(claimMappings, allClaims, payload);
 
-						try
+						if (userAuth.Email == null && jwtClaim != null && jwtClaim.Identity != null && !string.IsNullOrEmpty(jwtClaim.Identity.Name))
 						{
-							var propBuilder = new StringBuilder(string.Empty);
-
-							foreach (var claim in claimMappings)
-							{
-								var type = claim.Path.Replace("$.", "").Split('.')[0];
-								var childPath = "$." + claim.Path.Replace("$.", "").Replace(type, "");
-								var isRootProperty = "$." == childPath;
-
-								var props = allClaims.Where(p => p.Type.ToLower() == type);
-
-								foreach (var prop in props)
-								{
-									string val = null;
-									List<string> vals = new List<string>();
-									JToken propToken = null;
-
-									propBuilder.Append($"{type}: {prop.Value}, ");
-
-									if (isRootProperty)
-									{
-										if (claim.IsArray)
-										{
-											if (payload.ContainsKey(type))
-											{
-												var propJsonString = JsonConvert.SerializeObject(payload[type]);
-												jwtTelemetry.TrackTrace($"JWT json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
-
-												propToken = JToken.Parse(propJsonString);
-												vals = propToken?.Select(s => (string)s)?.ToList();
-											}
-										}
-										else
-										{
-											val = prop.Value.ToString();
-										}
-
-									}
-									else
-									{
-										if (payload.ContainsKey(type))
-										{
-											var propJsonString = JsonConvert.SerializeObject(payload[type]);
-											jwtTelemetry.TrackTrace($"JWT json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
-
-											propToken = JToken.Parse(propJsonString);
-
-											if (claim.IsArray)
-											{
-												propToken = JToken.Parse(propJsonString);
-												vals = propToken?.SelectToken(childPath, false)?.Select(s => (string)s)?.ToList();
-											}
-											else
-											{
-												val = propToken?.SelectToken(childPath, false)?.ToString() ?? "";
-											}
-										}
-									}
-
-									if (!string.IsNullOrWhiteSpace(val))
-									{
-										switch (claim.ClaimType)
-										{
-											case ClaimType.Email:
-												userName = val;
-												break;
-											case ClaimType.FirstName:
-												firstName = val;
-												break;
-											case ClaimType.LastName:
-												lastName = val;
-												break;
-											case ClaimType.Groups:
-												if (claim.IsArray)
-												{
-													if (vals?.Any() ?? false)
-													{
-														if (!groups.ContainsKey(claim.PathHash))
-														{
-															groups.Add(claim.PathHash, new List<string>());
-														}
-														groups[claim.PathHash].AddRange(vals);
-													}
-												}
-												else
-												{
-													if (!groups.ContainsKey(claim.PathHash))
-													{
-														groups.Add(claim.PathHash, new List<string>());
-													}
-													groups[claim.PathHash].Add(val);
-												}
-
-												break;
-										}
-									}
-								}
-							}
-
-							if (userName == null && jwtClaim != null && jwtClaim.Identity != null && !string.IsNullOrEmpty(jwtClaim.Identity.Name))
-							{
-								userName = jwtClaim.Identity.Name;
-							}
-
-							jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {jwtClaim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
-							u = LoadUserFromDatabase(companyID, null, null, jwtClaim.Identity.Name);
-
-							if (u != null)
-							{
-								if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
-								{
-									cachedUsers.Add(u);
-								}
-
-								Users = cachedUsers;
-
-								await parseLoginInfoAndClaims(companyID, firstName, lastName, userName, groups, jwtTelemetry);
-
-							}
-
-							jwtTelemetry.TrackTrace("JWT properties are: " + propBuilder, SeverityLevel.Verbose);
-							jwtTelemetry.TrackTrace($"JWT => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
-
+							userAuth.Email = jwtClaim.Identity.Name;
 						}
-						catch
-						{
 
+						jwtTelemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Username {jwtClaim.Identity.Name}", SeverityLevel = SeverityLevel.Verbose });
+						u = LoadUserFromDatabase(companyID, null, null, jwtClaim.Identity.Name);
+
+						if (u != null)
+						{
+							if (!cachedUsers.Any(i => i.Username == u.Username && i.CompanyID == u.CompanyID))
+							{
+								cachedUsers.Add(u);
+							}
+							Users = cachedUsers;
+
+							await parseLoginInfoAndClaims(companyID, 
+								userAuth.FirstName, userAuth.LastName, userAuth.Email, 
+								userAuth.Groups, jwtTelemetry);
 						}
 					}
 				}
@@ -395,7 +281,7 @@ namespace d360.web
 				telemetry.TrackException(e, properties);
 			}
 
-			await _next.Invoke(environment);
+			await Next(environment);
 		}
 
 		public const string Authority = "http://localhost:5000";
@@ -406,24 +292,22 @@ namespace d360.web
 
 		private async Task<ClaimsPrincipal> ValidateJwt(string jwt, IOwinContext context, Microsoft.ApplicationInsights.TelemetryClient telemetry)
 		{
-			string authority = await getJwtAuthority(context);
+			string authority = await getJwtAuthority(context);			
+			var authenticationSettings = context.Request.Get<CompanyOpenIdAuthenticationSettings>("AuthenticationSettings");
+			var discoveryUri = authenticationSettings.jwtAuthorityUri ?? authenticationSettings.discoveryUri ?? authority;
 
 			telemetry.TrackTrace(new TraceTelemetry { Message = $"JWT Authority : {authority}", SeverityLevel = SeverityLevel.Verbose });
-
 			telemetry.TrackTrace(new TraceTelemetry { Message = $"Discovery Client Starting", SeverityLevel = SeverityLevel.Verbose });
-
-			if (string.IsNullOrEmpty(authority))
-			{
-				telemetry.TrackTrace(new TraceTelemetry { Message = $"Jwt Authority Uri is not set cannot continue", SeverityLevel = SeverityLevel.Verbose });
-
-				return null;
-			}
 
 			var clientFactory = HttpClientFactory.Create(new HttpClientHandler
 			{
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
 			});
-			var discoCache = new DiscoveryCache(authority, () => clientFactory, new DiscoveryPolicy { ValidateIssuerName = jwtDiscoveryValidateIssuerName });
+			var discoCache = new DiscoveryCache(discoveryUri, () => clientFactory, new DiscoveryPolicy { 
+				ValidateEndpoints = false,
+				Authority = authority, 
+				ValidateIssuerName = jwtDiscoveryValidateIssuerName 
+			});
 			var disco = await discoCache.GetAsync();
 
 			if (disco == null)
@@ -447,7 +331,7 @@ namespace d360.web
 				return null;
 			}
 
-			var user = jwt.ValidateJwtIdentityToken("upn",
+			var user = jwt.ValidateJwtIdentityToken(authenticationSettings.nameClaimType,
 				null, jwtValidateAudience,
 				disco.Issuer, true,
 				disco.KeySet.Keys, true, true,
@@ -531,7 +415,7 @@ namespace d360.web
 
 						if (updatedResource)
 						{
-							await community.ExecuteAsync($"update [Resource] set {string.Join(", ", updateFields)} where ID = @resourceID", new { resourceId = resource.ID });
+							await community.ExecuteAsync($"update [Resource] set {string.Join(", ", updateFields)} where ID = @resourceID", new { resourceId = resource.ID, firstName, lastName });
 						}
 					}
 					else

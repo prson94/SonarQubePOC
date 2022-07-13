@@ -1,5 +1,5 @@
 ﻿import { DOCUMENT } from '@angular/common';
-import { AfterViewChecked, OnDestroy } from '@angular/core';
+import { AfterViewChecked, Input, OnDestroy } from '@angular/core';
 import { Inject, OnInit, Renderer2 } from '@angular/core';
 import { Directive, ElementRef, HostListener } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
@@ -11,6 +11,7 @@ import { CompanySettingsService } from '../services/settings.service';
     selector: '[context-link]'
 })
 export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChecked {
+	@Input() isOpenDefault: boolean = false;
     contextElement: HTMLDivElement;
     hoverElement: HTMLDivElement;
     hoverTooltipWidth: number = 350;
@@ -18,11 +19,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     private isTagTooltip: boolean = false;
     isAdmin: boolean = false;
 
-    contextMenuItems: any[] = [
-        { title: $localize`View Information`, value: 'info' },
-        { title: $localize`Open`, value: 'open' },
-        { title: $localize`Open in New Tab`, value: 'new-tab' }
-    ]
+    contextMenuItems: any[] = [];
 
     canViewUsers: boolean = true;
 
@@ -36,8 +33,22 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
     ngOnInit() {
         var htmlEl = this.el.nativeElement as HTMLElement;
         this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
-
-        if (this.isLinkDisabled) {
+		
+		if (this.isOpenDefault) {
+			this.contextMenuItems = [
+				{ title: $localize`Open`, value: 'open' },
+				{ title: $localize`Open in New Tab`, value: 'new-tab' },
+				{ title: $localize`View Information`, value: 'info' }
+			];
+		} else {
+			this.contextMenuItems = [
+				{ title: $localize`View Information`, value: 'info' },
+				{ title: $localize`Open`, value: 'open' },
+				{ title: $localize`Open in New Tab`, value: 'new-tab' }
+			];
+		}
+        
+		if (this.isLinkDisabled) {
             htmlEl.style.pointerEvents = "none";
             htmlEl.classList.add("disabled");
         }
@@ -88,11 +99,12 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
                 isInitialTag = true;
             }
         }
+		const action = this.isOpenDefault ? 'Open' : 'view information in the side panel';
         if (refElement === "link") {
-            html += $localize`Click the link to view information in the side panel or right-click for more options`;
+            html += $localize`Click the link to ${action} or right-click for more options`;
         }
         else {
-            html += $localize`Click the tag to view information in the side panel or right-click for more options`;
+            html += $localize`Click the tag to ${action} or right-click for more options`;
         }
 
 
@@ -126,7 +138,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.contextMenuItems.forEach((item) => {
             var menuItem = this.document.createElement('div');
             this.renderer.setAttribute(menuItem, 'class', 'menu-item');
-            if (item.value === "info") {
+            if (item.value === (this.isOpenDefault ? "open" : "info")) {
                 menuItem.style.fontWeight = "700";
             }
             menuItem.innerHTML = item.title;

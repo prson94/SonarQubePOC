@@ -5,12 +5,13 @@
 			<header *ngIf="!isEdit" i18n>Add Folder</header>
 			<header *ngIf="isEdit" i18n>Edit Folder</header>
 			<div class="sub-header" *ngIf="!isLoading">
-				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.name ? '> ' + navigationFolder?.name : '')}}
+				<ng-container i18n>Site Navigation</ng-container> {{(navigationFolder?.title ? '> ' + navigationFolder?.title : '')}}
 				<span *ngIf="requiredCount > 0"
 					  class="requiredCount req noselect"
 					  tabindex="1"
 					  i18n-pTooltip
 					  tooltipPosition="top"
+					  (click)="focusRequired($event)"
 					  tooltipStyleClass="ig-tooltip ig-tooltip-small"
 					  i18n>
 					{{requiredCount}} required
@@ -26,27 +27,26 @@
 					<ig-property-group [igformGroup]="folderForm" title="General" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div inputs>
 							<div class="row">
-								<div class="col s12">
-									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0" i18n>Folder Name</label>
+								<div class="col s12 m5 l3">
+									<label for="FieldName" class="ig-label FieldName" style="margin-top: 0px; margin-bottom: 4px" i18n>Name</label>
 									<input igInput maxlength="250"
-											[ngClass]="{'invalid': folderForm.get('name')?.errors?.empty}"
-										    (change)="setRequiredCount()"
-											required tabindex="1" type="text" 
-											[(ngModel)]="folderModel.Name" style="width:30%" />
+										   [ngClass]="{'invalid': folderForm.get('title')?.errors?.empty}"
+										   (input)="setRequiredFromNameInput($event)"
+										   name="folderNameInput"
+										   required tabindex="1" type="text" 
+										   [(ngModel)]="folderModel.Title" />
 								</div>
 							</div>
-							<div class="row" style="margin-bottom:15px;">
-								<div class="row" style="padding-top:12px">
-									<div class="col s12 m5 l5">
-										<div class="FieldName" i18n>Icon</div>
+							<div class="row" style="margin-bottom: 15px; padding-top: 12px">
+								<div class="col s12 m5 l3">
+									<div class="FieldName" i18n>Icon</div>
+									<div>
 										<div>
-											<div>
-												<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
-												<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
-											</div>
-											<div style="padding-bottom: 10px;">
-												<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" [(categories)]="categories" ngDefaultControl></ig-icon-picker>
-											</div>
+											<input #imageUpload id="imageUpload" type="file" (change)="onFileChange($event)" (click)="clearIcon()" accept="image/gif,image/jpeg,image/png" />
+											<ng-container i18n>Use a predefined icon or</ng-container>&nbsp;<a [routerLink]="" (click)="imageUploadClick($event)" id="imageUpload_link" i18n>Browse</a>
+										</div>
+										<div style="padding-bottom: 10px;">
+											<ig-icon-picker [showGovIcons]="true" [(ngModel)]="folderModel.Icon" [(categories)]="categories" ngDefaultControl></ig-icon-picker>
 										</div>
 									</div>
 								</div>
@@ -54,7 +54,7 @@
 						</div>
 					</ig-property-group>
 
-					<ig-property-group title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
+					<ig-property-group *ngIf="hasFolderItems" title="Folder Items" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
 							<div class="folder-flex-grid">
 								<div class="table-content">
@@ -65,6 +65,7 @@
 														 placeholder="Search"
 														 [(ngModel)]="simpleTextFilter"
 														 (onSearch)="dt3.filterGlobal($event, 'contains')"
+														 name="availableFolderItemsSearchField"
 														 style="width:100%; padding-bottom:8px;"></ig-search-field>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length === 1" i18n>1 item selected</div>
 										<div class="selected-count" *ngIf="_tempSelectedFolderItems && _tempSelectedFolderItems.length > 1" i18n>{{_tempSelectedFolderItems.length}} items selected</div>
@@ -142,18 +143,18 @@
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
 										<button igButton
-												class="ig-lookup-grid-button rotateLeft"
+												class="ig-lookup-grid-button"
 												[disabled]="disableBtnMoveUp()"
-												icon="fa-play"
+												icon="fa-caret-up"
 												(click)="moveUp()"
 												i18n-pTooltip
 												pTooltip="Move up"
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
 										<button igButton
-												class="ig-lookup-grid-button rotateRight"
+												class="ig-lookup-grid-button"
 												[disabled]="disableBtnMoveDown()"
-												icon="fa-play"
+												icon="fa-caret-down"
 												(click)="moveDown()"
 												i18n-pTooltip
 												pTooltip="Move down"
@@ -198,7 +199,7 @@
 											<ng-template pTemplate="header">
 												<tr>
 													<th style="max-width: 28px;">
-														<p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+														<p-tableHeaderCheckbox [disabled]="checkBoxAllForNewFolderItemsDisabled"></p-tableHeaderCheckbox>
 													</th>
 													<th i18n>Selected Folder Items</th>
 												</tr>
@@ -223,11 +224,10 @@
 
 					<ig-property-group title="Permissions" i18n-title [expanded]="true" [shouldBePadded]="false" [showHeaderLine]="false">
 						<div readonly>
-							<div class="info-block">
-								<i class="fa fa-info-circle"></i>
-								<span class="text-value">
+							<div style="margin-bottom: 16px">
+								<ig-message-box>
 									<ng-container i18n>By default all users can see each navigation folder. If there are any permissions defined, only those users/groups will see the folder on their navigation.</ng-container>
-								</span>
+								</ig-message-box>
 							</div>
 							<div class="folder-flex-grid">
 								<div class="table-content">
@@ -337,7 +337,7 @@
 											</ng-template>
 											<ng-template pTemplate="body" let-item>
 												<tr [pSelectableRow]="item">
-													<td style="max-width: 28px; height: 32px">
+													<td style="max-width: 28px; height: 40px">
 														<p-tableCheckbox [value]="item"></p-tableCheckbox>
 													</td>
 													<td>{{item.Text}}</td>
@@ -356,7 +356,7 @@
 			<div class="action-bar padding-top">
 				<button igButton
 						igAutoFocus
-						label="{{hasChanges ? labelDiscard : labelClose}}"
+						label="{{hasChanges ? labelDiscard : labelCancel}}"
 						(click)="closeClick.emit();"></button>
 				<span class="grow"></span>
 				<button igButton
@@ -364,7 +364,7 @@
 						label="{{isEdit ? labelSaveChanges : labelAddFolder}}"
 						(click)="save()"
 						[loading]="savingInProgress"
-						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Name == null || folderModel.Name == '' || newFolderItems == null || newFolderItems.length < 1"></button>
+						[disabled]="(isEdit && !hasChanges) || savingInProgress || folderModel == null || folderModel.Title == null || folderModel.Title == '' || newFolderItems == null || newFolderItems.length < 1"></button>
 			</div>
 		</div>
 	</div>

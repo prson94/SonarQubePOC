@@ -12,8 +12,6 @@ namespace d360.web
 {
     public class ContentSecurityPolicyMiddleware : BaseMiddleware
     {
-        private readonly Func<IDictionary<string, object>, Task> _next;
-
         private readonly Dictionary<string, List<string>> Permissive = new Dictionary<string, List<string>>
         {
             { "default-src", new List<string>{"*", "data:", "blob:", "filesystem:", "ws:", "wss:", "'unsafe-inline'", "'unsafe-eval'" } },
@@ -27,9 +25,8 @@ namespace d360.web
             { "worker-src", new List<string>{ "blob:" } }
     };
 
-        public ContentSecurityPolicyMiddleware(Func<IDictionary<string, object>, Task> next)
+        public ContentSecurityPolicyMiddleware(Func<IDictionary<string, object>, Task> next): base(next)
         {
-            _next = next;
         }
 
         public async Task Invoke(IDictionary<string, object> environment)
@@ -79,7 +76,7 @@ namespace d360.web
                 }
             }
 
-            await _next.Invoke(environment).ConfigureAwait(false);
+            await Next(environment).ConfigureAwait(false);
         }
 
         /*

@@ -13,6 +13,7 @@ import { DataCyDirective, DataCyModule } from './ig-data-cy.directive';
 import { RadioButtonDirective, IgRadioButtonModule } from './ig-radio-button-directive';
 import { NgLetDirective } from './ng-let-directive';
 import { LinkWithContextDirective } from './link-with-context-menu-directive';
+import { ClearTooltipDirective } from "./clear-tooltip.directive";
 
 
 @NgModule({ 
@@ -32,7 +33,8 @@ import { LinkWithContextDirective } from './link-with-context-menu-directive';
         ClickOutsideDirective,  
         AutoFocusDirective,
         NgLetDirective,
-        LinkWithContextDirective
+        LinkWithContextDirective,
+		ClearTooltipDirective
     ],
     exports: [
         TextHighlightDirective,
@@ -48,7 +50,8 @@ import { LinkWithContextDirective } from './link-with-context-menu-directive';
         RadioButtonDirective,
         CheckboxDirective,
         NgLetDirective,
-        LinkWithContextDirective
+        LinkWithContextDirective,
+		ClearTooltipDirective
     ]
 })
 export class DirectivesModule { }

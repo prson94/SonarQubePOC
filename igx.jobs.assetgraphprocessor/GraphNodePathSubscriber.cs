@@ -38,6 +38,7 @@ namespace igx.jobs.assetgraphprocessor
                 try
                 {
                     companyConnection.Open();
+					/*
                     await companyConnection.ExecuteAsync(@"begin
                         declare @assetId bigint;
 
@@ -47,6 +48,7 @@ namespace igx.jobs.assetgraphprocessor
 
                         exec graph.UpdateGraphTableHierarchyBy null, null, @assetId 
                     end", new { uid = info.Uid }, commandTimeout: timeout);
+					*/
                 }
                 catch (Exception ex)
                 {

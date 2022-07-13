@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -419,23 +420,31 @@ namespace d360.web.Controllers
                                     sqlBulkCopy.WriteToServer(dt);
 
                                     Company.Connection.Execute(
-                                        @"update A
+										@"	
+											update A
                                             set A.GroupID = G.ID,
                                             HasResourceGroup = case when RG.ResourceID is not null then 1 else null end
                                             from    #ADGroups A
                                                     inner join [Group] G on G.IsActiveDirectoryGroup = 1 and G.[Name] = A.[name]
-                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId and (A.Origin is null or RG.Origin = A.Origin)
+                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId
 
                                             insert into ResourceGroup (ResourceID, GroupID, Origin)
                                             select  @resourceId, GroupID, Origin
                                             from    #ADGroups 
                                             where   GroupID is not null and coalesce(HasResourceGroup, 0) = 0
 
+											update RG
+											set RG.Origin = A.Origin
+											from ResourceGroup RG
+											inner join [Group] G on G.ID = RG.GroupID and G.IsActiveDirectoryGroup = 1
+											inner join #ADGroups A on coalesce(A.HasResourceGroup, 0) = 1 and (A.Origin != RG.Origin or RG.Origin is null) and A.GroupID = G.ID
+											where RG.ResourceID = @resourceId;
+
                                             delete  R
                                             from    ResourceGroup R
                                                     inner join [Group] G on G.ID = R.GroupID and G.IsActiveDirectoryGroup = 1
                                             where   R.ResourceID = @resourceId and not exists (select 1 from #ADGroups where GroupID = R.GroupID and (Origin is null or Origin = R.Origin))"
-                                    , new { resourceID = resource.ID }
+									, new { resourceID = resource.ID }
                                     , transaction: trans);
 
                                     trans.Commit();
@@ -665,10 +674,17 @@ namespace d360.web.Controllers
 
                     var ru = new RequestUrl($"{authenticationSettings.baseUri}/authorize");
 
-                    var url = ru.CreateAuthorizeUrl(
+					var scopes = "openid profile email infogix";
+
+					if (authenticationSettings.scopes != null && authenticationSettings.scopes.Count > 0)
+					{
+						scopes = string.Join(" ", authenticationSettings.scopes);
+					}
+
+					var url = ru.CreateAuthorizeUrl(
                         clientId: authenticationSettings.clientId,
                         responseType: "code",
-                        scope: "openid profile email infogix", //infogix
+                        scope: scopes,
                         callbackUri,
                         state,
                         nonce,
@@ -868,155 +884,31 @@ namespace d360.web.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, response.HttpErrorReason);
             }
 
-            var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+            var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(response.IdentityToken);
 			var payload = token.Payload;
-            var accessToken = handler.ReadJwtToken(response.AccessToken);
-            var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
-
+			JwtSecurityToken accessToken = null;
+			if (!string.IsNullOrEmpty(response.AccessToken))
+			{
+				accessToken = handler.ReadJwtToken(response.AccessToken);
+			}
+			var incomingNonce = token.Claims.SingleOrDefault(c => c.Type == "nonce").Value.ToString();
             if (openIdRequest.Nonce != incomingNonce)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest, ApiMessages.FailedAuthenticationNonces);
             }
 
-            #region Claims processing
-
-            var combinedClaims = new List<System.Security.Claims.Claim>();
-            var customClaims = new Dictionary<string, string>();
-            string userName = null;
-            string firstName = null;
-            string lastName = null;
-			Dictionary<string, List<string>> groups = new Dictionary<string, List<string>>();
-
-            combinedClaims.AddRange(token.Claims); // ID token claims.
-            combinedClaims.AddRange(accessToken.Claims.Except(token.Claims)); // Access token claims.
-
-			
-
-            try
-            {
-
-				var excludedProps = new List<string> { "amr", "aud", "at_hash", "auth_time", "cid", "exp", "iat", "idp", "iss", "jti","name", "nonce", "preferred_username", "scp", "ver", "uid" };
-				var claimMappings = getClaimMappings();
-				var propBuilder = new StringBuilder(string.Empty);
-
-				foreach(var claim in claimMappings)
-				{
-					var type = claim.Path.Replace("$.", "").Split('.')[0];
-					var childPath = "$." + claim.Path.Replace("$.", "").Replace(type, "");
-					var isRootProperty = "$." == childPath;
-
-					var props = combinedClaims.Where(p => p.Type.ToLower() == type);
-
-					foreach (var prop in props)
-					{
-						string val = null;
-						List<string> vals = new List<string>();
-						JToken propToken = null;
-
-						propBuilder.Append($"{type}: {prop.Value}, ");
-
-						if (isRootProperty)
-						{
-							if (claim.IsArray)
-							{
-								if (payload.ContainsKey(type))
-								{
-									var propJsonString = JsonConvert.SerializeObject(payload[type]);
-									Telemetry.TrackTrace($"OpenId json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
-
-									propToken = JToken.Parse(propJsonString);
-									vals = propToken?.Select(s => (string)s)?.ToList();
-								}
-							}
-							else
-							{
-								val = prop.Value.ToString();
-							}
-
-						}
-						else
-						{
-							if (payload.ContainsKey(type))
-							{
-								var propJsonString = JsonConvert.SerializeObject(payload[type]);
-								Telemetry.TrackTrace($"OpenId json string for property {type}: " + propJsonString, SeverityLevel.Verbose);
-
-								propToken = JToken.Parse(propJsonString);
-
-								if (claim.IsArray)
-								{
-									propToken = JToken.Parse(propJsonString);
-									vals = propToken?.SelectToken(childPath, false)?.Select(s => (string)s)?.ToList();
-								}
-								else
-								{
-									val = propToken?.SelectToken(childPath, false)?.ToString() ?? "";
-								}
-							}
-						}
-
-						if (!string.IsNullOrWhiteSpace(val))
-						{
-							switch (claim.ClaimType)
-							{
-								case ClaimType.Email:
-									userName = val;
-									break;
-								case ClaimType.FirstName:
-									firstName = val;
-									break;
-								case ClaimType.LastName:
-									lastName = val;
-									break;
-								case ClaimType.Groups:
-									if (claim.IsArray)
-									{
-										if (vals?.Any() ?? false)
-										{
-											if (!groups.ContainsKey(claim.PathHash))
-											{
-												groups.Add(claim.PathHash, new List<string>());
-											}
-											groups[claim.PathHash].AddRange(vals);
-										}
-									}
-									else
-									{
-										if (!groups.ContainsKey(claim.PathHash))
-										{
-											groups.Add(claim.PathHash, new List<string>());
-										}
-										groups[claim.PathHash].Add(val);
-									}
-
-									break;
-							}
-						}
-
-						excludedProps.Add(prop.Type);
-					}
-				}
-
-				Telemetry.TrackTrace("OpenId properties are: " + propBuilder, SeverityLevel.Verbose);
-				Telemetry.TrackTrace($"OpenId => Username: {userName}, FirstName: {firstName}, LastName: {lastName}", SeverityLevel.Information);
-
-				foreach (var prop in combinedClaims)
-                {
-					if (!excludedProps.Contains(prop.Type) && !customClaims.ContainsKey(prop.Type))
-					{
-						customClaims.Add(prop.Type, prop.Value.ToString());
-					}
-				}
-            }
-            catch (Exception ex)
-            {
-				Telemetry.TrackException(ex);
+			var combinedClaims = new List<System.Security.Claims.Claim>();
+			combinedClaims.AddRange(token.Claims); // ID token claims.
+			if (accessToken != null)
+			{
+				combinedClaims.AddRange(accessToken.Claims.Except(token.Claims)); // Access token claims.
 			}
-
-			#endregion
-
+			var claimMappings = getClaimMappings();
 			string redirectUrl = openIdRequest.RedirectUrl;
+
+			var userAuth = new UserAuthentication();
+			userAuth.ParseClaims(claimMappings, combinedClaims, payload);
 
             try
             {
@@ -1030,11 +922,12 @@ namespace d360.web.Controllers
             try
             {
                 var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
-                var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false });
+                var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false, ValidateIssuerName = false });
                 var discoDoc = disco.GetAsync().Result;
-                var keySet = await client.GetJsonWebKeySetAsync($"{baseUri}/keys");
+                var keySet = await client.GetJsonWebKeySetAsync(discoDoc.JwksUri);
 
-                var user = response.IdentityToken.ValidateJwtIdentityToken(authenticationSettings.nameClaimType,
+                var user = response.IdentityToken.ValidateJwtIdentityToken(
+					authenticationSettings.nameClaimType,
                     authenticationSettings.audience, false,
                     discoDoc.Issuer, (discoDoc.Issuer != null),
                     keySet.KeySet.Keys, true, true, true, false);
@@ -1055,8 +948,9 @@ namespace d360.web.Controllers
                         );
                 };
 
-                return parseUserInfoAndLogin(userName, firstName, lastName,
-                    groups, customClaims,
+                return parseUserInfoAndLogin(
+					userAuth.Email, userAuth.FirstName, userAuth.LastName,
+					userAuth.Groups, userAuth.CustomClaims,
                     redirectUrl, addOpenIdTokenToContext);
             }
             catch (Exception ex)
@@ -1068,7 +962,13 @@ namespace d360.web.Controllers
             return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
         }
 
-        [AllowAnonymous, Route("sso"), HttpPost, ValidateAntiForgeryToken]
+		[AllowAnonymous, Route("sso/openid"), HttpGet]
+		public async Task<ActionResult> HandleOpenIdGetResponse()
+		{
+			return new ContentResult { Content = "Govern does not respond to IdP-initiated JWT requests.", ContentType = "text/html" };
+		}
+
+		[AllowAnonymous, Route("sso"), HttpPost, ValidateAntiForgeryToken]
         public async Task<ActionResult> ParseFormsResponse(LoginModel model, string ReturnUrl)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);

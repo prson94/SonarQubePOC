@@ -434,12 +434,12 @@ namespace d360.core.entities
 
 			if ((model.BaseType.HasValue && model.BaseType == SemanticBaseType.Long) || (!model.BaseType.HasValue && existing.BaseType == SemanticBaseType.Long))
 			{
-				if(model.Maximum == null)
+				if(model.Maximum == null && existing.Maximum !=null)
 				{
 					repoModel.Maximum = (long)existing.Maximum;
 				}
 
-				if (model.Minimum == null)
+				if (model.Minimum == null && existing.Minimum != null)
 				{
 					repoModel.Minimum = (long)existing.Minimum;
 				}
@@ -689,7 +689,7 @@ namespace d360.core.entities
 						dateRange.Add(new DateRange { StartDate = startDate, EndDate = enddate });
 						startDate = effectiveDate.Split('T')[0];
 					}
-					var isPresent = effectiveDate == updateDate || updateDate.Split('T')[0] == DateTime.Now.ToString("yyyy-MM-dd");
+					var isPresent = effectiveDate == updateDate;
 
 					dateRange.Add(new DateRange { StartDate = startDate, EndDate = isPresent ? "Present" : updateDate.Split('T')[0] });                    
                     break;

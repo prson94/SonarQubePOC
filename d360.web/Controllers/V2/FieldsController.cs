@@ -2507,15 +2507,16 @@ namespace d360.web.Controllers.V2
 								declare @assetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
 
 								select ObjectId as value,isnull(node.DisplayPath,'Path Missing') as text from Asset A
-								 inner join graph.AssetNode Node on Node.id = a.id
+								 inner join AssetPath Node on Node.id = a.id
 								where a.AssetTypeID = @assetTypeId {whereQuery}
 								order by node.displaypath
 								{pagingQuery}
 								OPTION(RECOMPILE);
 
 								select count(*) from Asset A
-								 inner join graph.AssetNode Node on Node.id = a.id
-								where a.AssetTypeID = @assetTypeId {whereQuery};";
+								 inner join AssetPath Node on Node.id = a.id
+								where a.AssetTypeID = @assetTypeId {whereQuery}
+								OPTION(RECOMPILE);";
 
 					var resultsAssets = Company.Connection.QueryMultiple(sql, new { fieldTypeId, skip, take, filter });
 

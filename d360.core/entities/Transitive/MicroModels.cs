@@ -280,7 +280,7 @@ namespace d360.core.entities
 	public class EditSiteNavModel
 	{
 		public int Id { get; set; }
-		public string Name { get; set; }
+		public string Title { get; set; }
 		public string Icon { get; set; }
 		public string IconPayload { get; set; }
 		public string ImageIconUrl { get; set; }

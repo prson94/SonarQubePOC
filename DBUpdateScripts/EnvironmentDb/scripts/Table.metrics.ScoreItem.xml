@@ -145,4 +145,30 @@ END
 	</rollback>
   </changeSet>  
   
+  <changeSet author="Puneet Gupta" id="Index.metrics.ScoreItem-v2">
+  <comment>GOV-18545</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[metrics].[ScoreItem]') AND name = N'IX_metrics_ScoreItem_ConditionUid')
+begin
+	CREATE NONCLUSTERED INDEX [IX_metrics_ScoreItem_ConditionUid] ON [metrics].[ScoreItem]
+	(
+		[ConditionUid] ASC
+	)
+end
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (SELECT * FROM sys.indexes WHERE object_id = OBJECT_ID(N'[metrics].[ScoreItem]') AND name = N'IX_metrics_ScoreItem_ConditionUid')
+BEGIN
+	DROP INDEX [IX_metrics_ScoreItem_ConditionUid] ON [metrics].[ScoreItem]
+END
+		]]>
+	</rollback>
+    </changeSet>  
 </databaseChangeLog>

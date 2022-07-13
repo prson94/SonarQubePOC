@@ -12,6 +12,7 @@ import { HelpMenuModule } from '../../shared/helpmenu/helpmenu.module';
 import { IconPickerModule } from '../../shared/controls/icon-picker/icon-picker.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { DayOfWeekInputModule } from "../../shared/small-widgets/dayofweek-input/dayofweek-input.component";
+import { IgMessageBoxModule } from '../../shared/controls/message-box/message-box.module';
 import { IgNumberFieldModule } from "../../shared/controls/number-picker/number-input.component";
 
 import { AdminSettingsComponent } from './admin-settings.component';
@@ -19,7 +20,7 @@ import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
 import { AdminSiteMenuFolderEditorComponent } from './admin-site-menu-folder-editor.component';
 import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
-import { AdminSiteMenuFolderDeleteComponent } from './admin-site-menu-folder-delete.component';
+import { AdminSiteMenuDeleteDialogComponent } from './admin-site-menu-delete-dialog.component';
 import { AdminHomeComponent } from './admin-home.component';
 
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
@@ -71,6 +72,7 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
         ResourceMultiSelectGridModule,
         PipesModule,
         IgCheckboxModule,
+		IgMessageBoxModule,
         IgNumberFieldModule,
         PopupMenuModule,
         SiteModalModule,
@@ -89,7 +91,7 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
 		AdminSiteMenuFolderEditorComponent,
 		AdminSiteMenuAssetTypeEditorComponent,
 		AdminSiteMenuPermissionsComponent,
-		AdminSiteMenuFolderDeleteComponent,
+		AdminSiteMenuDeleteDialogComponent,
 		AdminHomeComponent
     ],
     providers: [

@@ -5,12 +5,36 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.SimpleAssetSearch-v2">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.SimpleAssetSearch-v3">
+  <comment>GOV-18610</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [dbo].[SimpleAssetSearch]
+	@assetTypeId int,
+	@filter nvarchar(500),
+	@skip int,
+	@take int
+AS
+BEGIN
+	 select		A.Uid as [value],
+				case 
+					when len(AP.DisplayPath) > 0 then AP.DisplayPath
+					else 'ERR:MISSING PATH SEGMENTS'
+				end as [label]
+	 from		Asset A
+	 inner join dbo.AssetPath AP ON Ap.ID = A.ID
+	 where		A.AssetTypeID = @assetTypeID 
+				and AP.DisplayPath like @filter
+	 order by	AP.DisplayPath asc
+	 offset @skip rows fetch next @take rows only
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[SimpleAssetSearch]
 	@assetTypeId int,
 	@filter nvarchar(500),
@@ -28,35 +52,6 @@ BEGIN
 				and DisplayPath like @filter
 	 order by	DisplayPath asc
 	 offset @skip rows fetch next @take rows only
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER procedure [dbo].[SimpleAssetSearch]
-	@assetTypeId int,
-	@filter nvarchar(500),
-	@skip int,
-	@take int
-AS
-BEGIN
-  drop table if exists #tempTable
-	 select
-		 A.[UID] as [AssetUid],
-		 KP.DisplayPath as [Path]
-	 into #tempTable
-	 from Asset A
-	 inner join AssetType T on T.ID = A.AssetTypeID
-	 inner join graph.AssetNodeDisplayPath KP on KP.ID = a.ID 
-	 where A.AssetTypeID = @assetTypeID and KP.DisplayPath like @filter
-	 order by KP.DisplayPath asc
-	offset @skip rows fetch next @take rows only
-            
-	select AssetUid as value,
-	case when len([Path]) > 0 then [Path]
-	else 'ERR:MISSING PATH SEGMENTS'
-	end as label 
-	from #tempTable
 END
 		]]>
 	</rollback>

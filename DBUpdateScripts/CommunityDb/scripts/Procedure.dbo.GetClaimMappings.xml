@@ -5,17 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.GetClaimMappings-v1">
+  <changeSet author="Core" id="Procedure.dbo.GetClaimMappings-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-create or alter procedure GetClaimMappings
-(
+create or alter procedure [dbo].[GetClaimMappings]
 	@CompanyID int,
 	@url nvarchar(500)
-)
 as
 begin
     set nocount on
@@ -34,15 +32,37 @@ begin
 	where	CompanyID = @CompanyID 
 			and UrlPrefix = @url;
 
-	select	coalesce(C1.ClaimType, C2.ClaimType, C3.ClaimType, C4.ClaimType) as ClaimType,
-			coalesce(C1.[Path], C2.[Path], C3.[Path], C4.[Path]) as [Path],
-			coalesce(C1.IsArray, C2.IsArray, C3.IsArray, C4.IsArray) as IsArray,
-			coalesce(C1.[Action], C2.[Action], C3.[Action], C4.[Action]) as [Action]
-	from	ClaimMapping C4
-			left join ClaimMapping C3 on C3.ClientID = @ClientID and C3.CompanyID = 0 and C3.DomainSettingID = 0 and C3.ClaimType = C4.ClaimType and C3.AuthenticationType = C4.AuthenticationType
-			left join ClaimMapping C2 on C2.ClientID = @ClientID and C2.CompanyID = @CompanyID and C2.DomainSettingID = 0 and C2.ClaimType = C4.ClaimType and C2.AuthenticationType = C4.AuthenticationType
-			left join ClaimMapping C1 on C2.ClientID = @ClientID and C2.CompanyID = @CompanyID and C2.DomainSettingID = @DomainSettingID and C1.ClaimType = C4.ClaimType and C1.AuthenticationType = C4.AuthenticationType
-	where	C4.ClientID = 0 and C4.CompanyID = 0 and C4.DomainSettingID = 0 and C4.AuthenticationType = @AuthenticationType
+	declare @claims table (ClaimType int, [Path] nvarchar(250), IsArray bit, [Action] int)
+
+	-- IdP-specific
+	insert into @claims
+		select	ClaimType, [Path], IsArray, [Action] 
+		from	ClaimMapping 
+		where	ClientID = @ClientID and CompanyID = @CompanyID and DomainSettingID = @DomainSettingID and AuthenticationType = @AuthenticationType
+
+	-- Tenant-wide
+	insert into @claims
+		select	ClaimType, [Path], IsArray, [Action] 
+		from	ClaimMapping
+		where	ClientID = @ClientID and CompanyID = @CompanyID and DomainSettingID = 0 and AuthenticationType = @AuthenticationType
+				and ClaimType not in (select ClaimType from @claims)
+
+	-- Client-wide
+	insert into @claims
+		select	ClaimType, [Path], IsArray, [Action] 
+		from	ClaimMapping
+		where	ClientID = @ClientID and CompanyID = 0 and DomainSettingID = 0 and AuthenticationType = @AuthenticationType
+				and ClaimType not in (select ClaimType from @claims)
+
+	-- Defaults
+	insert into @claims
+		select	ClaimType, [Path], IsArray, [Action] 
+		from	ClaimMapping
+		where	ClientID = 0 and CompanyID = 0 and DomainSettingID = 0 and AuthenticationType = @AuthenticationType
+				and ClaimType not in (select ClaimType from @claims)
+
+	select	* 
+	from	@claims
 end
 		]]>
     </sql>

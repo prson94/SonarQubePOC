@@ -43,7 +43,7 @@ import { takeUntil, tap, startWith } from 'rxjs/operators';
 	providers: [DataProfileService, SiteMenuService],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	encapsulation: ViewEncapsulation.None,
-	styleUrls: ['folder-editor.less']
+	styleUrls: ['admin-site-menu-folder-editor.component.less']
 })
 
 export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements OnChanges, OnInit {
@@ -60,6 +60,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	folderItems: SiteNav[] = [];
 	formMode = FormMode.Default;
 	matchTypes: any[];
+	checkBoxAllForNewFolderItemsDisabled: boolean = true;
 	savingInProgress: boolean = false;
 	hasHeader: boolean = false;
 	iconType = 'icon';
@@ -68,6 +69,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	_tempSelectedFolderItems: any[] = [];
 	selectedNewFolderItems: SiteNav[] = [];
 	folderModel: SiteNav;
+	folderNameIsFocused: boolean = false;
 	selection: SiteNav = null;
 	folderForm: FormGroup;
 	hasFormChanged: boolean = false;
@@ -103,8 +105,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	labelAddFolder = $localize`Add Folder`;
 	labelSaveChanges = $localize`Save Changes`;
 
-	labelClose = $localize`Close`;
+	labelCancel = $localize`Cancel`;
 	labelDiscard = $localize`Discard Changes`;
+
+	hasFolderItems: boolean = false;
 
 	private iconImage: CompanyImage = new CompanyImage();
 
@@ -133,23 +137,27 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	ngOnInit(): void {
 		this.selection = null;
-		this.newFolderItems = new Array<SiteNav>();
-		this.selectedNewFolderItems = new Array<SiteNav>();
-
 		this.folderForm = this.formBuilder.group({
 			name: [null, [Validators.required, this.isEmptyString()]]
 		});
 		setTimeout(() => {
 			this.folderForm.valueChanges.subscribe((change) => {
-				this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+				this.formMode = this.navigationFolder?.Title?.length > 0 ? FormMode.Editing : FormMode.Adding;
 			});
-			this.formMode = this.navigationFolder?.Name?.length > 0 ? FormMode.Editing : FormMode.Adding;
+			this.formMode = this.navigationFolder?.Title?.length > 0 ? FormMode.Editing : FormMode.Adding;
 		}, 500);
 		this.folderForm.updateValueAndValidity();
 	}
 
 	ngOnChanges(changes: SimpleChanges): void {
 		let c = changes;
+		if (changes.navigationFolder && changes.navigationFolder.currentValue !== changes.navigationFolder.previousValue) {
+			this._initialVersion = "";
+			if (!this.navigationFolder?.Name.startsWith("#")) {
+				this.hasFolderItems = true;
+			}
+		}
+
 		if (this.navigationFolder) {
 			this.folderModel = _.cloneDeep(this.navigationFolder);
 			this.isEdit = true;
@@ -216,7 +224,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 				this.isAvailableFolderItemsTableLoading = false;
 				this.isPermissionAssetTableLoading = false;
-
+				this.setRequiredCount();
 				this._initialVersion = JSON.stringify(this.getModel());
 			});
 	}
@@ -231,7 +239,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	private getModel(): any {
 		let folder: any = {};
 		folder.Id = this.folderModel.ID;
-		folder.Name = this.folderModel.Name;
+		folder.Title = this.folderModel.Title;
 		folder.Icon = this.folderModel.Icon;
 		if (this.folderModel.IconPayload) {
 			folder.IconPayload = this.folderModel.IconPayload;
@@ -264,10 +272,13 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.siteMenuService.editFolder(folder)
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
-						this.stateService.reloadLeftNavMenu();
-						this.formMode = FormMode.Default;
-						this.handleSaveComplete(result);
+						if (result?.type !== "error") {
+							this.stateService.reloadLeftNavMenu();
+							this.formMode = FormMode.Default;
+							this.handleSaveComplete(result);
+						}
 						this.savingInProgress = false;
+						this.cdRef.markForCheck();
 					});
 				break;
 			case FormMode.Adding:
@@ -287,11 +298,14 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				this.siteMenuService.addFolder(model)
 					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
-						this.formMode = FormMode.Default;
-						this.stateService.reloadLeftNavMenu();
-						this.siteMenuService.setSiteNavPermissions(this.selection);
-						this.handleSaveComplete(result);
+						if (result?.type !== "error") {
+							this.formMode = FormMode.Default;
+							this.stateService.reloadLeftNavMenu();
+							this.siteMenuService.setSiteNavPermissions(this.selection);
+							this.handleSaveComplete(result);
+						}
 						this.savingInProgress = false;
+						this.cdRef.markForCheck();
 					});
 				break;
 		}
@@ -299,7 +313,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	handleSaveComplete(res: any) {
 		if (!(res?.status)) {
-			this.saveClick.emit({ item: this.folderModel.Name, action: `${this.isEdit ? 'edit' : 'new'}` });
+			this.saveClick.emit({ item: this.folderModel.Title, action: `${this.isEdit ? 'edit' : 'new'}` });
 		}
 		else {
 			this.savingInProgress = false;
@@ -445,8 +459,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					]
 				}
 				this.folderModel.Icon = this.categories[0].items[0];
-			}
-			)
+				this.cdRef.markForCheck();
+			})
 	}
 
 	loadTableData() {
@@ -466,6 +480,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			if (this.navigationFolder) {
 				this.enrichFolderData();
 			}
+
 			this.cdRef.markForCheck();
 		})
 	}
@@ -479,6 +494,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
+		this.checkBoxAllForNewFolderItemsDisabled = false;
 		this.setRequiredCount();
 	}
 
@@ -503,8 +519,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j])
 				}
 			}
+			this.newFolderItems = this.newFolderItems.sort((a, b) => a.Title.localeCompare(b.Title));
 			this._tempSelectedFolderItems = [];
 			this.setRequiredCount();
+			this.checkBoxAllForNewFolderItemsDisabled = false;
 		}
 		this.cdRef.markForCheck();
 	}
@@ -512,11 +530,16 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 	removeFromSelectedFolderItems() {
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
-				if (this.availableItems.indexOf(this.selectedNewFolderItems[j]) === -1) {
-					this.availableItems.push(this.selectedNewFolderItems[j]);
-					this.newFolderItems = this.newFolderItems.filter((x) => x != this.selectedNewFolderItems[j])
+				let x = this.availableItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				let y = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
+				if (y > -1) {
+					let i = _.cloneDeep(this.newFolderItems.splice(y, 1)[0]);
+					if (x === -1) {
+						this.availableItems.push(i);
+					}
 				}
 			}
+			this.availableItems = this.availableItems.sort((a, b) => a.Title.localeCompare(b.Title));
 			this.selectedNewFolderItems = [];
 			this.setRequiredCount();
 		}
@@ -592,11 +615,36 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 
 	setRequiredCount() {
 		this.requiredCount = 2;
-		if (this.folderModel.Name?.length > 0) {
+		if (this.folderModel.Title?.length > 0) {
 			this.requiredCount--;
 		}
-		if (this.newFolderItems?.length > 0) {
+		if (this.newFolderItems?.length > 0 || !this.hasFolderItems) {
 			this.requiredCount--;
+		}
+	}
+
+	setRequiredFromNameInput($event) {
+		this.requiredCount = 2;
+		if ($event.data?.length > 0) {
+			this.requiredCount--;
+		}
+		if (this.newFolderItems?.length > 0 || !this.hasFolderItems) {
+			this.requiredCount--;
+		}
+		this.cdRef.markForCheck();
+	}
+
+	focusRequired(event) {
+		event.stopPropagation();
+		if (this.requiredCount == 0) {
+			return;
+		}
+		if (!this.folderForm.get('title')?.errors?.empty && !this.folderNameIsFocused) {
+			this.elRef.nativeElement.querySelectorAll("[name = folderNameInput]")[0].focus();
+			this.folderNameIsFocused = true;
+		} else if (!this.newFolderItems || this.newFolderItems?.length == 0) {
+			this.elRef.nativeElement.querySelector("[name = availableFolderItemsSearchField]").querySelectorAll(".ig-input")[0].focus();
+			this.folderNameIsFocused = false;
 		}
 	}
 
@@ -661,5 +709,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			return false;
 		}
 		return this._initialVersion !== JSON.stringify(this.getModel());
+	}
+
+	get isSaveDisabled(): boolean {
+		return (this.isEdit && !this.hasChanges) || this.savingInProgress || this.folderModel === null || this.folderModel.Title === null || this.folderModel.Title === '' || ((this.newFolderItems === null || this.newFolderItems.length < 1) && this.hasFolderItems);
 	}
 }

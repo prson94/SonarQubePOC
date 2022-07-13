@@ -44,6 +44,8 @@ import { AssetEditorModule } from '../shared/asset-editor/asset-editor.module';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
 import { AssetTypeDetailModule } from '../shared/asset-type-detail/asset-type-detail.module';
 import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-detail.module';
+import { PortalsModule } from '../shared/portals/portals.module';
+import { InfoTooltipModule } from '../shared/tooltip/info-tooltip.component';
 
 @NgModule({
     imports: [
@@ -87,9 +89,11 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
         DataProfileModule,
         SidePanelModule,
         PopupMenuModule,
+        PortalsModule,
 
         AdvancedFiltersModule,
-        SearchFieldModule
+		SearchFieldModule,
+		InfoTooltipModule
     ],
     declarations: [
         HierarchyComponent,

@@ -33,6 +33,7 @@ export class AdminRelationshipsEditor {
     isLoading: boolean = false;
     isLoadingObject: boolean = false;
     isLoadingItem: boolean = false;
+	isLoadingPredicate: boolean = false;
     isLoadingCardinality: boolean = false;
     canChangePredicate: boolean = true;
     canChangeCardinality: boolean = true;
@@ -75,8 +76,8 @@ export class AdminRelationshipsEditor {
                     if (relationshipType) {
                         relationshipType = relationshipType[0];
 
-                        this.loadObjectOptions(this.relationshipType.Subject.Uid, this.relationshipType.Object.Uid, this.relationshipType.Predicate.Uid);
-                        this.loadPredicates(this.relationshipType.Subject.Uid, this.relationshipType.Object.Uid, this.relationshipType.Predicate.Uid);
+						this.loadObjectOptions(this.relationshipType.Subject.Uid, this.relationshipType.Object.Uid, this.relationshipType.Predicate.Uid);
+						this.loadPredicates(this.relationshipType.Subject.Uid, this.relationshipType.Object.Uid, this.relationshipType.Predicate.Uid, true);
 
                         if (relationshipType.PredicateID >= 3 && relationshipType.PredicateID <= 4) {
 
@@ -134,7 +135,10 @@ export class AdminRelationshipsEditor {
     }
 
 
-    private loadPredicates(subjectUid: string, objectUid?: string, predicateUid?: string) {
+	private loadPredicates(subjectUid: string, objectUid?: string, predicateUid?: string, Loadpredicate?: boolean) {
+		if (Loadpredicate) {
+			this.isLoadingPredicate = Loadpredicate;
+		}
         this.relationshipsService
             .getRelationshipPredicates(subjectUid, objectUid, predicateUid)
             .subscribe((result) => {
@@ -149,7 +153,8 @@ export class AdminRelationshipsEditor {
                 }
 
                 this.selectedPredicate = this.predicates.find((p) => p.value === this.relationshipType.Predicate.Uid);
-                this.loadCardinalityOptions();
+				this.loadCardinalityOptions();
+				this.isLoadingPredicate = false;
             });
     }
 

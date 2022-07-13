@@ -54,7 +54,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @Input() assetUid: string;
     @Input() assetTypeUid: string;
     @Input() diagramNodeKey: string;
-    selectionScrollHeight: string = "34px";
+    selectionScrollHeight: string = "320px";
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -780,7 +780,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
             if (!this.lookupValues || this.lookupValues.length === 0) {
-                this.lookupValues = Array.from({ length: res.count });
+				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null } });
             }
 
             if (this.lookupValues.length > 10 || loadParams["filter"]) {
@@ -808,8 +808,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.setSelectionVirtualScrollHeight();
             this.ref.detectChanges();
-            setTimeout(() => {
-                this.overlayPanel.align();
+			setTimeout(() => {
+				if (this.overlayPanel) {
+					this.overlayPanel.align();
+				}
             }, 10);
         });
     }
