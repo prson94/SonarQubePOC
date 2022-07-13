@@ -75,13 +75,13 @@ namespace d360.model.DataAccessLayer
 				existingOpt.Value = updateOpt.Value;
 			}
 
-			var addedOptions = update.QuestionTypeOptions.Where((opt, index) => index >= questionType.QuestionTypeOptions.Count);
+			var addedOptions = update.QuestionTypeOptions.Where((_, index) => index >= questionType.QuestionTypeOptions.Count);
 			foreach (var addedOption in addedOptions)
 			{
 				questionType.QuestionTypeOptions.Add(addedOption);
 			}
 
-			var deletedOptions = questionType.QuestionTypeOptions.Where((opt, index) => index >= update.QuestionTypeOptions.Count).ToList();
+			var deletedOptions = questionType.QuestionTypeOptions.Where((_, index) => index >= update.QuestionTypeOptions.Count).ToList();
 			foreach (var deletedOption in deletedOptions)
 			{
 				companyContext.QuestionTypeOptions.Remove(deletedOption);

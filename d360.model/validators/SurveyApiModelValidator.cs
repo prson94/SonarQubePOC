@@ -235,7 +235,8 @@ namespace d360.model.validators
 			}
 
 			var maxNameLength = 250;
-			if (!(surveyType.Name.Length <= maxNameLength))
+			var isValidNameLength = (surveyType.Name.Length <= maxNameLength);
+			if (!isValidNameLength)
 			{
 				return new WorkHttpStatus(
 					HttpStatusCode.BadRequest,
@@ -244,7 +245,8 @@ namespace d360.model.validators
 			}
 
 			var minValidForDays = 0;
-			if (!(surveyType.ValidForDays >= minValidForDays))
+			var isValidForDaysFitsMin = (surveyType.ValidForDays >= minValidForDays);
+			if (!isValidForDaysFitsMin)
 			{
 				return new WorkHttpStatus(
 					HttpStatusCode.BadRequest,
@@ -253,7 +255,8 @@ namespace d360.model.validators
 			}
 
 			var maxValidForDays = 365;
-			if (!(surveyType.ValidForDays <= maxValidForDays))
+			var isValidForDaysFitsMax = (surveyType.ValidForDays <= maxValidForDays);
+			if (!isValidForDaysFitsMax)
 			{
 				return new WorkHttpStatus(
 					HttpStatusCode.BadRequest,
@@ -294,7 +297,8 @@ namespace d360.model.validators
 			}
 
 			var maxNameLength = 250;
-			if (!(updateModel.Name.Length <= maxNameLength))
+			var isValidNameLength = (updateModel.Name.Length <= maxNameLength);
+			if (!isValidNameLength)
 			{
 				return new WorkHttpStatus(
 					HttpStatusCode.BadRequest,
@@ -303,7 +307,8 @@ namespace d360.model.validators
 			}
 
 			var minValidForDays = 0;
-			if (!(updateModel.ValidForDays >= minValidForDays))
+			var isValidForDaysGreaterFitsMin = (updateModel.ValidForDays >= minValidForDays);
+			if (!isValidForDaysGreaterFitsMin)
 			{
 				return new WorkHttpStatus(
 					HttpStatusCode.BadRequest,
@@ -312,7 +317,8 @@ namespace d360.model.validators
 			}
 
 			var maxValidForDays = 365;
-			if (!(updateModel.ValidForDays <= maxValidForDays))
+			var isValidForDaysFitsMax = updateModel.ValidForDays <= maxValidForDays;
+			if (!isValidForDaysFitsMax)
 			{
 				return new WorkHttpStatus(
 					HttpStatusCode.BadRequest,

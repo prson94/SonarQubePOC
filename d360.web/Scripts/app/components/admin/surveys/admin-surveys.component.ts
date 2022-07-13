@@ -233,7 +233,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         var index: number = -1;
         for (var survey of this.surveys) {
             index++;
-            if (survey.Uid == uid) {
+            if (survey.Uid === uid) {
                 return index;
             }
         }
@@ -262,7 +262,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
                     $localize`Success`
                 );
 
-                if (event.item.Uid == undefined) {
+                if (event.item.Uid == null) {
                     event.item.Uid = result.Uid;
                     this.surveys[this.surveys.length] = event.item;
                 }

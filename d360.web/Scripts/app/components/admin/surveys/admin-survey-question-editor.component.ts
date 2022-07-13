@@ -84,7 +84,7 @@ export class AdminSurveyQuestionEditorEditor {
                 DisplayStyle: null,
                 Name: null,
                 Options: [ { Name: '', Value: 0 } ]
-            }
+            };
 
             this.action = "New";
         }
