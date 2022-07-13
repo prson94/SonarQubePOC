@@ -11585,14 +11585,7 @@ EG.GroupUid
 						INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
 				WHERE M.[Action] = 'INSERT';
 
-				INSERT INTO graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
-				SELECT	 A.ID, A.[uid], a.AssetTypeID, AT.Uid as AssetTypeUid, A.[State], coalesce(A.UpdatedOn, getutcdate()) 
-				FROM	#mergeResultTable M
-				INNER JOIN [Group] G on G.ID = M.GroupID
-				INNER JOIN Asset A ON A.Object = 'Group' and A.ObjectID = G.ID
-				INNER JOIN  AssetType AT ON AT.Object = 'GroupType' and AT.ObjectID = 1
-				WHERE M.[Action] = 'INSERT' AND NOT EXISTS (SELECT 1 FROM graph.AssetNode WHERE [Uid] = A.Uid);
-
+				
 															INSERT INTO [ResourceGroup](GroupID,[ResourceID])
 															SELECT G.ID, G.PrimaryOwnerResourceID
 															FROM [Group] G
