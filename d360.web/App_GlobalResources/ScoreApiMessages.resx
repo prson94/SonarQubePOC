@@ -171,6 +171,9 @@
   <data name="ScoreNotExternalCalculation" xml:space="preserve">
     <value>Score definition with {0} is not externally calculated.</value>
   </data>
+  <data name="ScoreNotInternalCalculation" xml:space="preserve">
+    <value>Score definition with {0} is not internally calculated.</value>
+  </data>
   <data name="UpperGtLower" xml:space="preserve">
     <value>Lower threshold must be smaller than Upper threshold.</value>
   </data>
