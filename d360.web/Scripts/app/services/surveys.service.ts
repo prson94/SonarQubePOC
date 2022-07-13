@@ -1,12 +1,11 @@
 ﻿import { Injectable } from '@angular/core';
-import { SurveyType, SurveyTypeDetails, SurveyQuestionTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse, SurveyTypeV2, QuestionTypeV2 } from '../models/survey.model';
+import { SurveyTypeUpsertModel, SurveyTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse, QuestionTypeV2 } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
-import { ApiErrorOrResponse } from '../models/ApiErrorOrResponse';
 import { V2ApiFilters } from '../models/asset-search.model';
 
 @Injectable({
@@ -34,15 +33,6 @@ export class SurveysService extends BaseObservableService {
             );
     }
 
-    //used by admin section need to convert to v2 API 
-    getSurveyTypeQuestionDetails(id: number, surveyTypeId: number): Observable<SurveyQuestionTypeDetails> {
-        return this.http.get(`form/questiontype_formdata?id=${id}&surveyTypeID=${surveyTypeId}`)
-            .pipe(
-                map(response => <SurveyQuestionTypeDetails>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     deleteSurveyTypeById(uid: string): Observable<boolean> {
         return this.http
             .delete(`/api/v2/survey/types/${uid}`)
@@ -63,7 +53,7 @@ export class SurveysService extends BaseObservableService {
     }
 
 
-    saveSurveyType(surveyType: SurveyType): Observable<SurveyType> {
+    saveSurveyType(surveyType: SurveyTypeUpsertModel): Observable<SurveyTypeUpsertModel> {
         const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
@@ -75,7 +65,7 @@ export class SurveysService extends BaseObservableService {
                      {headers }
                 )
                 .pipe(
-                    map((res) => res as SurveyType),
+                    map((res) => res as SurveyTypeUpsertModel),
                     catchError(err => this.handleError(err))
                 );
         }

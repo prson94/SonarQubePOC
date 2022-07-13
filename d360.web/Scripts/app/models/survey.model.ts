@@ -1,6 +1,4 @@
-﻿import { DropdownOption } from './dropdown.model';
-
-export enum SurveyTypeDisplayStyle {
+﻿export enum SurveyTypeDisplayStyle {
     RadioList = 1,
     Rating = 2,
     CheckList = 3,
@@ -17,13 +15,7 @@ export class Survey {
     SurveyTypeUid: string;
 }
 
-// TODO: drop it
-export class SurveyType {
-    //legacy IDs for admin section
-    ID: number;
-    Object: string;
-    ObjectID: number;
-
+export class SurveyTypeUpsertModel {
     Name: string;
     Description: string;
     Uid: string;
@@ -82,29 +74,6 @@ export class Option {
     Name: string;
     Value: number;
     IsChecked: boolean = false;
-}
-
-export class SurveyQuestionOption {
-    ID: number;
-    Name: string;
-    Value: number;
-    IsChecked: boolean;
-}
-
-export class SurveyQuestionTypeDetails {
-    Description: string;
-    DisplayStyle: SurveyTypeDisplayStyle;
-    DisplayStyleOptions: DropdownOption[];
-    ID: number;
-    Name: string;
-    SurveyTypeID: number;
-    Items: SurveyQuestionOption[];
-    Values: SurveyQuestionOption[]; //used on response
-    Comments: string;
-}
-
-export class SurveyResponse {
-    Questions: SurveyQuestionTypeDetails[];
 }
 
 export class SurveyQuestionResponseApiModel {

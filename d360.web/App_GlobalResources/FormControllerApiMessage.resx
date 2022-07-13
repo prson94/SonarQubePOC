@@ -219,9 +219,6 @@
   <data name="EndPointRemoved" xml:space="preserve">
     <value>End point successfully removed.</value>
   </data>
-  <data name="ErrorOccurred" xml:space="preserve">
-    <value>Error Occurred!</value>
-  </data>
   <data name="FailedGenerateToken" xml:space="preserve">
     <value>Failed to generate embed token.</value>
   </data>
@@ -444,9 +441,6 @@
   <data name="PowerBINotSetupOnGovernEnvironment" xml:space="preserve">
     <value>PowerBI has not been setup on this Govern environment.  You are possibly seeing reports because the environment was copied from another region.  Please re-upload your PowerBI files to resolve this issue.</value>
   </data>
-  <data name="Question" xml:space="preserve">
-    <value>Question</value>
-  </data>
   <data name="Relationship" xml:space="preserve">
     <value>Relationship</value>
   </data>
@@ -467,9 +461,6 @@
   </data>
   <data name="Resource" xml:space="preserve">
     <value>Resource</value>
-  </data>
-  <data name="ResponseType" xml:space="preserve">
-    <value>Response type</value>
   </data>
   <data name="Responsibility" xml:space="preserve">
     <value>Responsibility</value>
@@ -536,12 +527,6 @@
   </data>
   <data name="SpecificCartNotFound" xml:space="preserve">
     <value>The specified cart could not be found</value>
-  </data>
-  <data name="SurveyQuestion" xml:space="preserve">
-    <value>Survey question</value>
-  </data>
-  <data name="SurveyType" xml:space="preserve">
-    <value>Survey type</value>
   </data>
   <data name="Synonym" xml:space="preserve">
     <value>Synonym</value>

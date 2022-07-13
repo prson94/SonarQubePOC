@@ -680,8 +680,6 @@ namespace d360.web.Controllers
 					return DeletePolicyTypeLevel(form);
 				case "SERVICE":
 					return DeleteCustomAPIService(form);
-				case "SURVEYQUESTIONTYPE":
-					return DeleteQuestionType(form);
 				case "TAXONOMYTYPELEVEL":
 					return DeleteTaxonomyTypeLevel(form);
 				case "URI":
