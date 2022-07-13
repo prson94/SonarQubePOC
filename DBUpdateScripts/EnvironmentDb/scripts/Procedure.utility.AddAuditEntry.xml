@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.utility.AddAuditEntry-v20">
+  <changeSet author="VLova" id="Procedure.utility.AddAuditEntry-v21">
   <comment>GOV-18940</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -304,8 +304,7 @@ begin
 		where	O.ID = @MainObjectID
 
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from SurveyType where ID = @MainObjectID
-		insert into @tbl  select 0, 'Object', Object, 0, 0 from SurveyType where ID = @MainObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from SurveyType where ID = @MainObjectID
+		insert into @tbl  select 0, 'AssetTypeID', AssetTypeID, 0, 0 from SurveyType where ID = @MainObjectID
 	end
 	
 	if @MainObject = 'Taxonomy'
@@ -710,7 +709,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-CREATE OR ALTER procedure [utility].[AddAuditEntry]
+		CREATE OR ALTER procedure [utility].[AddAuditEntry]
 		@DependentObject varchar(50),
 	@DependentObjectID int,
 	@ResourceID int,
@@ -927,9 +926,10 @@ begin
 
 		insert into @tbl  select 0, 'Name', Name, 0, 0 from Report where ID = @MainObjectID
 		insert into @tbl  select 0, 'Description', Description, 0, 0 from Report where ID = @MainObjectID
-		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Report where ID = @MainObjectID
-		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Report where ID = @MainObjectID
-		insert into @tbl  select 0, 'ShowOnHomePage', ShowOnHomePage, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ReportType', ReportType, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'AssetTypeID', AssetTypeID, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'Location', Location, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'Definition', Definition, 0, 0 from Report where ID = @MainObjectID
 	end
 
 	if @MainObject = 'Resource'
