@@ -94,6 +94,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>MemberShipErrors.resx</DependentUpon>
     </Compile>
+    <Compile Update="resources\DashboardMessages.Designer.cs">
+      <DependentUpon>DashboardMessages.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
     <Compile Update="resources\Messages.Designer.cs">
       <DependentUpon>Messages.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -225,6 +230,11 @@
     <EmbeddedResource Update="resources\MemberShipErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MemberShipErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\DashboardMessages.resx">
+      <SubType>Designer</SubType>
+      <LastGenOutput>DashboardMessages.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\Messages.resx">
       <SubType>Designer</SubType>

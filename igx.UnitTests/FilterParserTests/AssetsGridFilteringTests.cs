@@ -435,11 +435,9 @@ namespace igx.UnitTests.FilterExpressionTests
             string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 2);
             Assert.True(sqlParams["@intersectFilter1"].ToString() == DataConstants.ValidGUID);
-            Assert.Contains(@"IntersectTypeUid = @intersectFilter1", sql);
-            Assert.Contains(@"MATCH(S <- (E) - O)", sql);
-            Assert.Contains(@"MATCH(S - (E) -> O)", sql);
+            Assert.Contains(@"IT.Uid = @intersectFilter1", sql);
             Assert.True(sqlParams["@intersectAssetFilter1"].ToString() == DataConstants.ValidGUID2);
-            Assert.Contains(@"O.Uid = @intersectAssetFilter1", sql);
+            Assert.Contains(@"@intersectAssetFilter1", sql);
             if (!string.IsNullOrEmpty(additionalTest))
 
             {
@@ -458,8 +456,7 @@ namespace igx.UnitTests.FilterExpressionTests
             string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             Assert.True(sqlParams["@intersectFilter1"].ToString() == DataConstants.ValidGUID);
-            Assert.Contains(@"IntersectTypeUid = @intersectFilter1", sql);
-            Assert.Contains(@"MATCH(S <- (E) - O)", sql);
+            Assert.Contains(@"IT.Uid = @intersectFilter1", sql);
             if (!string.IsNullOrEmpty(additionalTest))
             {
                 Assert.Contains(additionalTest, sql);

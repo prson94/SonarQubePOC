@@ -156,7 +156,7 @@ export class SiteUrlHelpers {
     }
 
     // getObjectUrl - Generates the url for an object based on its type
-    static getObjectUrl(objectType: string, objectId: number, parentId?: number, objectName?: string): string {
+    static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string): string {
         switch (objectType.toUpperCase()) {
             case 'ARTIFACTTYPE':
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${objectId}`;

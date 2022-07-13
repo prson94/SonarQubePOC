@@ -63,7 +63,6 @@ END
 	  ]]>
     </rollback>
   </changeSet>
-
   <changeSet author="Core" id="Table.dbo.Report-Report_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -134,6 +133,48 @@ END
 
 		]]>
 	</rollback>
+  </changeSet>
+      <changeSet author="TDuric" id="Table.dbo.Report-v3.31">
+    <comment>GOV-18080</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[Report]', 'AssetTypeID') IS NULL
+		BEGIN
+			ALTER TABLE dbo.Report ADD [AssetTypeID] [int]
+		END
+		IF COL_LENGTH('[dbo].[Report]', 'Location') IS NULL
+		BEGIN
+			ALTER TABLE dbo.Report ADD [Location] [int]
+		END
+		IF COL_LENGTH('[dbo].[Report]', 'Definition') IS NULL
+		BEGIN
+			ALTER TABLE dbo.Report ADD [Definition] [nvarchar](MAX)
+		END
+		]]>
+    </sql>
+    
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[dbo].[Report]', 'AssetTypeID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN AssetTypeID
+		END
+		IF COL_LENGTH('[dbo].[Report]', 'Location') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN Location
+		END
+		IF COL_LENGTH('[dbo].[Report]', 'Definition') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN Definition
+		END
+	  ]]>
+    </rollback>
   </changeSet>
 
 </databaseChangeLog>

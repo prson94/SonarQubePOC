@@ -1651,4 +1651,174 @@ values	(G.ID, G.Segments);
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
+  <validCheckSum>7:295c472b9c68f533e2b8929af6797c49</validCheckSum>
+  <comment>Intersect table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DISABLE TRIGGER ALL ON [dbo].[Intersect];
+		
+update	T
+set		T.SubjectAssetID = S.ID,
+		T.SubjectAssetTypeID = S.AssetTypeID
+from	[Intersect] T inner join Asset S on S.Object = T.Subject and S.ObjectId = T.SubjectID
+where   T.SubjectAssetID is null;
+
+update	T
+set		T.ObjectAssetID = S.ID,
+		T.ObjectAssetTypeID = S.AssetTypeID
+from	[Intersect] T inner join Asset S on S.Object = T.Object and S.ObjectId = T.ObjectID
+where	T.ObjectAssetID is null;
+
+update	T
+set		T.ObjectAssetID = 0,
+		T.ObjectAssetTypeID = S.ID
+from	[Intersect] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID
+where	T.ObjectAssetID is null;
+
+ENABLE TRIGGER ALL ON [dbo].[Intersect];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TKlok" id="Data.Corrections.GOV-18612.2">
+  <comment>Intersect table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DISABLE TRIGGER ALL ON [dbo].[Intersect];
+
+update	T
+set		T.SubjectAssetID = 0,
+		T.SubjectAssetTypeID = S.ID
+from	[Intersect] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID
+where	T.SubjectAssetID is null;
+
+ENABLE TRIGGER ALL ON [dbo].[Intersect];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.69">
+  <comment>Update Data for reports</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		update r
+		set r.AssetTypeId = ISNULL(at.ID, AT2.Id)
+		from report r
+		left join AssetType AT on AT.Object = R.ObjectType AND at.ObjectID = r.ObjectID 
+		left join AssetType AT2 on AT2.Object = (R.ObjectType+'Type') AND AT2.ObjectID = r.ObjectID 
+		WHERE at.id is not null or AT2.Id is not null
+
+		update r
+		set r.Location = Location.Value
+		from report r
+		outer apply (
+		select 
+			case when ShowOnHomePage = 1 then 3
+			when IsType.Value = 0 then 2
+			else 1
+			end as Value
+			from Report rep
+			outer apply (Select count(1) as Value from Report where id = r.ID and rep.ObjectType like '%Type')IsType
+			where rep.ID = r.ID
+		)Location
+
+		update dbo.report set ReportType = 1 where ReportType = 'powerbi'
+		update dbo.report set ReportType = 2 where ReportType = 'sagacity'
+		update dbo.report set ReportType = 3 where ReportType = 'legacy'
+
+		update  r
+		set r.Definition = JSON.val
+		from dbo.Report r
+		outer apply (select PowerBIReportID as powerBiReportId,
+		PowerBIDatasetID as powerBiDatasetId,
+		[FileName] as fileName,
+		[url] as url
+		from dbo.Report
+		where id = r.ID
+		FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER)JSON(val)
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ObjectType') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN ObjectType
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ObjectID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN ObjectID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'PowerBIReportID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN PowerBIReportID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'PowerBIDatasetID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN PowerBIDatasetID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'FileName') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN FileName
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'Url') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN Url
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ShowOnHomePage') IS NOT NULL
+		BEGIN
+			ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ShowOnHomePage;
+			ALTER TABLE dbo.Report
+			DROP COLUMN ShowOnHomePage
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  
+   <changeSet author="TDuric" id="Data.Corrections.GOV-18080-2.2">
+  <comment>Update Data for reports 2</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF (OBJECT_ID('DF_Report_ReportType') IS NOT NULL)
+		begin
+				ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ReportType;
+				ALTER TABLE [dbo].[Report] ALTER COLUMN ReportType [int];
+		end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

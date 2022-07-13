@@ -157,7 +157,7 @@ namespace d360.model.DataAccessLayer
 					var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
-						extraJoins += @" cross apply (select count(1) as [Count] from Report where ObjectType = A.Object and ObjectID = A.ObjectID) D ";
+						extraJoins += @" cross apply (select count(1) as [Count] from Report where AssetTypeId = A.ID) D ";
 						extraColumns += @", cast(iif(D.[Count] = 1, 1, 0) as bit) as HasDashboards";
 					}
 					else
@@ -238,7 +238,7 @@ namespace d360.model.DataAccessLayer
 		}
 
 		//UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
-		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null)
+		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null)
 		{
 			if (cancellationToken == null)
 			{
@@ -1281,6 +1281,8 @@ namespace d360.model.DataAccessLayer
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			List<string> includedJoins = new List<string>();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
 				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
@@ -1327,6 +1329,11 @@ namespace d360.model.DataAccessLayer
 			#endregion
 
 			var countSQL = $@"{(includeTotal ? $"select count(1) from ({filteredSelect}) as sub_query" : "")}";
+
+			if (previousCount.HasValue) 
+			{
+				countSQL = "";
+			}
 
 			var pagingQuery = $" and TempA.ID Between {RecordStart} and {RecordEnd}";
 			if (!includeTotal)
@@ -1390,11 +1397,23 @@ namespace d360.model.DataAccessLayer
 
 			bool hasOwnershipData = !string.IsNullOrEmpty(selectOwnershipSQL);
 
+			if (previousCount.HasValue)
+			{
+				includeTotal = false;
+			}
+
 			var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
-			if (includeTotal)
+			if (previousCount.HasValue)
 			{
-				model.total = assetsResult.total;
+				model.total = previousCount.Value;
+			}
+			else
+			{
+				if (includeTotal)
+				{
+					model.total = assetsResult.total;
+				}
 			}
 			var results = assetsResult.items.ToList();
 
@@ -1592,20 +1611,29 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@pageSize", pageSize);
 			dbArgs.Add("@offset", pageSize * pageNum);
 
+
+
 			var sql = $@"
-				select	P.[uid],
-						P.[keypath] as [path]  
-				from	graph.AssetNode P		                
-				where P.assetTypeId = @assetTypeId
-				order by P.ID
+				select	A.[uid],
+						AP.[keypath] as [path]
+				from	
+					Asset A
+					inner join 
+					AssetPath AP on a.ID=ap.ID
+				where A.assetTypeId = @assetTypeId
+				order by A.ID
 				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
 			int? total = null;
 			if (includeTotal)
 			{
-				var countSql = $@"select count(1) 
-				from	graph.AssetNode P		                
-				where P.assetTypeId = @assetTypeId";
+				var countSql = $@"
+				select 
+					count(1)
+				from 
+					Asset A	                
+				where 
+					A.assetTypeId = @assetTypeId";
 
 				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
 			}

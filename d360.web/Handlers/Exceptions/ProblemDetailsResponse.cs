@@ -26,25 +26,30 @@ namespace d360.web.Handlers.Exceptions
 		/// <summary>
 		/// Status code.
 		/// </summary>
-		[JsonProperty("status")]
+		[JsonIgnore]
+		//[JsonProperty("status")]
 		public int Status { get; set; }
+
 
 		/// <summary>
 		/// Details of the problem.
 		/// </summary>
-		[JsonProperty("detail")]
+		//[JsonProperty("detail")]
+		[JsonIgnore]
 		public string Detail { get; set; }
 
 		/// <summary>
 		/// Request method
 		/// </summary>
-		[JsonProperty("method")]
+		//[JsonProperty("method")]
+		[JsonIgnore]
 		public string Method { get; set; }
 
 		/// <summary>
 		/// Request url
 		/// </summary>
-		[JsonProperty("instance")]
+		//[JsonProperty("instance")]
+		[JsonIgnore]
 		public string Instance { get; set; }
 
 		/// <summary>

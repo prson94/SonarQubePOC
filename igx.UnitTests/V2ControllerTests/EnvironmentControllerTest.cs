@@ -13,7 +13,7 @@ namespace igx.UnitTests.V2ControllerTests
         
         public EnvironmentControllerTest()
         {
-            this.environmentController = new EnvironmentController(GetCoreComponentSet(), GetThemeRepository(), GetStorage())
+            this.environmentController = new EnvironmentController(GetCoreComponentSet(), GetThemeRepository(), GetDashboardRepository(), GetStorage())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

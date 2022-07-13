@@ -14,7 +14,10 @@ using System.Web.Http.Results;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Threading;
 using d360.model.DataAccessLayer;
+using d360.web.Utilities;
+using igx.UnitTests.V2ControllerTests;
 using Moq;
 
 namespace igx.UnitTests
@@ -24,10 +27,20 @@ namespace igx.UnitTests
     {
         internal FieldsController fieldsController;
         private Mock<IAssetTypeRepository> AssetTypeRepositoryMock { get; }
+        private readonly TestDependencyResolver DependencyResolver;
+        private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
-        public FieldsControllerTest()
+		public FieldsControllerTest()
         {
-            AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
+	        RuntimeInfoMock = new Mock<IRuntimeInfo>();
+	        RuntimeInfoMock.Setup(x => x.IsDebuggerAttached).Returns(true);
+	        RuntimeInfoMock.Setup(x => x.IsReleaseBuild).Returns(true);
+
+	        DependencyResolver = new TestDependencyResolver();
+	        DependencyResolver.AddService(RuntimeInfoMock.Object);
+	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
+
+			AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
 
             this.fieldsController = new FieldsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetFieldsRepository(), GetAssetRepository(), AssetTypeRepositoryMock.Object)
             {
@@ -52,7 +65,7 @@ namespace igx.UnitTests
         public async void PutFields_CheckIfValidatorIncluded()
         {
             FieldTypesApiEditModel model = new FieldTypesApiEditModel();
-            var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
+            var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(CancellationToken.None);
             var content = await results.Content.ReadAsStringAsync();
 
             Assert.True(results.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
@@ -66,7 +79,7 @@ namespace igx.UnitTests
             model.Fields = new List<FieldTypeApiEditModel>();
             model.AssetTypeUid = Guid.Parse(DataConstants.ValidGUID);
             model.Action = FieldTypesApiEditAction.Merge;
-            var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
+            var results = await fieldsController.PutFieldTypesAsync(model).Result.ExecuteAsync(CancellationToken.None);
             var content = await results.Content.ReadAsStringAsync();
 
             var data = JsonConvert.DeserializeObject<JObject>(content);
@@ -81,13 +94,14 @@ namespace igx.UnitTests
         }
 
         [Fact]
-        public async void DeleteFields_CheckIfValidationIncluded()
+        public async Task DeleteFields_CheckIfValidationIncluded()
         {
             FieldTypesApiDeleteModel model = new FieldTypesApiDeleteModel();
-            var results = await fieldsController.DeleteFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
-            var content = await results.Content.ReadAsStringAsync();
+            var results = await fieldsController.DeleteFieldTypesAsync(model); 
+	        var response = await results.ExecuteAsync(CancellationToken.None);
+            var content = await response.Content.ReadAsStringAsync();
 
-            Assert.True(results.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(response.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
         }
 
         [Fact]
@@ -96,7 +110,7 @@ namespace igx.UnitTests
             FieldTypesApiDeleteModel model = new FieldTypesApiDeleteModel();
             model.Fields = new List<FieldTypeApiDeleteModel>();
             model.AssetTypeUid = Guid.Parse(DataConstants.ValidGUID);
-            var results = await fieldsController.DeleteFieldTypesAsync(model).Result.ExecuteAsync(new System.Threading.CancellationToken());
+            var results = await fieldsController.DeleteFieldTypesAsync(model).Result.ExecuteAsync(CancellationToken.None);
             var content = await results.Content.ReadAsStringAsync();
 
 

@@ -730,3 +730,36 @@ fieldset legend {
 d3s-artifact-list .ql-editor ul > li::marker {
   content: "" !important;
 }
+
+@keyframes tooltipIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.p-tooltip-dynamic {
+  background-color: white;
+  color: #202020;
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  line-height: 21px;
+  word-break: keep-all;
+  top: -40px;
+  position: absolute;
+  width: max-content;
+  animation: .3s tooltipIn forwards;
+  font-family: 'Precisely', sans-serif;
+}
+
+.ig-float-popup-container {
+  position: absolute;
+  height: 0;
+  width: 0;
+  border: 0;
+  padding: 0;
+}
