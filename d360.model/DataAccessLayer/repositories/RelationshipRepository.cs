@@ -132,6 +132,7 @@ namespace d360.model.DataAccessLayer
 			List<string> fieldJoins = new List<string>();
 
 			string filteredIntersectsTempTable = "";
+			string prefilteredIntersectTypesTempTable = "";
 
 			//if filtered by asset uid we will include relationship type name and asset name
 			//both relationship type name and asset name depends on which side of relationship are we on
@@ -219,6 +220,17 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.Add("@predicateuid", predicateUid);
 						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
+
+						prefilteredIntersectTypesTempTable = @"
+								drop table if exists #filteredIntersectTypes
+
+								select IT.ID 
+								into #filteredIntersectTypes
+								from [IntersectType] IT
+								inner join [Predicate] P on P.ID = IT.PredicateID
+								where P.UID = @predicateuid";
+
+						whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (T.ID in (select id from #filteredIntersectTypes))";
 					}
 				}
 				if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
@@ -533,6 +545,7 @@ namespace d360.model.DataAccessLayer
 
 			var sql = $@"
 {filteredIntersectsTempTable}
+{prefilteredIntersectTypesTempTable}
 
 declare @total int
 {(includeTotal ? countFullSql : "")}

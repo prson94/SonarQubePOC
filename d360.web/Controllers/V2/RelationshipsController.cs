@@ -41,7 +41,6 @@ namespace d360.web.Controllers.V2
 	[
 		ApiVersion("2.0"),
 		RoutePrefix("api/v{version:apiVersion}/relationships"),
-		Authorize,
 		StringEnumController
 	]
 	public class RelationshipsController : BaseV2ApiController
