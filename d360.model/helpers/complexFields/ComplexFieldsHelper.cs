@@ -110,14 +110,14 @@ namespace d360.model.helpers
 					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 
 					}
 					else
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 				}
@@ -126,13 +126,13 @@ namespace d360.model.helpers
 					if (rel.Direction == FieldTypeComplexLookupRelationDirection.Forward)
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Object = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.ObjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Subject and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.SubjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 					else
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.Subject = H{(idx == 1 ? idx : idx - 1)}.Object and I{idx}.SubjectID = H{(idx == 1 ? idx : idx - 1)}.ObjectId");
-						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
+						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.Id and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Object = I{idx}.Object and { (idx == 1 ? $"A{idx}" : $"H{idx}")}.ObjectId = I{idx}.ObjectID {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
 					}
 				}
@@ -158,19 +158,19 @@ namespace d360.model.helpers
 					selects.Add($"H{index}_A{f.FieldTypeID}.Uid AS [H{index}_{f.FieldTypeID}_Uid]");
 					selects.Add($"concat('asset/', H{index}_A{f.FieldTypeID}.Uid) AS [H{index}_{f.FieldTypeID}_Url]");
 					selects.Add($"H{index}_A{f.FieldTypeID}_DV.DisplayValue AS [H{index}_{f.FieldTypeID}_DisplayValue]");
-					selects.Add($"H{index}_R{f.FieldTypeID}.IntersectTypeUid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
+					selects.Add($"H{index}_R{f.FieldTypeID}.Uid AS [H{index}_{f.FieldTypeID}_IntersectTypeUid]");
 
 					var direction = fieldRelationDirectionMapping.FirstOrDefault(x => x.Item1 == f.FieldTypeID)?.Item2;
 
 					if (direction == null || direction == FieldTypeComplexLookupRelationDirection.Back)
 					{
-						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.ObjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}");
+						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.ObjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object AND H{index}_R{f.FieldTypeID}.Id = {f.FieldTypeID}");
 						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.SubjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object");
 						joins.Add($"LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
 					}
 					else
 					{
-						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.SubjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object AND H{index}_R{f.FieldTypeID}.IntersectTypeID = {f.FieldTypeID}");
+						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.SubjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object AND H{index}_R{f.FieldTypeID}.Id = {f.FieldTypeID}");
 						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object");
 						joins.Add($"LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
 					}
@@ -257,7 +257,7 @@ namespace d360.model.helpers
 					if (f.FieldTypeName.ToLowerInvariant() == "_assetpath")
 					{
 						selects.Add($"h{f.RelationIndex + 1}p.displaypath AS [H{f.RelationIndex + 1}__assetPath]");
-						joins.Add($"LEFT JOIN [Asset] H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
+						joins.Add($"LEFT JOIN [AssetNode] H{f.RelationIndex + 1}P ON h{f.RelationIndex + 1}p.id = h{f.RelationIndex + 1}.id");
 					}
 
 					if (f.FieldTypeName.ToLowerInvariant() == "code")
