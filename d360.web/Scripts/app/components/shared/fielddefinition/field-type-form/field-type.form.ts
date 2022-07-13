@@ -96,12 +96,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private scoreTypeOptions: SelectItem[];
     private model: FieldTypeEditorModel;
     private initialItem: FieldTypeEditorModel;
-    private isListable: boolean;
+	private isListable: boolean;
 
     private testPattern: string;
     private testPatternValidationText: string;
     private syncApiNameWithName: boolean = true;
-
     private relationItemCount = 0;
 
     private childIntersectTypes: any[] = [];
@@ -145,6 +144,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private maxLengthUpperNumeric = 9999999999;
 
     numberOfAssetsForType: number = 0;
+	isLoadingDefaultValue: boolean = false;
 
     private disableFieldTypeSelection: boolean = false;
     public enableListSingleResponsibilityType: boolean = false;
@@ -722,8 +722,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-
-        return this.fieldsService.getLookupDefaultValueOptions(uid).pipe(
+		this.isLoadingDefaultValue = true;
+		return this.fieldsService.getLookupDefaultValueOptions(uid).pipe(
             map(r => {
                 this.lookupDefaultValueOptions = r;
                 if (this.model.FieldType.Type[this.currentType].DefaultValue) {
@@ -732,9 +732,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             return false;
                         return x.value.toString().toLowerCase() == this.model.FieldType.Type[this.currentType].DefaultValue.toString().toLowerCase();
                     })[0];
-                    if (item)
-                        this.model.FieldType.Type[this.currentType].DefaultValue = item.value;
-                }
+					if (item) {
+						this.model.FieldType.Type[this.currentType].DefaultValue = item.value;
+					}
+					this.isLoadingDefaultValue = false;
+				}
             })
         ).subscribe();
     }
