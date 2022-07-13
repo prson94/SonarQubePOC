@@ -811,9 +811,9 @@ namespace d360.web.Controllers.V2
 				throw new NotFoundBusinessLayerException(string.Format(ScoreApiMessages.ScoreDefinitionNotFound, allocationUid));
 			}
 
-			if (!allocation.IsExternallyCalculated)
+			if (allocation.IsExternallyCalculated)
 			{
-				throw new ArgumentException(string.Format(ScoreApiMessages.ScoreNotExternalCalculation, allocationUid), nameof(allocationUid));
+				throw new ArgumentException(string.Format(ScoreApiMessages.ScoreNotInternalCalculation, allocationUid), nameof(allocationUid));
 			}
 
 			try
