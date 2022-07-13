@@ -274,8 +274,8 @@ namespace d360.model.DataAccessLayer
 		{
 			var dbArgs = new DynamicParameters();
 			List<string> whereClauses = new List<string>();
-			string sortField = "";
-			string sortOrder = "";
+			string sortField = "t.value";
+			string sortOrder = "asc";
 			string whereOperater = " and ";
 			int useCount = 0;
 
