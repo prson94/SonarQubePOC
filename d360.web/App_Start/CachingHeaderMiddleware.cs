@@ -39,7 +39,7 @@ namespace d360.web
             // Remove the server version number from being sent with every response.
             context.Response.Headers.Remove("server");
 
-            await _next.Invoke(environment);
+            await _next(environment);
         }
     }
 }

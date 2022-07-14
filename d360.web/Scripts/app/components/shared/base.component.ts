@@ -37,7 +37,12 @@ export class BaseComponent {
     assetTypeID: number;
     objectID: number;
     objectType: string;
-    objectName: string;
+	objectName: string;
+
+	baseAssetTypeUid: string;
+	baseAssetUid: string;
+	infoIconHtmlString: string = `<i class='fa fa-info-circle help-icon'></i>`;
+
     public preloadedTreeData: any[] = [];
     public baseCrumbs: Breadcrumb[] = [];
     public baseTreeNodeArray: any[] = [];
@@ -125,7 +130,7 @@ export class BaseComponent {
         tileService.setTitle(`${this.getStringSetting(CompanySettingEnum.BrowserTitlePrefix)} - ${area}`);
     }
 
-    logAction(actionName: string, objectName: string, objectId: number) {
+    logAction(actionName: string, objectName: string, objectId: number | string) {
         if (this.webAnalyticsService) {
             this.webAnalyticsService.logActivity({
                 Activity: actionName,
@@ -303,12 +308,20 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
-            if (opts.hasDashboard) {
+			if (opts.hasDashboard) {
+				let url: string = '/dashboard/';
+				if (this.baseAssetUid) {
+					url += `${this.baseAssetTypeUid}/${this.baseAssetUid}`;
+				}
+				else {
+					url += this.baseAssetTypeUid;
+				}
+
                 this.dashboardSidebar = new SecondaryNavItem(
                     $localize`Dashboards`,
                     'dashboards',
                     ['fa-tachometer'],
-                    `/dashboard${this.objectContextUrl()}`, null, 5
+                    url, null, 5
                 );
 
                 this.secondaryNavService.showItem(this.dashboardSidebar);
@@ -792,7 +805,7 @@ export class BaseComponent {
         this.secondaryNavService.refreshStats();
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null) {
+	buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null, DisplayValue: string = null, forceRefresh: boolean = false) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         data.Class = assetClass;
@@ -823,10 +836,11 @@ export class BaseComponent {
             data.PreloadData = true;
         }
 
-        if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined)) {
+		if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined) && !forceRefresh) {
             return;
-        }
-        if (this.isSidebarLoadedForCurrentObject(data)) {
+		}
+
+		if (this.isSidebarLoadedForCurrentObject(data) && !forceRefresh) {
             this.refreshObjectStats();
             return;
         }
@@ -834,9 +848,12 @@ export class BaseComponent {
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe((r) => {
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
-            this.uid = r.Uid;
+			this.uid = r.Uid;
             this.objectType = r.Object;
-            this.objectID = r.ObjectID;
+			this.objectID = r.ObjectID;
+
+			this.baseAssetUid = r.Uid;
+			this.baseAssetTypeUid = r.Artifact?.AssetTypeUid
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);

@@ -4,9 +4,9 @@ import { DashboardComponent } from './dashboard.component';
 
 const routes: Routes = [
     { path: '', component: DashboardComponent },
-    { path: ':objectType/:objectId', component: DashboardComponent },
     { path: ':objectType/:objectId/:name', component: DashboardComponent },
-    { path: ':reportID', component: DashboardComponent },
+	{ path: ':assetTypeUid', component: DashboardComponent },
+	{ path: ':assetTypeUid/:assetUid', component: DashboardComponent }
 ];
 
 @NgModule({

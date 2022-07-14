@@ -159,8 +159,9 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
                     });
 
-                    var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
-                        this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
+					var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
+						this.baseAssetTypeUid = this.artifactType.AssetTypeUID;
+						this.setCommonSecondaryNavTabs({ hasAudit: false, hasOwnership: false, hasDashboard: this.artifactType.HasDashboards });
                         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
                         this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, $localize`Assets`);
                         if (this.artifactType.HasV2Workflows) {

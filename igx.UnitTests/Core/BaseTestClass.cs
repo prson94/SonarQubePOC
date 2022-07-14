@@ -290,7 +290,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<Guid>()))
                 .Returns(() => JsonConvert.DeserializeObject<dynamic>(DataConstants.FieldTypesJsonFormat));
 
-            mockRepo.Setup(x => x.GetAssets(It.IsAny<AssetType>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            mockRepo.Setup(x => x.GetAssets(It.IsAny<AssetType>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<bool>(), It.IsAny<CancellationToken>(), It.IsAny<int>()))
                 .Returns(Task.FromResult(new AssetsApiViewModel()));
 
             mockRepo.Setup(x => x.GetAssetTypeByUID(It.IsAny<Guid>()))
@@ -647,7 +647,14 @@ namespace igx.UnitTests
             return mockRepo.Object;
         }
 
-        public IMetricsRepository GetMetricsRepository()
+		public IDashboardRepository GetDashboardRepository()
+		{
+			var mockRepo = new Mock<IDashboardRepository>();
+
+			return mockRepo.Object;
+		}
+
+		public IMetricsRepository GetMetricsRepository()
         {
             var mock = new Mock<IMetricsRepository>();
             mock.Setup(x => x.AddOrUpdateMetrics(It.IsAny<MetricAssetEditModel>()))

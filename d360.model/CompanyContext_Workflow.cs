@@ -3364,7 +3364,7 @@ namespace d360.model
 					item = GetObjectDetail(obj.ToString(), objectID);
 				}
 
-				string path = item?.UID == null ? null : Query<string>(@"select graph.GetPath(AN.Segments, ' > ', ' / ') from graph.assetNode AN where AN.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
+				string path = item?.UID == null ? null : Query<string>(@"select P.DisplayPath from Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
 
 				result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
 			}

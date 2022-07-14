@@ -36,10 +36,11 @@ namespace igx.jobs.assetgraphprocessor
                     var assetType = companyConnection.Query<AssetType>("select * from AssetType where Uid = @uid", new { info.Uid }).SingleOrDefault();
                     if (assetType != null)
                     {
+						/*
                         await companyConnection.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy null, @assetTypeId, null"
                             , new { assetTypeId = assetType.ID }
                             , commandTimeout: timeout);
-
+						*/
                         companyConnection.Close();
                     }
                 }

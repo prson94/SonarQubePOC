@@ -121,20 +121,6 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             Category: "",
             ValueLoader: this.getFilterValues.bind(this, "source"),
             RemovePopulatedOperator: true
-        },
-        {
-            Name: 'CreatedOn',
-            FriendlyName: $localize`Date Created`,
-            Type: new FieldType("Date"),
-            Category: "",
-            RemovePopulatedOperator: true
-        },
-        {
-            Name: 'UpdatedOn',
-            FriendlyName: $localize`Date Last Modified`,
-            Type: new FieldType("Date"),
-            Category: "",
-            RemovePopulatedOperator: true
         }
     ]
 

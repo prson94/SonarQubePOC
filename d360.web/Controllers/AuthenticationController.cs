@@ -420,23 +420,31 @@ namespace d360.web.Controllers
                                     sqlBulkCopy.WriteToServer(dt);
 
                                     Company.Connection.Execute(
-                                        @"update A
+										@"	
+											update A
                                             set A.GroupID = G.ID,
                                             HasResourceGroup = case when RG.ResourceID is not null then 1 else null end
                                             from    #ADGroups A
                                                     inner join [Group] G on G.IsActiveDirectoryGroup = 1 and G.[Name] = A.[name]
-                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId and (A.Origin is null or RG.Origin = A.Origin)
+                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId
 
                                             insert into ResourceGroup (ResourceID, GroupID, Origin)
                                             select  @resourceId, GroupID, Origin
                                             from    #ADGroups 
                                             where   GroupID is not null and coalesce(HasResourceGroup, 0) = 0
 
+											update RG
+											set RG.Origin = A.Origin
+											from ResourceGroup RG
+											inner join [Group] G on G.ID = RG.GroupID and G.IsActiveDirectoryGroup = 1
+											inner join #ADGroups A on coalesce(A.HasResourceGroup, 0) = 1 and (A.Origin != RG.Origin or RG.Origin is null) and A.GroupID = G.ID
+											where RG.ResourceID = @resourceId;
+
                                             delete  R
                                             from    ResourceGroup R
                                                     inner join [Group] G on G.ID = R.GroupID and G.IsActiveDirectoryGroup = 1
                                             where   R.ResourceID = @resourceId and not exists (select 1 from #ADGroups where GroupID = R.GroupID and (Origin is null or Origin = R.Origin))"
-                                    , new { resourceID = resource.ID }
+									, new { resourceID = resource.ID }
                                     , transaction: trans);
 
                                     trans.Commit();

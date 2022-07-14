@@ -592,9 +592,19 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
             } else if (parent.classList.contains("tagsnomanagewidth")) {
                 this.setVisibility();
                 return;
-            }
+			}
 
-            let ofWidth = parent ? parent.offsetWidth - 10 : 500;
+			let ofWidth = parent ? parent.offsetWidth - 10 : 500;
+
+			if (parent.tagName === "DIV" && parent.parentElement.tagName === "TD") {
+				let pTable = parent.closest("div.p-datatable-scrollable");
+				if (pTable) {
+					let colIndex = parent.closest("td").cellIndex + 1;
+					let headerElement = pTable.querySelector(`thead tr th:nth-child(${colIndex})`) as HTMLElement;
+					ofWidth = headerElement.offsetWidth - 10;
+				}
+			}
+
             parent.classList.remove('no-text-overflow')
             this.container.nativeElement.style.width = ofWidth + 'px';
 

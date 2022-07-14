@@ -54,8 +54,8 @@
      [style.top]="(backgroundImage != '' && numTiles < 1) ? '120px' : null"
      class="tile tile-detail"
      style="position: relative;">
-    <d3s-powerbi-viewer *ngIf="dashboard.ReportType =='powerbi'"
+    <d3s-powerbi-viewer *ngIf="dashboard.DashboardType == 'PowerBi'"
                         [dashboard]="dashboard"></d3s-powerbi-viewer>
-    <d3s-sagacity-viewer *ngIf="dashboard.ReportType =='sagacity'"
+    <d3s-sagacity-viewer *ngIf="dashboard.DashboardType == 'DqPlus'"
                          [dashboard]="dashboard"></d3s-sagacity-viewer>
 </div>

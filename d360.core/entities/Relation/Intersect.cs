@@ -12,9 +12,6 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Intersect : BaseIntObject, IIntObject, IFieldsObject, ICreatedMetadata, IUpdatedMetadata, IEventTrackedEntity
     {
-        public Intersect()
-        { }
-
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid uid { get; set; }
 
@@ -31,7 +28,9 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+		#region LEGACY COLUMNS
+
+		[DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Subject { get; set; }
 
         [DataMember]
@@ -43,7 +42,25 @@ namespace d360.core.entities
         [DataMember]
         public int ObjectID { get; set; }
 
-        [DataMember]
+		#endregion LEGACY COLUMNS
+
+		#region NEW COLUMNS
+
+		[DataMember]
+		public long SubjectAssetID { get; set; }
+
+		[DataMember]
+		public int SubjectAssetTypeID { get; set; }
+
+		[DataMember]
+		public long ObjectAssetID { get; set; }
+
+		[DataMember]
+		public int ObjectAssetTypeID { get; set; }
+
+		#endregion NEW COLUMNS
+
+		[DataMember]
         public State State { get; set; } = State.Active;
 
 

@@ -1204,16 +1204,6 @@ namespace d360.web.Controllers.V2
 					execution.CompletedOn = DateTime.UtcNow;
 					Company.Update(execution);
 
-					// Quick sync of graph.
-					try
-					{
-						Company.SynchronizeExecutionRelationshipWithGraph(execution.ExecutionID);
-					}
-					catch
-					{
-						// Do nothing, as graph topic will eventually synch.
-					}
-
 				}
 				catch (Exception ex)
 				{
@@ -1308,16 +1298,6 @@ namespace d360.web.Controllers.V2
 					execution.Error = results.Count(i => !i.Success);
 					execution.CompletedOn = DateTime.UtcNow;
 					Company.Update(execution);
-
-					// Quick sync of graph.
-					try
-					{
-						Company.SynchronizeExecutionRelationshipWithGraph(execution.ExecutionID);
-					}
-					catch
-					{
-						//Do nothing, as graph topic will eventually synch.
-					}
 
 				}
 				catch (Exception ex)
@@ -1732,16 +1712,6 @@ namespace d360.web.Controllers.V2
 				execution.Error = results.Count(i => !i.Success);
 				execution.CompletedOn = DateTime.UtcNow;
 				Company.Update(execution);
-
-				// Quick sync of graph.
-				try
-				{
-					Company.SynchronizeExecutionRelationshipWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually sync.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -1877,29 +1847,19 @@ namespace d360.web.Controllers.V2
 				var countsSql = @"drop table if exists #relationshipCountMap
 									create table #relationshipCountMap(IntersectTypeUid uniqueidentifier, IsSubject bit,Count int)
 
-									;with cte as (select 
-															ae.IntersectTypeUid,
-															1 as 'IsSubject',				
-															a1.uid as 'SubjectUid',
-															a2.uid as 'ObjectUid'
-															FROM 
-															graph.AssetNode A1,
-															graph.AssetEdge AE,
-															graph.AssetNode A2
-															WHERE MATCH(A1 - (AE) -> A2)
-															AND a1.uid = @assetuid
-															union
-															select
-															ae.IntersectTypeUid,
-															0 as 'IsSubject',				
-															a1.uid as 'SubjectUid',
-															a2.uid as 'ObjectUid'
-															FROM 
-															graph.AssetNode A1,
-															graph.AssetEdge AE,
-															graph.AssetNode A2
-															WHERE MATCH(A1 <- (AE) - A2)
-															AND a1.uid = @assetuid)
+									;with cte as (
+												select it.uid as IntersectTypeUid, 1 as IsSubject, a.uid as SubjectUid, TA.uid as ObjectUid from dbo.asset a 
+												inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
+												inner join [IntersectType] it on it.id = i.intersecttypeid
+												inner join [Asset] TA ON i.object = ta.object and i.objectid = ta.objectid
+												where a.uid = @assetuid
+												union
+												select it.uid as IntersectTypeUid, 0 as IsSubject,TA.uid as SubjectUid, a.uid as ObjectUid  from dbo.asset a 
+												inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
+												inner join [IntersectType] it on it.id = i.intersecttypeid
+												inner join [Asset] TA ON i.subject = ta.object and i.subjectid = ta.objectid
+												where a.uid = @assetuid
+										)
 															insert into #relationshipCountMap
 															select IntersectTypeUid, IsSubject, count(*) as 'Count'
 															from cte

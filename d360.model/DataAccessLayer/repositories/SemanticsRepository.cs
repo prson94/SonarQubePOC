@@ -596,7 +596,7 @@ namespace d360.model.DataAccessLayer
 						}
 						if (patchModel.IsDisabled.HasValue && patchModel.IsDisabled.Value)
 						{
-							if(patchModel.Description.Length>0 || patchModel.Name.Length > 0)
+							if(patchModel.Description?.Length>0 || patchModel.Name?.Length > 0)
                             {
 								throw new GenericException(
 									HttpStatusCode.Conflict,
@@ -772,6 +772,30 @@ namespace d360.model.DataAccessLayer
 				BatchUids = uids.ToList(),
 				BatchOperation = ReindexBatchOperation.Update
 			});
+		}
+
+		public async Task<IEnumerable<dynamic>> GetPossibleCreators()
+		{
+			var sql = @"select distinct Semantic.CreatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
+						from dbo.Semantic
+							join reporting.Global_Resource globalResource on globalResource.ResourceID = Semantic.CreatedBy
+						order by globalResource.FirstName + ' ' + globalResource.LastName";
+
+			var results = await CompanyContext.QueryAsync(sql);
+
+			return results;
+		}
+
+		public async Task<IEnumerable<dynamic>> GetPossibleRedactors()
+		{
+			var sql = @"select distinct Semantic.UpdatedBy as Id, globalResource.FirstName + ' ' + globalResource.LastName as Name
+						from dbo.Semantic
+							join reporting.Global_Resource globalResource on globalResource.ResourceID = Semantic.UpdatedBy
+						order by globalResource.FirstName + ' ' + globalResource.LastName";
+
+			var results = await CompanyContext.QueryAsync(sql);
+
+			return results;
 		}
 	}
 }

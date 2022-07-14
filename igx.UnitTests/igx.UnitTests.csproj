@@ -109,7 +109,9 @@
     <Compile Include="ServicesTests\Exceptions\UnauthorizedBusinessLayerExceptionTests.cs" />
     <Compile Include="ServicesTests\Exceptions\UnrecoverableBusinessLayerExceptionTests.cs" />
     <Compile Include="SettingsTests\SettingsTests-Get.cs" />
+    <Compile Include="V2ControllerTests\CoreComponentSetControllerTestBase.cs" />
     <Compile Include="V2ControllerTests\EnvironmentControllerTest.cs" />
+    <Compile Include="V2ControllerTests\ResponsibilitiesControllerTestBase.cs" />
     <Compile Include="V2ControllerTests\TestExtensions.cs" />
     <Compile Include="ValidatorTests\SurveyApiModelValidatorTests.cs" />
     <Compile Include="ValidatorTests\SemanticValidationTests.cs" />

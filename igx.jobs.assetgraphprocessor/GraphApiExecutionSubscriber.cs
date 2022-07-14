@@ -269,8 +269,6 @@ namespace igx.jobs.assetgraphprocessor
                                     inner join #GraphAssets S on S.Uid = T.Uid;"                    
                     , commandTimeout: timeout);
 
-                    bool shouldUpdateGraphHierarchy = true;
-                    
                     bool hasChildAssetType = (await company.QueryAsync<bool>(@"select case when T.ID is null then cast(0 as bit) else cast(1 as bit) end from AssetType A
                         left join IntersectTypeDetail T on T.Subject = A.Object and T.SubjectID = A.ObjectID and T.PredicateType in (3,4)
                         where A.[uid] = @assetTypeUid"
@@ -327,22 +325,6 @@ namespace igx.jobs.assetgraphprocessor
 
                     }
                     
-                    
-                    //skip heirarchy update if we're deleting leaf assets
-                    if (info.execution.Action == ApiExecutionAction.DeleteAssets && !hasChildAssetType)
-                    {
-                        shouldUpdateGraphHierarchy = false;
-                    }
-
-
-                    if (shouldUpdateGraphHierarchy)
-                    {
-                        // Update paths/segments for applicable assets
-                        await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
-                        , new { executionId = info.execution.ExecutionID }
-                        , commandTimeout: timeout);
-                    }
-
                     // Cleanup 
                     await company.ExecuteAsync(@"drop table if exists #GraphAssets;"
                     , commandTimeout: timeout);
