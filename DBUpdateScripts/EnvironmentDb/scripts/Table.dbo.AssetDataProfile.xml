@@ -179,4 +179,48 @@
 		]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.AssetDataProfile-v14">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (
+			  SELECT * 
+			  FROM   sys.columns 
+			  WHERE  object_id = OBJECT_ID(N'[dbo].[AssetDataProfile]') 
+					 AND name = 'ProfileSetDate'
+			)
+			BEGIN
+
+			DROP INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile] WITH ( ONLINE = OFF )
+
+			ALTER TABLE [dbo].[AssetDataProfile] Alter Column [ProfileSetDate] DATETIME NOT NULL
+
+			CREATE CLUSTERED INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile]
+			(
+				[AssetID] ASC,
+				[ProfileSetDate] ASC
+			)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+				
+			END
+		]]>
+    </sql>
+	<rollback>
+	
+		<![CDATA[			
+		
+		DROP INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile] WITH ( ONLINE = OFF )
+
+		ALTER TABLE [dbo].[AssetDataProfile] Alter Column [ProfileSetDate] DATE NOT NULL
+
+		CREATE CLUSTERED INDEX [IX_AssetDataProfile_AssetID_ProfileSetDate] ON [dbo].[AssetDataProfile]
+		(
+			[AssetID] ASC,
+			[ProfileSetDate] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

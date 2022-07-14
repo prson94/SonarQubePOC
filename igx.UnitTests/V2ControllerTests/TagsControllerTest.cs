@@ -6,6 +6,8 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Net.Http;
 using System.Web.Http;
+using d360.web.Utilities;
+using Moq;
 using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
@@ -14,10 +16,20 @@ namespace igx.UnitTests.V2ControllerTests
     public class TagsControllerTest : BaseTest
     {
         internal TagsController tagsController;
+        private readonly TestDependencyResolver DependencyResolver;
+        private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
-        public TagsControllerTest()
+		public TagsControllerTest()
         {
-            this.tagsController = new TagsController(GetCoreComponentSet(), GetTagRepository(), GetAssetRepository())
+	        RuntimeInfoMock = new Mock<IRuntimeInfo>();
+	        RuntimeInfoMock.Setup(x => x.IsDebuggerAttached).Returns(true);
+	        RuntimeInfoMock.Setup(x => x.IsReleaseBuild).Returns(true);
+
+	        DependencyResolver = new TestDependencyResolver();
+	        DependencyResolver.AddService(RuntimeInfoMock.Object);
+	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
+
+			this.tagsController = new TagsController(GetCoreComponentSet(), GetTagRepository(), GetAssetRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

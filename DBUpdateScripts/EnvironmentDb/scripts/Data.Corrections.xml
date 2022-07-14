@@ -1142,32 +1142,6 @@ inner join [workflow].[EventRegistration] ER ON ER.ChangeType = 7 AND ER.TypeID 
     </sql>
   </changeSet>
 
-  <changeSet author="TKlok" id="Data.Corrections.GOV-13242">
-		<sql dbms="mssql" splitStatements="false" stripComments="false">
-<![CDATA[
-BEGIN
-	DECLARE @typeId int
-	DECLARE TypeCursor CURSOR
-	FOR SELECT ID
-	FROM dbo.assettype
-	WHERE class = 15;
-
-	OPEN TypeCursor
-
-	FETCH NEXT FROM TypeCursor INTO @typeId
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		EXEC graph.UpdateGraphTableHierarchyBy null, @typeId, null
-		FETCH NEXT FROM TypeCursor INTO @typeId
-	END
-
-	CLOSE TypeCursor
-	DEALLOCATE TypeCursor
-END
-]]>
-		</sql>
-	</changeSet>
-	
 	<changeSet author="Pappas" id="Data.Corrections.GOV-13496">
 		<sql dbms="mssql" splitStatements="false" stripComments="false">
 <![CDATA[
@@ -1602,27 +1576,248 @@ drop table if exists #tempfieldid;
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-v1">
-  <comment>Copy segment data from graph table to dbo.AssetPath</comment>
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class1-v1.2">
+  <comment>Copy Business Asset segment data from graph table to dbo.AssetPath</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-declare @c int;
-select @c = count(1) from AssetPath
-if (@c = 0)
-begin
-	insert into AssetPath
+merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
+using	(
 		select	G.ID, G.Segments 
 		from	graph.AssetNode G
-				inner join Asset A on A.ID = G.ID
-end
+				inner join Asset A on A.ID = G.ID and G.[Class] = 1
+		) G 
+on		(G.ID = P.ID)
+when	not matched by target then
+insert	(ID, Segments)
+values	(G.ID, G.Segments);
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
 		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class2-v1.2">
+  <comment>Copy Technical Asset segment data from graph table to dbo.AssetPath</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
+using	(
+		select	G.ID, G.Segments 
+		from	graph.AssetNode G
+				inner join Asset A on A.ID = G.ID and G.[Class] = 8
+		) G 
+on		(G.ID = P.ID)
+when	not matched by target then
+insert	(ID, Segments)
+values	(G.ID, G.Segments);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18632-Class_AllOthers-v1.2">
+  <comment>Copy Non-Business and non-Technical segment data from graph table to dbo.AssetPath</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+merge	AssetPath WITH (TABLOCKX, HOLDLOCK) as P
+using	(
+		select	G.ID, G.Segments 
+		from	graph.AssetNode G
+				inner join Asset A on A.ID = G.ID and G.[Class] not in (1,8)
+		) G 
+on		(G.ID = P.ID)
+when	not matched by target then
+insert	(ID, Segments)
+values	(G.ID, G.Segments);
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
+  <validCheckSum>7:295c472b9c68f533e2b8929af6797c49</validCheckSum>
+  <comment>Intersect table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DISABLE TRIGGER ALL ON [dbo].[Intersect];
+		
+update	T
+set		T.SubjectAssetID = S.ID,
+		T.SubjectAssetTypeID = S.AssetTypeID
+from	[Intersect] T inner join Asset S on S.Object = T.Subject and S.ObjectId = T.SubjectID
+where   T.SubjectAssetID is null;
+
+update	T
+set		T.ObjectAssetID = S.ID,
+		T.ObjectAssetTypeID = S.AssetTypeID
+from	[Intersect] T inner join Asset S on S.Object = T.Object and S.ObjectId = T.ObjectID
+where	T.ObjectAssetID is null;
+
+update	T
+set		T.ObjectAssetID = 0,
+		T.ObjectAssetTypeID = S.ID
+from	[Intersect] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID
+where	T.ObjectAssetID is null;
+
+ENABLE TRIGGER ALL ON [dbo].[Intersect];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TKlok" id="Data.Corrections.GOV-18612.2">
+  <comment>Intersect table new column data updates</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DISABLE TRIGGER ALL ON [dbo].[Intersect];
+
+update	T
+set		T.SubjectAssetID = 0,
+		T.SubjectAssetTypeID = S.ID
+from	[Intersect] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID
+where	T.SubjectAssetID is null;
+
+ENABLE TRIGGER ALL ON [dbo].[Intersect];
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-18080-v1.69">
+  <comment>Update Data for reports</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		update r
+		set r.AssetTypeId = ISNULL(at.ID, AT2.Id)
+		from report r
+		left join AssetType AT on AT.Object = R.ObjectType AND at.ObjectID = r.ObjectID 
+		left join AssetType AT2 on AT2.Object = (R.ObjectType+'Type') AND AT2.ObjectID = r.ObjectID 
+		WHERE at.id is not null or AT2.Id is not null
+
+		update r
+		set r.Location = Location.Value
+		from report r
+		outer apply (
+		select 
+			case when ShowOnHomePage = 1 then 3
+			when IsType.Value = 0 then 2
+			else 1
+			end as Value
+			from Report rep
+			outer apply (Select count(1) as Value from Report where id = r.ID and rep.ObjectType like '%Type')IsType
+			where rep.ID = r.ID
+		)Location
+
+		update dbo.report set ReportType = 1 where ReportType = 'powerbi'
+		update dbo.report set ReportType = 2 where ReportType = 'sagacity'
+		update dbo.report set ReportType = 3 where ReportType = 'legacy'
+
+		update  r
+		set r.Definition = JSON.val
+		from dbo.Report r
+		outer apply (select PowerBIReportID as powerBiReportId,
+		PowerBIDatasetID as powerBiDatasetId,
+		[FileName] as fileName,
+		[url] as url
+		from dbo.Report
+		where id = r.ID
+		FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER)JSON(val)
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ObjectType') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN ObjectType
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ObjectID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN ObjectID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'PowerBIReportID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN PowerBIReportID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'PowerBIDatasetID') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN PowerBIDatasetID
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'FileName') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN FileName
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'Url') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.Report
+			DROP COLUMN Url
+		END
+		
+		IF COL_LENGTH('[dbo].[Report]', 'ShowOnHomePage') IS NOT NULL
+		BEGIN
+			ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ShowOnHomePage;
+			ALTER TABLE dbo.Report
+			DROP COLUMN ShowOnHomePage
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+  
+   <changeSet author="TDuric" id="Data.Corrections.GOV-18080-2.2">
+  <comment>Update Data for reports 2</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF (OBJECT_ID('DF_Report_ReportType') IS NOT NULL)
+		begin
+				ALTER TABLE [dbo].[Report] DROP CONSTRAINT DF_Report_ReportType;
+				ALTER TABLE [dbo].[Report] ALTER COLUMN ReportType [int];
+		end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
 	</rollback>
   </changeSet>
 

@@ -447,12 +447,12 @@ namespace d360.model.DataAccessLayer
 			var queryFieldOptions = new List<DefaultFilter>
 			{
 				new DefaultFilter("ResultUid", "AR.Uid", SqlFieldType.Guid),
-				new DefaultFilter("OwningAssetUid", "OAN.Uid", SqlFieldType.Guid),
+				new DefaultFilter("OwningAssetUid", "OA.Uid", SqlFieldType.Guid),
 				new DefaultFilter("OwningAssetPath", "OAN.KeyPath", SqlFieldType.Text),
 				new DefaultFilter("OwningAssetTypePath", "OANTP.Path", SqlFieldType.Text),
 				new DefaultFilter("OwningAssetDisplayPath", "OAN.DisplayPath", SqlFieldType.Text),
 
-				new DefaultFilter("EvaluatedAssetUid", "EAN.Uid", SqlFieldType.Guid),
+				new DefaultFilter("EvaluatedAssetUid", "EA.Uid", SqlFieldType.Guid),
 				new DefaultFilter("EvaluatedAssetPath", "EAN.KeyPath", SqlFieldType.Text),
 				new DefaultFilter("EvaluatedAssetTypePath", "EANTP.Path", SqlFieldType.Text),
 				new DefaultFilter("EvaluatedAssetDisplayPath", "EAN.DisplayPath", SqlFieldType.Text),
@@ -505,12 +505,13 @@ namespace d360.model.DataAccessLayer
 										select	count(1) as PathItemCount
 										from	openjson(E.value, N'$.RollupPath')
 									) Pc
+									inner join Asset OA on OA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
+									inner join AssetPath OAN on OAN.ID = OA.ID
+									cross apply GetAssetTypeTextPathById(OA.AssetTypeID, ' > ') OANTP
 
-									inner join graph.AssetNode OAN on OAN.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-1 as varchar)+'].Uid') as uniqueidentifier)
-									cross apply GetAssetTypeTextPathById(OAN.AssetTypeID, ' > ') OANTP
-
-									inner join graph.AssetNode EAN on EAN.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-2 as varchar)+'].Uid') as uniqueidentifier)
-									cross apply GetAssetTypeTextPathById(EAN.AssetTypeID, ' > ') EANTP 
+									inner join Asset EA on EA.Uid = cast(JSON_VALUE(E.value, N'$.RollupPath['+cast(Pc.PathItemCount-2 as varchar)+'].Uid') as uniqueidentifier)
+									inner join AssetPath EAN on EAN.ID = EA.ID 
+									cross apply GetAssetTypeTextPathById(EA.AssetTypeID, ' > ') EANTP 
 
 									outer apply openjson(E.value, '$.ResultResultUids') R
 									left join AssetResult AR on AR.Uid = R.value
@@ -563,8 +564,9 @@ namespace d360.model.DataAccessLayer
 													[PathAssetUid] uniqueidentifier '$.Uid',
 													[PathPosition] int '$.Position'
 												) ERP
-												inner join graph.AssetNode P on P.Uid = ERP.PathAssetUid
-												cross apply GetAssetTypeTextPathById(P.AssetTypeID, ' > ') TP
+												inner join Asset A on A.Uid = ERP.PathAssetUid 
+												inner join AssetPath P on P.ID = A.ID 
+												cross apply GetAssetTypeTextPathById(A.AssetTypeID, ' > ') TP
 												inner join metrics.AssetVersion V on V.Uid = I.AssetVersionUid
 												inner join metrics.AssetVersionRollupPath VR on VR.AssetVersionUid = V.Uid
 												inner join metrics.RollupPathLink PL on PL.RollupPathUid = VR.RollupPathUid and ( (ERP.PathPosition = 1 and ERP.PathPosition = PL.StartPosition) or (ERP.PathPosition > 1 and ERP.PathPosition = PL.EndPosition) )
@@ -578,11 +580,11 @@ namespace d360.model.DataAccessLayer
 										for json path
 									) as RollupPathJson,
 									AR.Uid as ResultUid,
-									OAN.Uid as OwningAssetUid, 
+									OA.Uid as OwningAssetUid, 
 									OAN.KeyPath as OwningAssetPath,
 									OANTP.Path as OwningAssetTypePath,
 									OAN.DisplayPath as OwningAssetDisplayPath,
-									EAN.Uid as EvaluatedAssetUid, 
+									EA.Uid as EvaluatedAssetUid, 
 									EAN.KeyPath as EvaluatedAssetPath,
 									EANTP.Path as EvaluatedAssetTypePath,
 									EAN.DisplayPath as EvaluatedAssetDisplayPath,

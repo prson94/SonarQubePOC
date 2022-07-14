@@ -157,7 +157,7 @@ namespace d360.model.DataAccessLayer
 					var includeString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "includedashboardflag").Value;
 					if (bool.TryParse(includeString, out bool include))
 					{
-						extraJoins += @" cross apply (select count(1) as [Count] from Report where ObjectType = A.Object and ObjectID = A.ObjectID) D ";
+						extraJoins += @" cross apply (select count(1) as [Count] from Report where AssetTypeId = A.ID) D ";
 						extraColumns += @", cast(iif(D.[Count] = 1, 1, 0) as bit) as HasDashboards";
 					}
 					else
@@ -238,7 +238,7 @@ namespace d360.model.DataAccessLayer
 		}
 
 		//UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
-		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null)
+		public async Task<AssetsApiViewModel> GetAssets(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false, CancellationToken? cancellationToken = null, int? previousCount = null)
 		{
 			if (cancellationToken == null)
 			{
@@ -869,6 +869,7 @@ namespace d360.model.DataAccessLayer
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 					fieldsUsedInMainQuery.AddRange(filteredFields.Select(x => "F" + x));
+					fieldsUsedInMainQuery.AddRange(filterExpressionParser.filteredCustomFields);
 
 					// check if the advanced filter contains a filter by asset path
 					foreach (var fieldTypeId in filteredFields)
@@ -1277,9 +1278,11 @@ namespace d360.model.DataAccessLayer
 			bool includeTreeGridQuery = isForTreeGrid && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("lvl."));
 			bool includeColorQuery = includeColor && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("acj."));
 			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
-			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent."));
+			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
 			List<string> includedJoins = new List<string>();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
 				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
@@ -1326,6 +1329,11 @@ namespace d360.model.DataAccessLayer
 			#endregion
 
 			var countSQL = $@"{(includeTotal ? $"select count(1) from ({filteredSelect}) as sub_query" : "")}";
+
+			if (previousCount.HasValue) 
+			{
+				countSQL = "";
+			}
 
 			var pagingQuery = $" and TempA.ID Between {RecordStart} and {RecordEnd}";
 			if (!includeTotal)
@@ -1389,11 +1397,23 @@ namespace d360.model.DataAccessLayer
 
 			bool hasOwnershipData = !string.IsNullOrEmpty(selectOwnershipSQL);
 
+			if (previousCount.HasValue)
+			{
+				includeTotal = false;
+			}
+
 			var assetsResult = await CompanyContext.ExecuteGetAssetsQuery(getAllQuery, cancellationToken.Value, dbArgs, includeTotal, hasOwnershipData);
 
-			if (includeTotal)
+			if (previousCount.HasValue)
 			{
-				model.total = assetsResult.total;
+				model.total = previousCount.Value;
+			}
+			else
+			{
+				if (includeTotal)
+				{
+					model.total = assetsResult.total;
+				}
 			}
 			var results = assetsResult.items.ToList();
 
@@ -1591,20 +1611,29 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@pageSize", pageSize);
 			dbArgs.Add("@offset", pageSize * pageNum);
 
+
+
 			var sql = $@"
-				select	P.[uid],
-						P.[keypath] as [path]  
-				from	graph.AssetNode P		                
-				where P.assetTypeId = @assetTypeId
-				order by P.ID
+				select	A.[uid],
+						AP.[keypath] as [path]
+				from	
+					Asset A
+					inner join 
+					AssetPath AP on a.ID=ap.ID
+				where A.assetTypeId = @assetTypeId
+				order by A.ID
 				OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
 			int? total = null;
 			if (includeTotal)
 			{
-				var countSql = $@"select count(1) 
-				from	graph.AssetNode P		                
-				where P.assetTypeId = @assetTypeId";
+				var countSql = $@"
+				select 
+					count(1)
+				from 
+					Asset A	                
+				where 
+					A.assetTypeId = @assetTypeId";
 
 				total = await CompanyContext.QueryFirstOrDefaultAsync<int>(countSql, dbArgs, ApiTimeout);
 			}
@@ -2144,18 +2173,20 @@ namespace d360.model.DataAccessLayer
 				--GET ALL CHILDREN
 				;with family_cte as (
 				select a1.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
-				inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
-				inner join asset a1 on a1.uid = rel1.Uid
+				from asset a 
+				inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
 				cross apply GetAssetDisplayValueById(a1.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUid
 				union all
 				select a1.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge1 on edge1.$from_id = an.$node_id and edge1.PredicateType = 4
-				inner join graph.AssetNode rel1 on rel1.$node_id = edge1.$to_id
-				inner join asset a1 on a1.uid = rel1.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Subject = an.Object and I.SubjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
 				cross apply GetAssetDisplayValueById(a1.ID)ADV
 				where an.Uid = fam.uid)
 				insert into #family 
@@ -2164,18 +2195,20 @@ namespace d360.model.DataAccessLayer
 				--GET ALL PARENT
 				;with family_cte as (
 				select a2.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from asset a 
+				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUid
 				union all
 				select a2.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
 				where an.Uid = fam.uid)
 				insert into #family 
@@ -2188,37 +2221,31 @@ namespace d360.model.DataAccessLayer
 
 		private List<Guid> GetAllParentsAssetUid(List<Guid> uids)
 		{
-			var sql = $@"drop table if exists #family
-				create table #family(
-				 AssetUid uniqueidentifier
-				)
-				--GET ALL PARENT
-				;with family_cte as (
+			var sql = $@";with family_cte as (
 				select a2.uid,ADV.DisplayValue
-				from graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from asset a 
+				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
-				where an.Uid in @assetUid
+				where a.Uid in @assetUids
 				union all
 				select a2.uid, ADV.DisplayValue
-				from family_cte fam, graph.assetnode an
-				inner join graph.AssetEdge edge2 on edge2.$to_id = an.$node_id and edge2.PredicateType = 4
-				inner join graph.AssetNode rel2 on rel2.$node_id = edge2.$from_id
-				inner join asset a2 on a2.uid = rel2.Uid
+				from family_cte fam, Asset an
+				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
+				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
 				cross apply GetAssetDisplayValueById(a2.ID)ADV
 				where an.Uid = fam.uid)
-				insert into #family 
-				select 
-				uid as AssetUid from family_cte
-				select * from #family";
+				select uid as AssetUid from family_cte";
 
 			List<Guid> parentUids = new List<Guid>();
 			var pages = uids.Count() / 2000;
 			for (int i = 0; i <= pages; i++)
 			{
-				parentUids.AddRange(CompanyContext.Query<Guid>(sql, new { assetUid = uids.Skip(i * 2000).Take(2000) }, ApiTimeout).AsList());
+				parentUids.AddRange(CompanyContext.Query<Guid>(sql, new { assetUids = uids.Skip(i * 2000).Take(2000) }, ApiTimeout).AsList());
 			}
 
 			return parentUids;
@@ -2308,24 +2335,27 @@ namespace d360.model.DataAccessLayer
 
 			if (!string.IsNullOrEmpty(prefilterSql))
 			{
-				prefilterSql = $"and N.AssetTypeID in ({prefilterSql})";
+				prefilterSql = $"and AT.Id in ({prefilterSql})";
 			}
 
 			var countSql = $@"
 							select	count(1)
-							from	graph.AssetNode N
+							from	AssetPath N
+							inner join Asset A on A.Id = N.Id
+							inner join AssetType AT on AT.Id = A.AssetTypeId
 							where	N.DisplayPath like @phrase {prefilterSql}
 							";
 
-			var sql = $@"
-							select	N.Uid,
-									N.AssetTypeUid,
-									T.Name as AssetTypeName,
+										var sql = $@"
+							select	A.Uid,
+									AT.Uid as AssetTypeUid,
+									AT.Name as AssetTypeName,
 									coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
 									N.Segments as SegmentsXml
-							from	graph.AssetNode N
-									inner join AssetType T on T.ID = N.AssetTypeID
-									left join AssetTypeStyle S on S.ID = T.ID
+							from	AssetPath N
+									inner join Asset A on A.Id = N.Id
+									inner join AssetType AT on AT.ID = A.AssetTypeID
+									left join AssetTypeStyle S on S.ID = AT.ID
 							where	N.DisplayPath like @phrase {prefilterSql}
 							order by N.DisplayPath asc
 							OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
@@ -2395,21 +2425,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -2643,21 +2658,6 @@ namespace d360.model.DataAccessLayer
 				execution.CompletedOn = DateTime.UtcNow;
 				CompanyContext.Update(execution);
 
-				// Quick sync of graph.
-				try
-				{
-					// Update Asset Node and Assets Path immediately when only 1 asset is updated (UI call)
-					if (results.Count == 1)
-					{
-						CompanyContext.UpdateAssetNode(results.FirstOrDefault().uid);
-					}
-
-					CompanyContext.SynchronizeExecutionAssetsWithGraph(execution.ExecutionID);
-				}
-				catch
-				{
-					// Do nothing, as graph topic will eventually synch.
-				}
 			}
 			catch (Exception ex)
 			{
@@ -3440,9 +3440,10 @@ namespace d360.model.DataAccessLayer
 
 		public async Task<Dictionary<Guid, List<PathComponent>>> GetAssetPathComponents(IEnumerable<Guid> assetUids)
 		{
-			var sql = $@"SELECT an.Uid, graph.GetPathAsJson(an.Segments) as JsonPath
-			FROM  graph.AssetNode an
-			inner join @uids U on U.Uid = an.Uid";
+			var sql = $@"
+				select a.Uid, graph.GetPathAsJson(ap.Segments) as JsonPath from Asset A
+				inner join @uids U on U.Uid = a.Uid
+				inner join AssetPath AP on AP.ID = a.ID";
 
 			var results = await CompanyContext.QueryAsync<(Guid Uid, string JsonPath)>(sql, new
 			{
@@ -3926,13 +3927,12 @@ namespace d360.model.DataAccessLayer
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
 								outer apply (
-									select  T.[uid]
-									from    graph.AssetNode S,
-											graph.AssetEdge E,
-											graph.assetNode T
-									where   match (T-(E)->S)
-											and E.PredicateType in (3,4)
-											and S.[uid] = A.[uid]
+									select SA.uid from Asset A
+									inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+									inner join [IntersectType] IT on IT.Id = I.IntersectTypeId
+									inner join [Predicate] P on P.Id = IT.PredicateID and P.Type in (3,4)
+									inner join [Asset] SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+									where A.uid = @assetuid
 								) Parent
 								left join AssetDetail P on P.uid = Parent.uid
 								{string.Join(Environment.NewLine, fieldJoins)}

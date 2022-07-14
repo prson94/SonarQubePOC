@@ -2,24 +2,24 @@
 <div [ngSwitch]="formMode" *ngIf="!isLoading" class="admin-site-menu">
 	<div *ngSwitchDefault>
 		<div class="grid-header">
-			<h2 i18n>Site Navigation</h2>
+			<h2 i18n style="margin-left:11px">Site Navigation</h2>
 			<div class="flex-grow"></div>
 			<button igButton (click)="addFolderDialog()" i18n-label label="Add Folder"></button>
 			<div class="spacer"></div>
-			<button igButton (click)="showAssetTypeModelDialog = true" i18n-label label="Add Asset Type"></button>
+			<button igButton (click)="showAssetTypeModelDialog = true" i18n-label label="Add Asset Type" style="margin-right:11px"></button>
 		</div>
 		<p-table #dt [value]="companySettings.SiteNav" selectionMode="single" [metaKeySelection]="true" [(selection)]="selection"
-				 [scrollable]="true" scrollHeight="420px">
+				 [scrollable]="true" scrollHeight="420px" style="margin-left:16px">
 			<ng-template pTemplate="header">
 				<tr>
-					<th i18n>Name</th>
-					<th width="35%">Type</th>
-					<th width="40px"></th>
+					<th style="min-width: 600px" i18n>Name</th>
+					<th i18n>Type</th>
+					<th style="min-width: 50px" ></th>
 				</tr>
 			</ng-template>
 			<ng-template pTemplate="body" let-item>
 				<tr [pSelectableRow]="item">
-					<td>
+					<td style="min-width: 600px">
 						<span *ngIf="item.Icon">
 							<img class="gov-icon" *ngIf="checkIfImg(item.Icon)" [src]="item.Icon" />
 							<i *ngIf="!checkIfImg(item.Icon)" [class]="'fa '+ item.Icon"></i>
@@ -29,10 +29,10 @@
 						</span>
 						&nbsp;&nbsp;{{item.Title}}
 					</td>
-					<td width="35%">
+					<td>
 						{{item.Type}}
 					</td>
-					<td width="40px" class="asset-grid-tools" (click)="selectRow(item)">
+					<td style="min-width: 50px" class="asset-grid-tools" (click)="selectRow(item)">
 						<div style="width: 100%; display: flex; flex-direction: row-reverse;">
 							<button igButton type="button" class="ig-button-dark" icon="fa-ellipsis-v" (click)="selectRow(item); popupMenu.toggle($event)"></button>
 							<ig-popup-menu [items]="item.menuItems" (onSelect)="clickMenuItem($event, item)" #popupMenu [tabIndex]="1"></ig-popup-menu>

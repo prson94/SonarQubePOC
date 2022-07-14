@@ -18,7 +18,9 @@ using System.Threading;
 using System.Web.Http.Results;
 using AutoFixture;
 using AutoFixture.Xunit2;
+using d360.web.Utilities;
 using FluentAssertions;
+using igx.UnitTests.V2ControllerTests;
 using Moq;
 
 namespace igx.UnitTests
@@ -28,14 +30,23 @@ namespace igx.UnitTests
     public class AssetControllerTest : BaseTest
     {
         private Mock<IAssetTypeRepository> AssetTypeRepositoryMock { get; set; }
-
-        internal AssetsController assetsController;
+        private readonly TestDependencyResolver DependencyResolver;
+        private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
+		internal AssetsController assetsController;
 
         public AssetControllerTest()
         {
-            AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
+	        RuntimeInfoMock = new Mock<IRuntimeInfo>();
+	        RuntimeInfoMock.Setup(x => x.IsDebuggerAttached).Returns(true);
+	        RuntimeInfoMock.Setup(x => x.IsReleaseBuild).Returns(true);
 
-            this.assetsController = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), GetAssetRepository(), GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
+	        DependencyResolver = new TestDependencyResolver();
+	        DependencyResolver.AddService(RuntimeInfoMock.Object);
+	        System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
+
+			AssetTypeRepositoryMock = new Mock<IAssetTypeRepository>();
+
+            this.assetsController = new AssetsController(GetCache(), GetCoreComponentSet(), GetStorage(), GetQueue(), GetAssetRepository(), GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -828,7 +839,7 @@ namespace igx.UnitTests
                 return Task.FromResult<object>(Task.CompletedTask);
             });
 
-            var assetsControllerTemp = new AssetsController(GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
+            var assetsControllerTemp = new AssetsController(GetCache(), GetCoreComponentSet(), GetStorage(), GetQueue(), assetRepo.Object, GetTagRepository(), GetRelationshipRepository(), GetFieldsRepository(), AssetTypeRepositoryMock.Object)
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

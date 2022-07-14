@@ -418,7 +418,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-        ]
+			ApiExplorerSettings(IgnoreApi = true)
+		]
         public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid, DateTime startDate, DateTime endDate, bool cascade)
         {
             var prefix = "DataProfiles.PostDataProfiles => ";
@@ -475,12 +476,143 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Provides support for adding a large set of Data Profile records.
-        /// </summary>
-        /// <param name="models">Data Profile record collection.</param>
-        /// <returns>Results response containing the ExecutionID of the request.</returns>
-        [
+		/// <summary>
+		/// Removes Data Profile results for a given asset. 
+		/// </summary>
+		/// <param name="assetUid">The unique identifier of an asset.</param>
+		/// <param name="_startDate">Start date of data profile data to be deleted. Expected date format is yyyy-MM-ddThh:mm:ss</param>
+		/// <param name="_endDate">End date of data profile data to be deleted. Expected date format is yyyy-MM-ddThh:mm:ss</param>
+		/// <param name="_cascade">True/false flag used to indicate if assets children should be deleted.</param>
+		/// <returns>Results response with the count of records deleted.</returns>
+		[
+			HttpDelete,
+			Route("{assetUID:Guid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerParameter("_startDate", "Start date of data profile data to be deleted. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is before oldest profiling record.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_endDate", "End date of data profile data to be deleted. If _startDate and _endDate are not supplied the date defaults to the most recent date for the specified asset for which there is data. Otherwise the default is after most recent profiling record.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_cascade", "True/false flag used to indicate if assets children should be deleted.", DataType = "boolean", ParameterType = "query", Required = false),
+			SwaggerResponse(HttpStatusCode.OK, "Count of Data Profile Records Deleted.", typeof(int)),
+			SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> DeleteDataProfiles(Guid assetUid)
+		{
+
+			DateTime? startDate = null;
+			DateTime? endDate = null;
+			bool cascade = false;
+
+			var queryParams = Request.GetQueryNameValuePairs();
+
+			var prefix = "DataProfiles.PostDataProfiles => ";
+			var execution = getApiExecution(1);
+
+			try
+			{
+				// FeatureFlag Check
+				if (!GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING))
+				{
+					throw new GenericException(HttpStatusCode.Conflict, DataProfileAPIMessages.ErrorOnRequest, DataProfileAPIMessages.EndpointNotAccessible);
+				}
+
+				if (!Company.CurrentResourceIsAdmin)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, NOT_AUTHORIZED_MESSAGE)).ConfigureAwait(false);
+				}
+
+				Asset asset = AssetRepository.GetAssetByUID(assetUid);
+
+				if (asset == null)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidAssetUid, assetUid.ToString()))).ConfigureAwait(false);
+				}
+
+				if (queryParams.Any(qp => qp.Key.ToLower() == "_startdate"))
+				{
+					if (!DateTime.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_startdate").Value, out DateTime outStartDate))
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidStartDate, assetUid.ToString()))).ConfigureAwait(false);
+					}
+					else
+					{
+						startDate = outStartDate;
+					}
+				}
+
+				if (queryParams.Any(qp => qp.Key.ToLower() == "_enddate"))
+				{
+					if (!DateTime.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_enddate").Value, out DateTime outEndDate))
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidEndDate, assetUid.ToString()))).ConfigureAwait(false);
+					}
+					else
+					{
+						endDate = outEndDate;
+					}
+				}
+
+				if (queryParams.Any(qp => qp.Key.ToLower() == "_cascade"))
+				{
+					if (!bool.TryParse(queryParams.FirstOrDefault(q => q.Key.ToLower() == "_cascade").Value, out cascade))
+					{
+						return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ApiMessages.InvalidEndDate, assetUid.ToString()))).ConfigureAwait(false);
+					}
+				}
+
+				if (startDate.HasValue && endDate.HasValue && startDate > endDate)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.StartEndDateValidation)).ConfigureAwait(false);
+				}
+
+				if(!startDate.HasValue && !endDate.HasValue)
+				{
+					var currentProfile = await Company.AssetDataProfile.OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefaultAsync();
+					if(currentProfile!= null)
+					{
+						startDate = endDate = currentProfile.ProfileSetDate;
+					}
+					else
+					{
+						return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, 0));
+					}
+				}
+
+				startDate = startDate ?? new DateTime(1800, 1, 1);//Can't use MinValue as that is 01/01/0001 but SQL server min is 01/01/1759
+				endDate = endDate ?? DateTime.MaxValue;
+
+				var recordCount = Company.AssetDataProfile.Count(x => x.AssetId == asset.ID && x.ProfileSetDate >= startDate && x.ProfileSetDate <= endDate);
+
+				if (recordCount > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+				{
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataProfileAPIMessages.DataProfileDeleteMaxLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT.ToString()))).ConfigureAwait(false);
+				}				
+
+				var results = DataProfiles.DeleteDataProfiles(asset, execution, queryParams);
+
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.FirstOrDefault().DeletedCount));
+			}
+			catch (GenericException ex)
+			{
+				throw;
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+				SendException(ex, new Dictionary<string, string> {
+					{ "Endpoint Method", prefix }
+				});
+
+				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage)).ConfigureAwait(false);
+			}
+		}
+
+		/// <summary>
+		/// Provides support for adding a large set of Data Profile records.
+		/// </summary>
+		/// <param name="models">Data Profile record collection.</param>
+		/// <returns>Results response containing the ExecutionID of the request.</returns>
+		[
             HttpPost,
             Route("batch"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -1045,13 +1177,13 @@ namespace d360.web.Controllers.V2
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfilingNotSupportAssetClass, asset.AssetType.Class.ToString()));
                 }
 
-                var profileSetDate = model.profileSetDate.Date;
-                var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && DbFunctions.TruncateTime(x.ProfileSetDate) == profileSetDate);
+                var profileSetDate = model.profileSetDate;
+                var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && x.ProfileSetDate == profileSetDate);
 
                 //check insert
                 if (recordExists && IsInsert)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.Date.ToString("yyyy-MM-dd")));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddThh:mm:ss")));
                 }
 
                 //check update
@@ -1741,11 +1873,41 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Create the Excel document for export
-        /// </summary>
-        /// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
-        private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
+		[
+			HttpGet,
+			Route("possibleCreators"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were creating Semantic Types."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public async Task<IHttpActionResult> GetPossibleCreators()
+		{
+			var result = await SemanticsRepository.GetPossibleCreators();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+		}
+
+		[
+			HttpGet,
+			Route("possibleRedactors"),
+			SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of users who were editing Semantic Types."),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+		public async Task<IHttpActionResult> GetPossibleRedactors()
+		{
+			var result = await SemanticsRepository.GetPossibleRedactors();
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+		}
+
+		/// <summary>
+		/// Create the Excel document for export
+		/// </summary>
+		/// <returns>A spreadsheet populated with a list of the Semantic Types</returns>
+		private SLDocument CreateResponseDocumentForSemanticTypesExport(GetSemantics semantics, bool includeDisabled = false)
         {
             ExcelRow HeaderRow = new ExcelRow
                         {

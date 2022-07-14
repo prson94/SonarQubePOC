@@ -15,9 +15,11 @@ using d360.core.types;
 using Autofac.Integration.Mvc;
 using d360.web.Utilities;
 using d360.extensions.caching;
+using d360.web.Handlers.Exceptions;
 using d360.web.Services;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using d360.web.Services.Favorites;
+using Microsoft.ApplicationInsights;
 
 namespace d360.web
 {
@@ -26,6 +28,20 @@ namespace d360.web
         public IContainer GetContainer()
         {
             var builder = new ContainerBuilder();
+
+            builder.RegisterType<RuntimeInfo>().As<IRuntimeInfo>().SingleInstance();
+
+            builder.AddWebApiExceptionHandler<DefaultWebApi2ExceptionHandler>();
+			builder.AddWebApiExceptionHandler<GenericExceptionWebApi2ExceptionHandler>();
+			builder.AddWebApiExceptionHandler<RestApiExceptionWebApi2ExceptionHandler>();
+			builder.AddWebApiExceptionHandler<BadRequestWebApi2ExceptionHandler>();
+			builder.AddWebApiExceptionHandler<NotFoundWebApi2ExceptionHandler>();
+			builder.AddWebApiExceptionHandler<UnauthorizedWebApi2ExceptionHandler>();
+			builder.AddWebApiExceptionHandler<ForbiddenWebApi2ExceptionHandler>();
+			builder.RegisterType<WebApi2ExceptionHandlerMediator>().AsSelf().SingleInstance();
+			
+			// register telemetry client (instance per request?)
+			builder.RegisterType<TelemetryClient>().AsSelf().SingleInstance();
 
             builder.RegisterType<DateTimeService>().As<IDateTimeService>().SingleInstance();
             builder.RegisterType<DecimalService>().As<IDecimalService>().SingleInstance();
@@ -103,6 +119,15 @@ namespace d360.web
 
             return builder.Build();
         }
+    }
+
+    public static class AutofacExtensions
+    {
+	    public static void AddWebApiExceptionHandler<T>(this ContainerBuilder builder)
+			where T: IWebApi2ExceptionHandler
+		{
+		    builder.RegisterType<T>().As<IWebApi2ExceptionHandler>().SingleInstance();
+	    }
     }
 
     public class MvcApplication : HttpApplication

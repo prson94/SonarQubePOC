@@ -65,7 +65,6 @@ namespace igx.jobs.assetgraphprocessor
                         }
                     }
 
-                    await companyConnection.ExecuteAsync(@"graph.UpdateAssetNode @uid, @updatePath", new { uid = info.Uid, updatePath }, commandTimeout: timeout);
                 }
                 catch (Exception ex)
                 {

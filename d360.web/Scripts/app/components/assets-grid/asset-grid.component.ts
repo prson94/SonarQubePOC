@@ -43,7 +43,8 @@ import { AssetEditorComponent } from "../shared/asset-editor/asset-editor.compon
 import { AppConstants } from "../../static/constants";
 import { NumberOfRowsByCategoryService } from "../../services/number-of-rows-by-category.service";
 import { FeatureFlags, FeatureFlagsService } from "../../services/featureflags.service";
-import { Param } from "../../enums/param.enum";
+import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
+import { LinkClickInterceptor } from "../../services/href-click-service";
 
 @Component({
     selector: "d3s-asset-grid",
@@ -155,7 +156,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         private changeDetectorRef: ChangeDetectorRef,
         private assetService: AssetService,
         private route: ActivatedRoute,
-        private featureFlagService: FeatureFlagsService
+        private featureFlagService: FeatureFlagsService,
+		private linkClickInterceptor: LinkClickInterceptor
     ) {
         super(settingsService);
 
@@ -221,15 +223,34 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         let key = event.value.toLowerCase();
 
         if (key === $localize`Open`.toLowerCase()) {
-            this.selectArtifact(item);
+            this.selectArtifact(event, item);
         } else if (key === $localize`Open in New Tab`.toLowerCase()) {
-            this.selectArtifact(item, true);
+            this.selectArtifact(event, item, true);
         } else if (key === $localize`Edit`.toLowerCase()) {
             this.onEdit(item);
         } else if (key === $localize`Delete`.toLowerCase()) {
             this.onDelete(item);
         }
     }
+
+	positionContextMenu(
+		$event: MouseEvent, container: HTMLElement, floatMenu: PopupMenu, assetGridTools: HTMLElement
+	): void {
+		if (!assetGridTools.contains(<Node>$event.target) && !this.isElementLink(<HTMLElement>$event.target)) {
+			container.style.top = `${$event['layerY']}px`;
+			container.style.left = `${$event['layerX']}px`;
+			floatMenu.toggle($event);
+			$event.preventDefault();
+		}
+	}
+	
+	private isElementLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.tagName === 'A') return true;
+			element = element.parentElement;
+		}
+		return false;
+	}
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['gridObject'] && this.gridObject != null) {
@@ -631,8 +652,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    selectArtifact(artifact, newTab: boolean = false) {
-
+    selectArtifact($event, artifact, newTab: boolean = false) {
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
                 if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
@@ -644,11 +664,25 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     console.warn("onRightClick => Invalid object type");
                 }
-                if (newTab) {
-                    window.open(this.itemUrl, '_blank');
-                } else {
-                    this.router.navigateByUrl(this.itemUrl);
-                }
+				if ($event['from-context-method']) {
+					this.linkClickInterceptor.sendEvent($event, {
+						Values: [{
+							TooltipContext: "Preview",
+							TooltipID: res.ObjectId,
+							TooltipType: "Artifact",
+							Value: artifact.Name,
+							assetTypeUid: artifact.AssetTypeUid,
+							uid: artifact.AssetUid,
+						}],
+						DataType: 'Lookup'
+					}, this.itemUrl);
+				} else {
+					if (newTab) {
+						window.open(this.itemUrl, '_blank');
+					} else {
+						this.router.navigateByUrl(this.itemUrl);
+					}
+				}
             });
 
     }

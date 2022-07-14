@@ -700,7 +700,7 @@ export class SystemFields {
     public static LastModifiedBy: string = "LastModifiedBy";
     public static RelationshipFieldCode: string = "$Related";
 
-    public static GetSystemFieldDefinition(gridType: string): FieldTypeAPIModelFieldAdvancedCondition[] {
+    public static GetSystemFieldDefinition(gridType: string, loadType: string): FieldTypeAPIModelFieldAdvancedCondition[] {
         var fields: FieldTypeAPIModelFieldAdvancedCondition[] = [];
 
         fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
@@ -742,18 +742,20 @@ export class SystemFields {
             Operators: [],
             Values: [],
             IsSystemField: true
-        }));
+		}));
 
-        fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
-            Category: "System Fields",
-            FriendlyName: "Owned By",
-            Name: this.OwnedByFieldCode,
-            Type: null,
-            Operators: [],
-            Values: [],
-            IsOwnerField: true,
-            IsSystemField: true
-        }));        
+		if (loadType !== "SemanticTypes") {
+			fields.push(new FieldTypeAPIModelFieldAdvancedCondition({
+				Category: "System Fields",
+				FriendlyName: "Owned By",
+				Name: this.OwnedByFieldCode,
+				Type: null,
+				Operators: [],
+				Values: [],
+				IsOwnerField: true,
+				IsSystemField: true
+			}));
+		}
 
         if (gridType === "Tree") {
             fields.push(new FieldTypeAPIModelFieldAdvancedCondition({

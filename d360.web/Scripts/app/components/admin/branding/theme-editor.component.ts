@@ -220,7 +220,7 @@ export class ThemeEditorComponent implements OnChanges {
         var contrastClass = "contrast-" + this.lightOrDark(headerColor);
 
         return `<div class="breadcrumbLinkColor-template ${contrastClass}" style="background-color:${headerColor}">
-        <div style="color:${color};">Administration</div> <i class="fa fa-angle-right"></i> <div class="selected">Branding</div>
+        <div style="color:${color};">Business Assets</div> <i class="fa fa-angle-right"></i> <div class="selected">Business Term</div>
     </div>`;
     }
 

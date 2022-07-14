@@ -817,7 +817,7 @@ namespace d360.web.Controllers
 		private List<TooltipFieldLevelPathModel> GetFieldLevelPathFromAssetNodeSegment(Guid uid)
 		{
 			List<TooltipFieldLevelPathModel> levels = new List<TooltipFieldLevelPathModel>();
-			string segments = Company.Query<string>($@"SELECT Segments FROM graph.AssetNode WHERE Uid = @assetUid", new { assetUid = uid }).FirstOrDefault();
+			string segments = Company.Query<string>($@"SELECT P.Segments FROM Asset A inner join AssetPath P on P.ID = A.ID and A.Uid = @assetUid", new { assetUid = uid }).FirstOrDefault();
 			
 			if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<') >= 0)
 			{

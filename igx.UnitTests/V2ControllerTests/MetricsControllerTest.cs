@@ -9,14 +9,42 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Mvc;
+using d360.web.Handlers.Exceptions;
+using d360.web.Services;
+using d360.web.Utilities;
+using FluentAssertions;
+using Moq;
 using Xunit;
 
 namespace igx.UnitTests.V2ControllerTests
 {
+	public class TestDependencyResolver: IDependencyResolver 
+	{
+		public object GetService(Type serviceType)
+		{
+			return RegisteredServices[serviceType];
+		}
+
+		public IEnumerable<object> GetServices(Type serviceType)
+		{
+			throw new NotImplementedException();
+		}
+
+		private readonly Dictionary<Type, object> RegisteredServices = new Dictionary<Type, object>();
+
+		public void AddService<T>(T instance)
+		{
+			RegisteredServices.Add(typeof(T), instance);
+		}
+	}
+
     [Trait("Unit tests", "Metrics controller")]
     public class MetricsControllerTest : BaseTest
     {
         internal MetricsController metricsController;
+        private readonly TestDependencyResolver DependencyResolver;
+        private readonly Mock<IRuntimeInfo> RuntimeInfoMock;
 
         public MetricsControllerTest()
         {
@@ -25,6 +53,14 @@ namespace igx.UnitTests.V2ControllerTests
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
             };
+
+            RuntimeInfoMock = new Mock<IRuntimeInfo>();
+            RuntimeInfoMock.Setup(x => x.IsDebuggerAttached).Returns(true);
+            RuntimeInfoMock.Setup(x => x.IsReleaseBuild).Returns(true);
+
+			DependencyResolver = new TestDependencyResolver();
+			DependencyResolver.AddService(RuntimeInfoMock.Object);
+            System.Web.Mvc.DependencyResolver.SetResolver(DependencyResolver);
         }
 
         [Fact]
@@ -45,11 +81,11 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.GetAssetById(Guid.Parse(DataConstants.InvalidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
-        }
+			data.Should().NotBeNull(XMsg.InvalidJSON);
+		}
 
         [Fact]
         public async void UpsertMetrics()
@@ -83,11 +119,10 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
-
+			data.Should().NotBeNull(XMsg.InvalidJSON);
         }
 
         [Fact]
@@ -120,11 +155,10 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
-
+			data.Should().NotBeNull(XMsg.InvalidJSON);
         }
 
         [Fact]
@@ -158,11 +192,10 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
-
+			data.Should().NotBeNull(XMsg.InvalidJSON);
         }
 
         [Fact]
@@ -186,12 +219,12 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
+			data.Should().NotBeNull(XMsg.InvalidJSON);
 
-        }
+		}
 
         [Fact]
         public async void Err_UpsertMetrics_BadCondition()
@@ -224,12 +257,12 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
+			data.Should().NotBeNull(XMsg.InvalidJSON);
 
-        }
+		}
 
         [Fact]
         public async void DeleteMetric()
@@ -247,14 +280,13 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void Err_DeleteMetric_BadUid()
         {
-            var actionResult = metricsController.DeleteById(Guid.Parse(DataConstants.InvalidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
+	        var actionResult = metricsController.DeleteById(Guid.Parse(DataConstants.InvalidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
-            var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+			var str = await actionResult.Content.ReadAsStringAsync();
+			var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
-
+			Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
+			data.Should().NotBeNull(XMsg.InvalidJSON);
         }
 
         [Fact]
@@ -276,12 +308,13 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.GetMetricHierarchyByAssetTypeAsync(Guid.Parse(DataConstants.InvalidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
-
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
+            
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
+            data.Should().NotBeNull(XMsg.InvalidJSON);
+			//Assert.True(Helpers.IsTypeOf(typeof(ProblemDetailsResponse), data), XMsg.InvalidJSON);
 
-        }
+		}
 
         [Fact]
         public async void GetMetricHierarchyByAssetUidAllocationAsync_BadUid()
@@ -289,12 +322,12 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.GetMetricHierarchyByAssetAndAllocationAsync(DataConstants.ValidGUID2, DataConstants.ValidGUID).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
+			data.Should().NotBeNull(XMsg.InvalidJSON);
 
-        }
+		}
 
         [Fact]
         public async void Err_GetMetricHierarchyByAssetUidAsync_BadUid()
@@ -302,12 +335,12 @@ namespace igx.UnitTests.V2ControllerTests
             var actionResult = metricsController.GetMetricHierarchyByAssetAndScoreTypeAsync(d360.core.enums.ScoreType.Governance, Guid.Parse(DataConstants.InvalidGUID)).Result.ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JObject>(str);
+            var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
+			data.Should().NotBeNull(XMsg.InvalidJSON);
 
-        }
+		}
 
         [Fact]
         public async void GetMetricFieldsByAssetType()
