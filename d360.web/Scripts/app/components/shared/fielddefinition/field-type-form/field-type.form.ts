@@ -16,7 +16,7 @@ import { ObjectDetailService } from '../../../../services/object-detail.service'
 import { BaseComponent } from '../../../shared/base.component';
 import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { finalize, map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
 import { AssetService } from '../../../../services/asset.service';
@@ -735,9 +735,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 					if (item) {
 						this.model.FieldType.Type[this.currentType].DefaultValue = item.value;
 					}
-					this.isLoadingDefaultValue = false;
 				}
-            })
+            }),
+			finalize(() => this.isLoadingDefaultValue = false)
         ).subscribe();
     }
 
