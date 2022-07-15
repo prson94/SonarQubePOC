@@ -374,7 +374,7 @@ namespace d360.extensions.search
             inner join [dbo].[AssetType] att on a.AssetTypeID = att.id
             inner join [dbo].[AssetPath] ap on a.ID = ap.id
             inner join @ids i on a.ID = i.Id 
-            where an.segments is not null";
+            where ap.segments is not null";
 
             DynamicParameters parameters = new DynamicParameters();
             DataTable dt = new DataTable();
