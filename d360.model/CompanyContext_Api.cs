@@ -11511,8 +11511,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 try
                                 {
                                     string insertSQL = $@"
-															drop table if exists #mergeResultTable
-			create table #mergeResultTable (GroupID int, [Action] nvarchar(10), GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
+														drop table if exists #mergeResultTable
+														create table #mergeResultTable (GroupID int, [Action] nvarchar(10), GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
 
 														drop table if exists #auditRecords
 														create table #auditRecords (ItemNumber int, FieldName nvarchar(200), OldValue nvarchar(max), NewValue nvarchar(max))
@@ -11583,7 +11583,7 @@ EG.GroupUid
 						INNER JOIN api.ExecutionGroup EG on EG.ExecutionItemUid = M.ExecutionItemUid
 						INNER JOIN [Group] G on G.ID = M.GroupID
 						INNER JOIN AssetType T on T.Object = 'GroupType' and T.ObjectID = 1
-				WHERE M.[Action] = 'INSERT';
+				WHERE EG.ExecutionID = @ExecutionID and M.[Action] = 'INSERT';
 
 				
 															INSERT INTO [ResourceGroup](GroupID,[ResourceID])
