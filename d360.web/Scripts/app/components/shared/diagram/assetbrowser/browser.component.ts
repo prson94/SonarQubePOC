@@ -3842,11 +3842,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     rel.text = rel.predicate;
                 })
             }
-            else {
-                this.relationshipData.forEach(rel => {
-                    rel.text = rel.responsibilityType;
-                })
-            }
             this.helper_HighlightPath(null, lastHighlightedPart);
             this.cdRef.markForCheck();
         }, 10);
