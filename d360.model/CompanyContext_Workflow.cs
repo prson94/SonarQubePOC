@@ -1332,8 +1332,6 @@ namespace d360.model
 						rels = new string[] { rels.First() };
 					}
 
-					List<DatabaseBulkRelationshipResult> graphEvents = new List<DatabaseBulkRelationshipResult>();
-
 					foreach (string rel in rels)
 					{
 						// split by | for type id
@@ -1374,20 +1372,8 @@ namespace d360.model
 								Intersects.Add(intersect);
 
 								SaveChanges();
-
-								graphEvents.Add(new DatabaseBulkRelationshipResult
-								{
-									Object = "Intersect",
-									uid = intersect.uid,
-									Success = true
-								});
 							}
 						}
-					}
-
-					if (graphEvents.Any())
-					{
-						SendAssetGraphEvents(graphEvents);
 					}
 				}
 			}
@@ -1396,7 +1382,6 @@ namespace d360.model
 		private void DeleteIntersects(SystemObjects @object, int objectID, int intersectTypeId, bool isSubject)
 		{
 			string sql;
-			List<DatabaseBulkRelationshipResult> graphEvents;
 
 			if (isSubject)
 			{
@@ -1405,19 +1390,6 @@ namespace d360.model
 			else
 			{
 				sql = "delete from [intersect] output deleted.uid into #deletedIntersects where [object] = @obj and objectid = @objectid and intersecttypeid = @intersectTypeId";
-			}
-
-			graphEvents = Database.Connection.Query<DatabaseBulkRelationshipResult>($@"
-				drop table if exists #deletedIntersects;
-				create table #deletedIntersects (uid uniqueidentifier);
-				{sql}
-				select uid, 'Intersect' as [Object], cast(1 as bit) as Success from #deletedIntersects"
-				, new { obj = @object.ToString(), objectid = objectID, intersectTypeId })
-				.ToList();
-
-			if (graphEvents.Any())
-			{
-				SendAssetGraphEvents(graphEvents);
 			}
 		}
 
