@@ -47,16 +47,16 @@ namespace d360.core.entities
 		#region NEW COLUMNS
 
 		[DataMember]
-		public long SubjectAssetID { get; set; }
+		public long? SubjectAssetID { get; set; }
 
 		[DataMember]
-		public int SubjectAssetTypeID { get; set; }
+		public int? SubjectAssetTypeID { get; set; }
 
 		[DataMember]
-		public long ObjectAssetID { get; set; }
+		public long? ObjectAssetID { get; set; }
 
 		[DataMember]
-		public int ObjectAssetTypeID { get; set; }
+		public int? ObjectAssetTypeID { get; set; }
 
 		#endregion NEW COLUMNS
 
