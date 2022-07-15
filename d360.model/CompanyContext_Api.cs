@@ -12568,7 +12568,7 @@ EG.GroupUid
 
 						update	EDP
 						set		Success = 0,
-								[Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 23)
+								[Message] = coalesce([Message] + '; ', '') + 'Record does not exist with AssetUid '+ convert(nvarchar(36), EDP.AssetUid) +' and profileSetDate '+ convert(varchar, EDP.ProfileSetDate, 120)
 						from
 							api.ExecutionAssetDataProfile EDP
 							inner join 
