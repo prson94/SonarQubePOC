@@ -2955,11 +2955,28 @@ namespace d360.model
 									from    #DeletedRelationships;",
 new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
-            #endregion
+			#endregion
 
-            #region Asset table
+			#region Delete surveys
 
-            Connection.Execute(
+			Connection.Execute($@"
+				delete q
+				from dbo.Question q
+					left join dbo.Survey survey
+						on q.SurveyID = survey.ID
+					left join api.ExecutionDeletedAsset S
+						on S.AssetID = survey.AssetID
+				where {querySuffix};",
+			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+			AddMeasurement(metrics, $"remove from surveys >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+			sw.Restart();
+
+			#endregion
+
+			#region Asset table
+
+			Connection.Execute(
                 $@"
 				declare @totalcount bigint = 0,
 						@runcount bigint = 0,
@@ -3269,9 +3286,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
             sw.Restart();
 
-            #endregion
+			#endregion
 
-            return step;
+			return step;
         }
 
         public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes deletes, int timeout = 7200, int maxRetryCount = 10)
