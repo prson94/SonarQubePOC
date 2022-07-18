@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
 using d360.core.entities;
 using d360.core.entities.SurveyModels;
 using d360.model.DataAccessLayer.repositories;
-
+using d360.model.helpers.filters;
 using Dapper;
 
 using Newtonsoft.Json;
@@ -20,6 +21,80 @@ namespace d360.model.DataAccessLayer
 			: base(context)
 		{
 			companyContext = context;
+		}
+
+		public async Task<SurveyType> Create(SurveyType surveyType) {
+			this.companyContext.Add(surveyType);
+			await this.companyContext.SaveChangesAsync();
+			return surveyType;
+		}
+
+		public async Task<SurveyType> Update(SurveyType surveyType)
+		{
+			this.companyContext.Update(surveyType);
+			await this.companyContext.SaveChangesAsync();
+			return surveyType;
+		}
+
+		public async Task DeleteSurveyType(Guid uid)
+		{
+			var surveyType = GetSurveyTypeByUid(uid);
+			var id = surveyType.ID;
+
+			await companyContext.DeleteAsync<d360.core.entities.Question>(i => i.Survey.SurveyTypeID == id);
+			await companyContext.DeleteAsync<Survey>(i => i.SurveyTypeID == id);
+			await companyContext.DeleteAsync<QuestionType>(i => i.SurveyTypeID == id);
+			await companyContext.DeleteAsync<SurveyType>(i => i.ID == id);
+		}
+
+		public async Task<QuestionType> CreateQuestionType(QuestionType questionType)
+		{
+			companyContext.Add(questionType);
+			await companyContext.SaveChangesAsync();
+			return questionType;
+		}
+
+		public async Task UpdateQuestionType(QuestionType update)
+		{
+			var questionType = this.companyContext
+				.GetWithIncludes<QuestionType>(x => x.QuestionTypeOptions)
+				.FirstOrDefault(x => x.Uid == update.Uid);
+
+			questionType.Name = update.Name;
+			questionType.DisplayStyle = update.DisplayStyle;
+			questionType.Description = update.Description;
+
+			var options = Enumerable.Zip(
+				questionType.QuestionTypeOptions,
+				update.QuestionTypeOptions,
+				(existingOpt, updateOpt) => (existingOpt, updateOpt));
+
+			foreach (var (existingOpt, updateOpt) in options)
+			{
+				existingOpt.Name = updateOpt.Name;
+				existingOpt.Value = updateOpt.Value;
+			}
+
+			var addedOptions = update.QuestionTypeOptions.Where((_, index) => index >= questionType.QuestionTypeOptions.Count);
+			foreach (var addedOption in addedOptions)
+			{
+				questionType.QuestionTypeOptions.Add(addedOption);
+			}
+
+			var deletedOptions = questionType.QuestionTypeOptions.Where((_, index) => index >= update.QuestionTypeOptions.Count).ToList();
+			foreach (var deletedOption in deletedOptions)
+			{
+				companyContext.QuestionTypeOptions.Remove(deletedOption);
+			}
+
+			companyContext.Update(questionType);
+
+			await companyContext.SaveChangesAsync();
+		}
+
+		public async Task DeleteQuestionType(Guid uid)
+		{
+			await companyContext.DeleteAsync<QuestionType>(i => i.Uid == uid);
 		}
 
 		public SurveyType GetSurveyTypeByUid(Guid uid)
@@ -110,7 +185,7 @@ namespace d360.model.DataAccessLayer
 			var countQuery = $@"select count(*)
 									from dbo.SurveyType ST
 										inner join Survey S on S.SurveyTypeID = ST.ID
-										inner join Asset A on A.Object = s.Object and A.ObjectID = S.ObjectID
+										inner join Asset A on A.ID = S.AssetID
 									where ST.Uid = @surveyTypeUID
 									{additionalWhereClause}
 									 ";
@@ -137,7 +212,7 @@ namespace d360.model.DataAccessLayer
 						
 						 from dbo.SurveyType ST
 							inner join Survey S on S.SurveyTypeID = ST.ID
-							inner join Asset A on A.Object = s.Object and A.ObjectID = S.ObjectID
+							inner join Asset A on A.ID = S.AssetID
 							inner join Asset U on U.Object = 'Resource' and U.ObjectID = S.ResourceID
 						where ST.Uid = @surveyTypeUID
 						{additionalWhereClause}
@@ -160,6 +235,7 @@ namespace d360.model.DataAccessLayer
 			response.total = 0;
 
 			string orderByClause = "order by ST.CreatedOn";
+			string orderByDirection = "asc";
 			List<string> whereClauses = new List<string>();
 			foreach (var param in queryParams)
 			{
@@ -210,12 +286,46 @@ namespace d360.model.DataAccessLayer
 					case "_order":
 						switch (param.Value.ToLower())
 						{
-							case "name": orderByClause = "order by ST.Name"; break;
-							case "validfordays": orderByClause = "order by ST.ValidForDays desc"; break;
-							case "createdon": orderByClause = "order by ST.CreatedOn"; break;
-							case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
-							case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
+							case "name": orderByClause = "order by ST.Name"; orderByDirection = "asc"; break;
+							case "validfordays": orderByClause = "order by ST.ValidForDays"; orderByDirection = "desc"; break;
+							case "createdon": orderByClause = "order by ST.CreatedOn"; orderByDirection = "asc"; break;
+							case "updatedon": orderByClause = "order by ST.UpdatedOn"; orderByDirection = "asc"; break;
+							case "numberofresponses": orderByClause = "order by NumberOfResponses"; orderByDirection = "desc"; break;
 						}
+						break;
+					case "_direction":
+						switch (param.Value.ToLower())
+						{
+							case "asc": orderByDirection = "asc"; break;
+							case "desc": orderByDirection = "desc"; break;
+						}
+						break;
+					case "_simplefilter":
+						whereClauses.Add("ST.Name like @simpleFilter or ST.ValidForDays like @simpleFilter");
+						sqlParams.Add("@simpleFilter", companyContext.GetEscapedFilterString(param.Value, isContains: true));
+						break;
+					case "_filter":
+						var fieldList = new List<DefaultFilter>
+						{
+							new DefaultFilter("name", "ST.Name", SqlFieldType.Text),
+							new DefaultFilter("validForDays", "ST.ValidForDays", SqlFieldType.Number),
+							new DefaultFilter("createdon", "ST.CreatedOn", SqlFieldType.DateTime),
+							new DefaultFilter("updatedon", "ST.CreatedOn", SqlFieldType.DateTime),
+							new DefaultFilter("numberofresponses", "NumberOfResponses", SqlFieldType.Number)
+						};
+
+						companyContext.ParseAdvancedFilterQueryParameter(
+							queryParams,
+							fieldList, 
+							out DynamicParameters advFilterArgs, 
+							out List<string> advFilterStatements);
+
+						if (advFilterArgs != null && advFilterStatements != null)
+						{
+							sqlParams.AddDynamicParams(advFilterArgs);
+							whereClauses.AddRange(advFilterStatements);
+						}
+
 						break;
 				}
 			}
@@ -228,7 +338,7 @@ namespace d360.model.DataAccessLayer
 			var pagingSql = $"OFFSET (@pageSize * (@pageNum - 1)) ROWS FETCH NEXT @pageSize ROWS ONLY";
 
 			var countQuery = $@"select  count(*) from dbo.SurveyType ST 
-											inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
+											inner join AssetType AT on AT.ID = ST.AssetTypeID
 											left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
 												on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
 			response.total = companyContext.Query<int>(countQuery, sqlParams, ApiTimeout).FirstOrDefault();
@@ -263,19 +373,19 @@ namespace d360.model.DataAccessLayer
 									Responses as NumberOfResponses,
 									(select Uid, Name, Description, DisplayStyle, Options from QuestionTypes where TypeId = ST.Id for json path) as Questions
 								 from SurveyType ST
-								 inner join AssetType AT on AT.Object = ST.Object AND AT.ObjectID = ST.ObjectID 
+								 inner join AssetType AT on AT.ID = ST.AssetTypeID
 								 inner join Asset ACreate on ACreate.Object = 'Resource' AND ACreate.ObjectID = ST.CreatedBy
 								 inner join Asset AUpdate on AUpdate.Object = 'Resource' AND AUpdate.ObjectID = ST.UpdatedBy
 								 left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses on Responses.SurveyTypeId = ST.Id
 								{additionalWhereClause}
-								{orderByClause}
+								{orderByClause} {orderByDirection}
 								{pagingSql}
 								for json path";
 
 			var itemsJson = string.Join("", companyContext.Query<string>(query, sqlParams, ApiTimeout).ToList());
 
 			response.items = JsonConvert.DeserializeObject<List<SurveyTypeApiModel>>(itemsJson) ?? new List<SurveyTypeApiModel>();
-			
+
 			return response;
 		}
 
@@ -357,7 +467,7 @@ namespace d360.model.DataAccessLayer
 			var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
 			var countWhereClause = whereClauses.Count > 0 ? "and " + string.Join(" and ", whereClauses) : "";
 			var countQuery = $@"select count(distinct A.uid) from Asset A
-								inner join Survey S ON A.Object = S.Object and A.ObjectID = S.ObjectID
+								inner join Survey S ON A.ID = S.AssetID
 								inner join SurveyType ST on S.SurveyTypeID = ST.ID
 								where ST.uid = @surveyTypeUid
 								{countWhereClause}";
@@ -374,7 +484,7 @@ namespace d360.model.DataAccessLayer
 									inner join Question Q on QO.QuestionID = Q.ID
 									inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
 									inner join Survey S on Q.SurveyID = S.ID
-									inner join Asset A on A.Object = S.Object and A.ObjectID = S.ObjectID
+									inner join Asset A on A.ID = S.AssetID
 									{additionalWhereClause}";
 
 			string QuestionsCTE = @"select 
@@ -390,7 +500,7 @@ namespace d360.model.DataAccessLayer
 									inner join QuestionTypeOption QTO on QTO.ID = QO.QuestionTypeOptionID
 									inner join Question Q on QO.QuestionId = Q.Id
 									inner join Survey S on S.ID = Q.SurveyID
-									inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
+									inner join Asset A on A.ID = S.AssetID
 									inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
 									group by QT.Uid, S.SurveyTypeID, A.Uid";
 
@@ -406,7 +516,7 @@ namespace d360.model.DataAccessLayer
 								for json path) AS Questions 
 							from SurveyType ST 
 							inner join Survey S on S.SurveyTypeID = ST.ID
-							inner join Asset A ON S.Object = A.Object AND S.ObjectID = A.ObjectID
+							inner join Asset A on A.ID = S.AssetID
 							cross apply (select count(distinct SurveyUid) as Responders from AnswerData where AssetUid = A.uid)QD
 							cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn)First
 							cross apply (select top 1 CreatedOn from AnswerData where AssetUid = A.uid order by CreatedOn desc)Last
@@ -419,7 +529,7 @@ namespace d360.model.DataAccessLayer
 			var itemsJson = string.Join("", companyContext.Query<string>(sql, new { surveyTypeUid }, ApiTimeout).ToList());
 
 			response.items = JsonConvert.DeserializeObject<List<SurveyResultSummaryApiModel>>(itemsJson) ?? new List<SurveyResultSummaryApiModel>();
-			
+
 			return response;
 		}
 
@@ -429,12 +539,12 @@ namespace d360.model.DataAccessLayer
 				@"select	ST.[uid] as SurveyTypeUid,
 							ST.[Name]
 					from	SurveyType ST
-							inner join AssetType T on T.[Object] = ST.[Object] and T.ObjectID = ST.ObjectID
+							inner join AssetType T on T.ID = ST.AssetTypeId
 							inner join Asset A on A.[uid] = @assetUid and A.AssetTypeID = T.ID
 					where	ST.ID not in (
 								select	SurveyTypeID 
 								from	Survey S
-										inner join Asset B on B.[Object] = S.[Object] and B.ObjectID = S.ObjectID
+										inner join Asset B on B.ID = S.AssetID
 								where	S.SurveyTypeID = ST.ID
 										and S.ResourceID = @resourceId
 										and S.CreatedOn > DATEADD(day, (ST.ValidForDays * -1), getdate())
@@ -482,7 +592,7 @@ namespace d360.model.DataAccessLayer
 					var assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
 					if (Guid.TryParse(assetUIDString, out Guid assetUid))
 					{
-						joins.Add("inner join Asset A on A.[Object]=S.[Object] and  A.ObjectID = S.ObjectID");
+						joins.Add("inner join Asset A on A.ID = S.AssetID");
 						whereStatements.Add("A.uid=@assetUid");
 						dbArgs.Add("assetUid", assetUid);
 					}
@@ -562,8 +672,7 @@ namespace d360.model.DataAccessLayer
 			var survey = new Survey
 			{
 				SurveyTypeID = surveyType.ID,
-				Object = asset.Object,
-				ObjectID = asset.ObjectID,
+				AssetID = asset.ID,
 				ResourceID = companyContext.CurrentResourceID,
 				CreatedOn = DateTime.UtcNow
 			};
@@ -593,6 +702,90 @@ namespace d360.model.DataAccessLayer
 						", new { questionId = q.ID, question.SurveyQuestionUid, value })).FirstOrDefault();
 				}
 			}
+		}
+
+		public async Task<bool> IsUniqueSurveyTypeName(string name, int assetTypeId, Guid? surveyTypeUid)
+		{
+			var sameNameSurveyTypes = await companyContext.QueryAsync<bool>(
+				@"
+					select top 1 1
+					from dbo.SurveyType st
+					where st.AssetTypeId = @assetTypeId
+						and st.Name = @name 
+						and (
+							@surveyTypeUid is null 
+							or st.Uid <> @surveyTypeUid
+						)
+				",
+				new { name, assetTypeId, surveyTypeUid });
+
+			return !sameNameSurveyTypes.Any();
+		}
+
+		public async Task<bool> IsUniqueQuestionTypeName(string name, int surveyTypeId, Guid? questionTypeUid)
+		{
+			var sameNameQuestionTypes = await companyContext.QueryAsync<bool>(
+				@"
+					select top 1 1
+					from dbo.QuestionType qt
+					where qt.SurveyTypeID = @surveyTypeId
+						and qt.Name = @name 
+						and (
+							@questionTypeUid is null 
+							or qt.Uid <> @questionTypeUid
+						)
+				",
+				new { name, surveyTypeId, questionTypeUid });
+
+			return !sameNameQuestionTypes.Any();
+		}
+
+		public async Task<bool> QuestionHasAnswers(Guid questionTypeUid)
+		{
+			var answers = await companyContext.QueryAsync<bool>(
+				@"
+					select top 1 1
+					from QuestionType qt
+						inner join QuestionTypeOption qto on qt.ID = qto.QuestionTypeID
+						inner join QuestionOption qo on qo.QuestionTypeOptionID = qto.ID
+					where qt.Uid = @questionTypeUid
+				",
+				new { questionTypeUid });
+
+			return answers.Any();
+		}
+
+		public async Task<List<QuestionTypeShortInfo>> GetQuestionTypesBySurveyType(Guid surveyTypeUid)
+		{
+			return await this.companyContext
+				.GetWithIncludes<QuestionType>(x => x.QuestionTypeOptions)
+				.Where(x => x.SurveyType.Uid == surveyTypeUid)
+				.Select(i => new QuestionTypeShortInfo
+				{
+					Uid = i.Uid,
+					Name = i.Name,
+					OptionCount = i.QuestionTypeOptions.Count,
+					DisplayStyle = i.DisplayStyle,
+					Description = i.Description
+				})
+				.ToListAsync();
+		}
+
+		public async Task<List<QuestionOptionShortInfo>> GetSurveyQuestionValues(Guid questionTypeUid)
+		{
+			var options = await companyContext.QueryAsync<QuestionOptionShortInfo>(
+				@"
+					select 
+						opt.Name,
+						opt.[Value]
+					from dbo.QuestionTypeOption opt
+					join dbo.QuestionType question on question.ID = opt.QuestionTypeID
+					where question.Uid = @questionTypeUid
+					order by opt.ID
+				",
+				new { questionTypeUid });
+
+			return options.ToList();
 		}
 	}
 }

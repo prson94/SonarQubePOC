@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class FormControllerApiMessage {
@@ -363,15 +363,6 @@ namespace Resources {
         public static string EndPointRemoved {
             get {
                 return ResourceManager.GetString("EndPointRemoved", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Error Occurred!.
-        /// </summary>
-        public static string ErrorOccurred {
-            get {
-                return ResourceManager.GetString("ErrorOccurred", resourceCulture);
             }
         }
         
@@ -1042,15 +1033,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Question.
-        /// </summary>
-        public static string Question {
-            get {
-                return ResourceManager.GetString("Question", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Relationship.
         /// </summary>
         public static string Relationship {
@@ -1110,15 +1092,6 @@ namespace Resources {
         public static string Resource {
             get {
                 return ResourceManager.GetString("Resource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Response type.
-        /// </summary>
-        public static string ResponseType {
-            get {
-                return ResourceManager.GetString("ResponseType", resourceCulture);
             }
         }
         
@@ -1317,24 +1290,6 @@ namespace Resources {
         public static string SpecificCartNotFound {
             get {
                 return ResourceManager.GetString("SpecificCartNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Survey question.
-        /// </summary>
-        public static string SurveyQuestion {
-            get {
-                return ResourceManager.GetString("SurveyQuestion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Survey type.
-        /// </summary>
-        public static string SurveyType {
-            get {
-                return ResourceManager.GetString("SurveyType", resourceCulture);
             }
         }
         
