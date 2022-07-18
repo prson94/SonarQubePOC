@@ -249,7 +249,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.savingTag = false;
-                this.messagesService.showError('Error', $localize`Tag already assigned to ` + (this.assetUIDList.length > 1 ? $localize`Assets` : $localize`Asset`));
+                this.messagesService.showError('Error', $localize`Tag already assigned to ` + (this.assetUIDList?.length > 1 ? $localize`Assets` : $localize`Asset`));
             }
         });
 
