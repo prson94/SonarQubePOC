@@ -91,7 +91,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         const overflow = Math.max(0, panelBottomEstimate - window.innerHeight);
         const newPanelTop = Math.max(0, wantedPanelTop - overflow);
 
-        if(panel) {
+        if (panel) {
             panel.style.top = newPanelTop + 'px';
         }
     }
