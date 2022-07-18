@@ -1651,7 +1651,7 @@ values	(G.ID, G.Segments);
 	</rollback>
   </changeSet>
   
-  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18602-CopyAssetResultRecords">
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18575-CopyAssetResultRecords">
   <comment>Copy asset result data from graph table to non-graph table dbo.AssetResult</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
