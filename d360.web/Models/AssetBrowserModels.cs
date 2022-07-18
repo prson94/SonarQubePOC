@@ -248,14 +248,15 @@ namespace d360.web.Models
         public int hopCount { get; set; }
     }
 
-    public class AssetBrowserImpactHopModel
-    {
-        public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
-        public AssetBrowserApiHopDirection direction { get; set; }
-        public string hierarchyKey { get; set; }
-        public bool includeHierarchyBadges { get; set; }
-        public List<long> intersects { get; set; }
-        public Guid predicateUid { get; set; }
+	public class AssetBrowserImpactHopModel
+	{
+		public List<AssetBrowserApiHopAssetRequestModel> assets { get; set; }
+		public AssetBrowserApiHopDirection direction { get; set; }
+		public string hierarchyKey { get; set; }
+		public bool includeHierarchyBadges { get; set; }
+		public List<long> intersects { get; set; }
+		public Guid predicateUid { get; set; }
+		public int initialSaltValue { get; set; }
     }
 
     public class AssetBrowserLineageInitialModel
