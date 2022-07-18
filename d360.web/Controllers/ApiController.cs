@@ -88,7 +88,7 @@ namespace d360.web.Controllers
 						           (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
 					          FROM AssetPath
 					         CROSS APPLY Segments.nodes('/path/segment') X(p)
-					         WHERE AssetNode.ID = @assetId
+					         WHERE AssetPath.ID = @assetId
 					      ) s
   						  JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = @fieldTypeUid
 					) segmentPath
