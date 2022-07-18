@@ -61,18 +61,6 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public void CheckMaxPageNum()
-        {
-            string pageSize = "5";
-            string pageNum = "150000";
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-
-            string result = actionsController.isPageSizeAndNumValid(pageParams);
-
-            Assert.Matches("Invalid pageNum value provided. Number is too large",result);
-
-        }
-        [Fact]
         public void CheckNegPageSize()
         {
             string pageSize = "-1";
