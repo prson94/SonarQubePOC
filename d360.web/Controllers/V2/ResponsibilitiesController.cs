@@ -143,10 +143,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Type based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
-        public async Task<HttpResponseMessage> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
+        public async Task<IHttpActionResult> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
         {
-            var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
-            string errorMessage;
+
             var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
             if (assetType == null)
@@ -159,21 +158,8 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
             }
 
-            try
-            {
-                IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
-
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
+            IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypesByAssetUid(assetTypeUid);
+            return Ok(responsibilityTypes);
         }
 
         /// <summary>
@@ -183,37 +169,17 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns a list of asset types a responsibility rule is allocated to.</returns>
         [
             HttpGet,
+			RequireAdminPermissions,
             Route("types/{responsibilityTypeUid:Guid}/allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
-        public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
+        public async Task<IHttpActionResult> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
         {
-            var prefix = "Responsibilities.GetResponsibilityTypeAllocationsAsync => ";
-            string errorMessage;
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
-            try
-            {
-                IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocations(responsibilityTypeUid);
-
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeAllocations);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
+            IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocations(responsibilityTypeUid);
+            return Ok(responsibilityTypeAllocations);
         }
 
         /// <summary>
@@ -223,37 +189,17 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns a list of responsibility types and allocations for an asset type.</returns>
         [
             HttpGet,
-            Route("typesbyasset/{assetTypeUid:Guid}/allocations"),
+			RequireAdminPermissions,
+			Route("typesbyasset/{assetTypeUid:Guid}/allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type allocations for the given responsibility type uid.", typeof(List<ResponsibilityTypeAllocationViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
-        public async Task<HttpResponseMessage> GetResponsibilityTypeAllocationsByAssetAsync(Guid assetTypeUid)
-        {
-            var prefix = "Responsibilities.GetResponsibilityTypeAllocationsByAssetAsync => ";
-            string errorMessage;
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
-            try
-            {
-                IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocationsByAsset(assetTypeUid);
-
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeAllocations);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
+        public async Task<IHttpActionResult> GetResponsibilityTypeAllocationsByAssetAsync(Guid assetTypeUid)
+		{
+			IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocationsByAsset(assetTypeUid);
+			return Ok(responsibilityTypeAllocations);
         }
 
         /// <summary>
@@ -600,37 +546,17 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns a list of responsibility type ownership rules.</returns>
         [
             HttpGet,
-            Route("types/{responsibilityTypeUid:Guid}/ownershiprules"),
+			RequireAdminPermissions,
+			Route("types/{responsibilityTypeUid:Guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of responsibility type ownership rules for the given responsibility type uid.", typeof(List<ResponsibilityTypeRuleViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
-        public async Task<HttpResponseMessage> GetResponsibilityRulesForTypeAsync(Guid responsibilityTypeUid)
+        public async Task<IHttpActionResult> GetResponsibilityRulesForTypeAsync(Guid responsibilityTypeUid)
         {
-            var prefix = "Responsibilities.GetResponsibilityRulesForTypeAsync => ";
-            string errorMessage;
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
-            try
-            {
-                IEnumerable<ResponsibilityTypeRuleViewModel> responsibilityTypeRules = await ResponsibilityRepository.GetResponsibilityRules(responsibilityTypeUid);
-
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeRules);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
+            IEnumerable<ResponsibilityTypeRuleViewModel> responsibilityTypeRules = await ResponsibilityRepository.GetResponsibilityRules(responsibilityTypeUid);
+            return Ok(responsibilityTypeRules);
         }
 
         /// <summary>
@@ -640,37 +566,17 @@ namespace d360.web.Controllers.V2
         /// <returns>Returns a stats for the specified responsibility type ownership rules.</returns>
         [
             HttpGet,
-            Route("rules/{responsibilityTypeRuleUid:Guid}/stats"),
+			RequireAdminPermissions,
+			Route("rules/{responsibilityTypeRuleUid:Guid}/stats"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(ResponsibilityTypeRuleStatsViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
-        public async Task<HttpResponseMessage> GetResponsibilityRulesStats(Guid responsibilityTypeRuleUid)
+        public async Task<IHttpActionResult> GetResponsibilityRulesStats(Guid responsibilityTypeRuleUid)
         {
-            var prefix = "Responsibilities.GetResponsibilityRulesStats => ";
-            string errorMessage;
-
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
-            try
-            {
-                ResponsibilityTypeRuleStatsViewModel responsibilityTypeRuleStats = await ResponsibilityRepository.GetResponsibilityRuleStats(responsibilityTypeRuleUid);
-
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypeRuleStats);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
+            ResponsibilityTypeRuleStatsViewModel responsibilityTypeRuleStats = await ResponsibilityRepository.GetResponsibilityRuleStats(responsibilityTypeRuleUid);
+            return Ok(responsibilityTypeRuleStats);
         }
 
         /// <summary>

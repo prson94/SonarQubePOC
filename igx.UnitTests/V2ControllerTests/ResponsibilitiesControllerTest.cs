@@ -22,57 +22,55 @@ namespace igx.UnitTests.V2ControllerTests
 		[Fact]
 		public async void GetResponsibilityTypesByAssetId()
 		{
-			var result = await responsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.Parse(DataConstants.ValidGUID));
-			var str = await result.Content.ReadAsStringAsync();
+			MockAssetRepository
+				.Setup(repository => repository.GetAssetTypeByUID(Guid.Parse(DataConstants.ValidGUID)))
+				.Returns(new AssetType { ID = 1, Object = "object",  });
 
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeViewModel>>(str);
+			MockCompanyContext
+				.Setup(context => context.HasAssetTypePermission("object", 1, Permission.ReadAsset))
+				.Returns(true);
+
+			var result = await ResponsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.Parse(DataConstants.ValidGUID));
+			
+			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeViewModel>>();
 		}
 
 		[Fact]
 		public async void GetResponsibilityTypeAllocationsAsync()
 		{
-			var result = await responsibilitiesController.GetResponsibilityTypeAllocationsAsync(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
+			var result = await ResponsibilitiesController.GetResponsibilityTypeAllocationsAsync(Guid.NewGuid());
+			
+			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeAllocationViewModel>>();
 		}
 
 		[Fact]
 		public async void GetResponsibilityTypeAllocationsByAssetAsync()
 		{
-			var result = await responsibilitiesController.GetResponsibilityTypeAllocationsByAssetAsync(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
+			var result = await ResponsibilitiesController.GetResponsibilityTypeAllocationsByAssetAsync(Guid.NewGuid());
+			
+			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeAllocationViewModel>>();
 		}
 
 		[Fact]
 		public async void GetResponsibilityRulesForTypeAsync()
 		{
-			var result = await responsibilitiesController.GetResponsibilityRulesForTypeAsync(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<IEnumerable<ResponsibilityTypeRuleViewModel>>(str);
+			var result = await ResponsibilitiesController.GetResponsibilityRulesForTypeAsync(Guid.NewGuid());
+			
+			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeRuleViewModel>>();
 		}
 
 		[Fact]
 		public async void GetResponsibilityRulesStats()
 		{
-			var result = await responsibilitiesController.GetResponsibilityRulesStats(Guid.NewGuid());
-			var str = await result.Content.ReadAsStringAsync();
-
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<ResponsibilityTypeRuleStatsViewModel>(str);
+			var result = await ResponsibilitiesController.GetResponsibilityRulesStats(Guid.NewGuid());
+			
+			result.ShouldBeOKContent<ResponsibilityTypeRuleStatsViewModel>();
 		}
 
 		[Fact]
 		public async void GetResponsibilities()
 		{
-			var result = await responsibilitiesController.GetResponsibilities();
+			var result = await ResponsibilitiesController.GetResponsibilities();
 			var str = await result.Content.ReadAsStringAsync();
 
 			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
@@ -470,7 +468,7 @@ namespace igx.UnitTests.V2ControllerTests
 			public GetResponsibilityTypesAsync()
 			{
 				// first of all we arrange happy path for tested method
-				ExpectedResult = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypes()).ReturnsNewValueAsync();
+				ExpectedResult = MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypes()).ReturnsNewValueAsync();
 				// and in each test we only slightly change behavior of used services to check if method process it properly
 			}
 			#endregion Arrange "Happy Path"
@@ -483,7 +481,7 @@ namespace igx.UnitTests.V2ControllerTests
 				// arrange
 
 				// act
-				var actualResponse = await responsibilitiesController.GetResponsibilityTypesAsync();
+				var actualResponse = await ResponsibilitiesController.GetResponsibilityTypesAsync();
 
 				// assert
 				var content = actualResponse.ShouldBeOKContent<IEnumerable<ResponsibilityTypeViewModel>>();
@@ -498,10 +496,10 @@ namespace igx.UnitTests.V2ControllerTests
 			public async Task Rethrow_ResponsibilityRepository_GetResponsibilityTypesAsync_Test()
 			{
 				// arrange
-				var testException = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypes()).ThrowsTestException();
+				var testException = MockResponsibilityRepository.Setup(x => x.GetResponsibilityTypes()).ThrowsTestException();
 
 				// act
-				var act = responsibilitiesController.GetResponsibilityTypesAsync();
+				var act = ResponsibilitiesController.GetResponsibilityTypesAsync();
 
 				// assert
 				await VerifyTestExceptionAsync(act, testException);
@@ -512,5 +510,4 @@ namespace igx.UnitTests.V2ControllerTests
 
 		#endregion DeleteResponsibilityRules
 	}
-
 }
