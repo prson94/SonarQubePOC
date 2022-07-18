@@ -900,7 +900,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			string tempTablesSQL = $@"drop table if exists #tempadpid;
-							create table #tempadpid (Assetid bigint,ProfileSetDate date)
+							create table #tempadpid (Assetid bigint,ProfileSetDate datetime)
 
 							insert into #tempadpid
 							select ADP.Assetid,max(ProfileSetDate) profileSetDate
