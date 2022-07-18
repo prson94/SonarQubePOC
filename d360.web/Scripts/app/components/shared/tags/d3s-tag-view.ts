@@ -221,8 +221,15 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     checkKey(event, value) {
         if (event.key == "Enter" && !this.savingTag) {
-            event.Value = value;
-            this.saveTag(event);
+            // mostly value is string as it supposed to be
+            // but in some cases when you pick existing tag from dropdown
+            // then primeng/autocomplete some fome reason saves select-event into inputValue field
+            if (typeof value === 'string') {
+                event.Value = value;
+                this.saveTag(event);
+            } else {
+                this.saveTag(value);
+            }
         }
     }
 
@@ -249,7 +256,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.savingTag = false;
-                this.messagesService.showError('Error', $localize`Tag already assigned to ` + (this.assetUIDList.length > 1 ? $localize`Assets` : $localize`Asset`));
+                this.messagesService.showError('Error', $localize`Tag already assigned to ` + (this.assetUIDList?.length > 1 ? $localize`Assets` : $localize`Asset`));
             }
         });
 
