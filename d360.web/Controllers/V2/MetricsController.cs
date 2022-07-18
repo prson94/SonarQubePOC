@@ -1383,16 +1383,16 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(MetricsApiMessages.CustomUidNotFound, "Result", model.Uid.Value));
                 }
 
-                if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.OwningAssetUid.Value && x.Class == (int)ResultRelationClass.Owns))
+                if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.OwningAssetUid == model.OwningAssetUid.Value))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
                 }
                 else
                 {
-                    _OwningUid = dataQualityAssetResult.Find(x => x.Class == (int)ResultRelationClass.Owns)?.AssetUid;
+                    _OwningUid = dataQualityAssetResult.Find(x => x.Class == (int)ResultRelationClass.Owns)?.OwningAssetUid;
                 }
 
-                if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.EvaluatedAssetUid.Value && x.Class == (int)ResultRelationClass.EvaluatedBy))
+                if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.EvaluatedAssetUid == model.EvaluatedAssetUid.Value))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
                 }
