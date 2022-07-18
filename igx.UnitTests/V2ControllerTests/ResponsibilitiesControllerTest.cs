@@ -19,6 +19,66 @@ namespace igx.UnitTests.V2ControllerTests
 	[Trait("Unit tests", "Responsibilities controller")]
 	public class ResponsibilitiesControllerTest : ResponsibilitiesControllerTestBase
 	{
+		[Fact]
+		public async void GetResponsibilityTypesByAssetId()
+		{
+			var result = await responsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.Parse(DataConstants.ValidGUID));
+			var str = await result.Content.ReadAsStringAsync();
+
+			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+			AssertJSON.True<IEnumerable<ResponsibilityTypeViewModel>>(str);
+		}
+
+		[Fact]
+		public async void GetResponsibilityTypeAllocationsAsync()
+		{
+			var result = await responsibilitiesController.GetResponsibilityTypeAllocationsAsync(Guid.NewGuid());
+			var str = await result.Content.ReadAsStringAsync();
+
+			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+			AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
+		}
+
+		[Fact]
+		public async void GetResponsibilityTypeAllocationsByAssetAsync()
+		{
+			var result = await responsibilitiesController.GetResponsibilityTypeAllocationsByAssetAsync(Guid.NewGuid());
+			var str = await result.Content.ReadAsStringAsync();
+
+			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+			AssertJSON.True<IEnumerable<ResponsibilityTypeAllocationViewModel>>(str);
+		}
+
+		[Fact]
+		public async void GetResponsibilityRulesForTypeAsync()
+		{
+			var result = await responsibilitiesController.GetResponsibilityRulesForTypeAsync(Guid.NewGuid());
+			var str = await result.Content.ReadAsStringAsync();
+
+			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+			AssertJSON.True<IEnumerable<ResponsibilityTypeRuleViewModel>>(str);
+		}
+
+		[Fact]
+		public async void GetResponsibilityRulesStats()
+		{
+			var result = await responsibilitiesController.GetResponsibilityRulesStats(Guid.NewGuid());
+			var str = await result.Content.ReadAsStringAsync();
+
+			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+			AssertJSON.True<ResponsibilityTypeRuleStatsViewModel>(str);
+		}
+
+		[Fact]
+		public async void GetResponsibilities()
+		{
+			var result = await responsibilitiesController.GetResponsibilities();
+			var str = await result.Content.ReadAsStringAsync();
+
+			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
+			AssertJSON.True<AssetResponsibilitiesApiModel>(str);
+		}
+
 		#region GetResponsibilityTypeBreakdown
 
 		public class GetResponsibilityTypeBreakdown : ResponsibilitiesControllerTestBase
@@ -398,6 +458,59 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
 		#endregion GetClaimsAsync
+
+		#region DeleteResponsibilityRules
+
+		public class GetResponsibilityTypesAsync : ResponsibilitiesControllerTestBase
+		{
+			#region Arrange "Happy Path"
+
+			private IEnumerable<ResponsibilityTypeViewModel> ExpectedResult;
+
+			public GetResponsibilityTypesAsync()
+			{
+				// first of all we arrange happy path for tested method
+				ExpectedResult = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypes()).ReturnsNewValueAsync();
+				// and in each test we only slightly change behavior of used services to check if method process it properly
+			}
+			#endregion Arrange "Happy Path"
+
+			#region Ok
+
+			[Fact]
+			public async Task Ok_Test()
+			{
+				// arrange
+
+				// act
+				var actualResponse = await responsibilitiesController.GetResponsibilityTypesAsync();
+
+				// assert
+				var content = actualResponse.ShouldBeOKContent<IEnumerable<ResponsibilityTypeViewModel>>();
+				content.Should().BeEquivalentTo(ExpectedResult);
+			}
+
+			#endregion Happy Path
+
+			#region Exception rethrow
+
+			[Fact]
+			public async Task Rethrow_ResponsibilityRepository_GetResponsibilityTypesAsync_Test()
+			{
+				// arrange
+				var testException = mockResponsibilityRepository.Setup(x => x.GetResponsibilityTypes()).ThrowsTestException();
+
+				// act
+				var act = responsibilitiesController.GetResponsibilityTypesAsync();
+
+				// assert
+				await VerifyTestExceptionAsync(act, testException);
+			}
+
+			#endregion Rethrow
+		}
+
+		#endregion DeleteResponsibilityRules
 	}
 
 }

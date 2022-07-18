@@ -53,50 +53,30 @@ namespace d360.web.Controllers.V2
             AssetService = assetService;
         }
 
-        /// <summary>
-        /// Retrieves a list of all responsibility types.
-        /// </summary>
-        /// <returns>Returns a list of responsibility types.</returns>
-        [
-            HttpGet,
-            Route("types"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
-        ]
-        public async Task<HttpResponseMessage> GetResponsibilityTypesAsync()
-        {
-            var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
-            string errorMessage;
+		/// <summary>
+		/// Retrieves a list of all responsibility types.
+		/// </summary>
+		/// <returns>Returns a list of responsibility types.</returns>
+		[
+			HttpGet,
+			RequireAdminPermissions,
+			Route("types"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "A list of responsibility types.", typeof(List<ResponsibilityTypeViewModel>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
+		]
+		public async Task<IHttpActionResult> GetResponsibilityTypesAsync()
+		{
+			var responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypes();
+			return Ok(responsibilityTypes);
+		}
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
-            try
-            {
-                IEnumerable<ResponsibilityTypeViewModel> responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypes();
-
-                return Request.CreateResponse(HttpStatusCode.OK, responsibilityTypes);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
-
-        /// <summary>
-        /// Retrieves a responsibility type.
-        /// </summary>
-        /// <returns>Returns a responsibility type.</returns>
-        [
+		/// <summary>
+		/// Retrieves a responsibility type.
+		/// </summary>
+		/// <returns>Returns a responsibility type.</returns>
+		[
             HttpGet,
             Route("type/{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
