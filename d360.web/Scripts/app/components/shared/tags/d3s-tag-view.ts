@@ -221,8 +221,15 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
     checkKey(event, value) {
         if (event.key == "Enter" && !this.savingTag) {
-            event.Value = value;
-            this.saveTag(event);
+            // mostly value is string as it supposed to be
+            // but in some cases when you pick existing tag from dropdown
+            // then primeng/autocomplete some fome reason saves select-event into inputValue field
+            if (typeof value === 'string') {
+                event.Value = value;
+                this.saveTag(event);
+            } else {
+                this.saveTag(value);
+            }
         }
     }
 
