@@ -1650,6 +1650,55 @@ values	(G.ID, G.Segments);
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18575-CopyAssetResultRecords">
+  <comment>Copy asset result data from graph table to non-graph table dbo.AssetResult</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			INSERT INTO [dbo].[AssetResult] (
+							[Uid]
+							,[OwningAssetUid]
+							,[EvaluatedAssetUid]
+							,[EffectiveDate]
+							,[RunDate]
+							,[PassCount]
+							,[FailCount]
+							,[CreatedOn]
+							,[CreatedBy]
+							,[UpdatedOn]
+							,[UpdatedBy])
+			SELECT 	ARD.[Uid]
+					,An.[Uid] as OwningAssetUid
+					,En.[Uid] as EvaluatedAssetUid					
+					,ARD.[EffectiveDate]
+					,ARD.[RunDate]
+					,ARD.[PassCount]
+					,ARD.[FailCount]
+					,ARD.[CreatedOn]
+					,ARD.[CreatedBy]
+					,ARD.[UpdatedOn]
+					,ARD.[UpdatedBy]
+			FROM 
+					AssetResultDepricated ARD,
+					AssetResultEdge Ee,
+					graph.AssetNode En,
+					AssetResultEdge Oe,
+					graph.AssetNode An
+			WHERE 
+					match(En-(Ee)->ARD<-(Oe)-An)
+					and Ee.Class = 2
+					and Oe.Class = 1
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+		]]>
+	</rollback>
+  </changeSet>
 
   <changeSet author="Pappas" id="Data.Corrections.GOV-18612">
   <validCheckSum>7:295c472b9c68f533e2b8929af6797c49</validCheckSum>

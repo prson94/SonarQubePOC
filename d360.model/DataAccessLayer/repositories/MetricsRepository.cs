@@ -2361,7 +2361,7 @@ namespace d360.model.DataAccessLayer
 
 			var cteQuery = @"with R as (
 										select	R.Uid as ResultUid,
-												O.Uid as OwningAssetUid,
+												R.OwningAssetUid as OwningAssetUid,
 												R.EffectiveDate, 
 												R.RunDate, 
 												R.PassCount, 
@@ -2369,39 +2369,32 @@ namespace d360.model.DataAccessLayer
 												R.TotalCount, 
 												R.PassFraction, 
 												case 
-													when ROW_NUMBER() over (partition by O.Uid, R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) 
+													when ROW_NUMBER() over (partition by R.OwningAssetUid, R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) 
 													else cast(1 as bit) 
 												end as IsDuplicate
-										from	AssetResult R,
-												AssetResultEdge Oe,
-												graph.AssetNode O,
-												Asset Oa
-										where	match(O-(Oe)->R)
-												and Oe.Class = 1
-												and O.Uid = @owningAssetUid
-												and Oa.ID = O.ID
+										from	AssetResult R												
+										Where	R.OwningAssetUid = @owningAssetUid
 									),
 									E as (
 										select	R.Uid as ResultUid,
-												En.ID as EvaluatedAssetId,
-												En.Uid as EvaluatedAssetUid,
-												En.AssetTypeID as EvaluatedAssetTypeId,
-												En.Segments,
-												En.Class,
+												A.ID as EvaluatedAssetId,
+												A.Uid as EvaluatedAssetUid,
+												A.AssetTypeID as EvaluatedAssetTypeId,
+												AP.Segments,
+												AST.Class,
 												case 
-													when ROW_NUMBER() over (partition by Rn.Uid, En.Uid, R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) 
+													when ROW_NUMBER() over (partition by R.OwningAssetUid, R.EvaluatedAssetUid, R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) 
 													else cast(1 as bit) 
 												end as IsDuplicate
-										from	AssetResult R,
-												AssetResultEdge Ee,
-												graph.AssetNode En,
-												AssetResultEdge Re,
-												graph.AssetNode Rn
-										where	match(En-(Ee)->R<-(Re)-Rn)
-												and Ee.Class = 2
-												and Re.Class = 1
-												and Rn.Uid = @owningAssetUid
-												and (@evaluatedAssetUid is null or (@evaluatedAssetUid is not null and En.Uid = @evaluatedAssetUid))
+										from	AssetResult R
+												inner Join 
+												Asset A on A.Uid = R.EvaluatedAssetUid
+												inner join 
+												AssetPath AP on AP.ID = A.ID
+												inner join 
+												AssetType AST on A.AssetTypeID = AST.ID
+										where R.OwningAssetUid = @owningAssetUid
+										and (@evaluatedAssetUid is null or (@evaluatedAssetUid is not null and R.evaluatedAssetUid = @evaluatedAssetUid))	
 									)";
 
 			var countQuery = $@"
@@ -2462,13 +2455,15 @@ namespace d360.model.DataAccessLayer
 			parameters.Add("@Uid", value);
 
 			string assetResultSQL = $@"select 
-										AR.Uid as ResultUid, ARE.[Class] as Class, AN.UID as AssetUid, AR.EffectiveDate as EffectiveDate, AR.RunDate as RunDate
-									from 
-										AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
-									where 
-										Match (AN -(ARE)-> AR)
-										and 
-										AR.Uid = @Uid";
+											AR.Uid as ResultUid, 
+											AR.OwningAssetUid as OwningAssetUid,
+											AR.EvaluatedAssetUid as EvaluatedAssetUid,
+											AR.EffectiveDate as EffectiveDate, 
+											AR.RunDate as RunDate
+										from 
+											AssetResult AR				
+										where 
+											AR.Uid = @Uid";
 
 			return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters, ApiTimeout).ToList();
 		}
