@@ -69,6 +69,7 @@ namespace d360.core.entities
 			var model = new DashboardApiGetModel();
 			model.Id = this.ID;
 			model.Name = this.Name;
+			model.uid = this.uid;
 			return model;
 		}
 	}

@@ -49,8 +49,15 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		this.sub = this.route.params.subscribe(params => {
 			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Dashboards`);
 			this.dashboardName = params['name'];
-			this.assetTypeUid = params['assetTypeUid'];
+			this.assetTypeUid = params['uid'];
 			this.assetUid = params['assetUid'];
+			if (this.assetUid === 'preview') {
+				//because of routing without type specifying we cannot easiliy destinguish all 3 rooting scenarious
+				//preview string in route gets matches as assetuid value
+				this.reportID = this.assetTypeUid;
+				this.assetUid = null;
+				this.assetTypeUid = null;
+			}
 			this.loadAvailableDashboards();
 			if (this.assetUid) {
 				this.buildSecondaryNavigation(this.assetUid,
