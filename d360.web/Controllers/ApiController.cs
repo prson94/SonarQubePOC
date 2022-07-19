@@ -517,7 +517,7 @@ namespace d360.web.Controllers
 						select ftl.* from fieldtype ft
 						inner join FieldTypeLookup ftl on ftl.FieldTypeID = ft.id
 						where ft.assettypeid = @AssetTypeID
-						and ft.type ='ComplexRelationLookup';";
+						and ft.type ='ComplexRelationLookup' and ft.type = 'OwnershipLookup';";
 
 				var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
 

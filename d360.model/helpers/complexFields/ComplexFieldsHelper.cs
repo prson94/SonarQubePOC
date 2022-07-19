@@ -101,8 +101,26 @@ namespace d360.model.helpers
 				model.NeedsFullCheck = false;
 			}
 
+			foreach (var ft in fieldTypes.Where(x => x.Type == "OwnershipLookup").ToList())
+			{
+				var ftl = lookups.FirstOrDefault(x => x.FieldTypeID == ft.ID);
+				var model = new ComplexRelationFieldHasAnyModel { FieldTypeId = ft.ID, NeedsFullCheck = true };
+				ret.Add(model);
+
+				if (ftl == null || ftl.Definition == null)
+				{
+					model.HasAny = false;
+					model.NeedsFullCheck = false;
+					continue;
+				}
+
+				model.FieldTypeLookup = ftl;
+				model.SQL = GetOwnershipLookupCountQuery(ftl);
+				model.HasAny = true;
+				model.NeedsFullCheck = false;
+			}
 			return ret;
-		}
+        }
 
 		public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping)
 		{
@@ -625,6 +643,31 @@ namespace d360.model.helpers
                             {string.Join(", ", selects)}
                             from Asset A
                             {string.Join("\n", joins)}";
+        }
+
+		public static string GetOwnershipLookupCountQuery(FieldTypeLookup ftl)
+		{
+			var definition = ftl.ParseOwnershipLookupDefinition();
+
+			List<string> wheres = new List<string>();
+
+			wheres.Add("r.isvisible = 1");
+			wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+
+			if (definition.ResponsibilityType != null && definition.ResponsibilityType.Value > 0)
+			{
+				wheres.Add($"(r.responsibilitytypeid = {definition.ResponsibilityType})");
+			}
+
+			var countSQL = $@"select distinct 
+							count(*)
+						FROM [dbo].[ResponsibilityDetail] R
+						inner join asset a on a.uid = @assetuid
+						{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+
+			return countSQL;
 		}
+
 	}
 }
