@@ -9,6 +9,7 @@ using System.Web.Http.Description;
 
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
@@ -142,25 +143,17 @@ namespace d360.web.Controllers.V2
         {
             if (!tagRepository.DoesTagExists(tagUid))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
             }
 
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
+                throw new UnauthorizedAccessException(ApiMessages.AccessDenied);
             }
 
-            try
+            if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
             {
-                if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
-                }
-            }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorDeleteTag, ex.Message);
-
+				throw new NotFoundException(TagsApiMessages.TagNotFound);
             }
 
             return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage);
