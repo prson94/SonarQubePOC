@@ -521,10 +521,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         }
         else {
             this.showEditor = false;
-            this.selected = null;
-            this.selectedLevel = null;
-            this.selectedParentId = null;
-            this.loadNodes();
+            this.loadNodes(true, { keyFieldChanged: $event.keyFieldChanged });
             this.headerActionsService.emitFavoritesChange();
             this.isLoading = false;
         }
@@ -702,7 +699,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         setTimeout(() => this.loadNodes(), 20);
     }
 
-    loadNodes(autoSelect: boolean = true) {
+    loadNodes(autoSelect: boolean = true, edit?: { keyFieldChanged: boolean }) {
         this.expandedNodes = this.treeState;
         this.areAllExpanded = false;
         if (this.assetTypeUid) {
@@ -751,12 +748,17 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     clearTimeout(this.timeouthandle);
                     this.timeouthandle = window.setTimeout(() => {
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1, undefined);
-                        if (autoSelect) {
-                            if (this.treeNodeArray.length > 0) {
-                                this.selectAsset(this.treeNodeArray[0]);
-                            } else {
-                                this.selectAsset(null);
-                            }
+						if (autoSelect) {
+							if (this.treeNodeArray.length > 0) {
+								if (this.selected && edit && !edit.keyFieldChanged) {
+									const asset = this.findAssetInTree(this.treeNodeArray, this.selected.key);
+									this.selectAsset(asset ? asset : this.treeNodeArray[0]);
+								} else {
+									this.selectAsset(this.treeNodeArray[0]);
+								}
+							} else {
+								this.selectAsset(null);
+							}
                         }
                         this.buildScoreAllocationThresholds();
                         this.isLoading = false;
@@ -771,6 +773,20 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             });
         }
     }
+	
+	findAssetInTree(tree: TreeNode[], assetUid: string): TreeNode {
+		if (!tree) { return; }
+
+		for (const item of tree) {
+			if (item.key === assetUid) {
+				return item;
+			}
+			const child = this.findAssetInTree(item.children, assetUid);
+			if (child) {
+				return child;
+			}
+		}
+	}
 
     canExportRecords() {
         var isfilter = false;
