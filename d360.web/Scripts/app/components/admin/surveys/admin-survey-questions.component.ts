@@ -1,5 +1,5 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
-import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
+import { QuestionTypeV2, SurveyTypeV2 } from '../../../models/survey.model';
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -42,7 +42,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
                                 <td>{{item.Name}}</td>
                                 <td>{{item.DisplayStyle}}</td>
-                                <td><d3s-preview-tooltip objectType="QuestionType" [objectId]="item.ID" icon="info"></d3s-preview-tooltip></td>
+                                <td><d3s-preview-tooltip objectType="QuestionType" [uid]="item.Uid" icon="info"></d3s-preview-tooltip></td>
                                 <td>
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
@@ -62,23 +62,27 @@ import { CompanySettingsService } from '../../../services/settings.service';
                 </span>
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
-                    [itemId]="selected?.ID"
+                    [itemId]="selected?.Uid"
                     [method]="'callback'"
                     [prompt]="deletePromptText"                                         
                     (onCancel)="showDelete=false;"
                 ></d3s-delete-form>  
-                <d3s-admin-survey-question-editor *ngIf="showEditor" [questionId]="selected?.ID" [surveyTypeId]="survey?.ID" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
+                <d3s-admin-survey-question-editor *ngIf="showEditor" [question]="selected" [surveyTypeUid]="survey?.Uid" (saveClick)="saveQuestion($event)" (closeClick)="closeEditor()"></d3s-admin-survey-question-editor>               
                 `
 })
 
 export class AdminSurveyQuestionsComponent extends BaseComponent implements OnChanges {
-    @Input() survey: SurveyType = null;
+    @Input() survey: SurveyTypeV2 = null;
     error: any;
-    questions: SurveyQuestionType[] = [];
+
+    get questions() {
+        return this.survey?.Questions;
+    }
+    
     showEditor: boolean = false;
     showDelete: boolean = false;
 
-    selected: SurveyQuestionType = null;
+    selected: QuestionTypeV2 = null;
     theDeleteCallback: Function;
 
     get deletePromptText(): string {
@@ -98,27 +102,25 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
             this.showEditor = false;
             this.showDelete = false;
         }
-
-        if (this.survey != null) this.getQuestions();
     }
 
-    getQuestions() {
-        this.isLoading = true;
+    deleteQuestion(uid: string) {
         this.surveysService
-            .getSurveyTypeQuestions(this.survey)
-            .subscribe(res => {
-                this.questions = res;
-                this.isLoading = false;
-            },
-                error => this.error = error);
-    }
+            .deleteSurveyQuestionType({ 
+                surveyTypeUid: this.survey.Uid, 
+                questionTypeUid: uid 
+            }).subscribe((result) => {
+                if (result == null) {
+                    return;
+                }
 
-    deleteQuestion(id: number) {
-        this.surveysService.deleteSurveyQuestionType(id).
-            subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+                
                 this.showDelete = false;
-                this.questions.splice(this.findQuestionById(id), 1);
+                this.survey.Questions.splice(this.findQuestionById(uid), 1);
             });
     }
 
@@ -133,22 +135,35 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
             this.selected = this.questions[0];
     }
 
-    findQuestionById(id: number) {
-        var index: number = -1;
-        for (var question of this.questions) {
-            index++;
-            if (question.ID == id) return index;
-        }
+    findQuestionById(uid: string) {
+        return this.survey.Questions.findIndex((x) => x.Uid === uid);
     }
 
     saveQuestion(event) {
-        this.surveysService.saveSurveyTypeQuestion(event.question)
+        this.surveysService.saveSurveyTypeQuestion(event.surveyTypeUid, event.question)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.getQuestions(); // incompatible types reload
+                if (result == null) {
+                    return;
+                }
+
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+                
+                this.updateQuestion(event.question, result);
                 this.showEditor = false;
             });
     }
+
+    updateQuestion(question: QuestionTypeV2, saveResponse: { Uid: string }) {
+        if (question.Uid === null) {
+            question.Uid = saveResponse.Uid;
+            this.survey.Questions.push(question);
+        } else {
+            this.survey.Questions[this.findQuestionById(question.Uid)] = question;
+        }
+    } 
 }
 
 

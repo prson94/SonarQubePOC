@@ -1,7 +1,7 @@
 ﻿import { Component, Input, Output, EventEmitter, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
-import { Survey, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
+import { Survey, SurveyTypeDisplayStyle, SurveyTypeDetails, Question, SurveyResultsApiModel, SurveyQuestionResponseApiModel } from '../../../models/survey.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 
@@ -30,7 +30,6 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     SurveyTypeDisplayStyle = SurveyTypeDisplayStyle;
 
     private submitting: boolean = false;
-    private questionDetails: SurveyQuestionTypeDetails[] = [];
     private currentQuestion: Question;
 
 
@@ -44,7 +43,6 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.surveyType && (changes.surveyType.previousValue !== changes.surveyType.currentValue)) {
             if (changes.surveyType.currentValue) {
-                this.questionDetails = [];
                 this.load();
             }
         }  

@@ -54,9 +54,13 @@ export class ObjectDetailComponent implements OnChanges {
     }
 
     public load(): void {
-        if (this.objectType && this.objectID) {
+        if (this.objectType && (this.objectID || this.objectUID)) {
             this.isLoading = true;
-            this.objectDetailService.getObjectDetail(this.objectID, this.objectType)
+            const request = this.objectUID 
+                ? this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType)
+                : this.objectDetailService.getObjectDetail(this.objectID, this.objectType);
+
+            request
                 .subscribe(data => {
                     this.rows = data.rows;
                     this.categories = [];

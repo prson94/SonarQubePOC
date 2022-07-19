@@ -1,11 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { SurveyType, SurveyQuestionType, SurveyTypeDetails, SurveyQuestionTypeDetails, SurveyResultsApiModel, Survey } from '../models/survey.model';
+import { SurveyTypeUpsertModel, SurveyTypeDetails, SurveyResultsApiModel, Survey, SurveyTypesResponse, QuestionTypeV2 } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { V2ApiFilters } from '../models/asset-search.model';
 
 @Injectable({
     providedIn: 'root'
@@ -14,10 +15,12 @@ export class SurveysService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getSurveyTypes(): Observable<SurveyType[]> {
-        return this.http.get(`api/surveys`)
+    getSurveyTypes(params: V2ApiFilters): Observable<SurveyTypesResponse> {
+        const queryString = '?' + Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+
+        return this.http.get(`api/v2/survey/types${queryString}`)
             .pipe(
-                map(response => <SurveyType[]>response),
+                map((response) => response as SurveyTypesResponse),
                 catchError(err => this.handleError(err))
             );
     }
@@ -30,71 +33,80 @@ export class SurveysService extends BaseObservableService {
             );
     }
 
-    //used by admin section need to convert to v2 API 
-    getSurveyTypeQuestionDetails(id: number, surveyTypeId: number): Observable<SurveyQuestionTypeDetails> {
-        return this.http.get(`form/questiontype_formdata?id=${id}&surveyTypeID=${surveyTypeId}`)
+    deleteSurveyTypeById(uid: string): Observable<boolean> {
+        return this.http
+            .delete(`/api/v2/survey/types/${uid}`)
             .pipe(
-                map(response => <SurveyQuestionTypeDetails>response),
+                map(() => true),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getSurveyTypeQuestions(survey: SurveyType): Observable<SurveyQuestionType[]> {
-        return this.http.get(`api/surveys/${survey.ID}/questions`)
+
+    deleteSurveyQuestionType({ surveyTypeUid, questionTypeUid }: { surveyTypeUid: string; questionTypeUid: string; }): Observable<JsonResult> {
+        return this.http
+            .delete(`/api/v2/survey/types/${surveyTypeUid}/questions/${questionTypeUid}`)
             .pipe(
-                map(response => <SurveyQuestionType[]>response),
+                map(() => true),
                 catchError(err => this.handleError(err))
             );
     }
 
-    deleteSurveyTypeById(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'surveytype', id);
-    }
 
-
-    deleteSurveyQuestionType(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'surveyquestiontype', id);
-    }
-
-
-    saveSurveyType(surveyType: SurveyType): Observable<JsonResult> {
-        if (surveyType.ID == undefined || !surveyType.ID) {
-            return this.postDynamic(this.http, 'surveytype', surveyType);
-        }
-        return this.putDynamic(this.http, 'surveytype', surveyType);
-    }
-
-    saveSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Observable<JsonResult> {
-        if (surveyQuestion.ID == undefined || !surveyQuestion.ID) {
-            return this.addSurveyTypeQuestion(surveyQuestion);
-        }
-        return this.editSurveyTypeQuestion(surveyQuestion);
-    }
-
-    protected addSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+    saveSurveyType(surveyType: SurveyTypeUpsertModel): Observable<SurveyTypeUpsertModel> {
+        const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
 
-        return this.http
-            .post('form/AddQuestionType', JSON.stringify(surveyQuestion), { headers })
-            .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
-            );
+        if (surveyType.Uid == null) {
+            return this.http.post(
+                    '/api/v2/survey/types', 
+                    JSON.stringify(surveyType),
+                     {headers }
+                )
+                .pipe(
+                    map((res) => res as SurveyTypeUpsertModel),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        
+        return this.http.put(
+            `/api/v2/survey/types/${surveyType.Uid}`, 
+            JSON.stringify(surveyType),
+            { headers }
+        )
+        .pipe(
+            map(() => surveyType),
+            catchError(err => this.handleError(err))
+        );
     }
 
-    protected editSurveyTypeQuestion(surveyQuestion: SurveyQuestionTypeDetails): Observable<JsonResult> {
-        let headers = new HttpHeaders({
+    saveSurveyTypeQuestion(surveyTypeUid: string, surveyQuestion: QuestionTypeV2): Observable<{ Uid: string }> {
+        const headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
 
-        return this.http
-            .put('form/EditQuestionType/', JSON.stringify(surveyQuestion), { headers })
-            .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
-            );
+        if (surveyQuestion.Uid == null) {
+            return this.http.post(
+                    `/api/v2/survey/types/${surveyTypeUid}/questions`, 
+                    JSON.stringify(surveyQuestion),
+                    { headers }
+                )
+                .pipe(
+                    map((res) => res as { Uid: string }),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        
+        return this.http.put(
+            `/api/v2/survey/types/${surveyTypeUid}/questions/${surveyQuestion.Uid}`, 
+            JSON.stringify(surveyQuestion),
+            { headers }
+        )
+        .pipe(
+            map(() => surveyQuestion as { Uid: string }),
+            catchError(err => this.handleError(err))
+        );
     }
 
     getObjectSurvey(assetUid: string): Observable<Survey> {

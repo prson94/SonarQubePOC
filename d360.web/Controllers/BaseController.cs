@@ -374,7 +374,12 @@ namespace d360.web.Controllers
             telemetry.TrackException(ex, properties, metrics);
         }
 
-        protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
+		protected internal IHttpActionResult errorMessageResponse(WorkHttpStatus status)
+		{
+			return errorMessageResponse(status.StatusCode, status.Error, status.Message);
+		}
+
+		protected internal IHttpActionResult errorMessageResponse(HttpStatusCode status, string title, string message)
         {
 	        return ResponseMessage(ReturnApiError(status, title, message));
         }

@@ -227,13 +227,19 @@ export class BrowserService extends BaseObservableService {
     public getImpactHop(hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, includeHierarchyBadges: boolean, assets: AssetBrowserApiHopAssetRequestModel[], intersects: number[]): Observable<AssetBrowserResponseModel> {
         const url = `api/v2/browser/impact/hop`;
 
+		let initialSaltValue: number = -1;
+		if (hierarchyKey && hierarchyKey.split('|').length === 3) {
+			initialSaltValue = +hierarchyKey.split('|')[1];
+		}
+
         return this.http.post(url, {
             assets: assets,
             direction: direction,
             hierarchyKey: hierarchyKey,
             includeHierarchyBadges,
             intersects,
-            predicateUid
+			predicateUid,
+			initialSaltValue
         }).pipe(
             map((response: AssetBrowserResponseModel) => {
                 this.processResponse(response);

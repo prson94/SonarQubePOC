@@ -2273,8 +2273,8 @@ namespace d360.model
 											set		T.Success = 0,
 													T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule.'
 											from    api.ExecutionDeletedAsset T
-													inner join graph.AssetNode AN on AN.ID = T.AssetID
-													cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id having count(1) > 0) ARE
+													inner join Asset AN on AN.ID = T.AssetID
+													cross apply (select count(1) as ResultCount from AssetResult where AN.Uid = EvaluatedAssetUid or AN.Uid = OwningAssetUid having count(1) > 0) ARE
 											where	T.ExecutionID = @ExecutionID
 													and T.[Cascade] = 0
 													and exists (select 1 from AssetType AT where AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule});",
@@ -2952,15 +2952,33 @@ namespace d360.model
 
 								-- Log the parent removals into Dependent Change table
 								insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-									select  @ExecutionID, ItemNumber, 1, 3, Payload
-									from    #DeletedRelationships;",
+									select distinct  @ExecutionID, ItemNumber, 1, 3, Payload
+									from    #DeletedRelationships dr
+									where not exists (select 1 from api.ExecutionItemDependentChange dc where dc.ExecutionID = @ExecutionID and dc.DependentChangeType = 3 and dc.ItemNumber = dr.ItemNumber);",
 new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
-            #endregion
+			#endregion
 
-            #region Asset table
+			#region Delete surveys
 
-            Connection.Execute(
+			Connection.Execute($@"
+				delete q
+				from dbo.Question q
+					left join dbo.Survey survey
+						on q.SurveyID = survey.ID
+					left join api.ExecutionDeletedAsset S
+						on S.AssetID = survey.AssetID
+				where {querySuffix};",
+			new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+			AddMeasurement(metrics, $"remove from surveys >> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
+			sw.Restart();
+
+			#endregion
+
+			#region Asset table
+
+			Connection.Execute(
                 $@"
 				declare @totalcount bigint = 0,
 						@runcount bigint = 0,
@@ -2988,12 +3006,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 				insert into #tempruleresults
 					select	R.Uid
-					from	graph.AssetNode A,
-							dbo.AssetResultEdge E,
-							dbo.AssetResult R
-					where	MATCH(A-(E)->R)
-							and E.Class = 1
-							and A.Id in (select assetid from #tempassetid);
+					from	dbo.Asset A
+							inner Join
+							dbo.AssetResult R on A.uid = R.OwningAssetUid
+					where	A.Id in (select assetid from #tempassetid);
 
 				create clustered index cix_tempruleresults on #tempruleresults (Uid);
 
@@ -3010,17 +3026,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 								from    #tempassetid S
 								where   S.assetid = a.ID
 										and S.id between @struncount and @enruncount
-							);
-
-					delete	E
-					from    dbo.AssetResultEdge E
-							inner join graph.AssetNode N on E.$from_id = N.$node_id
-					where   exists (
-								select  1
-								from    #tempassetid S
-								where   S.assetid = N.ID
-										and S.id between @struncount and @enruncount
-							);
+							);					
 
 					set @runcount = @enruncount;
 				end;
@@ -3261,9 +3267,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             AddMeasurement(metrics, $"remove from owner tables>> {currentLoop} >> {retryCount}", sw.ElapsedMilliseconds, ++step);
             sw.Restart();
 
-            #endregion
+			#endregion
 
-            return step;
+			return step;
         }
 
         public List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes deletes, int timeout = 7200, int maxRetryCount = 10)
@@ -3447,9 +3453,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 														set		T.Success = 0,
 																T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule type.'
 														from    api.ExecutionDeletedAssetType T
-																inner join graph.AssetNode AN on AN.AssetTypeID = T.AssetTypeID
+																inner join Asset AN on AN.AssetTypeID = T.AssetTypeID
 																inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
-																cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+																cross apply (select count(1) as ResultCount from AssetResult where AN.uid = OwningAssetUid or AN.uid = EvaluatedAssetUid) ARE
 														where	T.ExecutionID = @ExecutionID
 																and T.[Cascade] = 0
 																and ARE.ResultCount > 0;
@@ -3821,20 +3827,13 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								insert into #Uids
 									select	R.Uid
-									from	graph.AssetNode A,
-											dbo.AssetResultEdge E,
-											dbo.AssetResult R
-									where	MATCH(A-(E)->R)
-											and E.Class = 1
-											and A.AssetTypeID = @AssetTypeId
+									from	dbo.Asset A
+											INNER JOIN
+											dbo.AssetResult R on A.Uid = R.OwningAssetUid
+									where	A.AssetTypeID = @AssetTypeId
 									        and exists (select 1 from #deleteAssets d where A.Id = d.Id);
 
-								create clustered index CIX_TempUids on #Uids (Uid)
-
-								delete	E
-								from    dbo.AssetResultEdge E
-										inner join graph.AssetNode N on E.$from_id = N.$node_id
-								        inner join #deleteAssets D on N.Id = D.id;
+								create clustered index CIX_TempUids on #Uids (Uid)								
 
 						        if exists (select 1 from #Uids)
 						        begin
@@ -5675,8 +5674,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 																-- Log the parent removals into Dependent Change table
 																insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-																	select  @ExecutionID, ItemNumber, 1, 3, Payload
-																	from    #DeletedRelationships;
+																	select distinct @ExecutionID, ItemNumber, 1, 3, Payload
+																	from    #DeletedRelationships dr
+																	where not exists (select 1 from api.ExecutionItemDependentChange dc where dc.ExecutionID = @ExecutionID and dc.DependentChangeType = 3 and dc.ItemNumber = dr.ItemNumber);
 
 																delete  i
 																from    [intersect] i 
@@ -9319,7 +9319,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 }
 
                 rawMeasures = Connection
-                                .Query<RuleResultChangedRawModel>(@"
+                                .Query<RuleResultChangedRawModel>($@"
 															create table #Items (
 																AllocationUid uniqueidentifier, 
 																MetricAssetUid uniqueidentifier, 
@@ -9330,27 +9330,32 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 															select	distinct
 																	cast(Re.EffectiveDate as date) as EffectiveDate,
-																	Oa.AssetTypeUid as RuleAssetTypeUid,
+																	Oat.Uid as RuleAssetTypeUid,
 																	Oa.AssetTypeId as RuleAssetTypeId,
 																	Oa.Uid as RuleAssetUid,
-																	Ea.AssetTypeUid as EvaluatedAssetTypeUid,
+																	Eat.Uid as EvaluatedAssetTypeUid,
 																	Ea.AssetTypeId as EvaluatedAssetTypeId,
 																	Ea.Uid as EvaluatedAssetUid,
-																	Ev.IntersectTypeID,
-																	Ev.ID as IntersectID
+																	I.IntersectTypeID,
+																	I.ID as IntersectID
 															into	#Results
-															from	AssetResult Re,
-																	AssetResultEdge Ee,
-																	graph.AssetNode Ea,
-																	AssetResultEdge Eo,
-																	graph.AssetNode Oa,
-																	#RuleResults Rr,
-																	graph.AssetEdge Ev
-															where	match(Ea-(Ee)->Re<-(Eo)-Oa-(Ev)->Ea)
-																	and Ee.Class = 2
-																	and Eo.Class = 1
-																	and Ev.PredicateType = 2
-																	and Re.Uid = Rr.RuleResultUid;
+															from	AssetResult Re
+																	inner join
+																	#RuleResults Rr on Rr.RuleResultUid = Re.[Uid]
+																	Inner Join 
+																	Asset Ea on Ea.[Uid] = Re.EvaluatedAssetUid
+																	inner join
+																	AssetType Eat on Ea.AssetTypeId = Eat.ID
+																	Inner Join
+																	dbo.Asset Oa on Oa.[Uid] = Re.OwningAssetUid
+																	inner join
+																	AssetType Oat on Oa.AssetTypeId = Oat.ID
+																	inner join 
+																	[intersect] I on I.SubjectAssetID = OA.ID and I.ObjectAssetID = EA.ID
+																	inner join 
+																	intersectType it on i.intersectTypeid = it.id 
+																	inner join 
+																	[predicate] p on p.id = it.predicateid and p.[Type] = {(int)PredicateType.Evaluation}
 
 															select	R.IntersectID,
 																	R.EvaluatedAssetUid,
@@ -9747,17 +9752,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									from    api.ExecutionAssetResult EAR                                                
 									inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and EAR.Success is null and UPPER(E.Method)='PUT'
 									inner join AssetResult AR on AR.uid =EAR.Uid
-									inner join AssetResultEdge ARE on AR.$node_id = ARE.$to_id and ARE.class = {(int)ResultRelationClass.Owns}
-									inner join graph.AssetNode AN on AN.$node_id = ARE.$from_id
-									outer apply dbo.UserAssetPermissions(E.ResourceID, AN.AssetTypeID) P 
+									inner join Asset A on A.uid = AR.OwningAssetUid
+									outer apply dbo.UserAssetPermissions(E.ResourceID, A.AssetTypeID) P 
 									Where 
 									P.PermissionsBitMask is null
 									or 
 									(
-										P.AssetTypeID = AN.AssetTypeID 
+										P.AssetTypeID = A.AssetTypeID 
 										and 
 										(
-											P.AssetID <> AN.ID 
+											P.AssetID <> A.ID 
 											and
 											P.AssetID <> 0
 										) 
@@ -9874,6 +9878,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											using (
 													select  ItemNumber, 
 															UID,
+															OwningAssetUid,
+															EvaluatedAssetUid,															
 															EffectiveDate,
 															RunDate,
 															PassCount,
@@ -9886,6 +9892,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											ON S.UID = AR.UID
 											WHEN NOT MATCHED THEN
 											INSERT ([Uid]
+													,[OwningAssetUid]
+													,[EvaluatedAssetUid]
 														,[EffectiveDate]
 														,[RunDate]
 														,[PassCount]
@@ -9896,6 +9904,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 														,[UpdatedBy])
 													VALUES
 														(NEWID()
+														,S.[OwningAssetUid]
+														,S.[EvaluatedAssetUid]
 														,S.EffectiveDate
 														,S.RunDate
 														,S.PassCount
@@ -9908,7 +9918,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 												UPDATE 
 												SET RunDate = (case when S.RunDate is null then AR.RunDate else S.RunDate end),
 												PassCount = (case when S.PassCount is null then AR.PassCount else S.PassCount end),
-												FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end),
+												FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end),												
+												EvaluatedAssetUid = (case when S.EvaluatedAssetUid is null then AR.EvaluatedAssetUid else S.EvaluatedAssetUid end),
 												UpdatedOn = @requestDate,
 												UpdatedBy = @userId
 											output inserted.Uid, S.ItemNumber, $action into #ObjectMergeTableAssetResult;
@@ -9921,48 +9932,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 													inner join 
 													#ObjectMergeTableAssetResult MTR on EAR.ItemNumber=MTR.ItemNumber and EAR.ExecutionID=@ExecutionID                                                                                                         
 													
-												--Add new owning asset record in Edge table (insert only)
-												INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
-												select 
-													AN.$node_Id, AR.$node_Id, {(int)ResultRelationClass.Owns}
-												from 
-													AssetResult AR 
-													inner join
-													#ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
-													inner join 
-													api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
-													inner join 
-													graph.AssetNode AN on AN.Uid = EAR.[OwningAssetUid]
-													inner join 
-													api.Execution E on EAR.ExecutionID = E.ExecutionID and E.ExecutionID=@ExecutionID and E.Method='POST'
-													
-												--Delete existing evaluated edge record if there is one.
-												DELETE ARE FROM                                                     
-													AssetResultEdge ARE 
-													inner join 
-													AssetResult AR on AR.$node_id = ARE.$to_id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}
-													inner join 
-													#ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
-													inner join 
-													api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid and EAR.ExecutionID = @ExecutionID and EAR.Success is null and EAR.EvaluatedAssetUid is not null 
-													inner join 
-													api.Execution E on EAR.ExecutionID = E.ExecutionID and E.ExecutionID=@ExecutionID and E.Method='PUT'                                                  
-
-												-- and new edge records
-												INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
-												select 
-													AN.$node_Id, AR.$node_Id, {(int)ResultRelationClass.EvaluatedBy}
-												from 
-													AssetResult AR 
-													inner join 
-													#ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
-													inner join 
-													api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid and EAR.ExecutionID = @ExecutionID
-													inner join 
-													graph.AssetNode AN on AN.Uid = EAR.EvaluatedAssetUid
-													left Join AssetResultEdge ARE on ARE.$to_id = AR.$node_Id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}-- find any results already in Edge table.
-												where
-													ARE.$to_id is null --only insert if a matching record does not already exist                                                   
 
 												Update EAR
 												set EAR.success = 1 
@@ -10261,20 +10230,17 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
 									from    api.ExecutionDeleteAssetResult DAR                                                
 									inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
-									left join AssetResult AR_result on DAR.Uid = AR_result.uid
-									left join graph.AssetNode AN_eval on DAR.EvaluatedAssetUid = AN_eval.uid 
-									left join AssetResultEdge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = {(int)ResultRelationClass.EvaluatedBy} and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
-									left join AssetResultEdge ARE_own on (ARE_eval.$to_id = ARE_own.$to_id or ARE_own.$to_id = AR_result.$node_id) and ARE_own.class = {(int)ResultRelationClass.Owns} -- join the edge table to itself but only get the owning records.
-									left join graph.AssetNode AN_own on DAR.OwningAssetUid = AN_own.uid or ARE_own.$From_id = AN_own.$node_id
-									outer apply dbo.UserAssetPermissions(E.ResourceID, AN_own.AssetTypeID) P 
+									left join AssetResult AR on DAR.Uid = AR.uid 
+									left join Asset A on AR.OwningAssetUid = A.Uid									
+									outer apply dbo.UserAssetPermissions(E.ResourceID, A.AssetTypeID) P 
 									Where 
 									P.PermissionsBitMask is null
 									or 
 									(
-										P.AssetTypeID = AN_own.AssetTypeID 
+										P.AssetTypeID = A.AssetTypeID 
 										and 
 										(
-											P.AssetID <> AN_own.ID 
+											P.AssetID <> A.ID 
 											and
 											P.AssetID <> 0
 										) 
@@ -10372,12 +10338,12 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             {
                                 if (dr.OwningAssetUid != Guid.Empty)
                                 {
-                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult r, assetResultedge e, graph.AssetNode n where match(n-(e)->r) and n.Uid = @OwningAssetUid and e.Class = { (int)ResultRelationClass.Owns})");
+                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult AR where AR.OwningAssetUid = @OwningAssetUid)");
                                 }
 
                                 if (dr.EvaluatedAssetUid != Guid.Empty)
                                 {
-                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult r, assetResultedge e, graph.AssetNode n where match(n-(e)->r) and n.Uid = @EvaluatedAssetUid and e.Class = { (int)ResultRelationClass.EvaluatedBy})");
+                                    wheres.Add($@"AR.Uid in (select AR.Uid from AssetResult AR inner join Asset A on AR.EvaluatedAssetUid = A.Uid and AR.EvaluatedAssetUid = @EvaluatedAssetUid)");
                                 }
 
                                 if (dr.EffectiveDateStart.HasValue)
@@ -10413,12 +10379,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 															CREATE NONCLUSTERED INDEX IX_Tempuids_Uid ON #uids ( Uid ASC );
 	
 															insert into #uids (Uid)
-																select  distinct AR.Uid {ruleResultWhereClause};
-
-															delete  T
-															from    AssetResultEdge T
-																	inner join AssetResult R on R.$node_id = T.$to_id
-																	inner join #uids S on S.Uid = R.Uid;
+																select  distinct AR.Uid {ruleResultWhereClause};															
 
 															delete  T
 															from    AssetResult T

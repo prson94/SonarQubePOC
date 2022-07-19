@@ -620,69 +620,6 @@ namespace d360.web.Models
         public bool IsAccepted => ContractAcceptance?.Accepted ?? false;
     }
 
-    public class QuestionTypeItemEditorModel
-    {
-        public int ID { get; set; }
-
-        public string Name { get; set; }
-
-        public int Value { get; set; }
-
-        public FieldValidity Validation()
-        {
-            var prefix = "You are missing a";
-            var valid = new FieldValidity();
-
-            if (string.IsNullOrEmpty(Name))
-            {
-                valid.Valid = false;
-                valid.Message += $"{prefix} Name.";
-            }
-
-            return valid;
-        }
-    }
-
-    public class QuestionTypeEditorModel
-    {
-        public bool LimitedChangesOnly { get; set; }
-
-        public int ID { get; set; }
-
-        public int SurveyTypeID { get; set; }
-
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-
-        public QuestionDisplayStyle DisplayStyle { get; set; }
-
-        public List<KnockoutDisplayItem> DisplayStyleOptions { get; set; }
-
-        public List<QuestionTypeItemEditorModel> Items { get; set; }
-
-        public FieldValidity Validation()
-        {
-            var valid = new FieldValidity();
-
-            if (Items == null)
-            {
-                valid.Valid = false;
-                valid.Message = "You are missing one or more items.";
-            }
-            else
-            {
-                if (Items.Count == 0)
-                {
-                    valid.Valid = false;
-                    valid.Message = "You are missing one or more items.";
-                }
-            }
-
-            return valid;
-        }
-    }
-
     #region Asset Browser
 
     public enum AssetBrowserApiHopDirection

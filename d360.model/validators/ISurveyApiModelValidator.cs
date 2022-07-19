@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using d360.core.entities.SurveyModels;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace d360.model.validators
 {
@@ -15,5 +18,21 @@ namespace d360.model.validators
         bool IsValidDate(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName);
         
         WorkHttpStatus ValidateGetSurveyTypesRequest(IEnumerable<KeyValuePair<string, string>> queryParams);
-    }
+
+		Task<WorkHttpStatus> ValidateSurveyTypeCreateApiModel(SurveyTypeCreateApiModel surveyType);
+
+		Task<WorkHttpStatus> ValidateSurveyTypeUpdateApiModel(Guid surveyTypeUid, SurveyTypeUpdateApiModel surveyType);
+
+		Task<WorkHttpStatus> ValidateSurveyTypeDelete(Guid surveyTypeUid);
+
+		Task<WorkHttpStatus> ValidateQuestionTypeCreate(Guid surveyTypeUid, QuestionTypeUpsertModel question);
+
+		Task<WorkHttpStatus> ValidateQuestionTypeUpdate(Guid surveyTypeUid, Guid questionTypeUid, QuestionTypeUpsertModel question);
+
+		Task<WorkHttpStatus> ValidateQuestionTypeDelete(Guid surveyTypeUid, Guid questionTypeUid);
+
+		Task<WorkHttpStatus> ValidateGetQuestionTypesBySurveyType(Guid surveyTypeUid);
+
+		Task<WorkHttpStatus> ValidateGetSurveyQuestionValues(Guid surveyTypeUid, Guid questionTypeUid);
+	}
 }

@@ -139,6 +139,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Update="resources\SurveyTypeErrors.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SurveyTypeErrors.resx</DependentUpon>
+    </Compile>
     <Compile Update="resources\TagErrors.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -268,6 +273,10 @@
     <EmbeddedResource Update="resources\Enums.resx">
       <LastGenOutput>Enums.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\SurveyTypeErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>SurveyTypeErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\TagErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

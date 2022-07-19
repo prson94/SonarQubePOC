@@ -44,4 +44,125 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="VLova" id="Table.dbo.Survey-GOV-18067-BringAssetTypeId-6">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+
+			if col_length('dbo.Survey', 'AssetID') is null
+			begin
+
+				alter table dbo.Survey
+				add AssetID bigint null;
+
+				alter table dbo.Survey
+				with check add constraint [FK_Survey_AssetId] 
+				foreign key ([AssetID]) references dbo.Asset ([ID]) 
+				on delete cascade;
+
+			end
+
+GO
+
+			if col_length('dbo.Survey', 'ObjectID') is not null
+			begin
+
+				declare @surveyIdsToDelete table (Id int);
+
+				insert into @surveyIdsToDelete
+				select s.ID
+				from dbo.Survey s
+					left join dbo.Asset at 
+						on at.Object = s.Object 
+							and at.ObjectID = s.ObjectID
+				where at.ID is null;
+				
+				delete q
+				from dbo.Question q
+				where q.SurveyID in (select Id from @surveyIdsToDelete);
+				
+				delete s
+				from dbo.Survey s
+				where s.ID in (select Id from @surveyIdsToDelete);
+
+				update st
+				set st.AssetID = Asset.Id
+				from dbo.Survey st
+				join dbo.Asset asset 
+					on asset.Object = st.Object 
+					and asset.ObjectID = st.ObjectID;
+				
+				alter table dbo.Survey
+				alter column AssetID bigint not null;
+				
+				drop index [IX_Survey_ObjectType-ObjectID]
+				on dbo.Survey;
+				
+				alter table dbo.Survey
+				drop column Object;
+				
+				alter table dbo.Survey
+				drop column ObjectId;
+				
+				create nonclustered index [IX_Survey_AssetID] 
+				on [dbo].[Survey] ( 
+					[AssetID] asc
+				);
+
+			end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+			if col_length('dbo.Survey', 'ObjectID') is null
+			begin
+
+				alter table dbo.Survey
+				add [Object] [varchar](50) null;
+							
+				alter table dbo.Survey
+				add [ObjectID] [int] null;
+
+			end
+
+GO
+
+			if col_length('dbo.Survey', 'AssetID') is not null
+			begin
+
+				update st
+				set st.[Object] = Asset.[Object],
+					st.ObjectId = Asset.ObjectId
+				from dbo.Survey st
+				join dbo.Asset asset 
+					on asset.ID = st.AssetID;
+							
+				alter table dbo.Survey
+				alter column [Object] [varchar](50) not null;
+							
+				alter table dbo.Survey
+				alter column [ObjectID] [int] not null;
+							
+				drop index [IX_Survey_AssetID]
+				on dbo.Survey;
+				
+				alter table dbo.Survey
+				drop constraint [FK_Survey_AssetId];
+							
+				alter table dbo.Survey
+				drop column AssetID;
+							
+				create nonclustered index [IX_Survey_ObjectType-ObjectID] 
+				on [dbo].[Survey] ( 
+					[Object] asc, 
+					[ObjectID] asc 
+				);
+
+			end
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

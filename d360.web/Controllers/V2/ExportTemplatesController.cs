@@ -12,10 +12,12 @@ using System.Web.Http.Description;
 using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Dapper;
 
@@ -77,16 +79,21 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(List<AssetTypeExportTemplate>)),
 			SwaggerResponse(HttpStatusCode.NotFound, "", typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> Get(Guid assetTypeUID)
+		public async Task<IHttpActionResult> Get(string assetTypeUID)
 		{
-			List<AssetTypeExportTemplate> templateList = await assetRepository.GetExportTemplates(assetTypeUid: assetTypeUID);
-
-			if (templateList.Count == 0)
+			if (Guid.TryParse(assetTypeUID, out var assetTypeId))
 			{
-				return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.TemplateNotFound, ApiMessages.TemplateNotFoundMessage);
+				List<AssetTypeExportTemplate> templateList = await assetRepository.GetExportTemplates(assetTypeUid: assetTypeId);
+
+				if (templateList.Count == 0)
+				{
+					throw new NotFoundException(ApiMessages.TemplateNotFoundMessage);
+				}
+
+				return Ok(templateList);
 			}
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, templateList));
+			throw new ArgumentException(ApiMessages.InvalidRequest);
 		}
 
 		/// <summary>

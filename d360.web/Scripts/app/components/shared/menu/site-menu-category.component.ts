@@ -87,10 +87,12 @@ export class SiteMenuCategoryComponent extends BaseComponent {
         const panel = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
         const panelRect = panel?.getBoundingClientRect();
 
-        const panelBottomEstimate = wantedPanelTop + panelRect.height;
+        const panelBottomEstimate = wantedPanelTop + panelRect?.height;
         const overflow = Math.max(0, panelBottomEstimate - window.innerHeight);
         const newPanelTop = Math.max(0, wantedPanelTop - overflow);
 
-        panel.style.top = newPanelTop + 'px';
+        if (panel) {
+            panel.style.top = newPanelTop + 'px';
+        }
     }
 }

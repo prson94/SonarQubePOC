@@ -43,6 +43,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() title: string;
     @Input() directions: string;
     @Input() objectID: number = 0;
+    @Input() objectUid: string;
     @Input() objectTypeUid: string;
     @Input() targetUid: string;
 
@@ -64,6 +65,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() isV2API: boolean = false;
     @Input() useV2ApiLink: boolean = false;
 
+    @Input() useObjectUidForDefinition: boolean;
     @Input() useTypeUidForDefinition: boolean = false;
     @Input() showActions: boolean = true;
 
@@ -123,6 +125,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['objectID']) {
             if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
+                this.load();
+            }
+        }
+        if (changes['objectUid']) {
+            if (!changes['objectUid'].isFirstChange() && (changes['objectUid'].previousValue != changes['objectUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
@@ -205,6 +212,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
         else if (this.useNonLegacyData) {
             this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, this.assetUid)
+                .subscribe(result => {
+                    this.handleEditor(result);
+                });
+        }
+        else if (this.useObjectUidForDefinition) {
+            this.editorDefinitionService.getEditorDefinitionObjectUid(this.objectType, this.objectUid)
                 .subscribe(result => {
                     this.handleEditor(result);
                 });

@@ -2139,33 +2139,38 @@ namespace d360.web.Controllers.V2
 
 				if (queryParams != null)
 				{
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "uid"))
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "uid")
+						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value))
 					{
 						Guid _uid;
 						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value, out _uid);
 						uid = _uid;
 					}
 
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "location"))
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "location")
+						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value))
 					{
 						DashboardLocation _location;
 						Enum.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value, out _location);
 						location = _location;
 					}
 
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assettypeuid"))
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assettypeuid")
+						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value))
 					{
 						Guid _uid;
 						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value, out _uid);
 						assetTypeUid = _uid;
 					}
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid"))
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid")
+						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value))
 					{
 						Guid _uid;
 						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value, out _uid);
 						assetUid = _uid;
 					}
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id"))
+					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id")
+						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value))
 					{
 						int _id;
 						int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value, out _id);
