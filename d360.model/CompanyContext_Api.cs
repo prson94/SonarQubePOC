@@ -2952,8 +2952,9 @@ namespace d360.model
 
 								-- Log the parent removals into Dependent Change table
 								insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-									select  @ExecutionID, ItemNumber, 1, 3, Payload
-									from    #DeletedRelationships;",
+									select distinct  @ExecutionID, ItemNumber, 1, 3, Payload
+									from    #DeletedRelationships dr
+									where not exists (select 1 from api.ExecutionItemDependentChange dc where dc.ExecutionID = @ExecutionID and dc.DependentChangeType = 3 and dc.ItemNumber = dr.ItemNumber);",
 new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
 			#endregion
@@ -5673,8 +5674,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 																-- Log the parent removals into Dependent Change table
 																insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
-																	select  @ExecutionID, ItemNumber, 1, 3, Payload
-																	from    #DeletedRelationships;
+																	select distinct @ExecutionID, ItemNumber, 1, 3, Payload
+																	from    #DeletedRelationships dr
+																	where not exists (select 1 from api.ExecutionItemDependentChange dc where dc.ExecutionID = @ExecutionID and dc.DependentChangeType = 3 and dc.ItemNumber = dr.ItemNumber);
 
 																delete  i
 																from    [intersect] i 
