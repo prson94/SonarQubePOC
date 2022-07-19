@@ -16,6 +16,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Microsoft.Web.Http;
 
@@ -309,7 +310,6 @@ namespace d360.web.Controllers.V2
 			{
 				throw new ArgumentException(ApiMessages.StatusInvalid);
 			}
-
 
 			ApiExecutionExternalViewModel result = AssetRepository.AddConnectorStatus(model);
 
