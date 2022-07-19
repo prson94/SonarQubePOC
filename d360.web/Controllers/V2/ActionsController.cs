@@ -112,7 +112,7 @@ namespace d360.web.Controllers.V2
 
 			if (!string.IsNullOrEmpty(isValid))
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
+				throw new ArgumentException(isValid);
 			}
 
 			long.TryParse(_pageSize, out long pageSize);
@@ -131,7 +131,7 @@ namespace d360.web.Controllers.V2
 				case "desc":
 					break;
 				default:
-					throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidDirection));
+					throw new ArgumentException(ApiMessages.InvalidDirection);
 			}
 
 			if (string.IsNullOrEmpty(_order))
@@ -195,7 +195,7 @@ namespace d360.web.Controllers.V2
 
 					if (issueType == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid))).ConfigureAwait(false);
+						throw new NotFoundException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
 					}
 					else
 					{
@@ -226,13 +226,13 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ActionApiMessages.ActionTypeNotFound, string.Format(ApiMessages.InvalidGuid, actionTypeUid))).ConfigureAwait(false);
+					throw new NotFoundException(string.Format(ApiMessages.InvalidGuid, actionTypeUid));
 				}
 			}
 
 			if (!isOrderByFieldValid)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ActionApiMessages.OrderByFieldNotFound, string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order))).ConfigureAwait(false);
+				throw new NotFoundException(string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order));
 			}
 
 			if (!string.IsNullOrEmpty(assetUid) && !string.IsNullOrWhiteSpace(assetUid))
@@ -243,7 +243,7 @@ namespace d360.web.Controllers.V2
 
 					if (asset == null)
 					{
-						return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.AssetNotfound, string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid))).ConfigureAwait(false);
+						throw new NotFoundException(string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid));
 					}
 
 					queries.Add("A.[Uid] = @assetUid");
@@ -251,7 +251,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.AssetNotfound, string.Format(ApiMessages.InvalidGuid, assetUid))).ConfigureAwait(false);
+					throw new NotFoundException(string.Format(ApiMessages.InvalidGuid, assetUid));
 				}
 			}
 
@@ -277,7 +277,7 @@ namespace d360.web.Controllers.V2
 			model.total = count.FirstOrDefault();
 			model.items = results;
 
-			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model))).ConfigureAwait(false);
+			return Ok(model);
 		}
 
 		/// <summary>
