@@ -20,7 +20,7 @@ namespace d360.web.Handlers.Exceptions
 
 		protected override void ComposeErrorResponse(ExceptionHandlerContext context, ProblemDetailsResponse problemDetails)
 		{
-			problemDetails.Title = ApiMessages.InvalidRequest;
+			problemDetails.Title = ApiMessages.BadRequest;
 			problemDetails.Status = 400;
 		}
 	}
