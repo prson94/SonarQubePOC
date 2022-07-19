@@ -3092,30 +3092,21 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> GetAsset(Guid assetUid)
+		public async Task<IHttpActionResult> GetAsset(string assetUid)
 		{
-			var prefix = "Assets.GetAsset => ";
-
-			try
+			if (Guid.TryParse(assetUid, out Guid assetId))
 			{
-				var res = await AssetRepository.GetAssetSingle(assetUid);
+				var res = await AssetRepository.GetAssetSingle(assetId);
 
 				if (res == null)
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))));
+					throw new NotFoundException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
 				}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object)));
+				return Ok(res);
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
-			}
+			throw new ArgumentException(ApiMessages.InvalidRequest);
 		}
 
 		/// <summary>
