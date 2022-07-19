@@ -2631,18 +2631,22 @@ namespace d360.web.Controllers
 				case SystemObjects.Intersect:
 					objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
 					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
-				case SystemObjects.ReferenceItemType:
-					var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
-
-					return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
 				case SystemObjects.SurveyType:
 					objectId = Company.SurveyTypes.FirstOrDefault(s => s.Uid == uid).ID;
 					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
 				default:
-					var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
+					if (type.IsType())
+					{
+						var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
+						return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+					}
+					else
+					{
+						var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 
-					SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
-					return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+						SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
+						return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+					}
 			}
 		}
 
