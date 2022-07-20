@@ -31,6 +31,7 @@ import { NumberOfRowsByCategoryService } from '../../services/number-of-rows-by-
 import { AppConstants } from '../../static/constants';
 import { takeUntil } from 'rxjs/operators';
 import { PopupMenu } from "../shared/controls/popup-menu/popup-menu.component";
+import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 
 declare var CurrentResourceID;
 
@@ -96,6 +97,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
     @ViewChild("inputBox", { static: false }) filterText: any;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
+	@ViewChild('assetDetail', { static: false }) assetDetail: AssetDetailComponent;
 
     simpleFilterValue: string = '';
     areAllExpanded: boolean = false;
@@ -247,9 +249,13 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.destroy.complete();
     }
 
-    selectAsset(event: any) {
+    selectAsset(event: any, forceRefresh: boolean = false) {
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
         this.selected = event;
+		
+		if (forceRefresh) {
+			this.assetDetail.load();
+		}
 
         if (this.selected && this.selected.data && this.selected.data.HasProfiling) {
             this.sidePanelLoading = true;
@@ -752,7 +758,11 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 							if (this.treeNodeArray.length > 0) {
 								if (this.selected && edit && !edit.keyFieldChanged) {
 									const asset = this.findAssetInTree(this.treeNodeArray, this.selected.key);
-									this.selectAsset(asset ? asset : this.treeNodeArray[0]);
+									if (asset) {
+										this.selectAsset(asset, true);
+									} else {
+										this.selectAsset(this.treeNodeArray[0]);
+									}
 								} else {
 									this.selectAsset(this.treeNodeArray[0]);
 								}

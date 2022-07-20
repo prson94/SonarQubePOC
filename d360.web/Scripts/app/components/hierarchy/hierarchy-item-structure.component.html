@@ -194,7 +194,7 @@
                         <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag" #assetDetail
                                          [objectUID]="selectedAsset ? selectedAsset.uid : selected?.data?.AssetUid"
                                          [objectType]="selectedAsset ? selectedAsset.type : object"
                                          [useAccordion]="true"

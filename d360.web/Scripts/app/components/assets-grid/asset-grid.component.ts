@@ -214,9 +214,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    selectRow(row: any) {
+    selectRow(row: any, forceRefresh: boolean = false) {
         this.selected = row;
-        this.selectedChange.emit(row);
+        this.selectedChange.emit({ row, forceRefresh });
     }
 
     clickMenuItem(event: any, item: any) {
@@ -491,7 +491,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
                     if (this.selected && autoSelect && edit && !edit.keyFieldChanged) {
 						if (item.AssetId === this.selected.AssetId) {
-                            this.selectRow(item);
+                            this.selectRow(item, true);
 							isRowSelected = true;
                         }
                     }
