@@ -265,7 +265,7 @@ namespace d360.web.Controllers
         {
             if (ModelState.IsValid == false)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, message ?? BAD_REQUEST_GENERIC_MESSAGE));
+                throw new ArgumentException(message ?? BAD_REQUEST_GENERIC_MESSAGE);
             }
         }
 

@@ -3697,11 +3697,17 @@ namespace d360.web.Controllers.V2
 		[SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))]
 		[HttpGet]
 		[Route("types/{assetTypeUid}/ancestry")]
-		public async Task<IHttpActionResult> GetTypeAncestry(Guid assetTypeUid, CancellationToken cancellationToken)
+		public async Task<IHttpActionResult> GetTypeAncestry(string assetTypeUid, CancellationToken cancellationToken)
 		{
+			Guid assetTypeID;
+			if (!Guid.TryParse(assetTypeUid, out assetTypeID))
+			{
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetTypeUid));
+			}
+
 			ValidateParameters();
 
-			var entities = await AssetTypeRepository.GetAncestryAsync(assetTypeUid, cancellationToken);
+			var entities = await AssetTypeRepository.GetAncestryAsync(assetTypeID, cancellationToken);
 			if (entities.Count == 0)
 			{
 				throw new NotFoundBusinessLayerException($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");
