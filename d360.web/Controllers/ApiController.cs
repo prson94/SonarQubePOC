@@ -4169,20 +4169,24 @@ namespace d360.web.Controllers
 
 						var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == report.AssetTypeID);
 
-						string objectName = assetType.Class.GetDisplayName();
-						if(report.Location == DashboardLocation.Detail) {
-							objectName += " Instance: ";
-						}
-						objectName += assetType.Name;
-
-						model.rows.Add(new DetailReadOnlyRowModel
+						if (assetType != null)
 						{
-							columns = 1,
-							FirstColumnFields = new List<ReadOnlyField>
+							string objectName = assetType.Class.GetDisplayName();
+							if (report.Location == DashboardLocation.Detail)
+							{
+								objectName += " Instance: ";
+							}
+							objectName += assetType.Name;
+
+							model.rows.Add(new DetailReadOnlyRowModel
+							{
+								columns = 1,
+								FirstColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Row = 3, Column = 2, Name = assetType.Class.GetDisplayName(), FieldName = "ReportObjectType", FieldDescription = assetType.Class.GetDisplayName(), Value = objectName }
 							}
-						});
+							});
+						}
 					}
 					report = null;
 					break;
