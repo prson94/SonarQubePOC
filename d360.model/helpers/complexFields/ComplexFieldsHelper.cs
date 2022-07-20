@@ -203,14 +203,14 @@ namespace d360.model.helpers
 
 					if (direction == null || direction == FieldTypeComplexLookupRelationDirection.Back)
 					{
-						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.ObjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object AND H{index}_R{f.FieldTypeID}.Id = {f.FieldTypeID}");
-						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.SubjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object");
+						joins.Add($"LEFT JOIN [Intersect] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.ObjectAssetId = H{index}.Id AND H{index}_R{f.FieldTypeID}.IntersectTypeId = {f.FieldTypeID}");
+						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.SubjectAssetId");
 						joins.Add($"LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
 					}
 					else
 					{
-						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.SubjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object AND H{index}_R{f.FieldTypeID}.Id = {f.FieldTypeID}");
-						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object");
+						joins.Add($"LEFT JOIN [Intersect] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.SubjectAssetId = H{index}.Id AND H{index}_R{f.FieldTypeID}.IntersectTypeId = {f.FieldTypeID}");
+						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.ObjectAssetId");
 						joins.Add($"LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
 					}
 				}
