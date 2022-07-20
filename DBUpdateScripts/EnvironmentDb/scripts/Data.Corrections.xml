@@ -255,65 +255,6 @@ update [Predicate] set Name = 'Parent Of', Inverse = 'Child Of' where [Uid] = '7
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Data.Corrections.GOV-9723-V6">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-
-	drop table if exists #existingRuleResults
-	create table #existingRuleResults (RuleUid uniqueidentifier,Uid uniqueidentifier, EffectiveDate date, RunDate date, RowsPassed int, RowsFailed int, CreatedOn date, CreatedBy int, UpdatedOn date, UpdatedBy int)
-	
-	insert into #existingRuleResults (RuleUid, uid, EffectiveDate, RunDate, RowsPassed, RowsFailed, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
-	select 
-	A.uid as RuleUid, 
-	newid() as Uid, 
-	RR.EffectiveDate,
-	RR.RunDate, 
-	RowsPassed, 
-	RowsFailed, 
-	ISNULL(RR.CreatedOn, getdate()),
-	ISNULL(RR.CreatedBy, 0), 
-	ISNULL(RR.CreatedOn, getdate()), 
-	ISNULL(Rr.CreatedBy,0) 
-	from RuleResult RR
-			inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
-			inner join [Rule] R on R.ID = RI.RuleID
-			inner join [RuleType] RT on R.RuleTypeID = RT.ID
-			inner join Asset A on A.Object = 'Rule' and ObjectId = R.ID    
-
-	INSERT INTO AssetResult
-	 ([Uid]
-			                                                ,[EffectiveDate]
-			                                                ,[RunDate]
-			                                                ,[PassCount]
-			                                                ,[FailCount]
-			                                                ,[CreatedOn]
-			                                                ,[CreatedBy]
-															,[UpdatedOn]
-															,[UpdatedBy])
-		select uid, EffectiveDate,RunDate, RowsPassed, RowsFailed, CreatedOn, CreatedBy, CreatedOn, CreatedBy
-			from #existingRuleResults
-	
-
-		INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
-	    select 
-		    AN.$node_Id, AR.$node_Id, 1
-	    from 
-		    #existingRuleResults ERR 
-		    inner join graph.AssetNode AN on AN.Uid = ERR.[RuleUid]
-			inner join dbo.AssetResult AR on AR.Uid = ERR.[Uid]
-
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-
   <changeSet author="sdooley" id="Data.Corrections.GOV-14984">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1651,7 +1592,7 @@ values	(G.ID, G.Segments);
 	</rollback>
   </changeSet>
   
-  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18575-CopyAssetResultRecords">
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18575-CopyAssetResultRecords-1">
   <comment>Copy asset result data from graph table to non-graph table dbo.AssetResult</comment>
   <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -1670,7 +1611,8 @@ values	(G.ID, G.Segments);
 							,[CreatedBy]
 							,[UpdatedOn]
 							,[UpdatedBy])
-			SELECT 	ARD.[Uid]
+			select r.*		
+			from (SELECT 	ARD.[Uid]
 					,An.[Uid] as OwningAssetUid
 					,En.[Uid] as EvaluatedAssetUid					
 					,ARD.[EffectiveDate]
@@ -1686,12 +1628,15 @@ values	(G.ID, G.Segments);
 					AssetResultEdge Ee,
 					graph.AssetNode En,
 					AssetResultEdge Oe,
-					graph.AssetNode An
+					graph.AssetNode An									
 			WHERE 
 					match(En-(Ee)->ARD<-(Oe)-An)
 					and Ee.Class = 2
 					and Oe.Class = 1
-			
+					) R
+					outer apply (select 1 as value from AssetResult AR where AR.uid = R.uid) hasresult
+			where hasresult.value = null
+					
 		]]>
     </sql>
 	<rollback>
