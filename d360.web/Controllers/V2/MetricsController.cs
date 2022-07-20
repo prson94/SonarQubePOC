@@ -415,6 +415,7 @@ namespace d360.web.Controllers.V2
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
+			RequireAdminPermissions,
             Route("{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
@@ -423,16 +424,11 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteById(Guid uid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, MetricsApiMessages.MetricRemoveNotAllowed));
-            }
-
             MetricAsset model = MetricsRepository.GetActiveMetric(uid);
 
             if (model == null)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, MetricsApiMessages.ErrorRemoveMetric, MetricsApiMessages.MetricNotFound);
+				throw new NotFoundException(MetricsApiMessages.MetricNotFound);
             }
 
             MetricsRepository.DeleteMetric(model);
