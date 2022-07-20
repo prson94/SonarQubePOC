@@ -42,7 +42,7 @@ namespace d360.core.entities
 		[DataMember]
 		public string Definition { get; set; }
 		[DataMember]
-		public int AssetTypeID { get; set; }
+		public int? AssetTypeID { get; set; }
 
 		[DataMember]
 		public DashboardType ReportType { get; set; }
