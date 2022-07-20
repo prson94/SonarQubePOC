@@ -242,7 +242,7 @@ namespace d360.model.helpers
 					{
 						joins.Add($@"LEFT JOIN Field {fieldSelector} ON {fieldSelector}.ObjectType = 'Intersect'
                             AND {fieldSelector}.FieldTypeID = {f.FieldTypeID}
-                            AND {fieldSelector}.AssetId = R{f.RelationIndex + 1}.ID
+                            AND {fieldSelector}.ObjectID = I{f.RelationIndex + 1}.ID
                             AND {fieldSelector}.FormattedValue <> ''");
 					}
 					else if (ft.Type == "Counter")
