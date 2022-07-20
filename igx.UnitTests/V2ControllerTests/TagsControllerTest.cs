@@ -54,7 +54,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async Task DeleteTags()
         {
-            var actionResult = tagsController.DeleteById(Guid.Parse(DataConstants.ValidGUID));
+            var actionResult = tagsController.DeleteById(DataConstants.ValidGUID);
             await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
         }
 
