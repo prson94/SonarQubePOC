@@ -472,9 +472,74 @@ namespace d360.model
 			await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id and ExecutionItemUid is null", new { id = load.ID }, timeout: timeout);
 		}
 
+		public async Task<IEnumerable<BulkTagAsset>> GetBulkTagAssetsAsync(int loadId, Guid executionId)
+		{
+			await Connection.OpenIfClosed();
+
+			return await Connection.QueryAsync<BulkTagAsset>(@"
+				DECLARE @assetTypeUid uniqueidentifier;
+				DECLARE @fieldTypeid int;
+				DECLARE @tagColumnIndex int;
+				DECLARE @actionColumnIndex int;
+
+				SELECT	@assetTypeUid = AssetTypeUid 
+				FROM	[Load] 
+				WHERE	ID = @loadid;
+
+
+				SELECT	@fieldTypeid = ft.id 
+				FROM	FieldType FT
+						INNER JOIN AssetType T on T.UID = @assetTypeUid
+				WHERE	FT.Type = 'Tag';
+
+				SELECT	@tagColumnIndex = ColumnIndex 
+				FROM	LoadColumn 
+				WHERE	LoadID = @loadid AND [Name] = (SELECT [Name] FROM FieldType WHERE ID = @fieldTypeid);
+
+				SELECT	@actionColumnIndex = ColumnIndex 
+				FROM	LoadColumn 
+				WHERE	LoadID = @loadid AND [Name] = 'Tag Action';
+
+				DROP TABLE IF EXISTS #bulkTags;
+				CREATE TABLE #bulkTags
+				(
+				Id int identity not null,
+				AssetUid uniqueidentifier not null,
+				Tag nvarchar(max),
+				[Action] nvarchar(20)
+				)
+
+				INSERT INTO #bulkTags
+				SELECT	A.Uid as AssetUid, 
+						T.tag as Tag, 
+						LCA.Value as Action 
+				FROM	LoadItem LI
+						INNER JOIN api.ExecutionAsset A on A.ExecutionItemUid = LI.ExecutionItemUid AND A.Success = 1 AND A.ExecutionID = @executionId
+						INNER JOIN LoadItemColumn LCT on LCT.LoadID = @loadid AND LCT.ColumnIndex = @tagColumnIndex AND LCT.RowIndex = LI.RowIndex
+						INNER JOIN LoadItemColumn LCA on LCA.LoadID = @loadid AND LCA.ColumnIndex = @actionColumnIndex AND LCA.RowIndex = LI.RowIndex
+						CROSS APPLY (
+							SELECT	[Value] as tag 
+							FROM	STRING_SPLIT(LCT.[Value], '|', 0)
+						) T
+				WHERE	LI.LoadID = @loadid AND COALESCE(T.Tag,'') != '';
+
+				INSERT INTO #bulkTags
+				SELECT	A.Uid as AssetUid, 
+						NULL as Tag, 
+						coalesce(LCA.Value,'Append') as Action 
+				FROM	LoadItem LI
+						INNER JOIN api.ExecutionAsset A on A.ExecutionItemUid = LI.ExecutionItemUid AND A.Success = 1 AND A.ExecutionID = @executionId
+						INNER JOIN LoadItemColumn LCT on LCT.LoadID = @loadid AND LCT.ColumnIndex = @tagColumnIndex AND LCT.RowIndex = LI.RowIndex
+						INNER JOIN LoadItemColumn LCA on LCA.LoadID = @loadid AND LCA.ColumnIndex = @actionColumnIndex AND LCA.RowIndex = LI.RowIndex
+				WHERE	LI.LoadID = @loadid AND LCA.Value = 'Replace' AND COALESCE(LCT.[Value], '') = ''
+
+				SELECT	AssetUid, Tag, [Action] 
+				FROM	#bulkTags", new { loadId, executionId }); 
+		}
+
 		#region Bulk Promote
 
-		public async Task BulkLoadAssets(Load load, IAssetRepository repository)
+		public async Task BulkLoadAssets(Load load, IAssetRepository repository, ITagRepository tagRepository)
 		{
 			if (load == null)
 			{
@@ -968,6 +1033,9 @@ namespace d360.model
 			int endItemNumber = (currentLocation + loopSize) > loadItems.Count ? loadItems.Count : currentLocation + loopSize;
 			int rowIndexStartNumber = 2;
 
+			var tagField = FieldTypes.FirstOrDefault(f => f.Type == "Tag" && f.Object == assetType.Object && f.ObjectID == assetType.ObjectID);
+			bool hasTags = tagField != null;
+
 			for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
 			{
 				//bulk load rowindex starts with 2!
@@ -992,6 +1060,12 @@ namespace d360.model
 						{
 							fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
 						}
+					}
+
+					if (hasTags)
+					{
+						fieldsToSkip.Add(tagField.Name);
+						fieldsToSkip.Add("Tag Action");
 					}
 
 					if (!item.AssetUid.HasValue)
@@ -1112,6 +1186,7 @@ namespace d360.model
 				ApiExecution execution = getPromoteApiExecution(load, putAssets.Count);
 				ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
 				load.PutExecutionID = executionInfo.ExecutionID;
+
 			}
 
 			if (postAssets.Any())

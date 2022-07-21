@@ -1504,6 +1504,18 @@ namespace d360.model
             }
         }
 
+		public void SendBatchApiCompletedEvent(ApiExecution execution)
+		{
+			QueueSource.CreateFilteredTopicMessageAsync(Config.GetValue<string>("EventBusTopicName"), new BatchApiEvent()
+			{
+				CompanyID = CurrentCompanyID,
+				CompanyDomainPrefix = CurrentCompanyDomain,
+				Action = BatchApiEventAction.Completed,
+				ExecutionID = execution.ExecutionID
+			})
+				.Wait();
+		}
+
         public void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
         {
             List<AssetEventInfo> events = new List<AssetEventInfo>();
@@ -5864,9 +5876,12 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
 
-                    #region Send score recalculation notifications.
+					SendBatchApiCompletedEvent(execution);
+					AddMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
 
-                    if (intersectTypeID.HasValue)
+					#region Send score recalculation notifications.
+
+					if (intersectTypeID.HasValue)
                     {
                         CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
                     }

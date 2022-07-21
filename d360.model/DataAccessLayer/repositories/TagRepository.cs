@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -1169,6 +1172,111 @@ namespace d360.model.DataAccessLayer
 				dbArgs.Add("assettype", paramValue);
 				whereClauses.Add("AST.Object = @assettype");
 			}
+		}
+
+		public async Task BulkTagAssets(IEnumerable<BulkTagAsset> tags, int resourceId)
+		{
+			await companyContext.Connection.OpenIfClosed();
+
+			using (SqlTransaction trans = companyContext.Connection.BeginTransaction())
+			{
+				try
+				{
+					await companyContext.Connection.ExecuteAsync(@"
+					DROP TABLE IF EXISTS #bulkTags;
+					CREAT TABLE #bulkTags
+					(
+						Id int identity not null,
+						AssetUid uniqueidentifier not null,
+						Tag nvarchar(max),
+						[Action] nvarchar(20)
+					)"
+					, transaction: trans);
+
+
+					DataTable table = new DataTable();
+					table.Columns.Add("AssetUid", typeof(Guid));
+					table.Columns.Add("Tag", typeof(string));
+					table.Columns.Add("Action", typeof(string));
+
+					foreach (var tag in tags)
+					{
+						DataRow row = table.NewRow();
+						row["AssetUid"] = tag.AssetUid;
+						row["Tag"] = tag.Tag == null ? DBNull.Value : tag.Tag;
+						row["Action"] = tag.Action.ToString();
+
+						table.Rows.Add(row);
+					}
+
+
+					using (SqlBulkCopy bulkCopy = new SqlBulkCopy(companyContext.Connection, SqlBulkCopyOptions.Default, trans)
+					{
+						BatchSize = 5000,
+						DestinationTableName = "#bulkTags",
+						BulkCopyTimeout = ApiTimeout
+					})
+					{
+						bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+						bulkCopy.ColumnMappings.Add("Tag", "Tag");
+						bulkCopy.ColumnMappings.Add("Action", "Action");
+
+						await bulkCopy.WriteToServerAsync(table);
+					}
+
+
+					await companyContext.Connection.ExecuteAsync(@"
+					--add new tags
+					INSERT INTO Tag (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+					SELECT DISTINCT B.Tag as Value, 
+									GETUTCDATE(), 
+									@resourceId, 
+									GETUTCDATE(), 
+									@resourceId 
+					FROM			#bulkTags B
+					WHERE 			COALESCE(B.Tag, '') != '' 
+									AND NOT EXISTS (SELECT 1 FROM Tag WHERE [State] = @activeState AND Value = B.Tag);
+
+					--add missing tags to assets, applies to Append and Replace
+					INSERT INTO AssetTag (AssetID, TagID, CreatedOn, CreatedBy)
+					SELECT	A.ID, 
+							T.ID, 
+							GETUTCDATE(), 
+							@resourceId
+					FROM	#bulkTags B
+							INNER JOIN Asset A on A.UID = B.AssetUid
+							INNER JOIN  Tag T on T.[Value] = B.Tag AND T.[State] = @activeState
+					WHERE	COALESCE(B.Tag, '') != '' 
+							AND NOT EXISTS (SELECT 1 FROM AssetTag WHERE AssetID = A.ID AND TagID = T.ID)
+
+					--remove existing tags for Replace only
+					DELETE	TA
+					FROM	AssetTag TA
+							INNER JOIN Asset A on A.ID = TA.AssetID
+							INNER JOIN Tag T on T.ID = TA.TagID
+							INNER JOIN #bulkTags B on B.AssetUid = A.uid AND B.Action = 'Replace'
+					WHERE	NOT EXISTS (SELECT B.Tag FROM #bulkTags B WHERE B.AssetUid = A.uid AND B.Tag = T.Value)
+				", new { resourceId, activeState = State.Active }, transaction: trans);
+
+					trans.Commit();
+				}
+				catch (Exception ex)
+				{
+					try
+					{
+						if (trans != null)
+						{
+							trans.Rollback();
+						}
+					}
+					catch
+					{
+					}
+
+					throw ex;
+				}
+			}
+
 		}
 
 	}
