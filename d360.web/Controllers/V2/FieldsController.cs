@@ -2672,7 +2672,7 @@ namespace d360.web.Controllers.V2
 						if (!string.IsNullOrEmpty(filter))
 						{
 							filter = "%" + filter + "%";
-							whereQuery += " and trim(node.displaypath) like @filter ";
+							whereQuery += " trim(displaypath) like @filter ";
 						}
 
 						sql = $@"declare @target nvarchar(255) 
@@ -2685,19 +2685,26 @@ namespace d360.web.Controllers.V2
 								
 								declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
 								
+								drop table if exists #tempAssetsMap
+
+								select a.uid, a.id, node.DisplayPath
+								into #tempAssetsMap
+								from asset a
+								inner join AssetPath Node on Node.ID = a.ID 
+								where a.AssetTypeID = @parentAssetTypeId
+
 								select 
-								cast(a.uid as nvarchar(36)) as value,
-								coalesce(node.DisplayPath,'Path Missing') as text 
-								from Asset A
-									 inner join AssetPath Node on Node.ID = a.ID
-								where a.AssetTypeID = @parentAssetTypeId {whereQuery}
-								order by node.displaypath 
+								cast(uid as nvarchar(36)) as value,
+								coalesce(DisplayPath,'Path Missing') as text 
+								from #tempAssetsMap
+								{(!string.IsNullOrEmpty(whereQuery) ? "where " + whereQuery : "")}
+								order by displaypath 
 								{pagingQuery}
 								option(recompile);
 
-								select count(*) from Asset A
-								 inner join AssetPath Node on Node.ID = A.ID
-								where A.AssetTypeID = @parentAssetTypeId {whereQuery};";
+								select count(*) from #tempAssetsMap
+								{(!string.IsNullOrEmpty(whereQuery) ? "where " + whereQuery : "")}
+								option(recompile);";
 					}
 					else
 					{
