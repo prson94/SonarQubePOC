@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace igx.jobs.bulkloadprocessor
 {
-    public class Program
+    public static class Program
     {
         public static async Task Main()
         {

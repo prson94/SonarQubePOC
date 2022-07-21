@@ -47,7 +47,7 @@ namespace igx.jobs.bulkloadprocessor
 
 			try
 			{
-				var sec = new UriSecurityContextProvider()
+				var sec = new UriSecurityContextProvider
 				{
 					CompanyID = info.CompanyID,
 					ResourceID = 0,
@@ -64,7 +64,7 @@ namespace igx.jobs.bulkloadprocessor
 
 
 				var execution = company.ApiExecutions.FirstOrDefault(e => e.ExecutionID == info.ExecutionID);
-				if (execution?.Method == BulkMethodName)
+				if (execution != null && execution.Method == BulkMethodName)
 				{
 					var load = company.Loads.FirstOrDefault(l => l.PutExecutionID == info.ExecutionID || l.PostExecutionID == info.ExecutionID);
 					var tagField = company.FieldTypes.FirstOrDefault(f => f.Object == load.Object && f.ObjectID == load.ObjectID && f.Type == "Tag");

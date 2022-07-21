@@ -9,11 +9,6 @@ public enum BatchApiEventAction
 
 public class BatchApiEvent : IFilteredServiceBusMessage
 {
-	public BatchApiEvent()
-	{
-
-	}
-
 	public BatchApiEventAction Action { get; set; }
 	public Guid ExecutionID { get; set; }
 	public int CompanyID { get; set; }

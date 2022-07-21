@@ -1271,6 +1271,7 @@ namespace d360.model.DataAccessLayer
 					}
 					catch
 					{
+						//do nothing
 					}
 
 					throw ex;
