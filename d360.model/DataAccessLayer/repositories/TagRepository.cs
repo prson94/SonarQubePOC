@@ -58,14 +58,14 @@ namespace d360.model.DataAccessLayer
 
 			if (model == null && model.State != State.Deleted)
 			{
-				throw new ArgumentNullException(string.Format(TagErrors.TagUidNotExists, uid.ToString()));
+				throw new ArgumentException(string.Format(TagErrors.TagUidNotExists, uid.ToString()));
 			}
 
 			var anyAssetTagsForDeletion = companyContext.AssetTags.Any(x => x.TagID == model.ID);
 
 			if (anyAssetTagsForDeletion && !cascade)
 			{
-				throw new ArgumentNullException(string.Format(TagErrors.DeleteCascadeTagRelateAsset, uid.ToString()));
+				throw new ArgumentException(string.Format(TagErrors.DeleteCascadeTagRelateAsset, uid.ToString()));
 			}
 
 			model.State = State.Deleted;

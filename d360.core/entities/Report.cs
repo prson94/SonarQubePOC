@@ -42,7 +42,7 @@ namespace d360.core.entities
 		[DataMember]
 		public string Definition { get; set; }
 		[DataMember]
-		public int AssetTypeID { get; set; }
+		public int? AssetTypeID { get; set; }
 
 		[DataMember]
 		public DashboardType ReportType { get; set; }
@@ -69,6 +69,7 @@ namespace d360.core.entities
 			var model = new DashboardApiGetModel();
 			model.Id = this.ID;
 			model.Name = this.Name;
+			model.uid = this.uid;
 			return model;
 		}
 	}

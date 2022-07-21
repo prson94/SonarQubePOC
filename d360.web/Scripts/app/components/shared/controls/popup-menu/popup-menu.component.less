@@ -1,185 +1,185 @@
 ﻿@import "../../../../../../Content/styles/infogix-ui/infogix-ui.less";
 
 .ig-popup-menu {
-    outline: none;
-    position: absolute;
-    z-index: 20000;
+  outline: none;
+  position: absolute;
+  z-index: 20000;
 
 
 
-    .menu-items {
-        background-color: white;
-        padding: 4px 0;
-        border-radius: 4px;
-        box-shadow: @popup-shadow;
-        display: inline-block;
-        min-width: 128px;
-        position: relative;
+  .menu-items {
+    background-color: white;
+    padding: 4px 0;
+    border-radius: 4px;
+    box-shadow: @popup-shadow;
+    display: inline-block;
+    min-width: 128px;
+    position: relative;
 
-        li {
-            position: relative;
-        }
-
-        .open-menu {
-            font-size: 10px;
-            position: absolute;
-            top: 13px;
-            right: 10px;
-        }
-
-        .separator {
-            height: 0px;
-            border-top: 1px solid @ig-grey-t4;
-            margin: 4px 0px;
-        }
-
-        .sub-menu {
-            position: absolute;
-            margin-top: -4px;
-        }
-
-
-        &.open-right {
-            &.open-bottom {
-                &.sub-menu {
-                    right: 0px;
-                    transform: translateX(100%);
-                    background-color: white;
-                }
-            }
-
-            &.open-top {
-                &.sub-menu {
-                    right: 0px;
-                    transform: translateX(100%) translateY(-100%);
-                    background-color: white;
-                    top: 44px;
-                }
-            }
-        }
-
-        &.open-left {
-            &.open-top {
-                &.sub-menu {
-                    transform: translateX(-100%) translateY(-100%);
-                    left: 0px;
-                    right: initial;
-                    top: 44px;
-                }
-            }
-
-            &.open-bottom {
-                &.sub-menu {
-                    transform: translateX(-100%) translateY(0%);
-                    left: 0px;
-                    top: 2px;
-                    right: initial;
-                }
-            }
-        }
-
-        .menu-sub-item {
-            max-height: 36px;
-            padding: 0px 16px;
-
-            &.hover:not(.disabled) {
-                background-color: @ig-purple-t5;
-                cursor: pointer;
-            }
-
-            &.active:not(.disabled), &:active:not(.disabled) {
-                background-color: @ig-purple-t4;
-            }
-
-            &.disabled {
-                color: black;
-                opacity: 0.33;
-                cursor: default;
-                outline: none;
-            }
-
-            &:focus:not(.disabled) {
-                box-shadow: 0 0 0 2px @ig-midblue-t3;
-                outline: none;
-            }
-
-            &.default {
-                font-weight: bold;
-            }
-
-            &.label {
-                opacity: 1;
-                font-weight: bold;
-                color: @ig-grey;
-                max-height: unset;
-
-                .icon-part {
-                    display: none;
-                }
-
-                .checkbox-part {
-                    display: none;
-                }
-            }
-
-            .item-container {
-                display: inline-flex;
-                width: 100%;
-
-                .icon-part {
-                    width: 40px;
-                    text-align: center;
-                }
-
-                .title-part {
-                    padding-right: 16px;
-                    white-space: nowrap;
-                }
-
-                .menu-icon {
-                    font-size: 14px;
-                    width: 18px;
-                }
-
-                .checkbox-part {
-                    width: 40px;
-                    text-align: center;
-                }
-
-                .shortcuts-part {
-                    opacity: 0.33;
-
-                    span {
-                        float: right;
-                    }
-                }
-            }
-
-            .part {
-                line-height: 36px;
-            }
-        }
-
-        &.no-left-padding {
-            li {
-                padding-left: 0px;
-            }
-
-            .menu-sub-item.label {
-                padding-left: 14px;
-
-                .title-part {
-                    padding-top: 6px;
-                    padding-bottom: 6px;
-                    line-height: 21px;
-                }
-            }
-        }
-
-        &.default-padding {
-            li {
-                padding-left: 16px;
-            }
-        }
+    li {
+      position: relative;
     }
+
+    .open-menu {
+      font-size: 10px;
+      position: absolute;
+      top: 13px;
+      right: 10px;
+    }
+
+    .separator {
+      height: 0px;
+      border-top: 1px solid @ig-grey-t4;
+      margin: 4px 0px;
+    }
+
+    .sub-menu {
+      position: absolute;
+      margin-top: -4px;
+    }
+
+
+    &.open-right {
+      &.open-bottom {
+        &.sub-menu {
+          right: 0px;
+          transform: translateX(100%);
+          background-color: white;
+        }
+      }
+
+      &.open-top {
+        &.sub-menu {
+          right: 0px;
+          transform: translateX(100%) translateY(-100%);
+          background-color: white;
+          top: 44px;
+        }
+      }
+    }
+
+    &.open-left {
+      &.open-top {
+        &.sub-menu {
+          transform: translateX(-100%) translateY(-100%);
+          left: 0px;
+          right: initial;
+          top: 44px;
+        }
+      }
+
+      &.open-bottom {
+        &.sub-menu {
+          transform: translateX(-100%) translateY(0%);
+          left: 0px;
+          top: 2px;
+          right: initial;
+        }
+      }
+    }
+
+    .menu-sub-item {
+      max-height: 36px;
+      padding: 0px 16px;
+
+      &.hover:not(.disabled) {
+        background-color: var(--navbarBackColorSelectedHover);
+        cursor: pointer;
+      }
+
+      &.active:not(.disabled), &:active:not(.disabled) {
+        background-color: var(--navbarBackColorSelected);
+      }
+
+      &.disabled {
+        color: black;
+        opacity: 0.33;
+        cursor: default;
+        outline: none;
+      }
+
+      &:focus:not(.disabled) {
+        box-shadow: 0 0 0 2px @ig-midblue-t3;
+        outline: none;
+      }
+
+      &.default {
+        font-weight: bold;
+      }
+
+      &.label {
+        opacity: 1;
+        font-weight: bold;
+        color: @ig-grey;
+        max-height: unset;
+
+        .icon-part {
+          display: none;
+        }
+
+        .checkbox-part {
+          display: none;
+        }
+      }
+
+      .item-container {
+        display: inline-flex;
+        width: 100%;
+
+        .icon-part {
+          width: 40px;
+          text-align: center;
+        }
+
+        .title-part {
+          padding-right: 16px;
+          white-space: nowrap;
+        }
+
+        .menu-icon {
+          font-size: 14px;
+          width: 18px;
+        }
+
+        .checkbox-part {
+          width: 40px;
+          text-align: center;
+        }
+
+        .shortcuts-part {
+          opacity: 0.33;
+
+          span {
+            float: right;
+          }
+        }
+      }
+
+      .part {
+        line-height: 36px;
+      }
+    }
+
+    &.no-left-padding {
+      li {
+        padding-left: 0px;
+      }
+
+      .menu-sub-item.label {
+        padding-left: 14px;
+
+        .title-part {
+          padding-top: 6px;
+          padding-bottom: 6px;
+          line-height: 21px;
+        }
+      }
+    }
+
+    &.default-padding {
+      li {
+        padding-left: 16px;
+      }
+    }
+  }
 }

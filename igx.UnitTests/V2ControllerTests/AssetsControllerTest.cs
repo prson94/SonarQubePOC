@@ -863,7 +863,7 @@ namespace igx.UnitTests
             AssetTypeRepositoryMock.Setup(x => x.GetAncestryAsync(assetTypeUid, cancellationToken)).ReturnsAsync(assetTypes);
 
             // act
-            var result = await assetsController.GetTypeAncestry(assetTypeUid, cancellationToken);
+            var result = await assetsController.GetTypeAncestry(assetTypeUid.ToString(), cancellationToken);
             var contentResult = result.Should().BeOfType<OkNegotiatedContentResult<AssetsController.AssetTypeAncestryModel[]>>().Subject;
 
             // assert

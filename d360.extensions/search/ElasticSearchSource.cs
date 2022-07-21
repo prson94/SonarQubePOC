@@ -313,7 +313,12 @@ namespace d360.extensions.search
 
             var uri = new Uri("http://" + SearchServerUrl);
 
-            return new ConnectionSettings(uri).DefaultIndex(GetCompanyIndexName(companyID));
+            var settings = new ConnectionSettings(uri)
+				.DefaultIndex(GetCompanyIndexName(companyID))
+				.MaximumRetries(5)
+				.MaxRetryTimeout(TimeSpan.FromMinutes(3));
+
+			return settings;
         }
 
         /// <summary>

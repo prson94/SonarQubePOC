@@ -126,6 +126,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
 			config.Formatters.JsonFormatter.MediaTypeMappings.Add(new RequestHeaderMapping("Accept", "text/html", StringComparison.InvariantCultureIgnoreCase, true
 				, "application/json"));
 			config.MessageHandlers.Add(new HeadHandler());
+			config.MessageHandlers.Add(new ErrorMessageHandler());
 			config.MessageHandlers.Add(new MethodOverrideHandler());
 
 			config.EnsureInitialized();

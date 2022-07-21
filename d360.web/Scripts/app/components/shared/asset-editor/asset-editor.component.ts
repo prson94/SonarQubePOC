@@ -782,10 +782,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
                 if (res.Success) {
                     let msg = asset.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
+					const keyFields = this.fields.filter(field => field.IsPartOfKey).map(field => field.FieldName);
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
+						event.keyFieldChanged = this.getChangedKeys(asset.Fields, this.initialFormValue).some(
+							changedField => keyFields.includes(changedField)
+						);
                     }
                     this.savingInProgress = false;
                     this.savingInProgressWithAddNew = false;
@@ -848,10 +852,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
             if (res.Success) {
                 let msg = group.Uid ? $localize`Successfully updated` : $localize`Successfully added`;
+				const keyFields = this.fields.filter(field => field.IsPartOfKey).map(field => field.FieldName);
                 this.showMessageForApiResult(this.messagesService, res, msg);
                 if (res.uid) {
                     event.assetUid = res.uid;
                     event.assetTypeUid = this.objectTypeUid;
+					event.keyFieldChanged = this.getChangedKeys(group.Fields, this.initialFormValue).some(
+						changedField => keyFields.includes(changedField)
+					);
                 }
                 this.savingInProgress = false;
                 this.savingInProgressWithAddNew = false;
@@ -963,11 +971,15 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     }
 
     formHasChanges() {
-        if (this.selection && !this.hasUpdateFormChanged) {
-            return false;
-        }
-        return true;
+        return !(this.selection && !this.hasUpdateFormChanged);
     }
+
+	private getChangedKeys(o1: object, o2: object) {
+		const keys = _.union(_.keys(o1), _.keys(o2));
+		return _.filter(keys, function(key) {
+			return o1[key] !== o2[key];
+		});
+	}
 
     public isFormValid(): boolean {
         if (!this.form) {

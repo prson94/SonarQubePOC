@@ -459,7 +459,14 @@ namespace igx.functions.databasetaskprocessor
                             }
                             catch (Exception ex)
                             {
-                                CoreFunction.AITrackException(processorFunctionName, ex);
+								var debugInfo = new Dictionary<string, string> {
+									{ "ErrorSource", "SearchIndexer" },
+									{ "SearchServer", company.SearchServer },
+									{ "UpsertByUid", indexCollectionModel.UpsertByUid.Count.ToString() },
+									{ "UpsertByObject", indexCollectionModel.UpsertByObject.Count.ToString() },
+									{ "UpsertPathByAssetId", indexCollectionModel.UpsertPathByAssetId.Count.ToString() }
+								};
+                                CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID, debugInfo);
                             }
                         }
 
@@ -467,7 +474,14 @@ namespace igx.functions.databasetaskprocessor
                     }
                     catch (Exception ex)
                     {
-                        CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID);
+						var debugInfo = new Dictionary<string, string> {
+							{ "ErrorSource", "ElasticSearchSource" },
+							{ "SearchServer", company.SearchServer },
+							{ "Adds", indexCollectionModel.Adds.Count.ToString() },
+							{ "Updates", indexCollectionModel.Updates.Count.ToString() },
+							{ "Deletes", indexCollectionModel.Deletes.Count.ToString() }
+						};
+						CoreFunction.AITrackException(processorFunctionName, ex, company.CompanyID, debugInfo);
                     }
 
                     #endregion

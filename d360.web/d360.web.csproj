@@ -510,6 +510,7 @@
     <Compile Include="App_Start\ClaimMappingsMiddleware.cs" />
     <Compile Include="App_Start\ContentSecurityPolicyMiddleware.cs" />
     <Compile Include="App_Start\CorsMiddleware.cs" />
+    <Compile Include="Handlers\ErrorMessageHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionHandler.cs" />
     <Compile Include="Handlers\Exceptions\ApplicationExceptionLogger.cs" />
     <Compile Include="Handlers\Exceptions\BadRequestWebApi2ExceptionHandler.cs" />
@@ -818,6 +819,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>OthersMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

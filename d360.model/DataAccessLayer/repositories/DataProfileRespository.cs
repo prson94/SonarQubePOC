@@ -475,7 +475,7 @@ namespace d360.model.DataAccessLayer
 			string sqlJoins = "";
 			bool includeTotal = true;
 			string orderDirection = "asc";
-			string orderBy = "NDP.DisplayPath";
+			string orderBy = "AP.DisplayPath";
 			List<string> filters = new List<string>();
 
 			string filterSQL = "";
@@ -523,7 +523,7 @@ namespace d360.model.DataAccessLayer
 
 				if (orderFilter.Equals("path", StringComparison.InvariantCultureIgnoreCase))
 				{
-					orderBy = "NDP.DisplayPath";
+					orderBy = "AP.DisplayPath";
 				}
 			}
 
@@ -533,7 +533,7 @@ namespace d360.model.DataAccessLayer
 				List<DefaultFilter> fieldList = new List<DefaultFilter>
 				{
 				new DefaultFilter("assetTypePath", "P.Path", SqlFieldType.Text),
-				new DefaultFilter("Path", "NDP.[Segments]", SqlFieldType.Xml),
+				new DefaultFilter("Path", "AP.[Segments]", SqlFieldType.Xml),
 				new DefaultFilter("outOfDate", "(case when CAST(s.effectiveDate as DATE) > ADP.profileSetDate then 'true' else 'false' end)", SqlFieldType.Boolean),
 				};
 
@@ -558,7 +558,7 @@ namespace d360.model.DataAccessLayer
 					dbArgs.Add("@simpleFilter", simpleFilter);
 
 					filters.Add($@"(
-									NDP.DisplayPath like @simpleFilter 
+									AP.DisplayPath like @simpleFilter 
 									or                                             
 									P.[Path] like @simpleFilter
 								)");
@@ -574,8 +574,12 @@ namespace d360.model.DataAccessLayer
 			dbArgs.Add("@minConfidence", minConfidence);
 
 			sqlJoins = $@" AssetDataProfile ADP
-							inner join 
-							[graph].AssetNode NDP on NDP.ID=adp.AssetID
+							INNER JOIN
+							Asset A on A.ID=adp.AssetID
+							INNER JOIN
+							AssetPath AP on A.ID=AP.ID
+							INNER JOIN
+							AssetType AST on A.AssetTypeID=AST.ID
 							outer apply 
 							(
 							select 
@@ -585,12 +589,12 @@ namespace d360.model.DataAccessLayer
 							where 
 								AssetID = ADP.AssetID
 							) maxProfileDate
-							cross apply dbo.GetAssetTypeTextPathById(NDP.AssetTypeID, ' > ') P";
+							cross apply dbo.GetAssetTypeTextPathById(A.AssetTypeID, ' > ') P";
 
 			if (!CompanyContext.CurrentResourceIsAdmin)
 			{
 				sqlJoins = $@"{sqlJoins}
-							  outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = NDP.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=NDP.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
+							  outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = A.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=A.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
 
 				whereConditions = $@"{whereConditions} 
 									and
@@ -620,12 +624,12 @@ namespace d360.model.DataAccessLayer
 			var itemsSQL = $@"
 							SELECT 
 								distinct
-								NDP.uid, 
-								NDP.DisplayPath as [path],
+								A.uid, 
+								AP.DisplayPath as [path],
 								P.[path] as assetTypePath,
 								ADP.Confidence,
 								ADP.ProfileSetDate as effectiveDate,
-								NDP.assettypeUid
+								AST.Uid as assettypeUid
 								{(isExport ? ", s.Uid as semanticTypeUid" : "")}
 							FROM                                     
 								{sqlJoins}		                            
@@ -666,8 +670,11 @@ namespace d360.model.DataAccessLayer
 
 			string whereConditions = $@"where 
 										 ADP.ProfileSetDate = maxProfileDate.profileSetDate";
-			string sqlJoins = $@"  inner join 
-							[graph].AssetNode NDP on NDP.ID=adp.AssetID and adp.AssetId != @assetId
+			string sqlJoins = $@" 
+							INNER JOIN
+							Asset A on A.ID=adp.AssetID and adp.AssetId != @assetId
+							INNER JOIN
+							AssetPath AP on A.ID=AP.ID
 							outer apply 
 							(
 							select 
@@ -692,18 +699,18 @@ namespace d360.model.DataAccessLayer
 									For Json Path
 									) as [value]
 							) Tags
-							left Join FieldType F on f.AssetTypeID = NDP.AssetTypeID and F.[Type] = 'tag'";
+							left Join FieldType F on f.AssetTypeID = A.AssetTypeID and F.[Type] = 'tag'";
 
 			bool includeTotal = true;
 			string orderDirection = "asc";
 			string filterSQL = "";
 			string structureCondition = "";
 			string filterJoinSQL = "";
-			string selectFields = $@"NDP.uid, 
-									NDP.DisplayPath as [path]
+			string selectFields = $@"A.uid, 
+									AP.DisplayPath as [path]
 									,JSON_QUERY(replace(REPLACE(REPLACE(REPLACE(tags.value, '}}]', ']'), '[{{', '['), '""value"":', ''), '}},{{', ',')) as tagsJson 
 									,case when F.id is null then 0 else 1 end as hasTagField
-									,[Segments]";
+									,AP.[Segments]";
 			string filterSelectFields = "*";
 			string assetDetailSQL = "";
 
@@ -760,7 +767,7 @@ namespace d360.model.DataAccessLayer
 				List<DefaultFilter> fieldList = new List<DefaultFilter>
 				{
 				new DefaultFilter("Tag", "T.tagString", SqlFieldType.Text),
-				new DefaultFilter("Path", "[Segments]", SqlFieldType.Xml),
+				new DefaultFilter("Path", "AP.[Segments]", SqlFieldType.Xml),
 				};
 
 				if (!string.IsNullOrEmpty(filterValue))
@@ -831,7 +838,7 @@ namespace d360.model.DataAccessLayer
 			if (!CompanyContext.CurrentResourceIsAdmin)
 			{
 				sqlJoins = $@"{sqlJoins}
-							  outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = NDP.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=NDP.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
+							  outer apply (select 1 as [value] from ResponsibilityDetail RD where resourceid = @userid and ((RD.AssetID = A.id and applyToType=0) or (RD.AssetID = 0 and RD.AssetTypeID=A.AssetTypeID)) and RD.PermissionsBitMask & {(int)Permission.ReadAsset} = 0) hasAccess";
 
 				whereConditions = $@"{whereConditions} 
 									and
@@ -849,36 +856,39 @@ namespace d360.model.DataAccessLayer
 			if (isExport)
 			{
 				selectFields = $@"{selectFields}                                 
-								,NDP.AssetTypeID
-								,NDP.AssetTypeUid
-								,NDP.ID";
+								,A.AssetTypeID
+								,AST.Uid as AssetTypeUid
+								,A.ID";
 
 				assetDetailSQL = $@"drop table if exists #tempAssetDetails;
 
 									select 
-										AN.ID as AssetID
-										,AN.Uid as AssetUid
-										,AN.DisplayPath as AssetPath
+										A.ID as AssetID
+										,A.Uid as AssetUid
+										,AP.DisplayPath as AssetPath
 										,ATP.Path as AssetTypePath
 										,tagString as AssetTags
 									into #tempAssetDetails
-									from graph.AssetNode AN
-									cross apply dbo.GetAssetTypeTextPathById(AN.AssetTypeID, ' > ') ATP
-									outer apply
-									(   select                
-										STRING_AGG(T.Value ,'|') as tagString
-										from(
-											Select                                     
-												T.Value
-											from 
-												AssetTag AT
-												inner join 
-												Tag T on AT.TagId = T.Id
-											where 
-												AT.AssetID = AN.ID
-											order by T.Value OFFSET 0 ROWS) T
-									) as Tags
-									where AN.ID=@assetId";
+									from
+										Asset A on A.ID=adp.AssetID
+										INNER JOIN
+										AssetPath AP on A.ID=AP.ID
+										cross apply dbo.GetAssetTypeTextPathById(A.AssetTypeID, ' > ') ATP
+										outer apply
+										(   select                
+											STRING_AGG(T.Value ,'|') as tagString
+											from(
+												Select                                     
+													T.Value
+												from 
+													AssetTag AT
+													inner join 
+													Tag T on AT.TagId = T.Id
+												where 
+													AT.AssetID = A.ID
+												order by T.Value OFFSET 0 ROWS) T
+										) as Tags
+									where A.ID=@assetId";
 
 				filterJoinSQL = $@"{filterJoinSQL}
 								   outer apply dbo.GetAssetTypeTextPathById(td.AssetTypeId, ' > ') P

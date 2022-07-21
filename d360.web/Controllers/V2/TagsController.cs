@@ -9,11 +9,13 @@ using System.Web.Http.Description;
 
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using d360.web.Services;
 
 using Microsoft.Web.Http;
 
@@ -138,29 +140,27 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
+        public IHttpActionResult DeleteById(string tagUid, bool cascade = false)
         {
-            if (!tagRepository.DoesTagExists(tagUid))
+			Guid _tagUid;
+			if (!Guid.TryParse(tagUid, out _tagUid))
+			{
+				throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, tagUid));
+			}
+
+            if (!tagRepository.DoesTagExists(_tagUid))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
 
-            if (!tagRepository.IsAuthorizedToEditTag(tagUid))
+            if (!tagRepository.IsAuthorizedToEditTag(_tagUid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
+                throw new UnauthorizedBusinessLayerException(ApiMessages.AccessDenied);
             }
 
-            try
+            if (!tagRepository.DeleteTags(new List<TagApiDeleteModel> { new TagApiDeleteModel { uid = _tagUid, cascade = cascade } }))
             {
-                if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
-                }
-            }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorDeleteTag, ex.Message);
-
+				throw new NotFoundBusinessLayerException(TagsApiMessages.TagNotFound);
             }
 
             return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage);

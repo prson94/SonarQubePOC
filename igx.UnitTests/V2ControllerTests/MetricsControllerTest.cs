@@ -16,6 +16,8 @@ using d360.web.Utilities;
 using FluentAssertions;
 using Moq;
 using Xunit;
+using System.Threading.Tasks;
+using d360.core.exceptions;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -278,15 +280,10 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void Err_DeleteMetric_BadUid()
+        public async Task Err_DeleteMetric_BadUid()
         {
-	        var actionResult = metricsController.DeleteById(Guid.Parse(DataConstants.InvalidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
-
-			var str = await actionResult.Content.ReadAsStringAsync();
-			var data = JsonConvert.DeserializeObject<ProblemDetailsResponse>(str);
-
-			Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
-			data.Should().NotBeNull(XMsg.InvalidJSON);
+			Action act = () => { metricsController.DeleteById(Guid.Parse(DataConstants.InvalidGUID)); };
+			act.Should().ThrowExactly<NotFoundException>();
         }
 
         [Fact]

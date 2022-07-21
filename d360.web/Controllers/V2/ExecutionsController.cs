@@ -16,6 +16,7 @@ using d360.extensions;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Microsoft.Web.Http;
 
@@ -280,6 +281,7 @@ namespace d360.web.Controllers.V2
 		/// <returns>The required values of status of connector.</returns>
 		[
 			HttpPost,
+			RequireAdminPermissions,
 			Route("external"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "The status of connector was added, returns the required values of the added connector status.", typeof(ApiExecutionExternalViewModel)),
@@ -287,43 +289,31 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> PostConnectorStatus(ApiExecutionExternalRequestModel model)
+		public IHttpActionResult PostConnectorStatus(ApiExecutionExternalRequestModel model)
 		{
 			if (model == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.ErrorInvalidDatasetMessage)).ConfigureAwait(false);
-			}
-
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
+				throw new ArgumentException(ApiMessages.ErrorInvalidDatasetMessage);
 			}
 
 			if (model?.Status == null)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.StatusRequied)).ConfigureAwait(false);
+				throw new ArgumentException(ApiMessages.StatusRequied);
 			}
 
 			if (model.Component?.Length > 250)
 			{
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.ComponentMaxSize250)).ConfigureAwait(false);
+				throw new ArgumentException(ApiMessages.ComponentMaxSize250);
 			}
 
 			if (!Enum.IsDefined(typeof(ExecutionExternalStatus), model.Status))
 			{
-				throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, ApiMessages.StatusInvalid));
+				throw new ArgumentException(ApiMessages.StatusInvalid);
 			}
 
-			try
-			{
-				ApiExecutionExternalViewModel result = AssetRepository.AddConnectorStatus(model);
+			ApiExecutionExternalViewModel result = AssetRepository.AddConnectorStatus(model);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
-			}
-			catch (Exception e)
-			{
-				return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.ErrorConnectorStatus, e.Message);
-			}
+			return Ok(result);
 		}
 
 		/// <summary>

@@ -72,4 +72,43 @@ alter table dbo.AssetResult add PassFraction as (cast(PassCount as float)/coales
 ]]>
 	</rollback>
   </changeSet>
+  <changeSet author="bquinlivan" id="Table.dbo.AssetResult-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF EXISTS (SELECT * FROM SYS.TABLES WHERE NAME = 'AssetResult' AND is_node = 1)
+BEGIN
+	Alter table dbo.AssetResult
+	DROP CONSTRAINT PK_AssetResult;
+	
+	EXEC sp_rename 'AssetResult', 'AssetResultDepricated';
+	
+	CREATE TABLE [dbo].[AssetResult] (
+		Uid uniqueidentifier NOT NULL,
+		OwningAssetUid uniqueidentifier NOT NULL,
+		EvaluatedAssetUid uniqueidentifier NULL,
+		EffectiveDate datetime NOT NULL,
+		RunDate datetime NOT NULL,
+		PassCount bigint NOT NULL,
+		FailCount bigint NOT NULL,
+		TotalCount as (PassCount+FailCount) persisted,
+		PassFraction as (PassCount / (PassCount+FailCount)) persisted,
+		CreatedOn datetime NOT NULL,
+		CreatedBy int NOT NULL,
+		UpdatedOn datetime NOT NULL,
+		UpdatedBy int NOT NULL,
+		CONSTRAINT PK_AssetResult PRIMARY KEY CLUSTERED ( Uid ASC )
+	)
+		
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+   
+]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

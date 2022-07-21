@@ -9,6 +9,7 @@ using System.Web.Http;
 using d360.web.Utilities;
 using Moq;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -50,28 +51,11 @@ namespace igx.UnitTests.V2ControllerTests
 
         }
 
-        [Theory]
-        [InlineData(DataConstants.ValidGUID)]
-        [InlineData(DataConstants.InvalidGUID)]
-        public void DeleteTags(string uid)
+        [Fact]
+        public async Task DeleteTags()
         {
-
-            var actionResult = tagsController.DeleteById(Guid.Parse(uid));
-
-            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-
-            var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<JToken>(str);
-            if (uid == DataConstants.ValidGUID)
-            {
-                Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-            }
-            else
-            {
-                Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-
-            }
-
+            var actionResult = tagsController.DeleteById(DataConstants.ValidGUID);
+            await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
         }
 
         [Fact]

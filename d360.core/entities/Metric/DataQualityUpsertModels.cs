@@ -59,9 +59,10 @@ namespace d360.core.entities.Metric
     {
         public Guid ResultUid { get; set; }
 
-        public Guid AssetUid { get; set; }
+        public Guid OwningAssetUid { get; set; }
+		public Guid EvaluatedAssetUid { get; set; }
 
-        public int Class { get; set; }
+		public int Class { get; set; }
 
         public DateTime EffectiveDate { get; set; }
 

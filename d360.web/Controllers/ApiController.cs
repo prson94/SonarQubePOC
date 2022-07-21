@@ -517,7 +517,7 @@ namespace d360.web.Controllers
 						select ftl.* from fieldtype ft
 						inner join FieldTypeLookup ftl on ftl.FieldTypeID = ft.id
 						where ft.assettypeid = @AssetTypeID
-						and ft.type ='ComplexRelationLookup';";
+						and ft.type ='ComplexRelationLookup' or ft.type = 'OwnershipLookup';";
 
 				var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
 
@@ -2631,18 +2631,22 @@ namespace d360.web.Controllers
 				case SystemObjects.Intersect:
 					objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
 					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
-				case SystemObjects.ReferenceItemType:
-					var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
-
-					return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
 				case SystemObjects.SurveyType:
 					objectId = Company.SurveyTypes.FirstOrDefault(s => s.Uid == uid).ID;
 					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
 				default:
-					var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
+					if (type.IsType())
+					{
+						var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
+						return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+					}
+					else
+					{
+						var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 
-					SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
-					return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+						SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
+						return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+					}
 			}
 		}
 
@@ -4165,20 +4169,24 @@ namespace d360.web.Controllers
 
 						var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == report.AssetTypeID);
 
-						string objectName = assetType.Class.GetDisplayName();
-						if(report.Location == DashboardLocation.Detail) {
-							objectName += " Instance: ";
-						}
-						objectName += assetType.Name;
-
-						model.rows.Add(new DetailReadOnlyRowModel
+						if (assetType != null)
 						{
-							columns = 1,
-							FirstColumnFields = new List<ReadOnlyField>
+							string objectName = assetType.Class.GetDisplayName();
+							if (report.Location == DashboardLocation.Detail)
+							{
+								objectName += " Instance: ";
+							}
+							objectName += assetType.Name;
+
+							model.rows.Add(new DetailReadOnlyRowModel
+							{
+								columns = 1,
+								FirstColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Row = 3, Column = 2, Name = assetType.Class.GetDisplayName(), FieldName = "ReportObjectType", FieldDescription = assetType.Class.GetDisplayName(), Value = objectName }
 							}
-						});
+							});
+						}
 					}
 					report = null;
 					break;
