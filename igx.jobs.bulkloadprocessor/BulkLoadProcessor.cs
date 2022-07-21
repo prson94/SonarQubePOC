@@ -42,7 +42,7 @@ namespace igx.jobs.bulkloadprocessor
 
 				var _c = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x => x.CompanyID == loadInfo.CompanyID);
 
-				var sec = new UriSecurityContextProvider()
+				var sec = new UriSecurityContextProvider
 				{
 					CompanyID = loadInfo.CompanyID,
 					ResourceID = 0,
@@ -95,7 +95,6 @@ namespace igx.jobs.bulkloadprocessor
 
 						var stats = xls.GetWorksheetStatistics();
 
-						var numberOfRows = stats.NumberOfRows;
 						var rowIndex = stats.StartRowIndex + 1;
 						var numberOfColumns = load.LoadColumns.Count;
 
@@ -111,7 +110,9 @@ namespace igx.jobs.bulkloadprocessor
 							{
 								var testValue = (xls.GetCellValueAsString(rowIndex, c.ColumnIndex) ?? "").TrimEnd();
 								if (string.IsNullOrEmpty(testValue))
+								{
 									numberOfEmptyColumns++;
+								}
 							}
 
 							// Empty row check.
@@ -127,7 +128,9 @@ namespace igx.jobs.bulkloadprocessor
 
 									if (format.Contains("[$-404]") || format.Contains("m/d") || format.Contains("m-d") || format.Contains("d-m") ||
 										format.Contains("[$-F400]") || format.Contains("[$-409]"))
+									{
 										isDate = true;
+									}
 
 									var loadValue = string.Empty;
 
@@ -223,14 +226,22 @@ namespace igx.jobs.bulkloadprocessor
 									row["RowIndex"] = item.RowIndex;
 									row["ColumnIndex"] = item.ColumnIndex;
 									if (string.IsNullOrEmpty(item.Value))
+									{
 										row["Value"] = DBNull.Value;
+									}
 									else
+									{
 										row["Value"] = item.Value;
+									}
 
 									if (item.LookupObjectID == null)
+									{ 
 										row["LookupObjectID"] = DBNull.Value;
+									}
 									else
+									{
 										row["LookupObjectID"] = item.LookupObjectID;
+									}
 
 									table.Rows.Add(row);
 								}
@@ -365,9 +376,13 @@ namespace igx.jobs.bulkloadprocessor
 					{
 						case "M":
 							if (load.ObjectID == 0)
+							{
 								BulkLoadMembership(companyConnection, loadInfo.CompanyID, load.ID);
+							}
 							else
+							{
 								BulkLoadUsers(companyConnection, loadInfo.CompanyID, load.ID);
+							}
 							break;
 						case "O":
 							await BulkLoadOwnership(company, load.ID);
@@ -381,6 +396,8 @@ namespace igx.jobs.bulkloadprocessor
 							break;
 						case "U":   // Unrelate
 							await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Unrelate);
+							break;
+						default:
 							break;
 					}
 
@@ -413,7 +430,6 @@ namespace igx.jobs.bulkloadprocessor
 			{
 				throw new Exception($"Bulk load membership cannot find the load job to run [{loadId}].");
 			}
-			load = null;
 
 			// get the load columns
 			var columns = company.Query<LoadColumn>("select * from LoadColumn where LoadID = @loadId", new { loadId });
@@ -421,7 +437,6 @@ namespace igx.jobs.bulkloadprocessor
 			{
 				throw new Exception($"Bulk load data does not contain any columns in LoadColumn table.  Load ID [{loadId}]");
 			}
-			columns = null;
 
 			List<AssetEventInfo> assetEvents = new List<AssetEventInfo>();
 
@@ -620,7 +635,10 @@ from	LoadItem T
 						}
 						throw;
 					}
-					catch { }
+					catch 
+					{ 
+						//do nothing
+					}
 				}
 			}
 			SendAssetGraphEvents(assetEvents);
@@ -633,7 +651,6 @@ from	LoadItem T
 			{
 				throw new Exception($"Bulk load users cannot find the load job to run [{loadId}].");
 			}
-			load = null;
 
 			// get the load columns
 			var columns = company.Query<LoadColumn>("select * from LoadColumn where LoadID = @loadId", new { loadId });
@@ -894,7 +911,10 @@ where	T.Success = 1", transaction: trans);
 							}
 							throw;
 						}
-						catch { }
+						catch 
+						{ 
+							//do nothing
+						}
 					}
 				}
 			}
@@ -928,7 +948,9 @@ where	T.Success = 1", transaction: trans);
 				row["LastName"] = userResult.LastName;
 
 				if (userResult.ResourceID.HasValue)
+				{
 					row["ResourceID"] = userResult.ResourceID.Value;
+				}
 
 				row["uid"] = userResult.Uid;
 				row["Success"] = userResult.Success;
@@ -1105,8 +1127,6 @@ where	ID = @loadId", new { loadId }, transaction: trans);
 				{
 					throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{loadId}]");
 				}
-
-				var loaddata = company.LoadItemColumns.Where(x => x.LoadID == loadId);
 
 				int assetUidIndex = -1;
 				int responsibilityIndex = -1;

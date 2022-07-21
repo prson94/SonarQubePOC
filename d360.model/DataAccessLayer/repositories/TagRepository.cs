@@ -1260,7 +1260,7 @@ namespace d360.model.DataAccessLayer
 
 					trans.Commit();
 				}
-				catch (Exception ex)
+				catch (Exception)
 				{
 					try
 					{
@@ -1271,9 +1271,10 @@ namespace d360.model.DataAccessLayer
 					}
 					catch
 					{
+						//do nothing
 					}
 
-					throw ex;
+					throw;
 				}
 			}
 
