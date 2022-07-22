@@ -56,5 +56,8 @@ namespace d360.model.DataAccessLayer
         IEnumerable<dynamic> GetTooltip(Guid tagUid, Guid? assetUid);
         
         IEnumerable<Tag> GetTagsForAsset(long assetId);
-    }
+
+		Task BulkTagAssets(IEnumerable<BulkTagAsset> tags, int resourceId);
+
+	}
 }
