@@ -19,6 +19,7 @@ using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Dapper;
 
@@ -44,31 +45,31 @@ namespace d360.web.Controllers.V2
 	public class FieldsController : BaseV2ApiController
 	{
 
-        #region DI
+		#region DI
 
-        private readonly IQueueSource QueueSource;
-        private readonly IStorageProvider Storage;
-        private readonly IFieldsRepository FieldsRepository;
-        private readonly IAssetRepository AssetRepository;
-        private readonly IAssetTypeRepository AssetTypeRepository;
+		private readonly IQueueSource QueueSource;
+		private readonly IStorageProvider Storage;
+		private readonly IFieldsRepository FieldsRepository;
+		private readonly IAssetRepository AssetRepository;
+		private readonly IAssetTypeRepository AssetTypeRepository;
 
-        public FieldsController(
-            ICoreComponentSet set,
-            IStorageProvider storage,
-            IQueueSource queueSource,
-            IFieldsRepository fieldsRepository,
-            IAssetRepository assetRepository,
-            IAssetTypeRepository assetTypeRepository
-        ) : base(set)
-        {
-            AssetTypeRepository = assetTypeRepository;
-            QueueSource = queueSource;
-            Storage = storage;
-            FieldsRepository = fieldsRepository;
-            AssetRepository = assetRepository;
-        }
+		public FieldsController(
+			ICoreComponentSet set,
+			IStorageProvider storage,
+			IQueueSource queueSource,
+			IFieldsRepository fieldsRepository,
+			IAssetRepository assetRepository,
+			IAssetTypeRepository assetTypeRepository
+		) : base(set)
+		{
+			AssetTypeRepository = assetTypeRepository;
+			QueueSource = queueSource;
+			Storage = storage;
+			FieldsRepository = fieldsRepository;
+			AssetRepository = assetRepository;
+		}
 
-        #endregion
+		#endregion
 
 		/// <summary>
 		/// Retrieves field types contained within your environment.
@@ -127,8 +128,8 @@ namespace d360.web.Controllers.V2
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				SendException(
-					ex, 
-					new Dictionary<string, string> 
+					ex,
+					new Dictionary<string, string>
 					{
 						{ "Endpoint Method", prefix }
 					});
@@ -279,7 +280,7 @@ namespace d360.web.Controllers.V2
 				else
 				{
 					var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
-					
+
 					if (typePermissions != null)
 					{
 						hasPermissions = typePermissions.Any(i => i.ID == Permission.EditAsset);
@@ -304,7 +305,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields, ExistingIntersectID);
-				
+
 				if (validationStatus.StatusCode != HttpStatusCode.OK)
 				{
 					throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
@@ -316,7 +317,7 @@ namespace d360.web.Controllers.V2
 					model.Fields.ForEach(ft =>
 					{
 						int? currentInitialIndex = Company.FieldTypes.Where(x => x.AssetTypeID == assetTypeIdentifierInfoModel.ID && x.Name == ft.Name).FirstOrDefault()?.CounterInitialIndex;
-						
+
 						if (ft.Type.Counter != null)
 						{
 							if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
@@ -327,13 +328,13 @@ namespace d360.web.Controllers.V2
 					});
 				}
 
-                if (model.AssetTypeUid != null)
-                {
-                    foreach (var ft in model.Fields.Where(x => x.Type?.Path?.Definition != null))
-                    {
-                        if (ft.Type.Path.Definition.AssetTypeUid != null)
-                        {
-	                        switch (assetType.Class)
+				if (model.AssetTypeUid != null)
+				{
+					foreach (var ft in model.Fields.Where(x => x.Type?.Path?.Definition != null))
+					{
+						if (ft.Type.Path.Definition.AssetTypeUid != null)
+						{
+							switch (assetType.Class)
 							{
 								case AssetTypeClass.TechnicalAsset:
 								case AssetTypeClass.BusinessAsset:
@@ -343,17 +344,17 @@ namespace d360.web.Controllers.V2
 										$"Path field could not change selected segment if asset type is not technical or business class.");
 							}
 							var pathDefinitionAssetTypeUid = ft.Type.Path.Definition.AssetTypeUid;
-                            var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
-                            if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
-                            {
-                                throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
-                                    $"{ApiMessages.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
-                            }
-                        }
-                    }
-                }
+							var ancestryCollection = await AssetTypeRepository.GetAncestryAsync(model.AssetTypeUid.Value);
+							if (ancestryCollection.Any(x => x.uid == pathDefinitionAssetTypeUid) == false)
+							{
+								throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.FieldTypeError,
+									$"{ApiMessages.FieldTypeError}. Fields[].Type.Path.Definition.AssetTypeUid (\"{pathDefinitionAssetTypeUid}\") should be in ancestry list of (\"{model.AssetTypeUid}\")");
+							}
+						}
+					}
+				}
 
-                if (model.Fields.Any(x => x.Type.Lookup != null))
+				if (model.Fields.Any(x => x.Type.Lookup != null))
 				{
 					foreach (var ft in model.Fields.Where(x => x.Type.Lookup != null))
 					{
@@ -365,7 +366,7 @@ namespace d360.web.Controllers.V2
 						}
 
 						var hasFields = Company.Query<int>("select count(1) from field where fieldtypeid = @ftid", new { ftid = exFt.ID }).FirstOrDefault() > 0;
-						
+
 						if (hasFields)
 						{
 							var newType = Company.AssetTypes.Where(x => x.uid == ft.Type.Lookup.List.Uid)
@@ -584,8 +585,8 @@ namespace d360.web.Controllers.V2
 
 					if (exFt == null)
 					{
-						throw new RestApiException(HttpStatusCode.NotFound, 
-							ApiMessages.FieldTypeNotFound, 
+						throw new RestApiException(HttpStatusCode.NotFound,
+							ApiMessages.FieldTypeNotFound,
 							string.Format(ApiMessages.FieldTypeNotFound, ft.FriendlyName));
 					}
 				}
@@ -598,11 +599,11 @@ namespace d360.web.Controllers.V2
 				}
 
 				var editModel = new FieldTypesApiEditModel(model);
-				var validationStatus = FieldApiModelValidator.ValidateModel(editModel, 
-					actionTypeIdentifierInfoModel, 
-					assetTypeIdentifierInfoModel, 
-					relationshipTypeIdentifierInfoModel, 
-					existingFields, 
+				var validationStatus = FieldApiModelValidator.ValidateModel(editModel,
+					actionTypeIdentifierInfoModel,
+					assetTypeIdentifierInfoModel,
+					relationshipTypeIdentifierInfoModel,
+					existingFields,
 					ExistingIntersectID);
 
 				if (validationStatus.StatusCode != HttpStatusCode.OK)
@@ -622,8 +623,8 @@ namespace d360.web.Controllers.V2
 						{
 							if (ft.Type.Counter.CounterInitialIndex != currentInitialIndex && ft.Type.Counter.CounterInitialIndex <= currentAssetCount)
 							{
-								throw new RestApiException(HttpStatusCode.BadRequest, 
-									ApiMessages.FieldTypeError, 
+								throw new RestApiException(HttpStatusCode.BadRequest,
+									ApiMessages.FieldTypeError,
 									string.Format(ApiMessages.CounterInitialValueHigherCurrentValue, currentAssetCount.ToString()));
 							}
 						}
@@ -676,8 +677,8 @@ namespace d360.web.Controllers.V2
 
 							if (newType.Object.Replace("Type", "") != exFt.LookupObjectType || newType.ObjectID != exFt.LookupObjectID)
 							{
-								throw new RestApiException(HttpStatusCode.BadRequest, 
-									ApiMessages.ChangeFieldNotAllowed, 
+								throw new RestApiException(HttpStatusCode.BadRequest,
+									ApiMessages.ChangeFieldNotAllowed,
 									string.Format(ApiMessages.LookupFieldTypeInUse, exFt.FriendlyName));
 							}
 						}
@@ -690,7 +691,7 @@ namespace d360.web.Controllers.V2
 
 				foreach (var field in model.Fields)
 				{
-					if (field.Type?.Text?.Validation != null 
+					if (field.Type?.Text?.Validation != null
 						&& (!string.IsNullOrEmpty(field.Type.Text.Validation.Pattern) || !field.Type.Text.Validation.IsRequired))
 					{
 						field.Type.Text.Validation.MinimumLength = 0;
@@ -706,7 +707,7 @@ namespace d360.web.Controllers.V2
 
 				#endregion
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, 
+				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK,
 					new ApiStatusResponse { Message = "Fields successfully updated.", Success = true, Uid = typeIdentifierInfoModel.Uid })))
 					.ConfigureAwait(false);
 			}
@@ -746,95 +747,74 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<IHttpActionResult> DeleteFieldTypesAsync(FieldTypesApiDeleteModel model)
 		{
-			var prefix = "Fields.DeleteFieldTypesAsync => ";
-			var errorMessage = "";
+			(TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model);
 
-			try
+			if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
 			{
-				(TypeIdentifierInfoModel typeIdentifierInfoModel, WorkHttpStatus validationStatus) = await GetTypeIdentifierInfoModelAndValidate(model).ConfigureAwait(false);
-
-				if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+				if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
 				{
-					if (model.Fields.Any(x => new[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
-					{
-						throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ApiMessages.DiagramAssetTypeSystemFieldValidation);
-					}
+					throw new ArgumentException(ApiMessages.DiagramAssetTypeSystemFieldValidation);
 				}
-
-				#region Security check
-
-				bool hasPermissions = false;
-
-				if (Company.CurrentResourceIsAdmin)
-				{
-					hasPermissions = true;
-				}
-				else
-				{
-					var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
-					
-					if (typePermissions != null)
-					{
-						hasPermissions = typePermissions.Any(i => i.ID == Permission.DeleteAsset);
-					}
-				}
-
-				if (!hasPermissions)
-				{
-					throw new RestApiException(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.RemoveFieldNotAllowed);
-				}
-
-				#endregion
-
-				#region Validation
-
-				if (validationStatus.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
-				}
-
-				bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
-
-				List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-				bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
-
-				if (anyResponsibilitiesUsingField)
-				{
-					throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
-				}
-
-				(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
-				
-				if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
-				{
-					throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
-				}
-
-				#endregion
-
-				#region Validation done, time to do some work
-
-				FieldsRepository.DeleteFields(currentFieldTypes, fieldNamesToDelete);
-
-				#endregion
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid }))).ConfigureAwait(false);
 			}
-			catch (RestApiException ex)
+
+			#region Security check
+
+			bool hasPermissions = false;
+
+			if (Company.CurrentResourceIsAdmin)
 			{
-				errorMessage = ex.GetFullExceptionData(false);
-
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
+				hasPermissions = true;
 			}
-			catch (Exception ex)
+			else
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
+				var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
+				if (typePermissions != null)
+				{
+					hasPermissions = typePermissions.Any(i => i.ID == Permission.DeleteAsset);
+				}
 			}
+
+			if (!hasPermissions)
+			{
+				throw new ForbiddenBusinessLayerException(ApiMessages.RemoveFieldNotAllowed);
+			}
+
+			#endregion
+
+			#region Validation
+
+			if (validationStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
+			}
+
+			bool anyExistingItems = FieldsRepository.HasExistingItems(typeIdentifierInfoModel);
+
+			List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+			bool anyResponsibilitiesUsingField = FieldsRepository.hasResponsibilityUsingField(typeIdentifierInfoModel, currentFieldTypes.FindAll(x => model.Fields.Any(f => f.Name == x.Name)));
+
+			if (anyResponsibilitiesUsingField)
+			{
+				throw new RestApiException(HttpStatusCode.BadRequest, ApiMessages.UsedinResponsibilityRules, ApiMessages.FieldUseInResponsibilityRule);
+			}
+
+			(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
+
+			if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
+			{
+				throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
+			}
+
+			#endregion
+
+			#region Validation done, time to do some work
+
+			FieldsRepository.DeleteFields(currentFieldTypes, fieldNamesToDelete);
+
+			#endregion
+
+			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Fields successfully removed.", Success = true, Uid = typeIdentifierInfoModel.Uid })));
 		}
 
 		/// <summary>
@@ -896,7 +876,7 @@ namespace d360.web.Controllers.V2
 				}
 
 				(var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
-				
+
 				if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
 				{
 					throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
@@ -923,15 +903,15 @@ namespace d360.web.Controllers.V2
 			catch (RestApiException ex)
 			{
 				errorMessage = ex.GetFullExceptionData(false);
-				
+
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(ex.Status, errorMessage))).ConfigureAwait(false);
 			}
 			catch (Exception ex)
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				SendException(
-					ex, 
-					new Dictionary<string, string> 
+					ex,
+					new Dictionary<string, string>
 					{
 						{ "Endpoint Method", prefix }
 					});
@@ -1150,7 +1130,7 @@ namespace d360.web.Controllers.V2
 				{
 					enableJsonAttributes = SettingsRepository.GetSettingValue<bool>(Setting.EnableJsonAttribute);
 				}
-				catch 
+				catch
 				{
 					//swallow exception here.
 				}
@@ -1620,7 +1600,7 @@ namespace d360.web.Controllers.V2
 				var usersOnly = false;
 				string sql = "";
 				usersOnly = Company.Filter<AssetType>(x => x.uid == assetUid && x.Class == AssetTypeClass.User).Count() > 0;
-				
+
 				if (usersOnly)
 				{
 					string HideD3SUsers = HideData3SixtyUsers() ? "" : " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' and Email not like '%@precisely.com' ";
@@ -1732,7 +1712,7 @@ namespace d360.web.Controllers.V2
 					{
 						//get possible parent reference list types defined for this object / object id they cant already be parents
 						list = Company.FieldTypes.Where(x => x.Object == objectType && x.ObjectID == id && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = i.Name }).ToList();
-						
+
 						if (list.Count > 0)
 						{
 							list.Insert(0, new PrimeSelectItem { label = "", value = "" });
@@ -1966,7 +1946,7 @@ namespace d360.web.Controllers.V2
 				var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid) t 
 																		  where not exists(select 1 from intersecttypedetail itd where itd.uid = t.uid and ((itd.object = @ObjectType and itd.ObjectID = 0) or (itd.subject = @ObjectType and itd.subjectID = 0)))",
 																		  new { assetTypeUid, ObjectType = SystemObjects.ReferenceItemType.ToString() }, ApiTimeout);
-				
+
 				return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
 			}
 			catch (RestApiException ex)
@@ -2077,8 +2057,8 @@ namespace d360.web.Controllers.V2
 			{
 				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 				SendException(
-					ex, 
-					new Dictionary<string, string> 
+					ex,
+					new Dictionary<string, string>
 					{
 						{ "Endpoint Method", prefix }
 					});
@@ -2297,7 +2277,7 @@ namespace d360.web.Controllers.V2
 				SystemObjects type;
 				int id = 0;
 				var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
-				
+
 				if (intersectType == null)
 				{
 					return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
@@ -2579,7 +2559,7 @@ namespace d360.web.Controllers.V2
 				if (assetTypeUid == Guid.Empty && fieldName == "EvaluatedAssetClass")
 				{
 					var classInfos = AssetTypeClass.BusinessAsset.GetAsList().Where(x => x.ID == AssetTypeClass.BusinessAsset || x.ID == AssetTypeClass.TechnicalAsset);
-					
+
 					if (!string.IsNullOrEmpty(filter))
 					{
 						classInfos = classInfos.Where(x => x.Name.ToLower(CultureInfo.InvariantCulture).Contains(filter.ToLower(CultureInfo.InvariantCulture).Trim('\''))
@@ -2729,7 +2709,7 @@ namespace d360.web.Controllers.V2
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
 										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
 										cross apply dbo.GetAssetLevelById(A.ID) LV
-								where coalesce(LV.[Level], 1) <= '{ hierarchyItem?.Level ?? 1}' {whereQuery}
+								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								order by P.TextPath 
 								{pagingQuery}
 								option (maxrecursion 100)
@@ -2739,7 +2719,7 @@ namespace d360.web.Controllers.V2
 										inner join AssetType T on T.ID = A.AssetTypeID and T.Id = @id
 										cross apply dbo.GetAssetTextPathById(A.ID, ' / ') P
 										cross apply dbo.GetAssetLevelById(A.ID) LV
-								where coalesce(LV.[Level], 1) <= '{ hierarchyItem?.Level ?? 1}' {whereQuery}
+								where coalesce(LV.[Level], 1) <= '{hierarchyItem?.Level ?? 1}' {whereQuery}
 								option (maxrecursion 100)";
 					}
 
@@ -2861,7 +2841,7 @@ namespace d360.web.Controllers.V2
 					inner join assettype at on at.Object = ft.LookupObjectType + 'Type' and at.ObjectID = ft.LookupObjectID
 					inner join asset a on a.AssetTypeID = at.ID
 					where ft.id = @fieldTypeId and a.color is not null", new { fieldTypeId }).FirstOrDefault() > 0;
-					
+
 					if (hasColor)
 					{
 						selectStatement = "JSON_VALUE(colorJson.FV,'$.name') AS text,JSON_VALUE(colorJson.FV,'$.color') AS color, v.value";
@@ -2972,7 +2952,7 @@ namespace d360.web.Controllers.V2
 			public string text { get; set; }
 
 			public string value { get; set; }
-			
+
 			public string color { get; set; }
 		}
 
@@ -2999,7 +2979,7 @@ namespace d360.web.Controllers.V2
 				var dbArgs = new DynamicParameters();
 
 				var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
-				
+
 				if (fieldType.Type == DataType.OwnershipLookup.ToString())
 				{
 					if (filterName == "ResponsibilityTypeName")
@@ -3264,7 +3244,7 @@ namespace d360.web.Controllers.V2
 				var asset = AssetRepository.GetAssetByUID(assetUid);
 				var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
 				var fieldType = Company.FieldTypes.FirstOrDefault(x => x.AssetTypeID == assetType.ID && x.Name == fieldName);
-				
+
 				if (fieldType.Type == DataType.OwnershipLookup.ToString())
 				{
 					var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
@@ -3272,7 +3252,7 @@ namespace d360.web.Controllers.V2
 
 					response.items.Add(new FieldTypeApiViewModel { Name = "ResponsibilityTypeName", FriendlyName = "Responsibility", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
 					response.items.Add(new FieldTypeApiViewModel { Name = "ResourceName", FriendlyName = "Assigned User/Group", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
-					
+
 					if (definition.DisplayAssignmentSource)
 					{
 						response.items.Add(new FieldTypeApiViewModel { Name = "SecurityAssetName", FriendlyName = "Via", Type = new FieldTypeDataTypeApiViewModel { Lookup = new FieldTypeDataTypeLookupApiViewModel { List = new FieldTypeDataTypeLookupApiViewModel_List() } }, Category = "" });
@@ -3286,12 +3266,12 @@ namespace d360.web.Controllers.V2
 				{
 					Guid? assetTypeUid = Guid.Empty;
 					var fields = FieldsRepository.GetFieldDefinitionForComplexLookupFieldType(fieldType, assetUid, true).ToList();
-					
+
 					if (fields.Count > 0)
 					{
 
 						var assettypeid = fields.Where(x => x.AssetTypeID != null).FirstOrDefault()?.AssetTypeID;
-						
+
 						if (assettypeid.HasValue)
 						{
 							assetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.ID == assettypeid)?.uid;
@@ -3316,7 +3296,7 @@ namespace d360.web.Controllers.V2
 							{
 								var @object = f.LookupObjectType.EndsWith("Type") ? f.LookupObjectType : f.LookupObjectType + "Type";
 								var lookupAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == @object && x.ObjectID == f.LookupObjectID);
-								
+
 								if (lookupAssetType != null)
 								{
 									c.AssetTypeUid = lookupAssetType.uid;
@@ -3443,7 +3423,7 @@ namespace d360.web.Controllers.V2
 			catch (Exception ex)
 			{
 				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {{ "Endpoint Method", prefix}});
+				SendException(ex, new Dictionary<string, string> { { "Endpoint Method", prefix } });
 
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}
