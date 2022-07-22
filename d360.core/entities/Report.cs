@@ -230,4 +230,78 @@ namespace d360.core.entities
 		[DataMember]
 		public string Password { get; set; }
 	}
+
+	public class DashboardApiGetModelFilter
+	{
+		public Guid? uid = null;
+		public DashboardLocation? location = null;
+		public int? id = null;
+		public Guid? assetTypeUid = null;
+		public Guid? assetUid = null;
+
+		public List<string> Errors = new List<string>();
+		public DashboardApiGetModelFilter(IEnumerable<KeyValuePair<string, string>> queryParams)
+		{
+			if (queryParams != null)
+			{
+				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "uid")
+					&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value))
+				{
+					Guid _uid;
+					Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value, out _uid);
+					this.uid = _uid;
+					if (this.uid == Guid.Empty)
+					{
+						Errors.Add(DashboardMessages.InvalidDashboardUid);
+					}
+				}
+
+				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "location")
+					&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value))
+				{
+					var value = queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value.ToLowerInvariant().Trim();
+					switch (value)
+					{
+						case "1":
+						case "list": this.location = DashboardLocation.List; break;
+						case "2":
+						case "detail": this.location = DashboardLocation.Detail; break;
+						case "3":
+						case "homepage": this.location = DashboardLocation.Homepage; break;
+						default: Errors.Add(DashboardMessages.InvalidDashboardLocation); break;
+					}
+				}
+
+				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assettypeuid")
+					&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value))
+				{
+					Guid _uid;
+					Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value, out _uid);
+					this.assetTypeUid = _uid;
+					if (this.assetTypeUid == Guid.Empty)
+					{
+						Errors.Add(DashboardMessages.InvalidDashboardDashboardAssetTypeUid);
+					}
+				}
+				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid")
+					&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value))
+				{
+					Guid _uid;
+					Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value, out _uid);
+					this.assetUid = _uid;
+					if (this.assetUid == Guid.Empty)
+					{
+						Errors.Add(DashboardMessages.InvalidDashboardDashboardAssetUid);
+					}
+				}
+				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id")
+					&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value))
+				{
+					int _id;
+					int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value, out _id);
+					this.id = _id;
+				}
+			}
+		}
+	}
 }

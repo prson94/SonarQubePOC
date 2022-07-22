@@ -2130,55 +2130,15 @@ namespace d360.web.Controllers.V2
 		{
 			try
 			{
-				Guid? uid = null;
-				DashboardLocation? location = null;
-				int? id = null;
-				Guid? assetTypeUid = null;
-				Guid? assetUid = null;
 				var queryParams = Request.GetQueryNameValuePairs();
+				DashboardApiGetModelFilter getModelFilter = new DashboardApiGetModelFilter(queryParams);
 
-				if (queryParams != null)
+				if (getModelFilter.Errors.Count > 0)
 				{
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "uid")
-						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value))
-					{
-						Guid _uid;
-						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value, out _uid);
-						uid = _uid;
-					}
-
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "location")
-						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value))
-					{
-						DashboardLocation _location;
-						Enum.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value, out _location);
-						location = _location;
-					}
-
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assettypeuid")
-						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value))
-					{
-						Guid _uid;
-						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value, out _uid);
-						assetTypeUid = _uid;
-					}
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid")
-						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value))
-					{
-						Guid _uid;
-						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value, out _uid);
-						assetUid = _uid;
-					}
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id")
-						&& !string.IsNullOrEmpty(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value))
-					{
-						int _id;
-						int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value, out _id);
-						id = _id;
-					}
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Join(", ", getModelFilter.Errors));
 				}
 
-				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id, assetTypeUid, assetUid);
+				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
@@ -2188,7 +2148,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 

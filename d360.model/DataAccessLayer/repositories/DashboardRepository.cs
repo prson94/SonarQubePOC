@@ -144,7 +144,7 @@ namespace d360.model.DataAccessLayer
 			return true;
 		}
 
-		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id, Guid? assetTypeUid, Guid? assetUid)
+		public async Task<List<DashboardApiGetModel>> GetDashboardsAsync(DashboardApiGetModelFilter filters)
 		{
 			var dbArgs = new DynamicParameters();
 			List<string> whereStatements = new List<string>();
@@ -152,38 +152,38 @@ namespace d360.model.DataAccessLayer
 			Asset asset = null;
 			int assetTypeId = 0;
 
-			if (assetTypeUid.HasValue)
+			if (filters.assetTypeUid.HasValue)
 			{
-				dbArgs.Add("assetTypeUid", assetTypeUid.Value);
-				assetTypeId = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid.Value).ID;
+				dbArgs.Add("assetTypeUid", filters.assetTypeUid.Value);
+				assetTypeId = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == filters.assetTypeUid.Value).ID;
 				whereStatements.Add("at.uid = @assetTypeUid");
 				isTypePage = true;
 			}
 
-			if (assetUid.HasValue)
+			if (filters.assetUid.HasValue)
 			{
-				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == assetUid);
+				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == filters.assetUid);
 				assetTypeId = asset.AssetTypeID;
 				dbArgs.Add("assetTypeId", assetTypeId);
 				whereStatements.Add("at.id = @assetTypeId");
 				isTypePage = false;
 			}
 
-			if (uid.HasValue)
+			if (filters.uid.HasValue)
 			{
-				dbArgs.Add("uid", uid);
+				dbArgs.Add("uid", filters.uid);
 				whereStatements.Add("r.uid = @uid");
 			}
 
-			if (location.HasValue)
+			if (filters.location.HasValue)
 			{
-				dbArgs.Add("location", (int)location);
+				dbArgs.Add("location", (int)filters.location);
 				whereStatements.Add("r.location = @location");
 			}
 
-			if (id.HasValue)
+			if (filters.id.HasValue)
 			{
-				dbArgs.Add("id", id.Value);
+				dbArgs.Add("id", filters.id.Value);
 				whereStatements.Add("r.id = @id");
 			}
 
@@ -210,7 +210,7 @@ namespace d360.model.DataAccessLayer
 				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x => Guid.Parse(x)).ToList();
 			});
 
-			if (assetTypeUid.HasValue || assetUid.HasValue)
+			if (filters.assetTypeUid.HasValue || filters.assetUid.HasValue)
 			{
 				FilterDashboardsByResponsibilities(isTypePage, asset, assetTypeId, data);
 			}

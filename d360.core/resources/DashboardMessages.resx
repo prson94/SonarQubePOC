@@ -135,6 +135,12 @@
   <data name="ErrorOnUpdate" xml:space="preserve">
     <value>Error updating dashboard</value>
   </data>
+  <data name="InvalidDashboardDashboardAssetTypeUid" xml:space="preserve">
+    <value>Invalid Asset Type Uid provided.</value>
+  </data>
+  <data name="InvalidDashboardDashboardAssetUid" xml:space="preserve">
+    <value>Invalid Asset Uid provided.</value>
+  </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
     <value>Invalid Location. Valid values are List, Detail or Homepage</value>
   </data>
