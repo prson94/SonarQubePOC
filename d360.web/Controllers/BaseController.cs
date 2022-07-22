@@ -97,6 +97,8 @@ namespace d360.web.Controllers
         ISettingsRepository SettingsRepository { get; set; }
 
         IThemeRepository ThemeRepository { get; set; }
+		
+		IRuntimeInfo RuntimeInfo { get; set; }
 
         LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
     }
@@ -115,24 +117,28 @@ namespace d360.web.Controllers
 
         public LaunchDarkly.Sdk.Server.LdClient Ld { get; set; }
 
-        public CoreComponentSet(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository, IThemeRepository themeRepository, LaunchDarkly.Sdk.Server.LdClient ld)
-        {
-            Company = company;
-            Community = community;
-            Ld = ld;
-            Mail = mail;
-            SettingsRepository = settingsRepository;
-            ThemeRepository = themeRepository;
-        }
-    }
+		public IRuntimeInfo RuntimeInfo { get; set; }
+
+		public CoreComponentSet(ICommunityContext community, ICompanyContext company, IMailProvider mail, ISettingsRepository settingsRepository, IThemeRepository themeRepository, LaunchDarkly.Sdk.Server.LdClient ld, IRuntimeInfo runtimeInfo)
+		{
+			Company = company;
+			Community = community;
+			Ld = ld;
+			Mail = mail;
+			SettingsRepository = settingsRepository;
+			ThemeRepository = themeRepository;
+			RuntimeInfo = runtimeInfo;
+		}
+	}
 
     public class BaseApiController : ApiController
     {
         internal ICompanyContext Company;
         internal ICommunityContext Community;
         internal ISettingsRepository SettingsRepository;
-        internal LaunchDarkly.Sdk.Server.LdClient Ld;
-        internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
+		internal LaunchDarkly.Sdk.Server.LdClient Ld;
+		internal IRuntimeInfo RuntimeInfo;
+		internal List<string> CalculatedFieldTypes = DataType.Text.GetComputedFields();
 
         internal const int MAX_SYNCHRONOUS_API_ITEM_COUNT = 250;
 
@@ -167,6 +173,7 @@ namespace d360.web.Controllers
             Community = set.Community;
             Ld = set.Ld;
             SettingsRepository = set.SettingsRepository;
+			RuntimeInfo = set.RuntimeInfo;
         }
 
         #region Feature Flag Logic
@@ -286,8 +293,8 @@ namespace d360.web.Controllers
         [Obsolete("You should throw appropriate exception instead of this method.")]
         protected internal HttpResponseMessage ReturnApiError(HttpStatusCode status, string title, string message)
         {
-	        // moved some code from exception handler (until this method will be removed)
-	        var runtimeInfo = DependencyResolver.Current.GetService<IRuntimeInfo>();
+			// moved some code from exception handler (until this method will be removed)
+			var runtimeInfo = this.RuntimeInfo;
 	        var problem = new ProblemDetailsResponse
 	        {
 		        Type = "error",
