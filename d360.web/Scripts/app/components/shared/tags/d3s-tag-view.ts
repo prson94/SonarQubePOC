@@ -97,12 +97,14 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                             });
                             if (!tagExists) {
                                 this.tags = this.tags.concat([{ Value: message.data, uid: null }]);
+								this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 this.ref.detectChanges();
                             }
                         }
                     } else if (message.messageType === GenericMessageType.DeleteTag
                         && ((message.assetUIDList && message.assetUIDList.indexOf(this.assetUID) > -1) || message.uid === this.assetUID)) {
                         this.tags = this.tags.filter((x) => x.Value !== message.data);
+						this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                         this.ref.detectChanges();
                     }
                 }
