@@ -1186,7 +1186,7 @@ namespace d360.model.DataAccessLayer
 				{
 					await companyContext.Connection.ExecuteAsync(@"
 					DROP TABLE IF EXISTS #bulkTags;
-					CREAT TABLE #bulkTags
+					CREATE TABLE #bulkTags
 					(
 						Id int identity not null,
 						AssetUid uniqueidentifier not null,

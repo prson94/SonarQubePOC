@@ -20,7 +20,7 @@ namespace igx.jobs.bulkloadprocessor
 		const string FunctionName = "BulkLoadTag_Process";
 		const string BulkMethodName = "BULK";
 
-		public async static Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent")] Message brokeredMessage)
+		public async Task Run([ServiceBusTrigger("%EventBusTopicName%", "BatchApiEvent")] Message brokeredMessage)
 		{
 			string messageString;
 			BatchApiEvent info;
