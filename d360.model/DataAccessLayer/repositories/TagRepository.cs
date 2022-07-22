@@ -301,10 +301,12 @@ namespace d360.model.DataAccessLayer
 						break;
 					case "globalsearch":
 						dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
-						whereClauses.Add("LOWER(t.Value) like @value");
-						whereClauses.Add("STR(Tags.count) like @value");
+						List<string> simpleSearchWheres = new List<string>();
+						simpleSearchWheres.Add("LOWER(t.Value) like @value");
+						simpleSearchWheres.Add("STR(Tags.count) like @value");
+						simpleSearchWheres.Add("concat(grc.FirstName, ' ', grc.LastName) like @value");
 
-						whereOperater = " or ";
+						whereClauses.Add($"({string.Join(" or ", simpleSearchWheres)})");
 
 						break;
 					case "value":
@@ -846,11 +848,11 @@ namespace d360.model.DataAccessLayer
 							}
 						}
 						break;
-					case "displayvalue":
+					case "displaypath":
 						if (!hasGlobalSearch)
 						{
-							dbArgs.Add("displayvalue", $"%{param.Value.ToLower()}%");
-							whereClauses.Add("(ADV.DisplayValue like @displayvalue or node.DisplayPath like @displayValue)");
+							dbArgs.Add("displaypath", $"%{param.Value.ToLower()}%");
+							whereClauses.Add("(node.DisplayPath like @displaypath)");
 						}
 						else
 						{
@@ -929,9 +931,9 @@ namespace d360.model.DataAccessLayer
 						break;
 					case "sortby":
 
-						if (param.Value.ToLower() == "displayvalue")
+						if (param.Value.ToLower() == "displaypath")
 						{
-							sortField = "displayvalue";
+							sortField = "node.displaypath";
 						}
 						else if (param.Value.ToLower() == "assettype")
 						{
