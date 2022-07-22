@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -2568,7 +2569,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 			]
-		public HttpResponseMessage GetFilterVales(Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
+		public async Task<HttpResponseMessage> GetFilterVales(CancellationToken cancellationToken, Guid assetTypeUid, string fieldName, int? skip = null, int? take = 0, string filter = null, string lookupParentValue = null, bool isForAssetForm = false, Guid? assetUid = null)
 		{
 			var prefix = "Fields.GetFilterVales => ";
 			try
@@ -2743,8 +2744,8 @@ namespace d360.web.Controllers.V2
 								option (maxrecursion 100)";
 					}
 
-
-					var resultsAssets = Company.Connection.QueryMultiple(sql, new { atype.ID, skip, take, filter });
+					var cmd = new CommandDefinition(sql, cancellationToken: cancellationToken, parameters: new { atype.ID, skip, take, filter });
+					var resultsAssets = await Company.Connection.QueryMultipleAsync(cmd);
 					var items = resultsAssets.Read<DDLSelectItem>().ToList();
 
 					if (isHierarchyGrid)
