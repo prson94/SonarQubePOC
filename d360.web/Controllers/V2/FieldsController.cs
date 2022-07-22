@@ -771,7 +771,9 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					var typePermissions = Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
+					var typePermissions = typeIdentifierInfoModel == null 
+						? null 
+						: Company.GetTypePermissions(typeIdentifierInfoModel.Object, typeIdentifierInfoModel.ObjectID);
 					
 					if (typePermissions != null)
 					{
