@@ -497,7 +497,7 @@ namespace d360.model
 
         Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
         
-        Task BulkLoadAssets(Load load, IAssetRepository repository);
+        Task BulkLoadAssets(Load load, IAssetRepository repository, ITagRepository tagRepository);
 
         void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
 
@@ -556,10 +556,13 @@ namespace d360.model
         List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool isInsert = false, bool hasLookupFieldTypes = true);
         
         void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true);
-        
-        void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false);
-        
-        List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
+
+		void SendBatchApiCompletedEvent(ApiExecution execution);
+
+		void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false);
+		Task<IEnumerable<BulkTagAsset>> GetBulkTagAssetsAsync(int loadId, Guid executionId);
+
+		List<Guid> GetImpactedMeasureVersionsBy(MetricGovernanceCheckType check, int typeId);
 
         string GetCounterFieldValue(int fieldTypeId, long assetId);
         

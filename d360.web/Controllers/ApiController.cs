@@ -2409,7 +2409,7 @@ namespace d360.web.Controllers
 			int objectId = int.Parse(row.ID.ToString());
 			var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
 			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.Object == "RuleType" && x.ObjectID == id).ID;
-			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy);
+			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List);
 
 			return Request.CreateResponse<dynamic>(
 				new Dictionary<string, object>() {
@@ -4175,6 +4175,10 @@ namespace d360.web.Controllers
 							if (report.Location == DashboardLocation.Detail)
 							{
 								objectName += " Instance: ";
+							}
+							else
+							{
+								objectName += ": ";
 							}
 							objectName += assetType.Name;
 

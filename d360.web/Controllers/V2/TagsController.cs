@@ -287,14 +287,14 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorRemoveTag, ApiMessages.ErrorInvalidDatasetMessage);
+                throw new ArgumentException(ApiMessages.ErrorInvalidDatasetMessage);
             }
 
             foreach (var item in model)
             {
                 if (!tagRepository.DoesTagExists(item.uid))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
+                    throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
                 }
 
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
@@ -303,19 +303,12 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            try
-            {
-                if (!tagRepository.DeleteTags(model))
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
-                }
-            }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, TagsApiMessages.ErrorRemoveTag, ex.Message);
-            }
+			if (!tagRepository.DeleteTags(model))
+			{
+				throw new UnauthorizedBusinessLayerException(TagsApiMessages.TagNotFound);
+			}
 
-            return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage);
+			return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage);
         }
 
         /// <summary>
@@ -395,9 +388,12 @@ namespace d360.web.Controllers.V2
             ApiExplorerSettings(IgnoreApi = true),
             Route("export"),
             FileDownload,
+			RequireAdminPermissions,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
-            SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)), 
+			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ExportToExcel()
         {
