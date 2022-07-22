@@ -144,48 +144,23 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
 		{
-			var prefix = "Assets.GetAssetTypesAsync => ";
-			string errorMessage;
-
-			try
+			if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
 			{
-				if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
-				{
-					var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
+				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
 
+				if (assetType == null)
+				{
 					if (assetType == null)
 					{
-						if (assetType == null)
-						{
-							return ReturnApiError(HttpStatusCode.BadRequest, AssetTypeErrors.NotFoundGeneric);
-						}
+						throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
 					}
 				}
-
-				var queryParams = Request.GetQueryNameValuePairs();
-				var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
-
-				return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
 			}
-			catch (ArgumentException ex)
-			{
-				return ReturnApiError(HttpStatusCode.BadRequest, ex.Message);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				if (ex is FormatException)
-				{
-					errorMessage = errorMessage.Replace("Guid", ApiMessages.UidConstant);
-				}
+			var queryParams = Request.GetQueryNameValuePairs();
+			var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
 
-				SendException(ex, new Dictionary<string, string>() {
-					{ApiMessages.EndpointMethod, prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
 		}
 
 		string calculateCacheKeyForGetAssetsTotal(int assetTypeId, IEnumerable<KeyValuePair<string, string>> queryParams)
