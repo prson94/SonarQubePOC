@@ -233,13 +233,21 @@ namespace d360.core.entities
 
 	public class DashboardApiGetModelFilter
 	{
-		public Guid? uid = null;
-		public DashboardLocation? location = null;
-		public int? id = null;
-		public Guid? assetTypeUid = null;
-		public Guid? assetUid = null;
+		private Guid? uid = null;
+		private DashboardLocation? location = null;
+		private int? id = null;
+		private Guid? assetTypeUid = null;
+		private Guid? assetUid = null;
 
-		public List<string> Errors = new List<string>();
+		private List<string> errors = new List<string>();
+
+		public Guid? Uid { get { return this.uid; } }
+		public DashboardLocation? Location { get { return this.location; } }
+		public int? Id { get { return this.id; } }
+		public Guid? AssetTypeUid { get { return this.assetTypeUid; } }
+		public Guid? AssetUid { get { return this.assetUid; } }
+		public List<string> Errors { get { return this.errors; } }
+
 		public DashboardApiGetModelFilter(IEnumerable<KeyValuePair<string, string>> queryParams)
 		{
 			if (queryParams != null)
@@ -252,7 +260,7 @@ namespace d360.core.entities
 					this.uid = _uid;
 					if (this.uid == Guid.Empty)
 					{
-						Errors.Add(DashboardMessages.InvalidDashboardUid);
+						this.errors.Add(DashboardMessages.InvalidDashboardUid);
 					}
 				}
 
@@ -268,7 +276,7 @@ namespace d360.core.entities
 						case "detail": this.location = DashboardLocation.Detail; break;
 						case "3":
 						case "homepage": this.location = DashboardLocation.Homepage; break;
-						default: Errors.Add(DashboardMessages.InvalidDashboardLocation); break;
+						default: this.errors.Add(DashboardMessages.InvalidDashboardLocation); break;
 					}
 				}
 
@@ -280,7 +288,7 @@ namespace d360.core.entities
 					this.assetTypeUid = _uid;
 					if (this.assetTypeUid == Guid.Empty)
 					{
-						Errors.Add(DashboardMessages.InvalidDashboardDashboardAssetTypeUid);
+						this.errors.Add(DashboardMessages.InvalidDashboardDashboardAssetTypeUid);
 					}
 				}
 				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid")
@@ -291,7 +299,7 @@ namespace d360.core.entities
 					this.assetUid = _uid;
 					if (this.assetUid == Guid.Empty)
 					{
-						Errors.Add(DashboardMessages.InvalidDashboardDashboardAssetUid);
+						this.errors.Add(DashboardMessages.InvalidDashboardDashboardAssetUid);
 					}
 				}
 				if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id")
@@ -303,5 +311,7 @@ namespace d360.core.entities
 				}
 			}
 		}
+
+
 	}
 }

@@ -152,38 +152,38 @@ namespace d360.model.DataAccessLayer
 			Asset asset = null;
 			int assetTypeId = 0;
 
-			if (filters.assetTypeUid.HasValue)
+			if (filters.AssetTypeUid.HasValue)
 			{
-				dbArgs.Add("assetTypeUid", filters.assetTypeUid.Value);
-				assetTypeId = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == filters.assetTypeUid.Value).ID;
+				dbArgs.Add("assetTypeUid", filters.AssetTypeUid.Value);
+				assetTypeId = CompanyContext.AssetTypes.FirstOrDefault(x => x.uid == filters.AssetTypeUid.Value).ID;
 				whereStatements.Add("at.uid = @assetTypeUid");
 				isTypePage = true;
 			}
 
-			if (filters.assetUid.HasValue)
+			if (filters.AssetUid.HasValue)
 			{
-				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == filters.assetUid);
+				asset = CompanyContext.Assets.FirstOrDefault(x => x.uid == filters.AssetUid);
 				assetTypeId = asset.AssetTypeID;
 				dbArgs.Add("assetTypeId", assetTypeId);
 				whereStatements.Add("at.id = @assetTypeId");
 				isTypePage = false;
 			}
 
-			if (filters.uid.HasValue)
+			if (filters.Uid.HasValue)
 			{
-				dbArgs.Add("uid", filters.uid);
+				dbArgs.Add("uid", filters.Uid);
 				whereStatements.Add("r.uid = @uid");
 			}
 
-			if (filters.location.HasValue)
+			if (filters.Location.HasValue)
 			{
-				dbArgs.Add("location", (int)filters.location);
+				dbArgs.Add("location", (int)filters.Location);
 				whereStatements.Add("r.location = @location");
 			}
 
-			if (filters.id.HasValue)
+			if (filters.Id.HasValue)
 			{
-				dbArgs.Add("id", filters.id.Value);
+				dbArgs.Add("id", filters.Id.Value);
 				whereStatements.Add("r.id = @id");
 			}
 
@@ -210,7 +210,7 @@ namespace d360.model.DataAccessLayer
 				data.Responsibilities = string.IsNullOrEmpty(data._responsibilities) ? null : data._responsibilities.Split(',').Select(x => Guid.Parse(x)).ToList();
 			});
 
-			if (filters.assetTypeUid.HasValue || filters.assetUid.HasValue)
+			if (filters.AssetTypeUid.HasValue || filters.AssetUid.HasValue)
 			{
 				FilterDashboardsByResponsibilities(isTypePage, asset, assetTypeId, data);
 			}
