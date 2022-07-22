@@ -315,7 +315,7 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Link")
 						 {
-							 fieldColumns.Add($"NULLIF({tableAlias}.{valueColumn},'|') as [{columnName}]");
+							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]");
 						 }
 						 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
 						 {
