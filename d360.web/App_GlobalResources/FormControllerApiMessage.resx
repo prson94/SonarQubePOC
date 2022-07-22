@@ -223,7 +223,7 @@
     <value>Failed to generate embed token.</value>
   </data>
   <data name="FailedToLoadPowerBI" xml:space="preserve">
-    <value>FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!</value>
+    <value>Failed to load Power BI Worksheet into workspace!</value>
   </data>
   <data name="FavoriteMoved" xml:space="preserve">
     <value>Favorite moved successfully.</value>

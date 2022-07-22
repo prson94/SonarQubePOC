@@ -8,7 +8,7 @@ namespace d360.model.DataAccessLayer
 {
 	public interface IDashboardRepository
 	{
-		Task<List<DashboardApiGetModel>> GetDashboardsAsync(Guid? uid, DashboardLocation? location, int? id, Guid? assetTypeUid, Guid? assetUid);
+		Task<List<DashboardApiGetModel>> GetDashboardsAsync(DashboardApiGetModelFilter filters);
 		Task<DashboardApiGetModel> PostDashboardAsync(DashboardApiUpsertModel postModel);
 		Task<DashboardApiGetModel> PutDashboardAsync(DashboardApiUpsertModel model);
 		bool DeleteDashboard(Guid? uid);

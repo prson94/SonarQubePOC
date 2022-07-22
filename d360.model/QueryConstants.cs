@@ -486,7 +486,7 @@ namespace d360.model
 					T.UpdatedBy,	
 					S.AllowSynonyms,
 					T.Uid,
-					(select cast(count(1) as bit) from report r where r.assettypeid = T.Id and r.ReportType != {(int)DashboardType.Legacy}) as HasDashboards	
+					(select cast(count(1) as bit) from report r where r.assettypeid = T.Id and r.ReportType != {(int)DashboardType.Legacy} and r.Location = {(int)DashboardLocation.List}) as HasDashboards	
 				from	AssetType T		
 						cross apply (
 									select	case 
