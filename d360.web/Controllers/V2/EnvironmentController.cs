@@ -2216,29 +2216,36 @@ namespace d360.web.Controllers.V2
 
 				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
 				{
-					var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
-
-					if (importResult.ImportState == "Failed")
+					try
 					{
-						throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
+						var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
+
+						if (importResult.ImportState == "Failed")
+						{
+							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+						}
+
+						definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
+
+						var rpt = importResult.Reports.FirstOrDefault();
+
+						if (rpt != null)
+						{
+							definition.powerBiReportId = rpt.Id.ToString();
+						}
+
+						definition.fileName = file.FileName;
+
+						requestModel.Definition = definition;
 					}
-
-					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
-
-					var rpt = importResult.Reports.FirstOrDefault();
-
-					if (rpt != null)
+					catch (Exception ex)
 					{
-						definition.powerBiReportId = rpt.Id.ToString();
+						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 					}
-
-					definition.fileName = file.FileName;
-
-					requestModel.Definition = definition;
 				}
 				else if (requestModel.DashboardType == DashboardType.PowerBi && file == null)
 				{
-					throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
+					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FileRequired);
 				}
 
 				var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);
