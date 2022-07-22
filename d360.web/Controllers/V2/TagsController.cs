@@ -236,7 +236,7 @@ namespace d360.web.Controllers.V2
 
             if (!tagRepository.DoesTagExists(tagUid))
             {
-                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
 
             if (!tagRepository.IsAuthorizedToEditTag(tagId))
@@ -250,7 +250,7 @@ namespace d360.web.Controllers.V2
 
             if (existingTag == null)
             {
-                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
 
             if (tagRepository.DoesTagExists(tagId, model))

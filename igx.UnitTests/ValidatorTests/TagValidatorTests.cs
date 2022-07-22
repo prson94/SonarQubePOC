@@ -121,7 +121,7 @@ namespace igx.UnitTests.ValidatorTests
         {
             var guid = new Guid();
             Action act = () => TagValidator.ValidateForPut(guid, new TagApiUpsertModel() { });
-            var exception = Assert.Throws<Exception>(act);
+            var exception = Assert.Throws<ArgumentException>(act);
 
             Assert.True(exception.Message.Contains("[no value]"), XMsg.BadResponseMessage);
 
@@ -137,7 +137,7 @@ namespace igx.UnitTests.ValidatorTests
             Guid guid = new Guid();
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
-            var exception = Assert.Throws<Exception>(act);
+            var exception = Assert.Throws<ArgumentException>(act);
 
             Assert.True(exception.Message.Contains("[too long]"), XMsg.BadResponseMessage);
 
@@ -153,7 +153,7 @@ namespace igx.UnitTests.ValidatorTests
             Guid guid = Guid.Empty;
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
-            var exception = Assert.Throws<Exception>(act);
+            var exception = Assert.Throws<ArgumentException>(act);
 
             Assert.True(exception.Message.Contains("Invalid uid"), XMsg.BadResponseMessage);
 
