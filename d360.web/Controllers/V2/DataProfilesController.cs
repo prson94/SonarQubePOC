@@ -567,7 +567,7 @@ namespace d360.web.Controllers.V2
 
 				if(!startDate.HasValue && !endDate.HasValue)
 				{
-					var currentProfile = await Company.AssetDataProfile.OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefaultAsync();
+					var currentProfile = await Company.AssetDataProfile.Where(ADP=> ADP.AssetId == asset.ID).OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefaultAsync();
 					if(currentProfile!= null)
 					{
 						startDate = endDate = currentProfile.ProfileSetDate;

@@ -1207,7 +1207,11 @@ namespace d360.model.DataAccessLayer
 
 			if(!hasStartDate && !hasEndDate)
 			{
-				var profile = CompanyContext.AssetDataProfile.OrderByDescending(adp => adp.ProfileSetDate).First(adp => adp.AssetId == asset.ID);
+				var profile = CompanyContext.AssetDataProfile.Where(adp => adp.AssetId == asset.ID).OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefault();
+				if(profile == null)
+				{
+					return new List<DataProfileDeleteResponse> { new DataProfileDeleteResponse { uid = asset.uid, DeletedCount = 0 } };
+				}
 				startDate = endDate = profile.ProfileSetDate;
 			}
 
