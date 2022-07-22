@@ -248,7 +248,9 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.folderModel.Icon && typeof this.folderModel.Icon !== "string") {
 			let path: string = this.folderModel.Icon["path"];
 			if (path.indexOf(this.folderModel.ImageIconUrl) !== -1) {
-				folder.Icon = this.folderModel.ImageIconUrl;
+				folder.ImageIconUrl = this.folderModel.ImageIconUrl;
+				folder.Icon = null;
+				folder.IconPayload = null;
 			}
 		}
 
@@ -282,16 +284,8 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 					});
 				break;
 			case FormMode.Adding:
-
-				this.folderModel.IconPayload = this.iconImage.dataUrl;
-				this.folderModel.Permissions = [];
-				this.selectedPermissionAssets.forEach((p) => {
-					var legacyData = (p["Value"] as string).split('|');
-					this.folderModel.Permissions.push({ Name: p.Text, Object: legacyData[0], ObjectID: +legacyData[1], SiteNavID: 0 });
-				});
-
 				var model = {
-					folder: this.folderModel,
+					folder: this.getModel(),
 					items: this.newFolderItems,
 				};
 
