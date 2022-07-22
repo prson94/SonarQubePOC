@@ -120,23 +120,5 @@ namespace igx.UnitTests.V2ControllerTests
 
 			act.Should().ThrowExactly<ArgumentException>();
         }
-
-        [Fact]
-        public void PutTag_ErrorInvalidName()
-        {
-            var model = new TagApiUpsertModel() { Value = "invalid name" };
-
-            var actionResult = tagsController.Put(DataConstants.InvalidGUID, model);
-
-            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-
-            var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<JToken>(str);
-
-            Assert.True(data != null, XMsg.InvalidJSON);
-            Assert.True(data["type"] != null && data["type"].ToString() == "error", "Invalid type field");
-            Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-
-        }
     }
 }
