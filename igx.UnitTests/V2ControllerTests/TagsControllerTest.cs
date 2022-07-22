@@ -10,6 +10,7 @@ using d360.web.Utilities;
 using Moq;
 using Xunit;
 using System.Threading.Tasks;
+using FluentAssertions;
 
 namespace igx.UnitTests.V2ControllerTests
 {
@@ -98,7 +99,7 @@ namespace igx.UnitTests.V2ControllerTests
         {
             var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
-            var actionResult = tagsController.Put(Guid.Parse(DataConstants.ValidGUID), model);
+            var actionResult = tagsController.Put(DataConstants.ValidGUID, model);
 
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
@@ -115,26 +116,17 @@ namespace igx.UnitTests.V2ControllerTests
         {
             var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
-            var actionResult = tagsController.Put(Guid.Parse(DataConstants.InvalidGUID), model);
+            Action act = () => tagsController.Put(DataConstants.InvalidGUID, model);
 
-            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-
-            var str = res.Result.Content.ReadAsStringAsync().Result;
-            var data = JsonConvert.DeserializeObject<JToken>(str);
-
-            Assert.True(data != null, XMsg.InvalidJSON);
-            Assert.True(data["type"] != null && data["type"].ToString() == "error", "Invalid type field");
-            Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-
+			act.Should().ThrowExactly<ArgumentException>();
         }
-
 
         [Fact]
         public void PutTag_ErrorInvalidName()
         {
             var model = new TagApiUpsertModel() { Value = "invalid name" };
 
-            var actionResult = tagsController.Put(Guid.Parse(DataConstants.InvalidGUID), model);
+            var actionResult = tagsController.Put(DataConstants.InvalidGUID, model);
 
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
 
@@ -146,6 +138,5 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(!res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
 
         }
-
     }
 }

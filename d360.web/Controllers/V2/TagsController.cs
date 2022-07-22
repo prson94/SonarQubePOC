@@ -219,51 +219,48 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             MapToApiVersion("2.0"),
-            Route("{tagUid:Guid}"),
+            Route("{tagUid:string}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult Put(Guid tagUid, TagApiUpsertModel model)
+        public IHttpActionResult Put(string tagUid, TagApiUpsertModel model)
         {
+			Guid tagId;
+			if (!Guid.TryParse(tagUid, out tagId))
+			{
+				throw new ArgumentException(ApiMessages.InvalidGuid);
+			}
+
             if (!tagRepository.DoesTagExists(tagUid))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorUpdateTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
             }
 
-            if (!tagRepository.IsAuthorizedToEditTag(tagUid))
+            if (!tagRepository.IsAuthorizedToEditTag(tagId))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+                throw new ForbiddenBusinessLayerException(ApiMessages.AccessDenied);
             }
 
-            TagApiModel result;
+            model.Value = model.Value.Trim();
+            TagValidator.ValidateForPut(tagId, model);
+            var existingTag = tagRepository.GetTagByUid(tagId);
 
-            try
+            if (existingTag == null)
             {
-                model.Value = model.Value.Trim();
-                TagValidator.ValidateForPut(tagUid, model);
-                var existingTag = tagRepository.GetTagByUid(tagUid);
-
-                if (existingTag == null)
-                {
-                    throw new ArgumentNullException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
-                }
-
-                if (tagRepository.DoesTagExists(tagUid, model))
-                {
-                    throw new ArgumentNullException(TagsApiMessages.TagExists);
-                }
-
-                result = tagRepository.UpdateTag(tagUid, model, existingTag);
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
             }
-            catch (Exception e)
+
+            if (tagRepository.DoesTagExists(tagId, model))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorUpdateTag, e.Message);
+                throw new ArgumentException(TagsApiMessages.TagExists);
             }
 
-            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+            var result = tagRepository.UpdateTag(tagId, model, existingTag);
+
+            return Ok(result);
         }
 
         /// <summary>
