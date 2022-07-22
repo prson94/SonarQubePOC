@@ -215,7 +215,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
                 this.assetTypeService.getAssetTypes(uriParams).subscribe((result) => {
                     this.assetType = result[0];
-                    this.assetTypeUid = result[0].uid;
+					this.assetTypeUid = result[0].uid;
+					this.baseAssetTypeUid = this.assetTypeUid;
                     this.uid = this.assetTypeUid;
 
                     this.levels = result[0].Levels;
