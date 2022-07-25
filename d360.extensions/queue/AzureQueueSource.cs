@@ -433,7 +433,7 @@ namespace d360.extensions.queue
         {
             var bm = GetFilteredServiceBusMessage(e);
             var sender = CreateServiceBusSender(topicName);
-            await sender.SendMessageAsync(bm);
+            await sender.SendMessageAsync(bm).ConfigureAwait(false);
         }
 
         public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
