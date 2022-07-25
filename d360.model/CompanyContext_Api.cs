@@ -1513,7 +1513,8 @@ namespace d360.model
 				Action = BatchApiEventAction.Completed,
 				ExecutionID = execution.ExecutionID
 			})
-				.Wait();
+				.GetAwaiter()
+				.GetResult();
 		}
 
         public void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
@@ -5859,9 +5860,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
 
-					SendBatchApiCompletedEvent(execution);
-					AddMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
+					try
+					{
+						SendBatchApiCompletedEvent(execution);
+						AddMeasurement(metrics, $"SendCompletedEvent", sw.ElapsedMilliseconds, ++step);
+					}
+					catch 
+					{
 
+					}
+					
 					#region Send score recalculation notifications.
 
 					if (intersectTypeID.HasValue)
