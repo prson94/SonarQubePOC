@@ -219,7 +219,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             MapToApiVersion("2.0"),
-            Route("{tagUid:string}"),
+            Route("{tagUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
