@@ -236,10 +236,18 @@ namespace igx.UnitTests
             mock.Setup(s => s.Company).Returns(GetCompany());
             mock.Setup(s => s.Ld).Returns(new LdClient("sdk-4dbbdcf8-62bd-451b-b78b-8f96b1de2e68"));
             mock.Setup(s => s.SettingsRepository).Returns(GetSettingsRepository());
-            return mock.Object;
+			mock.Setup(s => s.RuntimeInfo).Returns(GetRuntimeInfo());
+			return mock.Object;
         }
 
-        public IStorageProvider GetStorage()
+		private IRuntimeInfo GetRuntimeInfo()
+		{
+			var mock = new Mock<IRuntimeInfo>();
+
+			return mock.Object;
+		}
+
+		public IStorageProvider GetStorage()
         {
             var mock = new Mock<IStorageProvider>();
             mock.Setup(x => x.GetFileContentsAsString(It.IsAny<string>(), It.IsAny<string>()))
