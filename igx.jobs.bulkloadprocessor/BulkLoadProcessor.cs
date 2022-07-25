@@ -31,7 +31,7 @@ namespace igx.jobs.bulkloadprocessor
 		const string functionName = "BulkLoad_Process";
 		const int SqlBulkBatchSize = 5000;
 
-		public async static Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+		public async Task Run([QueueTrigger("%BulkLoadQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
 		{
 			var loadInfo = JsonConvert.DeserializeObject<BulkLoadInfo>(myQueueItem);
 			Load load = null;
