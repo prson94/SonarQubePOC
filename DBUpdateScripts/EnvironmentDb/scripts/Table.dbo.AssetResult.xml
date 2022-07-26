@@ -38,40 +38,6 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.AssetResult-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-alter table dbo.AssetResult drop column PassFraction;
-alter table dbo.AssetResult add PassFraction as (cast(PassCount as float)/coalesce(cast(PassCount as float)+cast(FailCount as float),1)) persisted;
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-alter table dbo.AssetResult drop column PassFraction;
-alter table dbo.AssetResult add PassFraction as (PassCount / (PassCount+FailCount)) persisted;
-]]>
-	</rollback>
-  </changeSet>
-<changeSet author="Pappas" id="Table.dbo.AssetResult-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-alter table dbo.AssetResult drop column PassFraction;
-alter table dbo.AssetResult add PassFraction as (CASE WHEN PassCount =0 and FailCount=0 THEN null ELSE (cast(PassCount as float)/coalesce(cast(PassCount as float)+cast(FailCount as float),1)) END) persisted;
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-alter table dbo.AssetResult drop column PassFraction;
-alter table dbo.AssetResult add PassFraction as (cast(PassCount as float)/coalesce(cast(PassCount as float)+cast(FailCount as float),1)) persisted;
-]]>
-	</rollback>
-  </changeSet>
   <changeSet author="bquinlivan" id="Table.dbo.AssetResult-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -111,4 +77,23 @@ END
 ]]>
 	</rollback>
   </changeSet>
+
+<changeSet author="Pappas" id="Table.dbo.AssetResult-v4.1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+alter table AssetResult drop column [PassFraction]
+alter table AssetResult add [PassFraction] as (CASE WHEN PassCount=0 and FailCount=0 THEN null ELSE (cast(PassCount as float)/coalesce(cast(PassCount as float)+cast(FailCount as float),1)) END) PERSISTED
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+alter table AssetResult drop column [PassFraction]
+alter table AssetResult add [PassFraction] as (PassCount / (PassCount+FailCount)) PERSISTED
+]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>

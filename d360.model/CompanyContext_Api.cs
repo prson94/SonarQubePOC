@@ -9363,22 +9363,14 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																	I.ID as IntersectID
 															into	#Results
 															from	AssetResult Re
-																	inner join
-																	#RuleResults Rr on Rr.RuleResultUid = Re.[Uid]
-																	Inner Join 
-																	Asset Ea on Ea.[Uid] = Re.EvaluatedAssetUid
-																	inner join
-																	AssetType Eat on Ea.AssetTypeId = Eat.ID
-																	Inner Join
-																	dbo.Asset Oa on Oa.[Uid] = Re.OwningAssetUid
-																	inner join
-																	AssetType Oat on Oa.AssetTypeId = Oat.ID
-																	inner join 
-																	[intersect] I on I.SubjectAssetID = OA.ID and I.ObjectAssetID = EA.ID
-																	inner join 
-																	intersectType it on i.intersectTypeid = it.id 
-																	inner join 
-																	[predicate] p on p.id = it.predicateid and p.[Type] = {(int)PredicateType.Evaluation}
+																	inner join #RuleResults Rr on Rr.RuleResultUid = Re.[Uid]
+																	Inner Join Asset Ea on Ea.[Uid] = Re.EvaluatedAssetUid
+																	inner join AssetType Eat on Ea.AssetTypeId = Eat.ID
+																	inner join Asset Oa on Oa.[Uid] = Re.OwningAssetUid
+																	inner join AssetType Oat on Oa.AssetTypeId = Oat.ID
+																	inner join [Intersect] I on I.SubjectAssetID = OA.ID and I.ObjectAssetID = EA.ID
+																	inner join IntersectType it on i.intersectTypeid = it.id 
+																	inner join [Predicate] p on p.id = it.predicateid and p.[Type] = {(int)PredicateType.Evaluation}
 
 															select	R.IntersectID,
 																	R.EvaluatedAssetUid,
