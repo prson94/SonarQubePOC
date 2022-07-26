@@ -146,7 +146,7 @@ namespace d360.model.helpers
                 allowedDefaultFields.Clear();
                 allowedDefaultFields.Add(new DefaultFilter("value", "t.Value", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("useCount", "Tags.count", SqlFieldType.Number));
-                allowedDefaultFields.Add(new DefaultFilter("createdOn", "t.CreatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "cast(t.CreatedOn as date)", SqlFieldType.Date));
                 allowedDefaultFields.Add(new DefaultFilter("createdBy", "grc.FirstName + ' ' +grc.LastName", SqlFieldType.Text));
             }
 
@@ -155,7 +155,7 @@ namespace d360.model.helpers
                 allowedDefaultFields.Clear();
                 allowedDefaultFields.Add(new DefaultFilter("displayPath", "DisplayPath", SqlFieldType.Text));
                 allowedDefaultFields.Add(new DefaultFilter("assetType", "AST.Name", SqlFieldType.Text));
-                allowedDefaultFields.Add(new DefaultFilter("createdOn", "AT.CreatedOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("createdOn", "cast(AT.CreatedOn as date)", SqlFieldType.Date));
                 allowedDefaultFields.Add(new DefaultFilter("addedByUid", "grc.uid", SqlFieldType.Guid));
             }
         }

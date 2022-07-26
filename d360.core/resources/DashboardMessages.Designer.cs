@@ -115,6 +115,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid Asset Type Uid provided..
+        /// </summary>
+        public static string InvalidDashboardDashboardAssetTypeUid {
+            get {
+                return ResourceManager.GetString("InvalidDashboardDashboardAssetTypeUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Asset Uid provided..
+        /// </summary>
+        public static string InvalidDashboardDashboardAssetUid {
+            get {
+                return ResourceManager.GetString("InvalidDashboardDashboardAssetUid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid Location. Valid values are List, Detail or Homepage.
         /// </summary>
         public static string InvalidDashboardLocation {

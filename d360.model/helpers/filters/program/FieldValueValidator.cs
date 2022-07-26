@@ -145,7 +145,7 @@ namespace d360.model.helpers.filters.program
             }
             else
             {
-                value = date;
+                value = date.ToString("yyyy-MM-dd HH:mm:ss.fff");
                 if (@operator == "ct" || @operator == "nct")
                 {
                     if (date == date.Date)

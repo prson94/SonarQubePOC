@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Procedure.graph.AssetBrowser_Lineage-v3">
-    <comment>GOV-18610</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v4">
+    <comment>GOV-18354 : Asset Ancestry filter fix</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -295,17 +295,20 @@ begin
 	drop table if exists #parents;
 	create table #parents (Hop int, ID bigint, ParentID bigint);
 
-	insert into #parents
-		select	distinct
-				H.Hop,
-				n.s.value('@assetId', 'bigint') as ID,
-				P.ID as ParentID
-		from	#hopAsset H
-				inner join dbo.AssetPath A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
-				cross apply A.Segments.nodes('/path/segment') n(s)
-				inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
-				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
-				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+	if @ancestry = 1
+	begin
+		insert into #parents
+			select	distinct
+					H.Hop,
+					n.s.value('@assetId', 'bigint') as ID,
+					P.ID as ParentID
+			from	#hopAsset H
+					inner join dbo.AssetPath A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
+					cross apply A.Segments.nodes('/path/segment') n(s)
+					inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
+					left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
+					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+	end
 
 	-- Update parentId of assets that are already in the table.
 	update	H

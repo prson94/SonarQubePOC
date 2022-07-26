@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { BaseComponent } from '../../shared/base.component';
-import { Dashboard } from '../../../models/dashboard.model'
+import { DashboardModel } from '../../../models/dashboard.model'
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({
@@ -17,7 +17,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class SagacityViewerComponent extends BaseComponent implements OnInit {
-    @Input() dashboard: Dashboard;    
+	@Input() dashboard: DashboardModel;    
 
     sagacityUrl: any;
 
@@ -26,11 +26,11 @@ export class SagacityViewerComponent extends BaseComponent implements OnInit {
         super(settingsService);        
     }
 
-    ngOnInit() {
-        this.sagacityUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.dashboard.Url);
+	ngOnInit() {
+		this.sagacityUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.dashboard.Definition.url);
     }
 
     openWindow() {
-       window.open(this.dashboard.Url, "_blank");
+		window.open(this.dashboard.Definition.url, "_blank");
     }
 }

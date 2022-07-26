@@ -415,6 +415,7 @@ namespace d360.web.Controllers.V2
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
+			RequireAdminPermissions,
             Route("{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
@@ -423,16 +424,11 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteById(Guid uid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, MetricsApiMessages.MetricRemoveNotAllowed));
-            }
-
             MetricAsset model = MetricsRepository.GetActiveMetric(uid);
 
             if (model == null)
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, MetricsApiMessages.ErrorRemoveMetric, MetricsApiMessages.MetricNotFound);
+				throw new NotFoundException(MetricsApiMessages.MetricNotFound);
             }
 
             MetricsRepository.DeleteMetric(model);
@@ -1383,16 +1379,16 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(MetricsApiMessages.CustomUidNotFound, "Result", model.Uid.Value));
                 }
 
-                if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.OwningAssetUid.Value && x.Class == (int)ResultRelationClass.Owns))
+                if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.OwningAssetUid == model.OwningAssetUid.Value))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
                 }
                 else
                 {
-                    _OwningUid = dataQualityAssetResult.Find(x => x.Class == (int)ResultRelationClass.Owns)?.AssetUid;
+                    _OwningUid = dataQualityAssetResult.Find(x => x.Class == (int)ResultRelationClass.Owns)?.OwningAssetUid;
                 }
 
-                if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.EvaluatedAssetUid.Value && x.Class == (int)ResultRelationClass.EvaluatedBy))
+                if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.EvaluatedAssetUid == model.EvaluatedAssetUid.Value))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
                 }

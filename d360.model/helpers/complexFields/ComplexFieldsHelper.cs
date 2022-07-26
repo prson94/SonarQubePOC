@@ -101,8 +101,26 @@ namespace d360.model.helpers
 				model.NeedsFullCheck = false;
 			}
 
+			foreach (var ft in fieldTypes.Where(x => x.Type == "OwnershipLookup").ToList())
+			{
+				var ftl = lookups.FirstOrDefault(x => x.FieldTypeID == ft.ID);
+				var model = new ComplexRelationFieldHasAnyModel { FieldTypeId = ft.ID, NeedsFullCheck = true };
+				ret.Add(model);
+
+				if (ftl == null || ftl.Definition == null)
+				{
+					model.HasAny = false;
+					model.NeedsFullCheck = false;
+					continue;
+				}
+
+				model.FieldTypeLookup = ftl;
+				model.SQL = GetOwnershipLookupCountQuery(ftl);
+				model.HasAny = true;
+				model.NeedsFullCheck = false;
+			}
 			return ret;
-		}
+        }
 
 		public static string GetComplexRelationLookupSQL(FieldTypeComplexLookupDefinition definition, DynamicParameters dbArgs, List<FieldType> fields, List<string> selects, List<Tuple<int, FieldTypeComplexLookupRelationDirection>> fieldRelationDirectionMapping)
 		{
@@ -130,12 +148,14 @@ namespace d360.model.helpers
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
 						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 					else
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
 						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 				}
 				else
@@ -145,12 +165,14 @@ namespace d360.model.helpers
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.SubjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
 						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.ObjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 					else
 					{
 						joins.Add($"inner join [Intersect] I{idx} on I{idx}.ObjectAssetId = H{(idx == 1 ? idx : idx - 1)}.Id");
 						joins.Add($"inner join [IntersectType] IT{idx} on IT{idx}.ID = I{idx}.IntersectTypeID and IT{idx}.[uid] = '{rel.IntersectTypeUid}'");
 						joins.Add($"inner join [Asset] {(idx == 1 ? $"A{idx}" : $"H{idx}")} on {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id = I{idx}.SubjectAssetId {(idx == 1 ? $" and A{idx}.uid = @assetuid" : "")}");
+						joins.Add($"left join dbo.[AssetPath] R{idx} ON R{idx}.id = {(idx == 1 ? $"A{idx}" : $"H{idx}")}.Id");
 					}
 				}
 
@@ -181,14 +203,14 @@ namespace d360.model.helpers
 
 					if (direction == null || direction == FieldTypeComplexLookupRelationDirection.Back)
 					{
-						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.ObjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object AND H{index}_R{f.FieldTypeID}.Id = {f.FieldTypeID}");
-						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.SubjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object");
+						joins.Add($"LEFT JOIN [Intersect] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.ObjectAssetId = H{index}.Id AND H{index}_R{f.FieldTypeID}.IntersectTypeId = {f.FieldTypeID}");
+						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.SubjectAssetId");
 						joins.Add($"LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
 					}
 					else
 					{
-						joins.Add($"LEFT JOIN [IntersectType] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.SubjectID = H{index}.ObjectID AND H{index}_R{f.FieldTypeID}.Subject = H{index}.Object AND H{index}_R{f.FieldTypeID}.Id = {f.FieldTypeID}");
-						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.ObjectID AND H{index}_R{f.FieldTypeID}.Object = H{index}.Object");
+						joins.Add($"LEFT JOIN [Intersect] H{index}_R{f.FieldTypeID} ON H{index}_R{f.FieldTypeID}.SubjectAssetId = H{index}.Id AND H{index}_R{f.FieldTypeID}.IntersectTypeId = {f.FieldTypeID}");
+						joins.Add($"LEFT JOIN [Asset] H{index}_A{f.FieldTypeID} ON H{index}_A{f.FieldTypeID}.ID = H{index}_R{f.FieldTypeID}.ObjectAssetId");
 						joins.Add($"LEFT JOIN AssetDisplayValue H{index}_A{f.FieldTypeID}_DV ON H{index}_A{f.FieldTypeID}_DV.AssetID = H{index}_A{f.FieldTypeID}.ID");
 					}
 				}
@@ -238,7 +260,7 @@ namespace d360.model.helpers
 					{
 						joins.Add($@"LEFT JOIN Field {fieldSelector} ON {fieldSelector}.ObjectType = 'Intersect'
                             AND {fieldSelector}.FieldTypeID = {f.FieldTypeID}
-                            AND {fieldSelector}.ObjectID = R{f.RelationIndex + 1}.ID
+                            AND {fieldSelector}.ObjectID = I{f.RelationIndex + 1}.ID
                             AND {fieldSelector}.FormattedValue <> ''");
 					}
 					else if (ft.Type == "Counter")
@@ -621,6 +643,31 @@ namespace d360.model.helpers
                             {string.Join(", ", selects)}
                             from Asset A
                             {string.Join("\n", joins)}";
+        }
+
+		public static string GetOwnershipLookupCountQuery(FieldTypeLookup ftl)
+		{
+			var definition = ftl.ParseOwnershipLookupDefinition();
+
+			List<string> wheres = new List<string>();
+
+			wheres.Add("r.isvisible = 1");
+			wheres.Add("((r.assetid = A.Id) or (r.applytotype = 1 AND r.assettypeid = a.assettypeid))");
+
+			if (definition.ResponsibilityType != null && definition.ResponsibilityType.Value > 0)
+			{
+				wheres.Add($"(r.responsibilitytypeid = {definition.ResponsibilityType})");
+			}
+
+			var countSQL = $@"select distinct 
+							count(*)
+						FROM [dbo].[ResponsibilityDetail] R
+						inner join asset a on a.uid = @assetuid
+						{(wheres.Count == 0 ? "" : "where " + string.Join(" and ", wheres))}";
+
+
+			return countSQL;
 		}
+
 	}
 }

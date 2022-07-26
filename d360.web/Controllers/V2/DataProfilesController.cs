@@ -567,7 +567,7 @@ namespace d360.web.Controllers.V2
 
 				if(!startDate.HasValue && !endDate.HasValue)
 				{
-					var currentProfile = await Company.AssetDataProfile.OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefaultAsync();
+					var currentProfile = await Company.AssetDataProfile.Where(ADP=> ADP.AssetId == asset.ID).OrderByDescending(adp => adp.ProfileSetDate).FirstOrDefaultAsync();
 					if(currentProfile!= null)
 					{
 						startDate = endDate = currentProfile.ProfileSetDate;
@@ -1178,18 +1178,18 @@ namespace d360.web.Controllers.V2
                 }
 
                 var profileSetDate = model.profileSetDate;
-                var recordExists = Company.AssetDataProfile.Any(x => x.AssetId == asset.ID && x.ProfileSetDate == profileSetDate);
+				var recordExists = Company.AssetDataProfile.Where(x => x.AssetId == asset.ID).ToList().Any(x => x.ProfileSetDate.ToString("yyyy-MM-ddTHH:mm:ss") == profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss"));
 
                 //check insert
                 if (recordExists && IsInsert)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddThh:mm:ss")));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.ProfileRecordAlreadyExists, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss")));
                 }
 
                 //check update
                 if (!recordExists && !IsInsert)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.AssetUidProfileSetDateRecordNotfound, model.assetUid.ToString(), model.profileSetDate.Date.ToString("yyyy-MM-dd")));
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(DataProfileAPIMessages.AssetUidProfileSetDateRecordNotfound, model.assetUid.ToString(), model.profileSetDate.ToString("yyyy-MM-ddTHH:mm:ss")));
                 }
 
                 if (model.topK != null && model.topK.Any(x => x.Trim() == string.Empty))

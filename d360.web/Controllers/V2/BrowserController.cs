@@ -259,7 +259,8 @@ namespace d360.web.Controllers.V2
 				{
 					hopModel.intersects = new List<long>();
 				}
-                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeHierarchyBadges, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin";
+
+                var sql = "exec graph.AssetBrowser_Impact @assets, @resourceId, @hopCount, @intersects, @includeHierarchyBadges, @includeOwnershipBadges, @includeRelationshipBadges, @direction, @hierarchyKey, @predicateUid, @isAdmin, @initialSaltValue";
                 var reader = await Company.QueryMultipleAsync(
                     sql,
                     new
@@ -274,8 +275,9 @@ namespace d360.web.Controllers.V2
                         direction = hopModel.direction == AssetBrowserApiHopDirection.Backward ? "B" : "F",
                         hopModel.hierarchyKey,
                         hopModel.predicateUid,
-                        isAdmin = Company.CurrentResourceIsAdmin
-                    },
+                        isAdmin = Company.CurrentResourceIsAdmin,
+						initialSaltValue = hopModel.initialSaltValue
+					},
                     timeout: 60
                 );
 

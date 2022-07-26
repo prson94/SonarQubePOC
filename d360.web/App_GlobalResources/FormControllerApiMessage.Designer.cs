@@ -367,15 +367,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error Occurred!.
-        /// </summary>
-        public static string ErrorOccurred {
-            get {
-                return ResourceManager.GetString("ErrorOccurred", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to generate embed token..
         /// </summary>
         public static string FailedGenerateToken {
@@ -385,7 +376,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to FAILED TO LOAD POWER BI WORKSHEET INTO WORKSPACE!.
+        ///   Looks up a localized string similar to Failed to load Power BI Worksheet into workspace!.
         /// </summary>
         public static string FailedToLoadPowerBI {
             get {
@@ -1042,15 +1033,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Question.
-        /// </summary>
-        public static string Question {
-            get {
-                return ResourceManager.GetString("Question", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Relationship.
         /// </summary>
         public static string Relationship {
@@ -1110,15 +1092,6 @@ namespace Resources {
         public static string Resource {
             get {
                 return ResourceManager.GetString("Resource", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Response type.
-        /// </summary>
-        public static string ResponseType {
-            get {
-                return ResourceManager.GetString("ResponseType", resourceCulture);
             }
         }
         
@@ -1317,24 +1290,6 @@ namespace Resources {
         public static string SpecificCartNotFound {
             get {
                 return ResourceManager.GetString("SpecificCartNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Survey question.
-        /// </summary>
-        public static string SurveyQuestion {
-            get {
-                return ResourceManager.GetString("SurveyQuestion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Survey type.
-        /// </summary>
-        public static string SurveyType {
-            get {
-                return ResourceManager.GetString("SurveyType", resourceCulture);
             }
         }
         

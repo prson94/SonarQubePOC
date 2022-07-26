@@ -69,7 +69,40 @@ namespace d360.core.entities.SurveyModels
         public List<Option> Options { get; set; }
     }
 
-    public class SurveyTypeApiModel
+	public class SurveyTypeCreateApiModel
+	{
+		public Guid AssetTypeUid { get; set; }
+
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public int ValidForDays { get; set; }
+	}
+
+	public class SurveyTypeCreateResponseApiModel
+	{
+		public Guid Uid { get; set; }
+
+		public Guid AssetTypeUid { get; set; }
+
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public int ValidForDays { get; set; }
+	}
+
+	public class SurveyTypeUpdateApiModel
+	{
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public int ValidForDays { get; set; }
+	}
+
+	public class SurveyTypeApiModel
     {
         public Guid Uid { get; set; }
 
@@ -119,9 +152,25 @@ namespace d360.core.entities.SurveyModels
         public Guid Uid { get; set; }
 
         public List<Response> Responses { get; set; } = new List<Response>();
-    }
+	}
 
-    public class SurveyResultSummaryApiModel
+	public class QuestionTypeUpsertModel
+	{
+		public string Name { get; set; }
+
+		public string Description { get; set; }
+
+		public QuestionDisplayStyle DisplayStyle { get; set; }
+
+		public List<Option> Options { get; set; }
+	}
+
+	public class QuestionTypeCreateResponseModel
+	{
+		public Guid Uid { get; set; }
+	}
+
+	public class SurveyResultSummaryApiModel
     {
         public Guid AssetUid { get; set; }
 
@@ -170,6 +219,27 @@ namespace d360.core.entities.SurveyModels
 
         public string Comments { get; set; }
     }
+
+	public class QuestionTypeShortInfo
+	{
+		public Guid Uid { get; set; }
+
+		[JsonConverter(typeof(StringEnumConverter))]
+		public QuestionDisplayStyle DisplayStyle { get; set; }
+
+		public string Description { get; set; }
+
+		public string Name { get; set; }
+
+		public int OptionCount { get; set; }
+	}
+
+	public class QuestionOptionShortInfo
+	{
+		public string Name { get; set; }
+
+		public int Value { get; set; }
+	}
 
     public class DateFormatConverter : IsoDateTimeConverter
     {

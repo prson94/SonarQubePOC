@@ -142,6 +142,10 @@ export class AddRelationshipComponent extends BaseComponent implements OnChanges
 		this.selectedAssets = [];
 		this.fieldValues = {};
 
+		if (!this.assetUid) {
+			return;
+		}
+
         this.loadTypesSub = forkJoin(
             this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid),
             this.relationshipService.getRelationshipsCountsForAsset(this.assetUid),

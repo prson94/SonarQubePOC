@@ -3,11 +3,15 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SurveysService } from '../../../services/surveys.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
-import { SurveyType } from '../../../models/survey.model';
+import { SurveyTypeV2 } from '../../../models/survey.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { LazyLoadEvent } from 'primeng/api';
+import { SortOrder } from '../../../models/enums.model';
+import { V2ApiFilters } from '../../../models/asset-search.model';
+import { AdvancedFiltersHelper } from '../../../static/advanced-filter-helpers';
 
 @Component({
     selector: 'd3s-admin-surveys',
@@ -18,10 +22,26 @@ import { CompanySettingsService } from '../../../services/settings.service';
                             <header *ngIf="!showEditor && !showDelete"><ng-container i18n>Surveys</ng-container>
                             <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
                             </header>
-                            <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                            <span *ngIf="!isLoading && !showDelete && !showEditor">
+                            <span *ngIf="!showDelete && !showEditor">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" i18n-placeholder placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="surveys" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','ValidForDays']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                                <p-table #dt 
+                                    [value]="surveys" 
+                                    selectionMode="single"
+                                    [metaKeySelection]="true" 
+                                    [globalFilterFields]="['Name','ValidForDays']" 
+                                    [sortField]="sortField" 
+                                    [sortOrder]="sortOrder" 
+                                    [pageLinks]="3" 
+                                    [paginator]="true" 
+                                    [rows]="rowsPerPage"
+                                    [(selection)]="selected"
+                                    [first]="0"
+                                    [lazy]="true"
+                                    (onLazyLoad)="loadSurveyTypesLazy($event)"
+                                    [totalRecords]="totalRecords"
+                                    [loading]="isLoading"
+                                    [loadingIcon]="'fa fa-spinner fa-spin'"
+                                    >                                  
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'" style="width: 25%">
@@ -57,10 +77,10 @@ import { CompanySettingsService } from '../../../services/settings.service';
                                     </ng-template>
                                 </p-table>
                             </span>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
+                            <d3s-dynamic-editor *ngIf="showEditor" [useObjectUidForDefinition]="true" [objectUid]="selected?.Uid" [objectType]="'SurveyType'" [title]="'Survey'" [selection]="selected" (saveClick)="saveSurvey($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>                        
                             <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
-                                [itemId]="selected?.ID"
+                                [itemId]="selected?.Uid"
                                 [method]="'callback'"
                                 [prompt]="deletePromptText"                                         
                                 (onCancel)="showDelete=false;"
@@ -71,7 +91,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <object-detail [objectType]="'SurveyType'" [objectID]="selected?.ID"></object-detail>
+                                    <object-detail [objectType]="'SurveyType'" [objectUID]="selected?.Uid"></object-detail>
                                 </div>
                             </div>
                         </div>
@@ -89,8 +109,16 @@ import { CompanySettingsService } from '../../../services/settings.service';
 })
 
 export class AdminSurveysComponent extends AdminBaseComponent {
-    surveys: SurveyType[] = [];
-    selected: SurveyType;
+    surveys: SurveyTypeV2[] = [];
+    selected: SurveyTypeV2;
+
+    pageNum = 0;
+    rowsPerPage = 10;
+    sortOrder: number = 1;
+    sortField: string = 'Name';
+    simpleTextFilter: string = '';
+    filters: LazyLoadEvent['filters'] = {};
+    totalRecords: number;
 
     error: any;
 
@@ -122,32 +150,92 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     getTemplates() {
         this.isLoading = true;
         this.surveysService
-            .getSurveyTypes()
+            .getSurveyTypes(this.getSurveyTypesParams())
             .subscribe(res => {
-                this.surveys = res.sort((a, b) => a.Name.localeCompare(b.Name));
+                this.totalRecords = res.total;
+                this.surveys = res.items.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
             }, err => { this.error = err })
     }
+    
+    getSurveyTypesParams() {
+        const params = new V2ApiFilters();
+        params._pageNum = this.pageNum + 1;
 
-    deleteSurveyType(id: number) {
-        this.surveysService.deleteSurveyTypeById(id).
+        params._pageSize = this.rowsPerPage;
+        if (this.sortField) {
+            params._order = this.sortField;
+        }
+
+        if (this.sortOrder !== SortOrder.None) {
+            params._direction = this.sortOrder === SortOrder.Ascending ? "asc" : "desc";
+        }
+
+        if (this.simpleTextFilter && this.simpleTextFilter.length > 0) {
+            params._simpleFilter = encodeURIComponent(this.simpleTextFilter);
+        }
+        
+        const advancedFilter = AdvancedFiltersHelper.parseFiltersFromTableFilters(this.filters, [
+            {
+                apiName: 'Name',
+                fieldType: 'text',
+                name: 'Name',
+                type: 'text'
+            },
+            {
+                apiName: 'ValidForDays',
+                fieldType: 'number',
+                name: 'ValidForDays',
+                type: 'number'
+            }
+        ]);
+
+        if (advancedFilter.length > 0) {
+            params['_filter'] = advancedFilter;
+        }
+
+        return params;
+    }
+
+    loadSurveyTypesLazy(event: LazyLoadEvent) {
+        this.pageNum = event.first / event.rows;
+        this.sortOrder = event.sortOrder;
+        this.sortField = event.sortField;
+        this.rowsPerPage = event.rows;
+        this.simpleTextFilter = event.globalFilter;
+        this.filters = event.filters;
+        this.getTemplates();
+    }
+
+    deleteSurveyType(uid: string) {
+        this.surveysService.deleteSurveyTypeById(uid).
             subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                //remove the template with this id from the grid
-                if (result.type != 'error') {
-                    this.surveys.splice(this.findSurveyTypeIndex(id), 1);
-                    this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
+                if (result !== true) {
+                    // error happened
+                    this.showDelete = false;
+                    return;
                 }
+                
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+
+                //remove the template with this id from the grid
+                this.surveys.splice(this.findSurveyTypeIndex(uid), 1);
+                this.selected = this.surveys.length > 0 ? this.surveys[0] : null;
                 this.showDelete = false;
             });
     }
 
-    findSurveyTypeIndex(id: number) {
+    findSurveyTypeIndex(uid: string) {
         var index: number = -1;
         for (var survey of this.surveys) {
             index++;
-            if (survey.ID == id) return index;
+            if (survey.Uid === uid) {
+                return index;
+            }
         }
     }
 
@@ -165,14 +253,23 @@ export class AdminSurveysComponent extends AdminBaseComponent {
     saveSurvey(event) {
         this.surveysService.saveSurveyType(event.item)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID == undefined) {
-                    event.item.ID = Number(result.id);
+                if (result == null) {
+                    return;
+                }
+
+                this.messagesService.showInfoMessage(
+                    null,
+                    $localize`Success`
+                );
+
+                if (event.item.Uid == null) {
+                    event.item.Uid = result.Uid;
                     this.surveys[this.surveys.length] = event.item;
                 }
                 else {
-                    this.surveys[this.findSurveyTypeIndex(event.item.ID)] = event.item;
+                    this.surveys[this.findSurveyTypeIndex(event.item.Uid)] = event.item;
                 }
+
                 this.selected = event.item;
                 this.showEditor = false;
             });

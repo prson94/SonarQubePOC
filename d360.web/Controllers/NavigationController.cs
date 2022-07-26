@@ -631,45 +631,7 @@ namespace d360.web.Controllers
 					throw new ArgumentNullException(string.Format(FormControllerApiMessage.FolderIdNotFound, folder.Id.ToString()));
 				}
 
-				string originalImage = siteNav.ImageIconUrl ?? siteNav.Icon;
-
-				if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.Icon))
-				{
-					try
-					{
-						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
-					}
-					catch
-					{
-						//swallow exception here.
-					}
-				}
-
-				if (!string.IsNullOrEmpty(folder.IconPayload))
-				{
-					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(folder.IconPayload);
-
-					var imageMime = imageMatch.Groups["mime"].Value;
-					var imageData = imageMatch.Groups["data"].Value;
-					var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
-					var imageByteArray = Convert.FromBase64String(imageData);
-					var imageGuid = Guid.NewGuid();
-
-					using (var imageStream = new MemoryStream(imageByteArray))
-					{
-						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
-						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
-
-						siteNav.ImageIconUrl = $"{imageFileName}";
-						siteNav.Icon = null;
-					}
-				}
-
-				if (originalImage != folder.Icon)
-				{
-					siteNav.Icon = folder.Icon;
-					siteNav.ImageIconUrl = null;
-				}
+				await UpdateImage(siteNav, folder);
 				siteNav.Title = folder.Title;
 
 				//handle folder items
@@ -705,6 +667,66 @@ namespace d360.web.Controllers
 				Formatting = Newtonsoft.Json.Formatting.None
 			};
 
+			async Task UpdateImage(SiteNav folderToUpdate, EditSiteNavModel patch)
+			{
+				SanitizePatch(patch);
+
+				if (folderToUpdate.ImageIconUrl != patch.ImageIconUrl)
+				{
+					try
+					{
+						await Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, folderToUpdate.ImageIconUrl);
+					}
+					catch
+					{
+						//swallow exception here.
+					}
+				}
+
+				if (!string.IsNullOrEmpty(patch.IconPayload))
+				{
+					var imageMatch = MimeTypeExtensionsMap.RegEx.Match(patch.IconPayload);
+
+					var imageMime = imageMatch.Groups["mime"].Value;
+					var imageData = imageMatch.Groups["data"].Value;
+					var imageExtension = MimeTypeExtensionsMap.GetExtension(imageMime);
+					var imageByteArray = Convert.FromBase64String(imageData);
+					var imageGuid = Guid.NewGuid();
+
+					using (var imageStream = new MemoryStream(imageByteArray))
+					{
+						var imageFileName = string.Format("{0}.menuicon.{1}{2}", Company.CurrentCompanyID, imageGuid, imageExtension);
+						await Storage.CreateFile(constants.COMPANY_RESOURCES_FOLDER, imageFileName, imageStream);
+
+						folderToUpdate.ImageIconUrl = $"{imageFileName}";
+						folderToUpdate.Icon = null;
+					}
+				} 
+				else
+				{
+					folderToUpdate.Icon = patch.Icon;
+					folderToUpdate.ImageIconUrl = patch.ImageIconUrl;
+				}
+			}
+
+			void SanitizePatch(EditSiteNavModel patch)
+			{
+				if (patch.IconPayload != null)
+				{
+					patch.Icon = null;
+					patch.ImageIconUrl = null;
+				}
+
+				if (patch.Icon != null)
+				{
+					patch.ImageIconUrl = null;
+				}
+
+				if (patch.ImageIconUrl != null)
+				{
+					patch.Icon = null;
+				}
+			}
 		}
 
 		[HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]

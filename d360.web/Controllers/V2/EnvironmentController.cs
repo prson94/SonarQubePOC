@@ -2127,50 +2127,15 @@ namespace d360.web.Controllers.V2
 		{
 			try
 			{
-				Guid? uid = null;
-				DashboardLocation? location = null;
-				int? id = null;
-				Guid? assetTypeUid = null;
-				Guid? assetUid = null;
 				var queryParams = Request.GetQueryNameValuePairs();
+				DashboardApiGetModelFilter getModelFilter = new DashboardApiGetModelFilter(queryParams);
 
-				if (queryParams != null)
+				if (getModelFilter.Errors.Count > 0)
 				{
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "uid"))
-					{
-						Guid _uid;
-						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "uid").Value, out _uid);
-						uid = _uid;
-					}
-
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "location"))
-					{
-						DashboardLocation _location;
-						Enum.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "location").Value, out _location);
-						location = _location;
-					}
-
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assettypeuid"))
-					{
-						Guid _uid;
-						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assettypeuid").Value, out _uid);
-						assetTypeUid = _uid;
-					}
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "assetuid"))
-					{
-						Guid _uid;
-						Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "assetuid").Value, out _uid);
-						assetUid = _uid;
-					}
-					if (queryParams.Any(x => x.Key.ToLowerInvariant() == "id"))
-					{
-						int _id;
-						int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLowerInvariant() == "id").Value, out _id);
-						id = _id;
-					}
+					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Join(", ", getModelFilter.Errors));
 				}
 
-				var responseModel = await DashboardRepository.GetDashboardsAsync(uid, location, id, assetTypeUid, assetUid);
+				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
 			}
@@ -2180,7 +2145,7 @@ namespace d360.web.Controllers.V2
 			}
 			catch
 			{
-				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnCreate, ApiMessages.UnknownErrorInvestigatingMessage);
+				return errorMessageResponse(HttpStatusCode.InternalServerError, DashboardMessages.ErrorOnGet, ApiMessages.UnknownErrorInvestigatingMessage);
 			}
 		}
 
@@ -2248,29 +2213,36 @@ namespace d360.web.Controllers.V2
 
 				if (requestModel.DashboardType == DashboardType.PowerBi && file != null)
 				{
-					var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
-
-					if (importResult.ImportState == "Failed")
+					try
 					{
-						throw new ArgumentNullException(FormControllerApiMessage.FailedToLoadPowerBI);
+						var importResult = await uploadPowerBIReport(file, requestModel.Name, definition.powerBiDatasetId);
+
+						if (importResult.ImportState == "Failed")
+						{
+							return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
+						}
+
+						definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
+
+						var rpt = importResult.Reports.FirstOrDefault();
+
+						if (rpt != null)
+						{
+							definition.powerBiReportId = rpt.Id.ToString();
+						}
+
+						definition.fileName = file.FileName;
+
+						requestModel.Definition = definition;
 					}
-
-					definition.powerBiDatasetId = importResult.Datasets.FirstOrDefault().Id;
-
-					var rpt = importResult.Reports.FirstOrDefault();
-
-					if (rpt != null)
+					catch (Exception ex)
 					{
-						definition.powerBiReportId = rpt.Id.ToString();
+						return errorMessageResponse(HttpStatusCode.BadRequest, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FailedToLoadPowerBI);
 					}
-
-					definition.fileName = file.FileName;
-
-					requestModel.Definition = definition;
 				}
 				else if (requestModel.DashboardType == DashboardType.PowerBi && file == null)
 				{
-					throw new ConflictException(ApiMessages.Error, FormControllerApiMessage.FileRequired);
+					return errorMessageResponse(HttpStatusCode.Forbidden, DashboardMessages.ErrorOnCreate, FormControllerApiMessage.FileRequired);
 				}
 
 				var responseModel = await DashboardRepository.PostDashboardAsync(requestModel);

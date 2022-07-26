@@ -87,8 +87,8 @@
                     <ng-template pTemplate="body"
                                  let-rowNode
                                  let-item="rowData">
-                        <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (focus)="selectAsset(rowNode.node)"
-							(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools);">
+                        <tr [ttRow]="rowNode" [ttSelectableRow]="rowNode" (click)="selectAsset(rowNode.node)"
+							(contextmenu)="positionContextMenu($event, floatButton, floatMenu, assetGridTools); selectAsset(rowNode.node)">
                             <td class="no-text-overflow" *ngFor="let column of columns; let i = index" [style.width]="column.columnWidth ? column.columnWidth + 'px' : null">
                                 <p-treeTableToggler [rowNode]="rowNode"
                                                     style="margin-right: 8px;"
@@ -194,7 +194,7 @@
                         <data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>
                     </ng-container>
                     <ng-container *ngIf="sidePanelTab === 'detail'">
-                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag"
+                        <ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag" #assetDetail
                                          [objectUID]="selectedAsset ? selectedAsset.uid : selected?.data?.AssetUid"
                                          [objectType]="selectedAsset ? selectedAsset.type : object"
                                          [useAccordion]="true"

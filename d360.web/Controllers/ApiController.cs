@@ -88,7 +88,7 @@ namespace d360.web.Controllers
 						           (select X.p.value('.', 'nvarchar(250)') for xml path('')) as Val
 					          FROM AssetPath
 					         CROSS APPLY Segments.nodes('/path/segment') X(p)
-					         WHERE AssetNode.ID = @assetId
+					         WHERE AssetPath.ID = @assetId
 					      ) s
   						  JOIN AssetType at ON at.ID = s.AssetTypeId and at.uid = @fieldTypeUid
 					) segmentPath
@@ -517,7 +517,7 @@ namespace d360.web.Controllers
 						select ftl.* from fieldtype ft
 						inner join FieldTypeLookup ftl on ftl.FieldTypeID = ft.id
 						where ft.assettypeid = @AssetTypeID
-						and ft.type ='ComplexRelationLookup';";
+						and ft.type ='ComplexRelationLookup' or ft.type = 'OwnershipLookup';";
 
 				var dataReader = await Company.QueryMultipleAsync(lookupDataSql + relationLookupDataSql, new { uid = details.UID, details.AssetTypeID, assetId = details.ID });
 
@@ -2409,7 +2409,7 @@ namespace d360.web.Controllers
 			int objectId = int.Parse(row.ID.ToString());
 			var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
 			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.Object == "RuleType" && x.ObjectID == id).ID;
-			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy);
+			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List);
 
 			return Request.CreateResponse<dynamic>(
 				new Dictionary<string, object>() {
@@ -2631,15 +2631,22 @@ namespace d360.web.Controllers
 				case SystemObjects.Intersect:
 					objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
 					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
-				case SystemObjects.ReferenceItemType:
-					var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
-
-					return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+				case SystemObjects.SurveyType:
+					objectId = Company.SurveyTypes.FirstOrDefault(s => s.Uid == uid).ID;
+					return await GetObjectDetailFields(type, objectId, useSingleColumn, includeHeader, baseAssetUid: baseAssetUid);
 				default:
-					var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
+					if (type.IsType())
+					{
+						var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == uid);
+						return await GetObjectDetailFields(type, assetType.ObjectID, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+					}
+					else
+					{
+						var asset = Company.Assets.FirstOrDefault(a => a.uid == uid);
 
-					SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
-					return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+						SystemObjects sysObject = (SystemObjects)Enum.Parse(typeof(SystemObjects), asset.Object, true);
+						return await GetObjectDetailFields(sysObject, asset?.ObjectID ?? -1, useSingleColumn, includeHeader, useAssetDetailColumnDefinition);
+					}
 			}
 		}
 
@@ -4162,20 +4169,28 @@ namespace d360.web.Controllers
 
 						var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == report.AssetTypeID);
 
-						string objectName = assetType.Class.GetDisplayName();
-						if(report.Location == DashboardLocation.Detail) {
-							objectName += " Instance: ";
-						}
-						objectName += assetType.Name;
-
-						model.rows.Add(new DetailReadOnlyRowModel
+						if (assetType != null)
 						{
-							columns = 1,
-							FirstColumnFields = new List<ReadOnlyField>
+							string objectName = assetType.Class.GetDisplayName();
+							if (report.Location == DashboardLocation.Detail)
+							{
+								objectName += " Instance: ";
+							}
+							else
+							{
+								objectName += ": ";
+							}
+							objectName += assetType.Name;
+
+							model.rows.Add(new DetailReadOnlyRowModel
+							{
+								columns = 1,
+								FirstColumnFields = new List<ReadOnlyField>
 							{
 								new ReadOnlyField { Row = 3, Column = 2, Name = assetType.Class.GetDisplayName(), FieldName = "ReportObjectType", FieldDescription = assetType.Class.GetDisplayName(), Value = objectName }
 							}
-						});
+							});
+						}
 					}
 					report = null;
 					break;
@@ -4269,17 +4284,17 @@ namespace d360.web.Controllers
 							}
 						});
 
-						var dtlSurveyType = Company.GetObjectDetail(surveyType.Object, surveyType.ObjectID);
+						var dtlSurveyType = Company.GetObjectDetail(surveyType.AssetType.Object, surveyType.AssetType.ObjectID);
 						model.rows.Add(new DetailReadOnlyRowModel
 						{
 							columns = 2,
 							FirstColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.Object), Value = (dtlSurveyType != null) ? dtlSurveyType.Class.GetDisplayName() : "Invalid class" }
+								new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.AssetType.Object), Value = (dtlSurveyType != null) ? dtlSurveyType.Class.GetDisplayName() : "Invalid class" }
 							},
 							SecondColumnFields = new List<ReadOnlyField>
 							{
-								new ReadOnlyField { Name = "Object", FieldName = "SurveyTypeObjectID", FieldDescription = surveyType.GetDescription(i => i.ObjectID), Value = (dtlSurveyType != null) ? dtlSurveyType.Name : surveyType.ObjectID.ToString() }
+								new ReadOnlyField { Name = "Object", FieldName = "SurveyTypeObjectID", FieldDescription = surveyType.GetDescription(i => i.AssetType.ObjectID), Value = (dtlSurveyType != null) ? dtlSurveyType.Name : surveyType.AssetType.ObjectID.ToString() }
 							}
 						});
 
@@ -4866,24 +4881,8 @@ where v.id = {0}", id)).FirstOrDefault();
 			return Company.Table<SurveyType>();
 		}
 
-		[Route("surveys/{typeID:int}/questions")]
-		public HttpResponseMessage GetQuestionTypesBySurveyType(int typeID)
-		{
-			var list = Company.Filter<QuestionType>(i => i.SurveyTypeID == typeID, i => i.QuestionTypeOptions)
-				.ToList()
-				.Select(i => new
-				{
-					i.ID,
-					i.Name,
-					OptionCount = i.QuestionTypeOptions.Count,
-					DisplayStyle = i.DisplayStyle.GetDescription(),
-					Description = i.Description
-				});
-			return Request.CreateResponse(HttpStatusCode.OK, list);
-		}
-
-		[Route("surveys/{typeID:int}/{type}/{id}/report")]
-		public JObject GetSurveyReport(int typeID, SystemObjects type, int id)
+		[Route("surveys/{typeID:int}/{assetId}/report")]
+		public JObject GetSurveyReport(int typeID, long assetId)
 		{
 			var sql = $@"
 					SELECT (
@@ -4901,7 +4900,7 @@ where v.id = {0}", id)).FirstOrDefault();
 																FROM		Question IQ
 																			INNER JOIN QuestionOption IQO ON IQ.ID = IQO.QuestionID
 																			INNER JOIN QuestionTypeOption IQTO on IQTO.ID = IQO.QuestionTypeOptionID and IQTO.QuestionTypeID = QT.ID
-																			inner join Survey S on S.ID = IQ.SurveyID and S.Object = @Object and S.ObjectID = @ObjectID
+																			inner join Survey S on S.ID = IQ.SurveyID and S.AssetId = @assetId
 																			inner join  SurveyType ST on ST.ID = S.SurveyTypeID and ST.ID = @SurveyTypeID
 																WHERE		IQTO.QuestionTypeID = QT.ID
 																GROUP BY	IQTO.QuestionTypeID, 
@@ -4929,14 +4928,14 @@ where v.id = {0}", id)).FirstOrDefault();
 									FOR XML PATH('Charts'), Type--as Charts
 									)
 							FROM		SurveyType ST
-										INNER JOIN Survey S ON ST.ID = S.SurveyTypeID AND S.Object = @Object AND S.ObjectID = @ObjectID and getutcdate() between S.CreatedOn and dateadd(dd, ST.[ValidForDays], S.CreatedOn)
+										INNER JOIN Survey S ON ST.ID = S.SurveyTypeID AND S.AssetId = @assetId and getutcdate() between S.CreatedOn and dateadd(dd, ST.[ValidForDays], S.CreatedOn)
 							WHERE		ST.ID = @SurveyTypeID
 							GROUP BY ST.Name, ST.ID
 							FOR XML PATH(''), Type
 							)
 							FOR XML PATH('Report')";
 
-			var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, Object = new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, ObjectID = id });
+			var models = Company.Query<string>(sql, new { SurveyTypeID = typeID, assetId });
 			var xmlString = string.Join("", models);
 			var xml = XElement.Parse(xmlString);
 			string json = JsonConvert.SerializeXNode(xml);
@@ -4944,19 +4943,23 @@ where v.id = {0}", id)).FirstOrDefault();
 			return JObject.Parse(json);
 		}
 
-		[Route("surveys/{parentType}/{parentId}/{type}/{id}/survey")]
-		public ObjectSurveyModel GetSurvey(SystemObjects parentType, int parentId, SystemObjects type, int id)
+		[Route("surveys/{assetTypeId}/{assetId}/survey")]
+		public ObjectSurveyModel GetSurvey(SystemObjects parentType, int assetTypeId, long assetId)
 		{
 			var sql = @"
-						select id, name from surveytype where object= @parObj and objectid= @parObjId and id not in(
+						select id, name from surveytype where AssetTypeId = @assetTypeId and id not in(
 								select 
 									st.id
 								from 
 									surveytype st 
-									inner join survey s on (s.surveytypeid = st.id and s.resourceid = @resource and s.createdon > DATEADD(day, (st.validfordays*-1), getdate()) and s.[object] = @obj and s.ObjectID = @objId)
+									inner join survey s on (s.surveytypeid = st.id and s.resourceid = @resource and s.createdon > DATEADD(day, (st.validfordays*-1), getdate()) and s.AssetId = @assetId)
 					)";
 
-			var surveys = Company.Query<ObjectSurveyModel>(sql, new { parObj = new DbString { Value = parentType.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, parObjId = parentId, resource = Company.CurrentResourceID, obj = new DbString { Value = type.ToString(), IsFixedLength = true, IsAnsi = true, Length = 50 }, objId = id }).ToList();
+			var surveys = Company.Query<ObjectSurveyModel>(sql, new { 
+				assetTypeId,
+				assetId,
+				resource = Company.CurrentResourceID
+			}).ToList();
 
 			if (surveys == null || surveys.Count == 0)
 			{
@@ -4974,9 +4977,9 @@ where v.id = {0}", id)).FirstOrDefault();
 			return surveys.First();
 		}
 
-		[Route("survey/{surveyId}/{objectId}/{type}")]
+		[Route("survey/{surveyId}/{assetId}")]
 		[ValidateHttpAntiForgeryToken]
-		public CreateResponse PostSurveyResponse(int surveyId, int objectId, string type, SurveyResponseModel data)
+		public CreateResponse PostSurveyResponse(int surveyId, long assetId, SurveyResponseModel data)
 		{
 			foreach (var question in data.Questions)
 			{
@@ -4989,8 +4992,7 @@ where v.id = {0}", id)).FirstOrDefault();
 			var survey = new Survey
 			{
 				SurveyTypeID = surveyId,
-				Object = type,
-				ObjectID = objectId,
+				AssetID = assetId,
 				ResourceID = Company.CurrentResourceID,
 				CreatedOn = DateTime.UtcNow
 			};
@@ -5019,18 +5021,6 @@ where v.id = {0}", id)).FirstOrDefault();
 			}
 
 			return new CreateResponse { Message = "Created" };
-		}
-
-		[Route("surveys/question/{questionId}/values")]
-		public IEnumerable<ObjectSurveyQuestionValuesModel> GetSurveyQuestionValues(int questionId)
-		{
-			var sql = @"select 
-							ID,
-							Name,
-							[Value]
-						from questiontypeoption where questiontypeid = @id order by id";
-
-			return Company.Query<ObjectSurveyQuestionValuesModel>(sql, new { id = questionId });
 		}
 
 		#endregion

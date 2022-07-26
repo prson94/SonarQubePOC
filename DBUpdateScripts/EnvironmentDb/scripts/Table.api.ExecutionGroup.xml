@@ -79,4 +79,30 @@ end
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Index.api.ExecutionGroup-v1">
+  <comment>GOV-18937</comment>
+   <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+If Exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionItemUid')
+BEGIN
+	IF Not EXISTS (select 1 from [sys].[indexes] i where name = 'IX_ApiExecutionGroup_ExecutionIDExecutionItemUid' and object_id = object_id(N'api.ExecutionGroup'))
+	BEGIN	
+		CREATE NONCLUSTERED INDEX [IX_ApiExecutionGroup_ExecutionIDExecutionItemUid] ON [api].[ExecutionGroup] ([ExecutionID] ASC, [ExecutionItemUid] ASC) 
+	END
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+If Exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionItemUid')
+BEGIN
+	IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_ApiExecutionGroup_ExecutionIDExecutionItemUid' and object_id = object_id(N'api.ExecutionGroup'))
+	BEGIN
+		DROP INDEX [IX_ApiExecutionGroup_ExecutionIDExecutionItemUid] ON [api].[ExecutionGroup] 
+	END
+END
+]]>
+	</rollback>
+  </changeSet>
+  
 </databaseChangeLog>

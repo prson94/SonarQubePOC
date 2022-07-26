@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
@@ -20,6 +20,7 @@ import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
 import { TitleAndTabsService } from '../../services/title-and-tabs.service';
 import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.service';
+import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 
 declare var CurrentResourceID;
 
@@ -58,6 +59,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     secondarySidePanelOpen: boolean;
     secondarySidePanel: string = "detail";
     resourceUid: any;
+	
+	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -180,7 +183,11 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
     selectAsset(event: any) {
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
-        this.selection = event;
+        this.selection = event.row;
+		
+		if (event.forceRefresh) {
+			this.assetDetail.load();
+		}
 
         if (this.selection && this.selection.HasProfiling && this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
             this.sidePanelLoading = true;                                  

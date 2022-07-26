@@ -52,6 +52,19 @@ export class EditorDefinitionService extends BaseObservableService {
         );
     }
 
+    public getEditorDefinitionObjectUid(objectType: string, objectUid: string): Observable<EditorField[]> {
+        const url = objectUid == null 
+            ? `form/dynamiceditor/new/${objectType}`
+            : `form/dynamiceditor/edit/${objectType}/${objectUid}`;
+
+        return this.http
+            .get(url)
+            .pipe(
+                map(res => <EditorField[]>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     public getEditorDefinitionUid(uid: string, objectType?: string, targetAssetUid?: string): Observable<EditorField[]> {
         var url = `form/dynamiceditor/new/uid/${uid}/type/${objectType}`;
 

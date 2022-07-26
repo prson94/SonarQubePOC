@@ -18,13 +18,10 @@ namespace d360.core.entities
         [DataMember]
         public string Description { get; set; }
 
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
+		[DataMember]
+		public int AssetTypeID { get; set; }
 
-        [DataMember]
-        public int ObjectID { get; set; }
-
-        [DataMember]
+		[DataMember]
         public int ValidForDays { get; set; }
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -44,7 +41,10 @@ namespace d360.core.entities
         [ForeignKey("SurveyTypeID")]
         public virtual ICollection<Survey> Surveys { get; set; }
 
-        public EventObjectInfo GetEventObjectInfo()
+		[ForeignKey("AssetTypeID"), IgnoreDataMember]
+		public virtual AssetType AssetType { get; set; }
+
+		public EventObjectInfo GetEventObjectInfo()
         {
             return new EventObjectInfo
             {

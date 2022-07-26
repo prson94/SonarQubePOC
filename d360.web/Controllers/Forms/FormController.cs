@@ -318,6 +318,9 @@ namespace d360.web.Controllers
 				case "ISSUETYPE":
 					objectId = Company.IssueTypes.FirstOrDefault(x => x.uid == uid).ID;
 					return DynamicEditorEditFields(o, objectId);
+				case "SURVEYTYPE":
+					objectId = Company.SurveyTypes.FirstOrDefault(x => x.Uid == uid).ID;
+					return DynamicEditorEditFields(o, objectId);
 				default:
 					foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
 					{
@@ -492,6 +495,18 @@ namespace d360.web.Controllers
 			throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, ""));
 		}
 
+		[HttpGet, Route("dynamiceditor/new/objectUid/{objectType}")]
+		public JsonResult DynamicEditorAddFieldsByObjectUid(string objectType)
+		{
+			switch ((objectType ?? "").ToUpper())
+			{
+				case "SURVEYTYPE":
+					return this.DynamicEditorAddFields(objectType, objectID: null, parentID: null, typeID: null);
+				default:
+					throw new ArgumentException(FormControllerApiMessage.InvalidEditorType);
+			}
+		}
+
 		[HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
 		public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
 		{
@@ -620,8 +635,6 @@ namespace d360.web.Controllers
 					return EditPolicyTypeLevel(form);
 				case "SERVICE":
 					return EditService(form);
-				case "SURVEYTYPE":
-					return EditSurveyType(form);
 				case "TAXONOMYTYPELEVEL":
 					return EditTaxonomyTypeLevel(form);
 				case "VERSION":
@@ -663,10 +676,6 @@ namespace d360.web.Controllers
 					return DeletePolicyTypeLevel(form);
 				case "SERVICE":
 					return DeleteCustomAPIService(form);
-				case "SURVEYTYPE":
-					return DeleteSurveyType(form);
-				case "SURVEYQUESTIONTYPE":
-					return DeleteQuestionType(form);
 				case "TAXONOMYTYPELEVEL":
 					return DeleteTaxonomyTypeLevel(form);
 				case "URI":
@@ -711,8 +720,6 @@ namespace d360.web.Controllers
 					return AddPolicyTypeLevel(form);
 				case "SERVICE":
 					return AddService(form);
-				case "SURVEYTYPE":
-					return AddSurveyType(form);
 				case "TAXONOMYTYPELEVEL":
 					return AddTaxonomyTypeLevel(form);
 				case "VERSION":

@@ -1066,11 +1066,6 @@ namespace d360.web.Controllers.V2
 
 				if (long.TryParse(_pageNum, out pageNum))
 				{
-					if (pageNum > 100000)
-					{
-						return string.Format(ApiMessages.InvalidNumberTooLarge, ApiMessages.PageNumString);
-					}
-
 					if (pageNum <= 0)
 					{
 						return string.Format(ApiMessages.MinLengthCheckGTZero, ApiMessages.PageNumString);

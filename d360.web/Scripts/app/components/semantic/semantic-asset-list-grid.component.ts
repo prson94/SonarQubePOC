@@ -38,8 +38,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
 
     simpleFilter: string = "";
     advancedFilter: string = "";
-    isExportInProgress: boolean = false;
-    semanticEffectiveDate: Date;
+    isExportInProgress: boolean = false;   
 
     menuItems: any[] = [
         { title: $localize`Open` },
@@ -98,9 +97,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         this.getData();
     }
 
-    getData() {
-        this.semanticEffectiveDate = new Date(this.semanticType.effectiveDate);
-        this.semanticEffectiveDate.setUTCHours(0, 0, 0, 0);
+    getData() {               
         if (this.semanticTypesEnabled) {
             this.isLoading = true;
             this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, this.currentPageNumber, this.rowsPerPage, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder).subscribe((result) => {
@@ -172,8 +169,12 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
         this.dataProfileService.getSemanticTypeMatchingAssets(this.semanticType.qualifier, 1, this.maxExportRows, this.semanticType.threshold, this.simpleFilter, this.advancedFilter, this.sortField, this.sortOrder, true, this.semanticType.name, () => { this.isExportInProgress = false; });
     }
 
-    isOutOfDate(profileDate) {
-        return this.semanticEffectiveDate > new Date(profileDate) || new Date(profileDate) > new Date(this.semanticType.updatedOn);
+	isOutOfDate(profileDate) {		
+		let effectiveDate = (new Date(this.semanticType.effectiveDate)).getTime();
+		let profileDateTime = (new Date(profileDate)).getTime();
+		let updatedDate = (new Date(this.semanticType.updatedOn)).getTime();
+
+		return effectiveDate > profileDateTime || (updatedDate !== effectiveDate && profileDateTime > updatedDate);
     }
     
 }

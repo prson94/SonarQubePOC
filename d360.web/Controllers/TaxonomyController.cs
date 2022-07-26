@@ -25,6 +25,13 @@ namespace d360.web.Controllers
 		public JsonNetResult ModelHierarchy(int id)
 		{
 			var models = Company.Query<dynamic>($@"
+					drop table if exists #tempFilteredAssets
+					select a.id
+					into #tempFilteredAssets
+					from assettype at
+					inner join asset a on a.AssetTypeID = at.ID
+					where AT.Object = 'TaxonomyType' and At.ObjectID = @id AND At.[State] = 1 
+
 					select	A.ObjectID as ID,
 							A.[Uid],
 							A.DisplayValue,
@@ -41,6 +48,7 @@ namespace d360.web.Controllers
 								end as HasWorkflow
 					from	AssetDetail A
 							inner join AssetType AT on AT.ID = A.AssetTypeID
+							inner join #tempFilteredAssets tfa on tfa.ID = a.Id
 							outer apply (
 										select	I.SubjectID
 										from	[Intersect] I

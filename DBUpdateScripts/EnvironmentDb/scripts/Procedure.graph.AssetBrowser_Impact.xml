@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.AssetBrowser_Impact-v2">
-    <comment>GOV-18269</comment>
+  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Impact-v3">
+    <comment>GOV-18301</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,6 +24,7 @@ create or alter procedure [graph].[AssetBrowser_Impact]
 	,@hierarchyKey varchar(50) = null -- If this value is populated, you should link all relationships to this key. Not populated during initial load of AB.
 	,@predicateUid uniqueidentifier = null
 	,@isAdmin bit
+	,@initialSaltValue int = -1
 as
 begin
 	set nocount on;
@@ -80,6 +81,11 @@ begin
 	declare @i table (Position int, IntersectID int, PredicateID int, PredicateUid uniqueidentifier, [Text] nvarchar(250), PredicateType int, SubjectHierarchyKey varchar(50), SubjectKey varchar(50), SubjectSalt int, SubjectID bigint, ObjectHierarchyKey varchar(50), ObjectKey varchar(50), ObjectSalt int, ObjectID bigint)
 	declare @c int = 1,
 			@salt int = LEFT(CAST(RAND()*1000000000+999999 AS INT),3)	-- Random 3 digit number as salt
+
+	if @initialSaltValue > 0 
+	begin
+		set @salt = @initialSaltValue
+	end
 
 	insert into @a (Salt, Position, Initial, ID)
 		select @salt, 0, 1, ID from @assets O inner join Asset A on A.Uid = O.Uid;

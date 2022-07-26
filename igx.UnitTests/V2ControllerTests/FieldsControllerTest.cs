@@ -19,6 +19,8 @@ using d360.model.DataAccessLayer;
 using d360.web.Utilities;
 using igx.UnitTests.V2ControllerTests;
 using Moq;
+using FluentAssertions;
+using d360.web.Models;
 
 namespace igx.UnitTests
 {
@@ -97,11 +99,9 @@ namespace igx.UnitTests
         public async Task DeleteFields_CheckIfValidationIncluded()
         {
             FieldTypesApiDeleteModel model = new FieldTypesApiDeleteModel();
-            var results = await fieldsController.DeleteFieldTypesAsync(model); 
-	        var response = await results.ExecuteAsync(CancellationToken.None);
-            var content = await response.Content.ReadAsStringAsync();
+			Func<Task> act = async () => { await fieldsController.DeleteFieldTypesAsync(model); };
 
-            Assert.True(response.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+			await act.Should().ThrowAsync<RestApiException>();
         }
 
         [Fact]
@@ -124,5 +124,5 @@ namespace igx.UnitTests
             Assert.True(Guid.Parse(data.GetValue("Uid").ToString()) == model.AssetTypeUid, "Invalid Uid returned!");
             Assert.True(bool.Parse(data.GetValue("Success").ToString()), "Invalid Success returned!");
         }
-    }
+	}
 }

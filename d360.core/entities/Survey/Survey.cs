@@ -10,12 +10,9 @@ namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
     public class Survey : BaseIntObject, IIntObject
-    {
-        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
-
-        [DataMember]
-        public int ObjectID { get; set; }
+	{
+		[DataMember]
+		public long AssetID { get; set; }
 
         [DataMember]
         public int ResourceID { get; set; }
@@ -34,5 +31,8 @@ namespace d360.core.entities
 
         [ForeignKey("SurveyID")]
         public virtual ICollection<Question> Questions { get; set; }
-    }
+
+		[ForeignKey("AssetID"), IgnoreDataMember]
+		public virtual Asset Asset { get; set; }
+	}
 }

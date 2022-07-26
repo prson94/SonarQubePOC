@@ -43,12 +43,12 @@ namespace d360.model.validators
 
             if (model == null)
             {
-                throw new Exception("Invalid tag specified [null model].");
+                throw new ArgumentException("Invalid tag specified [null model].");
             }
 
             if (string.IsNullOrEmpty(model.Value))
             {
-                throw new Exception("Invalid tag specified [no value].");
+                throw new ArgumentException("Invalid tag specified [no value].");
             }
             
             if (!string.IsNullOrEmpty(model.Value))
@@ -58,17 +58,17 @@ namespace d360.model.validators
 
             if (isTagBlank.Length < 1)
             {
-                throw new Exception("Tag must be as least 1 character long in length.");
+                throw new ArgumentException("Tag must be as least 1 character long in length.");
             }
 
             if (model.Value.Length > 100)
             {
-                throw new Exception("Invalid tag specified [too long].");
+                throw new ArgumentException("Invalid tag specified [too long].");
             }
 
             if (uid == Guid.Empty)
             {
-                throw new Exception("Invalid uid specified.");
+                throw new ArgumentException("Invalid uid specified.");
             }
         }
     }

@@ -24,6 +24,7 @@ import { CompanySettingsService } from '../../services/settings.service';
 import { AssetGridComponent } from '../assets-grid/asset-grid.component';
 import { LinkClickInterceptor } from '../../services/href-click-service';
 import { SemanticType } from '../../models/semantic-type.model';
+import { AssetDetailComponent } from "../shared/asset-detail/asset-detail.component";
 
 declare var CurrentResourceID;
 
@@ -53,6 +54,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     dataProfile: any;
 
     @ViewChild('grid', { static: false }) assetGrid: AssetGridComponent;
+	@ViewChild('assetDetail') assetDetail: AssetDetailComponent;
 
     hrefSub: Subscription;
     selectedAsset: any;
@@ -105,8 +107,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
-                    this.gridObject = RuleType.AsGridObject(this.ruleType);
-
+					this.gridObject = RuleType.AsGridObject(this.ruleType);
+					this.baseAssetTypeUid = this.gridObject.AssetTypeUID;
                     this.setObjectInfo('RuleType', this.ruleType.ID);
 
                     this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
@@ -141,8 +143,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     selectAsset(event: any) {
-        this.selection = event;
+        this.selection = event.row;
         this.selectedAsset = this.selectedReferenceItem = this.selectedTag = null;
+		
+		if (event.forceRefresh) {
+			this.assetDetail.load();
+		}
 
         if (this.selection && this.selection.HasProfiling) {
             this.sidePanelLoading = true;

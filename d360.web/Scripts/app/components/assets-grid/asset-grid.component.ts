@@ -214,9 +214,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    selectRow(row: any) {
+    selectRow(row: any, forceRefresh: boolean = false) {
         this.selected = row;
-        this.selectedChange.emit(row);
+        this.selectedChange.emit({ row, forceRefresh });
     }
 
     clickMenuItem(event: any, item: any) {
@@ -452,13 +452,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         return params;
     }
 
-    getData(autoSelect: boolean = true) {
+    getData(autoSelect: boolean = true, edit?: { keyFieldChanged: boolean }) {
         this.isLoading = true;
         this.isLoadingChange.emit(true);
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
 		}
-		var params = this.getParams();
+		const params = this.getParams();
 		this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, params, true)
             .pipe(debounceTime(200))
 			.subscribe(res => {
@@ -466,37 +466,39 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
                 this.items = res.items;
                 let hasScoring = this.scoreAllocations && this.scoreAllocations.length > 0;
+				let isRowSelected = false;
 
-                this.items.forEach((i) => {
+                this.items.forEach((item) => {
 
-                    i[this.menuKey] = [
+                    item[this.menuKey] = [
                         { title: $localize`Open` },
                         { title: $localize`Open in New Tab` },
                     ];
 
-                    if (i.Permissions.ModifyAsset) {
-                        i[this.menuKey].push({ title: $localize`Edit` });
+                    if (item.Permissions.ModifyAsset) {
+                        item[this.menuKey].push({ title: $localize`Edit` });
                     }
 
-                    if (i.Permissions.DeleteAsset) {
-                        i[this.menuKey].push({ title: $localize`Delete` });
+                    if (item.Permissions.DeleteAsset) {
+                        item[this.menuKey].push({ title: $localize`Delete` });
                     }
 
                     if (hasScoring) {
                         this.scoreAllocations.forEach((s) => {
-                            i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
+                            item[s.Name + '_threshold'] = this.getThreshold(item[s.Name], s.LowerThreshold, s.UpperThreshold);
                         });
                     }
 
-                    if (this.selected != null && autoSelect) {
-                        if (i.AssetId === this.selected.AssetId) {
-                            this.selectRow(i);
+                    if (this.selected && autoSelect && edit && !edit.keyFieldChanged) {
+						if (item.AssetId === this.selected.AssetId) {
+                            this.selectRow(item, true);
+							isRowSelected = true;
                         }
                     }
 
                 });
 
-                if (autoSelect) {
+                if (autoSelect && (!edit || !isRowSelected)) {
                     if (this.items && this.items.length > 0) {
                         this.selectRow(this.items[0]);
                     } else {
@@ -524,9 +526,6 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 				}
                 if (this.initialTotalRecords == null) {
                     this.initialTotalRecords = res.total;
-                }
-                if (this.items && this.items.length > 0 && autoSelect) {
-                    this.selected = this.items[0];
                 }
                 this.isLoading = false;
                 this.isLoadingChange.emit(false);
@@ -591,10 +590,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     add() {
-        this.selected = null;
+		this.selectRow(null);
         this.showEditor = true;
-        this.selectedChange.emit(null);
-
         //reload dynamic editor if it already exists to trigger change detection
         if (this.dynamicEditor) {
             this.dynamicEditor.load();
@@ -641,7 +638,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             this.router.navigateByUrl(newUrl);
         }
         else {
-            this.getData();
+            this.getData(true, { keyFieldChanged: $event.keyFieldChanged });
             this.isLoading = false;
             this.isLoadingChange.emit(false);
             this.showEditor = false;
@@ -750,7 +747,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private onEdit(item) {
-        this.selected = item;
+        this.selectRow(item);
         this.showEditor = true;
         this.showEditorChange.emit(true);
         this.changeDetectorRef.markForCheck();
@@ -758,7 +755,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     private onDelete(item) {
         this.deleteName = item['Path'].slice(1, -1);
-        this.selected = item;
+		this.selectRow(item);
         this.showDelete = true;
         this.changeDetectorRef.markForCheck();
     }

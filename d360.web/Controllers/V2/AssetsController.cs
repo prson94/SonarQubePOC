@@ -144,48 +144,23 @@ namespace d360.web.Controllers.V2
 		]
 		public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, Guid? assetTypeUid = null)
 		{
-			var prefix = "Assets.GetAssetTypesAsync => ";
-			string errorMessage;
-
-			try
+			if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
 			{
-				if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
-				{
-					var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
+				var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
 
+				if (assetType == null)
+				{
 					if (assetType == null)
 					{
-						if (assetType == null)
-						{
-							return ReturnApiError(HttpStatusCode.BadRequest, AssetTypeErrors.NotFoundGeneric);
-						}
+						throw new NotFoundBusinessLayerException(AssetTypeErrors.NotFoundGeneric);
 					}
 				}
-
-				var queryParams = Request.GetQueryNameValuePairs();
-				var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
-
-				return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
 			}
-			catch (ArgumentException ex)
-			{
-				return ReturnApiError(HttpStatusCode.BadRequest, ex.Message);
-			}
-			catch (Exception ex)
-			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
-				if (ex is FormatException)
-				{
-					errorMessage = errorMessage.Replace("Guid", ApiMessages.UidConstant);
-				}
+			var queryParams = Request.GetQueryNameValuePairs();
+			var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, assetTypeUid);
 
-				SendException(ex, new Dictionary<string, string>() {
-					{ApiMessages.EndpointMethod, prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-			}
+			return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
 		}
 
 		string calculateCacheKeyForGetAssetsTotal(int assetTypeId, IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -3092,30 +3067,21 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
 		]
-		public async Task<IHttpActionResult> GetAsset(Guid assetUid)
+		public async Task<IHttpActionResult> GetAsset(string assetUid)
 		{
-			var prefix = "Assets.GetAsset => ";
-
-			try
+			if (Guid.TryParse(assetUid, out Guid assetId))
 			{
-				var res = await AssetRepository.GetAssetSingle(assetUid);
+				var res = await AssetRepository.GetAssetSingle(assetId);
 
 				if (res == null)
 				{
-					return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))));
+					throw new NotFoundException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
 				}
 
-				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object)));
+				return Ok(res);
 			}
-			catch (Exception ex)
-			{
-				var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string>() {
-					{ ApiMessages.EndpointMethod, prefix }
-				});
 
-				return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.InternalServerError, errorMessage));
-			}
+			throw new ArgumentException(ApiMessages.InvalidRequest);
 		}
 
 		/// <summary>
@@ -3706,11 +3672,17 @@ namespace d360.web.Controllers.V2
 		[SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))]
 		[HttpGet]
 		[Route("types/{assetTypeUid}/ancestry")]
-		public async Task<IHttpActionResult> GetTypeAncestry(Guid assetTypeUid, CancellationToken cancellationToken)
+		public async Task<IHttpActionResult> GetTypeAncestry(string assetTypeUid, CancellationToken cancellationToken)
 		{
+			Guid assetTypeID;
+			if (!Guid.TryParse(assetTypeUid, out assetTypeID))
+			{
+				throw new ArgumentException(string.Format(ApiMessages.InvalidAssetUid, assetTypeUid));
+			}
+
 			ValidateParameters();
 
-			var entities = await AssetTypeRepository.GetAncestryAsync(assetTypeUid, cancellationToken);
+			var entities = await AssetTypeRepository.GetAncestryAsync(assetTypeID, cancellationToken);
 			if (entities.Count == 0)
 			{
 				throw new NotFoundBusinessLayerException($"{nameof(AssetType)} with uid=\"{assetTypeUid}\" not found.");

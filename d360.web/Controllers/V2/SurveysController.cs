@@ -139,11 +139,302 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        /// <summary>
-        /// Returns defined survey types.          
-        /// </summary>        
-        /// <returns>A list of survey types</returns>
-        [
+		/// <summary>
+		/// Create surveys that are targeted to a specific type of asset. Users will be prompted to periodically fill in a survey on the asset.
+		/// </summary>
+		/// <param name="surveyType">Survey to create</param>
+		/// <returns>Created survey with uid</returns>
+		[
+			HttpPost, MapToApiVersion("2.0"), Route("types"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.Created, "Survey successfully created.", typeof(SurveyTypeCreateResponseApiModel)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Survey with the same name already exists for this asset type.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> AddSurveyType(SurveyTypeCreateApiModel surveyType)
+		{
+			var validationStatus = await this.validator.ValidateSurveyTypeCreateApiModel(surveyType);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var assetType = this.AssetRepository.GetAssetTypeByUID(surveyType.AssetTypeUid);
+
+			var createdSurveyType = await SurveyRepository.Create(new core.entities.SurveyType
+			{
+				AssetTypeID = assetType.ID,
+				Name = surveyType.Name,
+				Description = surveyType.Description,
+				ValidForDays = surveyType.ValidForDays
+			});
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new SurveyTypeCreateResponseApiModel
+			{
+				AssetTypeUid = surveyType.AssetTypeUid,
+				Name = createdSurveyType.Name,
+				Description = createdSurveyType.Description,
+				ValidForDays = createdSurveyType.ValidForDays,
+				Uid = createdSurveyType.Uid
+			}));
+		}
+
+		/// <summary>
+		/// Updates existing survey type
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="updateModel">Update model</param>
+		/// <returns>Nothing</returns>
+		[
+			HttpPut, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Survey successfully updated."),
+			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Another survey with the same name already exists for this asset type.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> UpdateSurveyType(Guid surveyTypeUid, SurveyTypeUpdateApiModel updateModel)
+		{
+			var validationStatus = await this.validator.ValidateSurveyTypeUpdateApiModel(surveyTypeUid, updateModel);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var surveyType = SurveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+
+			surveyType.Name = updateModel.Name;
+			surveyType.Description = updateModel.Description;
+			surveyType.ValidForDays = updateModel.ValidForDays;
+
+			await SurveyRepository.Update(surveyType);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+		}
+
+
+		/// <summary>
+		/// Deletes a survey type
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <returns>Nothing</returns>
+		[
+			HttpDelete, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Survey successfully removed."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> DeleteSurveyType(Guid surveyTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateSurveyTypeDelete(surveyTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			await this.SurveyRepository.DeleteSurveyType(surveyTypeUid);
+
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+		}
+
+
+		/// <summary>
+		/// Gets a list of questions under a survey
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <returns>List of questions under a survey</returns>
+		[
+			HttpGet, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/"),
+			SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<QuestionTypeShortInfo>)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey Type not found.", typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> GetQuestionTypesBySurveyType(Guid surveyTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateGetQuestionTypesBySurveyType(surveyTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var questionTypes = await this.SurveyRepository.GetQuestionTypesBySurveyType(surveyTypeUid);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
+		}
+
+		/// <summary>
+		/// Gets a list of options for a specific question on a survey
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="questionTypeUid">Uid of question type</param>
+		/// <returns>List of options for a specific question on a survey</returns>
+		[
+			HttpGet, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/{questionTypeUid}/options"),
+			SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<ObjectSurveyQuestionValuesModel>)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey Type not found. Question not found.", typeof(ErrorResponse)),
+		]
+		public async Task<IHttpActionResult> GetSurveyQuestionValues(Guid surveyTypeUid, Guid questionTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateGetSurveyQuestionValues(surveyTypeUid, questionTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var questionTypes = await this.SurveyRepository.GetSurveyQuestionValues(questionTypeUid);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
+		}
+
+		/// <summary>
+		/// Create questions for a survey. Users will be prompted to periodically fill in a survey question on the asset.
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <returns>Object with uid of created question</returns>
+		[
+			HttpPost, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponseRemoveDefaults,
+			SwaggerResponse(HttpStatusCode.Created, "Survey question successfully created.", typeof(QuestionTypeCreateResponseModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Question have invalid fields", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, "Question with the same name already exists for this survey type.", typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> AddQuestionType(Guid surveyTypeUid, QuestionTypeUpsertModel question)
+		{
+			var validationStatus = await this.validator.ValidateQuestionTypeCreate(surveyTypeUid, question);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var surveyType = this.SurveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+
+			var createdQuestionType = await this.SurveyRepository.CreateQuestionType(new core.entities.QuestionType
+			{
+				Name = question.Name,
+				SurveyTypeID = surveyType.ID,
+				DisplayStyle = question.DisplayStyle,
+				Description = question.Description,
+				QuestionTypeOptions = question.Options
+					.Select(item => new core.entities.QuestionTypeOption
+					{
+						Name = item.Name,
+						Value = item.Value
+					})
+					.ToList()
+			});
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, new QuestionTypeCreateResponseModel
+			{
+				Uid = createdQuestionType.Uid
+			}));
+		}
+
+		/// <summary>
+		/// Once someone has submitted a response to a question, only the Description may be updated.
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="questionTypeUid">Uid of question type</param>
+		/// <returns>Nothing</returns>
+		[
+			HttpPut, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/{questionTypeUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Survey question successfully updated.", typeof(QuestionTypeCreateResponseModel)),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.BadRequest, "Question have invalid fields", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, 
+				@"Survey with the specified Uid was does not exist.
+				  Survey question with the specified Uid was does not exist.", 
+				typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Conflict, 
+				@"Another survey question with the same name already exists for this survey type. 
+				  Question response already submitted by user and may no longer be updated. Only Description may be updated.", 
+				typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> UpdateQuestionType(
+			Guid surveyTypeUid, 
+			Guid questionTypeUid, 
+			QuestionTypeUpsertModel question)
+		{
+			var validationStatus = await this.validator.ValidateQuestionTypeUpdate(surveyTypeUid, questionTypeUid, question);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			var surveyType = this.SurveyRepository.GetSurveyTypeByUid(surveyTypeUid);
+
+			await this.SurveyRepository.UpdateQuestionType(new core.entities.QuestionType
+			{
+				SurveyTypeID = surveyType.ID,
+				Uid = questionTypeUid,
+				Name = question.Name,
+				DisplayStyle = question.DisplayStyle,
+				Description = question.Description,
+				QuestionTypeOptions = question.Options
+					.Select(item => new core.entities.QuestionTypeOption
+					{
+						Name = item.Name,
+						Value = item.Value
+					})
+					.ToList()
+			});
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+		}
+
+
+		/// <summary>
+		/// Deletes a question from survey type
+		/// </summary>
+		/// <param name="surveyTypeUid">Uid of survey type</param>
+		/// <param name="questionTypeUid">Uid of question type</param>
+		/// <returns>Nothing</returns>
+		[
+			HttpDelete, MapToApiVersion("2.0"), Route("types/{surveyTypeUid}/questions/{questionTypeUid}"),
+			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+			SwaggerResponse(HttpStatusCode.OK, "Survey question successfully removed."),
+			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey question.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound,
+				@"Survey with the specified Uid was does not exist. 
+				Survey question with the specified Uid was does not exist.",
+				typeof(ErrorResponse)),
+			RequireAdminPermissions
+		]
+		public async Task<IHttpActionResult> DeleteQuestionType(Guid surveyTypeUid, Guid questionTypeUid)
+		{
+			var validationStatus = await this.validator.ValidateQuestionTypeDelete(surveyTypeUid, questionTypeUid);
+			if (validationStatus != null)
+			{
+				return errorMessageResponse(validationStatus);
+			}
+
+			await this.SurveyRepository.DeleteQuestionType(questionTypeUid);
+
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK));
+		}
+
+		/// <summary>
+		/// Returns defined survey types.          
+		/// </summary>        
+		/// <returns>A list of survey types</returns>
+		[
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
@@ -151,8 +442,11 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("HasResponses", "Default value(blank) returns all types. Set to true to return only those survey types to which users have responded, and set to false to return survey types without responses", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are Name, CreatedOn, UpdatedOn, ValidForDays and NumberOfResponses. By default the results are ordered by CreatedOn ascending. Fields ValidForDays and NumberOfResponses are sorted descending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of survey types.", typeof(SurveyTypeApiResponseModel)),
+            SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are Name, CreatedOn, UpdatedOn, ValidForDays and NumberOfResponses. By default the results are ordered by CreatedOn ascending. . Fields ValidForDays and NumberOfResponses are sorted descending if sort order is not specified", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the data set. Filtering is done using 'Contains' logic.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_filter", ADVANCED_FILTER_DESCRIPTION, DataType = "string", ParameterType = "query", Required = false),
+			SwaggerResponse(HttpStatusCode.OK, "A full list of survey types.", typeof(SurveyTypeApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
@@ -283,7 +577,7 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, uid.ToString()))).ConfigureAwait(false);
                     }
 
-                    if (asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
+                    if (asset.AssetType.ID != survey.AssetTypeID)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, SurverysApiMessages.AssetTypeNotSurvey)).ConfigureAwait(false);
                     }
@@ -530,7 +824,7 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, string.Format(ActionApiMessages.AssetNotFound, model.AssetUid.ToString()))).ConfigureAwait(false);
             }
 
-            if (surveyType.Object != asset.AssetType.Object || surveyType.ObjectID != asset.AssetType.ObjectID)
+            if (surveyType.AssetTypeID != asset.AssetType.ID)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.BadRequest, SurverysApiMessages.SurveyInvalidForAssetType)).ConfigureAwait(false);
             }

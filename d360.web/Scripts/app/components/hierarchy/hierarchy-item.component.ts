@@ -167,7 +167,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         this.buildBreadcrumb();
     }
 
-    private buildBreadcrumb() {
+	private buildBreadcrumb() {
         if (this.selected) {
             if (this.selected.DisplayValue) {
                 this.buildSecondaryNavigation(this.selected.Uid, null, this.object, null, null, null, this.assetTypeClass, this.selected.DisplayValue);
@@ -179,7 +179,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
     }
 
     private loadHierarchy(id: number, selectedHierarchyId: number): void {
-
         switch (this.assetTypeClass) {
             case AssetTypeClass.Model:
                 this.modelsService.getModelHierarchy(id).subscribe(result => {
@@ -217,7 +216,9 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
         }
 
-        this.assetID = this.selected.AssetID;
+		this.assetID = this.selected.AssetID;
+
+		this.baseAssetUid = this.selected.Uid;
 
         this.loadPermissions(this.permissionsService, this.object, this.selected.ID);
 

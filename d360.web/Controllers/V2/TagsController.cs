@@ -9,11 +9,13 @@ using System.Web.Http.Description;
 
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using d360.web.Services;
 
 using Microsoft.Web.Http;
 
@@ -138,29 +140,27 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
+        public IHttpActionResult DeleteById(string tagUid, bool cascade = false)
         {
-            if (!tagRepository.DoesTagExists(tagUid))
+			Guid _tagUid;
+			if (!Guid.TryParse(tagUid, out _tagUid))
+			{
+				throw new ArgumentException(string.Format(ApiMessages.InvalidGuid, tagUid));
+			}
+
+            if (!tagRepository.DoesTagExists(_tagUid))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
 
-            if (!tagRepository.IsAuthorizedToEditTag(tagUid))
+            if (!tagRepository.IsAuthorizedToEditTag(_tagUid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ApiMessages.AccessDenied));
+                throw new UnauthorizedBusinessLayerException(ApiMessages.AccessDenied);
             }
 
-            try
+            if (!tagRepository.DeleteTags(new List<TagApiDeleteModel> { new TagApiDeleteModel { uid = _tagUid, cascade = cascade } }))
             {
-                if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
-                }
-            }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorDeleteTag, ex.Message);
-
+				throw new NotFoundBusinessLayerException(TagsApiMessages.TagNotFound);
             }
 
             return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoved, TagsApiMessages.TagRemoveMessage);
@@ -219,51 +219,48 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             MapToApiVersion("2.0"),
-            Route("{tagUid:Guid}"),
+            Route("{tagUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, UNKNOWN_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public IHttpActionResult Put(Guid tagUid, TagApiUpsertModel model)
+        public IHttpActionResult Put(string tagUid, TagApiUpsertModel model)
         {
-            if (!tagRepository.DoesTagExists(tagUid))
+			Guid tagId;
+			if (!Guid.TryParse(tagUid, out tagId))
+			{
+				throw new ArgumentException(ApiMessages.InvalidGuid);
+			}
+
+            if (!tagRepository.DoesTagExists(tagId))
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorUpdateTag, string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
 
-            if (!tagRepository.IsAuthorizedToEditTag(tagUid))
+            if (!tagRepository.IsAuthorizedToEditTag(tagId))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
+                throw new ForbiddenBusinessLayerException(ApiMessages.AccessDenied);
             }
 
-            TagApiModel result;
+            model.Value = model.Value.Trim();
+            TagValidator.ValidateForPut(tagId, model);
+            var existingTag = tagRepository.GetTagByUid(tagId);
 
-            try
+            if (existingTag == null)
             {
-                model.Value = model.Value.Trim();
-                TagValidator.ValidateForPut(tagUid, model);
-                var existingTag = tagRepository.GetTagByUid(tagUid);
-
-                if (existingTag == null)
-                {
-                    throw new ArgumentNullException(string.Format(TagsApiMessages.TagUidNotFound, tagUid.ToString()));
-                }
-
-                if (tagRepository.DoesTagExists(tagUid, model))
-                {
-                    throw new ArgumentNullException(TagsApiMessages.TagExists);
-                }
-
-                result = tagRepository.UpdateTag(tagUid, model, existingTag);
-            }
-            catch (Exception e)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorUpdateTag, e.Message);
+                throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
 
-            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+            if (tagRepository.DoesTagExists(tagId, model))
+            {
+                throw new ArgumentException(TagsApiMessages.TagExists);
+            }
+
+            var result = tagRepository.UpdateTag(tagId, model, existingTag);
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -287,14 +284,14 @@ namespace d360.web.Controllers.V2
         {
             if (model == null)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, TagsApiMessages.ErrorRemoveTag, ApiMessages.ErrorInvalidDatasetMessage);
+                throw new ArgumentException(ApiMessages.ErrorInvalidDatasetMessage);
             }
 
             foreach (var item in model)
             {
                 if (!tagRepository.DoesTagExists(item.uid))
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
+                    throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, item.uid.ToString()));
                 }
 
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
@@ -303,19 +300,12 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            try
-            {
-                if (!tagRepository.DeleteTags(model))
-                {
-                    return errorMessageResponse(HttpStatusCode.NotFound, TagsApiMessages.ErrorRemoveTag, TagsApiMessages.TagNotFound);
-                }
-            }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, TagsApiMessages.ErrorRemoveTag, ex.Message);
-            }
+			if (!tagRepository.DeleteTags(model))
+			{
+				throw new UnauthorizedBusinessLayerException(TagsApiMessages.TagNotFound);
+			}
 
-            return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage);
+			return successMessageResponse(HttpStatusCode.OK, TagsApiMessages.TagRemoveTitle, TagsApiMessages.TagRemoveMessage);
         }
 
         /// <summary>
@@ -395,9 +385,12 @@ namespace d360.web.Controllers.V2
             ApiExplorerSettings(IgnoreApi = true),
             Route("export"),
             FileDownload,
+			RequireAdminPermissions,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
-            SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)), 
+			SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.Forbidden, NOT_AUTHORIZED_MESSAGE, typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ExportToExcel()
         {

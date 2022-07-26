@@ -9,6 +9,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { TitleAndTabsService } from '../../../services/title-and-tabs.service';
+import { Param } from '../../../enums/param.enum';
 
 @Component({
 	selector: 'd3s-dashboard',
@@ -48,9 +49,21 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		this.showSingle = false;
 		this.sub = this.route.params.subscribe(params => {
 			this.titleAndTabsService.initializeTitleAndTabsCheck(this.route.params, params, $localize`Dashboards`);
+
 			this.dashboardName = params['name'];
-			this.assetTypeUid = params['assetTypeUid'];
+			this.assetTypeUid = null;
+			if (params['uid'] && (params['uid'] as string).length === 36) {
+				this.assetTypeUid = params['uid'];
+			}
+
 			this.assetUid = params['assetUid'];
+			if (this.assetUid === 'preview') {
+				//because of routing without type specifying we cannot easiliy destinguish all 3 rooting scenarious
+				//preview string in route gets matches as assetuid value
+				this.reportID = this.assetTypeUid;
+				this.assetUid = null;
+				this.assetTypeUid = null;
+			}
 			this.loadAvailableDashboards();
 			if (this.assetUid) {
 				this.buildSecondaryNavigation(this.assetUid,

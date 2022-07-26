@@ -306,12 +306,12 @@ export class BaseComponent {
                     );
                 }
                 this.secondaryNavService.showItem(this.ownershipSidebar);
-            }
+			}
 
 			if (opts.hasDashboard) {
 				let url: string = '/dashboard/';
 				if (this.baseAssetUid) {
-					url += `${this.baseAssetTypeUid}/${this.baseAssetUid}`;
+					url += `asset/${this.baseAssetUid}`;
 				}
 				else {
 					url += this.baseAssetTypeUid;
