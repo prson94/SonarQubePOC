@@ -69,13 +69,15 @@ export class D3SModal implements OnChanges, AfterContentInit, OnDestroy {
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
         let path: any[] = event.path;
-        //add scroll exceptions here
+		//add scroll exceptions here
+		console.log(path);
         if (this.display == true
             && !(path.filter(x => x.tagName == 'D3S-TAG-USAGE').length > 0)
             && !(path.filter(x => x.tagName == 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
             && !(path.filter(x => x.tagName == 'P-DROPDOWNITEM').length > 0)
-            && !(path.filter((x) => x.tagName === 'IG-PROPERTY-GROUP').length > 0)
-        ) {
+			&& !(path.filter((x) => x.tagName === 'IG-PROPERTY-GROUP').length > 0)
+			&& !(path.filter((x) => x.tagName === 'TABLE').length > 0) 
+		){
             event.preventDefault();
         }
     }
