@@ -178,8 +178,12 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     addCreatedByFieldToTags(tags: TagType[]): void {
         tags.forEach((tag: TagType): void => {
-            tag['CreatedBy'] = `${tag.CreatedByFirstName} ${tag.CreatedByLastName}`;
+            this.addCreatedByFieldToTag(tag);
         });
+    }
+
+    addCreatedByFieldToTag(tag: TagType): void {
+        tag['CreatedBy'] = `${tag.CreatedByFirstName} ${tag.CreatedByLastName}`;
     }
 
     private triggerRerenderOfSelection() {
@@ -285,6 +289,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
+                    this.addCreatedByFieldToTag(result);
                     this.mutateTags(tags => tags.push(result));
                 }
                 else {
