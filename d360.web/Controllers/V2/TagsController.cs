@@ -234,7 +234,7 @@ namespace d360.web.Controllers.V2
 				throw new ArgumentException(ApiMessages.InvalidGuid);
 			}
 
-            if (!tagRepository.DoesTagExists(tagUid))
+            if (!tagRepository.DoesTagExists(tagId))
             {
                 throw new NotFoundBusinessLayerException(string.Format(TagsApiMessages.TagUidNotFound, tagUid));
             }
