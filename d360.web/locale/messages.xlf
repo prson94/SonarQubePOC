@@ -1438,11 +1438,18 @@
           <context context-type="linenumber">6</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="1a616774d44287ffa84599a8c49435544ffbacc9" datatype="html">
-        <source> The selected <x id="INTERPOLATION" equiv-text="{{className}} that will also"/> Type contains <x id="START_BOLD_TEXT" ctype="x-b" equiv-text="&lt;b&gt;{{count}}&lt;/b&gt;"/><x id="INTERPOLATION_1" equiv-text="{{count}}&lt;/b&gt; {"/><x id="CLOSE_BOLD_TEXT" ctype="x-b" equiv-text="&lt;/b&gt; {{className}"/> <x id="INTERPOLATION" equiv-text="{{className}} that will also"/> that will also be deleted. These actions cannot be undone. Please check this box if you would like to continue. </source>
+      <trans-unit id="b1b4cfda2e153371662e5dfa52f124d45d3aed19" datatype="html">
+        <source> The selected <x id="INTERPOLATION" equiv-text="{{className}} T"/> Type contains <x id="INTERPOLATION_1" equiv-text="{{count}}"/> <x id="ICU" equiv-text="{count"/> that will also be deleted. These actions cannot be undone. Please check this box if you would like to continue. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-delete/asset-type-delete.component.html</context>
           <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="ab8c264b6017bc9e5ea12ae5337f543129316788" datatype="html">
+        <source>{VAR_PLURAL, plural, =0 {just now} =1 {one assets} other {<x id="INTERPOLATION"/> assets}}</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/asset-type-delete/asset-type-delete.component.html</context>
+          <context context-type="linenumber">16,19</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4467323362722952678" datatype="html">
@@ -9308,45 +9315,6 @@
           <context context-type="linenumber">59,61</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="5357629346591026715" datatype="html">
-        <source>Export not available for over <x id="PH" equiv-text="this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${"/> rows</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid.component.ts</context>
-          <context context-type="linenumber">137</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
-          <context context-type="linenumber">165</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/reference/reference-item-list.component.ts</context>
-          <context context-type="linenumber">65</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/semantic/semantic-asset-list-grid.component.ts</context>
-          <context context-type="linenumber">85</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/match-detection.component.ts</context>
-          <context context-type="linenumber">518</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/user/user-list.component.ts</context>
-          <context context-type="linenumber">82</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/sidebar/audit/audit.component.ts</context>
-          <context context-type="linenumber">79</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/sidebar/children/artifact-item-child-grid.component.ts</context>
-          <context context-type="linenumber">42</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list.component.ts</context>
-          <context context-type="linenumber">54</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="9149586889863006620" datatype="html">
         <source>Export to Excel</source>
         <context-group purpose="location">
@@ -9392,6 +9360,45 @@
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list-filter.component.ts</context>
           <context context-type="linenumber">76,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5357629346591026715" datatype="html">
+        <source>Export not available for over <x id="PH" equiv-text="this.canExportRecords() ? $localize`Export to Excel` : $localize`Export not available for over ${"/> rows</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/assets-grid/asset-grid.component.ts</context>
+          <context context-type="linenumber">137</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/hierarchy/hierarchy-item-structure.component.ts</context>
+          <context context-type="linenumber">165</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/reference/reference-item-list.component.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/semantic/semantic-asset-list-grid.component.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/match-detection.component.ts</context>
+          <context context-type="linenumber">518</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/user/user-list.component.ts</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/sidebar/audit/audit.component.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/sidebar/children/artifact-item-child-grid.component.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/workflowmonitor/workflowmonitor-list.component.ts</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4436042776458191535" datatype="html">
