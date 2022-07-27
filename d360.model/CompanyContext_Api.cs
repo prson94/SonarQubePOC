@@ -10313,7 +10313,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 								";
 
-                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset }, commandTimeout: timeout);
+                    //Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset }, commandTimeout: timeout);
 
                     #endregion
 
@@ -10353,7 +10353,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                             {
                                 if (dr.OwningAssetUid != Guid.Empty)
                                 {
-                                    wheres.Add($@"AR.Uid in (select r.Uid from AssetResult AR where AR.OwningAssetUid = @OwningAssetUid)");
+                                    wheres.Add($@"AR.OwningAssetUid = @OwningAssetUid");
                                 }
 
                                 if (dr.EvaluatedAssetUid != Guid.Empty)
