@@ -1592,51 +1592,48 @@ values	(G.ID, G.Segments);
 	</rollback>
   </changeSet>
   
-  <changeSet author="bquinlivan" id="Data.Corrections.GOV-18575-CopyAssetResultRecords-1">
-  <comment>Copy asset result data from graph table to non-graph table dbo.AssetResult</comment>
-  <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
+  <changeSet author="Pappas" id="Data.Corrections.GOV-18575-CopyAssetResultRecords-1.1">
+  <comment>Initially set by Quinlivan. Copy asset result data from graph table to non-graph table dbo.AssetResult</comment>
+  <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
 		<![CDATA[
-			INSERT INTO [dbo].[AssetResult] (
-							[Uid]
-							,[OwningAssetUid]
-							,[EvaluatedAssetUid]
-							,[EffectiveDate]
-							,[RunDate]
-							,[PassCount]
-							,[FailCount]
-							,[CreatedOn]
-							,[CreatedBy]
-							,[UpdatedOn]
-							,[UpdatedBy])
-			select r.*		
-			from (SELECT 	ARD.[Uid]
-					,An.[Uid] as OwningAssetUid
-					,En.[Uid] as EvaluatedAssetUid					
-					,ARD.[EffectiveDate]
-					,ARD.[RunDate]
-					,ARD.[PassCount]
-					,ARD.[FailCount]
-					,ARD.[CreatedOn]
-					,ARD.[CreatedBy]
-					,ARD.[UpdatedOn]
-					,ARD.[UpdatedBy]
-			FROM 
-					AssetResultDepricated ARD,
-					AssetResultEdge Ee,
-					graph.AssetNode En,
-					AssetResultEdge Oe,
-					graph.AssetNode An									
-			WHERE 
-					match(En-(Ee)->ARD<-(Oe)-An)
-					and Ee.Class = 2
-					and Oe.Class = 1
-					) R
-					outer apply (select 1 as value from AssetResult AR where AR.uid = R.uid) hasresult
-			where hasresult.value = null
-					
+merge	AssetResult T
+using	(
+		select	* from AssetResultDepricated
+		) S
+on		(T.Uid = S.Uid)
+when	matched then
+update	set
+		T.EffectiveDate = S.EffectiveDate,
+		T.RunDate = S.RunDate,
+		T.PassCount = S.PassCount,
+		T.FailCount = S.FailCount,
+		T.CreatedBy = S.CreatedBy,
+		T.CreatedOn = S.CreatedOn,
+		T.UpdatedBy = S.UpdatedBy,
+		T.UpdatedOn = S.UpdatedOn
+when not matched then
+insert	(Uid, EffectiveDate, RunDate, PassCount, FailCount, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+values	(S.Uid, S.EffectiveDate, S.RunDate, S.PassCount, S.FailCount, S.CreatedBy, S.CreatedOn, S.UpdatedBy, S.UpdatedOn);
+
+merge	AssetResult T
+using	(
+		SELECT 	ARD.[Uid],
+				An.[Uid] as OwningAssetUid,
+				En.[Uid] as EvaluatedAssetUid
+		FROM	AssetResultDepricated ARD,
+				AssetResultEdge Ee,
+				graph.AssetNode En,
+				AssetResultEdge Oe,
+				graph.AssetNode An									
+		WHERE	match(En-(Ee)->ARD<-(Oe)-An)
+				and Ee.Class = 2
+				and Oe.Class = 1
+		) S
+on		(T.Uid = S.Uid)
+when	matched then
+update	set
+		T.OwningAssetUid = S.OwningAssetUid,
+		T.EvaluatedAssetUid = S.EvaluatedAssetUid;					
 		]]>
     </sql>
 	<rollback>
