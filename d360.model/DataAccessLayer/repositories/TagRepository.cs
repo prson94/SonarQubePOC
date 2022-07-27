@@ -934,7 +934,7 @@ namespace d360.model.DataAccessLayer
 						break;
 					case "sortby":
 
-						if (param.Value.ToLower() == "displaypath")
+						if (param.Value.ToLower() == "displaypath" || param.Value.ToLower() == "displayvalue")
 						{
 							sortField = "node.displaypath";
 						}
