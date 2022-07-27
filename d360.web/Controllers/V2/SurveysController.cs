@@ -257,7 +257,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<QuestionTypeShortInfo>)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey Type not found.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetQuestionTypesBySurveyType(Guid surveyTypeUid)
 		{
@@ -283,7 +283,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<ObjectSurveyQuestionValuesModel>)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey Type not found. Question not found.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist. Question not found.", typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetSurveyQuestionValues(Guid surveyTypeUid, Guid questionTypeUid)
 		{
