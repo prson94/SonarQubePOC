@@ -1180,11 +1180,7 @@ namespace d360.model.DataAccessLayer
 		{
 			await companyContext.Connection.OpenIfClosed();
 
-			using (SqlTransaction trans = companyContext.Connection.BeginTransaction())
-			{
-				try
-				{
-					await companyContext.Connection.ExecuteAsync(@"
+			await companyContext.Connection.ExecuteAsync(@"
 					DROP TABLE IF EXISTS #bulkTags;
 					CREATE TABLE #bulkTags
 					(
@@ -1192,42 +1188,41 @@ namespace d360.model.DataAccessLayer
 						AssetUid uniqueidentifier not null,
 						Tag nvarchar(max),
 						[Action] nvarchar(20)
-					)"
-					, transaction: trans);
+					)");
 
 
-					DataTable table = new DataTable();
-					table.Columns.Add("AssetUid", typeof(Guid));
-					table.Columns.Add("Tag", typeof(string));
-					table.Columns.Add("Action", typeof(string));
+			DataTable table = new DataTable();
+			table.Columns.Add("AssetUid", typeof(Guid));
+			table.Columns.Add("Tag", typeof(string));
+			table.Columns.Add("Action", typeof(string));
 
-					foreach (var tag in tags)
-					{
-						DataRow row = table.NewRow();
-						row["AssetUid"] = tag.AssetUid;
-						row["Tag"] = tag.Tag == null ? DBNull.Value : tag.Tag;
-						row["Action"] = tag.Action.ToString();
+			foreach (var tag in tags)
+			{
+				DataRow row = table.NewRow();
+				row["AssetUid"] = tag.AssetUid;
+				row["Tag"] = tag.Tag == null ? DBNull.Value : tag.Tag;
+				row["Action"] = tag.Action.ToString();
 
-						table.Rows.Add(row);
-					}
-
-
-					using (SqlBulkCopy bulkCopy = new SqlBulkCopy(companyContext.Connection, SqlBulkCopyOptions.Default, trans)
-					{
-						BatchSize = 5000,
-						DestinationTableName = "#bulkTags",
-						BulkCopyTimeout = ApiTimeout
-					})
-					{
-						bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
-						bulkCopy.ColumnMappings.Add("Tag", "Tag");
-						bulkCopy.ColumnMappings.Add("Action", "Action");
-
-						await bulkCopy.WriteToServerAsync(table);
-					}
+				table.Rows.Add(row);
+			}
 
 
-					await companyContext.Connection.ExecuteAsync(@"
+			using (SqlBulkCopy bulkCopy = new SqlBulkCopy(companyContext.Connection)
+			{
+				BatchSize = 5000,
+				DestinationTableName = "#bulkTags",
+				BulkCopyTimeout = ApiTimeout
+			})
+			{
+				bulkCopy.ColumnMappings.Add("AssetUid", "AssetUid");
+				bulkCopy.ColumnMappings.Add("Tag", "Tag");
+				bulkCopy.ColumnMappings.Add("Action", "Action");
+
+				await bulkCopy.WriteToServerAsync(table);
+			}
+
+
+			await companyContext.Connection.ExecuteAsync(@"
 					--add new tags
 					INSERT INTO Tag (Value, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
 					SELECT DISTINCT B.Tag as Value, 
@@ -1258,28 +1253,7 @@ namespace d360.model.DataAccessLayer
 							INNER JOIN Tag T on T.ID = TA.TagID
 							INNER JOIN #bulkTags B on B.AssetUid = A.uid AND B.Action = 'Replace'
 					WHERE	NOT EXISTS (SELECT B.Tag FROM #bulkTags B WHERE B.AssetUid = A.uid AND B.Tag = T.Value)
-				", new { resourceId, activeState = State.Active }, transaction: trans);
-
-					trans.Commit();
-				}
-				catch (Exception)
-				{
-					try
-					{
-						if (trans != null)
-						{
-							trans.Rollback();
-						}
-					}
-					catch
-					{
-						//do nothing
-					}
-
-					throw;
-				}
-			}
-
+				", new { resourceId, activeState = State.Active });
 		}
 
 	}
