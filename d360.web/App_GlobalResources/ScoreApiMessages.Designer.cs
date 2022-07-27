@@ -81,9 +81,9 @@ namespace Resources {
         /// <summary>
         ///   Looks up a localized string similar to Duplicate measureUid specified in the payload..
         /// </summary>
-        public static string DuplicateMesaureUid {
+        public static string DuplicateMeasureUid {
             get {
-                return ResourceManager.GetString("DuplicateMesaureUid", resourceCulture);
+                return ResourceManager.GetString("DuplicateMeasureUid", resourceCulture);
             }
         }
         
@@ -93,6 +93,15 @@ namespace Resources {
         public static string EffectiveDateNotGTToday {
             get {
                 return ResourceManager.GetString("EffectiveDateNotGTToday", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error adding score results.
+        /// </summary>
+        public static string ErrorAddingScoreResults {
+            get {
+                return ResourceManager.GetString("ErrorAddingScoreResults", resourceCulture);
             }
         }
         

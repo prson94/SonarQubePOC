@@ -123,11 +123,14 @@
   <data name="AllocationNotExists" xml:space="preserve">
     <value>Allocation with uid {0} does not exist.</value>
   </data>
-  <data name="DuplicateMesaureUid" xml:space="preserve">
+  <data name="DuplicateMeasureUid" xml:space="preserve">
     <value>Duplicate measureUid specified in the payload.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
     <value>effectiveDate must not be greater than today's date (in UTC).</value>
+  </data>
+  <data name="ErrorAddingScoreResults" xml:space="preserve">
+    <value>Error adding score results</value>
   </data>
   <data name="ErrorGetDataQualityScore" xml:space="preserve">
     <value>Error retrieving data quality evidence for score result</value>
