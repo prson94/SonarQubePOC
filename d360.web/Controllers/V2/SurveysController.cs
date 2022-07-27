@@ -269,7 +269,7 @@ namespace d360.web.Controllers.V2
 
 			var questionTypes = await this.SurveyRepository.GetQuestionTypesBySurveyType(surveyTypeUid);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, questionTypes));
 		}
 
 		/// <summary>
@@ -295,7 +295,7 @@ namespace d360.web.Controllers.V2
 
 			var questionTypes = await this.SurveyRepository.GetSurveyQuestionValues(questionTypeUid);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, questionTypes));
+			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, questionTypes));
 		}
 
 		/// <summary>
