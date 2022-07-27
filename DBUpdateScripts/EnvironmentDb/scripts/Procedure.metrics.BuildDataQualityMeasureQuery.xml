@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-alter procedure [metrics].[BuildDataQualityMeasureQuery]
+create or alter procedure [metrics].[BuildDataQualityMeasureQuery]
 	@QueryType int, -- 1 => Impacted Assets/Effective Dates by ResultUids   |   2 => Impacted Asset/Effective Dates By Provided Uid   |   3 => Get Measure Results For Calculation
 	@AssetVersionRollupPathUid uniqueidentifier
 as
