@@ -489,7 +489,7 @@ namespace d360.model
 
 				SELECT	@fieldTypeid = ft.id 
 				FROM	FieldType FT
-						INNER JOIN AssetType T on T.UID = @assetTypeUid
+						INNER JOIN AssetType T on T.UID = @assetTypeUid and FT.AssetTypeID = T.ID
 				WHERE	FT.Type = 'Tag';
 
 				SELECT	@tagColumnIndex = ColumnIndex 
