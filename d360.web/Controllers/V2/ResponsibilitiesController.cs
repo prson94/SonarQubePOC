@@ -805,33 +805,22 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Uid item doesn't exist or is not a valid type for ownership."),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetOwnershipOfAsset(Guid assetUid)
+        public async Task<IHttpActionResult> GetOwnershipOfAsset(string assetUid)
         {
-            var prefix = "Responsibilities.GetOwnershipOfAsset => ";
-            string errorMessage;
+			Guid assetId;
+			if (!Guid.TryParse(assetUid, out assetId))
+			{
+				throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+			}
 
-            try
+            if (!Company.Assets.Any(x => x.uid == assetId))
             {
-                var validAsset = Company.Assets.Any(x => x.uid == assetUid);
-
-                if (!validAsset)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
-                }
-
-                var res = await ResponsibilityRepository.GetOwnership(assetUid);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res))).ConfigureAwait(false);
+				throw new NotFoundBusinessLayerException();
             }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
-            }
+            var res = await ResponsibilityRepository.GetOwnership(assetId);
+
+			return Ok(res);
         }
 
         /// <summary>
