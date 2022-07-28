@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
 using System.Threading.Tasks;
 
 using d360.core;
@@ -25,7 +26,8 @@ namespace d360.model
                 }
             });
 
-            return list;
+			//Filter out removed JobToken = 1 (AssetGraph)
+			return list.Where(x=> x.JobToken == CompanyRebuildJobToken.DisplayValues || x.JobToken == CompanyRebuildJobToken.SearchIndex).ToList();
         }
 
         public async Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken, int timeOutInHours)
