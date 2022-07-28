@@ -54,7 +54,7 @@ namespace d360.model.DataAccessLayer
         
         void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources);
 
-        List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution);
+        Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution);
         
         Task<ICollection<ResponsibilityRuleDeleteResponse>> DeleteResponsibilityRulesAsync(Guid responsibilityTypeUid, IReadOnlyList<Guid> rulesForDeletion);
 

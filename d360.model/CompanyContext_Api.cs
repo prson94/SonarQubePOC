@@ -10476,7 +10476,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
             return results;
         }
 
-        public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600)
+        public async Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600)
         {
             List<ResponsibilityRuleUpsertResponseModel> results = new List<ResponsibilityRuleUpsertResponseModel>();
             bool generalChecksCompleted = false;
@@ -10856,6 +10856,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											isvisible = data.isvisible,
 											applytotype = data.applytotype,
 											definition = data.DefinitionConverted,
+											lastrunon = '1/1/2000',
 											updatedon = getdate(),
 											updatedby = @resourceId
 									WHEN NOT MATCHED
@@ -10877,7 +10878,18 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     trans.Commit();
                                     runCompleted = true;
-                                }
+
+									try
+									{
+										await ProcessRulesForExecution(execution.ExecutionID, beginItemNumber, endItemNumber);
+
+									}
+									catch (Exception ex)
+									{
+										LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityRule", ex.GetFullExceptionData(false), timeout);
+									}
+
+								}
                                 catch (Exception ex)
                                 {
                                     try
