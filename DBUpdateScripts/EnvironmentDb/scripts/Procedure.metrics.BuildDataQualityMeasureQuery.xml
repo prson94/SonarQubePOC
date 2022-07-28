@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.BuildDataQualityMeasureQuery-v4.2">
+  <changeSet author="Puneet Gupta" id="Procedure.metrics.BuildDataQualityMeasureQuery-v4.3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -79,10 +79,10 @@ begin
 							'N_'+Sa+'_'+Sp+'.Uid as StartingAssetUid, N_'+Sa+'_'+Sp+'.Uid as TechnicalAssetUid, N_'+Ea+'_'+Ep+'.Uid as RuleAssetUid, '
 						),
 				Tab =	'Asset N_'+Sa+'_'+Sp + 
-						' inner join [Intersect] E_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.SubjectAssetID = N_'+Sa+'_'+Sp+'.ID and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa +
+						' inner join [Intersect] E_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.ObjectAssetID = N_'+Sa+'_'+Sp+'.ID and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa +
 						' inner join [IntersectType] ET_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.IntersectTypeID = ET_'+It+'_'+Sp+'_'+Ep+'.ID ' +
 						' inner join [Predicate] EP_'+It+'_'+Sp+'_'+Ep + ' on ET_'+It+'_'+Sp+'_'+Ep+'.PredicateID = EP_'+It+'_'+Sp+'_'+Ep+'.ID and EP_'+It+'_'+Sp+'_'+Ep+'.[Type] = 2 ' +
-						' inner join Asset N_'+Ea+'_'+Ep+' on E_'+It+'_'+Sp+'_'+Ep+'.ObjectAssetID = N_'+Ea+'_'+Ep+'.ID and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea,
+						' inner join Asset N_'+Ea+'_'+Ep+' on E_'+It+'_'+Sp+'_'+Ep+'.SubjectAssetID = N_'+Ea+'_'+Ep+'.ID and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea,
 				Pat =	'select N_'+Sa+'_'+Sp+'.Uid, '+Sp+' as Position ' +
 						'union ' + 
 						'select N_'+Ea+'_'+Ep+'.Uid, '+Ep+' as Position'
