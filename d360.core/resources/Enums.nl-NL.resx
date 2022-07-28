@@ -115,12 +115,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CompanyRebuildJobToken_AssetGraph" xml:space="preserve">
-    <value>Assetgrafiek</value>
-  </data>
-  <data name="CompanyRebuildJobToken_AssetGraph_Desc" xml:space="preserve">
-    <value>Visualisatiediagrammen opnieuw bouwen voor assets. Dit verzoek kan veel tijd in beslag nemen, afhankelijk van het aantal assets in uw omgeving. Bovendien is deze actie van invloed op de prestaties van uw omgeving.</value>
-  </data>
   <data name="CompanyRebuildJobToken_DisplayValues" xml:space="preserve">
     <value>Weergavewaarden</value>
   </data>

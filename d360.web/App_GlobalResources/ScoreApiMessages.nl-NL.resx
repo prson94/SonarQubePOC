@@ -121,7 +121,7 @@
   <data name="AllocationNotExists" xml:space="preserve">
     <value>Toewijzing met UID {0} bestaat niet.</value>
   </data>
-  <data name="DuplicateMesaureUid" xml:space="preserve">
+  <data name="DuplicateMeasureUid" xml:space="preserve">
     <value>Dubbele measureUid opgegeven in de payload.</value>
   </data>
   <data name="EffectiveDateNotGTToday" xml:space="preserve">
