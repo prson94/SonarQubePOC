@@ -28,19 +28,35 @@ namespace d360.web.Handlers
 
 		private HttpResponseMessage GenerateResponse(HttpRequestMessage request, HttpResponseMessage response)
 		{
-			if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
-			{
-				var responseMetadata = new ErrorResponse
-				{
-					message = null,
-					title = OthersMessages.BadRequestSubmitted
-				};
-				var result = request.CreateResponse(response.StatusCode, responseMetadata);
-
-				return result;
+			if (IsResponseValid(response))
+			{ 
+				return response; 
 			}
 
-			return response;
+			HttpError responseContent;
+			if (!response.TryGetContentValue(out responseContent))
+			{
+				return response;
+			}
+
+			var responseMetadata = new ErrorResponse
+			{
+				type = "error",
+				message = responseContent["message"].ToString()
+			};
+
+			if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
+			{
+				responseMetadata.message = null;
+				responseMetadata.title = ApiMessages.BadRequest;
+			} 
+			else if (response.StatusCode == HttpStatusCode.BadRequest)
+			{
+				responseMetadata.title = ApiMessages.BadRequest;
+			}
+
+			var result = request.CreateResponse(response.StatusCode, responseMetadata);
+			return result;
 		}
 
 		private bool IsResponseValid(HttpResponseMessage response)
