@@ -33,16 +33,10 @@ namespace d360.web.Handlers
 				return response; 
 			}
 
-			HttpError responseContent;
-			if (!response.TryGetContentValue(out responseContent))
-			{
-				return response;
-			}
-
 			var responseMetadata = new ErrorResponse
 			{
 				type = "error",
-				message = responseContent["message"].ToString()
+				message = response.RequestMessage.ToString()
 			};
 
 			if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
