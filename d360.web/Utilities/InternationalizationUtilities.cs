@@ -124,7 +124,11 @@ namespace d360.web.Utilities
 
                 if (setUiCulture)
                 {
-					uiCulture = GetUserLocaleCode(uiCulture);
+					var _uiLocale = GetUserLocaleCode(uiCulture);
+					if (_uiLocale != DefaultLocale)
+					{
+						uiCulture = _uiLocale;
+					}
                     var UICulture = new CultureInfo(uiCulture);
                     Thread.CurrentThread.CurrentUICulture = UICulture;
                 }
@@ -139,7 +143,11 @@ namespace d360.web.Utilities
         {
 			string currentLocale = userLocale ?? Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant();
 			var uiLocale = AllowedUILocales.FirstOrDefault(x=> x.ToLowerInvariant().Contains(currentLocale));
-
+			if (uiLocale == null)
+			{
+				currentLocale = userLocale.ToLowerInvariant().Split('-')[0];
+				uiLocale = AllowedUILocales.FirstOrDefault(x => x.ToLowerInvariant().Contains(currentLocale));
+			}
 			return string.IsNullOrEmpty(uiLocale) ? DefaultLocale : uiLocale;
         }
     }
