@@ -277,7 +277,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             if (f.Values) {
                 f.Values.forEach(val => {
                     fieldOption.Values.push({ value: val.Value, label: val.Text });
-                })
+                });
             }
 
             return fieldOption;

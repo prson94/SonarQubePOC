@@ -80,7 +80,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
                 this._loadedAllocations = r;
                 r.forEach(x => {
                     this.allocations.push(this.getFormattedItem(x));
-                })
+                });
                 this.isLoading = false;
             });
     }
@@ -184,7 +184,7 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     private openMeasures(event: ScoreTypeAllocationFormatted, allocation: ScoreTypeAllocation = null) {
         let alloc = allocation;
         if (!alloc)
-            alloc = this.getAllocationByUid(event.uid)
+            alloc = this.getAllocationByUid(event.uid);
         const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.uid}`;
         this.router.navigateByUrl(url);
     }

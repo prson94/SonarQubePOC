@@ -19,7 +19,7 @@ export class TagService extends BaseObservableService {
 
         return this.http.get(url).pipe(
             map(response => {
-                return response
+                return response;
             }),
             map(item => { return <Tag[]>item; }),
             catchError(err => this.handleError(err)));
@@ -135,14 +135,14 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}&ignoreCounts=${ignoreCounts}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)))
+                catchError(err => this.handleError(err, true)));
     }
 
     searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<any[]> {
         let url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)))
+                catchError(err => this.handleError(err, true)));
     }
 
     exportTags(filter: any, sort, advancedFilter: string) {

@@ -479,7 +479,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         for (let i = 0; i < this.treeNodeArray.length; i++) {
             if (this.treeNodeArray[i].data.AssetUid && this.treeNodeArray[i].data.AssetUid === id) {
                 this.treeNodeArray.splice(i, 1);
-                return
+                return;
             }
             nodes.push(this.treeNodeArray[i]);
         }
@@ -501,7 +501,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 for (let i = 0; i < node.children.length; i++) {
                     if (node.children[i].data.AssetUid && node.children[i].data.AssetUid == id) {
                         node.children.splice(i, 1);
-                        return
+                        return;
                     }
                     nodes.push(node.children[i]);
                 }

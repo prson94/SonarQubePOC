@@ -793,8 +793,8 @@ export class AllocationAPIModel {
 }
 
 export class AllocationRequestModel {
-    AssetTypeUid: string
-    ResponsibilityTypeUid: string[]
+    AssetTypeUid: string;
+    ResponsibilityTypeUid: string[];
 }
 
 export class WorkflowReassignmentAsset {

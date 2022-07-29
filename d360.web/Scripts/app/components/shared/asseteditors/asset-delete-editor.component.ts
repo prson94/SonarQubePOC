@@ -74,7 +74,7 @@ export class AssetDeleteEditorComponent extends BaseComponent {
                     this.onDeleted.emit();
                     this.changeDetectorRef.markForCheck();
                 }
-            )
+            );
     }
 
 }

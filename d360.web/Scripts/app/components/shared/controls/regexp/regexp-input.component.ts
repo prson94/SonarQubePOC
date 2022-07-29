@@ -57,7 +57,7 @@ export class RegexpInputComponent implements ControlValueAccessor, OnInit, Valid
         { title: "Public URL", value: "^$|\\b(http(s)?:\\/\\/)?([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([\\/\\w \\.-]*)*\\/?\\b$" },
         { title: "Internal URL", value: "^$|\\b(http(s)?:\\/\\/){1}([\\da-z\\.-]+)([\\/\\w \\.-]*)*\\/?\\b$" },
         { title: "US Zip Code", value: "^[0-9]{5}(?:-[0-9]{4})?$" }
-    ]
+    ];
 
     setExample(title: string) {
         const example = this.examples.find((ex) => ex.title === title);

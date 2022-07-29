@@ -19,7 +19,7 @@ export class SecondaryNavItem {
     count: number;
     orderPriority: number = 99;
     subTabsUrl: string[] = [];
-    warningMessage: string = ''
+    warningMessage: string = '';
 }
 
 export class NavState {

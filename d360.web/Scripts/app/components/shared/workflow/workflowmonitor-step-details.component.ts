@@ -26,7 +26,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
     reassignments: WorkflowStepReassignment[] = [];
     StepType = StepType;
     WorkflowActivityType = WorkflowActivityType;
-    WorkflowChangeType = WorkflowChangeType
+    WorkflowChangeType = WorkflowChangeType;
     responsibilities: ResponsibilityType[];
     fields: any[] = [];
     helper = WorkflowHelpers;
@@ -51,7 +51,7 @@ export class WorkflowMonitorStepDetailsComponent extends BaseComponent implement
         this.load()
             .pipe(
                 map(() => {
-                    this.responsibilityService.getResponsibilityTypes().subscribe((r) => { this.responsibilities = r; })
+                    this.responsibilityService.getResponsibilityTypes().subscribe((r) => { this.responsibilities = r; });
                 }),
                 map(() => {
                     if (this.step != null)

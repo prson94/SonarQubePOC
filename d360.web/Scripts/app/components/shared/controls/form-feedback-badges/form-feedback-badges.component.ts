@@ -129,7 +129,7 @@ export class FormFeedbackBadgesComponent implements OnChanges, OnDestroy {
                 }
 
                 throw new Error(`Unknown code returned by Node.compareDocumentPosition: ${position}`);
-            })
+            });
     }
 
     private expandAndActivateInput(inputElement: HTMLElement) {

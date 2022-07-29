@@ -239,7 +239,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     }
                 },
                 () => {
-                })
+                });
         this.savingTag = false;
     }
 
@@ -302,7 +302,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                 this.arePermissionsLoaded = true;
                 this.tagPermissions = permissions;
                 this.changeDetectorRef.markForCheck();
-            })
+            });
     }
 
     canDeleteTag(tagValue: string) {

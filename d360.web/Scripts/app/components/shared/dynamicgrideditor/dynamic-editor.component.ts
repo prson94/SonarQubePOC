@@ -586,7 +586,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         Object.keys(values).forEach(key => {
             if (values[key] === '')
                 values[key] = null;
-        })
+        });
 
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
         if (this.useModelBinding) {

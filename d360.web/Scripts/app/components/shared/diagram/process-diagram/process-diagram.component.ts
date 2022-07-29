@@ -124,7 +124,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             callback: () => this.doControlledAction('open-diagram-replace'),
             disabled: true
         }
-    ]
+    ];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -513,7 +513,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     console.log(e);
                 }
 
-            })
+            });
         });
         //set initial actions
 
@@ -773,7 +773,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.myDiagram.nodes.each(node => {
                 if (node && node.data && node.data['Name'])
                     this.nodeNames.push(node.data['Name']);
-            })
+            });
         }
     }
 
@@ -917,7 +917,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 isNew: true,
                 relCount: "0"
             });
-        })
+        });
 
         if (this.events.length == 1) {
             eventArr.push({
@@ -963,7 +963,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 isNew: true,
                 relCount: "0"
             });
-        })
+        });
 
         if (this.activities.length == 1) {
             activitiesArr.push({
@@ -1009,7 +1009,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 isNew: true,
                 relCount: "0"
             });
-        })
+        });
         if (this.gateways.length == 1) {
             gatewaysArr.push({
                 category: 'blank-node'
@@ -1058,7 +1058,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.actionAfterSaved = () => {
                         this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
                         this.actionAfterSaved = null;
-                    }
+                    };
                     break;
                 case 'export':
                     this.actionMessage = $localize`Please save your changes to the diagram before exporting process diagram.`;
@@ -1066,7 +1066,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.actionAfterSaved = () => {
                         this.downloadProcessDiagram();
                         this.actionAfterSaved = null;
-                    }
+                    };
                     this.showDiscardChanges = false;
                     break;
                 case 'open-diagram-replace':
@@ -1120,12 +1120,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             var data = m.findNodeDataForKey(asset.AssetUid);
                             if (data)
                                 m.set(data, 'relCount', asset.RelationshipCount.toString());
-                        })
+                        });
                     }, 'update_model_badge_data');
                 } catch (e) {
                     console.log(e);
                 }
-            })
+            });
     }
 
     closeErrorModal() {
@@ -1166,7 +1166,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.popupMenuItems[1]['tooltip'] = $localize`There are currently no other assets of type ${this.assetDetail?.TypeName} to import a diagram from.`;
                 }
                 this.cdRef.detectChanges();
-            })
+            });
         }
     }
 
@@ -1193,7 +1193,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 else {
                     this.load(true);
                 }
-            })
+            });
     }
 
     onImportAssetSelection($event) {

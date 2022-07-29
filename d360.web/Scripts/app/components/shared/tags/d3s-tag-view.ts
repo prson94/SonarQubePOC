@@ -329,7 +329,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                             this.showMessageForResult(this.messagesService, result, msg);
                                             if (event.uid == undefined) {
                                                 event.uid = result[0].Uid;
-                                                this.tags = this.tags.concat([event])
+                                                this.tags = this.tags.concat([event]);
                                             }
                                             this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                             event.UseCount = 0;
@@ -432,7 +432,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     } else {
                         this.checkIfTagOwner(tagElements, tag, this.assetUID);
                     }
-                })
+                });
             }
         }
     }
@@ -462,7 +462,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                     if (e.children[0].innerText.trim() == tag.Value.trim()) {
                         e.children[1].parentElement.removeChild(e.children[1]);
                     }
-                })
+                });
             }
         }
     }

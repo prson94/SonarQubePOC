@@ -161,7 +161,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
             selectedResourceUid = this.model.resources.find(x => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
             this.itemToSave.ResourceUid = selectedResourceUid;
-            this.itemToSave.Description = this.model.responsibility.Context
+            this.itemToSave.Description = this.model.responsibility.Context;
         }
         catch (exception) {
             this.message.Error($localize`An error occurred while parsing the select item values.`);

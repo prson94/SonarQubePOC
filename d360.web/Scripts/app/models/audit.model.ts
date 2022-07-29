@@ -16,7 +16,7 @@
     newValue: string;
     previousValue: string;
     version: string;
-    resourceUid: string
+    resourceUid: string;
 }
 
 export class AuditResults {

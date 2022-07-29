@@ -32,7 +32,7 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     @Input()
     assetTypeId: number = 0;
     initialValue: boolean;
-    isRelationsExist : boolean =false
+    isRelationsExist : boolean =false;
 
     constructor(
         private messagesService: MessagesObservableService,

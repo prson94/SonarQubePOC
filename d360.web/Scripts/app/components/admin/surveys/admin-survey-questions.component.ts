@@ -86,7 +86,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     theDeleteCallback: Function;
 
     get deletePromptText(): string {
-        return $localize`Are you sure you want to delete the question [${this.selected?.Name}]?`
+        return $localize`Are you sure you want to delete the question [${this.selected?.Name}]?`;
     }
 
     constructor(

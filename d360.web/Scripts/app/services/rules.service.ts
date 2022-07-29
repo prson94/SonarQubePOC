@@ -55,12 +55,12 @@ export class RulesService extends BaseObservableService {
         let sortOrderText = sortOrder == SortOrder.None ? "desc" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
         let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`;
 
-        let fileName = " Rule Results"
+        let fileName = " Rule Results";
 
         if (sortField) {
-            uri += "&_order=" + sortField
+            uri += "&_order=" + sortField;
             if (sortOrder && sortOrderText != "") {
-                uri += "&_direction=" + sortOrderText
+                uri += "&_direction=" + sortOrderText;
             }
         }
         if (simpleFilter) {

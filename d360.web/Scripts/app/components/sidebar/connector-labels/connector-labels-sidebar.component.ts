@@ -24,7 +24,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     showDelete: boolean = false;
     showEditor: boolean = false;
-    showConsolidate: boolean = false
+    showConsolidate: boolean = false;
     filters: any = { globalSearch: '', Value: '', UseCount: '' };
     sort: any;
 
@@ -356,5 +356,5 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
         {
             title: $localize`Consolidate`
         }
-    ]
+    ];
 }

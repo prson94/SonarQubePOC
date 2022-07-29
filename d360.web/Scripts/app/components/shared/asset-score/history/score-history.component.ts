@@ -120,7 +120,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
 
                     arr[arr.length - 1].ScoreProgression = 2;
                 }
-            })
+            });
         }
         catch (ex) {
             arr = [];

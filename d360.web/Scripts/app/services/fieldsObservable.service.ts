@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { SelectItem } from 'primeng/api';
 import { FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel } from '../models/fields.model';
-import { EditorDropDownItem } from '../models/editor-field.model'
+import { EditorDropDownItem } from '../models/editor-field.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
@@ -80,7 +80,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getComplexField
+    getComplexField;
 
     getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField> {
         let url = "";
@@ -358,7 +358,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             TypeUid: typeUid,
             FieldTypename: fieldTypeName,
             Direction: "down"
-        }
+        };
         return this
             .http
             .post(`api/v2/fields/move`, model)
@@ -421,7 +421,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         map(res => res),
                         map(
                             (res) => {
-                                return { fieldTypeID: event.fieldTypeID, results: res, event: event.event }
+                                return { fieldTypeID: event.fieldTypeID, results: res, event: event.event };
                             }
                         ),
                         catchError(err => this.handleError(err))

@@ -248,7 +248,7 @@ export module SettingsHelper {
         searchTypes.split(',').forEach(i => {
             let k = t.find(j => j.value == i);
             if (k)
-                k.selected = true
+                k.selected = true;
         });
         return t;
     }

@@ -505,7 +505,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 target_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
             }
 
-        })
+        });
 
         //Split relationships, and save target after source, so we can properly check for circular relationships
         let sourceObs = forkJoin(source_tasks);
@@ -548,7 +548,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 }
 
             });
-        })
+        });
 
         //If error occured, delete only newly created relationships
         if (rollback) {

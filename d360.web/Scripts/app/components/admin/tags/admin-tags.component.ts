@@ -35,7 +35,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     consolidatePromptHTML: string;
     showDelete: boolean = false;
     showEditor: boolean = false;
-    showConsolidate: boolean = false
+    showConsolidate: boolean = false;
     filters: any = { globalSearch: '', Value: '', UseCount: '', DateCreated: '', CreatedBy: '' };
     advancedFilter: string = '';
     sort: any;

@@ -24,7 +24,7 @@ export class SearchStateService extends BaseObservableService {
     private AggQuery$: BehaviorSubject<SearchQuery> = new BehaviorSubject<SearchQuery>(new SearchQuery());
     private MainQuery$: BehaviorSubject<SearchQuery> = new BehaviorSubject<SearchQuery>(new SearchQuery());
 
-    private searchTypes: SearchType[] = []
+    private searchTypes: SearchType[] = [];
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService, protected searchService: SearchService) {
         super(messagesService);
@@ -278,7 +278,7 @@ export class SearchStateService extends BaseObservableService {
         this.AggSub$ = this.AggQuery$.pipe(
             debounceTime(this.debounceValue),
             distinctUntilChanged(this.compareQueries),
-            tap(val => { this._treeLoading.next(true) }),
+            tap(val => { this._treeLoading.next(true); }),
             switchMap((aggQuery) => this.searchService.getSearchResultsByQuery(aggQuery).pipe(
                 catchError((err) => {
                     if (err === "ConnectionError") {
@@ -306,7 +306,7 @@ export class SearchStateService extends BaseObservableService {
                                 "count": cat.ResultCount
                             };
                         })
-                    }
+                    };
                 }));
                 let selectedFilters = [];
                 if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
@@ -414,7 +414,7 @@ export class SearchStateService extends BaseObservableService {
                     "type": "category",
                     "data": val.value,
                     "key": val.value
-                }
+                };
             });
         }
         return this._baseCategoryTree;

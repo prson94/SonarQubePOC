@@ -24,7 +24,7 @@ export class AutoFocusDirective implements DoCheck {
             if (window.getComputedStyle(element)["visibility"] === "hidden"
                 || element.getAttribute("hidden") !== null
             ) {
-                return true
+                return true;
             }
             return this.isElementHidden(element.parentElement);
         }

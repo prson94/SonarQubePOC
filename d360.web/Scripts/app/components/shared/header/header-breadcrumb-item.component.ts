@@ -70,8 +70,8 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     public searchValue: string;
     public searchTreeValue: string;
     public treeItems: TreeNode[] = [];
-    public maxOverlayHeight: string = '800px'
-    private searchSub: ISubscription
+    public maxOverlayHeight: string = '800px';
+    private searchSub: ISubscription;
     searchingTypeahed: boolean = false;
     
     constructor(private elementRef: ElementRef, private router: Router,

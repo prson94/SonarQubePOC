@@ -91,7 +91,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	changeIconType(e: any) {
 		if (this.formMode == FormMode.Editing) {
 			if (this.iconType == 'icon') {
-				this.iconType = 'image'
+				this.iconType = 'image';
 				this.selection.Icon = null;
 			} else {
 				this.iconType = 'icon';
@@ -101,7 +101,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			}
 		} else if (this.formMode == FormMode.Adding) {
 			if (this.iconType == 'icon') {
-				this.iconType = 'image'
+				this.iconType = 'image';
 				this.newFolder.Icon = null;
 			} else {
 				this.iconType = 'icon';
@@ -196,7 +196,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				.subscribe(() => {
 					this.stateService.reloadLeftNavMenu();
 					this.loadFolderItems();
-				})
+				});
 		}
 	}
 
@@ -225,7 +225,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 					this.stateService.reloadLeftNavMenu();
 					this.loadFolderItems();
 					this.loadNavItems();
-				})
+				});
 		}
 	}
 
@@ -241,7 +241,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 					this.stateService.reloadLeftNavMenu();
 					this.loadFolderItems();
 					this.loadNavItems();
-				})
+				});
 		}
 	}
 
@@ -283,8 +283,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 						this.setMenuOptions();
 						this.isLoading = false;
-					})
-			})
+					});
+			});
 	}
 
 	moveDown(item: SiteNav) {
@@ -301,7 +301,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.isLoading = false;
 					});
 
-			})
+			});
 	}
 
 	moveToTop(item: SiteNav) {
@@ -318,7 +318,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.isLoading = false;
 					});
 
-			})
+			});
 	}
 
 	moveToBottom(item: SiteNav) {
@@ -335,7 +335,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.isLoading = false;
 					});
 
-			})
+			});
 	}
 
 	moveFolderUp(item: SiteNav, i: number) {
@@ -347,10 +347,10 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			this.siteMenuService.moveSiteNavFolderUp(this.selection.ID, this.prevFolderID)
 				.subscribe(() => {
 					this.edit(this.editedMenuItem);
-					this.stateService.reloadLeftNavMenu()
-				})
+					this.stateService.reloadLeftNavMenu();
+				});
 		} else {
-			this.messagesService.showError($localize`Error`, $localize`First item can not be moved up.`)
+			this.messagesService.showError($localize`Error`, $localize`First item can not be moved up.`);
 		}
 
 	}
@@ -364,8 +364,8 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			this.siteMenuService.moveSiteNavFolderDown(this.selection.ID, this.nextFolderID)
 				.subscribe(() => {
 					this.edit(this.editedMenuItem);
-					this.stateService.reloadLeftNavMenu()
-				})
+					this.stateService.reloadLeftNavMenu();
+				});
 		} else {
 			this.messagesService.showError($localize`Error`, $localize`Last item can not be moved down.`);
 		}
@@ -387,7 +387,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.formMode = FormMode.Default;
 						this.onSaveComplete.emit();
 						this.loadNavItems();
-					})
+					});
 				break;
 			case FormMode.Adding:
 
@@ -407,7 +407,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.siteMenuService.setSiteNavPermissions(this.selection);
 						this.loadFolderItems();
 						this.loadNavItems();
-					})
+					});
 				break;
 		}
 	}
@@ -480,9 +480,9 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 									this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
 									this.isLoading = false;
 									this.stateService.reloadLeftNavMenu();
-								})
-						})
-				})
+								});
+						});
+				});
 		}
 	}
 
@@ -544,7 +544,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	onAssetTypeNavAdded(model) {
 		this.stateService.reloadLeftNavMenu();
 		this.onSaveComplete.emit();
-		this.siteMenuService.setSiteNavPermissions(this.selection)
+		this.siteMenuService.setSiteNavPermissions(this.selection);
 		this.loadFolderItems();
 		this.showAssetTypeModelDialog = false;
 		this.loadNavItems(model);

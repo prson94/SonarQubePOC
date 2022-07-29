@@ -450,11 +450,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						label: null,
 						items: [{ label: 'Custom', path: dataUrl, img: true }]
 					}, ...this.categories
-					]
+					];
 				}
 				this.folderModel.Icon = this.categories[0].items[0];
 				this.cdRef.markForCheck();
-			})
+			});
 	}
 
 	loadTableData() {
@@ -476,7 +476,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 
 			this.cdRef.markForCheck();
-		})
+		});
 	}
 
 	menuPermissionsOnModeChange($event) {
@@ -567,7 +567,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(x - 1, 0, this.newFolderItems.splice(x, 1)[0])
+				this.newFolderItems.splice(x - 1, 0, this.newFolderItems.splice(x, 1)[0]);
 			}
 		}
 	}

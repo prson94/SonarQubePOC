@@ -34,7 +34,7 @@ export class SiteMenuManageFavoritesPanelComponent {
 
             return null;
         })
-    )
+    );
 
     canRemove$ = this.store.state$.pipe(
         map(state => state.removeFavoriteIds.size > 0)

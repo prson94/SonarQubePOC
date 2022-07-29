@@ -78,7 +78,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
             "callback": () => this.setCollapsed(true)
         }
 
-    ]
+    ];
 
     constructor(
         protected assetService: AssetService,
@@ -157,9 +157,9 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                             });
                         }
                     }
-                })
+                });
             }
-        })
+        });
     }
 
     /**
@@ -388,7 +388,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                     if (m.Uid == this.selectedMeasureUid) {
                                         preselected = m;
                                     }
-                                })
+                                });
                             }
                         });
                     }
@@ -509,7 +509,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                     m._isCollapsed = !val;
                 });
             }
-        })
+        });
         this.saveState();
     }
 
@@ -590,8 +590,8 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                         this.pointBreakdown.forEach(pb => {
                             if (pb.Uid == ex)
                                 pb._isCollapsed = true;
-                        })
-                    })
+                        });
+                    });
                 }
             }
         }

@@ -22,7 +22,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
     @Input() issueObject: string = null;
     @Input() formFields: any[] = [];
     @Input() httpFields: any[] = [];
-    @Input() outputFields: any[] = []
+    @Input() outputFields: any[] = [];
     @Input() condition: any = null;
     @Input() changeType: WorkflowChangeType = null;
     @Input() diagram: go.Diagram;

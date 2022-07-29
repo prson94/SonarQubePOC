@@ -27,7 +27,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     public result: SearchResult;
     public searchText: string;
     public results: SearchResult[];
-    private searchSub: ISubscription
+    private searchSub: ISubscription;
     private defaultSearchOptions: string[];
     private availableSearchOptions: string[];
     private endSearchAllOption: SearchResult;

@@ -97,7 +97,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         {
             title: $localize`Open in New Tab`
         }
-    ]
+    ];
 
     menuItemsWithTags = [
         {
@@ -109,13 +109,13 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
         {
             title: $localize`Edit Tags`
         }
-    ]
+    ];
 
     multiselectMenuItems = [
         {
             title: $localize`Edit Tags`
         }
-    ]
+    ];
 
     filterFieldList: AdvancedFilterFieldType[] = [
         {
@@ -132,7 +132,7 @@ export class MatchDetectionComponent extends BaseComponent implements OnChanges 
             Category: "",
             RemovePopulatedOperator: true
         }
-    ]
+    ];
 
     constructor(
         private assetService: AssetService,

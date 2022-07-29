@@ -64,7 +64,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
     searchAssetSub: Subscription;
 
     public rowsPerPage: number;
-    public title: string = 'MultiSelect Grid'
+    public title: string = 'MultiSelect Grid';
     private destroy = new Subject<void>();
 
     @ViewChild('dt', { static: false }) dt: Table;
@@ -321,7 +321,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
                         this.selectedItems.push(item);
                     }
                 });
-            })
+            });
         }
     }
 

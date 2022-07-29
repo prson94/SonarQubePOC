@@ -360,7 +360,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                             if (options && options.Values) {
                                 options.Values.forEach(val => {
                                     f.Values.push({ value: val.Value.toString(), label: val.Text });
-                                })
+                                });
                             }
                         }
 
@@ -709,7 +709,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             if (updated.length != original.length || !original.every((item) => {
                 return updated.findIndex(x => x.field == item.field
                     && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                    && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1
+                    && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
             })) {
                 return true;
             }

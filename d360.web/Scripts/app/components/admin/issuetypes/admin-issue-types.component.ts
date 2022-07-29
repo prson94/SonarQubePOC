@@ -3,7 +3,7 @@ import { WorkflowIssueType } from '../../../models/workflow.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { WorkflowService } from '../../../services/workflow.service';
-import { AdminBaseComponent } from '../admin-base.component'
+import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';

@@ -138,7 +138,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             if (i.items) {
                 this.assignUniqueIDs(i.items, i.itemID + 10000, i);
             }
-        })
+        });
     }
 
     updatePropToAll(items: PopupMenuItem[], prop: string, value: any) {
@@ -267,7 +267,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                         if (!this.pressedKeys[key.toString()]) {
                             doesMatch = false;
                         }
-                    })
+                    });
                     if (doesMatch) {
                         this.select(item, { event: 'shortcut' });
                     }
@@ -279,12 +279,12 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                         if (!this.pressedKeys[key.toString()]) {
                             doesMatch = false;
                         }
-                    })
+                    });
                     if (doesMatch) {
                         this.select(item, { event: 'shortcut' });
                     }
                 }
-            })
+            });
         }
     }
 
@@ -487,12 +487,12 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             if (this.isMac) {
                 item.keysMac.forEach(k => {
                     arr.push(KeyMapHelpers.getCharForKeyCode(k, this.isMac));
-                })
+                });
             }
             else {
                 item.keys.forEach(k => {
                     arr.push(KeyMapHelpers.getCharForKeyCode(k, this.isMac));
-                })
+                });
             }
             return this.isMac ? arr.join('') : arr.join('+');
         }
@@ -551,7 +551,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
             else if (item.items) {
                 return this.getFocusedElement(item.items);
             }
-        })
+        });
 
         return null;
     }
@@ -568,7 +568,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                     el = this.getLastHoveredElement(item.items);
                 }
             }
-        })
+        });
 
         return el;
     }
@@ -636,5 +636,5 @@ export class PopupMenuItem {
 
 export class PopupMenuItemBadge {
     text: string = '';
-    variant: string = 'default'
+    variant: string = 'default';
 }

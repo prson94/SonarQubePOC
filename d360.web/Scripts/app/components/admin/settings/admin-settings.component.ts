@@ -45,7 +45,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     searchTypes: SearchType[];
     companyLogo: CompanyImage = new CompanyImage();
     companyIcon: CompanyImage = new CompanyImage();
-    homePageImage: CompanyImage = new CompanyImage()
+    homePageImage: CompanyImage = new CompanyImage();
     groups: SelectItem[];
     sub: any;
     routeValidationMessage = "";

@@ -27,7 +27,7 @@ export class ExportTemplateService extends BaseObservableService {
 
     public getExportTemplatesForAssetType(assetTypeUID: string): Observable<ExportTemplate[]> {
         return this.http.get(`/api/v2/exporttemplates/${assetTypeUID}`).pipe(
-            map(item => { return <ExportTemplate[]>item }),
+            map(item => { return <ExportTemplate[]>item; }),
             catchError(err => this.handleError(err)));
     }
 
@@ -91,7 +91,7 @@ export class ExportTemplateService extends BaseObservableService {
 
         return this.http
             .post<ExportTemplateStyle>(`/api/v2/exporttemplates/Style`, templateStyle).pipe(
-                map(item => { return <ExportTemplateStyle>item }),
+                map(item => { return <ExportTemplateStyle>item; }),
                 catchError(err => this.handleError(err)));
 
     }

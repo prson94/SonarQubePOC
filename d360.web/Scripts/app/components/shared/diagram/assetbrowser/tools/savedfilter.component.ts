@@ -220,13 +220,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
         this.createUserFilter.assetTypes = this.options.AssetTypeOptions
             .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
-            .map((a) => { return { uid: a.Uid, class: a.Class } });
+            .map((a) => { return { uid: a.Uid, class: a.Class }; });
         this.createUserFilter.responsibilityTypes = this.options.ResponsibilityTypeOptions
             .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
-            .map((r) => { return { uid: r.Uid, type: r.Name } });
+            .map((r) => { return { uid: r.Uid, type: r.Name }; });
         this.createUserFilter.predicates = this.options.PredicateOptions
             .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
-            .map((p) => { return { uid: p.Uid, type: p.Name } });
+            .map((p) => { return { uid: p.Uid, type: p.Name }; });
 
         this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
         this.createUserFilter.diagramType = this.filterModel.DiagramType;

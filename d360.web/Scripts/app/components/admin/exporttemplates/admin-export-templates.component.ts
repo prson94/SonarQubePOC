@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AdminBaseComponent } from '../admin-base.component'
+import { AdminBaseComponent } from '../admin-base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';

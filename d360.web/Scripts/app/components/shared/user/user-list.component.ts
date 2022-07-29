@@ -58,7 +58,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     totalRecords: number;
     rowsPerPage: number = this.defaultInitialItemsPerPage;
     defaultInitialItemsPerPage: number = 10;
-    private usersSub: ISubscription
+    private usersSub: ISubscription;
     currentPageNumber: number = 0;
     sortField: string = undefined;
     sortOrder: SortOrder = SortOrder.None;
@@ -207,7 +207,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     Category: "",
                     ValueLoader: this.getStatusFilterValues.bind(this),
                     RemovePopulatedOperator: true
-                }
+                };
             } else if (customFields.findIndex((o) => o.Name === apiName) !== -1) {
                 return customFields.find((o) => o.Name === apiName) as AdvancedFilterFieldType;
             } else {
@@ -217,7 +217,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     Type: new FieldType(c.fieldType),
                     Category: "",
                     RemovePopulatedOperator: ["FirstName", "LastName", "Email"].indexOf(c.datafield) !== -1
-                }
+                };
             }
         });
 
@@ -390,7 +390,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     }
                     this.changeDetectorRef.markForCheck();
                 }
-            )
+            );
     }
 
     resetPassword() {

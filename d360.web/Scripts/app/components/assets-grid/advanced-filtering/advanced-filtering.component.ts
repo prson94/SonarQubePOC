@@ -105,7 +105,7 @@ export class AdvancedFilteringComponent implements OnChanges {
                 this.cdRef.markForCheck();
             }
         }
-    ]
+    ];
     @ViewChild("dropdownRef", { static: false }) dropdownRef: ElementRef;
     @HostBinding("class") class = "advanced-filtering-component";
 

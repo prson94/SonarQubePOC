@@ -89,7 +89,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
 
     loadPageNumberAfterDeletion: number = -1;
     selectIndexAfterDeletion: number = -1;
-    @ViewChild('addRelationships', { static: false }) addRelationshipComponent: AddRelationshipComponent
+    @ViewChild('addRelationships', { static: false }) addRelationshipComponent: AddRelationshipComponent;
 
     public getRelationshipTypes(params: LookupValuesAPIParameters): Observable<LookupValuesAPIModel> {
         let data: LookupValuesAPIModel = new LookupValuesAPIModel();
@@ -123,7 +123,7 @@ export class RelationshipGridComponent extends BaseComponent implements OnChange
             Type: new FieldType("Text"),
             Category: ""
         }
-    ]
+    ];
 
     @ViewChild('dt', { static: false }) dt: Table;
     @ViewChild('advFilterComponent', { static: false }) advFilterComponent: AdvancedFilteringComponent;

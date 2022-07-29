@@ -43,7 +43,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private conditions: any[] = [];
     private issueObjectTypes: any[] = [];
     private scoreTypes: any[] = [];
-    private scheduleTypes: any[] = [{ label: $localize`Daily`, value: 'd' }, { label: $localize`Hourly`, value: 'h' }]
+    private scheduleTypes: any[] = [{ label: $localize`Daily`, value: 'd' }, { label: $localize`Hourly`, value: 'h' }];
     private resSub: Subscription;
     private defaultWorkflowObject = new WorkflowObjectType();
 

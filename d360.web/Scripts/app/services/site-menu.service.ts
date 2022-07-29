@@ -240,7 +240,7 @@ export class SiteMenuService extends BaseObservableService {
                 'Content-Type': 'application/json'
             }),
             context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true)
-        }
+        };
 
         return this.http.post(`navigation/secondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)
             .pipe(

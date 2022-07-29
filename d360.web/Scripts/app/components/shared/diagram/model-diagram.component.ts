@@ -110,9 +110,9 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
 
     private htmlDecode(s: string): string {
         s = s.replace(/&#39;/g, '\'');
-        s = s.replace(/&amp;/g, '&')
-        s = s.replace(/&lt;/g, '<')
-        s = s.replace(/&gt;/g, '>')
+        s = s.replace(/&amp;/g, '&');
+        s = s.replace(/&lt;/g, '<');
+        s = s.replace(/&gt;/g, '>');
         s = s.replace(/&#34;/g, '"');
 
         return s;
@@ -237,7 +237,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.breadcrumbsService
             .getAreaName(this.objectType, this.id)
             .subscribe(result => {
-                this.currentAreaName = result
+                this.currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle(this.navFolderName).then((res) => {
                     this.breadcrumbsService.clearBreadcrumbs();
                     this.breadcrumbsService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `TaxonomyType/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`));
@@ -248,7 +248,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
                             this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, $localize`Model`);
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                             this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
-                            let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7)
+                            let diagramTab = new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.id}`, null, 7);
                             this.secondaryNavService.showItem(diagramTab);
                             diagramTab.active = true;
 

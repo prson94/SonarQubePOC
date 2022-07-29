@@ -5,7 +5,7 @@ export class WorkflowMonitorItem {
     Type: string;
     TypeName: number;
     Asset: string;
-    Initiator:string
+    Initiator:string;
     StartedOn: Date;
     CompletedOn: Date;
     Status: string;

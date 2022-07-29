@@ -10,7 +10,7 @@ import { SocialModule } from '../shared/social/social.module';
 import { SearchModule } from '../search/search.module';
 import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
-import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 import { ShortcutDisplayModule } from '../shared/shortcutdisplay/shortcut-display.module';
 import { DashboardModule } from '../sidebar/dashboard/dashboard.module';
 

@@ -249,5 +249,5 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         passwordPrompt: $localize`Enter a password`,
         emptyMessage: $localize`No results found`,
         emptyFilterMessage: $localize`No results found`
-    }
+    };
 }

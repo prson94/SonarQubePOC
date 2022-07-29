@@ -237,7 +237,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                         data: c,
                         children: [],
                         expanded: true
-                    }
+                    };
                     node.children.push(n);
                     this.addChildren(n);
                 });
@@ -364,7 +364,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     getSelectedRuleResultPath() {
-        let html = ';'
+        let html = ';';
         const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
         if (ruleResultPathUid && this.screenReferences && this.screenReferences.paths) {
             const matches = this.screenReferences.paths.filter(p => { return p.value == ruleResultPathUid; });

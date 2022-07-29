@@ -464,5 +464,5 @@ export class GalleryDropDownComponent implements OnInit {
             "label": "Velit Industries",
             "value": "049857B6-F7A4-6F5B-832B-D846DE0EC3B6"
         }
-    ]
+    ];
 }

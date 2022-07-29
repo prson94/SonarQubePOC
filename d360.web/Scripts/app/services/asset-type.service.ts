@@ -130,7 +130,7 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get(`api/v2/assets/${uid}/possibleCreators`)
             .pipe(
-                map((response) => { return <any[]>response }),
+                map((response) => { return <any[]>response; }),
                 catchError(err => this.handleError(err))
             );
     }
@@ -140,7 +140,7 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get(`api/v2/assets/${uid}/possibleRedactors`)
             .pipe(
-                map((response) => { return <any[]>response }),
+                map((response) => { return <any[]>response; }),
                 catchError(err => this.handleError(err))
             );
 	}
@@ -149,7 +149,7 @@ export class AssetTypeService extends BaseObservableService {
 			.http
 			.get(`api/v2/assets/possibleSiteNav`)
 			.pipe(
-				map((response) => { return <any[]>response }),
+				map((response) => { return <any[]>response; }),
 				catchError(err => this.handleError(err))
 			);
 	}

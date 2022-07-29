@@ -39,7 +39,7 @@ export class GalleryMultiInputFieldComponent implements OnInit {
 
     myForm = new FormGroup({
         multiInput: new FormControl(this.multiValueInvalid, [NoDuplicate()]),
-    })
+    });
 
     ngOnInit(): void {
         this.properties = new Array();

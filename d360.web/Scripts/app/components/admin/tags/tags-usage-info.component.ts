@@ -31,7 +31,7 @@ export class TagUsageInfoBox {
 
             this.tooltipHTML = `<table class="table table-borderless">${tableHTML}</div>`;
             this.loadedUid = this.uid;
-        })
+        });
     }
 
     showContent(isFromTooltip = false) {

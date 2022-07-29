@@ -120,7 +120,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 													if (o.Type == 'Date' || o.Type == 'DateTime') {
 														f.Values.forEach(fv => {
 															filterModel.value += (filterModel.value == '' ? '' : ', ') + new Date(fv).toLocaleDateString();
-														})
+														});
 													}
 													else {
 														filterModel.value = f.Values.join(', ');
@@ -184,7 +184,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 						}
 						break;
 					case 'Predicate':
-						let predicate = this.screenReferences.predicates.find(x => { return x.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase() });
+						let predicate = this.screenReferences.predicates.find(x => { return x.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase(); });
 						let existsOperatorP = $localize`exists`;
 						if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
 							existsOperatorP = $localize`does not exist`;
@@ -195,7 +195,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 							this.formattedCheck = "";
 						break;
 					case 'Relation':
-						let relationshipType = this.screenReferences.relationships.find(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase() });
+						let relationshipType = this.screenReferences.relationships.find(x => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase(); });
 						let existsOperator = $localize`exists`;
 						if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
 							existsOperator = $localize`does not exist`;
@@ -209,7 +209,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 							let label = "";
 							if (isSubject) {
 								labelName = relationshipType.Predicate.Name;
-								assetName = relationshipType.Object.Name
+								assetName = relationshipType.Object.Name;
 							} else if (isObject) {
 								labelName = relationshipType.Predicate.Inverse;
 								assetName = relationshipType.Subject.Name;

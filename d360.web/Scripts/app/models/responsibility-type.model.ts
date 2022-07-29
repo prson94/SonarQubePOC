@@ -235,5 +235,5 @@ export class ResponsibilityTypeRelationRuleDefinitionV2 {
 
 export class ResponsibilityTypeRelationRuleV2 {
     AssetTypeUid: string;
-    Definition: ResponsibilityTypeRelationRuleDefinitionV2
+    Definition: ResponsibilityTypeRelationRuleDefinitionV2;
 }

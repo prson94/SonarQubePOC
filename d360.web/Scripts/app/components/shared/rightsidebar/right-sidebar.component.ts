@@ -153,7 +153,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return Boolean(this.searchDetails?.Scores.length);
         }
         return true;
-    }
+    };
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['menuOpen'])
@@ -274,7 +274,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showSurvey = false;
                 this.searchDetails = null;
                 this.emitChanges();
-            })
+            });
         this.areaSub = this.secondaryNavService.currentArea$.subscribe(
             area => {
                 this.area = area; this.emitChanges();
@@ -328,7 +328,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.assetAction = null;
                     this.emitChanges();
                 }
-            })
+            });
 
         this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
             item => {
@@ -340,7 +340,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             }
-        })
+        });
 
         this.updateSub = this.secondaryNavService.updateObject$.subscribe(res => {
             if (res) {
@@ -353,7 +353,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
                 this.ref.markForCheck();
             }
-        })
+        });
 
 
         this.emitChanges();

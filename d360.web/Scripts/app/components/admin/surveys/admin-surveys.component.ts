@@ -1,7 +1,7 @@
 ﻿import { Component } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SurveysService } from '../../../services/surveys.service';
-import { AdminBaseComponent } from '../admin-base.component'
+import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { SurveyTypeV2 } from '../../../models/survey.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -156,7 +156,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
                 this.surveys = res.items.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
-            }, err => { this.error = err })
+            }, err => { this.error = err; });
     }
     
     getSurveyTypesParams() {
