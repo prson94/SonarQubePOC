@@ -33,12 +33,6 @@ namespace d360.web.Handlers
 				return response; 
 			}
 
-<<<<<<< Updated upstream
-			var responseMetadata = new ErrorResponse
-			{
-				type = "error",
-				message = response.RequestMessage.ToString()
-=======
 			HttpError responseContent;
 			if (!response.TryGetContentValue(out responseContent))
 			{
@@ -52,7 +46,6 @@ namespace d360.web.Handlers
 			{
 				type = "error",
 				message = message?.ToString()
->>>>>>> Stashed changes
 			};
 
 			if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
