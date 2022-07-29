@@ -357,10 +357,29 @@ export class DataProfileComponent extends BaseComponent implements OnInit {
         return str.toString()[0].toUpperCase() + str.toString().slice(1);
     }
 
-    getMatchTooltip(type: string, count: number): string {
-        let assetCountStr: string = count > 1 ? $localize`${count} assets` : $localize`1 asset`;
-        let descStr: string = type === $localize`duplicates` ? $localize`same type and matching data` : $localize`same type but different data`;
-        return $localize`${assetCountStr} detected which have the ${descStr}.\nClick to investigate and add tags.`;
+	getMatchTooltip(type: string, count: number): string {
+		let isDuplicates = type === $localize`duplicates`;
+		let isPlural = count > 1;
+		let tagText = $localize`Click to investigate and add tags.`;
+		let message = ``;
+		if (isDuplicates) {
+			if (isPlural) {
+				message = $localize`${count} assets detected which have the same type and matching data.`;
+			}
+			else {
+				message = $localize`1 asset detected which have the same type and matching data.`;
+			}
+		}
+		else {
+			if (isPlural) {
+				message = $localize`${count} assets detected which have the same type but different data.`;
+			}
+			else {
+				message = $localize`1 asset detected which have the same type but different data.`;
+			}
+		}
+
+		return message + '\n' + tagText;
     }
 
     matchDetectionLinkClicked(type: string) {
