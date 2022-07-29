@@ -52,7 +52,7 @@ namespace d360.core.entities
 
         public static List<CompanyRebuildJobStatusApiModel> GetDefaultList()
         {
-            return CompanyRebuildJobToken.AssetGraph
+            return CompanyRebuildJobToken.DisplayValues
                 .GetAsList()
                 .Select(i => new CompanyRebuildJobStatusApiModel
                 {

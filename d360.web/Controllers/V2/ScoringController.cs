@@ -743,7 +743,7 @@ namespace d360.web.Controllers.V2
 
 				if (isDistinct.Count() != m.measures.Count())
 				{
-					throw new GenericException(HttpStatusCode.BadRequest, ScoreApiMessages.DuplicateMesaureUid);
+					throw new GenericException(HttpStatusCode.BadRequest, ScoreApiMessages.ErrorAddingScoreResults, ScoreApiMessages.DuplicateMeasureUid);
 				}
 			}
 

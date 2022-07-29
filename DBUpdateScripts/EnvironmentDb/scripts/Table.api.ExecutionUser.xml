@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Table.api.ExecutionUser-v2">
+  <changeSet author="TDuric" id="Table.api.ExecutionUser-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -51,6 +51,12 @@ BEGIN
 	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
 	
  END
+ 
+ if col_length('api.ExecutionUser', 'AssetId') is null
+begin
+	alter table api.ExecutionUser
+	add AssetId bigint null;
+end
 		]]>
     </sql>
   </changeSet>

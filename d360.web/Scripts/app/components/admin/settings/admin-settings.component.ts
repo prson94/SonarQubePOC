@@ -52,15 +52,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     disableExcel: boolean = false;
 
     rebuildStatuses: CompanyRebuildJobStatusApiModel[] = [];
-
-    disableRebuildAssetGraph: boolean = false;
-    graphValidationMessage = "";
-    
-    disableRebuildDisplayValue: boolean = false;
-    displayValueValidationMessage = "";
-
-    disableRebuildIndex: boolean = false;
-    indexValidationMessage = "";
     
     SaveButton: DynamicButton;
 

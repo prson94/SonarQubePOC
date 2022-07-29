@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.metrics.BuildDataQualityMeasureQuery-v4.0">
+  <changeSet author="Puneet Gupta" id="Procedure.metrics.BuildDataQualityMeasureQuery-v4.3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -40,7 +40,7 @@ begin
 		It nvarchar(25), Pt nvarchar(3), 
 		Sp nvarchar(3), Sa nvarchar(25), Sc nvarchar(3), 
 		Ep nvarchar(3), Ea nvarchar(25), Ec nvarchar(3), 
-		Col nvarchar(2500), Tab nvarchar(2500), Whe nvarchar(2500), Mat nvarchar(2500), Pat nvarchar(2500) 
+		Col nvarchar(2500), Tab nvarchar(2500), Pat nvarchar(2500) 
 	)
 
 	insert into @tbl
@@ -53,7 +53,7 @@ begin
 				cast(I.EndPosition as nvarchar(3)),
 				cast(E.AssetTypeID as nvarchar(25)),
 				cast(EA.Class as nvarchar(3)),
-				'' as Col, '' as Tab, '' as Whe, '' as Mat, '' as Pat
+				'' as Col, '' as Tab, '' as Pat
 		from	[metrics].[RollupPathLink] I
 				inner join [metrics].[RollupPathSegment] S on S.RollupPathUid = I.RollupPathUid and S.Position = I.StartPosition
 				inner join AssetType SA on SA.ID = S.AssetTypeID
@@ -78,13 +78,11 @@ begin
 							'N_'+Ea+'_'+Ep+'.Uid as StartingAssetUid, N_'+Sa+'_'+Sp+'.Uid as TechnicalAssetUid, N_'+Ea+'_'+Ep+'.Uid as RuleAssetUid, ',
 							'N_'+Sa+'_'+Sp+'.Uid as StartingAssetUid, N_'+Sa+'_'+Sp+'.Uid as TechnicalAssetUid, N_'+Ea+'_'+Ep+'.Uid as RuleAssetUid, '
 						),
-				Tab =	'graph.AssetNode N_'+Sa+'_'+Sp + 
-						', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
-						', graph.AssetNode N_'+Ea+'_'+Ep+' ',
-				Whe =	'E_'+It+'_'+Sp+'_'+Ep+'.PredicateType = 2' 
-						+ ' and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa 
-						+ ' and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea + ' ',
-				Mat =	'N_'+Sa+'_'+Sp+'<-(E_'+It+'_'+Sp+'_'+Ep+')-N_'+Ea+'_'+Ep,
+				Tab =	'Asset N_'+Sa+'_'+Sp + 
+						' inner join [Intersect] E_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.ObjectAssetID = N_'+Sa+'_'+Sp+'.ID and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa +
+						' inner join [IntersectType] ET_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.IntersectTypeID = ET_'+It+'_'+Sp+'_'+Ep+'.ID ' +
+						' inner join [Predicate] EP_'+It+'_'+Sp+'_'+Ep + ' on ET_'+It+'_'+Sp+'_'+Ep+'.PredicateID = EP_'+It+'_'+Sp+'_'+Ep+'.ID and EP_'+It+'_'+Sp+'_'+Ep+'.[Type] = 2 ' +
+						' inner join Asset N_'+Ea+'_'+Ep+' on E_'+It+'_'+Sp+'_'+Ep+'.SubjectAssetID = N_'+Ea+'_'+Ep+'.ID and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea,
 				Pat =	'select N_'+Sa+'_'+Sp+'.Uid, '+Sp+' as Position ' +
 						'union ' + 
 						'select N_'+Ea+'_'+Ep+'.Uid, '+Ep+' as Position'
@@ -99,25 +97,17 @@ begin
 							else ''
 						end,
 				Tab =	case StartPosition
-							when 1 then 'graph.AssetNode N_'+Sa+'_'+Sp +
-										', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
-										', graph.AssetNode N_'+Ea+'_'+Ep+' '
-							when @MaxStartPosition then ', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
-														', graph.AssetNode N_'+Ea+'_'+Ep+' '
-							else	', graph.AssetEdge E_'+It+'_'+Sp+'_'+Ep +
-									', graph.AssetNode N_'+Ea+'_'+Ep+' '
-						end,
-				Whe =	case StartPosition
-							when 1 then 'N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa + ' '
-							when @MaxStartPosition then 'E_'+It+'_'+Sp+'_'+Ep+'.PredicateType = 2' 
-														+ ' and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa
-														+ ' and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea + ' '
-							else 'N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea + ' '
-						end,
-				Mat =	case StartPosition
-							when 1 then 'N_'+Sa+'_'+Sp+'-(E_'+It+'_'+Sp+'_'+Ep+')->N_'+Ea+'_'+Ep
-							when @MaxStartPosition then '<-(E_'+It+'_'+Sp+'_'+Ep+')-N_'+Ea+'_'+Ep 
-							else '-(E_'+It+'_'+Sp+'_'+Ep+')->N_'+Ea+'_'+Ep 
+							when 1 then 'Asset N_'+Sa+'_'+Sp +
+										' inner join [Intersect] E_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.SubjectAssetID = N_'+Sa+'_'+Sp+'.ID and N_'+Sa+'_'+Sp+'.AssetTypeID = ' + Sa +
+										' inner join Asset N_'+Ea+'_'+Ep+ ' on E_'+It+'_'+Sp+'_'+Ep+'.ObjectAssetID = N_'+Ea+'_'+Ep+'.ID and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea
+							when @MaxStartPosition then 
+										' inner join [Intersect] E_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.ObjectAssetID = N_'+Sa+'_'+Sp+'.ID' +
+										' inner join [IntersectType] ET_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.IntersectTypeID = ET_'+It+'_'+Sp+'_'+Ep+'.ID' +
+										' inner join [Predicate] EP_'+It+'_'+Sp+'_'+Ep + ' on ET_'+It+'_'+Sp+'_'+Ep+'.PredicateID = EP_'+It+'_'+Sp+'_'+Ep+'.ID and EP_'+It+'_'+Sp+'_'+Ep+'.[Type] = 2' +
+										' inner join Asset N_'+Ea+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.SubjectAssetID = N_'+Ea+'_'+Ep+'.ID and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea
+							else	
+									' inner join [Intersect] E_'+It+'_'+Sp+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.SubjectAssetID = N_'+Sa+'_'+Sp+'.ID' +
+									' inner join Asset N_'+Ea+'_'+Ep + ' on E_'+It+'_'+Sp+'_'+Ep+'.ObjectAssetID = N_'+Ea+'_'+Ep+'.ID and N_'+Ea+'_'+Ep+'.AssetTypeID = ' + Ea
 						end,
 				Pat =	case StartPosition
 							when 1 then 'select N_'+Sa+'_'+Sp+'.Uid, '+Sp+' as Position ' +
@@ -129,22 +119,12 @@ begin
 
 	declare @c nvarchar(max),
 			@t nvarchar(max),
-			@w nvarchar(max),
-			@m nvarchar(max),
 			@p nvarchar(max),
 			@sql nvarchar(max)
 
 	select	@c = string_agg(Col, '') from @tbl --order by StartPosition
 	select	@t = string_agg(Tab, '') from @tbl --order by StartPosition
-
-	update @tbl set Whe = null where Whe = ''
-	select	@w = string_agg(Whe, ' and ') from @tbl --order by StartPosition
-	if @w <> '' begin set @w = ' and ' + @w end
-	if @w is null begin set @w = '' end
-
-	select	@m = string_agg(Mat, '') from @tbl --order by StartPosition
 	select	@p = string_agg(Pat, ' union ') from @tbl --order by StartPosition
-
 
 	declare @StartingAssetUidColumn nvarchar(250) = '',
 			@TechnicalAssetUidColumn nvarchar(250) = '',
@@ -163,7 +143,7 @@ begin
 	begin
 	declare @ResultUids dbo.UidTable;
 	set @sql =	'select	distinct O.StartingAssetUid as AssetUid, R.EffectiveDate from (
-select	distinct ' + @c + ', null as NullVal from ' + @t + ' where match('+@m+')' + @w + '{{FILTERS}}) O 
+select	distinct ' + @c + ', null as NullVal from ' + @t + ' where 1=1{{FILTERS}}) O 
 cross apply (
 select	EffectiveDate
 from	(select	ROW_NUMBER() over (partition by R.EffectiveDate order by R.UpdatedOn desc) as RowNumber, 
@@ -182,7 +162,7 @@ where 1=1'
 	if @QueryType = 2
 	begin
 	set @sql =	'select	distinct O.StartingAssetUid as AssetUid, R.EffectiveDate from (
-select	distinct ' + @c + ' null as NullVal from ' + @t + ' where match('+@m+')' + @w + '{{FILTERS}}) O 
+select	distinct ' + @c + ' null as NullVal from ' + @t + ' where 1=1{{FILTERS}}) O 
 cross apply (
 	select	max(R.UpdatedOn) as MaxUpdatedOn,
 			R.EffectiveDate
@@ -217,7 +197,7 @@ where 1=1'
 					for json path
 					) as [Results]' +
 					' from ' + @t + 
-					' where match('+@m+')' + @w + ' and ' + @StartingAssetUidColumn + ' = @AssetUid{{FILTERS}}'
+					' where ' + @StartingAssetUidColumn + ' = @AssetUid{{FILTERS}}'
 	end
 
 

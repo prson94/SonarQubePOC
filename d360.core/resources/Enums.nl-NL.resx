@@ -1,0 +1,343 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CompanyRebuildJobToken_DisplayValues" xml:space="preserve">
+    <value>Weergavewaarden</value>
+  </data>
+  <data name="CompanyRebuildJobToken_DisplayValues_Desc" xml:space="preserve">
+    <value>Weergavewaarden opnieuw bouwen voor alle assets is uw omgeving.</value>
+  </data>
+  <data name="CompanyRebuildJobToken_SearchIndex" xml:space="preserve">
+    <value>Index zoeken</value>
+  </data>
+  <data name="CompanyRebuildJobToken_SearchIndex_Desc" xml:space="preserve">
+    <value>Hiermee wordt de full-text index voor alle assets binnen uw omgeving opnieuw gebouwd. Het kan tot zestig minuten duren om de index volledig opnieuw te bouwen.</value>
+  </data>
+  <data name="FieldType_AssetPath" xml:space="preserve">
+    <value>Assetpad</value>
+  </data>
+  <data name="FieldType_Boolean" xml:space="preserve">
+    <value>True/False</value>
+  </data>
+  <data name="FieldType_ColorPicker" xml:space="preserve">
+    <value>Kleurkiezer</value>
+  </data>
+  <data name="FieldType_Counter" xml:space="preserve">
+    <value>Teller</value>
+  </data>
+  <data name="FieldType_DataTableSelect" xml:space="preserve">
+    <value>DataTableSelect</value>
+  </data>
+  <data name="FieldType_Date" xml:space="preserve">
+    <value>Datum</value>
+  </data>
+  <data name="FieldType_DateTime" xml:space="preserve">
+    <value>Datum met tijd</value>
+  </data>
+  <data name="FieldType_Decimal" xml:space="preserve">
+    <value>Decimaal getal</value>
+  </data>
+  <data name="FieldType_FieldFromRel" xml:space="preserve">
+    <value>Veld van relatie</value>
+  </data>
+  <data name="FieldType_File" xml:space="preserve">
+    <value>Bestand</value>
+  </data>
+  <data name="FieldType_Hidden" xml:space="preserve">
+    <value>Verborgen</value>
+  </data>
+  <data name="FieldType_Html" xml:space="preserve">
+    <value>Html/Richtext</value>
+  </data>
+  <data name="FieldType_JSON" xml:space="preserve">
+    <value>JSON</value>
+  </data>
+  <data name="FieldType_JSONAttribute" xml:space="preserve">
+    <value>JSON-attribuut</value>
+  </data>
+  <data name="FieldType_Link" xml:space="preserve">
+    <value>Koppeling</value>
+  </data>
+  <data name="FieldType_List" xml:space="preserve">
+    <value>Lijst</value>
+  </data>
+  <data name="FieldType_None" xml:space="preserve">
+    <value>Geen</value>
+  </data>
+  <data name="FieldType_Number" xml:space="preserve">
+    <value>Nummer</value>
+  </data>
+  <data name="FieldType_OwnershipLookup" xml:space="preserve">
+    <value>Eigenaarschap-lookup</value>
+  </data>
+  <data name="FieldType_Password" xml:space="preserve">
+    <value>Wachtwoord</value>
+  </data>
+  <data name="FieldType_Percentage" xml:space="preserve">
+    <value>Percentage</value>
+  </data>
+  <data name="FieldType_ReferenceItemListFromRel" xml:space="preserve">
+    <value>Referentie-item Lijst van relatie</value>
+  </data>
+  <data name="FieldType_RelationLookup" xml:space="preserve">
+    <value>Relatie-lookup</value>
+  </data>
+  <data name="FieldType_Relationship" xml:space="preserve">
+    <value>Relatie</value>
+  </data>
+  <data name="FieldType_Score" xml:space="preserve">
+    <value>Score</value>
+  </data>
+  <data name="FieldType_SimpleText" xml:space="preserve">
+    <value>Eenvoudige tekst</value>
+  </data>
+  <data name="FieldType_Tag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="FieldType_UNCLink" xml:space="preserve">
+    <value>UNC/Bestandskoppeling</value>
+  </data>
+  <data name="OperatorAfter" xml:space="preserve">
+    <value>is na</value>
+  </data>
+  <data name="OperatorBefore" xml:space="preserve">
+    <value>is voor</value>
+  </data>
+  <data name="OperatorBetween" xml:space="preserve">
+    <value>is tussen</value>
+  </data>
+  <data name="OperatorContains" xml:space="preserve">
+    <value>bevat</value>
+  </data>
+  <data name="OperatorEndsWith" xml:space="preserve">
+    <value>eindigt met</value>
+  </data>
+  <data name="OperatorEquals" xml:space="preserve">
+    <value>is</value>
+  </data>
+  <data name="OperatorGreaterThan" xml:space="preserve">
+    <value>is groter dan</value>
+  </data>
+  <data name="OperatorGreaterThanOrEquals" xml:space="preserve">
+    <value>is groter dan of gelijk aan</value>
+  </data>
+  <data name="OperatorIn" xml:space="preserve">
+    <value>in</value>
+  </data>
+  <data name="OperatorIsFalse" xml:space="preserve">
+    <value>is onwaar</value>
+  </data>
+  <data name="OperatorIsInBand" xml:space="preserve">
+    <value>is in bereik</value>
+  </data>
+  <data name="OperatorIsTrue" xml:space="preserve">
+    <value>is waar</value>
+  </data>
+  <data name="OperatorLessThan" xml:space="preserve">
+    <value>is kleiner dan</value>
+  </data>
+  <data name="OperatorLessThanOrEquals" xml:space="preserve">
+    <value>is kleiner dan of gelijk aan</value>
+  </data>
+  <data name="OperatorNotContains" xml:space="preserve">
+    <value>bevat niet</value>
+  </data>
+  <data name="OperatorNotEquals" xml:space="preserve">
+    <value>is niet</value>
+  </data>
+  <data name="OperatorNotIn" xml:space="preserve">
+    <value>niet in</value>
+  </data>
+  <data name="OperatorNotPopulated" xml:space="preserve">
+    <value>is niet gevuld</value>
+  </data>
+  <data name="OperatorOnOrAfter" xml:space="preserve">
+    <value>is op of na</value>
+  </data>
+  <data name="OperatorOnOrBefore" xml:space="preserve">
+    <value>is op of voor</value>
+  </data>
+  <data name="OperatorPopulated" xml:space="preserve">
+    <value>is gevuld</value>
+  </data>
+  <data name="OperatorStartsWith" xml:space="preserve">
+    <value>begint met</value>
+  </data>
+  <data name="QuestionDisplayStyle_Check" xml:space="preserve">
+    <value>Lijst met aanvinkvakjes</value>
+  </data>
+  <data name="QuestionDisplayStyle_Radio" xml:space="preserve">
+    <value>Lijst met keuzerondjes</value>
+  </data>
+  <data name="QuestionDisplayStyle_Rating" xml:space="preserve">
+    <value>Beoordeling</value>
+  </data>
+  <data name="ScoreType_DataQuality" xml:space="preserve">
+    <value>Gegevenskwaliteitsscore</value>
+  </data>
+  <data name="ScoreType_Governance" xml:space="preserve">
+    <value>Governancescore</value>
+  </data>
+  <data name="WorkflowActivityType_Delete" xml:space="preserve">
+    <value>Verwijderen</value>
+  </data>
+  <data name="WorkflowActivityType_EmailNotif" xml:space="preserve">
+    <value>E-mailmelding</value>
+  </data>
+  <data name="WorkflowActivityType_FieldChange" xml:space="preserve">
+    <value>Veldwijziging</value>
+  </data>
+  <data name="WorkflowActivityType_Form" xml:space="preserve">
+    <value>Formulier</value>
+  </data>
+  <data name="WorkflowActivityType_HTTPRequest" xml:space="preserve">
+    <value>HTTP-aanvraag</value>
+  </data>
+  <data name="WorkflowActivityType_HTTPResponse" xml:space="preserve">
+    <value>HTTP-reactie</value>
+  </data>
+  <data name="WorkflowActivityType_RelationshipChange" xml:space="preserve">
+    <value>Relatiewijziging</value>
+  </data>
+  <data name="WorkflowActivityType_SqlProcedure" xml:space="preserve">
+    <value>Sql-procedure</value>
+  </data>
+  <data name="WorkflowActivityType_StateChange" xml:space="preserve">
+    <value>Statuswijziging</value>
+  </data>
+  <data name="WorkflowActivityType_StatusChange" xml:space="preserve">
+    <value>Statuswijziging</value>
+  </data>
+  <data name="WorkflowChangeType_ItemAdded" xml:space="preserve">
+    <value>Item toegevoegd</value>
+  </data>
+  <data name="WorkflowChangeType_ItemChanged" xml:space="preserve">
+    <value>Item gewijzigd</value>
+  </data>
+  <data name="WorkflowChangeType_ItemRemoved" xml:space="preserve">
+    <value>Item verwijderd</value>
+  </data>
+  <data name="WorkflowChangeType_RequestCertification" xml:space="preserve">
+    <value>Aanvraagcertificering</value>
+  </data>
+  <data name="WorkflowChangeType_Schedule" xml:space="preserve">
+    <value>Plannen</value>
+  </data>
+  <data name="WorkflowChangeType_ScoreChange" xml:space="preserve">
+    <value>Score gewijzigd</value>
+  </data>
+</root>

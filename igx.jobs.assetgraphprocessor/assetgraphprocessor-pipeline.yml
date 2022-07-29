@@ -1,25 +1,6 @@
-trigger:
-  branches:
-    include:
-    - '*sprint*'
-  paths:
-    include:
-    - /igx.jobs
-    - /d360.core
-    - /d360.utils.company
-    - /igx.jobs.assetgraphprocessor
-pr:
-  autoCancel: false
-  drafts: true
-  branches:
-    include:
-    - '*sprint*'
-  paths:
-    include:
-    - /igx.jobs
-    - /d360.core
-    - /d360.utils.company
-    - /igx.jobs.assetgraphprocessor
+trigger: none
+pr: none
+
 name: WebJob-AssetGraphProcessor-$(SourceBranchName)-$(Date:MM-dd-yyyy)$(Rev:.r)
 resources:
   repositories:

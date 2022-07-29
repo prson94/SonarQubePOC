@@ -1623,11 +1623,6 @@ namespace d360.model
 			Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
 		}
 
-		public void RebuildAssetGraphRequest()
-		{
-			Enqueue(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = CurrentCompanyID });
-		}
-
 		public void RebuildDisplayValuesRequest()
 		{
 			Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });

@@ -105,21 +105,18 @@ namespace d360.web.Controllers.V2
 					return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 				}
 
-				var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
-				if (readyToActivate.StatusCode == HttpStatusCode.OK)
-				{
-					switch (model.Job)
-					{
-						case CompanyRebuildJobToken.AssetGraph:
-							Company.RebuildAssetGraphRequest();
-							break;
-						case CompanyRebuildJobToken.DisplayValues:
-							Company.RebuildDisplayValuesRequest();
-							break;
-						case CompanyRebuildJobToken.SearchIndex:
-							Company.RebuildIndexRequest();
-							break;
-					}
+                var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+                if (readyToActivate.StatusCode == HttpStatusCode.OK)
+                {
+                    switch (model.Job)
+                    {
+                        case CompanyRebuildJobToken.DisplayValues:
+                            Company.RebuildDisplayValuesRequest();
+                            break;
+                        case CompanyRebuildJobToken.SearchIndex:
+                            Company.RebuildIndexRequest();
+                            break;
+                    }
 
 					return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action = ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
 				}

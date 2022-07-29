@@ -257,8 +257,6 @@ namespace igx.jobs.apiexecutionprocessor
                                     log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(postAssetsResults, log, "Assets", HttpMethod.Post);
-
-                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {
@@ -283,8 +281,6 @@ namespace igx.jobs.apiexecutionprocessor
                                     log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(putAssetsResults, log, "Assets", HttpMethod.Put);
-
-                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {
@@ -309,8 +305,6 @@ namespace igx.jobs.apiexecutionprocessor
                                     log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(deleteAssetsResults, log, "Assets", HttpMethod.Delete);
-
-                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {
@@ -335,7 +329,6 @@ namespace igx.jobs.apiexecutionprocessor
                                     log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(postRelationshipsResults, log, "Relationships", HttpMethod.Post);
-                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {
@@ -360,7 +353,6 @@ namespace igx.jobs.apiexecutionprocessor
                                     log.WriteLine($"PUT Relationships (DB Complete): Total results: {putRelationshipsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(putRelationshipsResults, log, "Relationships", HttpMethod.Put).ConfigureAwait(false);
-                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {
@@ -385,7 +377,6 @@ namespace igx.jobs.apiexecutionprocessor
                                     log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(deleteRelationshipsResults, log, "Relationships", HttpMethod.Delete);
-                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {

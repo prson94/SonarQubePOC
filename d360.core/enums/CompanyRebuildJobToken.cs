@@ -9,14 +9,9 @@ namespace d360.core.enums
     public enum CompanyRebuildJobToken
     {
         [
-            QueueSettingName("AssetGraphQueue")
-        ]
-        AssetGraph = 1,
-
-        [
             QueueSettingName("DisplayValueQueue")
         ]
-        DisplayValues,
+        DisplayValues = 2,
 
         [
             QueueSettingName("SearchIndexQueue")
@@ -95,7 +90,6 @@ namespace d360.core.enums
         {
             switch (type)
             {
-                case CompanyRebuildJobToken.AssetGraph: return Enums.CompanyRebuildJobToken_AssetGraph_Desc;
                 case CompanyRebuildJobToken.DisplayValues: return Enums.CompanyRebuildJobToken_DisplayValues_Desc;
                 case CompanyRebuildJobToken.SearchIndex: return Enums.CompanyRebuildJobToken_SearchIndex_Desc;
                 default: throw new ArgumentOutOfRangeException("CompanyRebuildJobToken");
@@ -106,7 +100,6 @@ namespace d360.core.enums
         {
             switch (type)
             {
-                case CompanyRebuildJobToken.AssetGraph: return Enums.CompanyRebuildJobToken_AssetGraph;
                 case CompanyRebuildJobToken.DisplayValues: return Enums.CompanyRebuildJobToken_DisplayValues;
                 case CompanyRebuildJobToken.SearchIndex: return Enums.CompanyRebuildJobToken_SearchIndex;
                 default: throw new ArgumentOutOfRangeException("CompanyRebuildJobToken");
