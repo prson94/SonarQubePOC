@@ -187,7 +187,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     getElementRightPosition(element) {
         if (element && element.getBoundingClientRect) {
-            return element.getBoundingClientRect().right
+            return element.getBoundingClientRect().right;
         }
         return NaN;
     }
@@ -259,7 +259,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.buttonSubscriptionClear = this.secondaryNavService.rightSidebarButtonClear$.subscribe(
             item => {
                 this.buttons.splice(0, this.buttons.length); this.emitChanges();
-            })
+            });
 
 
         this.subscriptionClear = this.secondaryNavService.rightSidebarClear$.subscribe(
@@ -334,7 +334,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             item => {
                 this.homeUrl = item;
             }
-        )
+        );
 
         this.statsSub = this.secondaryNavService.refreshStats$.subscribe(res => {
             if (this.currentObject && !this.currentObject.isType) {

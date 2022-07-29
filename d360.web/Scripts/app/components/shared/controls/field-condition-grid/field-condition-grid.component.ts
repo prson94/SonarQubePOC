@@ -255,7 +255,7 @@ export class FieldConditionGrid implements OnChanges, OnDestroy {
         }
         setTimeout(() => {
             this.cdRef.markForCheck();
-        })
+        });
     }
 
     getTypeForCondition(item: FieldCondition) {

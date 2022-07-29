@@ -593,7 +593,7 @@ export class WorkflowService extends BaseObservableService {
             .pipe(
                 map(response => {
                     let r = <AllocationAPIModel[]>response;                    
-                    r.forEach(x => x.ClassName = AssetTypeClass[x.Class])
+                    r.forEach(x => x.ClassName = AssetTypeClass[x.Class]);
                     return r;
                 }),
                 catchError(err => this.handleError(err))

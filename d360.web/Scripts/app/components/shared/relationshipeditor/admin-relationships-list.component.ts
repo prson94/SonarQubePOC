@@ -97,7 +97,7 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                     if (this.relationships && !this.showEditor) {
                         if (this.relationships.length > 0) {
                             this.selected = this.relationships[0];
-                            this.selectedChange.emit(this.selected)
+                            this.selectedChange.emit(this.selected);
                         }
                     }
                     this.checkGridState();

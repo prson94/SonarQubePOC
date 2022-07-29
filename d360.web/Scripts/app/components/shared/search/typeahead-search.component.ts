@@ -132,8 +132,8 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     selectItem(ac) {
         if (this.result.Type == this.endSearchAllTypeToken) {
-            this.result.Name = this.searchText
-            this.openSearch()
+            this.result.Name = this.searchText;
+            this.openSearch();
         } else {
             this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
         }

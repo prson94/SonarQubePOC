@@ -16,13 +16,13 @@ export class SimpleSearch implements PipeTransform {
 
         const loop = (items) => {
             if (isString(items.Name) && items.Name.toLowerCase().indexOf(filter.toLowerCase()) != -1)
-                return true
+                return true;
 
             if (isArray(items.Items)) {
                 let tempItems = [];
                 return (tempItems = items.Items.filter(loop)).length;
             }
-        }
+        };
         return items.filter(x => loop(x));
     }
 }

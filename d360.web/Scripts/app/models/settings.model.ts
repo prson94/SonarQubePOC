@@ -57,7 +57,7 @@ export class CompanyImage {
             fileReader.onloadend = (e: any) => {
                 this.isLoading = false;
                 this.dataUrl = e.target.result;
-            }
+            };
             fileReader.readAsDataURL(this.file);
         } else {
             this.dataUrl = null;

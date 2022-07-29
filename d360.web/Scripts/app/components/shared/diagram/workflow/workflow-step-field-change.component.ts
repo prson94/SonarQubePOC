@@ -203,7 +203,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         let d = new Date(e);
         let dateString = "";
 
-        dateString = (d.getMonth() + 1).toString()
+        dateString = (d.getMonth() + 1).toString();
     }
 
     changeUseFormValue(e: any) {

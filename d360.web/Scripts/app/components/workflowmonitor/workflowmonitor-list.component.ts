@@ -102,7 +102,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         }
         this.selection = $event;
         this.selectedCount = this.selection == null ? 0 : this.selection.length;
-        this.selectionChange.emit($event)
+        this.selectionChange.emit($event);
     }
 
     getFilter(): GridFilterExpression[] {
@@ -149,7 +149,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
                 if (this.items != null && this.items.length > 0) {
                     let item: any;
                     if (this.stateService.workflowItemFilters.itemId != 0) {
-                        item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId)
+                        item = this.items.find(x => x.Id == this.stateService.workflowItemFilters.itemId);
                     }
 
                     this.selection = item ? [item] : [this.items[0]];
@@ -205,7 +205,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
         if (window.navigator && window.navigator.platform.indexOf("Mac") >= 0) {
             return "\u2318";
         } else {
-            return "Ctrl"
+            return "Ctrl";
         }
     }
 

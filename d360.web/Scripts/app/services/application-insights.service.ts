@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core'
+﻿import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';

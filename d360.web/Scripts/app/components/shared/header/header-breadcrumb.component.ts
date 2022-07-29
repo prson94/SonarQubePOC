@@ -172,7 +172,7 @@ export class HeaderBreadcrumbComponent {
 
             html = '<a class="breadcrumb"><span class="breadcrumb-text">' + this.breadcrumbs[i].text + ' </span>';
             if (this.breadcrumbs[i].parentTypeName !== undefined)
-                html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>'
+                html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>';
             html += '</a>';
 
             this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);

@@ -99,7 +99,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                         var score = (+pt['Value'] * measureAdjustmentRatio * 1000) / 1000;
                         sp.Score = Math.round(score * 100 * 10) / 10;
                         arr.push(sp);
-                    })
+                    });
 
                     arr = arr.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
@@ -424,7 +424,7 @@ export class ScoreHistoryComponent extends BaseComponent implements OnChanges {
                 if (this.chartInstance.series.length > 0) {
 
                     var ms = new Date(this.scoreDate.toString()).getTime();
-                    var idx = this.chartInstance.series[0].data.findIndex((p) => { return p.x == ms });
+                    var idx = this.chartInstance.series[0].data.findIndex((p) => { return p.x == ms; });
 
                     if (idx == -1) {
                         idx = 1;

@@ -21,7 +21,7 @@ export class TagService extends BaseObservableService {
             map(response => {
                 return response
             }),
-            map(item => { return <Tag[]>item }),
+            map(item => { return <Tag[]>item; }),
             catchError(err => this.handleError(err)));
     }
 
@@ -52,10 +52,10 @@ export class TagService extends BaseObservableService {
         if (tags.length == 1)
             return this.deleteTagByUid(tags[0].uid);
 
-        let body: any[] = []
+        let body: any[] = [];
         tags.forEach(t => {
             body.push({ 'uid': t.uid, cascade: true });
-        })
+        });
 
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: body
@@ -128,7 +128,7 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/${tagUid}/assetpath`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)))
+                catchError(err => this.handleError(err, true)));
     }
 
     searchTags(q: string, exceptId, ignoreCounts: boolean = false): Observable<any[]> {

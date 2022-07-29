@@ -6,7 +6,7 @@ import { Table } from 'primeng/table';
 import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
-import { RuleColumnFilterComponent } from './rule-column-filter.component'
+import { RuleColumnFilterComponent } from './rule-column-filter.component';
 import { Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { AdvancedFilterFieldType, Filters } from '../assets-grid/advanced-filtering/advanced-filtering.models';

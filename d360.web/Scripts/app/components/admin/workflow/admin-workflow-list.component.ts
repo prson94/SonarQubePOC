@@ -106,7 +106,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
     cloneWorkflow(uid) {
 
-        this.isLoading = true
+        this.isLoading = true;
         this.workflowService.cloneWorkflowDiagramModel(uid)
             .subscribe((x) => {
                 this.isLoading = false;

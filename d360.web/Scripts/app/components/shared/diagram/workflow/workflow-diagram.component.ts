@@ -349,7 +349,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     map(r => this.fieldTypes = r),
                     map(() => this.parseData(this.model)),
                     map(() => { this.isLoadingCounter--; }),
-                    map(() => { this.resetContentPosition() })
+                    map(() => { this.resetContentPosition(); })
                 );
         }
 
@@ -413,7 +413,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         if (data.Links)
             data.Links.forEach(l => {
-                linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link))
+                linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link));
             });
 
         nodeList.forEach(n => {
@@ -2072,14 +2072,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 stroke: "gray", strokeWidth: 2
             },
                 new go.Binding("stroke", "valid", v => {
-                    return (v || this.isReadOnly) ? "gray" : "red"
+                    return (v || this.isReadOnly) ? "gray" : "red";
                 })),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
                 new go.Binding("fill", "valid", v => {
-                    return (v || this.isReadOnly) ? "gray" : "red"
+                    return (v || this.isReadOnly) ? "gray" : "red";
                 }),
                 new go.Binding("stroke", "valid", v => {
-                    return (v || this.isReadOnly) ? "gray" : "red"
+                    return (v || this.isReadOnly) ? "gray" : "red";
                 })
             ), // the arrowhead
             this.g(go.Panel, "Auto",
@@ -2093,13 +2093,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 },
                     //only visible if there's a label
                     new go.Binding("stroke", "valid", v => {
-                        return (v || this.isReadOnly) ? "gray" : "red"
+                        return (v || this.isReadOnly) ? "gray" : "red";
                     }),
                     new go.Binding("fill", "valid", v => {
-                        return (v || this.isReadOnly) ? "gray" : "red"
+                        return (v || this.isReadOnly) ? "gray" : "red";
                     }),
                     new go.Binding("visible", "icon", function (a) {
-                        return (a ? true : false)
+                        return (a ? true : false);
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {

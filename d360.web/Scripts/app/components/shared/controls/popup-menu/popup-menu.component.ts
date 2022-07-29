@@ -132,7 +132,7 @@ export class PopupMenu implements AfterContentInit, OnDestroy, DoCheck {
                         i.keysMac.push(x);
                     }
 
-                })
+                });
             }
 
             if (i.items) {

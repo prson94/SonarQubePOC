@@ -76,7 +76,7 @@ export class ExternalMeasureEditorComponent extends BaseMeasureEditorComponent i
             this.metricForm?.valueChanges.subscribe(() => {
                 setTimeout(() => {
                     this.checkModelChanged();
-                })
+                });
             });
 
             this.cdRef.detectChanges();

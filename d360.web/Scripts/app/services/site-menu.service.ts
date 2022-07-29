@@ -181,7 +181,7 @@ export class SiteMenuService extends BaseObservableService {
             body: {
                 permission
             }
-        }
+        };
 
         return this.http.delete('navigation/permissions/remove', options)
             .pipe(

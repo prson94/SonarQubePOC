@@ -132,7 +132,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.companySettings.ShowHomeBoardTile = this.getBooleanSetting(CompanySettingEnum.ShowHomeBoardTile);
         this.companySettings.ShowHomePageTitle = this.getBooleanSetting(CompanySettingEnum.ShowHomePageTitle);
         this.companySettings.SiteNav.forEach(s => {
-            s.IsCustom = (s.Name.indexOf('#') != 0)
+            s.IsCustom = (s.Name.indexOf('#') != 0);
         });
         this.companySettings.WorkflowCatchAllGroup = this.getNumberSetting(CompanySettingEnum.WorkflowCatchAllGroup);
         this.companySettings.WorkflowDigestEmailDays = this.getNumberSetting(CompanySettingEnum.WorkflowDigestEmailDays);
@@ -142,7 +142,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         this.settingsService.getGroups()
             .subscribe(x => {
                 this.groups = x.map(x => {
-                    return { label: x.label, value: +x.value }
+                    return { label: x.label, value: +x.value };
                 });
                 this.groups.unshift({ label: $localize`[Administrators]`, value: 0 });
                 this.isLoading = false;

@@ -60,7 +60,7 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
                         this.isRelationsExist = true;
                         this.UseAsTransformation = this.initialValue;
                         this.UseAsTransformationChange.emit(this.UseAsTransformation);
-                    })
+                    });
                 }
             });
         }

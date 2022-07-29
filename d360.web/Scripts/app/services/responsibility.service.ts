@@ -67,7 +67,7 @@ export class ResponsibilityService extends BaseObservableService implements IRes
     }
 
     putResponsibility(responsibility: ResponsibilityItem): Observable<JsonResult> {
-        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         return this.http.put('form/responsibility', JSON.stringify(responsibility), { headers })
             .pipe(
                 map(response => <JsonResult>response),

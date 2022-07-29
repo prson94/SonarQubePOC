@@ -128,7 +128,7 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
             this.metricForm?.valueChanges.subscribe(() => {
                 setTimeout(() => {
                     this.checkModelChanged();
-                })
+                });
             });
 
             this.cdRef.detectChanges();

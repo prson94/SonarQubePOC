@@ -266,7 +266,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                                     this.form.controls[this.field.FieldName].setValue(this.field.Value);
                                 }
                             }
-                        )
+                        );
                     } else {
                         this.field.Value = null;
                         this.field.Items = [];
@@ -385,7 +385,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
-                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
+                this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value);
             }
 
             if (this.field.FieldType == 'Lookup' && this.field.Value == null) {
@@ -503,7 +503,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 return true;
             }
 
-            return this.form.controls[this.field.FieldName + '_Url'].valid
+            return this.form.controls[this.field.FieldName + '_Url'].valid;
         }
 
         const numInputs = document.querySelectorAll('input[type=number]');
@@ -811,11 +811,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         let ix = this.excludedRelationitems[field.FieldName].findIndex(r => r.Value == i.Value);
                         if (ix > -1) {
                             let item = this.excludedRelationitems[field.FieldName].slice()[ix];
-                            this.excludedRelationitems[field.FieldName].splice(ix, 1)
+                            this.excludedRelationitems[field.FieldName].splice(ix, 1);
                             this.field.Items.push(item);
                         }
                     }
-                })
+                });
             }
             this.ref.markForCheck();
         }

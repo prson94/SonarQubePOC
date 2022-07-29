@@ -153,7 +153,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                                             this.cdRef.markForCheck();
                                         }
                                     }
-                                })
+                                });
                             });
                         }
                     }
@@ -182,7 +182,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreTypes = x.map(x => <any>ScoreType[x.scoreType]);
                 this.allocationData = x;
                 if (x.length > 0) {
-                    let selectedScoreTypeIndex = this.scoreTypes.findIndex(a => { return a == this.selectedScoreType });
+                    let selectedScoreTypeIndex = this.scoreTypes.findIndex(a => { return a == this.selectedScoreType; });
                     if (selectedScoreTypeIndex > -1) {
                         this.scoreType = <any>ScoreType[this.scoreTypes[selectedScoreTypeIndex]];
                     }
@@ -334,7 +334,7 @@ export class AssetScoreComponent extends BaseComponent implements OnChanges, Aft
                 this.scoreDate += 'T00:00:00.000Z';
             }
 
-            let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType });
+            let selectedAllocation = this.allocationData.find(o => { return <any>ScoreType[o.scoreType] == this.selectedScoreType; });
             this.allocationUid = selectedAllocation.uid;
 
             this.scoreService.getScoreHistoryByAllocationAndAssetAndEffectiveDate(this.allocationUid, this.uid, this.scoreDate)

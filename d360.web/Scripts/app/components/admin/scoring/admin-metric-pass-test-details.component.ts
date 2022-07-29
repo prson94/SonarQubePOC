@@ -108,7 +108,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 											if (f.Values && f.Values.length > 0) {
 												if (o.Type == 'Lookup') {
 													f.Values.forEach(fv => {
-														const theseFilterOptions = o.Values.filter(ov => { return ov.Value == fv });
+														const theseFilterOptions = o.Values.filter(ov => { return ov.Value == fv; });
 														if (theseFilterOptions.length > 0) {
 															theseFilterOptions.forEach(tfo => {
 																filterModel.value += (filterModel.value == '' ? '' : ', ') + tfo.Text;
@@ -172,7 +172,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
 						break;
 					case 'Owner':
-						let responsibilitytype = this.screenReferences.responsibilities.find(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase() });
+						let responsibilitytype = this.screenReferences.responsibilities.find(x => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase(); });
 						let operatorString = $localize`is assigned`;
 						if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
 							operatorString = $localize`is not assigned`;

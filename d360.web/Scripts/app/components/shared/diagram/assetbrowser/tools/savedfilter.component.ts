@@ -33,9 +33,9 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
     saveTitle = $localize`Save`;
 
     menuitems = [
-        { title: $localize`Add`, callback: (event) => { this.add() } },
-        { title: this.saveTitle, disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.update() } },
-        { title: this.removeTitle, disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.showRemove() } }
+        { title: $localize`Add`, callback: (event) => { this.add(); } },
+        { title: this.saveTitle, disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.update(); } },
+        { title: this.removeTitle, disabled: !this.hasSelectedUserFilter(), callback: (event) => { this.showRemove(); } }
     ];
 
     constructor(
@@ -77,13 +77,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         this.createUserFilter = new StoredAssetBrowserFilterModel();
         this.createUserFilter.assetTypes = this.options.AssetTypeOptions
             .filter((a) => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
-            .map((a) => { return { uid: a.Uid, class: a.Class } });
+            .map((a) => { return { uid: a.Uid, class: a.Class }; });
         this.createUserFilter.responsibilityTypes = this.options.ResponsibilityTypeOptions
             .filter((r) => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
-            .map((r) => { return { uid: r.Uid, type: r.Name } });
+            .map((r) => { return { uid: r.Uid, type: r.Name }; });
         this.createUserFilter.predicates = this.options.PredicateOptions
             .filter((p) => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
-            .map((p) => { return { uid: p.Uid, type: p.Name } });
+            .map((p) => { return { uid: p.Uid, type: p.Name }; });
         this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
         this.createUserFilter.numberOfHops = this.numberOfHops();
         this.createUserFilter.diagramType = this.diagramType;

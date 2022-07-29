@@ -156,7 +156,7 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                     /* ./EmailTaskRecipientList */
 
                     /* GroupList */
-                    this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+                    this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name }; });
                     if (this.step.settings.MessageToGroup != null) {
                         if (!this.groups.find((g) => g.value === this.step.settings.MessageToGroup)) {
                             this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: "<invalid group>" });

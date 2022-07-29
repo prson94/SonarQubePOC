@@ -415,7 +415,7 @@ export class SearchStateService extends BaseObservableService {
                     "data": val.value,
                     "key": val.value
                 }
-            })
+            });
         }
         return this._baseCategoryTree;
     }

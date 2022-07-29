@@ -54,7 +54,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                 if (x.data && x.data.key) {
                     this.selected.push(this.nodeArray.find(node => node.key == x.data.key));
                 }
-            })
+            });
         }
         this.cdRef.detectChanges();
     }
@@ -222,7 +222,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     public clearSearchValue() {
         if (this.searchValue) {
             this.searchValue = '';
-            this.tableEl.filterGlobal(this.searchValue, 'contains')
+            this.tableEl.filterGlobal(this.searchValue, 'contains');
         }
     }
 

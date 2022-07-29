@@ -66,7 +66,7 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                     .subscribe(res => {
                         this.workflowId = res;
                         this.load();
-                    })
+                    });
             }
             else {
                 this.load();

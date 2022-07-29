@@ -145,7 +145,7 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 
         if (isForUI)
-            return utcDate.toLocaleDateString()
+            return utcDate.toLocaleDateString();
 
         return `${utcDate.getMonth() + 1}/${utcDate.getDate()}/${utcDate.getFullYear()} ${utcDate.toTimeString().split(' ')[0]}`;
     }

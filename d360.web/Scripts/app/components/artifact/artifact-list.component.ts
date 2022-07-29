@@ -146,7 +146,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
             this.headerBreadcrumbService
                 .getAreaName('ArtifactType', this.artifactTypeHierarchy[0].ID)
                 .subscribe(result => {
-                    this.currentAreaName = result
+                    this.currentAreaName = result;
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
                     this.artifactTypeHierarchy.forEach(x => {
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(

@@ -525,7 +525,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
         if (this.objectType == "ExportTemplate" && field.Name == "Asset Type") {
             var item = field.Items.filter(x => {
-                return x.Value == field.Value
+                return x.Value == field.Value;
             })[0];
             if (item && item.Text.startsWith("Rule")) {
                 this.fields.find((x) => x.FieldName == "IncludeParent").FieldType = "no-display";

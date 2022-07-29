@@ -59,7 +59,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                 this.refListDDL.push({ value: '', label: $localize`Select Reference List...` });
                 res.forEach(x => {
                     this.refListDDL.push({ value: x.uid, label: x.Name });
-                })
+                });
 
                 this.cdRef.detectChanges();
 

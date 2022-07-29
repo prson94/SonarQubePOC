@@ -129,7 +129,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                             uid: x.ResponsibilityTypeUID
                         })),
                         events: {
-                            click: function (e) { this.onPieClick(e) }.bind(this)
+                            click: function (e) { this.onPieClick(e); }.bind(this)
                         }
                     }]
                 };

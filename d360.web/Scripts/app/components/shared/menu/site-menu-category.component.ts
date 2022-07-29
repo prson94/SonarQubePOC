@@ -64,7 +64,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
 
         const submenu = this.item.nativeElement.children[0].nextElementSibling as HTMLDivElement;
         if (!submenu) {
-            return
+            return;
         }
 
         this.menu.isActiveItem = true;

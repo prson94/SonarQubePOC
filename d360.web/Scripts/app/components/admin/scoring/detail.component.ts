@@ -109,7 +109,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                             let html: string = p.Path;
                             p.Segments.forEach(s => {
                                 // Keep track of Uids we already replaced the paths for, so we do not mess up the resulting HTML.
-                                if (processedUids.findIndex(x => { return x == s.AssetTypeUid }) == -1) {
+                                if (processedUids.findIndex(x => { return x == s.AssetTypeUid; }) == -1) {
                                     let segmentPath = s.Path.split('->').join(' > ');
                                     html = html.replace(new RegExp(s.Name, 'g'), `<b title="${segmentPath}">${s.Name}</b>`,);
                                     processedUids.push(s.AssetTypeUid);
@@ -225,7 +225,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     this.headerBreadcrumbService.showBreadcrumb(crumb);
 
                     if (res && res.length > 0) {
-                        const items = res.filter(x => { return x.uid == this.allocation.uid });
+                        const items = res.filter(x => { return x.uid == this.allocation.uid; });
 
                         if (items.length > 0) {
                             this.allocation = items[0];
@@ -309,7 +309,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
         if (!val)
             return;
         if (val == 1)
-            return '100%'
+            return '100%';
         let s = val + '0000';
         s = s.replace('0.', '');
         if (s.length > 6)
@@ -331,7 +331,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 this.showConditions = false;
 
             if (this.hasPassTest(this.selectedMetric) && !this.selectedMetric.IsGroup)
-                this.showPassTest = true
+                this.showPassTest = true;
             else
                 this.showPassTest = false;
         }

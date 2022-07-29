@@ -16,7 +16,7 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
-import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
+import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module';
 import { ApiKeyUsersGuard } from '../../guards/api-key-users.gurard';
 
 import { ResourceComponent } from './resource.component';

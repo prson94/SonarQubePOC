@@ -152,7 +152,7 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
                     let itemBreadcrumb = new Breadcrumb(
                         this.label.Value,
                         `${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${this.label.uid}`
-                    )
+                    );
 
                     this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
                     this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
@@ -268,12 +268,12 @@ export class ConnectorLabelItemComponent extends BaseComponent implements OnInit
             }, err => this.showMessageForResult(this.messagesService, err));
     }
     private exportUsage() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`)
+        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Where Used report for Connector Label "${this.label.Value}"`);
     }
     openConnectorLabelPageByUID(uid: string) {
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_CONNECTORLABEL_ROOT}/${uid}`]);
     }
     private export() {
-        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters)
+        this.connectorLabelService.exportLabelUsage(this.label.uid, $localize`Connector Labels`, this.sort, this.filters);
     }
 }

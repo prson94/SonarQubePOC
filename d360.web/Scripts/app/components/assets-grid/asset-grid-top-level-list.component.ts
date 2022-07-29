@@ -140,6 +140,6 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
                 } else {
                     this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
                 }
-            })
+            });
     }
 }

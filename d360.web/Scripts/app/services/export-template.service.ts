@@ -21,7 +21,7 @@ export class ExportTemplateService extends BaseObservableService {
 
     public getExportTemplates(): Observable<ExportTemplate[]> {
         return this.http.get('/api/v2/exporttemplates/').pipe(
-            map(item => { return <ExportTemplate[]>item }),
+            map(item => { return <ExportTemplate[]>item; }),
             catchError(err => this.handleError(err)));
     }
 
@@ -33,20 +33,20 @@ export class ExportTemplateService extends BaseObservableService {
 
     public getExportTemplateByTemplateUid(templateUid: string): Observable<ExportTemplate> {
         return this.http.get(`/api/v2/exporttemplates/${templateUid}/details`).pipe(
-            map(item => { return <ExportTemplate>item }),
+            map(item => { return <ExportTemplate>item; }),
             catchError(err => this.handleError(err)));
     }
 
     public getExportTemplateId(templateUid: string): Observable<any> {
         return this.http.get(`/api/v2/exporttemplates/${templateUid}/id`).pipe(
-            map(item => { return item }),
+            map(item => { return item; }),
             catchError(err => this.handleError(err)));
     }
 
     public deleteExportTemplates(templateUID: String): Observable<any> {
         return this.http.delete(`/api/v2/exporttemplates/${templateUID}`)
             .pipe(map((res: any) => {
-                this.messages.showInfoMessage($localize`Success`, $localize`Template Deleted Successfully`)
+                this.messages.showInfoMessage($localize`Success`, $localize`Template Deleted Successfully`);
             }),
                 catchError(err => this.handleError(err)));
     }
@@ -78,14 +78,14 @@ export class ExportTemplateService extends BaseObservableService {
 
     public getExportTemplateStyles(templateId: number): Observable<ExportTemplateStyle[]> {
         return this.http.get(`/api/v2/exporttemplates/Styles/${templateId}`).pipe(
-            map(item => { return <ExportTemplateStyle[]>item }),
+            map(item => { return <ExportTemplateStyle[]>item; }),
             catchError(err => this.handleError(err)));
     }
 
     public saveExportTemplateStyle(templateStyle: ExportTemplateStyle): Observable<ExportTemplateStyle> {
         if (templateStyle.ID > 0) {
             return this.http.put(`/api/v2/exporttemplates/Style/${templateStyle.ID}`, templateStyle).pipe(
-                map(item => { return <ExportTemplateStyle>item }),
+                map(item => { return <ExportTemplateStyle>item; }),
                 catchError(err => this.handleError(err)));
         }
 

@@ -123,7 +123,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
                             name: item.assetTypePath,
                             label: '<span>' + this.getClassFriendlyName(item.assetTypeClass) + '</span> <span class="fa fa-angle-right separator"></span> <span> ' + item.assetTypePath + '</span>'
                         });
-                    })
+                    });
 
                     if (this.selection.uid) {
                         this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' > ' + this.selection.assetTypePath });
@@ -242,7 +242,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
 
             this.selection.lowerThreshold = +el.value;
             this.updateRanges();
-        }, 500)
+        }, 500);
 
     }
     private thresholdCheckUpper: any;

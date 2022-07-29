@@ -90,9 +90,9 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
     public setFavoriteRemovalAction(payload: { favoriteId: number, removeOn: boolean }) {
         this.mutate(state => {
             if (payload.removeOn) {
-                state.removeFavoriteIds.add(payload.favoriteId)
+                state.removeFavoriteIds.add(payload.favoriteId);
             } else {
-                state.removeFavoriteIds.delete(payload.favoriteId)
+                state.removeFavoriteIds.delete(payload.favoriteId);
             }
         });
     }
@@ -107,7 +107,7 @@ export class FavoritesManagementService extends BaseStore<FavoritesManagementSta
         this.mutate(state => {
             state.homepageAndFavorites = payload.homefav;
             state.removeFavoriteIds = new Set();
-        })
+        });
     }
 
     public setSearchTextAction({ searchText }: { searchText: string }) {
@@ -169,4 +169,4 @@ const initialState: FavoritesManagementState = {
     removeFavoriteIds: new Set(),
     loadingCounter: 0,
     searchText: '',
-}
+};

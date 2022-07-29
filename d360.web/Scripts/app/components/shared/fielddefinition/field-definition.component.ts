@@ -154,7 +154,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     currentFieldType(item: FieldTypeAPIModelField): string {
-        return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
+        return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null; })[0];
     }
 
     CheckObjectType() {
@@ -260,7 +260,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 if (items.length == 1) {
                     let index = this.fieldDisplayModel.indexOf(items[0]);
                     if (index > 0 && index < this.fieldDisplayModel.length)
-                        [this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]]
+                        [this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]];
                 }
             }
         );

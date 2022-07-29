@@ -168,7 +168,7 @@ export class LoadForm implements OnInit, OnChanges {
                             this.isSaving = false;
                             this.onComplete.emit(null);
                         }
-                    )
+                    );
                 }
                 );
         }

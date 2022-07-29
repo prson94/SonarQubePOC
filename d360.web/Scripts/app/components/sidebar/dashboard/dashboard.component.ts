@@ -85,7 +85,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		this.headerBreadcrumbService.clearBreadcrumbs();
 
 		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then(res => {
-			this.folderTitle = res
+			this.folderTitle = res;
 			let areaBreadcrumb = new Breadcrumb(
 				this.folderTitle ? this.folderTitle : 'Dashboards',
 				'/dashboard',

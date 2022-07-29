@@ -143,7 +143,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             }
         }
         catch {
-            console.log("Datadog Real user monitoring cannot be initialized!")
+            console.log("Datadog Real user monitoring cannot be initialized!");
         }
     }
 

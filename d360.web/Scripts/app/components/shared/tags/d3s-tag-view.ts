@@ -118,7 +118,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 
             if (typeof this.data == 'string') {
                 this.data.split('|').forEach(t => {
-                    this.tags = this.tags.concat([{ Value: t, uid: null }])
+                    this.tags = this.tags.concat([{ Value: t, uid: null }]);
                 });
             } else if (typeof this.data == 'object') {
                 if (Array.isArray(this.data) && this.data.every(item => typeof item === "string")) {
@@ -245,13 +245,13 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 let tag = new TagApiModel();
                 tag.AssetUID = uid;
                 tag.TagName = event.Value;
-                tags = tags.concat([tag])
-            })
+                tags = tags.concat([tag]);
+            });
         } else {
             let tag = new TagApiModel();
             tag.AssetUID = this.assetUID;
             tag.TagName = event.Value;
-            tags = tags.concat([tag])
+            tags = tags.concat([tag]);
         }
         this.tags.forEach(x => {
             if (x.Value == event.Value) {
@@ -280,7 +280,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
         }
         if (!this.existingTag) {
             this.tagNameBeingAdded = tags[0].TagName;
-            this.inputValue = ""
+            this.inputValue = "";
             this.searchResults = [];
             this.tagService.doesTagExist(event)
                 .subscribe((result) => {
@@ -293,7 +293,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 event.uid = result[0].Uid;
-                                this.tags = this.tags.concat([event])
+                                this.tags = this.tags.concat([event]);
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 event.UseCount = 0;
                                 this.searchResults = [];
@@ -428,7 +428,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
                 })();
                 this.tags.forEach(tag => {
                     if (this.assetUIDList) {
-                        this.assetUIDList.forEach((uid) => { this.checkIfTagOwner(tagElements, tag, uid) });
+                        this.assetUIDList.forEach((uid) => { this.checkIfTagOwner(tagElements, tag, uid); });
                     } else {
                         this.checkIfTagOwner(tagElements, tag, this.assetUID);
                     }
@@ -614,7 +614,7 @@ export class TagView extends BaseComponent implements OnInit, OnDestroy {
 				}
 			}
 
-            parent.classList.remove('no-text-overflow')
+            parent.classList.remove('no-text-overflow');
             this.container.nativeElement.style.width = ofWidth + 'px';
 
             var items = Array.prototype.slice.call(this.container.nativeElement.querySelectorAll('.tag-item-wrapper'), 0);

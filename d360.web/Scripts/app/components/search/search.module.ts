@@ -8,10 +8,10 @@ import { RouterModule } from '@angular/router';
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 
-import { HomeSearchComponent} from './home-search.component'
+import { HomeSearchComponent} from './home-search.component';
 import { HeroSearchInputComponent } from './hero-search-input';
-import { SearchResultItemComponent } from './search-result-item.component'
-import { SearchComponent } from './search.component'
+import { SearchResultItemComponent } from './search-result-item.component';
+import { SearchComponent } from './search.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
 import { SimpleBadgeModule } from '../shared/small-widgets/simple-badge/simple-badge.module';
 import { ScoreBadgeModule } from '../shared/small-widgets/score-badge/score-badge.module';

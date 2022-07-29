@@ -51,7 +51,7 @@ export class AssetDeleteEditorComponent extends BaseComponent {
                     this.isFormLoading = false;
                     this.changeDetectorRef.markForCheck();
                 }
-            )
+            );
     }
 
     private getDisplayValue(): string {

@@ -63,7 +63,7 @@ export class BaseObservableService {
                     }
                 }
             })
-        )
+        );
     }
 
     protected downloadFile(data: Blob, name: string) {

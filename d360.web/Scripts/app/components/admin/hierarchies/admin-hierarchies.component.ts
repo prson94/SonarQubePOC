@@ -102,7 +102,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
             this.getAssetTypes();
             this.selectedItemChange();
-        })
+        });
     }
 
     ngOnDestroy() {

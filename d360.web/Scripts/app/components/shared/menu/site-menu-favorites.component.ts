@@ -82,7 +82,7 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
             }
 
             this.ref.markForCheck();
-        }))
+        }));
 
         this.subs.push(this.siteMenu.activeMenu$.subscribe((activeMenu: SiteMenu | undefined) => {
             if (this.menu == null) {

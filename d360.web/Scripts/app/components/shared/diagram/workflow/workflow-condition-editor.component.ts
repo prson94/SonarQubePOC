@@ -261,7 +261,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             this.condition['@VersionStepID'] = input['@stepId'];
             this.condition['@FormInputID'] = input['@id'];
             this.condition['@ValueType'] = this.getValueType(this.selectedType);
-            this.condition['@FieldName'] = 'Form :: ' + input['@label']
+            this.condition['@FieldName'] = 'Form :: ' + input['@label'];
 
         } else if (this.selectedField.split('|')[0] == 'Contextual') {
             let fieldId = this.selectedField.split('|')[1];
@@ -422,7 +422,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             if (ix > -1) {
                 this.operators.push(this.allowedOperators[ix]);
             }
-        })
+        });
     }
 
     getValueType(type: string): string {

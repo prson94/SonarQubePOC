@@ -117,7 +117,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
     }
 
     setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled
+        this.disabled = isDisabled;
     }
 
     removeItem(tag: SelectItem) {
@@ -163,7 +163,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     this.messagesService.showError('Error', 'Tag already assigned');
                     isAssigned = true;
                 }
-            })
+            });
         }
         if (isAssigned)
             return false;
@@ -194,7 +194,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                         var sorted = res.sort((a, b) => a.name.localeCompare(b.name));
                         this.searchResults = [];
                         sorted.forEach(tag => {
-                            this.searchResults.push({ value: tag.code, title: tag.name })
+                            this.searchResults.push({ value: tag.code, title: tag.name });
                         });
                     }
                     else if (res && res.length == 0) {
@@ -203,7 +203,7 @@ export class TagPicker extends BaseComponent implements ControlValueAccessor, On
                     this.changeDetectorRef.markForCheck();
 
 
-                }, err => { console.log(err) });
+                }, err => { console.log(err); });
 
     }
 

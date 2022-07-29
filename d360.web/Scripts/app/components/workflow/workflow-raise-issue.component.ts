@@ -165,7 +165,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                         }
 
                         this.isLoading = false;
-                        this.loadIssueTypes()
+                        this.loadIssueTypes();
                     }
                 );
             });

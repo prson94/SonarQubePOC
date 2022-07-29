@@ -123,7 +123,7 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     consolidateClick() {
         if (!this.consolidateValue || this.consolidateValue.trim() == "") {
-            console.error("Cannot consolidate connectors without selecting a connector to keep.")
+            console.error("Cannot consolidate connectors without selecting a connector to keep.");
             return;
         }
         this.isSaving = true;
@@ -253,8 +253,8 @@ export class ConnectorLabelsComponent extends AdminBaseComponent {
 
     exportUsage() {
         this.selected.forEach(item => {
-            this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label "${item.Value}"`)
-        })
+            this.connectorLabelService.exportLabelUsage(item.uid, $localize`Where Used report for Connector Label "${item.Value}"`);
+        });
     }
 
 

@@ -151,7 +151,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             });
 
         this.groupService.getGroups().subscribe(GroupList => {
-            this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+            this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name }; });
             if (this.step.settings.MessageToGroup != undefined) {
                 if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
                     this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
@@ -233,10 +233,10 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
             }
 
             if (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] != null) {
-                this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'].toString().toLowerCase() == 'true')
+                this.step.settings.RelationshipUpdate.Relationship['@AppendValue'] = (this.step.settings.RelationshipUpdate.Relationship['@AppendValue'].toString().toLowerCase() == 'true');
             }
             if (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] != null) {
-                this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == 'true')
+                this.step.settings.RelationshipUpdate.Relationship['@ClearValue'] = (this.step.settings.RelationshipUpdate.Relationship['@ClearValue'].toString().toLowerCase() == 'true');
             }
 
         }

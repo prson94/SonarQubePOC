@@ -367,7 +367,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                     this.setCommonSecondaryNavTabs({ hasAudit: true, hasOwnership: false, hasDashboard: this.assetType.HasDashboards });
 
                     if (this.showDiagram) {
-                        this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
+                        this.secondaryNavService.showItem(new SecondaryNavItem($localize`Diagram`, 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7));
                     }
 
                     if (this.auditSidebar) {
@@ -387,7 +387,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.scoreAllocations = result.ScoreAllocations;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-                var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field") });
+                var filterfields = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field"); });
                 this.filterColumns = this.filterColumns.concat(filterfields.map(({ name }) => name));
 
                 for (let i = 0; i < this.columns.length; i++) {

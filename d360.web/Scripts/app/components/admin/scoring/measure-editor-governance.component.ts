@@ -182,10 +182,10 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     let assetLabel = "";
                     if (isSubject) {
                         label = x.Predicate.Name;
-                        assetLabel = x.Object.Name
+                        assetLabel = x.Object.Name;
                     } else if (isObject) {
                         label = x.Predicate.Inverse;
-                        assetLabel = x.Subject.Name
+                        assetLabel = x.Subject.Name;
                     }
                     label = label + " " + assetLabel;
                     return { label: label, value: x.Uid };
@@ -241,7 +241,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0]
+                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0];
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
                     let date = new Date(condition.value);
@@ -371,7 +371,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     this.model.Definition.Governance.Field.FieldTypeName = condition.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     this.model.Definition.Governance.Field.Operator = condition.operator;
 
-                    let val2 = null
+                    let val2 = null;
                     if (condition.operator == Operator.Between || <any>condition.operator == "Between")
                         val2 = condition.value2
 
@@ -380,7 +380,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                         val2 = null;
                     }
 
-                    this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });
+                    this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null; });
                 }
                 break;
             default:

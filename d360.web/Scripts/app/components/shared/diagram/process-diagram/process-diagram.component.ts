@@ -282,7 +282,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         setTimeout(() => {
             this.onResize(null);
-        }, 200)
+        }, 200);
     }
 
     private applyEditMode(state: boolean) {
@@ -397,7 +397,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.myDiagram.selection;
             this.myDiagram.selection.each(x => {
                 this.myDiagram.remove(x);
-            })
+            });
         }
     }
 
@@ -473,9 +473,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
         var gatewayNodeTemplate = ProcessDiagramTemplates.gatewayTemplate(this);
 
-        activityNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
-        eventNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
-        gatewayNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
+        activityNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); };
+        eventNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); };
+        gatewayNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); };
 
         var templmap = new go.Map<string, go.Node>();
         templmap.add("activity", activityNodeTemplate);
@@ -537,7 +537,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private returnUniqueName(name: string, iteration: number) {
         var tempName = name;
         if (iteration != 1) {
-            tempName = name + ` (${iteration})`
+            tempName = name + ` (${iteration})`;
         }
         if (this.isUnique(tempName)) {
             return tempName;
@@ -700,7 +700,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             this.actionAfterSaved = null;
                             this.isSavingChangesModalOpened = false;
                             this.cdRef.detectChanges();
-                        }, 10)
+                        }, 10);
                     }
                 }
 
@@ -1049,7 +1049,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.actionAfterSaved = () => {
                         this.switchModes();
                         this.actionAfterSaved = null;
-                    }
+                    };
                     this.showDiscardChanges = true;
                     break;
                 case 'open-related-assets':

@@ -340,7 +340,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             if (this.useModelBinding) {
                 this.form.valueChanges.subscribe(x => {
                     this.onSubmit();
-                })
+                });
             }
         }
 
@@ -693,7 +693,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         if (this.objectType == "ExportTemplate" && field.Name == "Asset Type") {
             var item = field.Items.filter(x => {
-                return x.Value == field.Value
+                return x.Value == field.Value;
             })[0];
             if (item && item.Text.startsWith("Rule")) {
                 this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "no-display";

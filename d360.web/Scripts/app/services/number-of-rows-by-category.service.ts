@@ -225,4 +225,4 @@ export const NumberOfRowsByCategoryServiceInitializer = {
   multi: true,
   useFactory: numberOfRowsByCategoryServiceInitializer,
   deps: [NumberOfRowsByCategoryService]
-}
+};

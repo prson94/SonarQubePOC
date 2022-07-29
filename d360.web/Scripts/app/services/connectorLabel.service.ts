@@ -109,8 +109,8 @@ export class ConnectorLabelService extends BaseObservableService {
         let url = `api/v2/connectorLabels/`;
         var model = [];
         labels.forEach(label => {
-            model.push({ uid: label.uid, cascade:true })
-        })
+            model.push({ uid: label.uid, cascade:true });
+        });
 
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),

@@ -9,7 +9,7 @@ export class SearchSession {
         if (sess == null) {
             sess = [];
         } else {
-            let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000)
+            let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000);
             sess = sess.filter(q => q.Term != term && new Date(q.Querytime).getTime() > limit);
         }
         sessionStorage.setItem(this.sessionKey, JSON.stringify(sess));

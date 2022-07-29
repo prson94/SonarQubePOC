@@ -240,7 +240,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         let selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
         let selectedResource = this.model == null ? "" : this.model.selectedResource;
         if (StringHelpers.isNullOrEmpty(selectedRespType)) {
-            resTypeId = 0
+            resTypeId = 0;
         }
         else {
             if (isNumber(this.model.selectedResponsibilityType))
@@ -266,7 +266,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.field.FieldName = "resources";
         this.field.MultiSelect = false;
         this.field.Value = [];
-        this.resourceGrid = true
+        this.resourceGrid = true;
     }
 
     private set fieldValue(value) {

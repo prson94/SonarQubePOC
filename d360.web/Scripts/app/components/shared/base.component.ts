@@ -161,7 +161,7 @@ export class BaseComponent {
 
         return permissionsService.getPermissionsById(assetID).toPromise().then((result) => {
             this.permissions = result;
-        })
+        });
 
     }
 
@@ -630,7 +630,7 @@ export class BaseComponent {
                     objectName,
                     parent.ID,
                     this.buildTreeNodeArrayBase(arr, parent.ParentID),
-                    this.findSelectedTreeNodeBase(parent.ID), false, false)
+                    this.findSelectedTreeNodeBase(parent.ID), false, false);
                 this.baseCrumbs.unshift(crumb);
                 this.checkParentBase(parent, arr, typeId, objectName);
             }
@@ -1262,7 +1262,7 @@ export class BaseComponent {
         if (!val)
             return;
         if (val >= 1)
-            return '100%'
+            return '100%';
 
         let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 

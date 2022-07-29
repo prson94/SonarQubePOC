@@ -375,7 +375,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     }
                     this.showMessageForApiResult(this.messagesService, result, `User(s) successfully ${event.item.ID > 0 ? 'updated' : 'added'}`);
                 }
-            )
+            );
     }
 
 

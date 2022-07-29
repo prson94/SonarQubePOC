@@ -152,7 +152,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
 
     changeIconType(e: any) {
         if (this.iconType == 'icon') {
-            this.iconType = 'image'
+            this.iconType = 'image';
             this.shortcut.Icon = null;
         } else {
             this.iconType = 'icon';

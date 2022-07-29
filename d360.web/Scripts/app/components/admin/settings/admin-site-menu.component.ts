@@ -367,7 +367,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 					this.stateService.reloadLeftNavMenu()
 				})
 		} else {
-			this.messagesService.showError($localize`Error`, $localize`Last item can not be moved down.`)
+			this.messagesService.showError($localize`Error`, $localize`Last item can not be moved down.`);
 		}
 	}
 
@@ -404,7 +404,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 						this.isLoading = false;
 						this.stateService.reloadLeftNavMenu();
 						this.onSaveComplete.emit();
-						this.siteMenuService.setSiteNavPermissions(this.selection)
+						this.siteMenuService.setSiteNavPermissions(this.selection);
 						this.loadFolderItems();
 						this.loadNavItems();
 					})
