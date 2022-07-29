@@ -249,7 +249,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">50,53</context>
+          <context context-type="linenumber">51,54</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/hierarchies/admin-level-editor.component.ts</context>
@@ -1178,11 +1178,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">74,78</context>
+          <context context-type="linenumber">49,52</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">203,205</context>
+          <context context-type="linenumber">75,79</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
+          <context context-type="linenumber">204,206</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/hierarchies/admin-hierarchies.component.ts</context>
@@ -1333,7 +1337,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">338</context>
+          <context context-type="linenumber">343</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/connector-label/connector-label-item.component.ts</context>
@@ -1475,15 +1479,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">51,55</context>
+          <context context-type="linenumber">52,56</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">75,79</context>
+          <context context-type="linenumber">76,80</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">205,208</context>
+          <context context-type="linenumber">206,209</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/scoring/measure-editor-base.component.ts</context>
@@ -2459,11 +2463,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.ts</context>
-          <context context-type="linenumber">169,170</context>
+          <context context-type="linenumber">160,161</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.ts</context>
-          <context context-type="linenumber">408,409</context>
+          <context context-type="linenumber">399,400</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-site-menu-folder-editor.component.ts</context>
@@ -3853,7 +3857,7 @@
         <source>Delete Group</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/groups/admin-groups.component.ts</context>
-          <context context-type="linenumber">48,50</context>
+          <context context-type="linenumber">48,51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="571d52053c1da32802a3d04655b19f010b253448" datatype="html">
@@ -7077,21 +7081,21 @@
         <source>[Administrators]</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.ts</context>
-          <context context-type="linenumber">156,157</context>
+          <context context-type="linenumber">147,148</context>
         </context-group>
       </trans-unit>
       <trans-unit id="518930666026135120" datatype="html">
         <source>The value entered must be a relative url (ex: /artifact/1)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.ts</context>
-          <context context-type="linenumber">427,430</context>
+          <context context-type="linenumber">418,421</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4006703959826826886" datatype="html">
         <source>Problem with Rebuild</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/settings/admin-settings.component.ts</context>
-          <context context-type="linenumber">435,436</context>
+          <context context-type="linenumber">426,427</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5e2126e692dde18e9ef1239c9076a35a2cb82dc2" datatype="html">
@@ -7905,7 +7909,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">322,323</context>
+          <context context-type="linenumber">327,328</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
@@ -7920,7 +7924,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">191,193</context>
+          <context context-type="linenumber">195,197</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
@@ -7975,14 +7979,14 @@
         <source>Add Tag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">264,266</context>
+          <context context-type="linenumber">268,270</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1479208357420665636" datatype="html">
         <source><x id="PH" equiv-text="= $localize`${"/> succesfully created</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">281</context>
+          <context context-type="linenumber">285</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
@@ -7993,7 +7997,7 @@
         <source><x id="PH" equiv-text="= $localize`${"/> succesfully updated</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">284</context>
+          <context context-type="linenumber">288</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>
@@ -8004,14 +8008,14 @@
         <source>Delete Tags</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">322,323</context>
+          <context context-type="linenumber">327,328</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4087159233711387475" datatype="html">
         <source>Tag consolidation succesfull</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/tags/admin-tags.component.ts</context>
-          <context context-type="linenumber">338,339</context>
+          <context context-type="linenumber">343,344</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/tag/tag-item.component.ts</context>

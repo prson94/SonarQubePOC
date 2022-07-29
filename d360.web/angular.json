@@ -1,89 +1,100 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "govern": {
-      "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "less"
-        }
-      },
-      "root": "",
-      "sourceRoot": "Scripts",
-      "prefix": "d3s",
-      "i18n": {
-        "sourceLocale": "en"
-      },
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:browser",
-          "options": {
-            "deployUrl": "/Scripts/dist/chunks/",
-            "outputPath": "Scripts/dist",
-            "index": "index.html",
-            "main": "Scripts/main.ts",
-            "polyfills": "Scripts/polyfills.ts",
-            "tsConfig": "Scripts/tsconfig.aot.json",
-            "localize": true,
-            "assets": [],
-            "styles": [
-              "Content/styles/angular.less"
-            ],
-            "scripts": [
-            ],
-            "vendorChunk": true,
-            "extractLicenses": false,
-            "buildOptimizer": false,
-            "sourceMap": true,
-            "optimization": false
-          },
-          "configurations": {
-            "production": {
-              "fileReplacements": [
-                {
-                  "replace": "Scripts/environments/environment.ts",
-                  "with": "Scripts/environments/environment.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all", // all will hash files
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": true,
-              "buildOptimizer": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "4mb",
-                  "maximumError": "6mb"
-                }
-              ]
-            }
-          },
-          "defaultConfiguration": ""
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "govern:build"
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "govern:build:production"
-            }
-          }
-        },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "govern:build"
-          }
-        }
-      }
-    }
-  },
-  "defaultProject": "govern"
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"newProjectRoot": "projects",
+	"projects": {
+		"govern": {
+			"projectType": "application",
+			"schematics": {
+				"@schematics/angular:component": {
+					"style": "less"
+				}
+			},
+			"root": "",
+			"sourceRoot": "Scripts",
+			"prefix": "d3s",
+			"i18n": {
+				"sourceLocale": "en",
+				"locales": {
+					"nl-NL": {
+						"translation": "locale/messages.nl-NL.xlf",
+						"baseHref": ""
+					}
+				}
+			},
+			"architect": {
+				"build": {
+					"builder": "@angular-devkit/build-angular:browser",
+					"options": {
+						"deployUrl": "/Scripts/dist/chunks/",
+						"outputPath": "Scripts/dist",
+						"index": "index.html",
+						"main": "Scripts/main.ts",
+						"polyfills": "Scripts/polyfills.ts",
+						"tsConfig": "Scripts/tsconfig.aot.json",
+						"localize": true,
+						"assets": [],
+						"styles": [
+							"Content/styles/angular.less"
+						],
+						"scripts": [
+						],
+						"vendorChunk": true,
+						"extractLicenses": false,
+						"buildOptimizer": false,
+						"sourceMap": true,
+						"optimization": false
+					},
+					"configurations": {
+						"production": {
+							"fileReplacements": [
+								{
+									"replace": "Scripts/environments/environment.ts",
+									"with": "Scripts/environments/environment.prod.ts"
+								}
+							],
+							"optimization": true,
+							"outputHashing": "all", // all will hash files
+							"sourceMap": false,
+							"namedChunks": false,
+							"extractLicenses": true,
+							"vendorChunk": true,
+							"buildOptimizer": true,
+							"budgets": [
+								{
+									"type": "initial",
+									"maximumWarning": "4mb",
+									"maximumError": "6mb"
+								}
+							]
+						},
+						"nl-NL": {
+							"localize": [
+								"nl-NL"
+							]
+						}
+					},
+					"defaultConfiguration": ""
+				},
+				"serve": {
+					"builder": "@angular-devkit/build-angular:dev-server",
+					"options": {
+						"browserTarget": "govern:build"
+					},
+					"configurations": {
+						"production": {
+							"browserTarget": "govern:build:production"
+						}
+					}
+				},
+				"extract-i18n": {
+					"builder": "@angular-devkit/build-angular:extract-i18n",
+					"options": {
+						"browserTarget": "govern:build"
+					}
+				}
+			}
+		}
+	},
+	"defaultProject": "govern"
 }

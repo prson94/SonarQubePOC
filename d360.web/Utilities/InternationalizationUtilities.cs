@@ -7,7 +7,7 @@ namespace d360.web.Utilities
     public static class InternationalizationUtilities
     {
         private const string DefaultLocale = "en";
-        private static readonly string[] AllowedUILocales = new[] { "en" };
+        private static readonly string[] AllowedUILocales = new[] { "en", "nl-NL" };
 
         /// <summary>
         /// Sets the culture and UI culture to a specific culture. Allows overriding of currency
@@ -124,6 +124,7 @@ namespace d360.web.Utilities
 
                 if (setUiCulture)
                 {
+					uiCulture = GetUserLocaleCode(uiCulture);
                     var UICulture = new CultureInfo(uiCulture);
                     Thread.CurrentThread.CurrentUICulture = UICulture;
                 }
@@ -134,20 +135,12 @@ namespace d360.web.Utilities
             }
         }
 
-        public static string GetUserLocaleCode()
+        public static string GetUserLocaleCode(string userLocale = null)
         {
-            if (AllowedUILocales.Select(x => x.ToLowerInvariant()).Contains(Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant()))
-            {
-                return Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant();
-            }
-            else if (AllowedUILocales.Select(x => x.ToLowerInvariant()).Contains(Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant()))
-            {
-                return Thread.CurrentThread.CurrentUICulture.TwoLetterISOLanguageName.ToLowerInvariant();
-            }
-            else
-            {
-                return DefaultLocale;
-            }
+			string currentLocale = userLocale ?? Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant();
+			var uiLocale = AllowedUILocales.FirstOrDefault(x=> x.ToLowerInvariant().Contains(currentLocale));
+
+			return string.IsNullOrEmpty(uiLocale) ? DefaultLocale : uiLocale;
         }
     }
 }

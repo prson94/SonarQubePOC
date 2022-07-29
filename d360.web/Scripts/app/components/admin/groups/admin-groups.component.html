@@ -150,7 +150,7 @@
                   *ngIf="showEditor"
                   [objectID]="selectedRow ? selectedRow.Uid : null"
                   [objectType]="'Group'"
-                  [title]="selectedRow ? 'Edit '+selectedRow.Name : 'Create New Group'"
+                  [title]="selectedRow ? editLabel + ' '+selectedRow.Name : createButtonLabel"
                   [selection]="selectedRow"
                   [rowID]="rowID"
                   [objectTypeUid]="'00000001-0000-0000-0000-B00000000012'"
