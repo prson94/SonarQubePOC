@@ -2019,7 +2019,7 @@ order by Sort, title";
 
 				if (adjacentShortcut == null)
 				{
-					throw new ArgumentNullException(string.Format(FormControllerApiMessage.ShortcutAlreadySorted, moveUp ? FormControllerApiMessage.TopConstant : FormControllerApiMessage.bottomConstant));
+					throw new ArgumentNullException(moveUp ? FormControllerApiMessage.ShortcutAlreadySortedTop : FormControllerApiMessage.ShortcutAlreadySortedBottom);
 				}
 
 				int newOrder = adjacentShortcut.DisplayOrder;

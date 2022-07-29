@@ -186,9 +186,6 @@
   <data name="AuthenticationFailed" xml:space="preserve">
     <value>Authentication failed</value>
   </data>
-  <data name="bottomConstant" xml:space="preserve">
-    <value>Bottom.</value>
-  </data>
   <data name="Contract" xml:space="preserve">
     <value>Contract</value>
   </data>
@@ -498,8 +495,11 @@
   <data name="ShortcutAdded" xml:space="preserve">
     <value>Shortcut added successfully</value>
   </data>
-  <data name="ShortcutAlreadySorted" xml:space="preserve">
-    <value>Shortcut is already sorted to the {0}</value>
+  <data name="ShortcutAlreadySortedBottom" xml:space="preserve">
+    <value>Shortcut is already sorted to the bottom.</value>
+  </data>
+  <data name="ShortcutAlreadySortedTop" xml:space="preserve">
+    <value>Shortcut is already sorted to the top.</value>
   </data>
   <data name="ShortcutDeleted" xml:space="preserve">
     <value>Shortcut deleted successfully.</value>
@@ -542,9 +542,6 @@
   </data>
   <data name="TaxonomyTypeLevel" xml:space="preserve">
     <value>Taxonomy type level</value>
-  </data>
-  <data name="TopConstant" xml:space="preserve">
-    <value>Top.</value>
   </data>
   <data name="TypeConstant" xml:space="preserve">
     <value>Type</value>

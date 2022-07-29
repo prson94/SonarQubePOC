@@ -1438,15 +1438,15 @@
           <context context-type="linenumber">6</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="b1b4cfda2e153371662e5dfa52f124d45d3aed19" datatype="html">
-        <source> The selected <x id="INTERPOLATION" equiv-text="{{className}} T"/> Type contains <x id="INTERPOLATION_1" equiv-text="{{count}}"/> <x id="ICU" equiv-text="{count"/> that will also be deleted. These actions cannot be undone. Please check this box if you would like to continue. </source>
+      <trans-unit id="2c9b0d986b88f1a7bbf6874699904f7ed3dcb3e0" datatype="html">
+        <source> The selected <x id="INTERPOLATION" equiv-text="{{className}} T"/> Type contains <x id="ICU" equiv-text="{count"/> that will also be deleted. These actions cannot be undone. Please check this box if you would like to continue. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-delete/asset-type-delete.component.html</context>
           <context context-type="linenumber">15</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="ab8c264b6017bc9e5ea12ae5337f543129316788" datatype="html">
-        <source>{VAR_PLURAL, plural, =0 {just now} =1 {one assets} other {<x id="INTERPOLATION"/> assets}}</source>
+      <trans-unit id="072637a96546e2019e0997bff6e7a0f4623d9970" datatype="html">
+        <source>{VAR_PLURAL, plural, =0 {0 assets} =1 {1 asset} other {<x id="INTERPOLATION"/> assets}}</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/admin/asset-type-delete/asset-type-delete.component.html</context>
           <context context-type="linenumber">16,19</context>
@@ -12986,7 +12986,7 @@ Please refine your search.</source>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">398,401</context>
+          <context context-type="linenumber">417,420</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2212866225623527100" datatype="html">
@@ -13430,54 +13430,53 @@ Please refine your search.</source>
           <context context-type="linenumber">322,324</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="2278510497381066632" datatype="html">
-        <source><x id="PH" equiv-text="count &gt; 1 ? $localize`${"/> assets</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">361</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="2344715122085986456" datatype="html">
-        <source>1 asset</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">361,362</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="2157525790100929687" datatype="html">
-        <source>same type and matching data</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">362</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5209341180067772210" datatype="html">
-        <source>same type but different data</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">362</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="5023800535212148222" datatype="html">
         <source>duplicates</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">362</context>
+          <context context-type="linenumber">361,363</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7339832482228154936" datatype="html">
-        <source><x id="PH" equiv-text="return $localize`${"/> detected which have the <x id="PH_1" equiv-text="return $localize`${assetCountStr} detected which have the ${"/>.
-Click to investigate and add tags.</source>
+      <trans-unit id="2664270841383975213" datatype="html">
+        <source>Click to investigate and add tags.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">363</context>
+          <context context-type="linenumber">363,366</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7523709879272873228" datatype="html">
+        <source><x id="PH" equiv-text="= $localize`${"/> assets detected which have the same type and matching data.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
+          <context context-type="linenumber">367</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2934063024703508585" datatype="html">
+        <source>1 asset detected which have the same type and matching data.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
+          <context context-type="linenumber">370,375</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5066686574927673235" datatype="html">
+        <source><x id="PH" equiv-text="= $localize`${"/> assets detected which have the same type but different data.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
+          <context context-type="linenumber">375</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3522990535701072269" datatype="html">
+        <source>1 asset detected which have the same type but different data.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
+          <context context-type="linenumber">378,383</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8895562348384686897" datatype="html">
         <source>Blank/Null</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/shared/dataprofile/dataprofile.component.ts</context>
-          <context context-type="linenumber">397,398</context>
+          <context context-type="linenumber">416,417</context>
         </context-group>
       </trans-unit>
       <trans-unit id="c809790eccad609689b348cb22d05c5fe6cbcea6" datatype="html">
@@ -20165,8 +20164,8 @@ Click to investigate and add tags.</source>
           <context context-type="linenumber">128,132</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7d4375d1e5560a65736c65db284d82dd85968c09" datatype="html">
-        <source>The following form is for the [<x id="START_BOLD_TEXT" ctype="x-b" equiv-text="&lt;b&gt;{{typeName}}&lt;"/><x id="INTERPOLATION" equiv-text="{{typeName}}&lt;/b"/><x id="CLOSE_BOLD_TEXT" ctype="x-b" equiv-text="&lt;/b&gt;] named &lt;/ng-"/>] named </source>
+      <trans-unit id="62167630740f767c217c8a156de99241cbb67437" datatype="html">
+        <source>The following form is for the [<x id="INTERPOLATION" equiv-text="{{typeName}}] n"/>] named </source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/components/workflow/workflow-form.component.html</context>
           <context context-type="linenumber">10</context>
