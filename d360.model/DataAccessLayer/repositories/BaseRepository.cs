@@ -671,15 +671,27 @@ namespace d360.model.DataAccessLayer.repositories
 
 						 if (!string.IsNullOrEmpty(f.DefaultValue))
 						 {
+							 string selectSource = "";
+							 if (IsCreateTempTable)
+							 {
+								 selectSource = $@"DFColor{tableAlias}.color
+									 FROM #TempLookUp{f.LookupObjectType}{f.LookupObjectID} DFColor{tableAlias}
+									 WHERE DFColor{tableAlias}.Object = '{f.LookupObjectType}' and DFColor{tableAlias}.ObjectID = {f.DefaultValue}";
+							 } else
+							 {
+								selectSource = $@"COALESCE(JSON_VALUE(DFColor{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
+									FROM AssetType AT
+									INNER JOIN Asset A ON A.AssetTypeID = AT.ID
+									cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
+									WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} and A.ObjectID = {f.DefaultValue}";
+							 }
 
-							 string defaultSql = $@"
+
+								string defaultSql = $@"
 							outer apply(
 							select FormattedValue = 
-							(SELECT COALESCE(JSON_VALUE(DFColor{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color, 
-							 @defaultValue{tableAlias} as name FROM AssetType AT 
-												INNER JOIN Asset A ON A.AssetTypeID = AT.ID
-												cross apply dbo.GetAssetColorJsonByColor(A.Color) DFColor{tableAlias}
-												WHERE AT.Object = '{type}' and AT.ObjectID = {f.LookupObjectID} and A.ObjectID = {f.DefaultValue} FOR JSON PATH)
+							(SELECT @defaultValue{tableAlias} as name,
+								{selectSource} FOR JSON PATH)
 							) defaultColorValue{tableAlias}(color)";
 							 fieldJoins.Add(defaultSql);
 						 }
@@ -837,7 +849,14 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else
 										{
-											orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
+											if(!string.IsNullOrEmpty(field.DefaultValue))
+											{
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE(F{field.ID}.{valueColumn}, @defaultValueF{field.ID}) {orderDirection}";
+											}
+											else
+											{
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
+											}
 										}
 									}
 								}
@@ -984,15 +1003,15 @@ namespace d360.model.DataAccessLayer.repositories
 			{
 				var fieldType = getFieldDataType(ft);
 
+				string val = $"F{ft.ID}.FormattedValue";
+
+				if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
+				{
+					val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
+				}
+
 				if (!string.IsNullOrEmpty(fieldType))
 				{
-					string val = $"F{ft.ID}.FormattedValue";
-
-					if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
-					{
-						val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
-					}
-
 					if (fieldType == "bit")
 					{
 						return $"try_cast(case when {val} = 'true' then 1 else 0 end as {fieldType})";
@@ -1003,7 +1022,7 @@ namespace d360.model.DataAccessLayer.repositories
 					}
 				}
 
-				return $"F{ft.ID}.FormattedValue";
+				return val;
 			}
 		}
 
