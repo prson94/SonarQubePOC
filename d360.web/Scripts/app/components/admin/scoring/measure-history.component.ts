@@ -52,7 +52,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
                                 data: g,
                                 children: [],
                                 expanded: true
-                            }
+                            };
 
                             this.metricTree.push(n);
 
@@ -90,7 +90,7 @@ export class AdminMeasureHistoryComponent extends BaseComponent implements OnIni
         if (!val)
             return;
         if (val == 1)
-            return '100%'
+            return '100%';
         let s = val + '0000';
         s = s.replace('0.', '');
         if (s.length > 6)

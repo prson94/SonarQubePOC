@@ -183,7 +183,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                                 data: g,
                                 children: [],
                                 expanded: true
-                            }
+                            };
                             if (this.metricTree.findIndex(o => o.data.Uid === g.Uid) == -1) {
                                 this.metricTree.push(n);
                                 this.addChildren(n);
@@ -202,7 +202,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                                     if (n.data.Name.toLowerCase() === initiallySelected.toLowerCase())
                                         found = n;
                                     else if (n.children && n.children.length > 0) {
-                                        found = n.children.find(c => c.data.Name.toLowerCase() === initiallySelected.toLowerCase())
+                                        found = n.children.find(c => c.data.Name.toLowerCase() === initiallySelected.toLowerCase());
                                     }
 
 
@@ -217,7 +217,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                         } else {
                             this.selectionChange.emit(null);
                         }
-                    })
+                    });
                     this.isLoading = false;
                 });
         }
@@ -237,7 +237,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                         data: c,
                         children: [],
                         expanded: true
-                    }
+                    };
                     node.children.push(n);
                     this.addChildren(n);
                 });
@@ -337,7 +337,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         if (!val)
             return;
         if (val == 1)
-            return '100%'
+            return '100%';
         let s = val + '0000';
         s = s.replace('0.', '');
         if (s.length > 6)
@@ -364,7 +364,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
     }
 
     getSelectedRuleResultPath() {
-        let html = ';'
+        let html = ';';
         const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
         if (ruleResultPathUid && this.screenReferences && this.screenReferences.paths) {
             const matches = this.screenReferences.paths.filter(p => { return p.value == ruleResultPathUid; });

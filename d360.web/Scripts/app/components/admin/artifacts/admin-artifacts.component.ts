@@ -6,7 +6,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
 import { StateService } from '../../../services/state.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
-import { AdminBaseComponent } from '../admin-base.component'
+import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
@@ -104,7 +104,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 let temp: TreeNode[] = [];
                 data.forEach(n => {
                     temp.push(AssetCount.ConvertToTreeNode(n));
-                })
+                });
 
                 this.artifactTypes = AssetCount.ListToTree(temp);
                 if (!uid) {
@@ -126,7 +126,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
             node.expanded = true;
         }
         if (node.data.parentUid) {
-            this.expandParent(node.data.parentUid)
+            this.expandParent(node.data.parentUid);
         }
     }
 
@@ -211,7 +211,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.selectedRow = { data: { ID: 0 } };
                 this.load();
                 this.stateService.reloadLeftNavMenu();
-            })
+            });
         }
     }
 
@@ -240,7 +240,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
         var match = false;
         nodes.forEach((node) => {
-            fields.forEach(field => { if (node.data[field].includes(search)) { match = true } }); //check each of the global filterfields for filter value            
+            fields.forEach(field => { if (node.data[field].includes(search)) { match = true; } }); //check each of the global filterfields for filter value            
             if (node.children && node.children.length > 0) {
                 node.expanded = this.expandChildNodes(node.children, fields, search);   //expand the node if any child matches.          
                 if (node.expanded) {

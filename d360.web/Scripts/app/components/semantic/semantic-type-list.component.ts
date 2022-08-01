@@ -122,7 +122,7 @@ export class SemanticTypeListComponent extends SemanticBaseComponent implements 
             ValueLoader: this.getFilterValues.bind(this, "source"),
             RemovePopulatedOperator: true
         }
-    ]
+    ];
 
     sourceValues: string[] = ["Built-In", "User-Defined"];
     statusValues: string[] = ["Certified", "Draft", "Under Review"];

@@ -23,7 +23,7 @@ export class SelectItem {
 export module FormHelper {
 
     export function mapSelectItems(s: SelectItem[]) {
-        s.forEach(s => { s.value = s.Value; s.label = s.Text });
+        s.forEach(s => { s.value = s.Value; s.label = s.Text; });
     }
 
     export function getSelectList(items: any[], label: string = 'label', value: string = 'value'): SelectItem[] {
@@ -50,7 +50,7 @@ export module FormHelper {
 
             reader.onloadend = () => {
                 resolve(reader.result);
-            }
+            };
             reader.readAsDataURL(file);
         }).then(() => {
             return reader.result;
@@ -90,7 +90,7 @@ export module FormHelper {
                 sub.forEach(s => {
                     if (idField && parentField)
                         s[parentField] = data[i][idField];
-                    flattened.push(s)
+                    flattened.push(s);
                 });
             }
         }

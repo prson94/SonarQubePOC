@@ -30,7 +30,7 @@ export class GalleryFormFeedbackBadgesComponent {
     properties = [
         { Name: "igformGroup", Type: "FormGroup", Description: "Angular FormGroup", Default: "" },
         { Name: "inputContainer", Type: "ElementRef", Description: "<form> element", Default: "" }
-    ]
+    ];
 
     sampleUsage: string = `
 <ig-form-feedback-badges 
@@ -47,5 +47,5 @@ export class GalleryFormFeedbackBadgesComponent {
 
 // configuring form to be ready for passing into form-feedback-badges (component.ts)
 @ViewChild('form', { static: false }) formElement: ElementRef;
-`
+`;
 }

@@ -114,7 +114,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
                 && (this.styleRules == null || this.styleRules.length == 0))
                 retval = true;
         }
-        return retval
+        return retval;
     }
 
     private getRowStyles(item: ExportTemplateStyle): any {

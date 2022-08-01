@@ -32,5 +32,5 @@ export class Artifact {
     Class: AssetTypeClass;
     Breadcrumbs: BreadcrumbItem[];
     NymTypes: NymType[];
-    SynonymPermission: SynonymPermission
+    SynonymPermission: SynonymPermission;
 }

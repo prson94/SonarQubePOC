@@ -165,7 +165,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                     if (sa.Uid == asset.Uid)
                         doesTargetContains = true;
                 });
-            })
+            });
 
             if (!doesSourceContains && !doesTargetContains) {
                 this.noAssetOnDiagram = true;
@@ -253,7 +253,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
             transformationFilters.UseAsTransformation = true;
             transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
             transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
-            transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object
+            transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
             this.transformationFilters.push(transformationFilters);
         }
         else {
@@ -264,7 +264,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
                 if (asset.Predicate)
                     transformationFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
-                transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object
+                transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
                 this.transformationFilters.push(transformationFilters);
             });
         }
@@ -505,7 +505,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 target_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
             }
 
-        })
+        });
 
         //Split relationships, and save target after source, so we can properly check for circular relationships
         let sourceObs = forkJoin(source_tasks);
@@ -548,7 +548,7 @@ export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
                 }
 
             });
-        })
+        });
 
         //If error occured, delete only newly created relationships
         if (rollback) {

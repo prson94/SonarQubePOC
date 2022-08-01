@@ -71,7 +71,7 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
             .subscribe(r => {
                 this.shortcutService.getShortcuts()
                     .subscribe((r) => this.shortcuts = r);
-            })
+            });
     }
 
     moveDown(id: number) {
@@ -80,6 +80,6 @@ export class ShortcutListComponent extends BaseComponent implements OnInit {
             .subscribe(r => {
                 this.shortcutService.getShortcuts()
                     .subscribe((r) => this.shortcuts = r);
-            })
+            });
     }
 }

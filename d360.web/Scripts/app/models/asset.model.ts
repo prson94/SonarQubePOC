@@ -33,7 +33,7 @@ export class AssetDetail {
 export class AssetTypeMetricModel {
     Uid: string;
     Name: string;
-    Class: string
+    Class: string;
 }
 
 export class AssetTypeEditorModel {

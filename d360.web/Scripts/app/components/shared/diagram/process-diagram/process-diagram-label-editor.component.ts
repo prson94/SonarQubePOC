@@ -51,7 +51,7 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
                 this.labels = [];
                 res.forEach(x => {
                     this.labels.push(x.Value);
-                })
+                });
                 this.cdRef.detectChanges();
             });
 

@@ -68,7 +68,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private selectedReassignmentAsset: WorkflowReassignmentAsset;
     private canViewUsers: boolean = true;
 
-    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent
+    @ViewChild('fieldsComponent', { static: false }) fieldsComponent: WorkflowFormFieldsComponent;
 
     constructor(
         protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -182,7 +182,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
                     this.isCompleted = false;
                     this.isItemDeleted = true;
                     this.title = $localize`Cannot find the requested item.`;
-                })
+                });
 
     }
 

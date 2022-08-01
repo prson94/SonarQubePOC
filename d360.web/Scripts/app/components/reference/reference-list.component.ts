@@ -117,10 +117,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                             var referenceItemType: ReferenceItemType = new ReferenceItemType();
                             referenceItemType.ID = this.selectedReferenceListId;
                             referenceItemType.uid = this.selectedReferenceListUid;
-                            this.changeType(referenceItemType, true)
+                            this.changeType(referenceItemType, true);
                         }
                         this.replaceUrl = false;
-                    })
+                    });
                 }
                 else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
                     this.load();

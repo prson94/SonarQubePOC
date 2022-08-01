@@ -31,7 +31,7 @@ export class SiteMenuFavoriteItemComponent {
             [FavoritePageType.WorkflowPage, 'usb'],
             [FavoritePageType.CartPage, 'shopping-cart'],
             [FavoritePageType.SemanticTypePage, 'tags']
-        ])
+        ]);
 
         switch (this.favorite.PageType) {
             case FavoritePageType.Artifact: {

@@ -1,7 +1,7 @@
 ﻿import { Component, Input, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { BaseComponent } from '../../shared/base.component';
-import { DashboardModel } from '../../../models/dashboard.model'
+import { DashboardModel } from '../../../models/dashboard.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 
 @Component({

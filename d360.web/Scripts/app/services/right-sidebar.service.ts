@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
 
 import { SiteMenuService } from './site-menu.service';
-import { PlatformLocation } from '@angular/common'
+import { PlatformLocation } from '@angular/common';
 import { Router, NavigationEnd, NavigationStart, Params } from '@angular/router';
 
 

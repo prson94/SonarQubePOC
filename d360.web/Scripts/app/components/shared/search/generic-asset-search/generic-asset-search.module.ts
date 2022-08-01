@@ -17,7 +17,7 @@ import { PipesModule } from '../../../../pipes/pipes.module';
 import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { SegmentsTooltipComponent } from './segments-tooltip.component';
 
-import { DirectivesModule } from '../../directives/directives.module'
+import { DirectivesModule } from '../../directives/directives.module';
 
 @NgModule({
     imports: [

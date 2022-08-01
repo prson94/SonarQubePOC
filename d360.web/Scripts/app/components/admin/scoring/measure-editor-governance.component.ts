@@ -107,14 +107,14 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         this.metricForm.valueChanges.subscribe(() => {
             setTimeout(() => {
                 this.checkModelChanged();
-            })
+            });
         });
         this.load();
         this.loadFieldData();
     }
 
     ngAfterViewInit() {
-        this.originalConditions = _.cloneDeep(this.conditionGroups)
+        this.originalConditions = _.cloneDeep(this.conditionGroups);
         this.originalModel = _.cloneDeep(this.model);
         this.originalEffectiveDate = new Date(this.displayEffectiveDate?.toString());
         if (!this.uid) {
@@ -182,10 +182,10 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     let assetLabel = "";
                     if (isSubject) {
                         label = x.Predicate.Name;
-                        assetLabel = x.Object.Name
+                        assetLabel = x.Object.Name;
                     } else if (isObject) {
                         label = x.Predicate.Inverse;
-                        assetLabel = x.Subject.Name
+                        assetLabel = x.Subject.Name;
                     }
                     label = label + " " + assetLabel;
                     return { label: label, value: x.Uid };
@@ -241,7 +241,7 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                 condition.value = this.model.Definition.Governance.Field.Values[0];
                 condition.value2 = this.model.Definition.Governance.Field.Values.length > 1 ? this.model.Definition.Governance.Field.Values[1] : null;
 
-                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0]
+                let field = this.screenReferences.fields.filter((x) => x.ApiName === this.model.Definition.Governance.Field.FieldTypeName)[0];
 
                 if (field && (field.Type == "Date" || field.Type == "DateTime")) {
                     let date = new Date(condition.value);
@@ -371,16 +371,16 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
                     this.model.Definition.Governance.Field.FieldTypeName = condition.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     this.model.Definition.Governance.Field.Operator = condition.operator;
 
-                    let val2 = null
+                    let val2 = null;
                     if (condition.operator == Operator.Between || <any>condition.operator == "Between")
-                        val2 = condition.value2
+                        val2 = condition.value2;
 
                     if (!this.doesSelectedOperatorAllowValues(<any>condition.operator)) {
                         condition.value = null;
                         val2 = null;
                     }
 
-                    this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null });
+                    this.model.Definition.Governance.Field.Values = [condition.value, val2].filter(x => { return x !== null; });
                 }
                 break;
             default:
@@ -454,8 +454,8 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
             if (updated.Governance.Field && this.testFieldConditions[0] &&
                 ((this.testFieldConditions[0].field != original.Governance.Field.FieldTypeName)
                     || !(this.testFieldConditions[0].operator == original.Governance.Field.Operator || Operator[this.testFieldConditions[0].operator] == <any>original.Governance.Field.Operator)
-                    || original.Governance.Field.Values.length != [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined }).length
-                    || (original.Governance.Field.Values.length > 0 && ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined }).every(v => original.Governance.Field.Values.indexOf(v) > -1))
+                    || original.Governance.Field.Values.length != [this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined; }).length
+                    || (original.Governance.Field.Values.length > 0 && ![this.testFieldConditions[0].value, this.testFieldConditions[0].value2].filter(x => { return x !== null && x !== undefined; }).every(v => original.Governance.Field.Values.indexOf(v) > -1))
                 )
             ) {
                 return true;

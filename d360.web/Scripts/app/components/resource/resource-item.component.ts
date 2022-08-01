@@ -210,6 +210,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.showMessageForApiResult(this.messagesService, result, $localize`Info successfully updated.`);
                     this.pageMode = PageMode.Default;
                 }
-            )
+            );
     }
 }

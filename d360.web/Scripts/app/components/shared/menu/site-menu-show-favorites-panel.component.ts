@@ -47,7 +47,7 @@ export class SiteMenuShowFavoritesPanelComponent {
         function includes(where: string, what: string) {
             return (where ?? '').toLowerCase().includes((what ?? '').toLowerCase());
         }
-    }
+    };
 
     @Output() contentSizeChanged = new EventEmitter();
     @Output() activeItemChanged = new EventEmitter();

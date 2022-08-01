@@ -70,7 +70,7 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
                                 ['fa-address-card'],
                                 `/admin/customapi/${this.serviceId}/namespaces`
                             )
-                        )
+                        );
                     }
                 );
             });

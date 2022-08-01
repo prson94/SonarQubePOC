@@ -59,9 +59,9 @@ export class FollowerService extends BaseObservableService {
                 ));
             setTimeout(() => {
                 this._followInfoCache.delete(cacheKey);
-            }, this._cacheTime())
+            }, this._cacheTime());
         }
-        return this._followInfoCache.get(cacheKey)
+        return this._followInfoCache.get(cacheKey);
     }
 
     updateFollowStatus(

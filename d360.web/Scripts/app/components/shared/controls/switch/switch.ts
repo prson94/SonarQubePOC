@@ -58,10 +58,10 @@ export class Switch implements ControlValueAccessor, OnInit {
 
     ngOnInit(): void {
         if (!this.trueLabel || this.trueLabel.length > 5) {
-            console.error("Invalid use of switch component true label should be 5 or less characters and not null")
+            console.error("Invalid use of switch component true label should be 5 or less characters and not null");
         }
         if (!this.falseLabel || this.falseLabel.length > 5) {
-            console.error("Invalid use of switch component true label should be 5 or less characters and not null")
+            console.error("Invalid use of switch component true label should be 5 or less characters and not null");
         }
     }
 
@@ -106,7 +106,7 @@ export class Switch implements ControlValueAccessor, OnInit {
     }
 
     setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled
+        this.disabled = isDisabled;
     }
     public focus(evt) {
         if (this._el) this._el.nativeElement.focus();

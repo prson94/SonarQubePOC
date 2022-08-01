@@ -83,7 +83,7 @@ export class ObjectDetailComponent implements OnChanges {
                         }
 
 
-                        this.populateRow(r)
+                        this.populateRow(r);
                     });
 
                     let displayRows = this.rows.filter(r => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));

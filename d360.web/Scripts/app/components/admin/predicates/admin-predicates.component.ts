@@ -130,9 +130,9 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
             .subscribe(predicates => {
                 this.predicates = predicates;
                 this.selected = predicates[0];
-                this.predicates.forEach(p => p.FriendlyTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type)
+                this.predicates.forEach(p => p.FriendlyTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type);
                 this.isLoading = false;
-            })
+            });
     }
 
     ngOnDestroy() {

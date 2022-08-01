@@ -70,7 +70,7 @@ export class DataCyDirective implements AfterViewInit, OnDestroy {
         if (paginator) {
             this.setDataCyAttrToPaginatorPages(paginator);
             this.setDataCyAttrToPaginatorDropdown(paginator);
-            this.setDataCyAttrToMutatedPaginatorPages(paginator)
+            this.setDataCyAttrToMutatedPaginatorPages(paginator);
         }
     }
 

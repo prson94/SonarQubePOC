@@ -32,7 +32,7 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     @Input() objectType: string = 'ArtifactType';
     @Input() sortField: string;
     @Input() sortOrder: SortOrder;
-    @Input() filters: GridFilterExpression[]
+    @Input() filters: GridFilterExpression[];
     @Input() relationships: GridRelationshipFilterExpression[];
     @Input() simpleFilter: string;
     @Input() owner: GridOwnerFilter;

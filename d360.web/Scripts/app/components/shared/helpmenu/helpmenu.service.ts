@@ -36,7 +36,7 @@ export class HelpMenuService extends BaseObservableService {
     }
 
     public updateHelpMenuItems(updateItems: HelpMenu[]): Observable<any[]> {
-        var headers = new HttpHeaders({ 'Content-Type': 'application/json' })
+        var headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         return this.http.put('api/v2/environment/help', JSON.stringify(updateItems), { headers })
             .pipe(
                 map((response) => <any>response),

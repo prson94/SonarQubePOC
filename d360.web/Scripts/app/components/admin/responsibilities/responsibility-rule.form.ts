@@ -162,8 +162,8 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 									this.isLoading = false;
 
 								});
-                        })
-                })
+                        });
+                });
         } else {
             this.actionName = $localize`Add`;
             this.isLoading = true;
@@ -193,7 +193,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             return ({
                 ...item,
                 value: mappedValue
-            })
+            });
         });
         mapped.unshift({ label: this.chooseLabel, value: null });
         return mapped;

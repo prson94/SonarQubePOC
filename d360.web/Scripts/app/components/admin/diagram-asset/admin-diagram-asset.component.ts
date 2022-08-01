@@ -4,7 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
 import { StateService } from '../../../services/state.service';
-import { AdminBaseComponent } from '../admin-base.component'
+import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass } from '../../../models/asset.model';
@@ -165,7 +165,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
                 this.selectedRow = { data: { ID: 0 } };
                 this.load();
                 this.stateService.reloadLeftNavMenu();
-            })
+            });
         }
     }
 

@@ -116,7 +116,7 @@ export class SiteMenuMegaItemComponent extends BaseComponent {
 
         nav.forEach(menu => {
             if (menu.SiteMenuID == this.category) {
-                menu.DisplayElements.splice(menu.DisplayElements.findIndex(element => (element.ParentUrl == this.parentUrl && element.Url == this.item.Url) || (!element.ParentUrl && element.Url == this.item.Name)), 1)
+                menu.DisplayElements.splice(menu.DisplayElements.findIndex(element => (element.ParentUrl == this.parentUrl && element.Url == this.item.Url) || (!element.ParentUrl && element.Url == this.item.Name)), 1);
             }
         });
 

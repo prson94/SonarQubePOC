@@ -11,7 +11,7 @@ export class TooltipFieldValue {
 export class TooltipFieldLevelPath {
     Path: string;
     LevelName: string;
-    Url: string
+    Url: string;
     Level: string;
 }
 

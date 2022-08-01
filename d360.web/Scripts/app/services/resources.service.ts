@@ -199,7 +199,7 @@ export class ResourcesService extends BaseObservableService {
     }
 
     exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number, responsibilityTypeUid: string = null) {
-        let uri = `/resources/${resourceID}/ownership/${type}/${id}.xlsx`
+        let uri = `/resources/${resourceID}/ownership/${type}/${id}.xlsx`;
         if (responsibilityTypeUid != null && responsibilityTypeUid !== "") {
             uri += `?responsibilityTypeId=${responsibilityTypeUid}`;
         }

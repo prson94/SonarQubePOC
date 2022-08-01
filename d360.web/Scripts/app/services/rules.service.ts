@@ -53,14 +53,14 @@ export class RulesService extends BaseObservableService {
         advancedFilter: string = ""
     ): Observable<RuleResultPagedResults> {
         let sortOrderText = sortOrder == SortOrder.None ? "desc" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
-        let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`
+        let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`;
 
-        let fileName = " Rule Results"
+        let fileName = " Rule Results";
 
         if (sortField) {
-            uri += "&_order=" + sortField
+            uri += "&_order=" + sortField;
             if (sortOrder && sortOrderText != "") {
-                uri += "&_direction=" + sortOrderText
+                uri += "&_direction=" + sortOrderText;
             }
         }
         if (simpleFilter) {
@@ -89,10 +89,10 @@ export class RulesService extends BaseObservableService {
                 );
         } else {
             if (pageSize) {
-                uri += "&_pageSize=" + pageSize
+                uri += "&_pageSize=" + pageSize;
             }
             if (pageNumber) {
-                uri += "&_pageNum=" + (pageNumber + 1)
+                uri += "&_pageNum=" + (pageNumber + 1);
             }
             uri += "&_includeDuplicateFlag=True";
 

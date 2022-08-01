@@ -161,7 +161,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
 
             selectedResourceUid = this.model.resources.find(x => x.Value.split('|')[0] == selectedResourceType && x.Value.split('|')[1] == selectedResourceID).Value.split('|')[2];
             this.itemToSave.ResourceUid = selectedResourceUid;
-            this.itemToSave.Description = this.model.responsibility.Context
+            this.itemToSave.Description = this.model.responsibility.Context;
         }
         catch (exception) {
             this.message.Error($localize`An error occurred while parsing the select item values.`);
@@ -240,7 +240,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         let selectedRespType = this.model == null ? "" : this.model.selectedResponsibilityType;
         let selectedResource = this.model == null ? "" : this.model.selectedResource;
         if (StringHelpers.isNullOrEmpty(selectedRespType)) {
-            resTypeId = 0
+            resTypeId = 0;
         }
         else {
             if (isNumber(this.model.selectedResponsibilityType))
@@ -266,7 +266,7 @@ export class ResponsibilityItemForm extends BaseComponent implements OnInit {
         this.field.FieldName = "resources";
         this.field.MultiSelect = false;
         this.field.Value = [];
-        this.resourceGrid = true
+        this.resourceGrid = true;
     }
 
     private set fieldValue(value) {

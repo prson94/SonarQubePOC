@@ -153,7 +153,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return Boolean(this.searchDetails?.Scores.length);
         }
         return true;
-    }
+    };
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['menuOpen'])
@@ -187,7 +187,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     getElementRightPosition(element) {
         if (element && element.getBoundingClientRect) {
-            return element.getBoundingClientRect().right
+            return element.getBoundingClientRect().right;
         }
         return NaN;
     }
@@ -259,7 +259,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.buttonSubscriptionClear = this.secondaryNavService.rightSidebarButtonClear$.subscribe(
             item => {
                 this.buttons.splice(0, this.buttons.length); this.emitChanges();
-            })
+            });
 
 
         this.subscriptionClear = this.secondaryNavService.rightSidebarClear$.subscribe(
@@ -274,7 +274,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.showSurvey = false;
                 this.searchDetails = null;
                 this.emitChanges();
-            })
+            });
         this.areaSub = this.secondaryNavService.currentArea$.subscribe(
             area => {
                 this.area = area; this.emitChanges();
@@ -328,19 +328,19 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.assetAction = null;
                     this.emitChanges();
                 }
-            })
+            });
 
         this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
             item => {
                 this.homeUrl = item;
             }
-        )
+        );
 
         this.statsSub = this.secondaryNavService.refreshStats$.subscribe(res => {
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasRequestCertificationWorkflow);
             }
-        })
+        });
 
         this.updateSub = this.secondaryNavService.updateObject$.subscribe(res => {
             if (res) {
@@ -353,7 +353,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
                 this.ref.markForCheck();
             }
-        })
+        });
 
 
         this.emitChanges();

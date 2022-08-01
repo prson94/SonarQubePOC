@@ -262,7 +262,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         }
                         this.tagUsage.forEach(tu => {
                             tu.TagsAsString = tu.Tags.map(x => x.Value).join('|');
-                        })
+                        });
                         this.readOnlyFullListOfTagUsage = [...this.tagUsage];
                         this.isLoading = false;
                     });
@@ -278,7 +278,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     let itemBreadcrumb = new Breadcrumb(
                         this.tag.Value,
                         `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${this.tag.uid}`
-                    )
+                    );
 
                     this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
                     this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);

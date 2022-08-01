@@ -165,7 +165,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
                         }
 
                         this.isLoading = false;
-                        this.loadIssueTypes()
+                        this.loadIssueTypes();
                     }
                 );
             });
@@ -261,7 +261,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.selectedOption = 'current';
         this.selectedObjectId = this.objectID;
         this.selectedObjectType = this.objectType;
-        this.loadIssueTypes()
+        this.loadIssueTypes();
     }
 
     private selectOther() {

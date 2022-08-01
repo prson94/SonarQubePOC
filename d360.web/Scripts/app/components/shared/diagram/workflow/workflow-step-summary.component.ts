@@ -65,8 +65,8 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                     .subscribe(f => {
                         this.fields = f;
                         this.load();
-                    })
-            })
+                    });
+            });
     }
     ngOnChanges() {
         this.load();
@@ -80,7 +80,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                 if (this.step.settings['MessageRecipientType'] == 'Responsibility') {
                     if (this.step.settings.ResponsibilityTypeID != null) {
                         if (!_.isArray(this.step.settings.ResponsibilityTypeID)) {
-                            let id = this.step.settings.ResponsibilityTypeID
+                            let id = this.step.settings.ResponsibilityTypeID;
                             delete this.step.settings.ResponsibilityTypeID;
                             this.step.settings.ResponsibilityTypeID = [];
                             this.step.settings.ResponsibilityTypeID.push(id);
@@ -88,7 +88,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                     }
                 } else if (this.step.settings['MessageRecipientType'] == 'Group') {
                     this.groupService.getGroups().subscribe(GroupList => {
-                        this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name } });
+                        this.groups = GroupList.items.map(g => { return { value: g.Uid, label: g.Name }; });
                         if (this.step.settings.MessageToGroup != undefined) {
                             if (!this.groups.find(g => g.value == this.step.settings.MessageToGroup)) {
                                 this.groups.push(<SelectItem>{ value: this.step.settings.MessageToGroup, label: '<invalid group>' });
@@ -101,7 +101,7 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
                 }
             }
         }
-        this.isLoading = false
+        this.isLoading = false;
         this.ref.markForCheck();
     }
 

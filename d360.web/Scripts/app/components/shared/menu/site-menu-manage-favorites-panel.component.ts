@@ -34,7 +34,7 @@ export class SiteMenuManageFavoritesPanelComponent {
 
             return null;
         })
-    )
+    );
 
     canRemove$ = this.store.state$.pipe(
         map(state => state.removeFavoriteIds.size > 0)
@@ -53,6 +53,6 @@ export class SiteMenuManageFavoritesPanelComponent {
     toggleAll(currentStatus, _newStatus) {
         // we ignore _newStatus, because p-triStateCheckbox thinks that it's nice idea to switch into 'intermediate' status
         // but we can switch only to on & off statuses
-        this.store.setAllFavoritesRemovalSaga({ removeOn: !currentStatus })
+        this.store.setAllFavoritesRemovalSaga({ removeOn: !currentStatus });
     }
 };

@@ -177,10 +177,10 @@ export class WorkflowService extends BaseObservableService {
     //#region diagram
 
     public getWorkflowDiagram(id: number,uid:string, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {
-        let uri = `services/workflow/diagram/${id}/${uid}${version != null ? '?version=' + version : ''}`
+        let uri = `services/workflow/diagram/${id}/${uid}${version != null ? '?version=' + version : ''}`;
 
         if (filteredObject != null && filteredObjectId != null)
-            uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`
+            uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`;
 
         return this.http.get(uri)
             .pipe(
@@ -593,7 +593,7 @@ export class WorkflowService extends BaseObservableService {
             .pipe(
                 map(response => {
                     let r = <AllocationAPIModel[]>response;                    
-                    r.forEach(x => x.ClassName = AssetTypeClass[x.Class])
+                    r.forEach(x => x.ClassName = AssetTypeClass[x.Class]);
                     return r;
                 }),
                 catchError(err => this.handleError(err))

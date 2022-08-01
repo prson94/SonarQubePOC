@@ -84,7 +84,7 @@ export class GalleryPropertyGroupComponent implements OnInit {
         return (control: NewType): { [key: string]: any } | null => {
             if (control.value == null)
                 return {};
-            if (control.value == null || wordsIDontLikeArr.map(x => { return x.toLowerCase() }).indexOf(control.value.toLowerCase()) != -1)
+            if (control.value == null || wordsIDontLikeArr.map(x => { return x.toLowerCase(); }).indexOf(control.value.toLowerCase()) != -1)
                 return {
                     notNiceWord: { value: control.value }
                 };

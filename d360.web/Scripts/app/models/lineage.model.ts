@@ -82,7 +82,7 @@ export class AssetBrowserRevealNode {
     hierarchyKey: string;
     from: string;
     to: string;
-    direction: AssetBrowserApiHopDirection
+    direction: AssetBrowserApiHopDirection;
 }
 
 export class AssetBrowserTranslationOwnerCount {
@@ -129,7 +129,7 @@ export class AssetBrowserTranslationLink {
     responsibilityTypeId: number;
     predicateId: number;
     predicateUid: string;
-    predicateType: PredicateType
+    predicateType: PredicateType;
 
     links: AssetBrowserTranslationChildLink[] = [];
 

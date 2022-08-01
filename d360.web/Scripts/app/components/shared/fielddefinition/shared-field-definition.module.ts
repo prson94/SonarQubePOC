@@ -23,7 +23,7 @@ import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
-import { SharedFormMessageModule } from '../form-message.part'
+import { SharedFormMessageModule } from '../form-message.part';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 
 import { FieldTypeForm } from './field-type-form/field-type.form';

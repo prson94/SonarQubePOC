@@ -30,8 +30,8 @@ import { SearchService } from './services/search.service';
 import { NumberOfRowsByCategoryService, NumberOfRowsByCategoryServiceInitializer } from './services/number-of-rows-by-category.service';
 import { TitleAndTabsService } from './services/title-and-tabs.service';
 
-import { TooltipSingletonService } from './services/tooltip-singleton.service'
-import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service'
+import { TooltipSingletonService } from './services/tooltip-singleton.service';
+import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service';
 
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';

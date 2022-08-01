@@ -88,7 +88,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         {
             title: 'Exit'
         }
-    ]
+    ];
 
     multiExample = [
         {
@@ -145,7 +145,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         {
             title: 'Exit'
         }
-    ]
+    ];
 
     tooltipExample = [
         {
@@ -170,7 +170,7 @@ export class GalleryPopupMenuComponent implements OnInit {
                 tooltip: 'I am tooltip and I am positioned above element. I am cool.'
             }]
         }
-    ]
+    ];
 
     defaultExample = [
         {
@@ -192,7 +192,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         {
             title: 'Exit'
         }
-    ]
+    ];
 
     labelExample = [
         {
@@ -243,7 +243,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         {
             title: 'Exit'
         }
-    ]
+    ];
 
     checkExample = [
         {
@@ -275,7 +275,7 @@ export class GalleryPopupMenuComponent implements OnInit {
             title: 'Show Beta Features',
             hasCheckbox: true
         }
-    ]
+    ];
 
     keyboardShortcuts = [
         {
@@ -310,7 +310,7 @@ export class GalleryPopupMenuComponent implements OnInit {
             title: 'Show Beta Features',
             hasCheckbox: true
         }
-    ]
+    ];
 
     badgeExample = [
         {
@@ -339,7 +339,7 @@ export class GalleryPopupMenuComponent implements OnInit {
         {
             title: 'Exit'
         }
-    ]
+    ];
 
     showFull: boolean = false;
     @HostListener('document:keydown.escape', ['$event']) onKeydownHandler(event: KeyboardEvent) {
@@ -445,5 +445,5 @@ export class GalleryPopupMenuComponent implements OnInit {
         {
             title: 'Exit'
         }
-    ]
+    ];
 }

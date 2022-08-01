@@ -97,7 +97,7 @@ export class BoardTile extends BaseComponent implements OnInit {
             case 365:
                 return ' (' + $localize`Past year` + ')';
         }
-        return ' (' + $localize`All` + ')'
+        return ' (' + $localize`All` + ')';
     }
 }
 

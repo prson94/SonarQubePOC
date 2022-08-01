@@ -231,7 +231,7 @@ export class HeaderActionsComponent {
     }
     onResize() {
         clearTimeout(this.resizeTimer);
-        this.resizeTimer = window.setTimeout(() => this.calculateControlWidth(), 250)
+        this.resizeTimer = window.setTimeout(() => this.calculateControlWidth(), 250);
     }
     ngOnDestroy() {
         if (this.routerSub) {

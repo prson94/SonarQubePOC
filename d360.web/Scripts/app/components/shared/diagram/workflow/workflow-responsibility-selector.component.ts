@@ -154,7 +154,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
                     this.responsibilities = r;
                     this.responsibilities.forEach(r => {
                         r.ResponsibilityTypeID = r.ID;
-                    })
+                    });
                 });
         }
 
@@ -166,7 +166,7 @@ export class WorkflowResponsibilitySelectorComponent implements OnInit {
         //console.log('changeResponsibility', e, i, this.responsibilities);
         this.step.settings.ResponsibilityTypeID[i] = e;
         this.step.settings.ResponsibilityTypeID = this.step.settings.ResponsibilityTypeID.slice();
-        this.stepChange.emit(this.step)
+        this.stepChange.emit(this.step);
     }
 
     trackRes(index, item) {

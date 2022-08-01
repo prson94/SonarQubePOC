@@ -57,7 +57,7 @@ export class CompanyImage {
             fileReader.onloadend = (e: any) => {
                 this.isLoading = false;
                 this.dataUrl = e.target.result;
-            }
+            };
             fileReader.readAsDataURL(this.file);
         } else {
             this.dataUrl = null;
@@ -248,7 +248,7 @@ export module SettingsHelper {
         searchTypes.split(',').forEach(i => {
             let k = t.find(j => j.value == i);
             if (k)
-                k.selected = true
+                k.selected = true;
         });
         return t;
     }

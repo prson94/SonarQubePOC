@@ -99,7 +99,7 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
 
     writeValue(obj: string): void {
         this.selectedColor = obj;
-        this.value = obj
+        this.value = obj;
         this.onModelChange(this.selectedColor);
         this.selectedColorChange.emit(this.selectedColor);
         this.ref.markForCheck();
@@ -114,11 +114,11 @@ export class ColorPickerComponent implements ControlValueAccessor, AfterViewInit
     }
 
     setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled
+        this.disabled = isDisabled;
     }
 
     itemChanged(item: any) {
-        this.writeValue(item.value)
+        this.writeValue(item.value);
     }
 
     public focus(evt) {

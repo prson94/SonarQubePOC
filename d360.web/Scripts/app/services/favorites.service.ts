@@ -78,7 +78,7 @@ export class FavoritesService extends BaseObservableService {
                 map(response => response),
                 catchError(err => this.handleError(err)),
                 tap(res => this.clearCache())
-            )
+            );
     }
 
     //Observable for caching Favorites and Homepage

@@ -92,7 +92,7 @@ export class RelationshipsService extends BaseObservableService {
                     var origResponse: ApiResult[] = [];
                     response.forEach(res => {
                         res.forEach(r =>
-                            origResponse.push(r))
+                            origResponse.push(r));
                     });
                     for (let i = 0; i < response.length; i++) {
                         origResponse[i].ItemNumber = i + 1;

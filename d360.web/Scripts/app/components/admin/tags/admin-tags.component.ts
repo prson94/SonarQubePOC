@@ -1,7 +1,7 @@
 ﻿import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
-import { AdminBaseComponent } from '../admin-base.component'
+import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { TagType } from '../../../models/tag.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -35,7 +35,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     consolidatePromptHTML: string;
     showDelete: boolean = false;
     showEditor: boolean = false;
-    showConsolidate: boolean = false
+    showConsolidate: boolean = false;
     filters: any = { globalSearch: '', Value: '', UseCount: '', DateCreated: '', CreatedBy: '' };
     advancedFilter: string = '';
     sort: any;
@@ -315,7 +315,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 if (result.type != 'error') {
                     this.selected.forEach(t => {
                         this.mutateTags(tags => tags.splice(this.findTagIndex(t.uid), 1));
-                    })
+                    });
                     this.selected = [];
                 }
                 this.showDelete = false;
@@ -326,7 +326,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         window.setTimeout(() => {
             this.deletePopupTitle = this.selected.length == 1 ? $localize`Delete Tag` : $localize`Delete Tags`;
             this.showDelete = true;
-        }, 100)
+        }, 100);
 
     }
 
@@ -350,7 +350,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     });
                 }
                 this.selected = [];
-                this.selected.push(this.tags[0])
+                this.selected.push(this.tags[0]);
                 this.showConsolidate = false;
                 this.showEditor = false;
             }, err => {

@@ -2,7 +2,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { DashboardService } from '../../../services/dashboard.service';
-import { Dashboard, DashboardModel } from '../../../models/dashboard.model'
+import { Dashboard, DashboardModel } from '../../../models/dashboard.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -85,7 +85,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 		this.headerBreadcrumbService.clearBreadcrumbs();
 
 		this.headerBreadcrumbService.getFolderTitle('#Dashboards').then(res => {
-			this.folderTitle = res
+			this.folderTitle = res;
 			let areaBreadcrumb = new Breadcrumb(
 				this.folderTitle ? this.folderTitle : 'Dashboards',
 				'/dashboard',

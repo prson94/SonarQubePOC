@@ -95,7 +95,7 @@ export class DayOfWeekInputComponent implements ControlValueAccessor {
 
     writeValue(daysOfWeek: number): void {
         this.days = this.days.map((_, i) => (daysOfWeek & Math.pow(2, i)) != 0);
-        this.onChange(this.value)
+        this.onChange(this.value);
     }
 
     recalc() {

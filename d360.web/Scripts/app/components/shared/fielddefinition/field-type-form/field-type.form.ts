@@ -166,7 +166,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             { label: $localize`-No Default-`, value: null },
             { label: $localize`True`, value: true },
             { label: $localize`False`, value: false },
-        ]
+        ];
     }
 
     ngOnInit() {
@@ -202,7 +202,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     currentFieldType(item: FieldTypeAPIModelField): string {
         if (item.Type) {
-            return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
+            return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null; })[0];
         }
     }
     //#region load functions
@@ -459,7 +459,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     let r = new FieldTypeRelationItemEditorModel();
 
                     r.DisplayFields = [];
-                    r.AssetTypeUid = this.GetCurrentUid()
+                    r.AssetTypeUid = this.GetCurrentUid();
 
                     this.model.RelationItems = [];
                     this.model.RelationItems.push(r);
@@ -476,7 +476,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case "ownershiplookup":
                 this.showDescription = false;
-                this.onEnableListSingleResponsibilityType(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid?.length > 1)
+                this.onEnableListSingleResponsibilityType(this.model.FieldType.Type[this.currentType].Definition.ResponsibilityTypeUid?.length > 1);
                 break;
             case 'computedownershiplookup':
             case 'json':
@@ -1258,7 +1258,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
-                var m
+                var m;
                 this.setValidation('MaximumLength_integer', $localize`Please enter a valid integer for Maximum Value.`, (() => {
                     return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength % 1 != 0);
                 })());
@@ -1583,7 +1583,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     new RegExp(pattern);
                 }
                 catch (e) {
-                    return false
+                    return false;
                 }
             }
         }

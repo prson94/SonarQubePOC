@@ -46,7 +46,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
 import { SwitchModule } from '../../shared/controls/switch/switch';
-import { AdminMeasureHistoryComponent } from './measure-history.component'
+import { AdminMeasureHistoryComponent } from './measure-history.component';
 import { IgDateModule } from '../../shared/controls/date/date';
 import { PropertyGroupModule } from '../../shared/controls/property-group/property-group.component';
 import { IgNumberFieldModule } from '../../shared/controls/number-picker/number-input.component';

@@ -100,7 +100,7 @@ export class ResponsibilityTypeForm implements OnInit {
         this.selectedAllocations = [];
         if (this.item.ResponsibilityTypeRelations)
             this.item.ResponsibilityTypeRelations.forEach(r => {
-                let s = r.ObjectID.toString()
+                let s = r.ObjectID.toString();
                 this.selectedAllocations.push(r.ObjectType + '|' + r.ObjectID.toString());
             });
     }
@@ -117,6 +117,6 @@ export class ResponsibilityTypeForm implements OnInit {
             valid = false;
         }
 
-        return valid
+        return valid;
     }
 }

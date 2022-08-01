@@ -95,15 +95,15 @@ export class SemanticTypeAsset {
 }
 
 export class SemanticTypeGetResponse {
-    pageNum: number
-    pageSize: number
+    pageNum: number;
+    pageSize: number;
     total: number;
     items: SemanticType[];
 }
 
 export class SemanticTypeGetAssetsResponse {
-    pageNum: number
-    pageSize: number
+    pageNum: number;
+    pageSize: number;
     total: number;
     items: SemanticTypeAsset[];
 }

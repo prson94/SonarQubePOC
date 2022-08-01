@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { SelectItem } from 'primeng/api';
 import { FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel } from '../models/fields.model';
-import { EditorDropDownItem } from '../models/editor-field.model'
+import { EditorDropDownItem } from '../models/editor-field.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
@@ -80,7 +80,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getComplexField
+    getComplexField;
 
     getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField> {
         let url = "";
@@ -343,7 +343,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             TypeUid: typeUid,
             FieldTypename: fieldTypeName,
             Direction: "up"
-        }
+        };
         return this
             .http
             .post(`api/v2/fields/move`, model)
@@ -358,7 +358,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             TypeUid: typeUid,
             FieldTypename: fieldTypeName,
             Direction: "down"
-        }
+        };
         return this
             .http
             .post(`api/v2/fields/move`, model)
@@ -410,18 +410,18 @@ export class FieldsObservableService extends BaseObservableService implements IF
                     let uri = `api/relationships/field/${event.fieldTypeID}?offset=${event.event.first}&rows=${event.event.rows}`;
 
                     if (event.event.globalFilter != null && event.event.globalFilter.length > 0) {
-                        uri += `&query=${event.event.globalFilter}`
+                        uri += `&query=${event.event.globalFilter}`;
                     }
 
                     if (event.objectID != null) {
-                        uri += `&object=${event.object}&objectID=${event.objectID}`
+                        uri += `&object=${event.object}&objectID=${event.objectID}`;
                     }
 
                     return this.http.get(uri).pipe(
                         map(res => res),
                         map(
                             (res) => {
-                                return { fieldTypeID: event.fieldTypeID, results: res, event: event.event }
+                                return { fieldTypeID: event.fieldTypeID, results: res, event: event.event };
                             }
                         ),
                         catchError(err => this.handleError(err))
@@ -468,7 +468,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return e.pipe(
             distinctUntilChanged(),
             switchMap((e) => {
-                let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`
+                let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`;
                 if (e.value != null)
                     uri += `&value=${e.value}`;
                 return this.http.get(uri).pipe(map(res => <any[]>res["items"]));

@@ -104,7 +104,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
                         if (e.keyCode == 13) {
                             setTimeout(() => { self.focus(event); });
                         }
-                    }
+                    };
                 }
             }
         }, 10);
@@ -140,7 +140,7 @@ export class IgDate implements ControlValueAccessor, OnInit, AfterViewInit, OnDe
     }
 
     setDisabledState?(isDisabled: boolean): void {
-        this.disabled = isDisabled
+        this.disabled = isDisabled;
     }
 
     public focus(evt) {

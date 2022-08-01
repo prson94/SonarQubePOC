@@ -70,7 +70,7 @@ export class SemanticAssetListGridComponent extends SemanticBaseComponent implem
             Category: "",
             RemovePopulatedOperator: true
         }     
-    ]    
+    ];    
 
     constructor(private route: ActivatedRoute,
         protected router: Router,

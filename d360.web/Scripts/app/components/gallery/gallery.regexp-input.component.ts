@@ -45,7 +45,7 @@ export class GalleryRegexpInputComponent {
             Description: "If true, the second row to validate the provided regex with a test value, and a Validate button.",
             Default: "true"
         }
-    ]
+    ];
     events = [
     ];
 

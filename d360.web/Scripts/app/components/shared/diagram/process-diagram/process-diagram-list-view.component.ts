@@ -54,7 +54,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                 if (x.data && x.data.key) {
                     this.selected.push(this.nodeArray.find(node => node.key == x.data.key));
                 }
-            })
+            });
         }
         this.cdRef.detectChanges();
     }
@@ -71,7 +71,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     nodeArrayCountChanged() {
         this.nodeArray = this.nodeArray.sort((a, b) => {
             return +a.StepNo - +b.StepNo;
-        })
+        });
         this.tableEl.reset();
     }
 
@@ -81,7 +81,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
             var selectedParts: go.Part[] = [];
             this.getTableCurrentData().forEach(data => {
                 selectedParts.push(this.getPartByKey(data.key));
-            })
+            });
             this.diagram.selectCollection(selectedParts);
         }
         else {
@@ -114,7 +114,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                 result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;
 
             return (event.order * result);
-        })
+        });
 
     }
     selectSingleItem(event: MouseEvent, item: go.ObjectData, element: ElementRef = null, elIndex = -1) {
@@ -129,7 +129,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
                     if (cn.nodeName === 'P-TABLECHECKBOX') {
                         isCheckboxClicked = true;
                     }
-                })
+                });
             }
         }
 
@@ -188,7 +188,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
 
         this.selected.forEach(d => {
             selectedParts.push(this.getPartByKey(d.key));
-        })
+        });
         this.diagram.selectCollection(selectedParts);
         this.lastSelectedIndex = elIndex;
     }
@@ -222,7 +222,7 @@ export class ProcessDiagramListViewComponent extends DiagramBaseComponent implem
     public clearSearchValue() {
         if (this.searchValue) {
             this.searchValue = '';
-            this.tableEl.filterGlobal(this.searchValue, 'contains')
+            this.tableEl.filterGlobal(this.searchValue, 'contains');
         }
     }
 

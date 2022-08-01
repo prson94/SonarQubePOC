@@ -101,7 +101,7 @@ export class GalleryFieldConditionGridComponent implements OnInit {
                 this.fields = tempFields;
                 this.ref.markForCheck();
             });
-        })
+        });
 
     }
 

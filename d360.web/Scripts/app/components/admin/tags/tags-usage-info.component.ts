@@ -27,11 +27,11 @@ export class TagUsageInfoBox {
             let tableHTML: string = '';
             assets.forEach((a) => {
                 tableHTML += `<tr><td class="name"><a target="_blank" href='${a.Url}'>${a.DisplayName}</a></td><td class="suppressed">${a.Breadcrumbs}</td></tr>`;
-            })
+            });
 
             this.tooltipHTML = `<table class="table table-borderless">${tableHTML}</div>`;
             this.loadedUid = this.uid;
-        })
+        });
     }
 
     showContent(isFromTooltip = false) {

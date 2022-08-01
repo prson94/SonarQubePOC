@@ -143,7 +143,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             }
         }
         catch {
-            console.log("Datadog Real user monitoring cannot be initialized!")
+            console.log("Datadog Real user monitoring cannot be initialized!");
         }
     }
 
@@ -249,5 +249,5 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         passwordPrompt: $localize`Enter a password`,
         emptyMessage: $localize`No results found`,
         emptyFilterMessage: $localize`No results found`
-    }
+    };
 }

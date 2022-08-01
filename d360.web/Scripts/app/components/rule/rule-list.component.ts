@@ -97,7 +97,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
                     .getAreaName('RuleType', this.ruleTypeId)
-                    .subscribe((result) => { this.currentAreaName = result });
+                    .subscribe((result) => { this.currentAreaName = result; });
             this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId);
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);

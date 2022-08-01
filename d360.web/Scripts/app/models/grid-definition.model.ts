@@ -86,7 +86,7 @@ export class GridFilterExpression {
             values.forEach(value => {
                 var val = this.wrapValue(f.fieldType, value);
                 expressions.push(`${f.apiName} ${cond} ${val}`);
-            })
+            });
 
             if (expressions.length > 1) {
                 return `(${expressions.join(' or ')})`;

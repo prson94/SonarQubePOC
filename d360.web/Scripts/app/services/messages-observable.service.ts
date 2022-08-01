@@ -78,6 +78,6 @@ export class MessagesObservableService {
                     return of(error);
                 }
             )
-        )
+        );
     }
 }

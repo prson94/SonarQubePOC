@@ -176,7 +176,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             this.prepopulatedResults.forEach(pr => {
                 this.searchresults.push({ AssetTypeName: pr.AssetTypeName, AssetTypeIcon: pr.AssetTypeIcon, AssetTypeUid: pr.AssetTypeUid, Uid: pr.Uid, Segments: pr.Segments, IsSelected: false });
                 this.ref.markForCheck();
-            })
+            });
 
             var itemsToResolve = [];
             this.searchresults.forEach(item => {

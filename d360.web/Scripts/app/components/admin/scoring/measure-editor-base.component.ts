@@ -192,7 +192,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         let fromitem = this.conditionGroups.find(x => x.DisplayOrder == from);
         let toitem = this.conditionGroups.find(x => x.DisplayOrder == to);
 
-        fromitem.DisplayOrder = to
+        fromitem.DisplayOrder = to;
         toitem.DisplayOrder = temp;
         this.orderConditionGroups();
     }
@@ -314,7 +314,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         }
 
                         newGroup.conditionItemFields.push(cond);
-                    })
+                    });
                 }
 
                 this.addConditionGroupFormControls(newGroup.Position);
@@ -360,7 +360,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                             if (options && options.Values) {
                                 options.Values.forEach(val => {
                                     f.Values.push({ value: val.Value.toString(), label: val.Text });
-                                })
+                                });
                             }
                         }
 
@@ -395,7 +395,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         this.currentEffectiveDate = null;
 
         if (this.isEditBasedOnUid()) {
-            this.verb = "Edit"
+            this.verb = "Edit";
             this.saveLabel = $localize`Save Changes`;
             this.closeLabel = $localize`Close`;
             if (this.model.EffectiveDate !== null) {
@@ -661,7 +661,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         let d = new Date(effectiveDate);
         let condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
         condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
-        return condate
+        return condate;
     }
 
     haveConditionsChanged(updated: MetricAssetVersionConditionViewModel[], original: MetricAssetVersionConditionViewModel[]) {
@@ -688,7 +688,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     } else if (!originalMatch.conditionItemFields.every((item) => {
                         return x.conditionItemFields.findIndex(x => x.field == item.field
                             && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                            && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1
+                            && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
                     })) {
                         changeFound = true;
                     }
@@ -709,7 +709,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             if (updated.length != original.length || !original.every((item) => {
                 return updated.findIndex(x => x.field == item.field
                     && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
-                    && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1
+                    && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
             })) {
                 return true;
             }

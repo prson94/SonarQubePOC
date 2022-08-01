@@ -36,7 +36,7 @@ export class DataQualityEvidenceModel {
     pageSize: number;
     pageNum: number;
     total: number;
-    items: DataQualityEvidenceItemModel[]
+    items: DataQualityEvidenceItemModel[];
 }
 
 //#endregion Evidence Models

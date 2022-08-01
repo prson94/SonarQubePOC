@@ -170,7 +170,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             if (this.elRef.nativeElement) {
                 var els = this.elRef.nativeElement.getElementsByClassName('form-wrapper');
                 if (els[0]) {
-                    var rect = els[0].getBoundingClientRect()
+                    var rect = els[0].getBoundingClientRect();
                     topPos = rect.top + 120;
                 }
             }

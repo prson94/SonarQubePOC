@@ -673,11 +673,11 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                         let ix = this.excludedRelationitems[field.FieldName].findIndex((r) => r.Value === i.Value);
                         if (ix > -1) {
                             let item = this.excludedRelationitems[field.FieldName].slice()[ix];
-                            this.excludedRelationitems[field.FieldName].splice(ix, 1)
+                            this.excludedRelationitems[field.FieldName].splice(ix, 1);
                             this.field.Items.push(item);
                         }
                     }
-                })
+                });
             }
             this.ref.markForCheck();
         }
@@ -780,7 +780,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         this.lookupSub = this.fieldsService.getLookupValues(this.assetTypeUid, this.field.FieldName, loadParams).subscribe((res) => {
             if (!this.lookupValues || this.lookupValues.length === 0) {
-				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null } });
+				this.lookupValues = Array.from({ length: res.count }, () => { return { label: null, value: null, color: null }; });
             }
 
             if (this.lookupValues.length > 10 || loadParams["filter"]) {
@@ -873,7 +873,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             if (values.indexOf(item.value) != -1) {
                 newValues.push(item);
             }
-        })
+        });
         this.lookupSelectedValue = newValues;
 
         if (event) {

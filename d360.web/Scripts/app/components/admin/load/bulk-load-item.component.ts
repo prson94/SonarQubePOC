@@ -1,7 +1,7 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { LoadService } from '../../../services/load.service';
 import { GridColumn } from '../../../models/grid-definition.model';
-import { BaseComponent } from '../../shared/base.component'
+import { BaseComponent } from '../../shared/base.component';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { V2ApiFilters } from '../../../models/asset-search.model';
 import { LazyLoadEvent } from 'primeng/api';
@@ -107,7 +107,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
                 this.totalRecords = data.total;
                 this.itemsLoading = false;
             });
-        })
+        });
     }
 
 

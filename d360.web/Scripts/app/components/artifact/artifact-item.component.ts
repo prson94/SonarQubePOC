@@ -33,7 +33,7 @@ declare var CurrentResourceID;
 })
 
 export class ArtifactItemComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
-    private artifact: Artifact
+    private artifact: Artifact;
     private sub: any;
     private currentAreaNameSubscription: any;
     private currentAreaName: string;

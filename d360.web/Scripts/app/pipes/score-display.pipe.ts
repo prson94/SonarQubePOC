@@ -9,6 +9,6 @@ export class ScoreDisplayPipe implements PipeTransform {
         var retval = (score == null) ? 'N/A' : ((score * Math.pow(10, 2 + precision)) / Math.pow(10, precision)).toFixed(precision) + '%';
         if (precision > 0 && !trailingZeros)
             retval = retval.replace(/\.0+%/,'%');
-        return retval
+        return retval;
     }
 }

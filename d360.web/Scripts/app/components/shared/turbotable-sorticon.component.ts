@@ -45,7 +45,7 @@ export class D3SSortIcon implements OnInit, OnDestroy {
             let sortMeta = this.dt.getSortMeta(this.field);
             this.sortOrder = sortMeta ? sortMeta.order : 0;
         }
-        this.changeCallback.emit({ field: this.dt.sortField, order: this.dt.sortOrder })
+        this.changeCallback.emit({ field: this.dt.sortField, order: this.dt.sortOrder });
 
     }
 

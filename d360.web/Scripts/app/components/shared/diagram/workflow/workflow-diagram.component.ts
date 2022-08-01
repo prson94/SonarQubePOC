@@ -157,7 +157,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         let isModelPassed = changes['model'] != null && changes['model'].currentValue != changes['model'].previousValue;
         let isVelueReadOnly = changes['readonly'] != null && changes['readonly'].currentValue != changes['readonly'].previousValue;
         let isIdChanged = changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue;
-        let isVersionChanged = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue
+        let isVersionChanged = changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue;
         let isUidChanged = changes['uid'] != null && changes['uid'].currentValue != changes['uid'].previousValue;
         let isSelectedStepIdChanged = changes['selectedStepId'] && changes['selectedStepId'].currentValue != changes['selectedStepId'].previousValue;
 
@@ -349,7 +349,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     map(r => this.fieldTypes = r),
                     map(() => this.parseData(this.model)),
                     map(() => { this.isLoadingCounter--; }),
-                    map(() => { this.resetContentPosition() })
+                    map(() => { this.resetContentPosition(); })
                 );
         }
 
@@ -408,12 +408,12 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         if (data.Nodes)
             data.Nodes.forEach(n => {
-                nodeList.push(<NodeModel>this.convertToDiagramModel(n, DiagramObjectType.Node))
+                nodeList.push(<NodeModel>this.convertToDiagramModel(n, DiagramObjectType.Node));
             });
 
         if (data.Links)
             data.Links.forEach(l => {
-                linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link))
+                linkList.push(<LinkModel>this.convertToDiagramModel(l, DiagramObjectType.Link));
             });
 
         nodeList.forEach(n => {
@@ -457,7 +457,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 this.workflowFieldsService.pushHttpFields(n);
             }
 
-            this.diagram.model.addNodeData(n)
+            this.diagram.model.addNodeData(n);
         });
         linkList.forEach(l => dm.addLinkData(l));
 
@@ -1300,7 +1300,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                     return false;
 
                 if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
-                    return false
+                    return false;
 
                 if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType')) {
                     if (this.model.Event.IssueObject != null && this.model.Event.IssueObject != '') {
@@ -1434,7 +1434,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 disconnectedNodeCount++;
 
             if (node.errors) {
-                node.errors.forEach(x => { if (x == 'Invalid field type') invalidFieldReferences++ });
+                node.errors.forEach(x => { if (x == 'Invalid field type') invalidFieldReferences++; });
             }
             
         });
@@ -1546,7 +1546,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 break;
             case WorkflowActivityType.Form: //form
                 n.fields = e.fields;
-                n.settings.FormResponseType = e.settings.FormResponseType
+                n.settings.FormResponseType = e.settings.FormResponseType;
                 n.settings.SendFormEmail = e.settings.SendFormEmail;
                 n.settings.MessageRecipientType = e.settings.MessageRecipientType;
                 n.settings.MessageToUser = e.settings.MessageToUser;
@@ -1968,7 +1968,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 },
                     new go.Binding("fill", "back").makeTwoWay(),
                     new go.Binding("stroke", "valid", v => {
-                        return (v || this.isReadOnly) ? nodeBorderColor : '#f00'
+                        return (v || this.isReadOnly) ? nodeBorderColor : '#f00';
                     })
                 ),
                 this.g(go.Panel, go.Panel.Horizontal, {
@@ -2072,14 +2072,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 stroke: "gray", strokeWidth: 2
             },
                 new go.Binding("stroke", "valid", v => {
-                    return (v || this.isReadOnly) ? "gray" : "red"
+                    return (v || this.isReadOnly) ? "gray" : "red";
                 })),
             this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" },
                 new go.Binding("fill", "valid", v => {
-                    return (v || this.isReadOnly) ? "gray" : "red"
+                    return (v || this.isReadOnly) ? "gray" : "red";
                 }),
                 new go.Binding("stroke", "valid", v => {
-                    return (v || this.isReadOnly) ? "gray" : "red"
+                    return (v || this.isReadOnly) ? "gray" : "red";
                 })
             ), // the arrowhead
             this.g(go.Panel, "Auto",
@@ -2093,13 +2093,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 },
                     //only visible if there's a label
                     new go.Binding("stroke", "valid", v => {
-                        return (v || this.isReadOnly) ? "gray" : "red"
+                        return (v || this.isReadOnly) ? "gray" : "red";
                     }),
                     new go.Binding("fill", "valid", v => {
-                        return (v || this.isReadOnly) ? "gray" : "red"
+                        return (v || this.isReadOnly) ? "gray" : "red";
                     }),
                     new go.Binding("visible", "icon", function (a) {
-                        return (a ? true : false)
+                        return (a ? true : false);
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {

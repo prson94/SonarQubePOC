@@ -106,7 +106,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
             case 'NP':
                 return $localize`is not populated`;
             default:
-                return item['@Operator']
+                return item['@Operator'];
         }
     }
 

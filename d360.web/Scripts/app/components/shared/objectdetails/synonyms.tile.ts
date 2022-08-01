@@ -104,7 +104,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges {
                     this.itemCount = this.items.length;
                     this.formMode = FormMode.Default;
                 }
-            )
+            );
         }
         else {
             this.objectDetailService.deleteCustomSynonym(item).subscribe(

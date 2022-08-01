@@ -552,7 +552,7 @@ export class AdvancedFilterFieldConditionCollection {
                         if ((r.value as string).length === lenghtOfTheGuid) {
                             subConditions.push(cond.getCopyWithNewValue(r.value));
                         } else if ((r.value as string).length > lenghtOfTheGuid) {
-                            let ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value)
+                            let ownerAndResponsibilitySubCondition = cond.getCopyWithNewValue(r.value);
                             ownerAndResponsibilitySubCondition.field = "$OwnedByAndResponsibility";
                             subConditions.push(ownerAndResponsibilitySubCondition);
                         }

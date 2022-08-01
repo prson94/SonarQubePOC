@@ -58,7 +58,7 @@ export class HeaderBreadcrumbComponent {
                     }
                     this.breadcrumbs.push(breadcrumb);
                     setTimeout(() => { this.resizeControlsToFit(window.innerWidth); }, 100);
-                    headerBreadcrumbService.saveBreacrumbsToStorage(this.breadcrumbs)
+                    headerBreadcrumbService.saveBreacrumbsToStorage(this.breadcrumbs);
                     this.ref.markForCheck();
                 }
             });
@@ -66,12 +66,12 @@ export class HeaderBreadcrumbComponent {
             breadcrumb => {
                 this.breadcrumbs.splice(0, this.breadcrumbs.length);
                 this.ref.markForCheck();
-            })
+            });
         this.subscriptionPop = headerBreadcrumbService.breadcrumbPopLastSource$.subscribe(
             breadcrumb => {
                 this.breadcrumbs.pop();
                 this.ref.markForCheck();
-            })
+            });
         this.subscriptionBuildFromStorage = headerBreadcrumbService.buildFromStorage$.subscribe(res => {
             this.breadcrumbs = res;
         });
@@ -133,7 +133,7 @@ export class HeaderBreadcrumbComponent {
     }
     resizeControlsToFit(windowWidth) {
 
-        this.breadcrumbs.forEach(x => { x.show = false });
+        this.breadcrumbs.forEach(x => { x.show = false; });
 
         let element = this.breadcrumbUIElement.nativeElement;
         var controlsWidth = this.controlWidth ? this.controlWidth : 0; // only visible medium and up
@@ -172,7 +172,7 @@ export class HeaderBreadcrumbComponent {
 
             html = '<a class="breadcrumb"><span class="breadcrumb-text">' + this.breadcrumbs[i].text + ' </span>';
             if (this.breadcrumbs[i].parentTypeName !== undefined)
-                html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>'
+                html += '<span class="parent">' + this.breadcrumbs[i].parentTypeName ? this.breadcrumbs[i].parentTypeName : '' + '</span>';
             html += '</a>';
 
             this.breadcrumbUIElement.nativeElement.insertAdjacentHTML('beforeend', html);
@@ -183,7 +183,7 @@ export class HeaderBreadcrumbComponent {
 
             var last = (this.breadcrumbs.length - 1) == i;
             if (!last)
-                max += 25 // for the icon separator
+                max += 25; // for the icon separator
 
             if (max < maxSpaceForCrumbs)
                 maxNumberOfCrumbsInSpace++;
@@ -202,7 +202,7 @@ export class HeaderBreadcrumbComponent {
 
         if (this.breadcrumbs.length == this.showThisManyCrumbs) {
             this.showLastOnly = false;
-            this.breadcrumbs.forEach(x => { x.show = true });
+            this.breadcrumbs.forEach(x => { x.show = true; });
             return;
         }
         let maxIndex = this.breadcrumbs.length - 1;

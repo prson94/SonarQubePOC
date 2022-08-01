@@ -39,7 +39,7 @@ export class ArtifactType {
         ago.Name = artifact.Name;
         ago.Object = 'Artifact';
         ago.ObjectType = 'ArtifactType';
-        ago.AutoDisplayParent = artifact.AutoDisplayParent
+        ago.AutoDisplayParent = artifact.AutoDisplayParent;
         ago.AssetTypePath = artifact.AssetTypePath;
         return ago;
     }

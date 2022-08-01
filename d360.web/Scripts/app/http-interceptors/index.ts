@@ -20,7 +20,7 @@ export const governHttpInterceptorProviders = [
         deps: [ReuseInterceptor],
         multi: true
     },
-]
+];
 
 export { ROUTE_INDEPENDENT_QUERY } from './routeIndependentQuery';
 export { IS_QUERY, isQueryRequest } from './isQuery';

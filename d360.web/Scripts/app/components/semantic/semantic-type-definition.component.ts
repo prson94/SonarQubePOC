@@ -28,7 +28,7 @@ declare var CurrentResourceID;
 
 export class SemanticDefinitionComponent extends SemanticBaseComponent implements OnInit, OnDestroy {
    
-    private semanticType: SemanticType
+    private semanticType: SemanticType;
     private sub: any;
 
     semanticDetails: SemanticType;

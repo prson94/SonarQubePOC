@@ -49,7 +49,7 @@ export class SemanticDetailComponent extends BaseComponent implements OnInit, On
         ["List", "List of Values"],
         ["Number", "Numbers"],
         ["Pattern", "Pattern in Data"],
-    ])
+    ]);
 
     validValuesToShow: number = 5;
     invalidValuesToShow: number = 5;

@@ -62,7 +62,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
 
     closeDialog() {
         this.currentQuestionIndex = 0;
-        this.surveyDetails.Questions.forEach((qd) => { qd.Options.forEach((i) => { i.Value = null; i.IsChecked = false }) });
+        this.surveyDetails.Questions.forEach((qd) => { qd.Options.forEach((i) => { i.Value = null; i.IsChecked = false; }); });
         this.currentQuestion = this.surveyDetails.Questions[0];
         this.ref.markForCheck();
         this.surveyBack.emit();
@@ -74,7 +74,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.currentQuestion = null;
 
         this.surveysService.saveSurveyResponse(this.surveyDetails.Uid, this.getSurveyResponseObject()).subscribe(res => {
-            this.submitting = false
+            this.submitting = false;
             this.surveyComplete.emit(res);
         });
     }
@@ -117,7 +117,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
             q.Comments = x.Comments;
             q.Responses = Array.isArray(x.Value) ? x.Value : [x.Value];
             q.SurveyQuestionUid = x.Uid;
-            surveyResponse.Questions.push(q)
+            surveyResponse.Questions.push(q);
         });
         return surveyResponse;
     }

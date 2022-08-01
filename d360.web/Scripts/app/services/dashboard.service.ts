@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
-import { DashboardModel, DashboardTokens } from '../models/dashboard.model'
+import { DashboardModel, DashboardTokens } from '../models/dashboard.model';
 
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";

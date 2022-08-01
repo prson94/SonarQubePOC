@@ -161,7 +161,7 @@ export class BaseComponent {
 
         return permissionsService.getPermissionsById(assetID).toPromise().then((result) => {
             this.permissions = result;
-        })
+        });
 
     }
 
@@ -558,7 +558,7 @@ export class BaseComponent {
                 if (this['selected']['Uid']) { //AdminIssueTypesComponent, AdminRelationshipsComponent
                     uid = this['selected']['Uid'];
                 } else if (this['selected']['uid']) { //AdminHierarchiesComponent
-                    uid = this['selected']['uid']
+                    uid = this['selected']['uid'];
                 }
             }
         }
@@ -630,7 +630,7 @@ export class BaseComponent {
                     objectName,
                     parent.ID,
                     this.buildTreeNodeArrayBase(arr, parent.ParentID),
-                    this.findSelectedTreeNodeBase(parent.ID), false, false)
+                    this.findSelectedTreeNodeBase(parent.ID), false, false);
                 this.baseCrumbs.unshift(crumb);
                 this.checkParentBase(parent, arr, typeId, objectName);
             }
@@ -780,7 +780,7 @@ export class BaseComponent {
         var currentData = JSON.parse(this.secondaryNavService.getLoadedKey());
 
         if (loadData.DisplayValue != null) {
-            checkdisplayvalue = true
+            checkdisplayvalue = true;
         }
 
         if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
@@ -853,7 +853,7 @@ export class BaseComponent {
 			this.objectID = r.ObjectID;
 
 			this.baseAssetUid = r.Uid;
-			this.baseAssetTypeUid = r.Artifact?.AssetTypeUid
+			this.baseAssetTypeUid = r.Artifact?.AssetTypeUid;
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID, DisplayValue: r.DisplayValue });
             this.secondaryNavService.setLoadedKey(_key);
@@ -936,7 +936,7 @@ export class BaseComponent {
             this.secondaryNavService.showHeader(true);
 
             this.activateComponent();
-        })
+        });
     }
 
     protected determineAreaForAdminPage(areaName: string): string {
@@ -1262,7 +1262,7 @@ export class BaseComponent {
         if (!val)
             return;
         if (val >= 1)
-            return '100%'
+            return '100%';
 
         let s = (val * 100).toFixed(decimals).replace(/0+$/g, "").replace(/(\.[0]*?)0*$/g, "") + "%";
 
@@ -1278,7 +1278,7 @@ export class BaseComponent {
         if (!val)
             return;
         if (val >= 1)
-            return '100%'
+            return '100%';
 
         if (val > 1) {
             var integerPart = Math.floor(val);

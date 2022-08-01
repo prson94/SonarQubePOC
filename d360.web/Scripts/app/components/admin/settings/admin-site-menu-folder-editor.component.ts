@@ -193,7 +193,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				label: null,
 				items: [{ label: 'Custom', path: this.folderModel.FullURL, img: true }]
 			}, ...this.categories
-			]
+			];
 			this.folderModel.Icon = this.categories[0].items[0];
 		}
 
@@ -208,12 +208,12 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 				var selectedPermissions = {};
 				permissions.forEach((item) => {
 					selectedPermissions[item.Object + "|" + item.ObjectID] = 1;
-				})
+				});
 				this.permissionAssets.forEach((res) => {
 					if (selectedPermissions[res["Value"]]) {
 						this._tempSelectedPermissionAssets.push(res);
 					}
-				})
+				});
 				this.addPermissionAssets();
 
 				//preselect folder items
@@ -450,11 +450,11 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 						label: null,
 						items: [{ label: 'Custom', path: dataUrl, img: true }]
 					}, ...this.categories
-					]
+					];
 				}
 				this.folderModel.Icon = this.categories[0].items[0];
 				this.cdRef.markForCheck();
-			})
+			});
 	}
 
 	loadTableData() {
@@ -476,7 +476,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			}
 
 			this.cdRef.markForCheck();
-		})
+		});
 	}
 
 	menuPermissionsOnModeChange($event) {
@@ -510,7 +510,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			for (let j = 0; j < this._tempSelectedFolderItems.length; j++) {
 				if (this.newFolderItems.indexOf(this._tempSelectedFolderItems[j]) === -1) {
 					this.newFolderItems.push(this._tempSelectedFolderItems[j]);
-					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j])
+					this.availableItems = this.availableItems.filter((x) => x != this._tempSelectedFolderItems[j]);
 				}
 			}
 			this.newFolderItems = this.newFolderItems.sort((a, b) => a.Title.localeCompare(b.Title));
@@ -544,7 +544,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(j, 0, this.newFolderItems.splice(x, 1)[0])
+				this.newFolderItems.splice(j, 0, this.newFolderItems.splice(x, 1)[0]);
 			}
 		}
 	}
@@ -567,7 +567,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(x - 1, 0, this.newFolderItems.splice(x, 1)[0])
+				this.newFolderItems.splice(x - 1, 0, this.newFolderItems.splice(x, 1)[0]);
 			}
 		}
 	}
@@ -584,7 +584,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		if (this.selectedNewFolderItems.length > 0) {
 			for (let j = this.selectedNewFolderItems.length - 1; j >= 0; j--) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
-				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0])
+				this.newFolderItems.splice(x + 1, 0, this.newFolderItems.splice(x, 1)[0]);
 			}
 		}
 	}
@@ -602,7 +602,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 			for (let j = 0; j < this.selectedNewFolderItems.length; j++) {
 				let x = this.newFolderItems.findIndex((i) => i.ObjectID == this.selectedNewFolderItems[j].ObjectID && i.Object == this.selectedNewFolderItems[j].Object);
 				let newPosition = this.newFolderItems.length - j;
-				this.newFolderItems.splice(newPosition - 1, 0, this.newFolderItems.splice(x, 1)[0])
+				this.newFolderItems.splice(newPosition - 1, 0, this.newFolderItems.splice(x, 1)[0]);
 			}
 		}
 	}

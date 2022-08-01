@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IconPickerModule } from '../shared/controls/icon-picker/icon-picker.component';
-import { SwitchModule } from '../shared/controls/switch/switch'
+import { SwitchModule } from '../shared/controls/switch/switch';
 import { CoreModule } from '../shared/core.module';
 import { IgDateModule } from '../shared/controls/date/date';
 
