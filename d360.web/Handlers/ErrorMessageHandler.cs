@@ -39,10 +39,13 @@ namespace d360.web.Handlers
 				return response;
 			}
 
+			object message;
+			responseContent.TryGetValue("message", out message);
+
 			var responseMetadata = new ErrorResponse
 			{
 				type = "error",
-				message = responseContent["message"].ToString()
+				message = message?.ToString()
 			};
 
 			if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
