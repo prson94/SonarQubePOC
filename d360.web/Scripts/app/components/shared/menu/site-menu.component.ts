@@ -424,4 +424,4 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
             }
         });
     }
-};
+}

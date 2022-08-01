@@ -25,7 +25,7 @@ export class SiteMenuCategoryComponent extends BaseComponent {
     @Input() emptyHint: TemplateRef<any>;
 
     @Output() clearClick = new EventEmitter();
-    @Output() activeItemChanged = new EventEmitter();;
+    @Output() activeItemChanged = new EventEmitter();
 
     @HostListener('document:click', ['$event'])
     documentClick(event: MouseEvent) {

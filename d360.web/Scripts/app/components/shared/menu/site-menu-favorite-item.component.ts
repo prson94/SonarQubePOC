@@ -64,4 +64,4 @@ export class SiteMenuFavoriteItemComponent {
     searchText$ = this.store.state$.pipe(
         map(x => x.searchText)
     );
-};
+}

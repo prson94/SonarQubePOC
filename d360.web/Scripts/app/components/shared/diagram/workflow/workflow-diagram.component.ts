@@ -1893,7 +1893,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             m.activityType = a.ID;
             m.runCount = 0;
             m.settings = new NodeSettings();
-            m.fields = new NodeFields();;
+            m.fields = new NodeFields();
             m.valid = true;
 
             paletteModel.push(m);

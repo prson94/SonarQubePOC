@@ -723,4 +723,4 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         return false;
     }
-};
+}

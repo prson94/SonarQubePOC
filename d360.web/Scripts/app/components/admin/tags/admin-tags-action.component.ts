@@ -10,7 +10,7 @@ export class AdminTagsActionComponent {
     @Input() selectedTags: TagType[] = [];
 
 
-    @Output() onDelete: EventEmitter<any> = new EventEmitter();;
+    @Output() onDelete: EventEmitter<any> = new EventEmitter();
     @Output() onConsolidate: EventEmitter<any> = new EventEmitter();
 
     onDeleteClick() {

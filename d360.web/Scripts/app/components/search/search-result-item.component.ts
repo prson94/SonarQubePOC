@@ -267,4 +267,4 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             neighbor?.querySelector<HTMLDivElement>(".card-res")?.focus();
         }
     }
-};
+}

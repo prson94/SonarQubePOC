@@ -103,6 +103,6 @@ export class SiteMenuFavoritesComponent extends BaseComponent implements OnInit,
         this.activeItemChanged.emit(event);
         this.ref.detectChanges();
     }
-};
+}
 
 
