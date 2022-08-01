@@ -55,7 +55,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(`api/count/assignments/${daysToLookBack}` + (resourceId ? `?id=${resourceId}` : ''))
             .pipe(
                 map(response => <Count[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -69,7 +69,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(url)
             .pipe(
                 map(response => <IssueDetail[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -83,7 +83,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(url)
             .pipe(
                 map(response => <Issue[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
     
@@ -95,7 +95,7 @@ export class WorkflowService extends BaseObservableService {
             .post(`/services/workflow/tasks/${issue.WorkflowID}`, JSON.stringify({ WorkflowAction: action, AssignTo: assignTo, Comment: comment }), { headers: headers })
             .pipe(
             map(response => <JsonResult>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
   
@@ -121,7 +121,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(`/api/v2/actions/types${qString}`)
             .pipe(
                 map(response => <WorkflowIssueType[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             ); 
     }
 
@@ -129,7 +129,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get('/api/v2/actions/types')
             .pipe(
                 map(response => <WorkflowIssueType[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );  
     }
 
@@ -185,7 +185,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(uri)
             .pipe(
                 map(response => <WorkflowDiagramModel>response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -198,7 +198,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.post('/services/workflow/form/bulk', model)
             .pipe(
                 map(response => response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -216,7 +216,7 @@ export class WorkflowService extends BaseObservableService {
         return this.http.get(`/services/workflow/form/${id}/${itemStepId}`)
             .pipe(
                 map(response => <WorkflowForm>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
  
@@ -225,7 +225,7 @@ export class WorkflowService extends BaseObservableService {
             .post(`services/workflow/ReassignWorkflowResource/${itemStepId}/${resourceId}/${clearAssignents}`, null)
             .pipe(
                 map(response => <JsonResult>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -239,7 +239,7 @@ export class WorkflowService extends BaseObservableService {
             .post(url, null)
             .pipe(
                 map(response => <JsonResult>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -248,7 +248,7 @@ export class WorkflowService extends BaseObservableService {
             .post(`services/workflow/SubmitWorkflowForm/${itemId}/${stepId}`, fields)
             .pipe(
                 map(response => response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -264,7 +264,7 @@ export class WorkflowService extends BaseObservableService {
          return this.http.get('services/workflow/changetypes')
             .pipe(
                 map(response => <ChangeTypeInfo[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 

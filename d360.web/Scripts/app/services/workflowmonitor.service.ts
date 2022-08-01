@@ -45,7 +45,7 @@ export class WorkflowMonitorService extends BaseObservableService {
         return this.http.get(uri)
             .pipe(
                 map(response => <GridFilterColumn[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
