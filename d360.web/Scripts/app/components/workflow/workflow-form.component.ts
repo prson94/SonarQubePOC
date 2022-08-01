@@ -234,4 +234,4 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     private filterItems(e: any) {
         this.filteredAssetsSource.next(e.query);
     }
-};
+}

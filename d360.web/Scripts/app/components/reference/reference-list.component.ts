@@ -229,4 +229,4 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceListUid}`;
         }
     }
-};
+}

@@ -529,4 +529,4 @@ export class GovernanceMeasureEditorComponent extends BaseMeasureEditorComponent
         return false;
     }
 
-};
+}

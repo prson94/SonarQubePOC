@@ -26,7 +26,7 @@ export class WorkflowMonitorListComponent extends BaseComponent implements OnIni
     @Input() predefinedFilters: GridFilterExpression[] = [];
     @Input() showHeader: boolean = true;
     title: string = $localize`WorkFlow Items`;
-    items: WorkflowMonitorItem[] = [];;
+    items: WorkflowMonitorItem[] = [];
     subItems: Subscription;
     totalRecords: number;
     rowsPerPage: number = 10;

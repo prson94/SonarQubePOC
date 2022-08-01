@@ -60,4 +60,4 @@ export class SiteMenuShowFavoritesPanelComponent {
         this.router.navigateByUrl(f.Route, { state: { "invalidateKey": true } });
         this.activeItemChanged.emit(undefined);
     }
-};
+}

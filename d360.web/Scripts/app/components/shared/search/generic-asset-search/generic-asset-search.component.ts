@@ -31,7 +31,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     @Input() showPredicateSelector: boolean = false;
 
     // When selector is enabled, filters a list of predicates based on the type below.
-    @Input() predicateSelectorType: PredicateType;;
+    @Input() predicateSelectorType: PredicateType;
     @Output() predicateSelectorTypeChange = new EventEmitter();
 
     // How should users select the options.

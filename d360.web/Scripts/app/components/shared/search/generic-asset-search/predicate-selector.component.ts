@@ -15,7 +15,7 @@ import { PredicatesService } from '../../../../services/predicates.service';
 
 export class PredicateSelectorComponent implements OnInit {
 
-    @Input() predicateType: PredicateType;;
+    @Input() predicateType: PredicateType;
     @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
     @Output() onChange: EventEmitter<Predicate> = new EventEmitter();
     @Input() selected: Predicate;

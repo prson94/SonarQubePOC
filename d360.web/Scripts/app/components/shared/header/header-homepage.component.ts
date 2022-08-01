@@ -37,7 +37,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
 
     private name: string;
 
-    get title(): string { return this.isHomePageItem ? $localize`Remove home page` : $localize`Make this my home page`; };
+    get title(): string { return this.isHomePageItem ? $localize`Remove home page` : $localize`Make this my home page`; }
 
     constructor(
         private favoritesService: FavoritesService,

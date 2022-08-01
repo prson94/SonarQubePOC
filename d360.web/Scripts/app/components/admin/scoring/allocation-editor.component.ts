@@ -315,4 +315,4 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
         return '...' + str.substring(startIndex);
     }
 
-};
+}

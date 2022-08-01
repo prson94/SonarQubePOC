@@ -438,4 +438,4 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     onFiltersLoaded() {
         this.getData();
     }
-};
+}

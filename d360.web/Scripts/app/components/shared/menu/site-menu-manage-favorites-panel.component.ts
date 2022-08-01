@@ -55,4 +55,4 @@ export class SiteMenuManageFavoritesPanelComponent {
         // but we can switch only to on & off statuses
         this.store.setAllFavoritesRemovalSaga({ removeOn: !currentStatus });
     }
-};
+}

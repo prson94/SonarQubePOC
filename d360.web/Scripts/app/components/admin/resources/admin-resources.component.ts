@@ -19,7 +19,7 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
     showSidePanel: boolean = true;
     private sidePanelOpen: boolean = false;
     sidePanelTab: string = 'detail';
-    sidePanelStorageKey: string = 'Admin_User_list_' + CurrentResourceID;;
+    sidePanelStorageKey: string = 'Admin_User_list_' + CurrentResourceID;
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,

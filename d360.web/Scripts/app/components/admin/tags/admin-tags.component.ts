@@ -382,4 +382,4 @@ export class AdminTagsComponent extends AdminBaseComponent {
         mutator(draft);
         this.tags = draft;
     }
-};
+}

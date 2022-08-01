@@ -70,7 +70,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         this.ref.markForCheck();
     }
 
-    get title(): string { return this.isFavoriteItem ? $localize`Remove from favorites` : $localize`Add to favorites`; };
+    get title(): string { return this.isFavoriteItem ? $localize`Remove from favorites` : $localize`Add to favorites`; }
 
     ngOnDestroy() {
         if (this.subBreadcrumb) {

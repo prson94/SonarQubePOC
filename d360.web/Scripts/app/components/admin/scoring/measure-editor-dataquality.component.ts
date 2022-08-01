@@ -420,4 +420,4 @@ export class DataQualityMeasureEditorComponent extends BaseMeasureEditorComponen
 
         return false;
     }
-};
+}
