@@ -885,22 +885,21 @@ namespace d360.extensions.search
                 SubjectAdv.DisplayValue as 'Synonym',
                 I.Subject as 'SynonymObjectType',
                 I.SubjectID as  'SynonymObjectID',
-                SubjectAsset.ID as 'SynonymAssetID', 
+                I.SubjectAssetID as 'SynonymAssetID', 
                 ObjectAdv.DisplayValue as 'SynonymFor', 
                 I.Object as 'SynonymForObject', 
                 I.ObjectID as 'SynonymForObjectID',
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',
+                dbo.GenerateAssetUrl(I.ObjectAssetID) as 'Url',
                 ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType',
                 P.Name as 'PredicateName' 
             from [intersect] I 
                 inner join IntersectType T on T.ID = I.IntersectTypeID
                 inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-                inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Subject and SubjectAsset.ObjectID = I.SubjectID 
-                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID 
-                inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Object and ObjectAsset.ObjectID = I.ObjectID 
-                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID 
-                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID
+                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = I.SubjectAssetID 
+                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = I.ObjectAssetID 
+                inner join Asset ObjectAsset on ObjectAsset.ID = I.ObjectAssetID
+                inner join AssetType ArtType on I.ObjectAssetTypeID = ArtType.ID
                 {where}
             Union 
             SELECT
@@ -909,21 +908,20 @@ namespace d360.extensions.search
                 SubjectAdv.DisplayValue as 'Synonym', 
                 I.Object as 'SynonymObjectType', 
                 I.ObjectID as  'SynonymObjectID', 
-                SubjectAsset.ID as 'SynonymAssetID', 
+                I.SubjectAssetID as 'SynonymAssetID', 
                 ObjectAdv.DisplayValue as 'SynonymFor', 
                 I.Subject as 'SynonymForObject', 
                 I.SubjectID as 'SynonymForObjectID', 
-                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', 
+                dbo.GenerateAssetUrl(I.ObjectAssetID) as 'Url', 
                 ObjectAsset.uid as Uid,
                 ArtType.Name as 'SynonymForObjectType', 
                 P.Name as 'PredicateName'
             from [intersect] I
                 inner join IntersectType T on T.ID = I.IntersectTypeID 
                 inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 
-                inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Object and SubjectAsset.ObjectID = I.ObjectID 
-                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-                inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Subject and ObjectAsset.ObjectID = I.SubjectID 
-                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID 
+                inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = I.ObjectAssetID
+                inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = I.SubjectAssetID
+                inner join Asset ObjectAsset on ObjectAsset.ID = I.SubjectAssetID
                 inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID
                 {where}
             order by SynonymFor";
