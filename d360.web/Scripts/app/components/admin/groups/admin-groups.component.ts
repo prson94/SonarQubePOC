@@ -46,6 +46,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 
     createButtonLabel = $localize`Create New Group`;
     deleteModalTitle = $localize`Delete Group`;
+    editLabel = $localize`Edit`;
 
     labelCancel = $localize`Cancel`;
     labelDelete = $localize`Delete`;

@@ -7,7 +7,7 @@
             <header>{{title}}</header>
             <div class="col s12"
                  *ngIf="objectType != 'Issue'">
-                <ng-container i18n>The following form is for the [<b>{{typeName}}</b>] named </ng-container>[<b>
+                <ng-container i18n>The following form is for the [{{typeName}}] named </ng-container>[<b>
                     <d3s-preview-tooltip [objectType]="objectType"
                                          [objectId]="objectID">
                         <a *ngIf="objectUrl != null"

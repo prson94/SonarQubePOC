@@ -145,17 +145,17 @@ export class MeasureRuleResultsComponent extends BaseComponent implements OnDest
             if (operation) {
                 let messagePart = ``;
                 if (operation === MetricRuleResultOperation.Maximum) {
-                    messagePart += $localize`maximum pass fraction, the measure score will most likely be unaffected by this.`;
+					messagePart += $localize`As this measure uses the maximum pass fraction, the measure score will most likely be unaffected by this.`;
                 }
                 else if (operation === MetricRuleResultOperation.Minimum) {
-                    messagePart += $localize`minimum pass fraction, the measure score will be 0.`;
+					messagePart += $localize`As this measure uses the minimum pass fraction, the measure score will be 0.`;
                 }
                 else { // (operation === MetricRuleResultOperation.Average)
-                    messagePart += $localize`average pass fraction, the measure score may be lower than expected.`;
+					messagePart += $localize`As this measure uses the average pass fraction, the measure score may be lower than expected.`;
                 }
 
                 message = $localize`For this scoring date, no rule results were found for this asset and rule.
-                           A pass fraction of 0 will therefore be used in place of this missing result. As this measure uses the ${messagePart}`;
+                           A pass fraction of 0 will therefore be used in place of this missing result.` + ' ' + + messagePart;
 
             }
         }

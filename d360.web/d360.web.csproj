@@ -406,105 +406,210 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ActionApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\ActionApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ActionApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\ApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\ApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApiMessages.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\AssetsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AssetsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\AssetsApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssetsApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\CommentsAPIMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>CommentsAPIMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\CommentsAPIMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CommentsAPIMessages.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\ConnectorLabelAPIMessage.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ConnectorLabelAPIMessage.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\ConnectorLabelAPIMessage.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ConnectorLabelAPIMessage.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\Core.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Core.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\Core.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Core.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\DataProfileAPIMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DataProfileAPIMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\DataProfileAPIMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DataProfileAPIMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\FieldInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FieldInfo.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\FieldInfo.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FieldInfo.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\FormControllerApiMessage.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FormControllerApiMessage.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\FormControllerApiMessage.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FormControllerApiMessage.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\FormInfo.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>FormInfo.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\FormInfo.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FormInfo.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\MetricsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MetricsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\MetricsApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MetricsApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\OthersMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>OthersMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\OthersMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OthersMessages.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\RelationshipsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>RelationshipsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\RelationshipsApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RelationshipsApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\ResponsibilityApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ResponsibilityApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\ResponsibilityApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResponsibilityApiMessages.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\ScoreApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ScoreApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\ScoreApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ScoreApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\SearchApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SearchApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\SearchApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SearchApiMessages.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\SurverysApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SurverysApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\SurverysApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SurverysApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\Swagger.designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Swagger.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\Swagger.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Swagger.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_GlobalResources\TagsApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TagsApiMessages.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\TagsApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>TagsApiMessages.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\Validation.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_GlobalResources\Validation.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Validation.nl-NL.resx</DependentUpon>
+    </Compile>
     <Compile Include="App_GlobalResources\WorkflowApiMessages.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>WorkflowApiMessages.resx</DependentUpon>
+    </Compile>
+    <Compile Include="App_GlobalResources\WorkflowApiMessages.nl-NL.designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>WorkflowApiMessages.nl-NL.resx</DependentUpon>
     </Compile>
     <Compile Include="App_Start\BaseMiddleware.cs" />
     <Compile Include="App_Start\ClaimMappingsMiddleware.cs" />
@@ -772,6 +877,14 @@
     <Content Include="Content\styles\Tooltip.min.css">
       <DependentUpon>Tooltip.css</DependentUpon>
     </Content>
+    <EmbeddedResource Include="App_GlobalResources\ActionApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ActionApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\ApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ApiMessages.Designer.cs</LastGenOutput>
@@ -783,6 +896,26 @@
       <LastGenOutput>ActionApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\AssetsApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>AssetsApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\CommentsAPIMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>CommentsAPIMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ConnectorLabelAPIMessage.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ConnectorLabelAPIMessage.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\Core.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>Core.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\DataProfileAPIMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>DataProfileAPIMessages.nl-NL.designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\DataProfileAPIMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -805,15 +938,35 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\FieldInfo.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>FieldInfo.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>FormControllerApiMessage.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\FormControllerApiMessage.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FormControllerApiMessage.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
     </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\FormInfo.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>FormInfo.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>MetricsApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MetricsApiMessages.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\OthersMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>OthersMessages.nl-NL.designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\OthersMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -821,11 +974,35 @@
       <CustomToolNamespace>Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>RelationshipsApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\RelationshipsApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RelationshipsApiMessages.designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ResponsibilityApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ResponsibilityApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\ScoreApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>ScoreApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\SearchApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>SearchApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\SurverysApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>SurverysApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\Swagger.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>Swagger.nl-NL.designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\Swagger.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -836,6 +1013,18 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>SearchApiMessages.Designer.cs</LastGenOutput>
       <CustomToolNamespace>Resources</CustomToolNamespace>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\TagsApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>TagsApiMessages.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\Validation.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>Validation.nl-NL.designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.nl-NL.resx">
+      <Generator>GlobalResourceProxyGenerator</Generator>
+      <LastGenOutput>WorkflowApiMessages.nl-NL.designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\WorkflowApiMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

@@ -1,34 +1,35 @@
 <header>Confirm Deletion of {{assetTypeName}} {{className}} Type</header>
 <div class="row">
-    <div *ngIf="isLoading;else notLoading"
-         style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
-    <ng-template #notLoading>
-        <div class="col s12"><ng-container i18n>Are you sure you want to delete the {{className}} Type {{assetTypeName}}.</ng-container></div>
-        <div class="col s12"
-             *ngIf="count > 0">&nbsp;</div>
-        <div class="col s12"
-             *ngIf="count > 0">
-            <p-checkbox [(ngModel)]="signoff"
-                        binary="true"></p-checkbox><i class="fa fa-exclamation-triangle"
-                                                      aria-hidden="true"></i>
-            <ng-container i18n>
-                The selected {{className}} Type contains <b>{{count}}</b> {{className}} that will also
-                be deleted. These actions cannot be undone. Please check this box if you would like to continue.
-            </ng-container>
-        </div>
-    </ng-template>
+	<div *ngIf="isLoading;else notLoading"
+		 style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+	<ng-template #notLoading>
+		<div class="col s12"><ng-container i18n>Are you sure you want to delete the {{className}} Type {{assetTypeName}}.</ng-container></div>
+		<div class="col s12"
+			 *ngIf="count > 0">&nbsp;</div>
+		<div class="col s12"
+			 *ngIf="count > 0">
+			<p-checkbox [(ngModel)]="signoff"
+						binary="true"></p-checkbox><i class="fa fa-exclamation-triangle"
+													  aria-hidden="true"></i>
+												   <ng-container i18n>
+												   	The selected {{className}} Type contains
+												   	{count, plural, =0 {0 assets} =1 {1 asset} other { {{count}} assets}} that will also
+												   	be deleted. These actions cannot be undone. Please check this box if you would like to continue.
+												   </ng-container>
+		</div>
+	</ng-template>
 </div>
 <div class="row">
-    <div class="col s12">&nbsp;</div>
+	<div class="col s12">&nbsp;</div>
 </div>
 <div class="row">
-    <button pButton
-            (click)="delete()"
-            [attr.data-cy]="'AssetType_Button_Delete'"
-            label="{{labelDelete}}"
-            [disabled]="isLoading || (count > 0 && !signoff)"></button>
-    <button pButton
-            (click)="cancel()"
-            [attr.data-cy]="'AssetType_Button_Cancel'"
-            label="{{labelCancel}}"></button>
+	<button pButton
+			(click)="delete()"
+			[attr.data-cy]="'AssetType_Button_Delete'"
+			label="{{labelDelete}}"
+			[disabled]="isLoading || (count > 0 && !signoff)"></button>
+	<button pButton
+			(click)="cancel()"
+			[attr.data-cy]="'AssetType_Button_Cancel'"
+			label="{{labelCancel}}"></button>
 </div>

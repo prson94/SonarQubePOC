@@ -45,5 +45,36 @@ namespace igx.UnitTests.WebUtilitiesTests
             Assert.NotNull(CultureInfo.CurrentCulture);
             Assert.True(!string.IsNullOrEmpty(CultureInfo.CurrentUICulture.Name));
         }
-    }
+
+
+		[Theory]
+		[InlineData("nl")]
+		[InlineData("nl-NL")]
+		[InlineData("nl-BE")]
+		[InlineData("nl-XX")]
+		public void DutchLanguageTest(string locale)
+		{
+			InternationalizationUtilities.SetUserLocale(locale);
+
+			Assert.NotNull(CultureInfo.CurrentCulture);
+			Assert.Equal("NL-NL", (CultureInfo.CurrentUICulture.Name ?? "").ToUpper());
+		}
+
+		[Theory]
+		[InlineData("nl","nl-NL")]
+		[InlineData("nl-NL", "nl-NL")]
+		[InlineData("nl-BE", "nl-NL")]
+		[InlineData("nl-XX", "nl-NL")]
+		[InlineData("en", "en")]
+		[InlineData("en-us","en")]
+		[InlineData("de","en")]
+		[InlineData(null, "en")]
+		public void GetUserLocaleCodeForChunkLocaleJSHandler(string locale, string expectedLocale)
+		{
+			var redirectLocale = InternationalizationUtilities.GetUserLocaleCode(locale);
+
+			Assert.NotNull(redirectLocale);
+			Assert.Equal(expectedLocale.ToLowerInvariant(), redirectLocale.ToLowerInvariant());
+		}
+	}
 }
