@@ -14,7 +14,13 @@
       "sourceRoot": "Scripts",
       "prefix": "d3s",
       "i18n": {
-        "sourceLocale": "en"
+				"sourceLocale": "en",
+				"locales": {
+					"nl-NL": {
+						"translation": "locale/messages.nl-NL.xlf",
+						"baseHref": ""
+					}
+				}
       },
       "architect": {
         "build": {
@@ -61,7 +67,12 @@
                   "maximumError": "6mb"
                 }
               ]
-            }
+            },
+						"nl-NL": {
+							"localize": [
+								"nl-NL"
+							]
+						}
           },
           "defaultConfiguration": ""
         },

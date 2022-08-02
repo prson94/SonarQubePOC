@@ -145,7 +145,7 @@ namespace d360.web.Utilities
 			var uiLocale = AllowedUILocales.FirstOrDefault(x=> x.ToLowerInvariant().Contains(currentLocale));
 			if (uiLocale == null)
 			{
-				currentLocale = userLocale.ToLowerInvariant().Split('-')[0];
+				currentLocale = currentLocale.ToLowerInvariant().Split('-')[0];
 				uiLocale = AllowedUILocales.FirstOrDefault(x => x.ToLowerInvariant().Contains(currentLocale));
 			}
 			return string.IsNullOrEmpty(uiLocale) ? DefaultLocale : uiLocale;
