@@ -440,8 +440,10 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml, bool forJson, bool lookupFieldsPassedByValue);
         
         Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200);
-        
-        IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
+
+		Task ProcessRulesForExecution(Guid executionId, int beginItemNumber, int endItemNumber);
+
+		IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
         
@@ -535,7 +537,7 @@ namespace d360.model
         
         List<FieldTypeCore> GetAssetTypeFieldTypesCore(string obj, int objectID);
         
-        List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
+        Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
         
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200, int maxRetryCount = 10);
         

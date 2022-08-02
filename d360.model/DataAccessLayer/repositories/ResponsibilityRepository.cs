@@ -968,14 +968,14 @@ namespace d360.model.DataAccessLayer
 			sendAssetMeasureQueueForOverrides(responsibilityType, asset);
 		}
 
-		public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
+		public async Task<List<ResponsibilityRuleUpsertResponseModel>> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
 		{
 			Company.Add(execution);
 
 			List<ResponsibilityRuleUpsertResponseModel> results = null;
 			try
 			{
-				results = Company.UpsertResponsibilityRules(execution, responsibilityTypeUid, responsibilityRules);
+				results = await Company.UpsertResponsibilityRules(execution, responsibilityTypeUid, responsibilityRules);
 
 				// Close execution record.
 				execution.Processed = results.Count;

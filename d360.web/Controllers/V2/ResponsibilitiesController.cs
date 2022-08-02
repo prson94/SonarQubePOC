@@ -1299,7 +1299,7 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(responsibilityRules.Count);
 
-                var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+                var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -1372,7 +1372,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(responsibilityRules.Count);
-                var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+                var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }

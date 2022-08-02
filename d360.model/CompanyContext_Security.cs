@@ -425,8 +425,7 @@ namespace d360.model
 		/// <summary>
 		/// Re-process responsibility rules. By default this will re-process ALL rules unless passing a specific rule ID.
 		/// </summary>
-		/// <param name="cnn">The SQL connection object</param>
-		/// <param name="ruleID">Optionall pass a specific rule by its ID.</param>
+		/// <param name="ruleID">Optionally pass a specific rule by its ID.</param>
 		public async Task ProcessResponsibilityRelationRules(int? ruleID = null, int timeout = 7200)
 		{
 			List<ResponsibilityAssetMeasureProcessedResult> results = new List<ResponsibilityAssetMeasureProcessedResult>();
@@ -488,6 +487,71 @@ namespace d360.model
 			{
 				throw new ApplicationException(ruleExceptionMessages);
 			}
+		}
+
+
+		public async Task ProcessRulesForExecution(Guid executionId, int beginItemNumber, int endItemNumber)
+		{
+			List<ResponsibilityAssetMeasureProcessedResult> results = new List<ResponsibilityAssetMeasureProcessedResult>();
+
+			if (Connection.State != System.Data.ConnectionState.Open)
+			{
+				Connection.Open();
+			}
+
+			IEnumerable<ResponsibilityTypeRelationRule> rules = await GetRulesToRun(executionId, beginItemNumber, endItemNumber);
+
+			List<int> rulesRequiringRun = new List<int>();
+
+			string ruleExceptionMessages = "";
+
+			foreach (ResponsibilityTypeRelationRule rule in rules)
+			{
+				try
+				{
+					if (await ShouldRuleRun(rule.ID))
+					{
+						rulesRequiringRun.Add(rule.ID);
+						rule.SetDefinitionFromRaw();
+
+						if (rule.ApplyToType)
+						{
+							await ProcessRuleForAssetType(rule, results);
+						}
+						else
+						{
+							await ProcessRuleForAsset(rule, results);
+						}
+					}
+				}
+				catch (ApplicationException ex)
+				{
+					ruleExceptionMessages += ex.Message;
+				}
+			}
+
+			// Send measure results to score engine.
+			DateTime today = DateTime.UtcNow.Date;
+			List<AssetMeasureModel> structuredMeasures = results.GroupBy(m => new { m.AssetUid })
+				.Select(m => new AssetMeasureModel
+				{
+					AssetUid = m.Key.AssetUid,
+					EffectiveDate = today,
+					Measures = m.Select(o => new AssetMeasureChildModel
+					{
+						AllocationUid = o.AllocationUid,
+						MetricAssetUid = o.MetricAssetUid,
+						MetricAssetVersionUid = o.MetricAssetVersionUid
+					}).Distinct().ToList()
+				}).ToList();
+
+			CreateMeasureChangedResultExecution(structuredMeasures);
+
+			if (!string.IsNullOrEmpty(ruleExceptionMessages))
+			{
+				throw new ApplicationException(ruleExceptionMessages);
+			}
+
 		}
 
 		#region Helper Methods
@@ -750,7 +814,6 @@ namespace d360.model
 		/// <summary>
 		/// Load the Responsibility Rules that the rebuild process should run
 		/// </summary>
-		/// <param name="cnn">DB connection</param>
 		/// <param name="ruleID">Specific responsibilty rule id to go after</param>
 		/// <returns></returns>
 		private async Task<IEnumerable<ResponsibilityTypeRelationRule>> GetRulesToRun(int? ruleID)
@@ -761,6 +824,18 @@ namespace d360.model
 			}
 
 			return await Connection.QueryAsync<ResponsibilityTypeRelationRule>(@"select * from ResponsibilityTypeRelationRule");
+		}
+
+		private async Task<IEnumerable<ResponsibilityTypeRelationRule>> GetRulesToRun(Guid executionId, int beginItemNumber, int endItemNumber)
+		{
+				return await Connection.QueryAsync<ResponsibilityTypeRelationRule>(@"
+					select	R.* 
+					from	ResponsibilityTypeRelationRule R 
+							inner join api.executionresponsibilityrule E on E.uid = R.uid 
+								and E.Success != 0
+								and E.ItemNumber between @beginItemNumber and @endItemNumber
+								and E.ExecutionID = @executionId"
+				, new { executionId, beginItemNumber, endItemNumber });
 		}
 
 		public async Task<string> GetWhenResultsSql(ResponsibilityTypeRelationRule rule, SqlTransaction transaction, bool includeName = true, bool includeUid = true)
