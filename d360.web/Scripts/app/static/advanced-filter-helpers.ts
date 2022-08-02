@@ -3,7 +3,7 @@
 export class AdvancedFiltersHelper {
 
     static parseFiltersFromTableFilters(data, fields: GridField[]): string {
-        var props = Object.keys(data).filter(x=> x != 'global');
+        var props = Object.keys(data).filter(x => x != 'global');
         var ret: string = '';
         props.forEach(prop => {
             if (prop != 'global') {
