@@ -1,10 +1,9 @@
-<div *ngIf="isLoading || isLoadingDefaultValue"
+<div *ngIf="isLoading"
      style="text-align:center;">
     <i class="fa fa-spinner fa-spin fa-2x"></i>
 </div>
-<div *ngIf="!isLoading && !isLoadingDefaultValue">
-    <form (ngSubmit)="onSubmit()"
-          #fieldEditor="ngForm">
+<div *ngIf="!isLoading">
+    <form (ngSubmit)="onSubmit()" #fieldEditor="ngForm">
         <div class="row">
             <div class="col l9 m8 s12">
                 <simple-accordion i18n-header
@@ -546,14 +545,22 @@
                             No scores are currently defined for this asset type
                         </div>
                     </ng-container>
-                    <p-dropdown *ngIf="currentType == 'Lookup'"
-                                [options]="lookupDefaultValueOptions"
-                                [(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
-                                (ngModelChange)="model.FieldType.Type[currentType].DefaultValue = $event;"
-                                [style]="{ 'width': '98%' }"
-                                ngDefaultControl
-                                [ngModelOptions]="{standalone: true}"
-                                [disabled]="listFilterPredicate != null"></p-dropdown>
+					<ng-container *ngIf="currentType == 'Lookup'">
+						<p-dropdown *ngIf="!isLoadingDefaultValue; else lookupDefaultValuesAbsent"
+									[options]="lookupDefaultValueOptions"
+									[(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
+									(ngModelChange)="model.FieldType.Type[currentType].DefaultValue = $event;"
+									[style]="{ 'width': '98%' }" ngDefaultControl
+									[ngModelOptions]="{standalone: true}"
+									[disabled]="listFilterPredicate != null"></p-dropdown>
+						<ng-template #lookupDefaultValuesAbsent>
+							<p-dropdown [options]="[loadingLabel]"
+										[(ngModel)]="loadingLabel"
+										[style]="{ 'width': '98%' }"
+										[ngModelOptions]="{standalone: true}"
+										[disabled]="true" ngDefaultControl></p-dropdown>
+						</ng-template>
+					</ng-container>
                     <p-calendar *ngIf="currentType == 'Date'"
                                 [ngModelOptions]="{standalone: true}"
                                 [(ngModel)]="defaultDate"

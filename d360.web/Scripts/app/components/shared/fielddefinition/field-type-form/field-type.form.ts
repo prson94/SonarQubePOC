@@ -151,7 +151,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public listSingleSegmentCheckbox: boolean = false;
     public assetTypeAncestries: AssetTypeAncestry[] = [];
 
-    chooseLabel = $localize`Choose...`;
+	chooseLabel = $localize`Choose...`;
+	loadingLabel = $localize`Loading...`;
 
     constructor(private fieldsService: FieldsObservableService,
         private messagesService: MessagesObservableService,
