@@ -95,7 +95,7 @@
                                                     [igDataCy]="'Hierarchy_Toggler_' + item.AssetUid"
                                                     *ngIf="i === 0"></p-treeTableToggler>
                                 <ng-container *ngIf="i === linkColumnIndex">
-                                    <a (click)="showHierarchy($event, item)" context-link [isOpenDefault]="true"
+                                    <a (click)="showHierarchy($event, item); selectAsset(rowNode.node)" context-link
                                        [ngStyle]="setTreeNodeStyles(rowNode.node)"
                                        [igDataCy]="'Hierarchy_Item_' + item.AssetUid">
                                         <d3s-dynamic-field-value [column]="column"
