@@ -153,4 +153,7 @@
   <data name="AssetTypeInvalidClass" xml:space="preserve">
     <value>Asset Type Class invalid. Allowed classes are {0}</value>
   </data>
+  <data name="AssetNotFound" xml:space="preserve">
+    <value>Asset with Uid {0} not found</value>
+  </data>
 </root>

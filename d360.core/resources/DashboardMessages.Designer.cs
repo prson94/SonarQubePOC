@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dashboard with provided Uid not found.
+        ///   Looks up a localized string similar to Dashboard with Uid {0} not found.
         /// </summary>
         public static string DashboardNotFound {
             get {
