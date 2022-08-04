@@ -31,7 +31,6 @@ export class StringConstants {
     static Section_Actions = $localize`Workflow Actions`;
     static Section_Branding = $localize`Branding`;
     static Section_BusinessAssets = $localize`Business Assets`;
-    static Section_CustomApi = $localize`Custom API`;
     static Section_Dashboards = $localize`Dashboards`;
     static Section_ExportTemplates = $localize`Export Templates`;
     static Section_Groups = $localize`Groups`;
