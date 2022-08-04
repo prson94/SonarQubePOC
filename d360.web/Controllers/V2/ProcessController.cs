@@ -13,6 +13,7 @@ using d360.core.enums;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Microsoft.Web.Http;
 
@@ -113,19 +114,19 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
+				throw new ArgumentException(OthersMessages.AssetUidMustSpecified);
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
+				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
 			IEnumerable<dynamic> nodes = await ProcessRepository.GetAvailableDiagramNodesForAsset(assetUid);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, nodes));
+			return Ok(nodes);
 		}
 
 		/// <summary>
