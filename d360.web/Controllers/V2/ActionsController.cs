@@ -17,6 +17,7 @@ using d360.model;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Dapper;
 
@@ -195,7 +196,7 @@ namespace d360.web.Controllers.V2
 
 					if (issueType == null)
 					{
-						throw new NotFoundException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
+						throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.ActionTypeUidIsNotValid, actionTypeUid));
 					}
 					else
 					{
@@ -226,13 +227,13 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					throw new NotFoundException(string.Format(ApiMessages.InvalidGuid, actionTypeUid));
+					throw new NotFoundBusinessLayerException(string.Format(ApiMessages.InvalidGuid, actionTypeUid));
 				}
 			}
 
 			if (!isOrderByFieldValid)
 			{
-				throw new NotFoundException(string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order));
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.OrderByFieldNotFoundMessage, _order));
 			}
 
 			if (!string.IsNullOrEmpty(assetUid) && !string.IsNullOrWhiteSpace(assetUid))
@@ -243,7 +244,7 @@ namespace d360.web.Controllers.V2
 
 					if (asset == null)
 					{
-						throw new NotFoundException(string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid));
+						throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetUidIsNotValid, assetUid));
 					}
 
 					queries.Add("A.[Uid] = @assetUid");
@@ -251,7 +252,7 @@ namespace d360.web.Controllers.V2
 				}
 				else
 				{
-					throw new NotFoundException(string.Format(ApiMessages.InvalidGuid, assetUid));
+					throw new NotFoundBusinessLayerException(string.Format(ApiMessages.InvalidGuid, assetUid));
 				}
 			}
 
