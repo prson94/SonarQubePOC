@@ -2354,7 +2354,7 @@ namespace d360.web.Controllers.V2
 
 				var responseModel = await DashboardRepository.PutDashboardAsync(requestModel);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
 			}
 			catch (GenericException ex)
 			{

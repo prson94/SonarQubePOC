@@ -44,6 +44,8 @@ namespace d360.model.DataAccessLayer
 			report.Name = model.Name;
 			report.Description = model.Description;
 			report.AssetTypeID = model.AssetTypeId;
+			report.AssetTypeUid = model.AssetTypeUid;
+
 			if (model.Definition != null)
 			{
 				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
@@ -68,6 +70,8 @@ namespace d360.model.DataAccessLayer
 			report.Name = model.Name;
 			report.Description = model.Description;
 			report.AssetTypeID = model.AssetTypeId;
+			report.AssetTypeUid = model.AssetTypeUid;
+
 			if (model.Definition != null)
 			{
 				report.Definition = Newtonsoft.Json.JsonConvert.SerializeObject(model.Definition);
@@ -93,7 +97,7 @@ namespace d360.model.DataAccessLayer
 
 			if (assetType == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeNotFound, model.AssetTypeUid));
+				throw new GenericException(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeNotFound, model.AssetTypeUid));
 			}
 			model.AssetTypeId = assetType.ID;
 			var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.User };
@@ -133,7 +137,7 @@ namespace d360.model.DataAccessLayer
 			var dashboard = CompanyContext.Reports.FirstOrDefault(x => x.uid == uid);
 			if (dashboard == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
+				throw new GenericException(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
 			}
 
 
