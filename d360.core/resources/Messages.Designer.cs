@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset with Uid {0} not found.
+        /// </summary>
+        public static string AssetNotFound {
+            get {
+                return ResourceManager.GetString("AssetNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Type Class invalid. Allowed classes are {0}.
         /// </summary>
         public static string AssetTypeInvalidClass {

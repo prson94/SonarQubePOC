@@ -133,7 +133,7 @@ namespace d360.model.DataAccessLayer
 			var dashboard = CompanyContext.Reports.FirstOrDefault(x => x.uid == uid);
 			if (dashboard == null)
 			{
-				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
+				throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(DashboardMessages.DashboardNotFound, uid));
 			}
 
 

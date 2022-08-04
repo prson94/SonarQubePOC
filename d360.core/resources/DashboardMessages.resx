@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DashboardNotFound" xml:space="preserve">
-    <value>Dashboard with provided Uid not found</value>
+    <value>Dashboard with Uid {0} not found</value>
   </data>
   <data name="DashboardRemoved" xml:space="preserve">
     <value>Dashboard removed</value>
