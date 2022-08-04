@@ -309,13 +309,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
 
-    clickMenuItem(event: any, item: any) {
-        let key = event.value.toLowerCase();
-
-        if (key === $localize`Open`.toLowerCase()) {
-            this.showHierarchy(event, item.data);
+    clickMenuItem(menuItem: any, item: any) {
+        let key = menuItem.value.toLowerCase();
+		const event = menuItem.event;
+		if (key === $localize`View Information`.toLowerCase()) {
+			event['from-context-method'] = 'info';
+			this.showHierarchy(event, item.data);
+		} else if (key === $localize`Open`.toLowerCase()) {
+			event['from-context-method'] = 'open';
+			this.showHierarchy(event, item.data);
         } else if (key === $localize`Open in New Tab`.toLowerCase()) {
-            this.showHierarchy(event, item.data, true);
+			event['from-context-method'] = 'new-tab';
+			this.showHierarchy(event, item.data);
         } else if (key === $localize`Edit`.toLowerCase()) {
             this.selectAsset(item);
             this.showEditor = true;
@@ -415,7 +420,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             root.Level = levelNumber;
 
             root[this.menuKey] = [
-                { title: $localize`Open` },
+				{ title: $localize`View Information` },
+				{ title: $localize`Open` },
                 { title: $localize`Open in New Tab` },
             ];
 
@@ -637,29 +643,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             return 'good';
     }
 
-	showHierarchy($event, asset, newTab: boolean = false) {
+	showHierarchy($event, asset) {
         this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
             .subscribe((res) => {
                 let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
-				if ($event['from-context-method']) {
-					this.linkClickInterceptor.sendEvent($event, {
-						Values: [{
-							TooltipContext: "Preview",
-							TooltipID: res.ObjectId,
-							TooltipType: "Artifact",
-							Value: asset.Name,
-							assetTypeUid: asset.AssetTypeUid,
-							uid: asset.AssetUid,
-						}],
-						DataType: 'Lookup'
-					}, url);
-				} else {
-					if (newTab) {
-						window.open(url, '_blank');
-					} else {
-						this.router.navigateByUrl(url);
-					}
-				}
+				this.linkClickInterceptor.sendEvent($event, {
+					Values: [{
+						TooltipContext: "Preview",
+						TooltipID: res.ObjectId,
+						TooltipType: "Artifact",
+						Value: asset.Name,
+						assetTypeUid: asset.AssetTypeUid,
+						uid: asset.AssetUid,
+					}],
+					DataType: 'Lookup'
+				}, url);
             });
     }
 
