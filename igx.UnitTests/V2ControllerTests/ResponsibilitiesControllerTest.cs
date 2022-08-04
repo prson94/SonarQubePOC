@@ -36,6 +36,14 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
 		[Fact]
+		public async void GetResponsibilityTypeAsync()
+		{
+			var result = await ResponsibilitiesController.GetResponsibilityTypeAsync(Guid.NewGuid());
+
+			result.Should().BeOfType(typeof(OkNegotiatedContentResult<>));
+		}
+
+		[Fact]
 		public async void GetResponsibilityTypeAllocationsAsync()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilityTypeAllocationsAsync(Guid.NewGuid());

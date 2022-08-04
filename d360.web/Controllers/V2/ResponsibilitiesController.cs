@@ -69,6 +69,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetResponsibilityTypesAsync()
 		{
 			var responsibilityTypes = await ResponsibilityRepository.GetResponsibilityTypes();
+
 			return Ok(responsibilityTypes);
 		}
 
@@ -78,38 +79,19 @@ namespace d360.web.Controllers.V2
 		/// <returns>Returns a responsibility type.</returns>
 		[
             HttpGet,
-            Route("type/{uid}"),
+			RequireAdminPermissions,
+			Route("type/{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A responsibility type.", typeof(List<ResponsibilityTypeViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<HttpResponseMessage> GetResponsibilityTypeAsync(Guid uid)
+			ApiExplorerSettings(IgnoreApi = true)
+		]
+        public async Task<IHttpActionResult> GetResponsibilityTypeAsync(Guid uid)
         {
-            var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
-            string errorMessage;
+           dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, ApiMessages.AccessDenied));
-            }
-
-            try
-            {
-                dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
-
-                return Request.CreateResponse(HttpStatusCode.OK, new { data = responsibilityTypes });
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
+           return Ok(new { data = responsibilityTypes });
         }
 
 		/// <summary>
