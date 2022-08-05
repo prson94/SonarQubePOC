@@ -1076,7 +1076,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
 
         ]
-        public IHttpActionResult PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
@@ -1095,7 +1095,7 @@ namespace d360.web.Controllers.V2
 
 			var execution = getApiExecution(responsibilityRules.Count);
 
-			var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+			var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
 			return Ok(results);
 		}
@@ -1140,7 +1140,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
@@ -1150,7 +1150,7 @@ namespace d360.web.Controllers.V2
 			}
 
 			var execution = getApiExecution(responsibilityRules.Count);
-			var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+			var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
 			return Ok(results);
 		}
