@@ -5742,6 +5742,19 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 									sw.Restart();
 									AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 
+									// Must execute BEFORE the Success flag is updated below.
+									sw.Restart();
+                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, at, timeout, isInsert);
+                                    AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+
+                                    //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
+                                    if (hasLookupFieldTypes && !isInsert)
+                                    {
+                                        sw.Restart();
+                                        DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+                                        AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
+                                    }
+
 									#region Generate proposed key hash and compare against existing data.
 									var invalidHashState = Connection.Query<int>(@"
 										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
@@ -5776,20 +5789,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 									#endregion
 
-									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();
-                                    MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, at, timeout, isInsert);
-                                    AddMeasurement(metrics, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-
-                                    //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
-                                    if (hasLookupFieldTypes && !isInsert)
-                                    {
-                                        sw.Restart();
-                                        DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                        AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
-                                    }
-
-                                    sw.Restart();
                                     // Update success flag.
                                     Connection.Execute(
                                         $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
