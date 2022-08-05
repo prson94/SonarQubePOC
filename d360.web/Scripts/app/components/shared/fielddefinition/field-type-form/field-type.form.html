@@ -548,6 +548,7 @@
 					<ng-container *ngIf="currentType == 'Lookup'">
 						<p-dropdown *ngIf="!isLoadingDefaultValue; else lookupDefaultValuesAbsent"
 									[options]="lookupDefaultValueOptions"
+									[virtualScroll]="true" [itemSize]="25"
 									[(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
 									(ngModelChange)="model.FieldType.Type[currentType].DefaultValue = $event;"
 									[style]="{ 'width': '98%' }" ngDefaultControl
