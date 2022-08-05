@@ -61,7 +61,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Dashboard with Uid {0} not found.
+        ///   Looks up a localized string similar to The dashboard was not found based on the provided unique identifier..
         /// </summary>
         public static string DashboardNotFound {
             get {
@@ -133,7 +133,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Location. Valid values are List, Detail or Homepage.
+        ///   Looks up a localized string similar to Location must be one of the following values: List, Detail or Homepage.
         /// </summary>
         public static string InvalidDashboardLocation {
             get {
@@ -142,7 +142,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid DashboardType. Valid values are PowerBi or DqPlus.
+        ///   Looks up a localized string similar to ReportType must be one of the following values: DqPlus or PowerBi.
         /// </summary>
         public static string InvalidDashboardType {
             get {

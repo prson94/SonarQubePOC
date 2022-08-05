@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DashboardNotFound" xml:space="preserve">
-    <value>Dashboard with Uid {0} not found</value>
+    <value>The dashboard was not found based on the provided unique identifier.</value>
   </data>
   <data name="DashboardRemoved" xml:space="preserve">
     <value>Dashboard removed</value>
@@ -142,10 +142,10 @@
     <value>Invalid Asset Uid provided.</value>
   </data>
   <data name="InvalidDashboardLocation" xml:space="preserve">
-    <value>Invalid Location. Valid values are List, Detail or Homepage</value>
+    <value>Location must be one of the following values: List, Detail or Homepage</value>
   </data>
   <data name="InvalidDashboardType" xml:space="preserve">
-    <value>Invalid DashboardType. Valid values are PowerBi or DqPlus</value>
+    <value>ReportType must be one of the following values: DqPlus or PowerBi</value>
   </data>
   <data name="InvalidDashboardUid" xml:space="preserve">
     <value>Invalid Uid provided.</value>
