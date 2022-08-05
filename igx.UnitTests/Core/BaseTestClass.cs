@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.model;
-using d360.web;
-using d360.web.Controllers.V2;
 using Xunit;
 using Moq;
 using d360.extensions;
 using System.Data.Entity;
 using d360.core.entities;
-using System.Text.RegularExpressions;
 using igx.UnitTests.Core;
 using d360.model.DataAccessLayer;
 using System.Linq.Expressions;
@@ -31,14 +27,12 @@ using MediatR;
 using d360.web.Controllers;
 using d360.web.Utilities;
 using FluentAssertions;
-using igx.UnitTests.V2ControllerTests;
 using LaunchDarkly.Sdk.Server;
 using Moq.Language;
-using Moq.Language.Flow;
 
 namespace igx.UnitTests
 {
-    public abstract class BaseTest
+	public abstract class BaseTest
     {
         protected IFixture Fixture { get; }
 
@@ -699,28 +693,46 @@ namespace igx.UnitTests
             var mock = new Mock<IResponsibilityRepository>();
 
             mock.Setup(x => x.GetResponsibilities(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns(Task.FromResult(new AssetResponsibilitiesApiModel() { items = new List<AssetResponsibilityItemModel>() { new AssetResponsibilityItemModel(), new AssetResponsibilityItemModel() } }));
+                .ReturnsAsync(new AssetResponsibilitiesApiModel() { items = new List<AssetResponsibilityItemModel>() { new AssetResponsibilityItemModel(), new AssetResponsibilityItemModel() } });
 
             mock.Setup(x => x.GetResponsibilityRules(It.IsAny<Guid>()))
-                .Returns(Task.FromResult(new List<ResponsibilityTypeRuleViewModel>() { new ResponsibilityTypeRuleViewModel(), new ResponsibilityTypeRuleViewModel() }.AsEnumerable()));
+                .ReturnsAsync(new List<ResponsibilityTypeRuleViewModel>() { new ResponsibilityTypeRuleViewModel(), new ResponsibilityTypeRuleViewModel() }.AsEnumerable());
 
             mock.Setup(x => x.GetResponsibilityRuleStats(It.IsAny<Guid>()))
-                .Returns(Task.FromResult(new ResponsibilityTypeRuleStatsViewModel()));
+                .ReturnsAsync(new ResponsibilityTypeRuleStatsViewModel());
 
             mock.Setup(x => x.GetResponsibilityTypeAllocations(It.IsAny<Guid>()))
-                .Returns(Task.FromResult(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable()));
+                .ReturnsAsync(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable());
 
             mock.Setup(x => x.GetResponsibilityTypeAllocationsByAsset(It.IsAny<Guid>()))
-                .Returns(Task.FromResult(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable()));
+                .ReturnsAsync(new List<ResponsibilityTypeAllocationViewModel>() { new ResponsibilityTypeAllocationViewModel(), new ResponsibilityTypeAllocationViewModel() }.AsEnumerable());
 
             mock.Setup(x => x.GetResponsibilityTypes())
-                .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
+                .ReturnsAsync(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable());
 
-            mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
-                .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
+			mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
+				 .ReturnsAsync(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable());
 
-            return mock;
-        }
+			mock.Setup(x => x.GetResponsibilityType(It.IsAny<Guid>()))
+				.ReturnsAsync(new ResponsibilityType());
+
+			mock.Setup(x => x.GetResponsibilityTypeByUID(It.IsAny<Guid>()))
+				.Returns((Guid uid) => new ResponsibilityType() { UID = uid });
+
+			mock.Setup(x => x.GetResponsibilityRuleTestResults(It.IsAny<ResponsibilityRuleUpsertModel>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
+				.ReturnsAsync(new ResponsibilityRuleTestResponseModel());
+
+			mock.Setup(x => x.PostBatchResponsibilityOverride(It.IsAny<List<BulkResponsibilityOverridePostModel>>(), It.IsAny<ApiExecution>()))
+				.ReturnsAsync(new ApiExecutionInfo());
+
+			mock.Setup(x => x.UpsertResponsibilityRules(It.IsAny<Guid>(), It.IsAny<List<ResponsibilityRuleUpsertModel>>(), It.IsAny<ApiExecution>()))
+				.ReturnsAsync(new List<ResponsibilityRuleUpsertResponseModel>() { new ResponsibilityRuleUpsertResponseModel() });
+
+			mock.Setup(x => x.UpsertResponsibilityTypes(It.IsAny<List<ResponsibilityTypeUpsertModel>>(), It.IsAny<ApiExecution>()))
+				.Returns(new List<ResponsibilityTypeUpsertResult>() { new ResponsibilityTypeUpsertResult() });
+
+			return mock;
+		}
 
         public ISettingsRepository GetSettingsRepository()
         {
