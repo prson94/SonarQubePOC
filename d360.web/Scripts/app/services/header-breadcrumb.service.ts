@@ -40,7 +40,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
     private updateCurrentObjectPath = new Subject<any>();
 
     // Observable streams
-    breadcrumbs$ = this.breadcrumbSource.asObservable().pipe(filter(x => x != null));
+    breadcrumbs$ = this.breadcrumbSource.asObservable().pipe(filter((x) => x != null));
     breadcrumbClear$ = this.breadcrumbClearSource.asObservable();
     breadcrumbTreeSource$ = this.breadcrumbTreeSource.asObservable();
     breadcrumbPopLastSource$ = this.breadcrumbPopLastSource.asObservable();
@@ -112,8 +112,8 @@ export class HeaderBreadcrumbService extends BaseObservableService {
         return this.http
             .get(`api/breadcrumb/getArea?&objectType=${objectType}&objectId=${objectId}`)
             .pipe(
-                map(response => <string>response),
-                catchError(err => this.handleError(err))
+                map((response) => <string>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -121,7 +121,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
         let folderName = menuID;
         let promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
-                this.SiteNavItemsCache.forEach(s => {
+                this.SiteNavItemsCache.forEach((s) => {
                     if (s.Name.indexOf(menuID) !== -1) {
                         folderName = s.Title;
                     }
@@ -132,9 +132,9 @@ export class HeaderBreadcrumbService extends BaseObservableService {
 
             } else {
 
-                this.sitenavservice.getSiteNavItems().subscribe(res => {
+                this.sitenavservice.getSiteNavItems().subscribe((res) => {
 
-                    res.forEach(s => {
+                    res.forEach((s) => {
                         if (s.Name.indexOf(menuID) !== -1) {
                             folderName = s.Title;
                         }
@@ -190,7 +190,7 @@ export class HeaderBreadcrumbService extends BaseObservableService {
                 icon = this.iconFromSiteNav(nav);
                 if (icon) resolve(icon);
             } else {
-                this.sitenavservice.getSiteNavItems().subscribe(res => {
+                this.sitenavservice.getSiteNavItems().subscribe((res) => {
                     const nav = res.find((s) => s.Title === menuID);
                     icon = this.iconFromSiteNav(nav);
                 }).add(() => {

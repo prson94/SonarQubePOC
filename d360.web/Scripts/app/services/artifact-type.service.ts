@@ -32,8 +32,8 @@ export class ArtifactTypeService extends BaseObservableService {
             .http
             .get(`form/ArtifactType?parentID=${parentID}&id=${id}`)
             .pipe(
-                map(response => <ArtifactTypeEditorModel>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ArtifactTypeEditorModel>response),
+                catchError((err) => this.handleError(err))
             )
             ;
     }
@@ -43,8 +43,8 @@ export class ArtifactTypeService extends BaseObservableService {
             .http
             .get(`api/artifacts/${id}`)
             .pipe(
-                map(response => <ArtifactType>response),
-                catchError(err => this.handleError(err, false, redirectToHome ? this.router : null))
+                map((response) => <ArtifactType>response),
+                catchError((err) => this.handleError(err, false, redirectToHome ? this.router : null))
             )
             ;
     }
@@ -85,7 +85,7 @@ export class ArtifactTypeService extends BaseObservableService {
             tree.push({ data: d, children: [], expanded: false });
         });
 
-        tree.forEach(t => {
+        tree.forEach((t) => {
             this.formTreeR(t, data);
         });
 
@@ -96,7 +96,7 @@ export class ArtifactTypeService extends BaseObservableService {
         node: TreeNode,
         data
     ) {
-        data.filter(d => d.ParentID == node.data.ID).forEach((d) => {
+        data.filter((d) => d.ParentID == node.data.ID).forEach((d) => {
             let child: TreeNode = { data: d, children: [] };
             node.children.push(child);
             this.formTreeR(child, data);

@@ -29,7 +29,7 @@ export class ArtifactService extends BaseObservableService {
             .http
             .get(`api/artifact/${id}`)
             .pipe(
-                map(response => <Artifact>response),
+                map((response) => <Artifact>response),
                 catchError((err) => this.handleError(err, false, this.router))
             )
             ;
@@ -40,8 +40,8 @@ export class ArtifactService extends BaseObservableService {
             .http
             .get(`api/count/activity/${daysToLookBack}`)
             .pipe(
-                map(response => <Count[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Count[]>response),
+                catchError((err) => this.handleError(err))
             )
             ;
     }
@@ -54,8 +54,8 @@ export class ArtifactService extends BaseObservableService {
             .http
             .get(`api/countitems/activity/${artifactTypeId}/${daysToLookBack}`)
             .pipe(
-                map(response => <AssetDetail[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AssetDetail[]>response),
+                catchError((err) => this.handleError(err))
             )
             ;
     }
@@ -71,7 +71,7 @@ export class ArtifactService extends BaseObservableService {
                 map((res: ApiResult) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     } 
 

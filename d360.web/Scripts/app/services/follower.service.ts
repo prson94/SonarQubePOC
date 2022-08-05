@@ -33,8 +33,8 @@ export class FollowerService extends BaseObservableService {
             .http
             .get(`api/${type}/${id}/followers`)
             .pipe(
-                map(response => <FollowDetail[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <FollowDetail[]>response),
+                catchError((err) => this.handleError(err))
             );
 
     }
@@ -53,8 +53,8 @@ export class FollowerService extends BaseObservableService {
                     { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
                 )
                 .pipe(
-                    map(response => <FollowInfo>response),
-                    catchError(err => this.handleError(err)),
+                    map((response) => <FollowInfo>response),
+                    catchError((err) => this.handleError(err)),
                     shareReplay(1, this._cacheTime())
                 ));
             setTimeout(() => {
@@ -74,8 +74,8 @@ export class FollowerService extends BaseObservableService {
             .http
             .post('resources/UpdateFollowStatus', {type: type, id: id, includeChildren: includeChildren})
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 }

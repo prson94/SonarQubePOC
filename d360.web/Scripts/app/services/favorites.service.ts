@@ -29,8 +29,8 @@ export class FavoritesService extends BaseObservableService {
                 { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
             )
             .pipe(
-                map(response => <FavoriteApiModel[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <FavoriteApiModel[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -41,9 +41,9 @@ export class FavoritesService extends BaseObservableService {
                 body: favoriteIds
             })
             .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err)),
-                tap(res => this.clearCache())
+                map((response) => <JsonResult>response),
+                catchError((err) => this.handleError(err)),
+                tap((res) => this.clearCache())
             );
     }
 
@@ -52,9 +52,9 @@ export class FavoritesService extends BaseObservableService {
             .http
             .put(`api/v2/membership/users/me/favorites`, favorite)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err)),
-                tap(res => this.clearCache())
+                map((response) => response),
+                catchError((err) => this.handleError(err)),
+                tap((res) => this.clearCache())
             );
     }
 
@@ -65,8 +65,8 @@ export class FavoritesService extends BaseObservableService {
                 { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
             )
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -75,9 +75,9 @@ export class FavoritesService extends BaseObservableService {
             .http
             .put(`api/v2/membership/users/me/homepage`, homepage)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err)),
-                tap(res => this.clearCache())
+                map((response) => response),
+                catchError((err) => this.handleError(err)),
+                tap((res) => this.clearCache())
             );
     }
 
@@ -125,8 +125,8 @@ export class FavoritesService extends BaseObservableService {
             .http
             .put(`navigation/movefavorite?admin=${admin}`, m)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -143,8 +143,8 @@ export class FavoritesService extends BaseObservableService {
             .http
             .put(`navigation/movefavorite?admin=${admin}`, m)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 }
