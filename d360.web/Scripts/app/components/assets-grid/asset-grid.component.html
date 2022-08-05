@@ -125,7 +125,7 @@
                         </ng-container>
                         <ng-template #linked>
                             <a style="word-wrap: break-word;" context-link
-							   (click)="selectArtifact($event, item); selectRow(item)">
+							   [isOpenDefault]="true" (click)="selectArtifact($event, item)">
 								<d3s-dynamic-field-value [column]="col"
                                                          [fields]="fields"
                                                          [item]="item"

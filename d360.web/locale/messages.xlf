@@ -9215,7 +9215,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
-          <context context-type="linenumber">38,39</context>
+          <context context-type="linenumber">39,40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="6283253681872253092" datatype="html">
@@ -9286,7 +9286,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
-          <context context-type="linenumber">39,42</context>
+          <context context-type="linenumber">40,43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="249236949966458486" datatype="html">
@@ -9447,7 +9447,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
-          <context context-type="linenumber">37,38</context>
+          <context context-type="linenumber">38,39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7236033667386522009" datatype="html">
@@ -20437,18 +20437,18 @@ Please refine your search.</source>
           <context context-type="linenumber">83,85</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="5623520242070013009" datatype="html">
-        <source>Click the link to view information in the side panel or right-click for more options</source>
+      <trans-unit id="6318464676322172190" datatype="html">
+        <source>Click the link to <x id="PH" equiv-text="+= $localize`Click the link to ${"/> or right-click for more options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
-          <context context-type="linenumber">95,98</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="8744760555583373273" datatype="html">
-        <source>Click the tag to view information in the side panel or right-click for more options</source>
+      <trans-unit id="4092209222714767941" datatype="html">
+        <source>Click the tag to <x id="PH" equiv-text="+= $localize`Click the tag to ${"/> or right-click for more options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
-          <context context-type="linenumber">98,103</context>
+          <context context-type="linenumber">101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8296090579167360692" datatype="html">
