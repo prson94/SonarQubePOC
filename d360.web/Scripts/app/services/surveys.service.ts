@@ -21,7 +21,7 @@ export class SurveysService extends BaseObservableService {
         return this.http.get(`api/v2/survey/types${queryString}`)
             .pipe(
                 map((response) => response as SurveyTypesResponse),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -29,7 +29,7 @@ export class SurveysService extends BaseObservableService {
         return this.http.get(`api/v2/survey/types?SurveyTypeUid=${surveyTypeUid}`)
             .pipe(
                 map((response: any) => { return response.items[0]; }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -38,7 +38,7 @@ export class SurveysService extends BaseObservableService {
             .delete(`/api/v2/survey/types/${uid}`)
             .pipe(
                 map(() => true),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -48,7 +48,7 @@ export class SurveysService extends BaseObservableService {
             .delete(`/api/v2/survey/types/${surveyTypeUid}/questions/${questionTypeUid}`)
             .pipe(
                 map(() => true),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -66,7 +66,7 @@ export class SurveysService extends BaseObservableService {
                 )
                 .pipe(
                     map((res) => res as SurveyTypeUpsertModel),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
         
@@ -77,7 +77,7 @@ export class SurveysService extends BaseObservableService {
         )
         .pipe(
             map(() => surveyType),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -94,7 +94,7 @@ export class SurveysService extends BaseObservableService {
                 )
                 .pipe(
                     map((res) => res as { Uid: string }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
         
@@ -105,15 +105,15 @@ export class SurveysService extends BaseObservableService {
         )
         .pipe(
             map(() => surveyQuestion as { Uid: string }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
     getObjectSurvey(assetUid: string): Observable<Survey> {
         return this.http.get(`api/v2/survey/${assetUid}`)
             .pipe(
-                map(response => <Survey>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Survey>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -125,8 +125,8 @@ export class SurveysService extends BaseObservableService {
         return this.http
             .post(`api/v2/survey/${surveyUid}`, JSON.stringify(response), { headers })
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 

@@ -74,9 +74,9 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
     getResponsibilityType(id: number): Observable<ResponsibilityType> {
         return this.http.get(`form/ResponsibilityType?id=${id}`)
             .pipe(
-                map(r => <any>r),
+                map((r) => <any>r),
 
-                map(r => {
+                map((r) => {
                     let t = new ResponsibilityType();
                     t = r.model;
                     t.AllocationsList = r.allocations;

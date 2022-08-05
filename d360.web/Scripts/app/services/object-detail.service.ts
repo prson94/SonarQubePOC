@@ -35,8 +35,8 @@ export class ObjectDetailService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -49,8 +49,8 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<any> {
         return this.http.get(`api/${objectType}/${objectID}/detail?useSingleColumn=${useSingleColumn}&includeHeader=${includeHeader}&useAssetDetailColumnDefinition=${useAssetDetailColumnDefinition}`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -60,16 +60,16 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<ObjectDetail> {
         return this.http.get(`api/${objectType}/${objectID}`)
             .pipe(
-                map(response => <ObjectDetail>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ObjectDetail>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getAsset(assetID: number): Observable<AssetDetail> {
         return this.http.get(`api/asset/${assetID}`)
             .pipe(
-                map(response => <AssetDetail>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AssetDetail>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -80,8 +80,8 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<Synonym[]> {
         return this.http.get(`api/${objectType}/${objectID}/${predicateId}/synonyms`)
             .pipe(
-                map(response => <Synonym[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Synonym[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -92,8 +92,8 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<any> {
         return this.http.get(`form/SynonymTypes?id=${objectID}&type=${objectType}&predicateId=${predicateId}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -107,8 +107,8 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<SynonymItem[]> {
         return this.http.get(`form/SynonymsOptions?type=${type}&typeId=${typeId}&obj=${object}&objid=${objectId}&query=${query}&predicateId=${predicateId}`)
             .pipe(
-                map(response => <SynonymItem[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SynonymItem[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -138,8 +138,8 @@ export class ObjectDetailService extends BaseObservableService {
     ): Observable<NymType[]> {
         return this.http.get(`api/${object}/${objectID}/NymAllocations`)
             .pipe(
-                map(response => <NymType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <NymType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -151,13 +151,13 @@ export class ObjectDetailService extends BaseObservableService {
         let model = {
             Object: object,
             ObjectID: objectID,
-            PredicateIDs: nyms.filter(x => x.Enabled).map((a) => a.ID)
+            PredicateIDs: nyms.filter((x) => x.Enabled).map((a) => a.ID)
         };
 
         return this.http.post('form/AddNymAllocation', model)
             .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+                map((response) => <JsonResult>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -165,8 +165,8 @@ export class ObjectDetailService extends BaseObservableService {
     getClassifications(objectType: string): Observable<Classification[]> {
         return this.http.get(`api/${objectType}?$orderby=Name`)
             .pipe(
-                map(response => <Classification[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Classification[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

@@ -17,7 +17,7 @@ export class MetricsService extends BaseObservableService {
     public getFieldTypeViewModelsByAssetType(assetTypeUid: string): Observable<MetricFieldTypeViewModel[]> {
         return this.http
             .get<MetricFieldTypeViewModel[]>(`/api/v2/metrics/fields/${assetTypeUid}`)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 
     public getActiveAllocationsByAssetUid(uid: string): Observable<ScoreTypeAllocation[]> {
@@ -28,7 +28,7 @@ export class MetricsService extends BaseObservableService {
                 map((res: ScoreTypeAllocation[]) => {
                     return res;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -40,7 +40,7 @@ export class MetricsService extends BaseObservableService {
                 map((res: ScoreTypeAllocation[]) => {
                     return res[0];
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -60,7 +60,7 @@ export class MetricsService extends BaseObservableService {
                         }
                     });
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -68,31 +68,31 @@ export class MetricsService extends BaseObservableService {
 
         return this.http
             .get<MetricPathOptionViewModel[]>(`/api/v2/metrics/${assetTypeUid}/${type}/pathoptions`)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 
     public getRuleResultPathOptionFields(ruleResultPathUid: string): Observable<MetricFieldTypeViewModel[]> {
 
         return this.http
             .get<MetricFieldTypeViewModel[]>(`/api/v2/metrics/pathoptions/${ruleResultPathUid}/fields`)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 
     public getMetricsVersionHistory(measureUid: string): Observable<MetricAssetHistoryViewModel[]> {
         return this.http
             .get<MetricAssetHistoryViewModel[]>(`/api/v2/scoring/history/measure/${measureUid}`)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 
     public saveMetric(model: MetricAssetViewModel): Observable<JsonResult> {
         return this.http
             .post<JsonResult>(`/api/v2/metrics`, model)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 
     public getMetricsScores(assetTypeUid: string,type:any): Observable<any> {
         return this.http
             .get<any>(`/api/v2/metrics/${assetTypeUid}/scores?_scoreType=${type}`)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 }

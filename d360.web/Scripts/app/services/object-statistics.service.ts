@@ -25,8 +25,8 @@ export class ObjectStatisticsService extends BaseObservableService {
         objectType: string
     ): Observable<ObjectStatistics> {
         return this.http.get(`api/${objectType}/${objectID}/object/statistics`).pipe(
-            map(response => <ObjectStatistics>response),
-            catchError(err => this.handleError(err))
+            map((response) => <ObjectStatistics>response),
+            catchError((err) => this.handleError(err))
         );
     }    
 
@@ -37,15 +37,15 @@ export class ObjectStatisticsService extends BaseObservableService {
         useFriendlyName: boolean = true
     ): Observable<string> {
         return this.http.get(`api/${objectType}/${objectID}/fieldName/${fieldName}/${useFriendlyName}`).pipe(
-            map(response => <string>response),
-            catchError(err => this.handleError(err))
+            map((response) => <string>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getSearchDetails(Uid: string): Observable<SearchDetail> {
         return this.http.get(`api/v2/assets/searchDetails/${Uid}`).pipe(
-            map(response => <any>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any>response),
+            catchError((err) => this.handleError(err))
         );
     }
 }

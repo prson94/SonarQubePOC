@@ -73,16 +73,16 @@ export class CompanySettingsService extends BaseObservableService {
     getAuthenticationModel(): Observable<AuthenticationProperties> {
         return this.http.get('api/authenticationModel')
             .pipe(
-                map(response => <AuthenticationProperties>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AuthenticationProperties>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getGroups(): Observable<SelectItem[]> {
         return this.http.get(`/form/CompanySettings/groups`)
             .pipe(
-                map(response => <SelectItem[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SelectItem[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -90,8 +90,8 @@ export class CompanySettingsService extends BaseObservableService {
         return this.http
             .get(`api/v2/environment/rebuilds`)
             .pipe(
-                map(res => res as CompanyRebuildJobStatusApiModel[]),
-                catchError(err => this.handleError(err))
+                map((res) => res as CompanyRebuildJobStatusApiModel[]),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -99,8 +99,8 @@ export class CompanySettingsService extends BaseObservableService {
         return this.http
             .post(`api/v2/environment/rebuilds`, { Job: jobToken })
             .pipe(
-                map(res => res as JsonResult),
-                catchError(err => this.handleError(err))
+                map((res) => res as JsonResult),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -189,12 +189,12 @@ export class CompanySettingsService extends BaseObservableService {
         }
         return this.http
             .get<OperatorModel[]>(url)
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 
     public getLicensingDetails(): Observable<any> {
         return this.http
             .get<any>("/api/v2/environment/licensing")
-            .pipe(catchError(err => this.handleError(err)));
+            .pipe(catchError((err) => this.handleError(err)));
     }
 }

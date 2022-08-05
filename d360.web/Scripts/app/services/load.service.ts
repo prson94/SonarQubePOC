@@ -25,22 +25,22 @@ export class LoadService extends BaseObservableService {
 
     getLoads(): Observable<LoadDetail[]> {
         return this.http.get('api/loads').pipe(
-            map(response => <LoadDetail[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <LoadDetail[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getLoadColumns(id: number): Observable<GridColumn[]> {
         return this.http.get(`api/loads/${id}/columns`).pipe(
-            map(response => <GridColumn[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <GridColumn[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getLoadItems(id: number): Observable<any[]> {
         return this.http.get(`api/loads/${id}/items`).pipe(
-            map(response => <any[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <any[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -81,30 +81,30 @@ export class LoadService extends BaseObservableService {
     getTypeOptions(action: string): Observable<SelectItem[]> {
         return this.http.get(`/form/Load_TypeOptions?act=${action}`)
             .pipe(
-                map(response => {
+                map((response) => {
                     let i = [];
 
-                    response["forEach"](r => {
+                    response["forEach"]((r) => {
                         i.push({ label: r.title, value: r.value });
                     });
 
                     return <SelectItem[]>i;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
     getExpectedColumns(action: string, type: string, id: number): Observable<LoadColumn[]> {
         return this.http.get(`form/Load_ExpectedColumns?action=${action}&id=${id}&type=${type}`).pipe(
-            map(response => <LoadColumn[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <LoadColumn[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getExpectedColumnsExcel(action: string, type: string, id: number): Observable<LoadColumn[]> {
         return this.http.get(`form/Load_ExpectedColumns_ToExcel?action=${action}&id=${id}&type=${type}`).pipe(
-            map(response => <LoadColumn[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <LoadColumn[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -118,8 +118,8 @@ export class LoadService extends BaseObservableService {
 
     postLoad(model: LoadFilePostModel): Observable<JsonResult> {
         return this.http.post('form/AddLoad', model).pipe(
-            map(response => <JsonResult>response),
-            catchError(err => this.handleError(err))
+            map((response) => <JsonResult>response),
+            catchError((err) => this.handleError(err))
         );
     }
 }

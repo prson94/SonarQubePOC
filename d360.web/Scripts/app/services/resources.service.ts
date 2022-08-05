@@ -104,7 +104,7 @@ export class ResourcesService extends BaseObservableService {
             .http
             .delete(`api/v2/membership/users`, httpOptions)
             .pipe(
-                map(res => <JsonResult>res),
+                map((res) => <JsonResult>res),
                 catchError((err) => this.handleError(err))
             );
     }
@@ -113,7 +113,7 @@ export class ResourcesService extends BaseObservableService {
 
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
@@ -136,7 +136,7 @@ export class ResourcesService extends BaseObservableService {
 
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
@@ -260,7 +260,7 @@ export class ResourcesService extends BaseObservableService {
 
     getLegacyData(uid: string): Observable<any> {
         return this.http.get(`/api/v2/membership/legacyData/resource/${uid}`)
-            .pipe(map(res => <any>res),
+            .pipe(map((res) => <any>res),
                 catchError((err) => this.handleError(err)));
     }
 }

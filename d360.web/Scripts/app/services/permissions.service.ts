@@ -38,22 +38,22 @@ export class PermissionsService extends BaseObservableService {
         objectType: string
     ): Observable<ResponsibilityTypeRelationPermission[]> {
         return this.http.get(`api/${objectType}/${objectID}/permissions`).pipe(
-            map(response => <ResponsibilityTypeRelationPermission[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <ResponsibilityTypeRelationPermission[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getPermissionsById(assetID: number): Observable<ResponsibilityTypeRelationPermission[]> {
         return this.http.get(`api/${assetID}/permissionsbyid`).pipe(
-            map(response => <ResponsibilityTypeRelationPermission[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <ResponsibilityTypeRelationPermission[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
     getAssetPermissions(assetUid: string): Observable<Permissions> {
         return this.http.get(`api/v2/permissions/asset/${assetUid}`).pipe(
             map((response) => <Permissions>response),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 }

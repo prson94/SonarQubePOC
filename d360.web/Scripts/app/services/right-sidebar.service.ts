@@ -51,10 +51,10 @@ export class SecondaryNavService {
             if (event instanceof NavigationEnd) {
                 var homeUrl = this.secondaryNavState.currentState.currentHome ? this.secondaryNavState.currentState.currentHome : '';
 
-                if (!this.crossNavURIS.some(x => x == homeUrl)) {
+                if (!this.crossNavURIS.some((x) => x == homeUrl)) {
                     this.crossNavURIS.push(homeUrl);
                 }
-                if (!this.crossNavURIS.some(x => event.url.toLowerCase() == x.toLowerCase())) {
+                if (!this.crossNavURIS.some((x) => event.url.toLowerCase() == x.toLowerCase())) {
                     this.isSidebarCreated = false;
                     this.invalidateKey();
                 }
@@ -200,7 +200,7 @@ export class SecondaryNavService {
 
     getItemState(url: string): NavState {
         let current = this.getCurrentState();
-        return current.previousStates.find(state => state.currentTab && state.currentTab.url == url);
+        return current.previousStates.find((state) => state.currentTab && state.currentTab.url == url);
     }
     
     getCurrentState(): SecondaryNavState {

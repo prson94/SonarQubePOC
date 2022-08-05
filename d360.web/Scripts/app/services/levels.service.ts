@@ -25,8 +25,8 @@ export class LevelsService extends BaseObservableService {
     ): Observable<any[]> {
         return this.http.get(`api/${objectType}/${objectID}/levels`)
             .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -60,8 +60,8 @@ export class LevelsService extends BaseObservableService {
                 headers: httpHeaders
             }
         ).pipe(
-            map(res => <JsonResult>res),
-            catchError(err => this.handleError(err))
+            map((res) => <JsonResult>res),
+            catchError((err) => this.handleError(err))
         );
     }
 }
