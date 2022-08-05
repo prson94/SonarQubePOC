@@ -3,7 +3,6 @@ using igx.UnitTests.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http.Results;
 using AutoFixture;
@@ -13,30 +12,94 @@ using d360.web.Services;
 using FluentAssertions;
 using Moq;
 using Xunit;
+using d360.web.Models;
+using System.Linq.Expressions;
 
 namespace igx.UnitTests.V2ControllerTests
 {
 	[Trait("Unit tests", "Responsibilities controller")]
 	public class ResponsibilitiesControllerTest : ResponsibilitiesControllerTestBase
 	{
+		public ResponsibilitiesControllerTest()
+		{
+			#region MockResponsibilityRepository initialization
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.DeleteAllocation(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>(), It.IsAny<bool>()))
+				.ReturnsAsync((ResponsibilityType responsibilityType, AssetType assetType, bool cascade) =>
+					new ResponsibilityTypeAllocationResponseModel() { AssetTypeUid = assetType.uid });
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.GetResponsibilityTypeUsedInOwnershipLookupMessage(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>()))
+				.Returns(string.Empty);
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.AddAllocation(It.IsAny<ResponsibilityType>(), It.IsAny<AssetType>(), It.IsAny<List<int>>()))
+				.Returns((ResponsibilityType responsibilityType, AssetType assetType, List<int> permissionaBitMask) => new ResponsibilityTypeAllocationResponseModel() { AssetTypeUid = assetType.uid });
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.IsValidResponsibilityForAsset(It.IsAny<Guid>(), It.IsAny<Guid>()))
+				.Returns(true);
+
+			#endregion
+
+			#region MockAssetRepository initialization
+
+			MockAssetRepository
+				.Setup(repository => repository.GetAssetByUID(It.IsAny<Guid>()))
+				.Returns((Guid assetUid) => new Asset() { uid = assetUid });
+
+			#endregion
+
+			#region MockCompanyContext initialization
+
+			MockCompanyContext
+				.Setup(context => context.Filter(It.IsAny<Expression<Func<AssetType, bool>>>()))
+				.Returns(new List<AssetType> { new AssetType { ID = 1, Class = AssetTypeClass.BusinessAsset } }.AsQueryable());
+
+			MockCompanyContext
+				.Setup(context => context.Filter(It.IsAny<Expression<Func<ResponsibilityType, bool>>>()))
+				.Returns(new List<ResponsibilityType> { new ResponsibilityType { UID = Guid.Parse(DataConstants.ValidGUID) } }.AsQueryable());
+
+			List<ResponsibilityTypeRelation> responsibilityTypeRelations = new List<ResponsibilityTypeRelation>();
+			responsibilityTypeRelations.Add(new ResponsibilityTypeRelation() { ObjectType = "Object" });
+
+			var dbSetResponsibilityTypeRelationMock = CreateDbSetMock(responsibilityTypeRelations);
+
+			MockCompanyContext
+				.Setup(context => context.ResponsibilityTypeRelations)
+				.Returns(dbSetResponsibilityTypeRelationMock.Object);
+
+			List<Asset> assets = new List<Asset>();
+			assets.Add(new Asset() { uid = Guid.Parse(DataConstants.ValidGUID) });
+
+			var dbSetAssetMock = CreateDbSetMock(assets);
+
+			MockCompanyContext
+				.Setup(context => context.Assets)
+				.Returns(dbSetAssetMock.Object);
+
+			#endregion
+		}
+
 		[Fact]
-		public async void GetResponsibilityTypesByAssetId()
+		public async Task GetResponsibilityTypesByAssetId()
 		{
 			MockAssetRepository
 				.Setup(repository => repository.GetAssetTypeByUID(Guid.Parse(DataConstants.ValidGUID)))
-				.Returns(new AssetType { ID = 1, Object = "object",  });
+				.Returns(new AssetType { ID = 1, Object = "object", });
 
 			MockCompanyContext
 				.Setup(context => context.HasAssetTypePermission("object", 1, Permission.ReadAsset))
 				.Returns(true);
 
 			var result = await ResponsibilitiesController.GetResponsibilityTypesByAssetTypeAsync(Guid.Parse(DataConstants.ValidGUID));
-			
+
 			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeViewModel>>();
 		}
 
 		[Fact]
-		public async void GetResponsibilityTypeAsync()
+		public async Task GetResponsibilityTypeAsync()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilityTypeAsync(Guid.NewGuid());
 
@@ -44,45 +107,298 @@ namespace igx.UnitTests.V2ControllerTests
 		}
 
 		[Fact]
-		public async void GetResponsibilityTypeAllocationsAsync()
+		public async Task GetResponsibilityTypeAllocationsAsync()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilityTypeAllocationsAsync(Guid.NewGuid());
-			
+
 			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeAllocationViewModel>>();
 		}
 
 		[Fact]
-		public async void GetResponsibilityTypeAllocationsByAssetAsync()
+		public async Task GetResponsibilityTypeAllocationsByAssetAsync()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilityTypeAllocationsByAssetAsync(Guid.NewGuid());
-			
+
 			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeAllocationViewModel>>();
 		}
 
 		[Fact]
-		public async void GetResponsibilityRulesForTypeAsync()
+		public void PostResponsibilityTypeAllocations()
+		{
+			Guid assetTypeUid = Guid.Parse(DataConstants.ValidGUID);
+			List<int> permissions = new List<int>() { 1, 2, 4 };
+
+			List<ResponsibilityTypeAllocationInsertModel> responsibilityTypeAllocationInsertModels = new List<ResponsibilityTypeAllocationInsertModel>();
+			responsibilityTypeAllocationInsertModels.Add(new ResponsibilityTypeAllocationInsertModel() { AssetTypeUid = assetTypeUid, Permissions = permissions });
+
+			var result = ResponsibilitiesController.PostResponsibilityTypeAllocations(assetTypeUid, responsibilityTypeAllocationInsertModels);
+
+			result.ShouldBeOKContent<List<ResponsibilityTypeAllocationResponseModel>>();
+		}
+
+		[Fact]
+		public void PutResponsibilityTypeAllocations()
+		{
+			Guid assetTypeUid = Guid.Parse(DataConstants.ValidGUID);
+			List<int> permissions = new List<int>() { 1, 2, 4 };
+
+			List<ResponsibilityTypeAllocationInsertModel> responsibilityTypeAllocationInsertModels = new List<ResponsibilityTypeAllocationInsertModel>();
+			responsibilityTypeAllocationInsertModels.Add(new ResponsibilityTypeAllocationInsertModel() { AssetTypeUid = assetTypeUid, Permissions = permissions });
+
+			var result = ResponsibilitiesController.PutResponsibilityTypeAllocations(assetTypeUid, responsibilityTypeAllocationInsertModels);
+
+			result.ShouldBeOKContent<List<ResponsibilityTypeAllocationResponseModel>>();
+		}
+
+		[Fact]
+		public async Task DeleteResponsibilityTypeAllocationsAsync()
+		{
+			Guid uid = Guid.Parse(DataConstants.ValidGUID);
+			string objectAsset = "Object";
+
+			AssetType assetType = new AssetType() { uid = uid, Class = AssetTypeClass.BusinessAsset, Object = objectAsset };
+
+			List<AssetType> assetTypes = new List<AssetType>();
+			assetTypes.Add(assetType);
+
+			List<ResponsibilityTypeAllocationDeleteItemModel> responsibilityTypeAllocationDeleteItemModels = new List<ResponsibilityTypeAllocationDeleteItemModel>();
+			responsibilityTypeAllocationDeleteItemModels.Add(new ResponsibilityTypeAllocationDeleteItemModel() { AssetTypeUid = uid });
+
+			ResponsibilityTypeAllocationDeleteModel responsibilityTypeAllocationDeleteModels = new ResponsibilityTypeAllocationDeleteModel()
+			{ Items = responsibilityTypeAllocationDeleteItemModels };
+
+			MockCompanyContext
+				.Setup(x => x.Filter(It.IsAny<Expression<Func<AssetType, bool>>>()))
+				.Returns(assetTypes.AsQueryable());
+
+			var result = await ResponsibilitiesController.DeleteResponsibilityTypeAllocationsAsync(uid, responsibilityTypeAllocationDeleteModels);
+
+			result.ShouldBeOKContent<List<ResponsibilityTypeAllocationResponseModel>>();
+		}
+
+		[Fact]
+		public async Task GetResponsibilityRulesForTypeAsync()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilityRulesForTypeAsync(Guid.NewGuid());
-			
+
 			result.ShouldBeOKContent<IEnumerable<ResponsibilityTypeRuleViewModel>>();
 		}
 
 		[Fact]
-		public async void GetResponsibilityRulesStats()
+		public async Task GetResponsibilityRulesStats()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilityRulesStats(Guid.NewGuid());
-			
+
 			result.ShouldBeOKContent<ResponsibilityTypeRuleStatsViewModel>();
 		}
 
 		[Fact]
-		public async void GetResponsibilities()
+		public async Task GetResponsibilities()
 		{
 			var result = await ResponsibilitiesController.GetResponsibilities();
-			var str = await result.Content.ReadAsStringAsync();
 
-			Assert.True(result.StatusCode == HttpStatusCode.OK, XMsg.InvalidJSON);
-			AssertJSON.True<AssetResponsibilitiesApiModel>(str);
+			result.ShouldBeOKContent<AssetResponsibilitiesApiModel>();
+		}
+
+		[Fact]
+		public void InsertResponsibilityTypes()
+		{
+			Guid uid = Guid.Parse(DataConstants.ValidGUID);
+
+			List<ResponsibilityTypeInsertModel> responsibilityTypeInsertModels = new List<ResponsibilityTypeInsertModel>();
+			responsibilityTypeInsertModels.Add(new ResponsibilityTypeInsertModel() { Uid = uid });
+
+			var result = ResponsibilitiesController.InsertResponsibilityTypes(responsibilityTypeInsertModels);
+
+			result.ShouldBeOKContent<List<ResponsibilityTypeUpsertResult>>();
+		}
+
+		[Fact]
+		public async Task GetOwnershipOfAsset()
+		{
+			Guid assetUid = Guid.Parse(DataConstants.ValidGUID);
+			Guid responsibilityUid = Guid.Parse(DataConstants.ValidGUID);
+
+			List<OwnershipApiModel> ownershipApiModels = new List<OwnershipApiModel>();
+			ownershipApiModels.Add(new OwnershipApiModel() { ResponsibilityUid = responsibilityUid });
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.GetOwnership(assetUid))
+				.ReturnsAsync(ownershipApiModels);
+
+			var result = await ResponsibilitiesController.GetOwnershipOfAsset(DataConstants.ValidGUID);
+
+			result.ShouldBeOKContent<IEnumerable<OwnershipApiModel>>();
+		}
+
+		[Fact]
+		public async Task GetAssetHasOwnership()
+		{
+			Guid assetUid = Guid.Parse(DataConstants.ValidGUID);
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.HasOwnership(assetUid))
+				.ReturnsAsync(true);
+
+			var result = await ResponsibilitiesController.GetAssetHasOwnership(DataConstants.ValidGUID);
+
+			result.ShouldBeOKContent<bool>();
+		}
+
+		[Fact]
+		public async Task UpdateResponsibilityTypes()
+		{
+			Guid uid = Guid.NewGuid();
+			string responsibilityTypeName = "testName";
+
+			List<ResponsibilityTypeUpsertModel> responsibilityTypeUpsertModels = new List<ResponsibilityTypeUpsertModel>();
+			responsibilityTypeUpsertModels.Add(new ResponsibilityTypeUpsertModel() { Uid = uid, Name = responsibilityTypeName });
+
+			MockResponsibilityRepository
+				.Setup(x => x.UpsertResponsibilityTypes(responsibilityTypeUpsertModels, It.IsAny<ApiExecution>()))
+				.Returns(new List<ResponsibilityTypeUpsertResult>() { new ResponsibilityTypeUpsertResult() { Uid = uid } });
+
+			var result = await ResponsibilitiesController.UpdateResponsibilityTypes(responsibilityTypeUpsertModels);
+
+			result.ShouldBeOKContent<List<ResponsibilityTypeUpsertResult>>();
+		}
+
+		[Fact]
+		public void DeleteResponsibilityTypes()
+		{
+			Guid uid = Guid.NewGuid();
+
+			ResponsibilityTypeDeleteModel responsibilityTypeDeleteModel = new ResponsibilityTypeDeleteModel() { Uid = uid };
+
+			MockResponsibilityRepository
+				.Setup(x => x.DeleteResponsibilityTypes(responsibilityTypeDeleteModel))
+				.Returns(new ResponsibilityTypeDeleteResult() { Uid = uid });
+
+			var result = ResponsibilitiesController.DeleteResponsibilityTypes(responsibilityTypeDeleteModel);
+
+			result.ShouldBeOKContent<ResponsibilityTypeDeleteResult>();
+		}
+
+		[Fact]
+		public void AddResponsibilitiesOverride()
+		{
+			Guid assetUid = Guid.NewGuid();
+			Guid resposibilityUid = Guid.NewGuid();
+			Guid resourceUid = Guid.NewGuid();
+
+			List<Guid> resourcesUids = new List<Guid>();
+			resourcesUids.Add(resourceUid);
+
+			ResponsibilityOverridePostModel responsibilityOverridePostModel = new ResponsibilityOverridePostModel()
+			{ ResourceUid = resourcesUids };
+
+			MockCompanyContext
+				.Setup(context => context.HasAssetPermission(It.IsAny<long>(), Permission.AddResponsibilities))
+				.Returns(true);
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.GetSecurityAssetModelsForResources(resourcesUids, assetUid, resposibilityUid))
+				.Returns(new List<SecurityAssetModel>() { new SecurityAssetModel() { uid = resourcesUids.FirstOrDefault(), SecurityAsset = "TestAsset" } });
+
+			var result = ResponsibilitiesController.AddResponsibilitiesOverride(assetUid, resposibilityUid, responsibilityOverridePostModel);
+
+			result.ShouldBeOKContent<string>();
+		}
+
+		[Fact]
+		public async Task BulkAddResponsibilitiesOverride()
+		{
+			var bulkResponsibilityOverridePostModels = new List<BulkResponsibilityOverridePostModel>();
+
+			var result = await ResponsibilitiesController.BulkAddResponsibilitiesOverride(bulkResponsibilityOverridePostModels);
+
+			result.ShouldBeOKContent<ApiExecutionRecievedResponse>();
+		}
+
+		[Fact]
+		public void DeleteResponsibilitiesOverride()
+		{
+			Guid assetUid = Guid.NewGuid();
+			Guid responsibilityUid = Guid.NewGuid();
+			Guid resourceUid = Guid.NewGuid();
+
+			List<Guid> resourcesUids = new List<Guid>();
+			resourcesUids.Add(resourceUid);
+
+			List<ResponsibilityOverrideDeleteModel> responsibilityOverrideDeleteModels = new List<ResponsibilityOverrideDeleteModel>();
+			responsibilityOverrideDeleteModels.Add(new ResponsibilityOverrideDeleteModel() { ResourceUid = resourceUid });
+
+			MockCompanyContext
+				.Setup(context => context.HasAssetPermission(It.IsAny<long>(), Permission.DeleteResponsibilities))
+				.Returns(true);
+
+			MockResponsibilityRepository
+				.Setup(repository => repository.GetSecurityAssetModelsForResources(resourcesUids, assetUid, responsibilityUid))
+				.Returns(new List<SecurityAssetModel>() { new SecurityAssetModel() { uid = resourcesUids.FirstOrDefault(), SecurityAsset = "TestAsset", Exists = true } });
+
+			var result = ResponsibilitiesController.DeleteResponsibilitiesOverride(assetUid, responsibilityUid, responsibilityOverrideDeleteModels);
+
+			result.ShouldBeOKContent<string>();
+		}
+
+		[Fact]
+		public async Task PostResponsibilityRules()
+		{
+			Guid responsibilityTypeUid = Guid.NewGuid();
+
+			List<ResponsibilityRuleUpsertModel> responsibilityRules = new List<ResponsibilityRuleUpsertModel>();
+
+			var result = await ResponsibilitiesController.PostResponsibilityRules(responsibilityTypeUid, responsibilityRules);
+
+			result.ShouldBeOKContent<List<ResponsibilityRuleUpsertResponseModel>>();
+		}
+
+		[Fact]
+		public async Task PutResponsibilityRules()
+		{
+			Guid responsibilityTypeUid = Guid.NewGuid();
+
+			List<ResponsibilityRuleUpsertModel> responsibilityRules = new List<ResponsibilityRuleUpsertModel>();
+
+			var result = await ResponsibilitiesController.PutResponsibilityRules(responsibilityTypeUid, responsibilityRules);
+
+			result.ShouldBeOKContent<List<ResponsibilityRuleUpsertResponseModel>>();
+		}
+
+		[Fact]
+		public async Task TestResponsibilityRules()
+		{
+			string testType = "when";
+
+			ResponsibilityRuleUpsertModel responsibilityRule = new ResponsibilityRuleUpsertModel();
+
+			var result = await ResponsibilitiesController.TestResponsibilityRules(testType, responsibilityRule);
+
+			result.ShouldBeOKContent<ResponsibilityRuleTestResponseModel>();
+		}
+
+		[Fact]
+		public async Task DeleteResponsibilitiesOverrideByGroupOrResourceAsync()
+		{
+			Guid assetUid = Guid.NewGuid();
+
+			MockAssetRepository
+				.Setup(repository => repository.GetAssetByUID(assetUid))
+				.Returns(new Asset() { uid = assetUid, Object = "Resource" });
+
+			var result = await ResponsibilitiesController.DeleteResponsibilitiesOverrideByGroupOrResourceAsync(assetUid);
+
+			result.Should().BeOfType(typeof(OkResult));
+		}
+
+		[Fact]
+		public async Task DeleteResponsibilitiesOverrideByTypeAsync()
+		{
+			Guid responsibilityTypeUid = Guid.NewGuid();
+
+			var result = await ResponsibilitiesController.DeleteResponsibilitiesOverrideByTypeAsync(responsibilityTypeUid);
+
+			result.Should().BeOfType(typeof(OkResult));
 		}
 
 		#region GetResponsibilityTypeBreakdown
