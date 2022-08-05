@@ -108,6 +108,7 @@ namespace d360.web.Controllers.V2
 		public async Task<IHttpActionResult> GetClaimsAsync()
 		{
 			var claims = await ResponsibilityRepository.GetClaimsAsync();
+
 			return Ok(claims);
 		}
 
@@ -127,7 +128,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetResponsibilityTypesByAssetTypeAsync(Guid assetTypeUid)
         {
-
             var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
             if (assetType == null)
@@ -161,7 +161,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetResponsibilityTypeAllocationsAsync(Guid responsibilityTypeUid)
         {
             IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocations(responsibilityTypeUid);
-            return Ok(responsibilityTypeAllocations);
+            
+			return Ok(responsibilityTypeAllocations);
         }
 
         /// <summary>
@@ -181,6 +182,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetResponsibilityTypeAllocationsByAssetAsync(Guid assetTypeUid)
 		{
 			IEnumerable<ResponsibilityTypeAllocationViewModel> responsibilityTypeAllocations = await ResponsibilityRepository.GetResponsibilityTypeAllocationsByAsset(assetTypeUid);
+			
 			return Ok(responsibilityTypeAllocations);
         }
 
@@ -192,6 +194,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
+			RequireAdminPermissions,
             Route("types/{uid:Guid}/allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(ResponsibilityTypeAllocationInsertModel), typeof(ResponsibilityTypeAllocationExample)),
@@ -200,103 +203,85 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add responsibility type allocations.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
+        public IHttpActionResult PostResponsibilityTypeAllocations(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
         {
-            var prefix = "Responsibilities.PostResponsibilityTypeAllocationsAsync => ";
-            string errorMessage;
+			List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-            }
+			//valdiate the responsibilitytype uid passed in
+			ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
 
-            try
-            {
-                List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
+			if (responsibility == null)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
 
-                //valdiate the responsibilitytype uid passed in
-                ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
-                
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
-                }
+			foreach (var allocation in model)
+			{
+				AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
 
-                foreach (var allocation in model)
-                {
-                    AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
-                   
-                    if (assetType == null)
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ActionApiMessages.InvalidAssetTypeUid,
-                            Success = false
-                        });
-                        continue;
-                    }
+				if (assetType == null)
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ActionApiMessages.InvalidAssetTypeUid,
+						Success = false
+					});
+					continue;
+				}
 
-                    List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
-                    {
-                        AssetTypeClass.BusinessAsset,
-                        AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.Model,
-                        AssetTypeClass.Rule,
-                        AssetTypeClass.Policy,
-                        AssetTypeClass.Reference
-                    };
+				List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
+					{
+						AssetTypeClass.BusinessAsset,
+						AssetTypeClass.TechnicalAsset,
+						AssetTypeClass.Model,
+						AssetTypeClass.Rule,
+						AssetTypeClass.Policy,
+						AssetTypeClass.Reference
+					};
 
-                    if (!allowedClasses.Contains(assetType.Class))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
-                            Success = false
-                        });
+				if (!allowedClasses.Contains(assetType.Class))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
-                    if (allocation.Permissions.Any(x => !validValues.Contains(x)))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
-                            Success = false
-                        });
+				var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
+				if (allocation.Permissions.Any(x => !validValues.Contains(x)))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    if (Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ActionApiMessages.UniqueAllocation,
-                            Success = false
-                        });
+				if (Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ActionApiMessages.UniqueAllocation,
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    results.Add(ResponsibilityRepository.AddAllocation(responsibility, assetType, allocation.Permissions));
-                }
+				results.Add(ResponsibilityRepository.AddAllocation(responsibility, assetType, allocation.Permissions));
+			}
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Edits a list of all allocations for the specified asset.
@@ -306,6 +291,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
+			RequireAdminPermissions,
             Route("types/{uid:Guid}/allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(ResponsibilityTypeAllocationInsertModel), typeof(ResponsibilityTypeAllocationExample)),
@@ -314,100 +300,82 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to edit responsibility type allocations.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
+        public IHttpActionResult PutResponsibilityTypeAllocations(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
         {
-            var prefix = "Responsibilities.PutResponsibilityTypeAllocationsAsync => ";
-            string errorMessage;
+			List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-            }
+			ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
+			if (responsibility == null)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
 
-            try
-            {
-                List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
+			foreach (var allocation in model)
+			{
+				AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
+				if (assetType == null)
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ActionApiMessages.InvalidAssetTypeUid,
+						Success = false
+					});
 
-                ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
-                }
+					continue;
+				}
 
-                foreach (var allocation in model)
-                {
-                    AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
-                    if (assetType == null)
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ActionApiMessages.InvalidAssetTypeUid,
-                            Success = false
-                        });
+				List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
+					{
+						AssetTypeClass.BusinessAsset,
+						AssetTypeClass.TechnicalAsset,
+						AssetTypeClass.Model,
+						AssetTypeClass.Rule,
+						AssetTypeClass.Policy,
+						AssetTypeClass.ReferenceItemType
+					};
+				if (!allowedClasses.Contains(assetType.Class))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
-                    {
-                        AssetTypeClass.BusinessAsset,
-                        AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.Model,
-                        AssetTypeClass.Rule,
-                        AssetTypeClass.Policy,
-                        AssetTypeClass.ReferenceItemType
-                    };
-                    if (!allowedClasses.Contains(assetType.Class))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
-                            Success = false
-                        });
+				var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
+				if (allocation.Permissions.Any(x => !validValues.Contains(x)))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
-                    if (allocation.Permissions.Any(x => !validValues.Contains(x)))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format(ResponsibilityApiMessages.InvalidPermissionProvided, string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())),
-                            Success = false
-                        });
+				if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ResponsibilityApiMessages.AllocationNotFound,
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ResponsibilityApiMessages.AllocationNotFound,
-                            Success = false
-                        });
+				results.Add(ResponsibilityRepository.EditAllocation(responsibility, assetType, allocation.Permissions));
+			}
 
-                        continue;
-                    }
-
-                    results.Add(ResponsibilityRepository.EditAllocation(responsibility, assetType, allocation.Permissions));
-                }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Deletes a list of all allocations for the specified asset.
@@ -417,6 +385,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
+			RequireAdminPermissions,
             Route("types/{uid:Guid}/allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeAllocationResponseModel>)),
@@ -426,100 +395,82 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteResponsibilityTypeAllocationsAsync(Guid uid, ResponsibilityTypeAllocationDeleteModel model)
         {
-            var prefix = "Responsibilities.DeleteResponsibilityTypeAllocationsAsync => ";
-            string errorMessage;
+			List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
 
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-            }
+			ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
+			if (responsibility == null)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
 
-            try
-            {
-                List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
+			foreach (var allocation in model.Items)
+			{
+				AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
+				if (assetType == null)
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ActionApiMessages.InvalidAssetTypeUid,
+						Success = false
+					});
 
-                ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
-                }
+					continue;
+				}
 
-                foreach (var allocation in model.Items)
-                {
-                    AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
-                    if (assetType == null)
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ActionApiMessages.InvalidAssetTypeUid,
-                            Success = false
-                        });
+				List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
+					{
+						AssetTypeClass.BusinessAsset,
+						AssetTypeClass.TechnicalAsset,
+						AssetTypeClass.Model,
+						AssetTypeClass.Rule,
+						AssetTypeClass.Policy,
+						AssetTypeClass.ReferenceItemType
+					};
 
-                        continue;
-                    }
+				if (!allowedClasses.Contains(assetType.Class))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
+						Success = false
+					});
 
-                    List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
-                    {
-                        AssetTypeClass.BusinessAsset,
-                        AssetTypeClass.TechnicalAsset,
-                        AssetTypeClass.Model,
-                        AssetTypeClass.Rule,
-                        AssetTypeClass.Policy,
-                        AssetTypeClass.ReferenceItemType
-                    };
+					continue;
+				}
 
-                    if (!allowedClasses.Contains(assetType.Class))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = string.Format(ResponsibilityApiMessages.InvalidAssetTypeClass, assetType.Class.ToString()),
-                            Success = false
-                        });
+				if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ResponsibilityApiMessages.AllocationNotFound,
+						Success = false
+					});
 
-                        continue;
-                    }
+					continue;
+				}
 
-                    if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ResponsibilityApiMessages.AllocationNotFound,
-                            Success = false
-                        });
+				string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibility, assetType);
 
-                        continue;
-                    }
+				if (ownershipLookupMessage != "")
+				{
+					results.Add(new ResponsibilityTypeAllocationResponseModel()
+					{
+						AssetTypeUid = allocation.AssetTypeUid,
+						Message = ownershipLookupMessage,
+						Success = false
+					});
 
-                    string ownershipLookupMessage = ResponsibilityRepository.GetResponsibilityTypeUsedInOwnershipLookupMessage(responsibility, assetType);
-                    
-                    if (ownershipLookupMessage != "")
-                    {
-                        results.Add(new ResponsibilityTypeAllocationResponseModel()
-                        {
-                            AssetTypeUid = allocation.AssetTypeUid,
-                            Message = ownershipLookupMessage,
-                            Success = false
-                        });
+					continue;
+				}
 
-                        continue;
-                    }
+				results.Add(await ResponsibilityRepository.DeleteAllocation(responsibility, assetType, model.Cascade));
+			}
 
-                    results.Add(await ResponsibilityRepository.DeleteAllocation(responsibility, assetType, model.Cascade));
-                }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Retrieves a list of responsibility type ownership rules for the specified responsibility type.
@@ -538,7 +489,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetResponsibilityRulesForTypeAsync(Guid responsibilityTypeUid)
         {
             IEnumerable<ResponsibilityTypeRuleViewModel> responsibilityTypeRules = await ResponsibilityRepository.GetResponsibilityRules(responsibilityTypeUid);
-            return Ok(responsibilityTypeRules);
+            
+			return Ok(responsibilityTypeRules);
         }
 
         /// <summary>
@@ -558,7 +510,8 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetResponsibilityRulesStats(Guid responsibilityTypeRuleUid)
         {
             ResponsibilityTypeRuleStatsViewModel responsibilityTypeRuleStats = await ResponsibilityRepository.GetResponsibilityRuleStats(responsibilityTypeRuleUid);
-            return Ok(responsibilityTypeRuleStats);
+            
+			return Ok(responsibilityTypeRuleStats);
         }
 
         /// <summary>
@@ -580,106 +533,90 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_responsibilityTypeUid", "The Uid of a responsibility type to return ownership for. If specified the results will include ownership of assets that include this responsibility type.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assigneeUid", "The Uid of an assignee to return ownership for. If specified the results will include assets for which the specified user is an owner.  In order to use this filter you must specify in addition the _assetTypeUid or _assetUid filter as well.", DataType = "string", ParameterType = "query", Required = false),
         ]
-        public async Task<HttpResponseMessage> GetResponsibilities()
+        public async Task<IHttpActionResult> GetResponsibilities()
         {
-            var prefix = "Responsibilities.GetResponsibilities => ";
-            string errorMessage;
+			var queryParams = Request.GetQueryNameValuePairs();
 
-            try
-            {
-                var queryParams = Request.GetQueryNameValuePairs();
+			Guid responsibilityUidFilter = Guid.Empty;
+			Guid assigneeUidFilter = Guid.Empty;
+			Guid assetUidFilter = Guid.Empty;
+			Guid assetTypeUidFilter = Guid.Empty;
+			string pageSize = "5";
+			string pageNum = "1";
+			var timeout = 300;
 
+			foreach (var q in queryParams.ToList())
+			{
+				var key = q.Key.ToLower();
 
-                Guid responsibilityUidFilter = Guid.Empty;
-                Guid assigneeUidFilter = Guid.Empty;
-                Guid assetUidFilter = Guid.Empty;
-                Guid assetTypeUidFilter = Guid.Empty;
-                string pageSize = "5";
-                string pageNum = "1";
-                var timeout = 300;
+				if (key.StartsWith("_"))
+				{
+					switch (key)
+					{
+						case "_pagesize":
+							pageSize = q.Value;
+							break;
+						case "_pagenum":
+							pageNum = q.Value;
+							break;
+						case "_responsibilitytypeuid":
+							if (!Guid.TryParse(q.Value, out responsibilityUidFilter) || responsibilityUidFilter == Guid.Empty)
+							{
+								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._responsibilitytypeuid));
+							}
+							break;
+						case "_assigneeuid":
+							if (!Guid.TryParse(q.Value, out assigneeUidFilter) || assigneeUidFilter == Guid.Empty)
+							{
+								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assigneeuid));
+							}
+							break;
+						case "_assettypeuid":
+							if (!Guid.TryParse(q.Value, out assetTypeUidFilter) || assetTypeUidFilter == Guid.Empty)
+							{
+								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assettypeuid));
+							}
+							break;
+						case "_assetuid":
+							if (!Guid.TryParse(q.Value, out assetUidFilter) || assetUidFilter == Guid.Empty)
+							{
+								throw new ArgumentException(string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assetuid));
+							}
+							break;
+						case "_timeout":
+							if (int.TryParse(q.Value, out timeout))
+							{
+								if (timeout < 1)
+								{
+									timeout = 30; // min timeout
+								}
+							}
+							break;
+					}
+				}
+			}
 
-                foreach (var q in queryParams.ToList())
-                {
-                    var key = q.Key.ToLower();
+			Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+			string isValid = isPageSizeAndNumValid(pageParams);
 
-                    if (key.StartsWith("_"))
-                    {
-                        switch (key)
-                        {
-                            case "_pagesize":
-                                pageSize = q.Value;
-                                break;
-                            case "_pagenum":
-                                pageNum = q.Value;
-                                break;
-                            case "_responsibilitytypeuid":
-                                if (!Guid.TryParse(q.Value, out responsibilityUidFilter) || responsibilityUidFilter == Guid.Empty)
-                                {
-                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._responsibilitytypeuid));
-                                }
-                                break;
-                            case "_assigneeuid":
-                                if (!Guid.TryParse(q.Value, out assigneeUidFilter) || assigneeUidFilter == Guid.Empty)
-                                {
-                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assigneeuid));
-                                }
-                                break;
-                            case "_assettypeuid":
-                                if (!Guid.TryParse(q.Value, out assetTypeUidFilter) || assetTypeUidFilter == Guid.Empty)
-                                {
-                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assettypeuid));
-                                }
-                                break;
-                            case "_assetuid":
-                                if (!Guid.TryParse(q.Value, out assetUidFilter) || assetUidFilter == Guid.Empty)
-                                {
-                                    return ReturnApiError(HttpStatusCode.BadRequest, string.Format(Messages.Error_Parameter_InvalidUidValue, ResponsibilityApiMessages._assetuid));
-                                }
-                                break;
-                            case "_timeout":
-                                if (int.TryParse(q.Value, out timeout))
-                                {
-                                    if (timeout < 1)
-                                    {
-                                        timeout = 30; // min timeout
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                }
+			if (!string.IsNullOrEmpty(isValid))
+			{
+				throw new ArgumentException(isValid);
+			}
 
-                Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
-                string isValid = isPageSizeAndNumValid(pageParams);
+			//validation dont allow assigneeuid filter across entire universe
+			if (assigneeUidFilter != Guid.Empty && assetTypeUidFilter == Guid.Empty && assetUidFilter == Guid.Empty)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.assigneeUidFilterValidation);
+			}
 
-                if (!string.IsNullOrEmpty(isValid))
-                {
-                    return ReturnApiError(HttpStatusCode.BadRequest, isValid);
-                }
+			int.TryParse(pageSize, out int _pageSize);
+			int.TryParse(pageNum, out int _pageNum);
 
-                //validation dont allow assigneeuid filter across entire universe
-                if (assigneeUidFilter != Guid.Empty && assetTypeUidFilter == Guid.Empty && assetUidFilter == Guid.Empty)
-                {
-                    return ReturnApiError(HttpStatusCode.BadRequest, ResponsibilityApiMessages.assigneeUidFilterValidation);
-                }
+			AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, responsibilityUidFilter, assigneeUidFilter, assetUidFilter, assetTypeUidFilter, _pageSize, _pageNum, timeout);
 
-                int.TryParse(pageSize, out int _pageSize);
-                int.TryParse(pageNum, out int _pageNum);
-
-                AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, responsibilityUidFilter, assigneeUidFilter, assetUidFilter, assetTypeUidFilter, _pageSize, _pageNum, timeout);
-
-                return Request.CreateResponse(HttpStatusCode.OK, res);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { ApiMessages.EndpointMethod, prefix }
-                });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
-            }
-        }
+			return Ok(res);
+		}
 
         /// <summary>
         /// Inserts responsibility types of a given responsibility types list.
@@ -688,6 +625,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
+			RequireAdminPermissions,
             MapToApiVersion("2.0"),
             Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -696,84 +634,65 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add responsibility types.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> InsertResponsibilityTypes(List<ResponsibilityTypeInsertModel> responsibilityTypes)
+        public IHttpActionResult InsertResponsibilityTypes(List<ResponsibilityTypeInsertModel> responsibilityTypes)
         {
-            var prefix = "Responsibilities.InsertResponsibilityTypes => ";
-            string errorMessage;
+			if (responsibilityTypes == null)
+			{
+				responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeInsertModel>>(Request, true).Result;
+			}
 
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-                }
+			if (responsibilityTypes == null)
+			{
+				throw new ArgumentException(ApiMessages.JSONValidMessage);
+			}
 
-                if (responsibilityTypes == null)
-                {
-                    responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeInsertModel>>(Request, true).Result;
-                }
+			if (responsibilityTypes.Count == 0)
+			{
+				throw new ArgumentException(RelationshipsApiMessages.PredicateRequired);
+			}
 
-                if (responsibilityTypes == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-                }
+			if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				throw new ArgumentException(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
 
-                if (responsibilityTypes.Count == 0)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
-                }
+			foreach (var type in responsibilityTypes)
+			{
+				if (type.Name?.Trim().Length > 250)
+				{
+					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				}
 
-                if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
-                }
+				if (type.Description?.Trim().Length > 4000)
+				{
+					throw new ArgumentException(string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length));
+				}
+			}
 
-                foreach (var type in responsibilityTypes)
-                {
-                    if (type.Name?.Trim().Length > 250)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
-                    }
+			var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
 
-                    if (type.Description?.Trim().Length > 4000)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length))).ConfigureAwait(false);
-                    }
+			if (existingUids.Any())
+			{
+				string errorMessage = string.Format(ResponsibilityApiMessages.ResponsibilityUidNonUnique, string.Join(", ", existingUids.Select(i => i.ToString())));
 
-                }
+				throw new ArgumentException(errorMessage);
+			}
 
-                var existingUids = Company.Query<Guid>("select uid from responsibilitytype where uid in @uids", new { uids = responsibilityTypes.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
-                
-                if (existingUids.Any())
-                {
-                    errorMessage = string.Format(ResponsibilityApiMessages.ResponsibilityUidNonUnique, string.Join(", ", existingUids.Select(i => i.ToString())));
-                    
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, errorMessage))).ConfigureAwait(false);
-                }
+			var execution = getApiExecution(responsibilityTypes.Count);
 
-                var execution = getApiExecution(responsibilityTypes.Count);
+			var upserts = new List<ResponsibilityTypeUpsertModel>();
+			upserts = responsibilityTypes.ConvertAll(x => new ResponsibilityTypeUpsertModel()
+			{
+				Name = x.Name,
+				Description = x.Description,
+				Uid = x.Uid,
+				IsNew = true
+			});
 
-                var upserts = new List<ResponsibilityTypeUpsertModel>();
-                upserts = responsibilityTypes.ConvertAll(x => new ResponsibilityTypeUpsertModel()
-                {
-                    Name = x.Name,
-                    Description = x.Description,
-                    Uid = x.Uid,
-                    IsNew = true
-                });
+			List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
 
-                List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
-                
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Retrieves all ownership records for the provided asset uid.
@@ -818,34 +737,23 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Asset Uid item doesn't exist or is not a valid type for ownership."),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetAssetHasOwnership(Guid assetUid)
+        public async Task<IHttpActionResult> GetAssetHasOwnership(string assetUid)
         {
-            var prefix = "Responsibilities.GetAssetHasOwnership => ";
-            string errorMessage;
+			Guid assetId;
+			if (!Guid.TryParse(assetUid, out assetId))
+			{
+				throw new ArgumentException(ActionApiMessages.InvalidAssetUid);
+			}
 
-            try
-            {
-                var validAsset = Company.Assets.Any(x => x.uid == assetUid);
+			if (!Company.Assets.Any(x => x.uid == assetId))
+			{
+				throw new NotFoundBusinessLayerException();
+			}
 
-                if (!validAsset)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.InvalidAssetUid)).ConfigureAwait(false);
-                }
+			var res = await ResponsibilityRepository.HasOwnership(assetId);
 
-                var res = await ResponsibilityRepository.HasOwnership(assetUid);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res))).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(ReturnApiError(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
-            }
-        }
+			return Ok(res);
+		}
 
         /// <summary>
         /// Updates responsibility types of a given responsibility types list.
@@ -854,6 +762,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
+			RequireAdminPermissions,
             MapToApiVersion("2.0"),
             Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -864,58 +773,39 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> UpdateResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypes)
         {
-            var prefix = "Responsibilities.UpdateResponsibilityTypes => ";
-            string errorMessage;
-            
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-                }
+			if (responsibilityTypes == null)
+			{
+				responsibilityTypes = await readRequestJsonContent<List<ResponsibilityTypeUpsertModel>>(Request, true);
+			}
 
-                if (responsibilityTypes == null)
-                {
-                    responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeUpsertModel>>(Request, true).Result;
-                }
+			if (responsibilityTypes == null)
+			{
+				throw new ArgumentException(ApiMessages.JSONValidMessage);
+			}
 
-                if (responsibilityTypes == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-                }
+			if (responsibilityTypes.Count == 0)
+			{
+				throw new ArgumentException(RelationshipsApiMessages.PredicateRequired);
+			}
 
-                if (responsibilityTypes.Count == 0)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, RelationshipsApiMessages.PredicateRequired)).ConfigureAwait(false);
-                }
+			if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+			{
+				throw new ArgumentException(string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT));
+			}
 
-                if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, string.Format(RelationshipsApiMessages.PredicateLimit, MAX_SYNCHRONOUS_API_ITEM_COUNT))).ConfigureAwait(false);
-                }
+			foreach (var type in responsibilityTypes)
+			{
+				if (type.Name.Trim().Length > 250)
+				{
+					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				}
+			}
 
-                foreach (var type in responsibilityTypes)
-                {
-                    if (type.Name.Trim().Length > 250)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.NameMaxLength250Char)).ConfigureAwait(false);
-                    }
-                }
+			var execution = getApiExecution(responsibilityTypes.Count);
 
-                var execution = getApiExecution(responsibilityTypes.Count);
-
-                List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(responsibilityTypes, execution);
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-        }
+			List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(responsibilityTypes, execution);
+			return Ok(results);
+		}
 
         /// <summary>
         /// Deletes responsibility type.
@@ -924,6 +814,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
+			RequireAdminPermissions,
             MapToApiVersion("2.0"),
             Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -932,36 +823,17 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypes)
+        public IHttpActionResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypes)
         {
-            var prefix = "Responsibilities.DeleteResponsibilityTypes => ";
-            string errorMessage;
+			if (responsibilityTypes == null)
+			{
+				throw new ArgumentException(ApiMessages.JSONValidMessage);
+			}
 
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-                }
+			ResponsibilityTypeDeleteResult results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
 
-                if (responsibilityTypes == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.JSONValidMessage)).ConfigureAwait(false);
-                }
-
-                ResponsibilityTypeDeleteResult results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
-
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage))).ConfigureAwait(false);
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Adds responsibility override to asset for a given Resource Uid list.
@@ -980,85 +852,71 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePostModel model)
+        public IHttpActionResult AddResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] ResponsibilityOverridePostModel model)
         {
-            var prefix = "Responsibilities.AddResponsibilitiesOverride => ";
-            string errorMessage;
-            
-            try
-            {
+			var asset = AssetRepository.GetAssetByUID(assetUid);
 
-                var asset = AssetRepository.GetAssetByUID(assetUid);
-                
-                if (asset == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
-                }
+			if (asset == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+			}
 
-                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
-                
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()))).ConfigureAwait(false);
-                }
+			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
-                if (!Company.HasAssetPermission(asset.ID, Permission.AddResponsibilities))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-                }
+			if (responsibility == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+			}
 
-                bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
+			if (!Company.HasAssetPermission(asset.ID, Permission.AddResponsibilities))
+			{
+				throw new UnauthorizedBusinessLayerException(ApiMessages.EndpointNotAuthorizedMessage);
+			}
 
-                if (!isValidResponsibilityForAsset)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset)).ConfigureAwait(false);
-                }
+			bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
-                if (model.ResourceUid.Count == 0)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidNotEmpty)).ConfigureAwait(false);
-                }
+			if (!isValidResponsibilityForAsset)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset);
+			}
 
-                if (model.ResourceUid.Any(x => x == Guid.Empty))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidInvalid)).ConfigureAwait(false);
-                }
+			if (model.ResourceUid.Count == 0)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidNotEmpty);
+			}
 
-                var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(model.ResourceUid, asset.uid, responsibility.UID).ToList();
+			if (model.ResourceUid.Any(x => x == Guid.Empty))
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidInvalid);
+			}
 
-                if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
-                {
-                    var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()))).ConfigureAwait(false);
-                }
+			var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(model.ResourceUid, asset.uid, responsibility.UID).ToList();
 
-                if (securityAssets.Any(x => x.Exists == true))
-                {
-                    var badAsset = securityAssets.First(x => x.Exists == true);
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()))).ConfigureAwait(false);
-                }
+			if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
+			{
+				var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
+				throw new ArgumentException(string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()));
+			}
 
-                foreach (var uid in model.ResourceUid)
-                {
-                    var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
-                    if (sas == null)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()))).ConfigureAwait(false);
-                    }
-                }
+			if (securityAssets.Any(x => x.Exists == true))
+			{
+				var badAsset = securityAssets.First(x => x.Exists == true);
+				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()));
+			}
 
-                ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
+			foreach (var uid in model.ResourceUid)
+			{
+				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
+				if (sas == null)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+				}
+			}
 
-                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ResponsibilityApiMessages.ResponsibilitySuccessAddMessage)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
+			ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
-            }
-        }
+			return Ok(ResponsibilityApiMessages.ResponsibilitySuccessAddMessage);
+		}
 
         /// <summary>
         /// Allows Bulk addition of responsibility overrides to assets for given Resource Uids.
@@ -1067,6 +925,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
+			RequireAdminPermissions,
             MapToApiVersion("2.0"),
             Route("batch"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -1077,40 +936,18 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> BulkAddResponsibilitiesOverride(List<BulkResponsibilityOverridePostModel> models)
         {
-            var prefix = "Responsibilities.BulkAddResponsibilitiesOverride => ";
-            string errorMessage;
-          
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-                }
+			var execution = getApiExecution(models.Count);
+			ApiExecutionInfo executionInfo = await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
 
-                var execution = getApiExecution(models.Count);
-                ApiExecutionInfo executionInfo = await ResponsibilityRepository.PostBatchResponsibilityOverride(models, execution);
+			var result = new ApiExecutionRecievedResponse
+			{
+				ExecutionID = executionInfo.ExecutionID,
+				Message = ApiMessages.ExecutionIDStatus,
+				Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+			};
 
-                var result = Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            new ApiExecutionRecievedResponse
-                            {
-                                ExecutionID = executionInfo.ExecutionID,
-                                Message = ApiMessages.ExecutionIDStatus,
-                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
-                            });
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                SendException(ex, new Dictionary<string, string> {
-                    { "Endpoint Method", prefix }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
+			return Ok(result);
+		}
 
         /// <summary>
         /// Deletes responsibility overrides from asset for a given Resource Uid list.
@@ -1130,84 +967,71 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility override.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] List<ResponsibilityOverrideDeleteModel> resourceUids)
+        public IHttpActionResult DeleteResponsibilitiesOverride(Guid assetUid, Guid responsibilityUid, [FromBody] List<ResponsibilityOverrideDeleteModel> resourceUids)
         {
-            var prefix = "Responsibilities.DeleteResponsibilitiesOverride => ";
-            string errorMessage;
+			var asset = AssetRepository.GetAssetByUID(assetUid);
 
-            try
-            {
+			if (asset == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+			}
 
-                var asset = AssetRepository.GetAssetByUID(assetUid);
+			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
-                if (asset == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()))).ConfigureAwait(false);
-                }
+			if (responsibility == null)
+			{
+				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+			}
 
-                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
-               
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()))).ConfigureAwait(false);
-                }
+			if (!Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
+			{
+				throw new UnauthorizedBusinessLayerException(ApiMessages.EndpointNotAuthorizedMessage);
+			}
 
-                if (!Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-                }
+			bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
-                bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
+			if (!isValidResponsibilityForAsset)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset);
+			}
 
-                if (!isValidResponsibilityForAsset)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ReposibilityTypeNotValidForAsset)).ConfigureAwait(false);
-                }
+			if (resourceUids.Count == 0)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidNotEmpty);
+			}
 
-                if (resourceUids.Count == 0)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidNotEmpty)).ConfigureAwait(false);
-                }
+			if (resourceUids.Any(x => x.ResourceUid == Guid.Empty))
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.ResourceUidInvalid);
+			}
 
-                if (resourceUids.Any(x => x.ResourceUid == Guid.Empty))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, ResponsibilityApiMessages.ResourceUidInvalid)).ConfigureAwait(false);
-                }
+			var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(resourceUids.Select(x => x.ResourceUid).ToList(), asset.uid, responsibility.UID).ToList();
 
-                var securityAssets = ResponsibilityRepository.GetSecurityAssetModelsForResources(resourceUids.Select(x => x.ResourceUid).ToList(), asset.uid, responsibility.UID).ToList();
+			if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
+			{
+				var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
+				throw new ArgumentException(string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()));
+			}
 
-                if (securityAssets.Any(x => string.IsNullOrEmpty(x.SecurityAsset)))
-                {
-                    var badAsset = securityAssets.First(x => string.IsNullOrEmpty(x.SecurityAsset));
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.InvalidResourceGroupUid, badAsset.uid.ToString()))).ConfigureAwait(false);
-                }
+			if (securityAssets.Any(x => x.Exists != true))
+			{
+				var badAsset = securityAssets.First(x => x.Exists != true);
+				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()));
+			}
 
-                if (securityAssets.Any(x => x.Exists != true))
-                {
-                    var badAsset = securityAssets.First(x => x.Exists != true);
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ReponsibilityOverrideExists, badAsset.uid.ToString()))).ConfigureAwait(false);
-                }
+			foreach (var uid in resourceUids.Select(x => x.ResourceUid).ToList())
+			{
+				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
+				if (sas == null)
+				{
+					throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+				}
+			}
 
-                foreach (var uid in resourceUids.Select(x => x.ResourceUid).ToList())
-                {
-                    var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
-                    if (sas == null)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()))).ConfigureAwait(false);
-                    }
-                }
+			ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-                ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
-
-                return await Task.FromResult<IHttpActionResult>(successMessageResponse(HttpStatusCode.OK, ApiMessages.Success, ResponsibilityApiMessages.ResponsibilitySuccessDeleteMessage)).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
+			return Ok(ResponsibilityApiMessages.ResponsibilitySuccessDeleteMessage);
+		}
 
         /// <summary>
         /// Adds a list of ownership rules for the specified responsibility type.
@@ -1242,6 +1066,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
+			RequireAdminPermissions,
             Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1251,48 +1076,29 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
 
         ]
-        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public IHttpActionResult PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
-            var prefix = "Relationships.PostResponsibilityRules => ";
-            string errorMessage;
+			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
-            try
-            {
+			if (responsibility == null)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-                }
+			var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
 
-                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+			if (existingUids.Any())
+			{
+				string errorMessage = string.Format(ResponsibilityApiMessages.DuplicateResponsibilityRule, string.Join(", ", existingUids.Select(i => i.ToString())));
+				throw new ArgumentException(errorMessage);
+			}
 
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
-                }
+			var execution = getApiExecution(responsibilityRules.Count);
 
-                var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
-               
-                if (existingUids.Any())
-                {
-                    errorMessage = string.Format(ResponsibilityApiMessages.DuplicateResponsibilityRule, string.Join(", ", existingUids.Select(i => i.ToString())));
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, errorMessage))).ConfigureAwait(false);
-                }
+			var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
-                var execution = getApiExecution(responsibilityRules.Count);
-
-                var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Edits a list of ownership rules for the specified responsibility type..
@@ -1325,6 +1131,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
+			RequireAdminPermissions,
             Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
@@ -1333,39 +1140,20 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, BAD_REQUEST_GENERIC_MESSAGE, typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        public IHttpActionResult PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody] List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
-            var prefix = "Relationships.PutResponsibilityRules => ";
-            string errorMessage;
+			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
 
-            try
-            {
+			if (responsibility == null)
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+			}
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-                }
+			var execution = getApiExecution(responsibilityRules.Count);
+			var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
 
-                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
-
-                if (responsibility == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, ApiMessages.NotFound, ResponsibilityApiMessages.InvalidResponsibilityUid)).ConfigureAwait(false);
-                }
-
-                var execution = getApiExecution(responsibilityRules.Count);
-                var results = await ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
+			return Ok(results);
+		}
 
 		/// <summary>
 		/// Deletes a list of ownership rules for the specified responsibility type..
@@ -1509,7 +1297,8 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
-            Route("test/{testType}"),
+			RequireAdminPermissions,
+			Route("test/{testType}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false),
@@ -1522,59 +1311,41 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> TestResponsibilityRules(string testType, [FromBody] ResponsibilityRuleUpsertModel responsibilityRule)
         {
-            var prefix = "Relationships.TestResponsibilityRules => ";
-            string errorMessage;
+			var allowedTests = new[] { "when", "then" };
 
-            try
-            {
-                var allowedTests = new[] { "when", "then" };
+			if (!allowedTests.Contains(testType.ToLower()))
+			{
+				throw new ArgumentException(ResponsibilityApiMessages.InvalidTestType);
+			}
 
-                if (!allowedTests.Contains(testType.ToLower()))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ResponsibilityApiMessages.InvalidTestType)).ConfigureAwait(false);
-                }
+			var hideD3SUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
+			var queryParams = Request.GetQueryNameValuePairs();
+			var includeThen = testType.ToLower() == "then";
 
-                if (!Company.CurrentResourceIsAdmin)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage)).ConfigureAwait(false);
-                }
+			var pageValid = isPageSizeAndNumValid(queryParams);
 
-                var hideD3SUsers = SettingsRepository.GetSettingValue<bool>(Setting.HideData3SixtyUsers);
-                var queryParams = Request.GetQueryNameValuePairs();
-                var includeThen = testType.ToLower() == "then";
+			if (!string.IsNullOrEmpty(pageValid))
+			{
+				throw new ArgumentException(pageValid);
+			}
 
-                var pageValid = isPageSizeAndNumValid(queryParams);
+			var allowedValues = new[] { "asc", "desc" };
+			var direction = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value ?? "asc";
 
-                if (!string.IsNullOrEmpty(pageValid))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, pageValid)).ConfigureAwait(false);
-                }
+			if (!allowedValues.Contains(direction.Trim().ToLower()))
+			{
+				throw new ArgumentException(ApiMessages.InvalidDirection);
+			}
 
-                var allowedValues = new[] { "asc", "desc" };
-                var direction = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value ?? "asc";
+			var results = await ResponsibilityRepository.GetResponsibilityRuleTestResults(responsibilityRule, hideD3SUsers, includeThen, queryParams, testType);
 
-                if (!allowedValues.Contains(direction.Trim().ToLower()))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ApiMessages.InvalidDirection)).ConfigureAwait(false);
-                }
+			if (!results.Success)
+			{
+				throw new ArgumentException(results.Message);
+			}
 
-                var results = await ResponsibilityRepository.GetResponsibilityRuleTestResults(responsibilityRule, hideD3SUsers, includeThen, queryParams, testType);
-
-                if (!results.Success)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, results.Message)).ConfigureAwait(false);
-                }
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, ApiMessages.UnknownError, errorMessage)).ConfigureAwait(false);
-            }
-        }
+			return Ok(results);
+		}
 
         /// <summary>
         /// Deletes responsibility overrides from asset for a given group or resource uid.
