@@ -849,13 +849,14 @@ namespace d360.model.DataAccessLayer.repositories
 										}
 										else
 										{
+											var tableAlias = (field.Type == "Lookup" && CompanyContext.LookupFieldHasColorItem(field)) ? $"FF{field.ID}" : $"F{field.ID}";
 											if(!string.IsNullOrEmpty(field.DefaultValue))
 											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE(F{field.ID}.{valueColumn}, @defaultValueF{field.ID}) {orderDirection}";
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"COALESCE({tableAlias}.{valueColumn}, @defaultValueF{field.ID}) {orderDirection}";
 											}
 											else
 											{
-												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
+												orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"{tableAlias}.{valueColumn} {orderDirection}";
 											}
 										}
 									}
@@ -1007,6 +1008,10 @@ namespace d360.model.DataAccessLayer.repositories
 
 				if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
 				{
+					if(ft.Type == "Lookup" && CompanyContext.LookupFieldHasColorItem(ft))
+					{
+						val = $"F{val}";
+					}
 					val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
 				}
 

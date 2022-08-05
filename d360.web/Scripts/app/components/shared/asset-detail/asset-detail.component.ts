@@ -82,6 +82,7 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     rows = new Array<DetailRow>();
     userGroups: any = [];
     loadGroupSub: Subscription;
+	detailSub: Subscription;
 
     loadedGroup: Group;
     simpleSearchTooltipHTML: string = StringConstants.simpleSearchTooltipHTML;
@@ -125,16 +126,17 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
     }
 
     public load(updateTab: boolean = true): void {
-        let detailSub = null;
+		this.detailSub?.unsubscribe();
+        let detailObservable = null;
         if (this.assetDetail) {
-            detailSub = this.assetDetail;
+            detailObservable = this.assetDetail;
         } else {
             if (this.objectType && this.objectID) {
-                detailSub = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
+                detailObservable = this.objectDetailService.getObjectDetail(this.objectID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition);
             }
 
             if (this.objectType && this.objectUID) {
-                detailSub = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition, this.baseAssetUid);
+                detailObservable = this.objectDetailService.getObjectDetailByUid(this.objectUID, this.objectType, true, this.showHeader, this.useAssetDetailColumnDefinition, this.baseAssetUid);
             }
         }
 
@@ -144,9 +146,9 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
             this.tab = 'relationship';
         }
 
-        if (detailSub) {
+        if (detailObservable) {
             this.isLoading = true;
-            detailSub
+            this.detailSub = detailObservable
                 .subscribe((data) => {
                     this.model = data;
                     this.rows = this.getRowsWithOnlyFilteredFields(data.rows);

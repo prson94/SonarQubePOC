@@ -11,7 +11,6 @@ import { CompanySettingsService } from '../services/settings.service';
     selector: '[context-link]'
 })
 export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChecked {
-	@Input() isOpenDefault: boolean = false;
     contextElement: HTMLDivElement;
     hoverElement: HTMLDivElement;
     hoverTooltipWidth: number = 350;
@@ -34,19 +33,11 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         var htmlEl = this.el.nativeElement as HTMLElement;
         this.canViewUsers = this.authenticationService.isAdmin || this.settingsService.getSettingById(CompanySettingEnum.ShowResources).BooleanSetting.Value;
 		
-		if (this.isOpenDefault) {
-			this.contextMenuItems = [
-				{ title: $localize`Open`, value: 'open' },
-				{ title: $localize`Open in New Tab`, value: 'new-tab' },
-				{ title: $localize`View Information`, value: 'info' }
-			];
-		} else {
-			this.contextMenuItems = [
-				{ title: $localize`View Information`, value: 'info' },
-				{ title: $localize`Open`, value: 'open' },
-				{ title: $localize`Open in New Tab`, value: 'new-tab' }
-			];
-		}
+		this.contextMenuItems = [
+			{ title: $localize`View Information`, value: 'info' },
+			{ title: $localize`Open`, value: 'open' },
+			{ title: $localize`Open in New Tab`, value: 'new-tab' }
+		];
         
 		if (this.isLinkDisabled) {
             htmlEl.style.pointerEvents = "none";
@@ -99,12 +90,12 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
                 isInitialTag = true;
             }
         }
-		const action = this.isOpenDefault ? 'Open' : 'view information in the side panel';
+
         if (refElement === "link") {
-            html += $localize`Click the link to ${action} or right-click for more options`;
+            html += $localize`Click the link to view information in the side panel or right-click for more options`;
         }
         else {
-            html += $localize`Click the tag to ${action} or right-click for more options`;
+            html += $localize`Click the tag to view information in the side panel or right-click for more options`;
         }
 
 
@@ -138,7 +129,7 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.contextMenuItems.forEach((item) => {
             var menuItem = this.document.createElement('div');
             this.renderer.setAttribute(menuItem, 'class', 'menu-item');
-            if (item.value === (this.isOpenDefault ? "open" : "info")) {
+            if (item.value === "info") {
                 menuItem.style.fontWeight = "700";
             }
             menuItem.innerHTML = item.title;

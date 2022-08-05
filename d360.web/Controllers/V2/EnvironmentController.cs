@@ -105,18 +105,18 @@ namespace d360.web.Controllers.V2
 					return ReturnApiError(HttpStatusCode.BadRequest, ApiMessages.ErrorInvalidDatasetMessage);
 				}
 
-                var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
-                if (readyToActivate.StatusCode == HttpStatusCode.OK)
-                {
-                    switch (model.Job)
-                    {
-                        case CompanyRebuildJobToken.DisplayValues:
-                            Company.RebuildDisplayValuesRequest();
-                            break;
-                        case CompanyRebuildJobToken.SearchIndex:
-                            Company.RebuildIndexRequest();
-                            break;
-                    }
+				var readyToActivate = await Company.UpdateRebuildJobStatus(model.Job, CompanyRebuildJobStatusState.Active, constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS);
+				if (readyToActivate.StatusCode == HttpStatusCode.OK)
+				{
+					switch (model.Job)
+					{
+						case CompanyRebuildJobToken.DisplayValues:
+							Company.RebuildDisplayValuesRequest();
+							break;
+						case CompanyRebuildJobToken.SearchIndex:
+							Company.RebuildIndexRequest();
+							break;
+					}
 
 					return Request.CreateResponse(HttpStatusCode.Created, new { type = ApiMessages.confirm, title = ApiMessages.Success, action = ApiMessages.add, message = ApiMessages.RebuildRequest, id = "" });
 				}
@@ -2135,6 +2135,30 @@ namespace d360.web.Controllers.V2
 					return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Join(", ", getModelFilter.Errors));
 				}
 
+				if (getModelFilter.AssetTypeUid.HasValue)
+				{
+					if (!Company.AssetTypes.Any(x => x.uid == getModelFilter.AssetTypeUid))
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(Messages.AssetTypeNotFound, getModelFilter.AssetTypeUid));
+					}
+				}
+
+				if (getModelFilter.AssetUid.HasValue)
+				{
+					if (!Company.Assets.Any(x => x.uid == getModelFilter.AssetUid))
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(Messages.AssetNotFound, getModelFilter.AssetUid));
+					}
+				}
+
+				if (getModelFilter.Uid.HasValue)
+				{
+					if (!Company.Reports.Any(x => x.uid == getModelFilter.Uid))
+					{
+						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(DashboardMessages.DashboardNotFound, getModelFilter.Uid));
+					}
+				}
+
 				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 
 				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
@@ -2315,7 +2339,7 @@ namespace d360.web.Controllers.V2
 				{
 					if (!Company.Reports.Any(x => x.uid == requestModel.Uid))
 					{
-						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, DashboardMessages.DashboardNotFound);
+						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(DashboardMessages.DashboardNotFound, requestModel.Uid));
 					}
 				}
 
