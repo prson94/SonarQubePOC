@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.FollowDetail-v7.1">
+  <changeSet author="Puneet Gupta" id="View.dbo.FollowDetail-v8">
+	<comment>GOV-18454</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -194,23 +195,23 @@ create or alter view [dbo].[FollowDetail]
 				F.ObjectID,  
 				F.[Object] as ObjectType,  
 				A.ID as AssetID,
-				O.ObjectID as ID,  
-				O.Name,  
-				O.TextPath,  
-				O.Description,  
-				O.ParentID,  
-				O.Parent as ParentType,  
-				O.Url,  
-				O.ObjectTypeID as TypeID,  
-				O.ObjectType as [Type],  
-				case O.ObjectType  
+				F.ObjectID as ID,  
+				coalesce(AName.DisplayValue,OAT.Name) Name,  
+				coalesce(AName.DisplayValue,OAT.Name) TextPath,  
+				cast(null as nvarchar) Description,  
+				cast(null as int) ParentID,  
+				cast(null as varchar) ParentType,  
+				coalesce(AUrl.Url,ATUrl.Url) as Url,  
+				coalesce(AAT.ObjectID,OAT.ObjectID) as TypeID,  
+				coalesce(AAT.Object,OAT.Object) as [Type],  
+				case coalesce(AAT.Object,OAT.Object)  
 					when 'ResourceType' then 'User'  
 					when 'Group' then 'Group'  
-					else O.ObjectTypeName  
+					else AAT.Name 
 				end as [TypeName],  
-				O.IconBackColor,  
-				O.IconForeColor,  
-				O.IconText,  
+				coalesce(AATS.IconBackColor,OATS.IconBackColor,'#000') IconBackColor,  
+				coalesce(AATS.IconForeColor,OATS.IconForeColor, '#fff') IconForeColor,  
+				coalesce(AATS.IconText, OATS.IconText , 'leaf') IconText,  
 				0 AS OpenEventCount,  
 				cast(S.Value as decimal(4,3)) as CurrentScore,  
 				cast(F.HardFollow as bit) as HardFollow  
@@ -287,14 +288,22 @@ create or alter view [dbo].[FollowDetail]
 				where 	FollowTypeID = 1   
 		) F  
 		inner join reporting.Global_Resource R on R.ResourceID = F.ResourceID  
-		inner join cache.ObjectDetails O on O.[Object] = F.[Object] and O.ObjectID = F.ObjectID
 		left join Asset A on A.Object = F.Object and A.ObjectID = F.ObjectID
+		left join AssetType AAT on AAT.ID = A.AssetTypeID
+		left join AssetTypeStyle AATS on AATS.ID = AAT.ID
+		outer apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+		outer apply [dbo].[GetAssetUrlById](A.ID) AUrl
+		left Outer Join AssetType OAT on OAT.[Object] = F.[Object] and OAT.ObjectID = F.ObjectID
+		left join AssetTypeStyle OATS on OATS.ID = OAT.ID
+		outer apply [dbo].[GetAssetTypeUrlByID](OAT.ID) ATUrl
+		
 		outer apply (
 			select	S.Value
 			from	metrics.Score S
 					inner join metrics.Allocation Al on Al.Uid = S.AllocationUid and Al.ScoreType = 1 and Al.OverrideName is null
 								and S.AssetUid = A.[Uid] and S.EffectiveDate <= getutcdate() and (S.EndDate >= getutcdate() or S.EndDate is null)
 		) S
+		where (A.ID IS NOT NULL OR OAT.ID IS NOT NULL)
 		]]>
     </sql>
 	<rollback>
@@ -481,6 +490,7 @@ create or alter view [dbo].[FollowDetail]
 				dbo.GenerateAssetUrl((select ID from Asset where Object ='Resource' and ObjectID = F.ResourceID)) as FollowerUrl,  
 				F.ObjectID,  
 				F.[Object] as ObjectType,  
+				A.ID as AssetID,
 				O.ObjectID as ID,  
 				O.Name,  
 				O.TextPath,  
