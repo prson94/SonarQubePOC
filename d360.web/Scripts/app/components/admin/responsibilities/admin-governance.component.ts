@@ -80,7 +80,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     delete(uid: string): void {
         this.formMode = FormMode.Deleting;
-        this.selectedRow = this.responsibilityTypeItems.find(i => i.uid === uid);
+        this.selectedRow = this.responsibilityTypeItems.find((i) => i.uid === uid);
         this.selectedItemChange();
     }
 

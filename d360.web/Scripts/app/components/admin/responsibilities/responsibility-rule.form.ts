@@ -257,7 +257,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
                 selectedFieldType = _.cloneDeep(selectedFieldType);
                 item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
                 if (selectedFieldType.isLookup) {
-                    let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
+                    let excluded = selectedFieldType.values.findIndex((a) => a.label == this.chooseLabel);
                     if (excluded < 0) {
                         selectedFieldType.values.unshift({ label: this.chooseLabel, value: null });
                     }
@@ -432,7 +432,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
         //remove valueoptions from any when criteria
         if (thenTest.StructuredDefinition.When) {
-            thenTest.StructuredDefinition.When.forEach(wft => {
+            thenTest.StructuredDefinition.When.forEach((wft) => {
                 wft.ValueOptions = [];
             });
         }
@@ -509,7 +509,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
             item.IsBool = false;
             item.FieldTypeName = selectedFieldType.fieldTypeName ?? selectedFieldType.label;
             if (selectedFieldType.isLookup) {
-                let excluded = selectedFieldType.values.findIndex(a => a.label == this.chooseLabel);
+                let excluded = selectedFieldType.values.findIndex((a) => a.label == this.chooseLabel);
                 if (excluded < 0) {
                     selectedFieldType.values.unshift({ label: this.chooseLabel, value: null });
                 }
@@ -571,7 +571,7 @@ export class ResponsibilityRuleForm extends BaseComponent implements OnInit {
 
         //remove valueoptions from any when criteria
         if (this.model.StructuredDefinition.When) {
-            this.model.StructuredDefinition.When.forEach(wft => {
+            this.model.StructuredDefinition.When.forEach((wft) => {
                 wft.ValueOptions = [];
             });
         }

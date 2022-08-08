@@ -186,7 +186,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	addFolder(item: SiteNav) {
-		let i = this.availableItems.findIndex(f => f.ObjectID == item.ObjectID && f.Object == item.Object);
+		let i = this.availableItems.findIndex((f) => f.ObjectID == item.ObjectID && f.Object == item.Object);
 
 		if (i > -1) {
 			let item = this.availableItems[i];
@@ -203,7 +203,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	deleteFolder(item: SiteNav) {
 		this.isLoading = true;
 		this.siteMenuService.removeFolder(item.ID)
-			.subscribe(res => {
+			.subscribe((res) => {
 				this.showMessageForResult(this.messagesService, res);
 				this.stateService.reloadLeftNavMenu();
 				this.loadNavItems();
@@ -213,7 +213,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	deleteFolderItem(item: SiteNav) {
-		let i = this.folderItems.findIndex(f => f.ID == item.ID);
+		let i = this.folderItems.findIndex((f) => f.ID == item.ID);
 
 		if (i > -1) {
 			let item = this.folderItems[i];
@@ -230,7 +230,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	addFolderItem(item: SiteNav) {
-		let i = this.availableItems.findIndex(f => f.ObjectID == item.ObjectID && f.Object == item.Object);
+		let i = this.availableItems.findIndex((f) => f.ObjectID == item.ObjectID && f.Object == item.Object);
 
 		if (i > -1) {
 			let item = this.availableItems[i];
@@ -246,13 +246,13 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	}
 
 	addNewFolder(item: SiteNav) {
-		let x = this.availableItems.findIndex(i => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.availableItems.splice(x, 1)[0]);
 		this.newFolderItems.push(i);
 	}
 
 	deleteNewFolder(item: SiteNav) {
-		let x = this.availableItems.findIndex(i => i.ObjectID == item.ObjectID && i.Object == item.Object);
+		let x = this.availableItems.findIndex((i) => i.ObjectID == item.ObjectID && i.Object == item.Object);
 		let i = _.cloneDeep(this.newFolderItems.splice(x, 1)[0]);
 		this.availableItems.push(i);
 	}
@@ -276,7 +276,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.siteMenuService.moveFolderUp(this.selection.ID)
 			.subscribe(() => {
 				this.siteMenuService.getSiteNavItems()
-					.subscribe(s => {
+					.subscribe((s) => {
 						this.companySettings.SiteNav = s;
 						this.companySettingsChange.emit(this.companySettings);
 						this.stateService.reloadLeftNavMenu();
@@ -293,7 +293,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.siteMenuService.moveFolderDown(this.selection.ID)
 			.subscribe(() => {
 				this.siteMenuService.getSiteNavItems()
-					.subscribe(s => {
+					.subscribe((s) => {
 						this.companySettings.SiteNav = s;
 						this.companySettingsChange.emit(this.companySettings);
 						this.stateService.reloadLeftNavMenu();
@@ -310,7 +310,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.siteMenuService.moveFolderToTop(this.selection.ID)
 			.subscribe(() => {
 				this.siteMenuService.getSiteNavItems()
-					.subscribe(s => {
+					.subscribe((s) => {
 						this.companySettings.SiteNav = s;
 						this.companySettingsChange.emit(this.companySettings);
 						this.stateService.reloadLeftNavMenu();
@@ -327,7 +327,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		this.siteMenuService.moveFolderToBottom(this.selection.ID)
 			.subscribe(() => {
 				this.siteMenuService.getSiteNavItems()
-					.subscribe(s => {
+					.subscribe((s) => {
 						this.companySettings.SiteNav = s;
 						this.companySettingsChange.emit(this.companySettings);
 						this.stateService.reloadLeftNavMenu();
@@ -379,7 +379,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 			case FormMode.Editing:
 				this.selection.IconPayload = this.iconImage.dataUrl;
 				this.siteMenuService.editFolder(this.selection)
-					.subscribe(result => {
+					.subscribe((result) => {
 						this.showMessageForResult(this.messagesService, result);
 						this.siteMenuService.setSiteNavPermissions(this.selection);
 						this.stateService.reloadLeftNavMenu();
@@ -398,7 +398,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 				};
 
 				this.siteMenuService.addFolder(model)
-					.subscribe(r => {
+					.subscribe((r) => {
 						this.showMessageForResult(this.messagesService, r);
 						this.formMode = FormMode.Default;
 						this.isLoading = false;
@@ -415,7 +415,7 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 	onDeleteFolderConfirmed() {
 		this.isLoading = true;
 		this.siteMenuService.removeFolder(this.selection.ID)
-			.subscribe(res => {
+			.subscribe((res) => {
 				this.showDeleteDialog = false;
 				this.stateService.reloadLeftNavMenu();
 				this.formMode = FormMode.Default;
@@ -429,17 +429,17 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 		let promises = [];
 		this.isLoading = true;
 
-		this.folderItems.forEach(o => {
-			let s = this.oldFolderItems.find(i => i.ID == o.ID);
+		this.folderItems.forEach((o) => {
+			let s = this.oldFolderItems.find((i) => i.ID == o.ID);
 
 			if (s == null) {
 				promises.push(this.siteMenuService.removeFolderItem(o.ID));
 			}
 		});
 
-		this.oldFolderItems.forEach(o => {
+		this.oldFolderItems.forEach((o) => {
 
-			let s = this.folderItems.find(i => i.ID == o.ID);
+			let s = this.folderItems.find((i) => i.ID == o.ID);
 
 			if (s == null) {
 				promises.push(this.siteMenuService.addFolderItem(o));
@@ -460,22 +460,22 @@ export class AdminSiteMenuComponent extends AdminBaseComponent implements OnInit
 
 		if (this.selection == null || this.selection.ID == null) {
 			return this.siteMenuService.getAvailableItems()
-				.subscribe(r => {
+				.subscribe((r) => {
 					this.availableItems = r;
 					this.isLoading = false;
 				});
 		} else {
 
 			return this.siteMenuService.getAvailableItems()
-				.subscribe(r => {
+				.subscribe((r) => {
 					this.availableItems = r;
 					this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
-						.subscribe(s => {
+						.subscribe((s) => {
 							this.folderItems = s;
 							this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
 							this.isLoading = false;
 							this.siteMenuService.getSiteNavFolderItems(this.selection.ID)
-								.subscribe(s => {
+								.subscribe((s) => {
 									this.folderItems = s;
 									this.folderItems = _.sortBy(this.folderItems, 'SortOrder'); // sort the folderItems by SortOrder
 									this.isLoading = false;

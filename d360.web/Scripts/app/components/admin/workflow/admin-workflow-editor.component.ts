@@ -104,11 +104,11 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         if (this.isClone) {
             this.workflowService.deleteWorkflowType(this.id, this.uid)
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.isLoading = false;
                     this.messageService.showInfoMessage($localize`Workflow not saved.`, "");
                     this.onClose.emit();
-                }, err => {
+                }, (err) => {
                     this.messageService.showError($localize`Problem deleting cloned Workflow`, err);
                     this.onClose.emit();
                 });
@@ -120,10 +120,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     load() {
         this.isLoading = true;
         this.workflowService.getChangeTypes()
-            .pipe(map(r => { this.changesTypes = r; }))
+            .pipe(map((r) => { this.changesTypes = r; }))
             .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id, this.uid)
                 .pipe(
-                    map(r => {
+                    map((r) => {
                         if ((this.id > 0 || (this.uid && this.uid != "00000000-0000-0000-0000-000000000000")) && this.model == null && r != null)
                             this.model = r;
 
@@ -156,7 +156,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                         if ((this.model.Event.ConditionObject == null || _.isEmpty(this.model.Event.ConditionObject)) && this.model.Event.Condition != null && this.model.Event.Condition.toString() === this.model.Event.Condition && this.model.Event.Condition.startsWith('{')) {
                             let conditions = JSON.parse(this.model.Event.Condition).Conditions.Condition;
                             this.conditions = [];
-                            conditions.forEach(c => this.conditions.push(c));
+                            conditions.forEach((c) => this.conditions.push(c));
                         }
                         else if (this.model.Event.ConditionObject != null && this.model.Event.ConditionObject.Condition != null) {
                             this.conditions = [];
@@ -168,18 +168,18 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     }))))
             .pipe(concatMap(() => this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
                 .pipe(
-                    map(r => {
+                    map((r) => {
                         this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r);
                         if (this.hideShoppingCart) {
-                            this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                            this.workflowObjectTypes = this.workflowObjectTypes.filter((w) => w.type != 'ShoppingCartType');
                         }
 
                         this.model.Event.IssueObject = '';
                         if (this.objectType == 'IssueType') {
-                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType' && w.type != 'ReferenceItemType');
+                            this.issueObjectTypes = this.workflowObjectTypes.slice().filter((w) => w.type != 'IssueType' && w.type != 'ReferenceItemType');
 
-                            let objectIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObject');
-                            let objectIdIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'IssueObjectID');
+                            let objectIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] == 'IssueObject');
+                            let objectIdIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] == 'IssueObjectID');
 
                             if (objectIndex > -1 && objectIdIndex > -1) {
                                 this.model.Event.IssueObject = this.conditions[objectIndex]['@Value'] + '|' + this.conditions[objectIdIndex]['@Value'];
@@ -200,10 +200,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                             || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
                             || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
                             this.workflowService.getScoreTypes(id, type)
-                                .subscribe(res => {
+                                .subscribe((res) => {
                                     this.scoreTypes = res;
                                     this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
-                                    let scoreIndex = this.conditions.findIndex(c => c['@ContextualFieldID'] == 'ScoreType');
+                                    let scoreIndex = this.conditions.findIndex((c) => c['@ContextualFieldID'] == 'ScoreType');
 
                                     if (scoreIndex > -1) {
                                         this.model.Event.ScoreType = +this.conditions[scoreIndex]['@Value'];
@@ -214,19 +214,19 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                     }))))
             .pipe(concatMap(() => this.workflowService.getWorkflowFieldTypes(this.objectID, this.objectType, true, this.model.Event.IssueObject)
                 .pipe(
-                    map(r => {
-                        r.forEach(t => {
-                            let c = this.conditions.filter(c => c['@FieldTypeID'] == t.ID);
+                    map((r) => {
+                        r.forEach((t) => {
+                            let c = this.conditions.filter((c) => c['@FieldTypeID'] == t.ID);
                             if (c != null)
-                                c.forEach(f => f['@FieldName'] = t.FriendlyName + (t.Object == 'IssueType' ? ' (Action Field)' : ''));
+                                c.forEach((f) => f['@FieldName'] = t.FriendlyName + (t.Object == 'IssueType' ? ' (Action Field)' : ''));
                         });
                     }))))
             .pipe(concatMap(() => of(
                 //apply names to contextual fields
-                this.conditions.filter(c => c['@ContextualFieldID'] != null).forEach(c => {
+                this.conditions.filter((c) => c['@ContextualFieldID'] != null).forEach((c) => {
                     let cx = this.workflowFieldsService
                         .getContextualFieldsForType()
-                        .find(x => x.value == 'Contextual|' + c['@ContextualFieldID']);
+                        .find((x) => x.value == 'Contextual|' + c['@ContextualFieldID']);
                     if (cx != null)
                         c['@FieldName'] = cx.label;
                 })
@@ -246,10 +246,10 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     loadObjects() {
         return this.workflowService.getWorkflowObjectTypes(this.model.Event.ChangeType)
             .pipe(
-                map(r => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
+                map((r) => this.workflowObjectTypes = [this.defaultWorkflowObject].concat(r)),
                 map(() => {
                     if (this.hideShoppingCart) {
-                        this.workflowObjectTypes = this.workflowObjectTypes.filter(w => w.type != 'ShoppingCartType');
+                        this.workflowObjectTypes = this.workflowObjectTypes.filter((w) => w.type != 'ShoppingCartType');
                     }
                 })).subscribe();
     }
@@ -291,7 +291,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             }
 
             if (this.objectType == 'IssueType') {
-                this.issueObjectTypes = this.workflowObjectTypes.slice().filter(w => w.type != 'IssueType' && w.type != 'ReferenceItemType');
+                this.issueObjectTypes = this.workflowObjectTypes.slice().filter((w) => w.type != 'IssueType' && w.type != 'ReferenceItemType');
             }
 
             this.loadContextualFields();
@@ -311,7 +311,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
             this.responsibilities = [];
         }
         this.resSub = this.responsibilityService.getResponsibilityTypesByObject(this.objectType, this.objectID)
-            .subscribe(r => this.responsibilities = r);
+            .subscribe((r) => this.responsibilities = r);
 
         this.validate();
     }
@@ -331,7 +331,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 || this.model.Event.ChangeType == WorkflowChangeType.RequestCertification
                 || this.model.Event.ChangeType == WorkflowChangeType.Schedule) {
                 this.workflowService.getScoreTypes(id, type)
-                    .subscribe(res => {
+                    .subscribe((res) => {
                         this.scoreTypes = res;
                         this.scoreTypes.unshift({ label: '', value: null });
                         this.workflowFieldsService.setAvailableScoreTypes(this.scoreTypes);
@@ -370,7 +370,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
     hasPendingWorkflowItems() {
         this.workflowService.hasPendingWorkflowItems(this.model.Type.ID)
-            .subscribe(x => {
+            .subscribe((x) => {
                 if (x) {
                     this.warningMessage = $localize`There are pending workflow items for this workflow. These items can still be completed, but no new workflow items will be created.`;
                 }
@@ -394,7 +394,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     remove(item: any) {
-        let i = this.conditions.findIndex(c => c == item);
+        let i = this.conditions.findIndex((c) => c == item);
         this.conditions.splice(i, 1);
         this.conditions = this.conditions.slice();
         this.validate();
@@ -407,7 +407,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         this.model.Type.PublishedVersionID = null;
 
-        this.conditions.forEach(c => {
+        this.conditions.forEach((c) => {
             delete c['@FieldName'];
         });
 
@@ -428,8 +428,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         ];
 
-        contextualFields.forEach(field => {
-            let ix = this.conditions.findIndex(c => c['@ContextualFieldID'] == field.key);
+        contextualFields.forEach((field) => {
+            let ix = this.conditions.findIndex((c) => c['@ContextualFieldID'] == field.key);
             if (field.applies) {
                 if (ix == -1) {
                     this.conditions.push({
@@ -478,7 +478,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
 
         if (this.model == null) return;
         let hasConditionsError = false;
-        this.conditions.forEach(c => {
+        this.conditions.forEach((c) => {
             if (c['@ContextualFieldID'] != null && this.excludedContextualFields.indexOf(c['@ContextualFieldID']) != -1)
                 return;
 
@@ -500,7 +500,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         }
 
         if (this.model.Event.ChangeType == WorkflowChangeType.Schedule && this.selectedObjectType != '' && this.selectedObjectType != null) {
-            if (this.scheduleTypes.map(s => s.value).indexOf(this.model.Event.SettingsObject.Settings.ScheduleType) == -1) {
+            if (this.scheduleTypes.map((s) => s.value).indexOf(this.model.Event.SettingsObject.Settings.ScheduleType) == -1) {
                 this.errorMessage = $localize`Please select a Run Interval.`;
                 this.isValid = false;
                 return;
@@ -536,7 +536,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
                 return;
             }
 
-            let t = this.workflowObjectTypes.find(t => t.value == this.selectedObjectType);
+            let t = this.workflowObjectTypes.find((t) => t.value == this.selectedObjectType);
 
             if (t != null && t.count > this.SCHEDULE_OBJECT_LIMIT) {
                 this.errorMessage = $localize`The chosen object type has more than ${this.SCHEDULE_OBJECT_LIMIT} items, which exceeds the limit for change type Schedule.`;

@@ -121,14 +121,14 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
     }
 
     add() {
-        this.field.Value.forEach(x => {
+        this.field.Value.forEach((x) => {
             let p: SiteNavPermission = new SiteNavPermission();
             p.SiteNavID = this.siteNav.ID;
             p.Object = x.split('|')[0];
             p.ObjectID = +x.split('|')[1];
             p.Name = x.split('|')[2];
            
-            let d = this.siteNav.Permissions.filter(x => x.ObjectID == p.ObjectID && x.Object == p.Object);
+            let d = this.siteNav.Permissions.filter((x) => x.ObjectID == p.ObjectID && x.Object == p.Object);
             if (d == null || d.length==0) 
                 this.siteNav.Permissions.push(p);
         });
@@ -140,7 +140,7 @@ export class AdminSiteMenuPermissionsComponent extends AdminBaseComponent implem
     }
 
     delete(item: SiteNavPermission) {
-        let x = this.siteNav.Permissions.findIndex(p => p.Object == item.Object && p.ObjectID == item.ObjectID);
+        let x = this.siteNav.Permissions.findIndex((p) => p.Object == item.Object && p.ObjectID == item.ObjectID);
         this.siteNav.Permissions.splice(x, 1);
         this.siteNavChange.emit(this.siteNav);
     }

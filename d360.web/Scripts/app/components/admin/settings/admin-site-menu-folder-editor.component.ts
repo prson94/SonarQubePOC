@@ -441,7 +441,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this.iconType = 'image';
 		this.iconImage.file = files[0];
 		FormHelper.getDataUrl(files[0])
-			.then(dataUrl => {
+			.then((dataUrl) => {
 				this.folderModel.IconPayload = dataUrl;
 				if (!this.categories[0].label) {
 					this.categories[0].items = [{ label: 'Custom', path: dataUrl, img: true }];
