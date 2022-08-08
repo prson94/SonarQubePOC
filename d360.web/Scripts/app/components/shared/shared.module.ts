@@ -1,10 +1,7 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
-
-
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -18,11 +15,9 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { TreeTableModule } from 'primeng/treetable';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ToastModule } from 'primeng/toast';
-
-
 import { PipesModule } from '../../pipes/pipes.module';
 import { CoreModule } from './core.module';
-import { TilesModule  } from './tiles/tiles.module';
+import { TilesModule } from './tiles/tiles.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedGridPagingInfoModule } from './grid-paging-info.component';
 import { SharedDeleteFormModule } from './delete.form';
@@ -30,7 +25,6 @@ import { SimpleAccordionModule } from './simple-accordion.part';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
-
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
 import { ObjectFollowersComponent } from './object-followers.component';
@@ -41,54 +35,56 @@ import { SiteModalModule } from './modal/gov-modal.module';
 import { AssetDetailModule } from './asset-detail/asset-detail.module';
 import { ResourceMultiSelectGridModule } from './resource-multiselect-grid.component';
 import { AssetEditorModule } from './asset-editor/asset-editor.module';
+import { RelocateButtonsComponent } from './relocate-buttons/relocate-buttons.component';
 
 @NgModule({
-    declarations: [                           
-        MessagesBarComponent,                                        
+    declarations: [
+        MessagesBarComponent,
         ObjectDefinitionTile,
-        ObjectFollowersComponent,                          
-        ResourceResponsibilityComponent,        
-        ResourceResponsibilityGridComponent,      
-        UserListComponent
-    ],
-    exports: [                                                                                                                                        
-        MessagesBarComponent,                                                  
-        ObjectDefinitionTile,
-        ObjectFollowersComponent,                                 
+        ObjectFollowersComponent,
         ResourceResponsibilityComponent,
-        ResourceResponsibilityGridComponent,               
-        UserListComponent
-        ]
-    , imports: [
+        ResourceResponsibilityGridComponent,
+        UserListComponent,
+        RelocateButtonsComponent
+    ],
+    exports: [
+        MessagesBarComponent,
+        ObjectDefinitionTile,
+        ObjectFollowersComponent,
+        ResourceResponsibilityComponent,
+        ResourceResponsibilityGridComponent,
+        UserListComponent,
+        RelocateButtonsComponent
+    ],
+    imports: [
         CommonModule,
         FormsModule,
-
         RouterModule,
-        
+
         //primeng
         ToastModule,
         InputSwitchModule,
-        InputTextModule,        
+        InputTextModule,
         TreeTableModule,
         ButtonModule,
-        DropdownModule,                
+        DropdownModule,
         SelectButtonModule,
         AutoCompleteModule,
-        MultiSelectModule,        
+        MultiSelectModule,
         EditorModule,
-        TooltipModule,                
-        SharedModule,                                    
+        TooltipModule,
+        SharedModule,
         TableModule,
 
         //d3s
         CoreModule,
-        PipesModule,                    
+        PipesModule,
         SharedDeleteFormModule,
         SharedDynamicGridEditorModule,
         AssetEditorModule,
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
-        SimpleAccordionModule,        
+        SimpleAccordionModule,
         TilesModule,
         SiteModalModule,
         AssetDetailModule,
@@ -101,4 +97,4 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
     ]
 })
 
-export class D3SSharedModule {}
+export class D3SSharedModule { }
