@@ -25,8 +25,8 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/${uid}/availableNodes`)
             .pipe(
-                map(response => <DiagramNodeBase[]>response),
-                catchError(err => this.handleError(err, true))
+                map((response) => <DiagramNodeBase[]>response),
+                catchError((err) => this.handleError(err, true))
             );
     }
     public getProcessDiagram(uid: string): Observable<any> {
@@ -34,8 +34,8 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/${uid}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err, true))
+                map((response) => response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
@@ -44,8 +44,8 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/${uid}/governanceRoleColors`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err, true))
+                map((response) => response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
@@ -54,8 +54,8 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/${uid}/badges`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err, true))
+                map((response) => response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
@@ -66,7 +66,7 @@ export class ProcessService extends BaseObservableService {
             .http
             .put(`/api/v2/process/${uid}`, model, { headers: headers })
             .pipe(
-                map(response => <any>response)
+                map((response) => <any>response)
             );
     }
 
@@ -78,7 +78,7 @@ export class ProcessService extends BaseObservableService {
             .http
             .put(`/api/v2/process/${targetUid}?sourceAssetUid=${sourceUid}`, model, { headers: headers })
             .pipe(
-                map(response => <any>response)
+                map((response) => <any>response)
             );
     }
 
@@ -89,7 +89,7 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/urlByDiagramAsset/${uid}`, { headers: headers })
             .pipe(
-                map(response => <any>response)
+                map((response) => <any>response)
             );
     }
 
@@ -100,7 +100,7 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/${uid}/importOptions`, { headers: headers })
             .pipe(
-                map(response => <any>response)
+                map((response) => <any>response)
             );
     }
 
@@ -111,7 +111,7 @@ export class ProcessService extends BaseObservableService {
             .http
             .get(`/api/v2/process/ignoredCopyRelationships/${targetUid}`, { headers: headers })
             .pipe(
-                map(response => <any[]>response)
+                map((response) => <any[]>response)
             );
     }
 

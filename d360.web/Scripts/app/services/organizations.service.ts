@@ -32,72 +32,72 @@ export class OrganizationsService extends BaseObservableService {
     getOrganizationTypes(): Observable<OrganizationType[]> {
         return this.http.get('services/organizations/types')
             .pipe(
-                map(response => <OrganizationType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <OrganizationType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getOrganizations(id: number): Observable<Organization[]> {
         return this.http.get(`services/organizations/${id}/items`)
             .pipe(
-                map(response => <Organization[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Organization[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getOrganizationsByType(id: number): Observable<Organization[]> {
         return this.http.get(`services/organizations/${id}/items`)
             .pipe(
-                map(response => <Organization[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Organization[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getDefaultContracts(): Observable<ContractDetail[]> {
         return this.http.get(`services/organizations/default/contracts`)
             .pipe(
-                map(response => <ContractDetail[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ContractDetail[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getContractsByOrganization(id: number): Observable<ContractDetail[]> {
         return this.http.get(`services/organizations/${id}/contracts`)
             .pipe(
-                map(response => <ContractDetail[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ContractDetail[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getDomainsByOrganization(id: number): Observable<OrganizationDomain[]> {
         return this.http.get(`services/organizations/${id}/domains`)
             .pipe(
-                map(response => <OrganizationDomain[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <OrganizationDomain[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getInvitationsByOrganization(id: number): Observable<OrganizationInvitation[]> {
         return this.http.get(`services/organizations/${id}/invitations`)
             .pipe(
-                map(response => <OrganizationInvitation[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <OrganizationInvitation[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getUsersByOrganization(id: number): Observable<OrganizationResource[]> {
         return this.http.get(`services/organizations/${id}/users`)
             .pipe(
-                map(response => <OrganizationResource[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <OrganizationResource[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     deleteOrganizationType(id: number): Observable<JsonResult> {
         return this.http.delete(`/form/OrganizationType?id=${id}`)
             .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+                map((response) => <JsonResult>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -115,16 +115,16 @@ export class OrganizationsService extends BaseObservableService {
     getContract(id: number): Observable<Contract> {
         return this.http.get(`form/Contract/${id}`)
             .pipe(
-                map(res => <Contract>res),
-                catchError(err => this.handleError(err))
+                map((res) => <Contract>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
     putContract(contract: Contract, publish: boolean = false): Observable<JsonResult> {
         return this.http.put(`form/Contract?publish=${publish}`, contract)
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
 
     }
@@ -132,8 +132,8 @@ export class OrganizationsService extends BaseObservableService {
     postContract(contract: Contract, publish: boolean = false): Observable<JsonResult> {
         return this.http.post(`form/Contract?publish=${publish}`, contract)
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
 
     }
@@ -167,24 +167,24 @@ export class OrganizationsService extends BaseObservableService {
     getContractHistoryForResource(id: number): Observable<ContractAcceptanceDetail[]> {
         return this.http.get(`services/organizations/history/resource/${id}`)
             .pipe(
-                map(res => <ContractAcceptanceDetail[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <ContractAcceptanceDetail[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getContractHistoryForContract(id: number): Observable<ContractAcceptanceDetail[]> {
         return this.http.get(`services/organizations/history/contract/${id}`)
             .pipe(
-                map(res => <ContractAcceptanceDetail[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <ContractAcceptanceDetail[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getContractHistoryForOrganization(id: number): Observable<ContractAcceptanceDetail[]> {
         return this.http.get(`services/organizations/history/organization/${id}`)
             .pipe(
-                map(res => <ContractAcceptanceDetail[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <ContractAcceptanceDetail[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 }

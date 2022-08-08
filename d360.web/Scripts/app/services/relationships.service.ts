@@ -29,32 +29,32 @@ export class RelationshipsService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <RelationshipType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RelationshipType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationshipTypesByAssetUid(uid: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types?state=1&AssetTypeUid=${uid}`)
             .pipe(
-                map(response => <RelationshipType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RelationshipType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types/${id}/${type}`)
             .pipe(
-                map(response => <RelationshipType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RelationshipType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationshipTypesForComplexField(assetUid: string, fieldName: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types/complexField/${assetUid}/${fieldName}`)
             .pipe(
-                map(response => <RelationshipType[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RelationshipType[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -71,8 +71,8 @@ export class RelationshipsService extends BaseObservableService {
                 }]
             })
                 .pipe(
-                    map(response => <any>response),
-                    catchError(err => this.handleError(err))
+                    map((response) => <any>response),
+                    catchError((err) => this.handleError(err))
                 );
         }
     }
@@ -84,14 +84,14 @@ export class RelationshipsService extends BaseObservableService {
                 models.push(model.slice(i, i + this.MAX_SYNCHRONOUS_API_ITEM_COUNT));
             }
             var obsArr: Observable<ApiResult[]>[] = [];
-            models.forEach(m => {
+            models.forEach((m) => {
                 obsArr.push(this.saveRelationships(intersectTypeUid, m));
             });
             return forkJoin(obsArr).pipe(
-                map(response => {
+                map((response) => {
                     var origResponse: ApiResult[] = [];
-                    response.forEach(res => {
-                        res.forEach(r =>
+                    response.forEach((res) => {
+                        res.forEach((r) =>
                             origResponse.push(r));
                     });
                     for (let i = 0; i < response.length; i++) {
@@ -99,13 +99,13 @@ export class RelationshipsService extends BaseObservableService {
                     }
                     return origResponse;
                 }),
-                catchError(err => this.handleError(err, true))
+                catchError((err) => this.handleError(err, true))
             );
         }
         else {
             return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
-                map(response => response),
-                catchError(err => this.handleError(err, true))
+                map((response) => response),
+                catchError((err) => this.handleError(err, true))
             );
         }
     }
@@ -113,8 +113,8 @@ export class RelationshipsService extends BaseObservableService {
     saveRelationshipsForked(intersectTypeUid: number, model: any[]): Observable<any> {
         var obj = { intersectTypeUid, model };
         return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
-            map(response => { return { obj, response }; }),
-            catchError(err => this.handleError(err, true))
+            map((response) => { return { obj, response }; }),
+            catchError((err) => this.handleError(err, true))
         );
     }
 
@@ -128,8 +128,8 @@ export class RelationshipsService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
         return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err, true))
+            map((response) => response),
+            catchError((err) => this.handleError(err, true))
         );
     }
 
@@ -138,55 +138,55 @@ export class RelationshipsService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
         return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err, true))
+            map((response) => response),
+            catchError((err) => this.handleError(err, true))
         );
     }
     exportRelationshipTypeItems(relType: RelationshipType) {
-        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
+        this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship type items'));
     }
 
     exportRelationshipTypes(keyword: string, id: number, subject: string, predicate: string, object: string) {
-        this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&id=${id}&subject=${subject}&predicate=${predicate}&object=${object}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));
+        this.http.get(`api/v2/relationships/export/types?keyword=${keyword}&id=${id}&subject=${subject}&predicate=${predicate}&object=${object}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'relationship types'));
     }
 
     getRelation(id: number): Observable<RelationshipDetail> {
         return this.http.get(`form/IntersectType_FormData?id=${id}`)
             .pipe(
-                map(response => <RelationshipDetail>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RelationshipDetail>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getIntersectTypeById(id: number): Observable<any> {
         return this.http.get(`api/v2/relationships/types/${id}`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelationshipUids(relationshipTypeUid: string): Observable<any> {
         return this.http.get(`api/v2/relationships/uids/${relationshipTypeUid}`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getObjectRelations(objectType: string, objectId: number): Observable<ObjectRelationship[]> {
         return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
             .pipe(
-                map(response => <ObjectRelationship[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ObjectRelationship[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Observable<RelatedItem[]> {
         return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
             .pipe(
-                map(response => <RelatedItem[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RelatedItem[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -197,8 +197,8 @@ export class RelationshipsService extends BaseObservableService {
     deleteRelationshipType(uid: string): Observable<any> {
         return this.http.delete('api/v2/relationships/types', { body: [{ uid }] })
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -219,24 +219,24 @@ export class RelationshipsService extends BaseObservableService {
         }
         return this.http.get(url)
             .pipe(
-                map(response => <PredicateDropdown[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <PredicateDropdown[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getCardinalityOptions(): Observable<DropdownOption[]> {
         return this.http.get('form/IntersectType_CardinalityOptions')
             .pipe(
-                map(response => <DropdownOption[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <DropdownOption[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getSubjectOptions(): Observable<DropdownOption[]> {
         return this.http.get('form/IntersectType_SubjectOptions')
             .pipe(
-                map(response => <DropdownOption[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <DropdownOption[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -251,16 +251,16 @@ export class RelationshipsService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <DropdownOption[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <DropdownOption[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     IsTransformPredicateExists(id: number): Observable<boolean> {
         return this.http.get(`api/v2/relationships/IsTransformPredicateExists/${id}`)
             .pipe(
-                map(response => <boolean>response),
-                catchError(err => this.handleError(err))
+                map((response) => <boolean>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -269,17 +269,17 @@ export class RelationshipsService extends BaseObservableService {
 
     getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<RelationshipType[]> {
 
-        var cachedItem = this.tagTooltipsCache.find(x => x.assetTypeUid == assetTypeUid);
+        var cachedItem = this.tagTooltipsCache.find((x) => x.assetTypeUid == assetTypeUid);
         if (cachedItem)
             return cachedItem.obs;
 
         let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active&includeHasFieldTypes=true`;
 
         var obs = this.http.get(url)
-            .pipe(map(response => <RelationshipType[]>response),
+            .pipe(map((response) => <RelationshipType[]>response),
                 publishReplay(1),
                 refCount(),
-                catchError(err => this.handleError(err)));
+                catchError((err) => this.handleError(err)));
 
         var data = { assetTypeUid: assetTypeUid, obs: obs };
         this.tagTooltipsCache.push(data);
@@ -321,8 +321,8 @@ export class RelationshipsService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

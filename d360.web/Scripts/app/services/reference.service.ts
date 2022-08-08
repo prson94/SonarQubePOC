@@ -17,8 +17,8 @@ export class ReferenceService extends BaseObservableService {
     canReadReferenceType(id: number): Observable<boolean> {
         return this.http.get(`api/canReadReferenceItemType/${id}`)
             .pipe(
-             map(response => <boolean>response),
-            catchError(err => this.handleError(err)));
+             map((response) => <boolean>response),
+            catchError((err) => this.handleError(err)));
     }
 
     saveReferenceItemType(item: ReferenceItemType) {

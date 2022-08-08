@@ -23,8 +23,8 @@ export class PredicatesService extends BaseObservableService {
             .http
             .get('/api/v2/relationships/predicates')
             .pipe(
-                map(response => <Predicate[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Predicate[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -33,8 +33,8 @@ export class PredicatesService extends BaseObservableService {
             .http
             .get('/api/v2/relationships/predicates?Type=' + type)
             .pipe(
-                map(response => <Predicate[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Predicate[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -45,8 +45,8 @@ export class PredicatesService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
         return this.http.delete(`/api/v2/relationships/predicates`, httpHeaders).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err, true))
+            map((response) => response),
+            catchError((err) => this.handleError(err, true))
         );
     }
 
@@ -54,8 +54,8 @@ export class PredicatesService extends BaseObservableService {
         let model: any[] = [];
         model.push(predicate);
         return this.http.post(`/api/v2/relationships/predicates`, model).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err, true))
+            map((response) => response),
+            catchError((err) => this.handleError(err, true))
         );
     }
 }

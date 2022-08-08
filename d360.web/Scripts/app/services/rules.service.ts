@@ -18,16 +18,16 @@ export class RulesService extends BaseObservableService {
     getRule(id: number): Observable<RuleDetail> {
         return this.http.get(`api/rule/${id}`)
             .pipe(
-                map(response => <RuleDetail>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RuleDetail>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getRuleType(id: number): Observable<RuleType> {
         return this.http.get(`api/ruletypes/${id}`)
             .pipe(
-                map(response => <RuleType>response),
-                catchError(err => this.handleError(err))
+                map((response) => <RuleType>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -78,14 +78,14 @@ export class RulesService extends BaseObservableService {
             uri += `&_isFriendlyNameExport=true&_pageNum=1&_pageSize=${pageSize}&_includeDuplicateFlag=True`;
 
             this.getRule(ruleId)
-                .subscribe(result => {
+                .subscribe((result) => {
                     fileName = result.Name + fileName;
                 });
             this.
                 http
                 .get(uri, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
                 .subscribe(
-                    data => this.downloadFile(data, fileName)
+                    (data) => this.downloadFile(data, fileName)
                 );
         } else {
             if (pageSize) {
@@ -98,8 +98,8 @@ export class RulesService extends BaseObservableService {
 
             return this.http.get(uri)
                 .pipe(
-                    map(response => <RuleResultPagedResults>response),
-                    catchError(err => this.handleError(err))
+                    map((response) => <RuleResultPagedResults>response),
+                    catchError((err) => this.handleError(err))
                 );
         }
 
@@ -111,8 +111,8 @@ export class RulesService extends BaseObservableService {
 
     hasCustomExport(uid: string): Observable<boolean> {
         return this.http.get(`api/v2/exporttemplates/hasCustomExport/${uid}`).pipe(
-            response => response,
-            catchError(err => this.handleError(err))
+            (response) => response,
+            catchError((err) => this.handleError(err))
         );
     }
 }

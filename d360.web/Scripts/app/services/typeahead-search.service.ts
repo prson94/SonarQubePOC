@@ -18,7 +18,7 @@ export class TypeaheadSearchService extends BaseObservableService {
         return term.pipe(
             debounceTime(400),
             distinctUntilChanged(),
-            switchMap(term => {
+            switchMap((term) => {
                 if (term === "") {
                     return of(<SearchResult[]>[]);
                 }
@@ -27,8 +27,8 @@ export class TypeaheadSearchService extends BaseObservableService {
                     uri,
                     { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
                 ).pipe(
-                    map(response => <SearchResult[]>response),
-                    catchError(err => this.handleError(err))
+                    map((response) => <SearchResult[]>response),
+                    catchError((err) => this.handleError(err))
                 );
             }));
     }
@@ -40,8 +40,8 @@ export class TypeaheadSearchService extends BaseObservableService {
                 { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
             )
             .pipe(
-                map(response => <SearchResult[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SearchResult[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
     getObjectTypeItemsFromParent(size: number, term: string, objectType: string, objectId: number) {
@@ -51,8 +51,8 @@ export class TypeaheadSearchService extends BaseObservableService {
                 { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
             )
             .pipe(
-                map(response => <SearchResult[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SearchResult[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -63,8 +63,8 @@ export class TypeaheadSearchService extends BaseObservableService {
                 { context: new HttpContext().set(ROUTE_INDEPENDENT_QUERY, true) }
             )
             .pipe(
-                map(response => <SearchResult[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SearchResult[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 }

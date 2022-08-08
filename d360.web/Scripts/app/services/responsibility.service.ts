@@ -50,7 +50,7 @@ export class ResponsibilityService extends BaseObservableService implements IRes
 
                     return model;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -61,8 +61,8 @@ export class ResponsibilityService extends BaseObservableService implements IRes
 
         return this.http.post(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, JSON.stringify(responsibilityOverridePostModel) , httpOptions)
             .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+                map((response) => <JsonResult>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -70,8 +70,8 @@ export class ResponsibilityService extends BaseObservableService implements IRes
         var headers = new HttpHeaders({ 'Content-Type': 'application/json' });
         return this.http.put('form/responsibility', JSON.stringify(responsibility), { headers })
             .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+                map((response) => <JsonResult>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -86,8 +86,8 @@ export class ResponsibilityService extends BaseObservableService implements IRes
 
         return this.http.delete(`/api/v2/responsibilities/${assetUid}/${responsibilityUid}`, httpOptions)
             .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
+                map((response) => <JsonResult>response),
+                catchError((err) => this.handleError(err))
             );
     }   
 }

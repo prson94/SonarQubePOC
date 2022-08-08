@@ -24,7 +24,7 @@ export class WorkflowMonitorService extends BaseObservableService {
 
             //#region regular fields
 
-            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
+            let normalFilters = filters.filter((f) => f.fieldtype == GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
 
@@ -35,8 +35,8 @@ export class WorkflowMonitorService extends BaseObservableService {
         }
         return this.http.get(uri)
             .pipe(
-                 map(response => <WorkflowMonitorItems> response),
-                catchError(err => this.handleError(err))
+                 map((response) => <WorkflowMonitorItems> response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -44,8 +44,8 @@ export class WorkflowMonitorService extends BaseObservableService {
         let uri = `services/workflow/workflowmonitor/filter/definition`;
         return this.http.get(uri)
             .pipe(
-                map(response => <GridFilterColumn[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <GridFilterColumn[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -56,7 +56,7 @@ export class WorkflowMonitorService extends BaseObservableService {
 
             //#region regular fields
 
-            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
+            let normalFilters = filters.filter((f) => f.fieldtype == GridFilterFieldType.Normal);
             let count = 0;
             uri += '&filterscount=' + normalFilters.length;
 
@@ -66,7 +66,7 @@ export class WorkflowMonitorService extends BaseObservableService {
             }
         }
 
-        this.http.get(uri, { responseType: 'blob' }).subscribe(data => {
+        this.http.get(uri, { responseType: 'blob' }).subscribe((data) => {
             console.log(data);
             this.downloadFile(data, '');
         });
@@ -85,8 +85,8 @@ export class WorkflowMonitorService extends BaseObservableService {
         let uri = `services/workflow/deleteItems`;
 
         return this.http.delete(uri, httpOptions).pipe(
-            map(res => res),
-            catchError(err => this.handleError(err))
+            map((res) => res),
+            catchError((err) => this.handleError(err))
         );
     }
 }
