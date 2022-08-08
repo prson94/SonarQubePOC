@@ -858,14 +858,14 @@ namespace d360.web.Controllers.V2
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
 			}
 
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
 			if (responsibility == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
 			}
 
 			if (!Company.HasAssetPermission(asset.ID, Permission.AddResponsibilities))
@@ -909,13 +909,13 @@ namespace d360.web.Controllers.V2
 				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
 				if (sas == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+					throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
 				}
 			}
 
 			ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
 
-			return Ok(ResponsibilityApiMessages.ResponsibilitySuccessAddMessage);
+			return Ok(new ConfirmResponse { title = ApiMessages.Success, message = ResponsibilityApiMessages.ResponsibilitySuccessAddMessage });
 		}
 
         /// <summary>
@@ -973,14 +973,14 @@ namespace d360.web.Controllers.V2
 
 			if (asset == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
+				throw new ArgumentException(string.Format(ActionApiMessages.AssetNotFound, assetUid.ToString()));
 			}
 
 			var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
 
 			if (responsibility == null)
 			{
-				throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
+				throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResponsibilityUidNotExist, responsibilityUid.ToString()));
 			}
 
 			if (!Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
@@ -1024,13 +1024,13 @@ namespace d360.web.Controllers.V2
 				var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
 				if (sas == null)
 				{
-					throw new NotFoundBusinessLayerException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
+					throw new ArgumentException(string.Format(ResponsibilityApiMessages.ResourceGroupUidNotExists, uid.ToString()));
 				}
 			}
 
 			ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
 
-			return Ok(ResponsibilityApiMessages.ResponsibilitySuccessDeleteMessage);
+			return Ok(new ConfirmResponse { title = ApiMessages.Success, message = ResponsibilityApiMessages.ResponsibilitySuccessDeleteMessage });
 		}
 
         /// <summary>
@@ -1082,7 +1082,7 @@ namespace d360.web.Controllers.V2
 
 			if (responsibility == null)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new NotFoundBusinessLayerException(ResponsibilityApiMessages.InvalidResponsibilityUid);
 			}
 
 			var existingUids = Company.Query<Guid>("select uid from ResponsibilityTypeRelationRule where uid in @uids", new { uids = responsibilityRules.Where(x => x.Uid.HasValue).Select(x => x.Uid) }).ToList();
@@ -1146,7 +1146,7 @@ namespace d360.web.Controllers.V2
 
 			if (responsibility == null)
 			{
-				throw new ArgumentException(ResponsibilityApiMessages.InvalidResponsibilityUid);
+				throw new NotFoundBusinessLayerException(ResponsibilityApiMessages.InvalidResponsibilityUid);
 			}
 
 			var execution = getApiExecution(responsibilityRules.Count);

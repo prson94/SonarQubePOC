@@ -302,7 +302,7 @@ namespace igx.UnitTests.V2ControllerTests
 
 			var result = ResponsibilitiesController.AddResponsibilitiesOverride(assetUid, resposibilityUid, responsibilityOverridePostModel);
 
-			result.ShouldBeOKContent<string>();
+			result.ShouldBeOKContent<ConfirmResponse>();
 		}
 
 		[Fact]
@@ -338,7 +338,7 @@ namespace igx.UnitTests.V2ControllerTests
 
 			var result = ResponsibilitiesController.DeleteResponsibilitiesOverride(assetUid, responsibilityUid, responsibilityOverrideDeleteModels);
 
-			result.ShouldBeOKContent<string>();
+			result.ShouldBeOKContent<ConfirmResponse>();
 		}
 
 		[Fact]
