@@ -136,21 +136,30 @@ GO
 	<changeSet author="Andrii Kunetskyi" id="Table.dbo.Favorite-v4">
 		<sql dbms="mssql" endDelimeter="\nGO" splitStatements="true" stripComments="false">
 			<![CDATA[
-				alter table dbo.Favorite
-				add AssetID bigint null
-					constraint DF_Favorite_AssetID default(null)
+				if not exists (select 1 from sys.columns where Name = N'AssetID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					add AssetID bigint null
+						constraint DF_Favorite_AssetID default(null)
+				end
 					
 				GO
 
-				alter table dbo.Favorite
-				add AssetTypeID bigint null
-					constraint DF_Favorite_AssetTypeID default(null)
+				if not exists (select 1 from sys.columns where Name = N'AssetTypeID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					add AssetTypeID bigint null
+						constraint DF_Favorite_AssetTypeID default(null)
+				end
 
 				GO
 
-				alter table dbo.Favorite
-				add SemanticID bigint null
-					constraint DF_Favorite_SemanticID default(null)
+				if not exists (select 1 from sys.columns where Name = N'SemanticID' and Object_ID = Object_ID(N'dbo.Favorite'))
+				begin
+					alter table dbo.Favorite
+					add SemanticID bigint null
+						constraint DF_Favorite_SemanticID default(null)
+				end
 
 				GO
 			]]>
