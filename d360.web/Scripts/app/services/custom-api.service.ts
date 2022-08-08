@@ -25,8 +25,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/services`)
             .pipe(
-                map(response => <ApiService[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiService[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -35,8 +35,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/service/${id}`)
             .pipe(
-                map(response => <ApiService>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiService>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -45,8 +45,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/service/${id}/endpoints`)
             .pipe(
-                map(response => <ApiEndpoint[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiEndpoint[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -55,8 +55,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/endpoint/${id}`)
             .pipe(
-                map(response => <ApiEndpoint>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiEndpoint>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -74,8 +74,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/endpoint/${id}/versions`)
             .pipe(
-                map(response => <ApiVersion[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiVersion[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -92,8 +92,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/version/${id}/fields`)
             .pipe(
-                map(response => <ApiField[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiField[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -102,8 +102,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/version/${id}/uritypes`)
             .pipe(
-                map(response => <ApiUri[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiUri[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -112,8 +112,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`api/custom/service/${id}/namespaces`)
             .pipe(
-                map(response => <ApiNamespace[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiNamespace[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -123,8 +123,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`/api/v2/customendpoints/Version/FieldEditor/model?id=${id}`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -133,8 +133,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`/api/v2/customendpoints/Version/FieldEditor/FieldTypes?versionId=${versionId}`)
             .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -143,8 +143,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .get(`/api/v2/customendpoints/Version/FieldEditor/LookupFields?fieldTypeId=${fieldTypeId}`)
             .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -153,8 +153,8 @@ export class CustomAPIService extends BaseObservableService {
             .http
             .post(`/api/v2/customendpoints/Version/FieldEditor/Field`, model)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

@@ -18,9 +18,9 @@ export class AsyncValidatorService {
                 .httpClient
                 .get(url)
                 .pipe(
-                    map(response => <any[]>response))
+                    map((response) => <any[]>response))
 
-                .pipe(map(res => {
+                .pipe(map((res) => {
                     return (res && res.length > 0) ? { "alreadyExists": true } : null;
                 })).pipe(first());
         };
@@ -34,7 +34,7 @@ export class AsyncValidatorService {
                 .pipe(map((response) => <any[]>response))
                 .pipe(map((res) => {
                     var doesExist = false;
-                    res.forEach(s => {
+                    res.forEach((s) => {
                         if (s.name.toLowerCase() == control.value.toLowerCase()) {
                             doesExist = true;
                         }

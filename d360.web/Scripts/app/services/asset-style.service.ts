@@ -21,8 +21,8 @@ export class AssetStyleService extends BaseObservableService {
         assetTypeId: number
     ): Observable<AssetTypeStyle> {
         return this.http.get(`api/${assetTypeId}/style`).pipe(
-            map(response => <AssetTypeStyle>response),
-            catchError(err => this.handleError(err))
+            map((response) => <AssetTypeStyle>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -33,8 +33,8 @@ export class AssetStyleService extends BaseObservableService {
     ): Observable<any> {
         return this.http.get(`api/${objectType}/${objectID}/style`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 }

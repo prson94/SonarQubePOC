@@ -32,8 +32,8 @@ export class AssetService extends BaseObservableService {
             .http
             .get(`api/legacyuri/Asset/${uid}`)
             .pipe(
-                map(response => <string & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <string & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
     public getAssetTypeLegacyUri(uid: string)
@@ -42,8 +42,8 @@ export class AssetService extends BaseObservableService {
             .http
             .get(`api/legacyuri/AssetType/${uid}`)
             .pipe(
-                map(response => <string & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <string & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -61,8 +61,8 @@ export class AssetService extends BaseObservableService {
             .http
             .delete(`api/v2/assets/${assetTypeUid}`, httpOptions)
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -86,7 +86,7 @@ export class AssetService extends BaseObservableService {
                     map((res: ApiResult[]) => {
                         return res[0];
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
         else {
@@ -97,7 +97,7 @@ export class AssetService extends BaseObservableService {
                     map((res: ApiResult[]) => {
                         return res[0];
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
     }
@@ -106,8 +106,8 @@ export class AssetService extends BaseObservableService {
         return this.
             http
             .get(`/api/v2/assets/artfactType/${artifactTypeId}`)
-            .pipe(map(res => { return <any>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAssetCountsByAssetType(cs: AssetTypeClass, isReturnCount: boolean = true): Observable<AssetCount[]> {
@@ -118,32 +118,32 @@ export class AssetService extends BaseObservableService {
         }
 
         return this.http.get(`/api/v2/assets/counts/byAssetType?class=${cs.toString()}` + qString)
-            .pipe(map(res => { return <AssetCount[]>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <AssetCount[]>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAssetCountOfArtifactTypeUid(uid: string): Observable<any> {
         return this.http.get(`/api/v2/assets/count/${uid}`)
-            .pipe(map(res => { return <any>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAssetCountsByAssetTypeUid(uid: string): Observable<AssetCount[]> {
         return this.http.get(`/api/v2/assets/counts/byAssetType?assetTypeUid=${uid}`)
-            .pipe(map(res => { return <AssetCount[]>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <AssetCount[]>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAllColors(): Observable<SelectItem[]> {
         return this.http.get(`/api/v2/assets/colors`)
-            .pipe(map(res => { return <SelectItem[]>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <SelectItem[]>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAssetTypeLegacyData(uid: string): Observable<any> {
         return this.http.get(`/api/v2/assets/assetTypeLegacyData/${uid}`)
-            .pipe(map(res => { return <any>res[0]; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res[0]; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAssets(assetTypeUid: string, params: any, onlyListableFields: boolean = false, includeOwnershipLookup: boolean = true): Observable<any> {
@@ -155,7 +155,7 @@ export class AssetService extends BaseObservableService {
             }
         }
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
@@ -163,29 +163,29 @@ export class AssetService extends BaseObservableService {
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`)
             .pipe(debounceTime(500),
-                map(res => { return <any>res; }),
-                catchError(err => {
+                map((res) => { return <any>res; }),
+                catchError((err) => {
                     return this.handleError(err);
                 }));
     }
 
     public getUIDetailsForAssetUID(uid: string): Observable<any> {
         return this.http.get('api/v2/assets/GetUIDetails/' + uid)
-            .pipe(map(res => { return <any>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public GetObjectUIDetailsForAssetUID(uid: string): Observable<any> {
         return this.http.get('api/v2/assets/GetObjectDetailUIDetails/' + uid)
-            .pipe(map(res => { return <any>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     getAssetsComplexFieldValue(assetUid: string, fieldName: string, params: any = null, isExport: boolean = false, fileName: string = ''): Observable<LookupGrid> | null {
         var url = `/api/v2/assets/${assetUid}/fields/${fieldName}?forUi=true`;
 
         if (params) {
-            var qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            var qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 url = url + '&' + qString;
         }
@@ -197,19 +197,19 @@ export class AssetService extends BaseObservableService {
         if (!isExport) {
             return this.http.get(url)
                 .pipe(
-                    map(result => {
+                    map((result) => {
                         result['Values'] = result['items'];
                         delete result['items'];
                         return <LookupGrid>result;
                     }),
-                    catchError(err => this.handleError(err))
+                    catchError((err) => this.handleError(err))
                 );
         }
         else {
             this.
                 http
                 .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-                .subscribe(data => this.downloadFile(data, fileName));
+                .subscribe((data) => this.downloadFile(data, fileName));
         }
     }
 
@@ -223,14 +223,14 @@ export class AssetService extends BaseObservableService {
 
         var qString = '';
         if (copyParams) {
-            qString = Object.keys(copyParams).map(key => key + '=' + copyParams[key]).join('&');
+            qString = Object.keys(copyParams).map((key) => key + '=' + copyParams[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
         this.
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.downloadFile(data, fileName);
                 if (callback) {
                     callback();
@@ -248,10 +248,10 @@ export class AssetService extends BaseObservableService {
             .post(`/api/v2/assets/paths`, filterValue, httpOptions)
             .pipe(
                 debounceTime(500),
-                map(response => {
+                map((response) => {
                     return <AssetSearchApiResponse>(response);
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -260,8 +260,8 @@ export class AssetService extends BaseObservableService {
             .http
             .get(`/api/v2/assets/${uid}/diagramUrl`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err, true))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
@@ -270,22 +270,22 @@ export class AssetService extends BaseObservableService {
             .http
             .get(`/api/v2/assets/asset/${uid}`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err, true))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
     getAssetsLookupValues(assetTypeUID: string, params: any): Observable<any> {
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
         return this.http.get(`api/v2/assets/lookupvalues/${assetTypeUID}` + qString)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -293,21 +293,21 @@ export class AssetService extends BaseObservableService {
         return this.
             http
             .get(`/api/v2/assets/${assetUid}/path`)
-            .pipe(map(res => { return <any>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAssetDescendants(assetUid: string, params: any): Observable<any> {
         var qString = '';
         if (params) {
-            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
             if (qString)
                 qString = '?' + qString;
         }
         return this.
             http
             .get(`/api/v2/assets/asset/${assetUid}/descendants${qString}`)
-            .pipe(map(res => { return <any>res; }),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((res) => { return <any>res; }),
+                catchError((err) => this.handleError(err, true)));
     }
 }

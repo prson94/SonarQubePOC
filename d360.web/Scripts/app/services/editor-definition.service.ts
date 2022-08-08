@@ -47,8 +47,8 @@ export class EditorDefinitionService extends BaseObservableService {
         }
 
         return this.http.get(uri).pipe(
-            map(response => <EditorField[]>response),
-            catchError(err => this.handleError(err))
+            map((response) => <EditorField[]>response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -60,8 +60,8 @@ export class EditorDefinitionService extends BaseObservableService {
         return this.http
             .get(url)
             .pipe(
-                map(res => <EditorField[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <EditorField[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -75,8 +75,8 @@ export class EditorDefinitionService extends BaseObservableService {
         return this.http
             .get(url)
             .pipe(
-                map(res => <EditorField[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <EditorField[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -87,8 +87,8 @@ export class EditorDefinitionService extends BaseObservableService {
         return this.http
             .get(`form/dynamiceditor/byUid/${assetTypeUid}/${assetUid}`)
             .pipe(
-                map(res => <EditorField[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <EditorField[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -103,8 +103,8 @@ export class EditorDefinitionService extends BaseObservableService {
         return this.http
             .get(uri)
             .pipe(
-                map(res => <EditorField[]>res),
-                catchError(err => this.handleError(err))
+                map((res) => <EditorField[]>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
