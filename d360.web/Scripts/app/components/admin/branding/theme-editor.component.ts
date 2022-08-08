@@ -38,6 +38,9 @@ export class ThemeEditorComponent implements OnChanges {
     labelSaveChanges = $localize`Save Changes`;
     labelCreate = $localize`Create`;
 
+	labelEditTheme = $localize`Edit Theme`;
+	labelCreateTheme = $localize`Create New Theme`;
+
     constructor(private fb: FormBuilder,
         private brandingService: BrandingService,
         private cdRef: ChangeDetectorRef,
@@ -175,28 +178,28 @@ export class ThemeEditorComponent implements OnChanges {
     getTooltip(prop: string): string {
 
         switch (prop) {
-            case 'headerBackColor':
-                return this.headerBackColorHtmlTemplate + `When choosing the color of the top navigation bar, bear in mind that it contains several important elements e.g. logo, search field, icons.`;
+			case 'headerBackColor':
+				return this.headerBackColorHtmlTemplate + $localize`When choosing the color of the top navigation bar, bear in mind that it contains several important elements e.g. logo, search field, icons.`;
             case 'breadcrumbLinkColor':
-                return this.breadcrumbLinkColorHtmlTemplate + `Breadcrumbs help you know where you are in the D360 Govern. Use a color that is clearly visible on the navigation bar.`;
+				return this.breadcrumbLinkColorHtmlTemplate + $localize`Breadcrumbs help you know where you are in the D360 Govern. Use a color that is clearly visible on the navigation bar.`;
             case 'buttonBackColor':
-                return this.buttonBackColorHtmlTemplate + `This button is displayed on the navigation bar. Make sure it is clearly visible against the background of the navigation bar.`;
+				return this.buttonBackColorHtmlTemplate + $localize`This button is displayed on the navigation bar. Make sure it is clearly visible against the background of the navigation bar.`;
             case 'navbarBackColor':
-                return this.navbarHtmlTemplate + `This is the main side navigation in the D360 Govern, so make sure its content is clearly visible.`;
+				return this.navbarHtmlTemplate + $localize`This is the main side navigation in the D360 Govern, so make sure its content is clearly visible.`;
             case 'navbarBackColorSelected':
-                return this.navbarHtmlTemplate + `This is the color option for the selected item in the side menu, so make sure its content is clearly visible.`;
+				return this.navbarHtmlTemplate + $localize`This is the color option for the selected item in the side menu, so make sure its content is clearly visible.`;
             case 'homeBackground':
-                return `The chosen image will be placed at the top of the home page and stretched horizontally to fit.`;
+				return $localize`The chosen image will be placed at the top of the home page and stretched horizontally to fit.`;
             case 'primaryButtonBackColor':
-                return this.primaryButtonBackColorHtmlTemplate + `The text color is automatically adjusted to the component color to comply with accessibility rules.`;
+				return this.primaryButtonBackColorHtmlTemplate + $localize`The text color is automatically adjusted to the component color to comply with accessibility rules.`;
             case 'backColor':
-                return `The background color should be as neutral as possible so that all elements in the D360 Govern are clearly visible.`;
+				return $localize`The background color should be as neutral as possible so that all elements in the D360 Govern are clearly visible.`;
             case 'tabLinkColor':
-                return this.tabLinkColorHtmlTemplate + `Remember that clickable elements should be in a color that is easily visible and suggests clickability.`;
+				return this.tabLinkColorHtmlTemplate + $localize`Remember that clickable elements should be in a color that is easily visible and suggests clickability.`;
             case 'tableHeaderBackColor':
-                return this.tableHeaderBackColorHtmlTemplate + `Data table elements should be as neutral as possible so that reading the data is not disturbed by flashy colors.`;
+				return this.tableHeaderBackColorHtmlTemplate + $localize`Data table elements should be as neutral as possible so that reading the data is not disturbed by flashy colors.`;
             case 'tableRowBackColor':
-                return this.tableHeaderBackColorHtmlTemplate + `Data table elements should be as neutral as possible so that reading the data is not disturbed by flashy colors.`;
+				return this.tableHeaderBackColorHtmlTemplate + $localize`Data table elements should be as neutral as possible so that reading the data is not disturbed by flashy colors.`;
             default:
                 return "";
         }
