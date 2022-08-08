@@ -11,6 +11,7 @@ import { CompanySettingsService } from '../services/settings.service';
     selector: '[context-link]'
 })
 export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChecked {
+	@Input() isOpenDefault: boolean = false;
     contextElement: HTMLDivElement;
     hoverElement: HTMLDivElement;
     hoverTooltipWidth: number = 350;
@@ -91,11 +92,13 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
             }
         }
 
-        if (refElement === "link") {
-            html += $localize`Click the link to view information in the side panel or right-click for more options`;
+		const objectName = refElement === "link" ? $localize`link` : $localize`tag`;
+
+        if (this.isOpenDefault) {
+            html += $localize`Click the ${objectName} to Open or right-click for more options`;
         }
         else {
-            html += $localize`Click the tag to view information in the side panel or right-click for more options`;
+            html += $localize`Click the ${objectName} to view information in the side panel or right-click for more options`;
         }
 
 
@@ -129,9 +132,6 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.contextMenuItems.forEach((item) => {
             var menuItem = this.document.createElement('div');
             this.renderer.setAttribute(menuItem, 'class', 'menu-item');
-            if (item.value === "info") {
-                menuItem.style.fontWeight = "700";
-            }
             menuItem.innerHTML = item.title;
             menuItem.onclick = ($event) => { this.menuItemClicked($event, item.value); };
             this.contextElement.appendChild(menuItem);
