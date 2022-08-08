@@ -101,54 +101,74 @@ namespace d360.web.Services.Favorites
             FavoriteRouteMatchResult routeMatch,
             FavoritesObjectDetailsResponse @object,
             bool isHomepage = false)
-        {
-            var newFavorite = new Favorite()
-            {
-                ResourceID = request.ResourceId,
-                Route = request.Route,
+		{
+			var newFavorite = new Favorite()
+			{
+				ResourceID = request.ResourceId,
+				Route = request.Route,
 
-                IsHomePage = isHomepage,
-                Type = routeMatch.Matcher.PageType.ToString(),
-                Name = routeMatch.Matcher.GetName(@object?.Name, routeMatch.RouteParams),
-                Object = @object?.ObjectType.ToString(),
-                ObjectID = @object?.ObjectId
-            };
+				IsHomePage = isHomepage,
+				Type = routeMatch.Matcher.PageType.ToString(),
+				Name = routeMatch.Matcher.GetName(@object?.Name, routeMatch.RouteParams),
+				Object = @object?.ObjectType.ToString(),
+				ObjectID = @object?.ObjectId
+			};
 
-            // only 1 home page allowed at once, remove old one(s)
-            if (newFavorite.IsHomePage)
-            {
-                var favorites = await companyContext.Filter<Favorite>(f => f.ResourceID == request.ResourceId && f.IsHomePage).ToListAsync();
-                companyContext.Favorites.RemoveRange(favorites);
-                await companyContext.SaveChangesAsync();
-            }
+			SplitObjectId(newFavorite, @object?.ObjectType.ToString());
 
-            var routes = matcherService.GetAllPossibleRoutes(request.Route, routeMatch.Matcher, @object);
-            var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && routes.Contains(f.Route));
-            
-            if (existing == null)
-            {
-                companyContext.Add(newFavorite);
-            }
-            else
-            {
-                if (existing.IsHomePage != newFavorite.IsHomePage)
-                {
-                    existing.IsHomePage = newFavorite.IsHomePage;
-                    existing.Type = newFavorite.Type;
-                    existing.Name = newFavorite.Name;
-                    existing.Object = newFavorite.Object;
-                    existing.ObjectID = newFavorite.ObjectID;
+			// only 1 home page allowed at once, remove old one(s)
+			if (newFavorite.IsHomePage)
+			{
+				var favorites = await companyContext.Filter<Favorite>(f => f.ResourceID == request.ResourceId && f.IsHomePage).ToListAsync();
+				companyContext.Favorites.RemoveRange(favorites);
+				await companyContext.SaveChangesAsync();
+			}
 
-                    companyContext.Update(existing);
-                }
-                else
-                {
-                    companyContext.Delete(existing);
-                }
-            }
-        }
+			var routes = matcherService.GetAllPossibleRoutes(request.Route, routeMatch.Matcher, @object);
+			var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && routes.Contains(f.Route));
 
-        public class Argument : IRequest<Unit>
+			if (existing == null)
+			{
+				companyContext.Add(newFavorite);
+			}
+			else
+			{
+				if (existing.IsHomePage != newFavorite.IsHomePage)
+				{
+					existing.IsHomePage = newFavorite.IsHomePage;
+					existing.Type = newFavorite.Type;
+					existing.Name = newFavorite.Name;
+					existing.Object = newFavorite.Object;
+					existing.ObjectID = newFavorite.ObjectID;
+
+					SplitObjectId(existing, newFavorite.ToString());
+
+					companyContext.Update(existing);
+				}
+				else
+				{
+					companyContext.Delete(existing);
+				}
+			}
+
+			void SplitObjectId(Favorite favorite, string objectType)
+			{
+				if (objectType.EndsWith("SemanticType", System.StringComparison.InvariantCultureIgnoreCase))
+				{
+					favorite.SemanticId = @object?.ObjectId;
+				}
+				else if (!objectType.EndsWith("Type", System.StringComparison.InvariantCultureIgnoreCase))
+				{
+					favorite.AssetId = @object?.ObjectId;
+				}
+				else if (objectType.EndsWith("Type", System.StringComparison.InvariantCultureIgnoreCase))
+				{
+					favorite.AssetTypeId = @object?.ObjectId;
+				}
+			}
+		}
+
+		public class Argument : IRequest<Unit>
         {
             public int ResourceId { get; set; }
 
