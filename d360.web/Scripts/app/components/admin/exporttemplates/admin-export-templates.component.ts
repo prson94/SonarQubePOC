@@ -158,12 +158,12 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
 
     private load() {
         this.isLoading = true;
-        this.exportTemplateService.getExportTemplates().subscribe(result => {
+        this.exportTemplateService.getExportTemplates().subscribe((result) => {
             this.exportTemplates = result;
             if (this.selected == null && this.exportTemplates != null && this.exportTemplates.length > 0)
                 this.selected = this.exportTemplates[0];
             else if (this.selected != null && this.exportTemplates != null && this.exportTemplates.length > 0) {
-                let item = this.exportTemplates.filter(x => x.Uid == this.selected.Uid);
+                let item = this.exportTemplates.filter((x) => x.Uid == this.selected.Uid);
                 if (item != null && item.length != 0)
                     this.selected = item[0];
             }
@@ -174,7 +174,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     }
 
     public deleteExportTemplate(uid: string) {
-            this.exportTemplateService.deleteExportTemplates(uid).subscribe(result => {            
+            this.exportTemplateService.deleteExportTemplates(uid).subscribe((result) => {            
             this.showDelete = false;
             this.selected = null;
             this.load();
@@ -182,7 +182,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     }   
 
     public saveExportTemplate(event) {
-        this.exportTemplateService.saveExportTemplate(event.item).subscribe(result => {            
+        this.exportTemplateService.saveExportTemplate(event.item).subscribe((result) => {            
                 this.showEditor = false;
                 this.load();                
             });
@@ -190,7 +190,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
 
     public saveFields(event) {
         this.selected.IncludeFieldTypes = event.IncludeFieldTypes;
-        this.exportTemplateService.saveExportTemplate(this.selected).subscribe(result => {           
+        this.exportTemplateService.saveExportTemplate(this.selected).subscribe((result) => {           
             for (let i = 0; i < this.exportTemplates.length; i++) {
                 if (this.exportTemplates[i].Uid == this.selected.Uid) {
                     this.exportTemplates[i].IncludeFieldTypes = this.selected.IncludeFieldTypes;
@@ -230,7 +230,7 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
 
     clearTemplate() {
         this.isLoading = true;
-        this.exportTemplateService.saveTemplateFile(this.selected).subscribe(result => {
+        this.exportTemplateService.saveTemplateFile(this.selected).subscribe((result) => {
             this.selected.HasTemplateFile = false;
             this.isLoading = false;
         });

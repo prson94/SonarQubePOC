@@ -46,7 +46,7 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
         this.isLoading = true;
 
         this.customAPIService.getEndpointVersions(this.endpoint.ID).subscribe(
-            res => {
+            (res) => {
                 this.versions = res;
 
                 if (this.versions && this.versions.length > 0) {
@@ -64,7 +64,7 @@ export class AdminCustomAPIEndpointVersionsComponent extends BaseComponent imple
 
     private saveVersion(data): void {
         this.customAPIService.saveVersion(data.item).subscribe(
-            res => {
+            (res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
 

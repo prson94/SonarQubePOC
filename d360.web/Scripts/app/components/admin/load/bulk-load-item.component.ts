@@ -34,7 +34,7 @@ export class BulkLoadItemComponent extends BaseComponent implements OnChanges {
     private itemsSearchSub: Subscription;
 
     get globalFilterFields(): string[] {
-        let f = this.columns.map(c => c.datafield);
+        let f = this.columns.map((c) => c.datafield);
 
         f.concat(['Status', 'RowIndex', 'StatusMessage']);
 

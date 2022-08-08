@@ -99,10 +99,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     load(uid: string = '') {
         this.isLoading = true;
         this.assetsService.getAssetCountsByAssetType(this.assetTypeClass, false)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.isLoading = false;
                 let temp: TreeNode[] = [];
-                data.forEach(n => {
+                data.forEach((n) => {
                     temp.push(AssetCount.ConvertToTreeNode(n));
                 });
 
@@ -135,7 +135,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
         if (this.assetTypeClass === AssetTypeClass.BusinessAsset || this.assetTypeClass === AssetTypeClass.TechnicalAsset) {
             this.assetsService.getAssetCountOfArtifactTypeUid(uid)
-                .subscribe(data => {
+                .subscribe((data) => {
                     this.selectedRow.data.count = data.count;
                     this.loadDataAndExecuteAction(() => {
                         this.isAdding = false;
@@ -203,7 +203,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         let data: any = node ? node.data : null;
         this.isLoading = true;
         if (data) {
-            this.assetTypeService.deleteSingleAssetType(data.uid).subscribe(result => {
+            this.assetTypeService.deleteSingleAssetType(data.uid).subscribe((result) => {
                 this.isLoading = false;
                 result.title = $localize`Success` + "!";
                 this.showMessageForResult(this.messagesService, result, $localize`Item successfully removed` + ".");
@@ -218,7 +218,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     private loadDataAndExecuteAction(action: Function) {
         if (this.selectedRow) {
             this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.selectedRow.data.ID = res.ObjectID;
                     this.selectedRow.data.AssetTypeID = res.AssetTypeID;
                     if (action) {
@@ -240,7 +240,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
         var match = false;
         nodes.forEach((node) => {
-            fields.forEach(field => { if (node.data[field].includes(search)) { match = true; } }); //check each of the global filterfields for filter value            
+            fields.forEach((field) => { if (node.data[field].includes(search)) { match = true; } }); //check each of the global filterfields for filter value            
             if (node.children && node.children.length > 0) {
                 node.expanded = this.expandChildNodes(node.children, fields, search);   //expand the node if any child matches.          
                 if (node.expanded) {
