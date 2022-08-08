@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.graph.AssetBrowser_Lineage-v4">
-    <comment>GOV-18354 : Asset Ancestry filter fix</comment>
+  <changeSet author="VLova" id="Procedure.graph.AssetBrowser_Lineage-v6">
+    <comment>GOV-18816 Optimize performance of lineage diagram</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -238,10 +238,24 @@ begin
 	-- Loop forward in lineage.
 	if @direction = 'A' or @direction = 'F'
 	begin
+		drop table if exists #PopulateForwardLineageReturn;
+		create table #PopulateForwardLineageReturn (
+			IntersectID int not null,
+			PredicateId int not null,
+			PredicateUid uniqueidentifier null,
+			PredicateName nvarchar(max) null,
+			PredicateType int null,
+			SubjectHop int not null,
+			SubjectId bigint not null,
+			ObjectHop int not null,
+			ObjectID bigint not null
+		)
+		exec graph.PopulateForwardLineage @currentHop = @currentHop, @endHop = @endForwardHop, @assetIds = @hopAssetIds, @intersectIds = @hopIntersectIds;
+
 		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID)
-			select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID 
-			from		graph.GetForwardLineage(@currentHop, @endForwardHop, @hopAssetIds, @hopIntersectIds) 
-			order by	SubjectHop;
+		select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID 
+		from		#PopulateForwardLineageReturn
+		order by	SubjectHop;
 	end
 
 	insert into @hopIntersectIds
