@@ -153,7 +153,11 @@
 
             <div style="margin-bottom: 20px" *ngFor="let rs of rebuildStatuses">
                 <div>
-                    <button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)"><i [class]="rebuildJobIcon(rs)"></i>Rebuild {{rs.jobTokenName}}</button>
+                    <button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)">
+                        <i [class]="rebuildJobIcon(rs)"></i>
+                        <span *ngIf="rs.jobToken === 2" i18n>Rebuild Display Values</span>
+                        <span *ngIf="rs.jobToken === 3" i18n>Rebuild Search Index</span>
+                    </button>
                 </div>
                 <div class="description" [innerHtml]="rs.jobTokenDescription"></div>
                 <div class="status" [innerHtml]="rs.validationMessage"></div>

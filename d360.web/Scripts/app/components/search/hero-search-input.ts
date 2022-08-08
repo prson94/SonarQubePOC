@@ -5,6 +5,8 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { ConnectedOverlayScrollHandler } from 'primeng/dom';
+import { interval } from 'rxjs';
 
 @Component({
     selector: 'd3s-hero-search-input',
@@ -23,7 +25,8 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
         protected searchService: SearchService,
         protected settingsService: CompanySettingsService
     ) {
-        super(settingsService);
+		super(settingsService);
+		this.setLabelInterval = setInterval(this.setSelectAllLabel, 50);
     }
 
     ngOnInit() {
@@ -57,6 +60,23 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
             label.textContent = $localize`Search All Categories`;
         } else {
             label.textContent = $localize`Search ${this.searchTypes.length} Categories`;
-        }
-    }
+		}
+
+	}
+
+	setLabelInterval;
+	private setSelectAllLabel() {
+		if (document.getElementById('searchMultiSelect').getElementsByClassName("select-all-label").length === 0
+			&& document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header").length !== 0
+		) {
+			if (this.setLabelInterval) {
+				clearInterval(this.setLabelInterval);
+			}
+			var selectAllLabel = document.createElement("span");
+			selectAllLabel.className = "select-all-label";
+			selectAllLabel.innerText = $localize`Search All Categories`;
+			document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header")[0]
+				.getElementsByClassName("p-checkbox-box")[0].append(selectAllLabel);
+		}
+	}
 }
