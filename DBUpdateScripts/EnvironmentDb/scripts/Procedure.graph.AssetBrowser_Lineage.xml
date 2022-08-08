@@ -61,9 +61,6 @@ begin
 		[text] nvarchar(250),
 		predicateType int,
 		);
-	create nonclustered index IX_TempHopIntersect_Subject on #hopIntersect (SubjectHop asc, SubjectID asc);
-	create nonclustered index IX_TempHopIntersect_Object on #hopIntersect (ObjectHop asc, ObjectID asc);
-	create nonclustered index IX_TempHopIntersect_IntersectID on #hopIntersect (IntersectID asc);
 
 	-- Tables that will contain the data to return. This is the final data that should be loaded into these tables.
 	drop table if exists #edges;
@@ -674,7 +671,7 @@ end
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
+		<![CDATA[
 create or alter procedure [graph].[AssetBrowser_Lineage]
 	@ancestry int -- 1 = all, 2 = direct-parent
 	,@descendancy int -- 1 = None, 2 = Direct, 3 = All
@@ -958,17 +955,20 @@ begin
 	drop table if exists #parents;
 	create table #parents (Hop int, ID bigint, ParentID bigint);
 
-	insert into #parents
-		select	distinct
-				H.Hop,
-				n.s.value('@assetId', 'bigint') as ID,
-				P.ID as ParentID
-		from	#hopAsset H
-				inner join graph.AssetNode A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
-				cross apply A.Segments.nodes('/path/segment') n(s)
-				inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
-				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
-				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+	if @ancestry = 1
+	begin
+		insert into #parents
+			select	distinct
+					H.Hop,
+					n.s.value('@assetId', 'bigint') as ID,
+					P.ID as ParentID
+			from	#hopAsset H
+					inner join dbo.AssetPath A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
+					cross apply A.Segments.nodes('/path/segment') n(s)
+					inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
+					left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
+					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+	end
 
 	-- Update parentId of assets that are already in the table.
 	update	H
@@ -1124,15 +1124,16 @@ begin
 				coalesce(DA.DisplayValue, DT.Name, 'No display value'),											--text
 				A.Uid,																							--assetUid
 				A.ID,																							--assetId
-				coalesce(A.AssetTypeID, DT.ID),																	--assetTypeId
-				coalesce(A.AssetTypeUid, DT.Uid),																--assetTypeUid
+				coalesce(AA.ID, DT.ID),																	--assetTypeId
+				coalesce(AA.Uid, DT.Uid),																--assetTypeUid
 				0,																								--backAmount
 				0																								--actionCount
 		from	#hopAsset H
 				left join #hopAsset P on P.Hop = H.Hop and P.ID = H.ParentID
 				left join AssetDisplayValue DA on DA.AssetID = H.ID and H.IsType = 0
 				left join AssetType DT on DT.ID = H.ID and H.IsType = 1
-				left join graph.AssetNode A on A.ID = H.ID and H.IsType = 0
+				left join Asset A on A.ID = H.ID and H.IsType = 0
+				left join AssetType AA on AA.ID = A.AssetTypeID 
 		where	H.IncludeInResult = 1;
 
 	-- Remove the current hop worth of assets IF this is not an initial load.
