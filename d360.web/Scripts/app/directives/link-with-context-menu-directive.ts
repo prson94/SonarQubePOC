@@ -92,13 +92,13 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
             }
         }
 
-		const action = this.isOpenDefault ? 'Open' : 'view information in the side panel';
+		const objectName = refElement === "link" ? $localize`link` : $localize`tag`;
 
-        if (refElement === "link") {
-            html += $localize`Click the link to ${action} or right-click for more options`;
+        if (this.isOpenDefault) {
+            html += $localize`Click the ${objectName} to Open or right-click for more options`;
         }
         else {
-            html += $localize`Click the tag to ${action} or right-click for more options`;
+            html += $localize`Click the ${objectName} to view information in the side panel or right-click for more options`;
         }
 
 

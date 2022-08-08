@@ -20437,15 +20437,29 @@ Please refine your search.</source>
           <context context-type="linenumber">83,85</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6318464676322172190" datatype="html">
-        <source>Click the link to <x id="PH" equiv-text="+= $localize`Click the link to ${"/> or right-click for more options</source>
+      <trans-unit id="4548306402868687712" datatype="html">
+        <source>link</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
+          <context context-type="linenumber">95,97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6402703264596649214" datatype="html">
+        <source>tag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
+          <context context-type="linenumber">95,97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5419146812056487709" datatype="html">
+        <source>Click the <x id="PH" equiv-text="+= $localize`Click the ${"/> to Open or right-click for more options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
           <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="4092209222714767941" datatype="html">
-        <source>Click the tag to <x id="PH" equiv-text="+= $localize`Click the tag to ${"/> or right-click for more options</source>
+      <trans-unit id="553027883772599309" datatype="html">
+        <source>Click the <x id="PH" equiv-text="+= $localize`Click the ${"/> to view information in the side panel or right-click for more options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">Scripts/app/directives/link-with-context-menu-directive.ts</context>
           <context context-type="linenumber">101</context>
