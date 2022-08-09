@@ -1,6 +1,9 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MetricAssetDefinitionViewModel, MetricRuleResultOperation } from '../../../models/metrics.model';
 import { Operator } from '../../../models/operator.model';
+import { Predicate } from '../../../models/predicate.model';
+import { RelationshipType } from '../../../models/relationship.model';
+import { ResponsibilityType } from '../../../models/responsibility-type.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { CommonScreenReferencesModel } from './common-screen-references-model';
 
@@ -172,7 +175,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 
 						break;
 					case 'Owner':
-						let responsibilitytype = this.screenReferences.responsibilities.find((x) => { return x.uid.toLowerCase() == gov.Owner.ResponsibilityTypeUid.toLowerCase(); });
+						let responsibilitytype = this.screenReferences.responsibilities.find((responsibility: ResponsibilityType) => { return responsibility.uid.toLowerCase() === gov.Owner.ResponsibilityTypeUid.toLowerCase(); });
 						let operatorString = $localize`is assigned`;
 						if (gov.Owner.Operator == Operator.NotPopulated || <any>gov.Owner.Operator == "NotPopulated") {
 							operatorString = $localize`is not assigned`;
@@ -184,7 +187,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 						}
 						break;
 					case 'Predicate':
-						let predicate = this.screenReferences.predicates.find((x) => { return x.Uid.toLowerCase() == gov.Predicate.PredicateUid.toLowerCase(); });
+						let predicate = this.screenReferences.predicates.find((predicate: Predicate) => { return predicate.Uid.toLowerCase() === gov.Predicate.PredicateUid.toLowerCase(); });
 						let existsOperatorP = $localize`exists`;
 						if (gov.Predicate.Operator == Operator.NotPopulated || <any>gov.Predicate.Operator == "NotPopulated") {
 							existsOperatorP = $localize`does not exist`;
@@ -195,7 +198,7 @@ export class AdminMetricPassTestDetailsComponent implements OnChanges {
 							this.formattedCheck = "";
 						break;
 					case 'Relation':
-						let relationshipType = this.screenReferences.relationships.find((x) => { return x.Uid.toLowerCase() == gov.Relation.IntersectTypeUid.toLowerCase(); });
+						let relationshipType = this.screenReferences.relationships.find((relationship: RelationshipType) => { return relationship.Uid.toLowerCase() === gov.Relation.IntersectTypeUid.toLowerCase(); });
 						let existsOperator = $localize`exists`;
 						if (gov.Relation.Operator == Operator.NotPopulated || <any>gov.Relation.Operator == "NotPopulated") {
 							existsOperator = $localize`does not exist`;
