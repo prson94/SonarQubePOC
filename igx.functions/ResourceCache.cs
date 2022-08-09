@@ -28,7 +28,7 @@ namespace igx.functions.consumption
 #endif
 
 		[FunctionName(functionName)]
-		public async Task Run([TimerTrigger(timerSettings)] TimerInfo myTimer, ExecutionContext context, TextWriter log)
+		public async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)] TimerInfo myTimer, ExecutionContext context, TextWriter log)
 		{
 			var config = new ConfigurationBuilder()
 				   .SetBasePath(context.FunctionAppDirectory)
@@ -40,11 +40,11 @@ namespace igx.functions.consumption
 
 			try
 			{
-#if DEBUG
-				var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
-#else
+//#if DEBUG
+//				var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 104).ToList();
+//#else
 				var companies = CoreFunction.GetCompaniesByCurrentSlot();
-#endif
+//#endif
 
 				using (var cnn = new SqlConnection(CoreFunction.GetConnectionString("CommunityContext")))
 				{
@@ -133,7 +133,9 @@ namespace igx.functions.consumption
 													table.Rows.Clear();
 												}
 											}
-
+											
+											await resources.CloseAsync();
+											
 											if (table.Rows.Count > 0)
 											{
 												await bulkCopy.WriteToServerAsync(table);
@@ -191,7 +193,7 @@ namespace igx.functions.consumption
 								try
 								{
 									var currentResourceIDs = companyConnection.Query<int>("select ResourceID from reporting.Global_Resource").ToList();
-									Stack<int> toDeleteIds = new Stack<int>(updatedResourceIDs.Except(currentResourceIDs));
+									Stack<int> toDeleteIds = new Stack<int>(currentResourceIDs.Except(updatedResourceIDs));
 									LinkedList<int> idsToSend = new LinkedList<int>();
 
 									//We need the following code because SQL Server allows us to send only 2100 parameters per query.
