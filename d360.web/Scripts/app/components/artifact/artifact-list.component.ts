@@ -83,16 +83,15 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
-
+			let assetTypeUid = params['assetTypeUid']; // (+) converts string 'id' to a number
 
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
-            this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
-            this.logAction('open', 'ArtifactType', artifactTypeId);
+            this.headerBreadcrumbService.setCurrentObjectInfo('bla bla', -1);
+			this.logAction('open', 'AssetType', assetTypeUid);
             this
                 .artifactTypeService
-                .getArtifactTypeDetails(artifactTypeId, true)
+				.getArtifactTypeDetails(assetTypeUid, true)
                 .subscribe((artifactType) => {
                     let folderName: string = '#Business';
                     this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;

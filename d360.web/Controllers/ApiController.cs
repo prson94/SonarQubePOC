@@ -1317,10 +1317,10 @@ namespace d360.web.Controllers
 			return Request.CreateResponse(HttpStatusCode.OK, json);
 		}
 
-		[Route("artifacts/{typeID:int}")]
-		public Dictionary<string, object> GetArtifactType(int typeID)
+		[Route("artifacts/{assetTypeUid:Guid}")]
+		public Dictionary<string, object> GetArtifactType(Guid assetTypeUid)
 		{
-			var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
+			var assetType = Company.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
 			
 			if (assetType == null)
 			{
@@ -1339,12 +1339,12 @@ namespace d360.web.Controllers
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
-				var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.Object == "ArtifactType" && x.ObjectID == typeID)?.ID;
+				var assetTypeId = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid)?.ID;
 
 				bool hasDashboards = Company.Filter<Report>(x => x.AssetTypeID == assetTypeId && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List).Any();
 				model.Add("HasDashboards", hasDashboards);
 
-				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+				var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {assetType.ObjectID}";
 
 				var hasV2WorkflowsAssigned = Company.Query<int>(sql).FirstOrDefault() > 0;
 				model.Add("HasV2Workflows", hasV2WorkflowsAssigned);

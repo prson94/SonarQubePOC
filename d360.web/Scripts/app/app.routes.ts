@@ -26,7 +26,7 @@ const routes: Routes = [
     { path: "reference", loadChildren: () => import("./components/reference/reference.module").then((m) => m.ReferenceModule) },
     { path: "asset", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
     { path: "assettype", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
-    { path: "assets", loadChildren: () => import("./components/assets/assets.module").then((m) => m.AssetsModule), data: { preload: false } },
+	{ path: "assets", loadChildren: () => import("./components/artifact/artifact.module").then((m) => m.ArtifactModule), data: { preload: false } },
     { path: "artifact", loadChildren: () => import("./components/artifact/artifact.module").then((m) => m.ArtifactModule), data: { preload: false } },
     { path: "home", loadChildren: () => import("./components/home/home.module").then((m) => m.HomeModule) },
     { path: "gallery", loadChildren: () => import("./components/gallery/gallery.module").then((m) => m.GalleryModule) },

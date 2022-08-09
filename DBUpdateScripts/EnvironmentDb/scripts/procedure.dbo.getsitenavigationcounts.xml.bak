@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="procedure.dbo.GetSiteNavigationCounts-v2">
+  <changeSet author="kmcnamee" id="procedure.dbo.GetSiteNavigationCounts-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,27 +32,31 @@ BEGIN
     select @cntdata = count(1)
     from #temtable;
 
-     if (@cntdata = 0)
+    if (@cntdata = 0)
 		SELECT count(ATT.[Object]) as count, 
-		ATT.Uid,
+		ATT.[Object], 
+		ATT.ObjectID,
 		ATT.Name
 		from    AssetType ATT
 		inner join [Asset] A on (a.AssetTypeID = Att.id)
 		WHERE A.[object] in('Artifact','Taxonomy','Policy','Rule')
 		Group by 
-		ATT.Uid,
+		ATT.[Object], 
+		ATT.ObjectID,
 		ATT.Name
 		Order By ATT.Name
 	else
 	    SELECT count(ATT.[Object]) as count, 
-		ATT.Uid,
+		ATT.[Object], 
+		ATT.ObjectID,
 		ATT.Name
 		from   AssetType ATT
 		inner join [Asset] A on (a.AssetTypeID = Att.id)
 		WHERE A.[object] in('Artifact','Taxonomy','Policy','Rule')
 		and	not exists (SELECT 1 FROM #temtable rd where rd.assetid = a.id and rd.assettypeid = a.assettypeid)   
 		Group by 
-		ATT.Uid,
+		ATT.[Object], 
+		ATT.ObjectID,
 		ATT.Name
 		Order By ATT.Name
 

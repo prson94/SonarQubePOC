@@ -11,7 +11,7 @@ const routes: Routes = [
         component: ArtifactComponent,
         children: [
             { path: 'assets/:class', component: AssetGridTopLevelListComponent },
-            { path: ':artifactTypeId', component: ArtifactListComponent },
+            { path: ':assetTypeUid', component: ArtifactListComponent },
             { path: ':artifactTypeId/:artifactId', component: ArtifactItemComponent }            
         ]
     }
