@@ -22,7 +22,7 @@ namespace d360.model.DataAccessLayer.repositories
 	{
 		private readonly ICompanyContext CompanyContext;
 		private const string RELATIONSHIP_DELIMITER = "|";
-		protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
+		protected readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occurred while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
 		protected BaseRepository(ICompanyContext ctx)
 		{
