@@ -40,11 +40,11 @@ namespace igx.functions.consumption
 
 			try
 			{
-//#if DEBUG
-//				var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 104).ToList();
-//#else
+#if DEBUG
+				var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
+#else
 				var companies = CoreFunction.GetCompaniesByCurrentSlot();
-//#endif
+#endif
 
 				using (var cnn = new SqlConnection(CoreFunction.GetConnectionString("CommunityContext")))
 				{

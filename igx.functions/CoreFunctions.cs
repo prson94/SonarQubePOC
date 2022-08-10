@@ -137,7 +137,7 @@ namespace igx.functions
 
         public string GetConnectionString(string name)
         {
-			return GetConfigValueByKey<string>(name);//Configuration.GetConnectionString(name);
+			return GetConfigValueByKey<string>(name);
         }
 
         public d360.core.enums.EnvironmentLevel GetEnvironmentLevelCurrentSlot()
