@@ -168,52 +168,6 @@ export class Group {
     Children: Group[] = [];
 }
 
-export class GroupForm {
-    Group: Group = new Group();
-    Children: Group[] = [];
-}
-
-export class MapForm {
-    Map: MetricMap;
-    Items: Item[] = [];
-    ObjectTypes: any[] = [];
-    Conditions: Condition[] = [];
-
-    AssetTypes: any[] = [];
-}
-
-export class ConditionForm {
-    Condition: Condition;
-    Fields: FieldType[] = [];
-}
-
-
-export class Item {
-    ID: number;
-    Name: string;
-    Description: string;
-    EffectiveStartDate: string;
-    EffectiveEndDate: string;
-    SourceID: string;
-}
-
-export class MetricMap {
-    ID: number;
-    GroupID: number;
-    ItemID: number;
-    Object: string;
-    ObjectID: number;
-    Weight: number;
-    EffectiveStartDate: string | Date;
-    EffectiveEndDate: string | Date;
-
-    itemName: string;
-    objectName: string;
-
-    EffectiveDate: string | Date;
-    AssetTypeID: number;
-}
-
 export class Condition {
     MapID: number;
     FieldTypeID: number;

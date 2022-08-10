@@ -2,7 +2,6 @@
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { Report } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
