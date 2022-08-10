@@ -165,18 +165,6 @@ export class SearchState {
     }
 }
 
-export class AdvancedSearchFilter {
-    constructor(field?: string, value?:string) {
-        this.field = field;
-        this.value = value;
-    }
-
-    field: string;
-    value: string;
-    exact: boolean = false;
-    connector: string = 'and';
-}
-
 export class SearchAssetDetail {
     uid: string;
     Status: string;
