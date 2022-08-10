@@ -935,9 +935,6 @@ namespace d360.web.Controllers
 
             try
             {
-                //var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
-                //var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false, ValidateIssuerName = false });
-                //var discoDoc = disco.GetAsync().Result;
                 var keySet = await client.GetJsonWebKeySetAsync(discoDoc.jwks_uri);
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(

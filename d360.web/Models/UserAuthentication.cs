@@ -14,7 +14,8 @@ namespace d360.web.Models
 {
 	public class OidcDiscoveryCache
 	{
-		ICachingProvider Cache;
+		readonly ICachingProvider Cache;
+		
 		public OidcDiscoveryCache(ICachingProvider cache)
 		{
 			Cache = cache;
