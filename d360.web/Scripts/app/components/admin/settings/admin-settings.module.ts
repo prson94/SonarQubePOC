@@ -19,7 +19,6 @@ import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
 import { AdminIpRestrictionComponent } from './admin-ip-restriction.component';
 import { AdminSiteMenuFolderEditorComponent } from './admin-site-menu-folder-editor.component';
-import { AdminSiteMenuPermissionsComponent } from './admin-site-menu-permissions.component';
 import { AdminSiteMenuDeleteDialogComponent } from './admin-site-menu-delete-dialog.component';
 import { AdminHomeComponent } from './admin-home.component';
 
@@ -90,7 +89,6 @@ import { AssetPreviewModule } from '../../shared/asset-preview/asset-preview.mod
         AdminIpRestrictionComponent,
 		AdminSiteMenuFolderEditorComponent,
 		AdminSiteMenuAssetTypeEditorComponent,
-		AdminSiteMenuPermissionsComponent,
 		AdminSiteMenuDeleteDialogComponent,
 		AdminHomeComponent
     ],

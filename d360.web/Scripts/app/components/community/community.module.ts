@@ -12,7 +12,6 @@ import { PipesModule } from '../../pipes/pipes.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 
 import { CommunityComponent } from './community.component';
-import { CommunityResponsibilityCountComponent } from './community-responsibility-count.component';
 
 import { CommunityRoutingModule } from './community.routes';
 
@@ -44,8 +43,7 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,
     ],
     declarations: [
-        CommunityComponent,
-        CommunityResponsibilityCountComponent,
+        CommunityComponent
     ],
     providers: [
                 

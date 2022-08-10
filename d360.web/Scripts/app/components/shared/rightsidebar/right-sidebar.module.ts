@@ -4,9 +4,7 @@ import { FormsModule }    from '@angular/forms';
 
 
 
-import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
-import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dynamic-percentage-module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
@@ -23,7 +21,6 @@ import { DataCyModule } from '../../../directives/ig-data-cy.directive';
     imports: [
         CommonModule,
         FormsModule,
-        DynamicPercentageModule,
 
         SharedDynamicGridEditorModule,
         DataCyModule,
@@ -38,7 +35,6 @@ import { DataCyModule } from '../../../directives/ig-data-cy.directive';
         PortalsModule
     ],
     declarations: [
-        RightSidebarItemComponent,
         RightSidebarComponent
     ],
     exports: [        
