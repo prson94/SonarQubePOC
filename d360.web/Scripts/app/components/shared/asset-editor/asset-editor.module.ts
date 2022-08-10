@@ -41,6 +41,8 @@ import { AssetEditorComponent } from './asset-editor.component';
 import { AssetEditorFieldComponent } from './asset-editor-field.component';
 import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-feedback-badges.component';
+import { SidePanelModule } from "../sidepanel/side-panel.module";
+import { AssetEditorFieldInfoComponent } from "./asset-editor-field-info.component";
 
 @NgModule({
     imports: [
@@ -49,7 +51,7 @@ import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
-        
+
         //d3s
         CoreModule,
         SharedDeleteFormModule,
@@ -68,7 +70,7 @@ import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-
         SearchFieldModule,
         DynamicFieldNameModule,
         FormFeedbackBadgesModule,
-        
+
         //prime        
         CalendarModule,
         DropdownModule,
@@ -85,11 +87,13 @@ import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-
         TagPickerModule,
         SwitchModule,
 
-        NgxJsonViewModule
+        NgxJsonViewModule,
+        SidePanelModule
     ],
     declarations: [
         AssetEditorComponent,
         AssetEditorFieldComponent,
+		AssetEditorFieldInfoComponent
     ],
     exports: [
         AssetEditorComponent

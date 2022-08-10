@@ -43,6 +43,7 @@ import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipV2 } from '../../../models/relationship.model';
+import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
 
 @Component({
     selector: 'asset-editor',
@@ -112,13 +113,17 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     editedItem: any;
     editorChange: Subject<any> = new Subject();
     hasDirections: boolean = false;
-    hasIconFields = false;
+    hasIconFields: boolean = false;
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
     hasUpdateFormChanged: boolean = false;
 
     isProcessSidePanel: boolean = false;
+	isSidePanelOpened: boolean = false;
+	isSidePanelLoading: boolean = false;
+	sidePanelTab: string;
+	sidePanelSelection: any = null;
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -995,4 +1000,23 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     get saveButtonLabel(): string {
         return this.selection ? $localize`Save Changes` : $localize`Create`;
     }
+
+	get panelApplies(): boolean {
+		if (this.sidePanelSelection == null || this.sidePanelTab === 'detail') {
+			return true;
+		}
+	}
+	
+	onSidePanelSelectionChange(selection: any): void {
+		this.sidePanelSelection = !_.isEqual(this.sidePanelSelection, selection) ? selection : null;
+		this.isSidePanelOpened = !!this.sidePanelSelection;
+	}
+	
+	onSidePanelExpansionChange(expanded: boolean): void {
+		if (!expanded) {
+			this.sidePanelSelection = null;
+		}
+		this.isSidePanelOpened = expanded;
+	}
+	
 }

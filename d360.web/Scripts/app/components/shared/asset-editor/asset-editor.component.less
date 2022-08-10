@@ -2,6 +2,7 @@
 
 .add-asset-form {
   padding: 24px;
+  width: 800px;
 
   .form-header-wrapper {
     display: flex;
@@ -38,6 +39,12 @@
 
     .dropdown-selected-value {
       margin-top: -7px;
+    }
+
+    .info-button {
+      position: absolute;
+      right: 26px;
+      top: 3px;
     }
 
     .col {
@@ -243,4 +250,17 @@
   .ig-dropdown-overlay {
     display: none;
   }
+}
+
+.asset-editor-container {
+  display: flex;
+  justify-content: flex-start;
+  
+  .side-panel {
+    min-width: 410px;
+    height: auto;
+    border-left: 1px solid @d3s-gray-6;
+    background: unset;
+  }
+
 }

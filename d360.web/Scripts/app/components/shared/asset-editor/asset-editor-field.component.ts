@@ -1,28 +1,25 @@
 import {
-    AfterViewChecked,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    EventEmitter,
-    Input,
-    OnChanges,
-    OnDestroy,
-    OnInit,
-    Output,
-    ViewChild,
-
-    HostListener,
-    ElementRef
+	AfterViewChecked,
+	ChangeDetectionStrategy,
+	ChangeDetectorRef,
+	Component,
+	EventEmitter,
+	Input,
+	OnChanges,
+	OnDestroy,
+	OnInit,
+	Output,
+	ViewChild,
+	ElementRef
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject, Observable, Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
 import { FormHelpers } from '../../../static/form-helpers';
 
-import { CascadeService } from '../../../services/cascade.service';
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 import { BaseComponent } from '../base.component';
@@ -58,6 +55,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
+	
+	@Input() sidePanelSelection: any;
+	@Output() sidePanelSelectionChange: EventEmitter<any> = new EventEmitter<any>();
 
     @ViewChild('ed', { static: false }) ed: Editor;
     private quill;
@@ -337,9 +337,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         }
 
         if (this.dropdown && this.overlayPanel) {
-            var width = this.dropdown.el.nativeElement.offsetWidth;
+            const width = this.dropdown.el.nativeElement.offsetWidth;
             if (this.overlayPanel.overlayVisible && this.overlayPanel.container) {
                 this.overlayPanel.container.style.width = width + "px";
+				this.overlayPanel.align();
             }
         }
 
@@ -808,11 +809,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.setSelectionVirtualScrollHeight();
             this.ref.detectChanges();
-			setTimeout(() => {
-				if (this.overlayPanel) {
-					this.overlayPanel.align();
-				}
-            }, 10);
         });
     }
 
@@ -951,4 +947,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         return true;
     }
+	
+	onItemInfoClick($event: MouseEvent, item: any): void {
+		$event.stopPropagation();
+		this.sidePanelSelectionChange.emit(item);
+	}
 }
