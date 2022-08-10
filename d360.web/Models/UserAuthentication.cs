@@ -1,13 +1,61 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
+using d360.extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using d360.core;
 
 namespace d360.web.Models
 {
+	public class OidcDiscoveryCache
+	{
+		ICachingProvider Cache;
+		public OidcDiscoveryCache(ICachingProvider cache)
+		{
+			Cache = cache;
+		}
+
+		public async Task<OidcDiscoveryDocument> GetDiscoverDocument(HttpClient client, string uri)
+		{
+			if (!uri.Contains(".well-known/openid-configuration"))
+			{
+				uri += "/.well-known/openid-configuration";
+			}
+
+			var cacheKey = $"Discovery_{uri.GetD3sHashString()}";
+			var doc = Cache.GetItem<OidcDiscoveryDocument>(cacheKey);
+			if (doc == null)
+			{
+				var result = await client.GetAsync(uri);
+				doc = await result.Content.ReadAsAsync<OidcDiscoveryDocument>();
+				Cache.SetItem(cacheKey, doc);
+			}
+			return doc;
+		}
+	}
+
+
+	public class OidcDiscoveryDocument
+	{
+		public string issuer { get; set; }
+		public string authorization_endpoint { get; set; }
+		public string token_endpoint { get; set; }
+		public string end_session_endpoint { get; set; }
+		public string jwks_uri { get; set; }
+		public List<string> response_modes_supported { get; set; }
+		public List<string> response_types_supported { get; set; }
+		public List<string> scopes_supported { get; set; }
+		public List<string> subject_types_supported { get; set; }
+		public List<string> id_token_signing_alg_values_supported { get; set; }
+		public List<string> token_endpoint_auth_methods_supported { get; set; }
+		public List<string> claims_supported { get; set; }
+	}
+
 	public class UserAuthentication
 	{
 		public Dictionary<string, string> CustomClaims { get; set; } = new Dictionary<string, string>();
