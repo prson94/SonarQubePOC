@@ -20,6 +20,7 @@ using d360.web.Services;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using d360.web.Services.Favorites;
 using Microsoft.ApplicationInsights;
+using d360.web.Models;
 
 namespace d360.web
 {
@@ -81,6 +82,8 @@ namespace d360.web
             builder.RegisterType<LaunchDarkly.Sdk.Server.LdClient>().As<LaunchDarkly.Sdk.Server.LdClient>()
                 .SingleInstance()
                 .WithParameter("sdkKey", Config.GetValue<string>("LaunchDarklySdkKey"));
+
+			builder.RegisterType<OidcDiscoveryCache>().AsSelf().InstancePerRequest();
 
             builder.RegisterType<CoreComponentSet>().As<ICoreComponentSet>().InstancePerRequest();
 
