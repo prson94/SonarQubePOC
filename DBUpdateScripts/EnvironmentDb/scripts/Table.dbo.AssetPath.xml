@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Table.dbo.AssetPath-v1">
+  <changeSet author="Tduric" id="Table.dbo.AssetPath-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -18,8 +18,15 @@ BEGIN
 		[Segments] [xml] NULL,
 		[DisplayPath]  AS ([dbo].[GetDisplayPath]([Segments],' > ',' / ')) PERSISTED,
 		[KeyPath]  AS ([dbo].[GetKeyPath]([Segments])) PERSISTED,
+		[KeyPathHash] AS ([dbo].[GetKeyPathHash]([Segments])) PERSISTED,
 		CONSTRAINT [PK_AssetPath] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
+END
+
+IF COL_LENGTH('dbo.AssetPath', 'KeyPathHash') IS NULL
+BEGIN
+    alter table [dbo].[AssetPath]
+	add [KeyPathHash] AS ([dbo].[GetKeyPathHash]([Segments])) PERSISTED
 END
 		]]>
     </sql>
