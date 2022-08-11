@@ -51,7 +51,7 @@ namespace d360.model.DataAccessLayer
 			string resourceString = "";
 
 			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
 
 			if (queryParams != null)
 			{
@@ -159,7 +159,7 @@ namespace d360.model.DataAccessLayer
 						   inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
 						   left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
 						   left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
+						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins.SQLJoinStatement) : "")}
 						   {resourceString} 
 						   {whereStatements}  
 						   order by G.Name  ";

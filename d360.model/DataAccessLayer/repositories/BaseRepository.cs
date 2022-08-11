@@ -138,7 +138,7 @@ namespace d360.model.DataAccessLayer.repositories
 			return $"{columnSql} AS {alias}";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null)
 		{
 			List<string> TempTableNameList = new List<string>();
 
@@ -414,7 +414,7 @@ namespace d360.model.DataAccessLayer.repositories
 							from    dbo.AssetPath
 							where   ID IN ({assetIdFinalQuery})
 							having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
-						) {tableAlias}");
+						) {tableAlias}", f.ID.ToString());
 					 }
 					 else
 					 {
@@ -424,7 +424,7 @@ namespace d360.model.DataAccessLayer.repositories
 							where   FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN ({assetIdFinalQuery})
 									and FormattedValue is not null
 							having  string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
-						) {tableAlias}");
+						) {tableAlias}", f.ID.ToString());
 					 }
 				 }
 				 else if (f.Type == "Relationship")
@@ -446,7 +446,7 @@ namespace d360.model.DataAccessLayer.repositories
 									left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
 									where FT.Id = {f.ID}
 									having STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') is not null
-								) {tableAlias}");
+								) {tableAlias}", f.ID.ToString());
 						 }
 						 else if (filtercond == SplitFilterCriteriaRelationship.Subject)
 						 {
@@ -456,7 +456,7 @@ namespace d360.model.DataAccessLayer.repositories
 									left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
 									where FT.Id = {f.ID}
 									having STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') is not null
-								) {tableAlias}");
+								) {tableAlias}", f.ID.ToString());
 						 }
 						 else
 						 {
@@ -467,7 +467,7 @@ namespace d360.model.DataAccessLayer.repositories
 									left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
 									where FT.Id = {f.ID}
 									having STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') is not null
-								) {tableAlias}");
+								) {tableAlias}", f.ID.ToString());
 						 }
 					 }
 					 else
@@ -552,7 +552,7 @@ namespace d360.model.DataAccessLayer.repositories
 							having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
 							) {tableAlias} ";
 
-						 fieldJoins.Add(assetIdFinalQuery);
+						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());
 					 }
 				 }
 				 else if (f.Type == "RefListRelationship")
@@ -564,25 +564,25 @@ namespace d360.model.DataAccessLayer.repositories
 						union all
 						select ObjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID
 						) Names
-					) {tableAlias}");
+					) {tableAlias}", f.ID.ToString());
 				 }
 				 else if (f.Type == "JsonElement")
 				 {
 					 fieldJoins.Add($@"
 						{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
 						{joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
-					");
+					", f.ID.ToString());
 					 dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
 				 }
 				 else if (f.Type == "Score")
 				 {
-					 fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}");
+					 fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}", f.ID.ToString());
 				 }
 				 else if (f.Type == "Counter")
 				 {
 					 fieldJoins.Add($@"outer apply (select top 1 [Value] as 'FormattedValue'
 							from dbo.FieldCounterValue
-							where AssetId = A.Id and FieldTypeId = {f.ID}){tableAlias}");
+							where AssetId = A.Id and FieldTypeId = {f.ID}){tableAlias}", f.ID.ToString());
 				 }
 				 else if (f.Type == "Tag")
 				 {
@@ -592,7 +592,7 @@ namespace d360.model.DataAccessLayer.repositories
 								inner join Tag T on AT.TagID = T.ID
 								where AT.AssetID = A.ID
 							for xml path (''), TYPE).value('.','NVARCHAR(MAX)'), 1, 1, '')
-						 ){tableAlias}(FormattedValue) ");
+						 ){tableAlias}(FormattedValue) ", f.ID.ToString());
 				 }
 				 else if (f.Type == "Lookup")
 				 {
@@ -667,7 +667,7 @@ namespace d360.model.DataAccessLayer.repositories
 								[Value] = F{tableAlias}.[Value]
 							){tableAlias}(FormattedValue, [Value]) ";
 						 }
-						 fieldJoins.Add(sql);
+						 fieldJoins.Add(sql, f.ID.ToString());
 
 						 if (!string.IsNullOrEmpty(f.DefaultValue))
 						 {
@@ -693,29 +693,29 @@ namespace d360.model.DataAccessLayer.repositories
 							(SELECT @defaultValue{tableAlias} as name,
 								{selectSource} FOR JSON PATH)
 							) defaultColorValue{tableAlias}(color)";
-							 fieldJoins.Add(defaultSql);
+							 fieldJoins.Add(defaultSql, f.ID.ToString());
 						 }
 					 }
 					 else
 					 {
-						 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
+						 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}", f.ID.ToString());
 					 }
 				 }
 				 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
 				 {
-					 fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}");
+					 fieldJoins.Add($"{joinPrefix} join FieldTypeLookup {tableAlias} on {tableAlias}.FieldTypeID = {f.ID}", f.ID.ToString());
 				 }
 				 else if (f.Type == "Path")
 				 {
 					 string pathJoinStatement = GetPathJoinSql(f);
 					 if (!string.IsNullOrEmpty(pathJoinStatement))
 					 {
-						 fieldJoins.Add(pathJoinStatement);
+						 fieldJoins.Add(pathJoinStatement, f.ID.ToString());
 					 }
 				 }
 				 else
 				 {
-					 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
+					 fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}", f.ID.ToString());
 				 }
 			 }
 			);

@@ -385,7 +385,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
 			List<string> TempTableScriptList = new List<string>();
@@ -395,7 +395,7 @@ namespace d360.model.DataAccessLayer
 			var dbArgs = new DynamicParameters();
 			var model = new AssetsApiViewModel();
 
-			fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+			fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", "AssetType");
 
 			dbArgs.Add("@assetTypeID", assetTypeID);
 			whereStatements.Add("A.AssetTypeID = @assetTypeID");
@@ -406,7 +406,7 @@ namespace d360.model.DataAccessLayer
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
 			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON, true, TempTableScriptList);
-			List<string> countJoins = new List<string>(fieldJoins);
+			var countJoins = fieldJoins.Clone();
 
 			TempTableScriptStr = string.Join("\n ", TempTableScriptList);
 
@@ -556,8 +556,8 @@ namespace d360.model.DataAccessLayer
 				fieldColumns.Add("R.Relationships");
 				dbArgs.Add("@predicateUid", predicateUID);
 
-				fieldJoins.Add(joinSql);
-				countJoins.Add(joinCountSql);
+				fieldJoins.Add(joinSql, "PredicateFilter");
+				countJoins.Add(joinCountSql, "PredicateFilter");
 				fieldsUsedInMainQuery.Add(joinCountSql);
 			}
 
@@ -730,8 +730,8 @@ namespace d360.model.DataAccessLayer
 
 					ownershipColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
 					groupColumns.Add($"F{f.ID}.FormattedValue");
-					fieldJoins.Add(ownershipQuery);
-					countJoins.Add(ownershipQuery);
+					fieldJoins.Add(ownershipQuery, "Ownership");
+					countJoins.Add(ownershipQuery, "Ownership");
 					ownershipJoins.Add(ownershipQuery);
 					ownershipPropertiesMapping.Add(f.Name, "F{f.ID}.FormattedValue");
 				});
@@ -846,7 +846,7 @@ namespace d360.model.DataAccessLayer
 					//Temp vars for filter expression parsing
 					//Filter expression parser uses sql definitions from getFieldSql() method
 					var tempArgs = new DynamicParameters();
-					List<string> tempJoins = new List<string>();
+					var tempJoins = new DynamicQueryJoins();
 					List<string> tempFieldColumns = new List<string>();
 					List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
@@ -898,8 +898,8 @@ namespace d360.model.DataAccessLayer
 						tempFieldColumns.Clear();
 						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
 						fieldColumns.AddRange(tempFieldColumns);
-						fieldJoins.AddRange(tempJoins);
-						countJoins.AddRange(tempJoins);
+						fieldJoins.Merge(tempJoins);
+						countJoins.Merge(tempJoins);
 						dbArgs.AddDynamicParams(tempArgs);
 					}
 
@@ -1280,12 +1280,12 @@ namespace d360.model.DataAccessLayer
 			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
-			List<string> includedJoins = new List<string>();
-			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+			var includedJoins = new DynamicQueryJoins();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", null);
 
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
-				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				var joins = countJoins.joins.Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
 				includedJoins.AddRange(joins);
 			});
 
@@ -1297,15 +1297,13 @@ namespace d360.model.DataAccessLayer
 				includeParentUIDSelect = true;
 				includeParentQuery = includeParent;
 			}
-			includedJoins = includedJoins.Distinct().ToList();
 
-			var assetCountJoins = new AssetQueryJoins(includedJoins);
 			var filteredSelect = $@"select  A.ID
 				from    Asset A 
 				inner join AssetPath Node on Node.ID = a.ID 
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{assetCountJoins.SQLJoinStatement}
+				{includedJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1342,7 +1340,6 @@ namespace d360.model.DataAccessLayer
 				pagingQuery = "";
 			}
 
-			var assetFieldJoins = new AssetQueryJoins(fieldJoins);
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
@@ -1372,7 +1369,7 @@ namespace d360.model.DataAccessLayer
 				inner join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{assetFieldJoins.SQLJoinStatement}
+				{fieldJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -3857,7 +3854,7 @@ namespace d360.model.DataAccessLayer
 
 			var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
 			var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID).ToList();
-			var fieldJoins = new List<string>();
+			DynamicQueryJoins fieldJoins = new DynamicQueryJoins();
 			var fieldColumns = new List<string>();
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@assetUid", assetUid);
@@ -3914,7 +3911,7 @@ namespace d360.model.DataAccessLayer
 				return null;
 			}
 
-			var fieldJoins = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
 			var fieldColumns = new List<string>();
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@assetUid", assetUid);

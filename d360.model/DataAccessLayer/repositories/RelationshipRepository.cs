@@ -129,7 +129,7 @@ namespace d360.model.DataAccessLayer
 			string _orderDirection = "asc";
 
 			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
 
 			string filteredIntersectsTempTable = "";
 			string prefilteredIntersectTypesTempTable = "";
@@ -454,7 +454,7 @@ namespace d360.model.DataAccessLayer
 					filteringByFields = true;
 
 					var tempArgs = new DynamicParameters();
-					List<string> tempJoins = new List<string>();
+					var tempJoins = new DynamicQueryJoins();
 					List<string> tempFieldColumns = new List<string>();
 
 					getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
@@ -508,27 +508,27 @@ namespace d360.model.DataAccessLayer
 
 			if (includeAssetPath || orderByAssetPath)
 			{
-				fieldJoins.Add(" left join dbo.AssetPath ANDP_Object on ANDP_Object.Id = O.Id ");
-				fieldJoins.Add(" left join dbo.AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
+				fieldJoins.Add(" left join dbo.AssetPath ANDP_Object on ANDP_Object.Id = O.Id ", "AssetPathObject");
+				fieldJoins.Add(" left join dbo.AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ", "AssetPathSubject");
 			}
 
 			if (isExport)
 			{
-				fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ");
-				fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ");
-				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ");
-				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
+				fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ", null);
+				fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ", null);
+				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ", null);
+				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ", null);
 			}
 
 			if (isFilteredByAssetUID)
 			{
 				//apply data to check which side on relationship are we
-				fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side");
+				fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
 				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
 				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
-				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData");
+				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
 
 			string fieldColumnsSql = "";
@@ -622,7 +622,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 				, new { uid }, ApiTimeout).ToList();
 
 			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
 
 			if (fieldTypes != null)
 			{
