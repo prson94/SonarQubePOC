@@ -1,1 +1,60 @@
-<p>relocate-buttons</p>
+<div class="buttons-grid">
+    <div style="height:100px"></div>
+    <div class="buttons-vertical">
+        <button igButton
+                class="ig-lookup-grid-button"
+                [disabled]="!selectedItemsFromSource || selectedItemsFromSource.length === 0"
+                icon="fa-arrow-right"
+                (click)="relocateSelectedItemsFromSourceToTarget()"
+                i18n-pTooltip
+                pTooltip="Add to selected folder items"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"></button>
+        <button igButton
+                class="ig-lookup-grid-button"
+                [disabled]="!selectedItemsFromTarget || selectedItemsFromTarget.length === 0"
+                icon="fa-arrow-left"
+                (click)="relocateSelectedItemsFromTargetToSource()"
+                i18n-pTooltip
+                pTooltip="Remove from selected folder items"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"></button>
+        <div style="height:16px"></div>
+        <button igButton
+                class="ig-lookup-grid-button rotateRight"
+                [disabled]="!isButtonMoveToTopActive()"
+                icon="fa-step-backward"
+                (click)="moveToTop()"
+                i18n-pTooltip
+                pTooltip="Move to top"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"></button>
+        <button igButton
+                class="ig-lookup-grid-button"
+                [disabled]="isButtonMoveUpActive()"
+                icon="fa-caret-up"
+                (click)="moveUp()"
+                i18n-pTooltip
+                pTooltip="Move up"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"></button>
+        <button igButton
+                class="ig-lookup-grid-button"
+                [disabled]="isButtonMoveDownActive()"
+                icon="fa-caret-down"
+                (click)="moveDown()"
+                i18n-pTooltip
+                pTooltip="Move down"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"></button>
+        <button igButton
+                class="ig-lookup-grid-button rotateLeft"
+                [disabled]="isButtonMoveToBottomActive()"
+                icon="fa-step-backward"
+                (click)="moveToBottom()"
+                i18n-pTooltip
+                pTooltip="Move to bottom"
+                tooltipPosition="top"
+                tooltipStyleClass="ig-tooltip"></button>
+    </div>
+</div>

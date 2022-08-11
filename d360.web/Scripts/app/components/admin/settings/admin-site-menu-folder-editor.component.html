@@ -111,8 +111,15 @@
 										</p-table>
 									</div>
 								</div>
-								<d3s-relocate-buttons></d3s-relocate-buttons>
-								<div class="buttons-grid">
+								<d3s-relocate-buttons [sourceItems]="availableItems"
+													  [targetItems]="newFolderItems"
+													  [selectedItemsFromSource]="_tempSelectedFolderItems"
+													  [selectedItemsFromTarget]="selectedNewFolderItems"
+													  [isFirstItemFromTargetSelected]="isFirstItemFromTargetSelected"
+													  (relocateItemsFromSourceToTargetEvent)="onRelocateItemsFromSourceToTargetEvent()"
+													  (relocateItemsFromTargetToSourceEvent)="onRelocateItemsFromTargetToSourceEvent()"
+													  (moveToTopEvent)="onMoveToTopEvent()"></d3s-relocate-buttons>
+								<!-- <div class="buttons-grid">
 									<div style="height:100px"></div>
 									<div class="buttons-vertical">
 										<button igButton
@@ -171,7 +178,7 @@
 												tooltipPosition="top"
 												tooltipStyleClass="ig-tooltip"></button>
 									</div>
-								</div>
+								</div> -->
 								<div class="table-content">
 									<div class="flex-grid-search">
 										<ig-search-field class="search tooltip-full-width"
