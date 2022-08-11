@@ -25,11 +25,6 @@ export class GroupApiModel {
     SecondaryOwnerUid: string;
 }
 
-export class GroupApiModels {
-    Items: GroupApiModel[];
-    Total: Number;
-}
-
 export class GroupResourceInfo {
     GroupID: number;
     ResourceID: number;
@@ -58,16 +53,6 @@ export class Group {
     Fields: any;
 }
 
-export class ResourceGroup {
-    GroupID: number;
-    ResourceID: number;
-    IsOwner: boolean;
-}
-
-export class ResourceGroupInfo {
-    ResourceGroups: ResourceGroup[];
-    GroupGuid: string;
-}
 export class GroupEditorModel {
     group: Group;
     resourceList: SelectItem[];

@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse } from '@angular/common/http';
-import { ReferenceItemType, ReferenceItem } from '../models/reference.model';
+import { ReferenceItemType } from '../models/reference.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';

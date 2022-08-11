@@ -1,8 +1,10 @@
 {
   "IsEncrypted": false,
-  "Values": {
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "APPINSIGHTS_INSTRUMENTATIONKEY": "2dd165d7-28b2-4258-8b55-32d9c83a3f43"
-  }
+	"Values": {
+		"Environment": "NIGHTLY",
+		"CommunityContext": "Server=tcp:gov-eng-int-sql.database.windows.net;Database=D3S;User ID=govsqladmin;Password=ZLWmhZjX5R9Ff7ra;Trusted_Connection=False;MultipleActiveResultSets=True;ConnectRetryCount=3;ConnectRetryInterval=3;Connection Timeout=60;",
+		"FUNCTIONS_WORKER_RUNTIME": "dotnet",
+		"AzureWebJobsStorage": "UseDevelopmentStorage=true",
+		"APPINSIGHTS_INSTRUMENTATIONKEY": "2dd165d7-28b2-4258-8b55-32d9c83a3f43"
+	}
 }

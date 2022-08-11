@@ -136,11 +136,6 @@ export class AssetBrowserTranslationLink {
     badgeIdentifier: string;
 }
 
-export class AssetBrowserTranslationLinkIdentifier {
-    predicateId: number;
-    intersectUid: string;
-}
-
 export class AssetBrowserTranslationNode {
     hierarchyKey: string;
     hop: number;
@@ -180,11 +175,6 @@ export class AssetBrowserTranslationNode {
 }
 
 // Ownership Models
-
-export class DiagramOwnerCount {
-    predictableId: string;
-    owners: AssetBrowserTranslationOwnerCount[];
-}
 
 export class AssetBrowserOwnerRelationModel {
     assetUid: string;
@@ -265,25 +255,12 @@ export class AssetBrowserDiagramAsset {
     AssetTypeUid: string;
 }
 
-export class AssetBrowserDiagramAssetField {
-    Name: string;
-    Value: string;
-    Type: string;
-}
-
 export class AssetBrowserDiagramAssetScore {
     Name: string;
     Value: number;
     ScoreClass: string;
     LowerThreshold: number;
     UpperThreshold: number;
-}
-
-export class AssetBrowserDiagramAssetOwner {
-    ResponsibilityTypeUid: string;
-    ResponsibilityTypeName: string;
-    ResourceUid: string;
-    ResourceName: string;
 }
 
 //#endregion
@@ -300,11 +277,6 @@ export enum FilterDescendancyMode {
     None = 1,
     Direct = 2,
     All = 3
-}
-
-export class FilterAncestryOption {
-    Mode: FilterAncestryMode;
-    Text: string;
 }
 
 export class AssetBrowserAssetTypeFilterModel {

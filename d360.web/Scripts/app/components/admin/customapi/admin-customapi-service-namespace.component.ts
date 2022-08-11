@@ -49,12 +49,12 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
             .route
             .params
             .subscribe(
-                params => {
+                (params) => {
                     this.serviceId = +params['serviceId']; // (+) converts string 'id' to a number
                     this.isLoading = true;
 
                     this.customAPIService.getService(this.serviceId).subscribe(
-                        res => {
+                        (res) => {
                             this.service = res;
 
                             this.load();
@@ -77,7 +77,7 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
     private load(): void {
         this.isLoading = true;
         this.customAPIService.getNamespaces(this.serviceId).subscribe(
-            res => {
+            (res) => {
                 this.fields = res;
 
                 this.isLoading = false;
@@ -86,7 +86,7 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
 
     private saveField(data): void {
         this.customAPIService.saveNamespace(data.item).subscribe(
-            res => {
+            (res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
 
@@ -97,7 +97,7 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
 
     deleteItem(id: number) {
         this.customAPIService.deleteNamespace(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
 

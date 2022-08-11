@@ -45,7 +45,7 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
         this.isLoading = true;
 
         this.customAPIService.getEndpoints(this.service.ID).subscribe(
-            res => {
+            (res) => {
                 this.isLoading = false;
                 this.endpoints = res;
                 this.numberOfEndpoints = this.endpoints.length;
@@ -56,7 +56,7 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
 
     private saveEndpoint(data): void {
         this.customAPIService.saveEndpoint(data.item).subscribe(
-            res => {
+            (res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
                 this.showEditor = false;
@@ -70,7 +70,7 @@ export class AdminCustomAPIEndpointsComponent extends BaseComponent implements O
 
     deleteService(id: number) {
         this.customAPIService.deleteEndpoint(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
                 this.showDelete = false;

@@ -58,7 +58,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.assetTypeClass = AssetTypeClass.DiagramAsset;
 
             let className: string = $localize`Diagram Asset`;
@@ -85,7 +85,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     load(uid: string = '') {
         this.isLoading = true;
         this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.artifactTypes = data;
                 if (!uid) {
                     this.selectedRow = this.artifactTypes[0];
@@ -170,16 +170,16 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     private getAssetTypeByUid(uid: string): any {
-        return this.artifactTypes.filter(x => x.uid == uid)[0];
+        return this.artifactTypes.filter((x) => x.uid == uid)[0];
     }
     private getAssetTypeById(id: number): any {
-        return this.artifactTypes.filter(x => x.ID == id)[0];
+        return this.artifactTypes.filter((x) => x.ID == id)[0];
     }
 
     private loadDataAndExecuteAction(action: Function) {
         if (this.selectedRow) {
             this.assetsService.getAssetTypeLegacyData(this.selectedRow.uid)
-                .subscribe(res => {
+                .subscribe((res) => {
                     this.selectedRow.ID = res.ObjectID;
                     this.selectedRow.AssetTypeID = res.AssetTypeID;
                     if (action) {

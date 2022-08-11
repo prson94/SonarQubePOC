@@ -52,11 +52,11 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
             this.isLoading = true;
 
             this.customAPIService.getEndpointVersionField_FieldTypes(this.versionId).subscribe(
-                r => {
+                (r) => {
                     this.fieldTypes = r;
                     this.isLoading = false;
                     if (this.fieldTypes != null && this.fieldTypes.length > 0) {
-                        this.customAPIService.getEndpointVersionField_LookupFieldTypes(this.fieldTypes[0].ID).subscribe(t => {
+                        this.customAPIService.getEndpointVersionField_LookupFieldTypes(this.fieldTypes[0].ID).subscribe((t) => {
                             this.multiSelectFieldTypes = t;
                         }
                         );
@@ -65,7 +65,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
             );
         } else {
             this.customAPIService.getEndpointVersionFieldEditorModel(this.model.ID).subscribe(
-                r => {
+                (r) => {
                     this.fieldTypes = r.fieldTypes;
                     this.multiSelectFieldTypes = r.multiSelectFieldTypes;
                     this.model = r.model;
@@ -77,7 +77,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
     }
 
     private changeFieldType(e: any) {
-        let field = this.fieldTypes.find(f => f.ID == e);
+        let field = this.fieldTypes.find((f) => f.ID == e);
 
         this.model.FieldTypeID = e;
         this.model.MultiSelectFields = [];
@@ -86,7 +86,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
 
         if (e != null && e > 0)
             this.customAPIService.getEndpointVersionField_LookupFieldTypes(e).subscribe(
-                t => {
+                (t) => {
                     this.multiSelectFieldTypes = t;
                 }
             );
@@ -96,7 +96,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
         this.isLoading = true;
         if (this.showMultiselectOptions) {
             let multiSelectFields = [];
-            this.selectedFields.forEach(s => {
+            this.selectedFields.forEach((s) => {
                 multiSelectFields.push({
                     EntityFieldTypeID: this.model.ID,
                     FieldTypeID: s.Value
@@ -110,7 +110,7 @@ export class AdminCustomAPIEndpointVersionFieldsEditorComponent extends BaseComp
         }
 
         this.customAPIService.saveEndpointVersionField(this.model).subscribe(
-            r => {
+            (r) => {
                 this.onSaveClick.emit(this.model);
 
                 this.isLoading = false;

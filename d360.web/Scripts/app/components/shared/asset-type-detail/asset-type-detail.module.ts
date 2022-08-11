@@ -22,7 +22,6 @@ import { PeopleResponsibilitiesModule } from "../responsibilities/people-respons
 import { DynamicFieldNameModule } from "../dynamic-field-name.component";
 import { PortalsModule } from "../portals/portals.module";
 import { AssetTypeDetailComponent } from "./asset-type-detail.component";
-import { FieldValueComponent } from "./field-value.component";
 import { ReferenceModule } from "../../reference/reference.module";
 import { AssetDetailModule } from "../asset-detail/asset-detail.module";
 
@@ -53,12 +52,10 @@ import { AssetDetailModule } from "../asset-detail/asset-detail.module";
         AssetDetailModule
     ],
     declarations: [
-        AssetTypeDetailComponent,
-        FieldValueComponent
+        AssetTypeDetailComponent
     ],
     exports: [
-        AssetTypeDetailComponent,
-        FieldValueComponent
+        AssetTypeDetailComponent
     ],
     providers: [{
         provide: HTTP_INTERCEPTORS,

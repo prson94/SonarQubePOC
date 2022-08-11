@@ -29,7 +29,6 @@ import { AccordionModule } from 'primeng/accordion';
 import { AssetBrowserAddPanelComponent } from './assetbrowser/panels/addpanel.component';
 import { AssetBrowserAlertPanelComponent } from './assetbrowser/panels/alertpanel.component';
 import { AssetBrowserFilterPanelComponent } from './assetbrowser/panels/filterpanel.component';
-import { AssetBrowserInfoPanelComponent } from './assetbrowser/panels/infopanel.component';
 import { AssetBrowserSettingsPanelComponent } from './assetbrowser/panels/settingspanel.component';
 
 import { AssetBrowserOverviewComponent } from './assetbrowser/tools/overview.component';
@@ -144,7 +143,6 @@ import { AddRelationshipModule } from "../relationship-grid/add-relationship.mod
         AssetBrowserAddPanelComponent,
         AssetBrowserAlertPanelComponent,
         AssetBrowserFilterPanelComponent,
-        AssetBrowserInfoPanelComponent,
         AssetBrowserSettingsPanelComponent,
 
         AssetBrowserOverviewComponent,

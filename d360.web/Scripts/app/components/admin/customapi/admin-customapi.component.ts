@@ -53,7 +53,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         this.isLoading = true;
 
         this.customAPIService.getServices().subscribe(
-            res => {
+            (res) => {
                 this.services = res.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.selected = this.services[0];
                 this.isLoading = false;
@@ -65,7 +65,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
         this.showEditor = false;
 
         this.customAPIService.saveService(data.item).subscribe(
-            res => {
+            (res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
             }
@@ -78,7 +78,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
 
     deleteService(id: number) {
         this.customAPIService.deleteService(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 this.load();

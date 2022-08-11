@@ -35,6 +35,7 @@
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
 	<include file="scripts/Function.dbo.GetDisplayPath.xml"/>
 	<include file="scripts/Function.dbo.GetKeyPath.xml"/>
+	<include file="scripts/Function.dbo.GetKeyPathHash.xml"/>
 	<include file="scripts/Function.graph.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
@@ -253,7 +254,6 @@
 	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectTypeNames.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetAssetScoreById.xml"/>
-	<include file="scripts/View.cache.ObjectDetails.xml"/>
 	<include file="scripts/View.dbo.ArtifactTypeDisplayFormatFieldTypes.xml"/>
 	<include file="scripts/View.dbo.AssetApiModel.xml"/>
 	<include file="scripts/View.dbo.AssetWithType.xml"/>

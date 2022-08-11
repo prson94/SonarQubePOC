@@ -15,6 +15,7 @@ using d360.core.entities.Membership;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
@@ -5395,14 +5396,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     AddMeasurement(metrics, "Log Errors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
 
-                    #region Generate proposed key hash and compare against existing data.
-
-                    CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID, fieldTable: ApiExecutionFieldTable);
-                    AddMeasurement(metrics, "CalculateProposedKeyHashes", sw.ElapsedMilliseconds, ++step);
-                    sw.Restart();
-
-                    #endregion
-
                     #region Invalidate repetitious items in load
 
                     // dont be a tool and look for duplicates in a load of 1 item
@@ -5796,6 +5789,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 										"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
 										new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
 										transaction: trans, timeout);
+									sw.Restart();
+									AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 
 									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();
@@ -5810,7 +5805,41 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                         AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
-                                    sw.Restart();
+									#region Generate proposed key hash and compare against existing data.
+									var invalidHashState = Connection.Query<int>(@"
+										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
+										inner join Asset a on a.ID = ea.AssetID
+										where ExecutionId = @executionid and ea.AssetID is not null and  ItemNumber between @beginItemNumber and @endItemNumber )
+
+										drop table if exists #HashData
+										select AssetID, Ap.KeyPathHash 
+										into #HashData
+										from api.ExecutionAsset ea
+										inner join Asset A on a.ID = ea.AssetID
+										inner join AssetPath AP on AP.ID = A.ID
+
+										where ea.ExecutionID = @executionid 
+										and ItemNumber between @beginItemNumber and @endItemNumber 
+
+										select count(1) from Asset A
+										inner join AssetPath ap on ap.ID = a.ID
+										inner join #HashData hd on hd.assetid != a.ID and hd.KeyPathHash = ap.KeyPathHash
+										where a.AssetTypeID = @assetTypeId
+										option(recompile)
+										", new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber },
+										transaction: trans, commandTimeout: timeout).FirstOrDefault();
+
+									if (invalidHashState > 0)
+									{
+										throw new DuplicateHashException("Key values match another asset under a different set of key fields.");
+									}
+
+									AddMeasurement(metrics, "CheckKeyHashes", sw.ElapsedMilliseconds, ++step);
+									sw.Restart();
+
+									#endregion
+
+									sw.Restart();
                                     // Update success flag.
                                     Connection.Execute(
                                         $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
@@ -5830,6 +5859,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 }
                                 catch (Exception ex)
                                 {
+									if (ex is DuplicateHashException)
+									{
+										retryCount = API_V2_RETRY_LIMIT;
+									}
+
                                     try
                                     {
                                         if (trans != null)
@@ -5840,7 +5874,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     catch
                                     {
                                     }
-
                                     retryCount++;
 
                                     if (retryCount > API_V2_RETRY_LIMIT)

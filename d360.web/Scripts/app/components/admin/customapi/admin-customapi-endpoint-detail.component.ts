@@ -43,14 +43,14 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
     }
 
     ngOnInit(): void {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             this.isLoading = true;
 
             this.serviceId = +params['serviceId']; // (+) converts string 'id' to a number            
             this.endpointId = +params['endpointId']; // (+) converts string 'id' to a number            
 
             this.customAPIService.getService(this.serviceId).subscribe(
-                res => {
+                (res) => {
                     this.service = res;
 
                     this.clearSidebar();
@@ -61,7 +61,7 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`, `/admin/customapi/${this.service.ID}/details`));
 
                     this.customAPIService.getEndpoint(this.endpointId).subscribe(
-                        res => {
+                        (res) => {
                             this.endpoint = res;
 
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.endpoint.Name}`));

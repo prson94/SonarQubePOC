@@ -2,7 +2,6 @@
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { Report } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -83,7 +82,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
 	deleteReport(uid: string) {
 		this.dashboardService.deleteDashboard(uid)
-			.subscribe(result => {
+			.subscribe((result) => {
 				this.messagesService.showInfoMessage($localize`Success`, $localize`Dashboard successfully deleted`);
 				this.showDelete = false;
 				this.selected = null;
@@ -95,7 +94,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 	saveReport(event) {
 		this.isLoading = true;
 		this.dashboardService.saveDashboard(event.report, event.file)
-			.subscribe(result => {
+			.subscribe((result) => {
 				if (result) {
 					this.messagesService.showInfoMessage($localize`Success`, event.report.uid ? $localize`Dashboard successfully updated` : $localize`Dashboard successfully added`);
 
@@ -127,7 +126,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 	private onSubmitPowerCreds() {
 		this.isLoading = true;
 		this.dashboardService.setPowerBICredentials(this.powerBiUser, this.powerBiPassword)
-			.subscribe(result => {
+			.subscribe((result) => {
 				this.isLoading = false;
 				this.showMessageForResult(this.messagesService, result);
 				if (result.type != 'error') {
