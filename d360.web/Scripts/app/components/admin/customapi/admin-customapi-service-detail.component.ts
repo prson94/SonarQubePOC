@@ -45,13 +45,13 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
         this.sub = this
             .route
             .params
-            .subscribe(params => {
+            .subscribe((params) => {
                 this.isLoading = true;
 
                 this.serviceId = +params['serviceId']; // (+) converts string 'id' to a number
 
                 this.customAPIService.getService(this.serviceId).subscribe(
-                    res => {
+                    (res) => {
                         this.isLoading = false;
                         this.service = res;
                         this.adminHeading = $localize`Integration`;

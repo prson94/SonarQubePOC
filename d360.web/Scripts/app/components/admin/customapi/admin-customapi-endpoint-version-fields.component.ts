@@ -45,7 +45,7 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
     private load(): void {
         this.isLoading = true;
         this.customAPIService.getEndpointVersionFields(this.version.ID).subscribe(
-            res => {
+            (res) => {
                 this.fields = res;
                 this.isLoading = false;
             }
@@ -56,7 +56,7 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
         data.item.EntityID = this.version.EntityID;
 
         this.customAPIService.saveField(data.item).subscribe(
-            res => {
+            (res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
                 this.showEditor = false;
@@ -66,7 +66,7 @@ export class AdminCustomAPIEndpointVersionFieldsComponent extends BaseComponent 
 
     deleteItem(id: number) {
         this.customAPIService.deleteField(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 this.load();

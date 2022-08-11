@@ -137,7 +137,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
         }
     }
     save() {
-        this.exportTemplateService.saveExportTemplateStyle(this.model).subscribe(result => {
+        this.exportTemplateService.saveExportTemplateStyle(this.model).subscribe((result) => {
             if (this.model.ID) {
                 this.messagesService.showInfoMessage($localize`Success`, $localize`Style updated successfully`);
             } else {

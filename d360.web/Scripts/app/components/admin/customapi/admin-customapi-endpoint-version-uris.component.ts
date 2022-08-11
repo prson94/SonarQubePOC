@@ -46,7 +46,7 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
     private load(): void {
         this.isLoading = true;
         this.customAPIService.getEndpointVersionUris(this.version.ID).subscribe(
-            res => {
+            (res) => {
                 this.uris = res;
                 this.isLoading = false;
             });
@@ -54,7 +54,7 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
 
     private saveUri(data): void {
         this.customAPIService.saveEndpointUri(data.item).subscribe(
-            res => {
+            (res) => {
                 this.showMessageForResult(this.messagesService, res);
                 this.load();
                 this.showEditor = false;
@@ -64,7 +64,7 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
 
     deleteService(id: number) {
         this.customAPIService.deleteEndpointUri(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 this.load();

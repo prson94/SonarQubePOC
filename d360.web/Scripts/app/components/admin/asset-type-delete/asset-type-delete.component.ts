@@ -37,7 +37,7 @@ export class AssetTypeDeleteComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
+        this.sub = this.route.params.subscribe((params) => {
             try {
                 if (!this.assetTypeClass) {
                     let assetTypeClassString: keyof typeof AssetTypeClass = params["class"];

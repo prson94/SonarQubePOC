@@ -93,7 +93,7 @@ export class AdminDashboardsEditor {
 	getReportTargets() {
 		this.isTargetsLoading = true;
 		this.dashboardService.getReportTargetTypes()
-			.subscribe(result => {
+			.subscribe((result) => {
 				this.targetTypes = result;
 				this.targetTypes.forEach((item) => item.value = item.value.toLowerCase());
 				this.isTargetsLoading = false;

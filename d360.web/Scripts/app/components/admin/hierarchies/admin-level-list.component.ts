@@ -41,7 +41,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
         this.isLoading = true;
 
         this.levelsService.getObjectLevels(this.objectId, this.objectType).subscribe(
-            levels => {
+            (levels) => {
                 this.levels = levels;
 
                 this.isLoading = false;
@@ -51,10 +51,10 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
 
     deleteLevel(id: number) {
         this.levelsService.deleteObjectLevel(this.objectType, this.objectId, id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
-                this.levels = this.levels.filter(x => x.Level != id);
+                this.levels = this.levels.filter((x) => x.Level != id);
             }
         );
     }
@@ -74,7 +74,7 @@ export class AdminLevelListComponent extends BaseComponent implements OnChanges 
 
     saveLevel(event) {
         this.levelsService.saveObjectLevel(event.level, this.objectType, this.objectId, event.action).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
                 this.showEditor = false;
                 this.getLevels();
