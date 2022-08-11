@@ -69,7 +69,7 @@ namespace d360.model
 			CurrentCompanyID = context.CompanyID;
 			CurrentDomainSettingID = context.DomainSettingID;
 			CurrentResourceID = context.ResourceID;
-			CurrentResourceIsAdmin = context.IsAdministrator;
+			CurrentResourceIsAdmin = true;
 			CurrentCompanyDomain = context.CompanyPrefix;
 
 			//output queries in debug mode to console

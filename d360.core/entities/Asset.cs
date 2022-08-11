@@ -294,9 +294,9 @@ namespace d360.core.entities
 	{
 		private List<DynamicQueryJoinData> joins { get; set; } = new List<DynamicQueryJoinData>();
 
-		public void Add(string statement, string fieldIdentifier)
+		public void Add(string statement, string fieldIdentifier, string simpleStatement = null)
 		{
-			this.joins.Add(new DynamicQueryJoinData { SQLStatement = statement, FieldIdentifier = fieldIdentifier });
+			this.joins.Add(new DynamicQueryJoinData { SQLStatement = statement, FieldIdentifier = fieldIdentifier, SimpleStatement = simpleStatement });
 		}
 
 		public void AddRange(IEnumerable<DynamicQueryJoinData> values)
@@ -356,7 +356,7 @@ namespace d360.core.entities
 	{
 		public string SQLStatement { get; set; }
 		public string FieldIdentifier { get; set; }
-
+		public string SimpleStatement { get; set; }
 		public int Sort
 		{
 			get
@@ -375,11 +375,11 @@ namespace d360.core.entities
 
 	public class DynamicQuerySelects
 	{
-		public List<DynamicQuerySelectData> selects { get; set; } = new List<DynamicQuerySelectData>();
+		private List<DynamicQuerySelectData> selects { get; set; } = new List<DynamicQuerySelectData>();
 
-		public void Add(string statement, string fieldIdentifier)
+		public void Add(string statement, string fieldIdentifier, string simpleStatement = null)
 		{
-			this.selects.Add(new DynamicQuerySelectData { Statement = statement, FieldIdentifier = fieldIdentifier });
+			this.selects.Add(new DynamicQuerySelectData { Statement = statement, FieldIdentifier = fieldIdentifier, SimpleStatement = simpleStatement });
 		}
 
 		public bool Any() { return this.selects.Any(); }
@@ -408,11 +408,17 @@ namespace d360.core.entities
 				this.Add(item.Statement, item.FieldIdentifier);
 			}
 		}
+
+		public List<DynamicQuerySelectData> Selects()
+		{
+			return this.selects;
+		}
 	}
 
 	public class DynamicQuerySelectData
 	{
 		public string Statement { get; set; }
 		public string FieldIdentifier { get; set; }
+		public string SimpleStatement { get; set; }
 	}
 }
