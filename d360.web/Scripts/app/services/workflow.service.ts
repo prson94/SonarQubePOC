@@ -1,16 +1,8 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
-    IssueInfo,
-    WorkflowStatusDetails,
-    WorkflowItem,
-    WorkflowType,    
-    WorkflowTypeRelationEditorModel,
     Issue,
     IssueDetail,
-    SuggestedItem,
-    CertifyItem,
-    ArtifactTypeWorkflowBreakdown,
     WorkflowIssueType,
     WorkflowDiagramModel,
     ActivityTypeInfo,     
@@ -38,7 +30,6 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { Count } from '../models/counts.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { DynamicGridResultsInData } from '../models/grid-definition.model';
 import { Observable,of } from 'rxjs';
 import { map, catchError, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';

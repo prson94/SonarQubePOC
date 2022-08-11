@@ -11,14 +11,6 @@ export enum RelationshipEditorType {
     RelatedAssets = 'RelatedAssets'
 }
 
-export class RelationshipInsertModel {
-    IntersectTypeUid: string;
-    SubjectUid: string;
-    ObjectUid: string;
-    IsTypeResolved: boolean = false;
-    IsSaved: boolean = false;
-}
-
 @Component({
     selector: 'd3s-assetbrowser-addpanel',
     templateUrl: 'addpanel.component.html',

@@ -63,9 +63,3 @@ export class RuleResultItems {
     FailCount: number;
     PassFraction: number;
 }
-
-export class RuleResultFilter {
-    dataField: string;
-    value: string;
-    condition: string = 'CONTAINS';
-}

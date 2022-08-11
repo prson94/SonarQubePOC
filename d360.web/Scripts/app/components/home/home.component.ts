@@ -4,7 +4,7 @@ import { Title } from "@angular/platform-browser";
 
 import { Breadcrumb } from "../../models/breadcrumb.model";
 import { WorkflowType } from "../../models/workflow.model";
-import { Dashboard, DashboardModel } from "../../models/dashboard.model";
+import { DashboardModel } from "../../models/dashboard.model";
 
 import { HeaderBreadcrumbService } from "../../services/header-breadcrumb.service";
 import { SecondaryNavService } from "../../services/right-sidebar.service";
