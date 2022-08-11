@@ -384,8 +384,9 @@ namespace d360.model.DataAccessLayer
 				hasAssetPathField = true;
 			}
 
-			List<string> fieldColumns = new List<string>();
+			DynamicQuerySelects fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
+
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
 			List<string> TempTableScriptList = new List<string>();
@@ -553,7 +554,7 @@ namespace d360.model.DataAccessLayer
 
 				var joinCountSql = $@"cross apply ({innerCountSql}) R";
 
-				fieldColumns.Add("R.Relationships");
+				fieldColumns.Add("R.Relationships", null);
 				dbArgs.Add("@predicateUid", predicateUID);
 
 				fieldJoins.Add(joinSql, "PredicateFilter");
@@ -847,7 +848,7 @@ namespace d360.model.DataAccessLayer
 					//Filter expression parser uses sql definitions from getFieldSql() method
 					var tempArgs = new DynamicParameters();
 					var tempJoins = new DynamicQueryJoins();
-					List<string> tempFieldColumns = new List<string>();
+					var tempFieldColumns = new DynamicQuerySelects();
 					List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
 					//handle field types in case "Field from relationship"
@@ -864,7 +865,7 @@ namespace d360.model.DataAccessLayer
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent);
-					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
+					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns.GetStatements());
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
@@ -897,7 +898,7 @@ namespace d360.model.DataAccessLayer
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
 						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
-						fieldColumns.AddRange(tempFieldColumns);
+						fieldColumns.Merge(tempFieldColumns);
 						fieldJoins.Merge(tempJoins);
 						countJoins.Merge(tempJoins);
 						dbArgs.AddDynamicParams(tempArgs);
@@ -1221,7 +1222,7 @@ namespace d360.model.DataAccessLayer
 			var fieldsSql = "";
 			if (fieldColumns.Any())
 			{
-				fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
+				fieldsSql = $",\n {string.Join(",\n", fieldColumns.GetStatements())}";
 			}
 
 			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.KeyPath");
@@ -1240,7 +1241,7 @@ namespace d360.model.DataAccessLayer
 						from Asset A
 						left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 						left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-						{string.Join("\n", fieldJoins)}
+						{string.Join("\n", fieldJoins.GetStatements())}
 						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " inner join AssetPath Node on Node.ID = a.ID" : "")} 
 						{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 						{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
@@ -1285,7 +1286,7 @@ namespace d360.model.DataAccessLayer
 
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
-				var joins = countJoins.joins.Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				var joins = countJoins.Joins().Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
 				includedJoins.AddRange(joins);
 			});
 
@@ -3854,8 +3855,8 @@ namespace d360.model.DataAccessLayer
 
 			var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
 			var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID).ToList();
-			DynamicQueryJoins fieldJoins = new DynamicQueryJoins();
-			var fieldColumns = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
+			var fieldColumns = new DynamicQuerySelects();
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@assetUid", assetUid);
 
@@ -3874,7 +3875,7 @@ namespace d360.model.DataAccessLayer
 								ACJ.ColorJson as Color,
 								{(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
 								Node.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
-								{string.Join(",\n", fieldColumns)}
+								{string.Join(",\n", fieldColumns.GetStatements())}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
 								inner join AssetPath Node on Node.ID = a.ID 
@@ -3887,7 +3888,7 @@ namespace d360.model.DataAccessLayer
 											inner join AssetDisplayValue PD on PD.AssetID = PA.ID
 									where	I.Object = A.Object and I.ObjectID = A.ObjectID
 								) P 
-								{string.Join("\n", fieldJoins)}
+								{string.Join("\n", fieldJoins.GetStatements())}
 						where   A.[uid] = @assetUid";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
@@ -3912,7 +3913,7 @@ namespace d360.model.DataAccessLayer
 			}
 
 			var fieldJoins = new DynamicQueryJoins();
-			var fieldColumns = new List<string>();
+			var fieldColumns = new DynamicQuerySelects();
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@assetUid", assetUid);
 
@@ -3920,7 +3921,7 @@ namespace d360.model.DataAccessLayer
 
 			var sql = $@"
 						select  
-								{string.Join("," + Environment.NewLine, fieldColumns)}
+								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
 								outer apply (
@@ -3932,7 +3933,7 @@ namespace d360.model.DataAccessLayer
 									where A.uid = @assetuid
 								) Parent
 								left join AssetDetail P on P.uid = Parent.uid
-								{string.Join(Environment.NewLine, fieldJoins)}
+								{fieldJoins.SQLJoinStatement}
 						where   A.[uid] = @assetUid";
 
 			var data = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs) as IDictionary<string, object>;

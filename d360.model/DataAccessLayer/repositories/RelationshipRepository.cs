@@ -128,7 +128,7 @@ namespace d360.model.DataAccessLayer
 			string _orderBy = "I.IntersectTypeID,I.ID";
 			string _orderDirection = "asc";
 
-			List<string> fieldColumns = new List<string>();
+			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
 
 			string filteredIntersectsTempTable = "";
@@ -357,7 +357,7 @@ namespace d360.model.DataAccessLayer
 			if (queryParams.Any(x => x.Key.ToLower() == "_order"))
 			{
 				var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-				var joinColumn = fieldColumns.FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
+				var joinColumn = fieldColumns.GetStatements().FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
 				if (!string.IsNullOrEmpty(joinColumn))
 				{
 					_orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
@@ -455,14 +455,14 @@ namespace d360.model.DataAccessLayer
 
 					var tempArgs = new DynamicParameters();
 					var tempJoins = new DynamicQueryJoins();
-					List<string> tempFieldColumns = new List<string>();
+					var tempFieldColumns = new DynamicQuerySelects();
 
 					getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
 					var filterDataProvider = new FilterDataProvider(companyContext);
 
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RelationshipCustomFields);
-					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
+					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns.GetStatements());
 					var fieldsQuery = "(" + filterExpressionParser.Parse(value, out Dictionary<string, object> sqlParams, out List<int> filteredFields) + ")";
 
 					whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;
@@ -532,13 +532,13 @@ namespace d360.model.DataAccessLayer
 			}
 
 			string fieldColumnsSql = "";
-			if (fieldColumns.Count > 0)
-				fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+			if (fieldColumns.Any())
+				fieldColumnsSql = string.Join(",\n", fieldColumns.GetStatements()) + ",";
 
 			var countFullSql = $@"select	
 		   @total = count(1) 
 				{countSql} 
-				{(filteringByFields ? string.Join("\n", fieldJoins) : "")} 
+				{(filteringByFields ? string.Join("\n", fieldJoins.GetStatements()) : "")} 
 				{whereClause}";
 
 			string orderByClause = $"order by {_orderBy} {_orderDirection}";
@@ -580,7 +580,7 @@ select	@pageSize as 'pageSize',
 				
 				
 		{baseTableSql}
-		{string.Join("\n", fieldJoins)}
+		{string.Join("\n", fieldJoins.GetStatements())}
 		{whereClause} 
 		{orderByClause}
 		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
@@ -621,7 +621,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 					WHERE I.uid = @uid"
 				, new { uid }, ApiTimeout).ToList();
 
-			List<string> fieldColumns = new List<string>();
+			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
 
 			if (fieldTypes != null)
@@ -644,9 +644,9 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 			predicateTypeSql += " end as 'Predicate.Type', ";
 
 			string fieldColumnsSql = "";
-			if (fieldColumns.Count > 0)
+			if (fieldColumns.Any())
 			{
-				fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+				fieldColumnsSql = string.Join(",\n", fieldColumns.GetStatements()) + ",";
 			}
 
 			var sql = $@"
@@ -666,7 +666,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 								OKP.KeyPath as 'Object.Path',
 								ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
 						{baseTableSql}
-						{string.Join("\n", fieldJoins)}
+						{fieldJoins.SQLJoinStatement}
 						{whereClause} 
 						for json path, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER";
 

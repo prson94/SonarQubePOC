@@ -292,7 +292,7 @@ namespace d360.core.entities
 
 	public class DynamicQueryJoins
 	{
-		public List<DynamicQueryJoinData> joins { get; set; } = new List<DynamicQueryJoinData>();
+		private List<DynamicQueryJoinData> joins { get; set; } = new List<DynamicQueryJoinData>();
 
 		public void Add(string statement, string fieldIdentifier)
 		{
@@ -341,6 +341,15 @@ namespace d360.core.entities
 		}
 
 		public int Count { get { return joins.Count; } }
+		public List<string> GetStatements()
+		{
+			return this.joins.Distinct().Select(x => x.SQLStatement).ToList();
+		}
+
+		public List<DynamicQueryJoinData> Joins()
+		{
+			return this.joins;
+		}
 	}
 
 	public class DynamicQueryJoinData
@@ -362,5 +371,48 @@ namespace d360.core.entities
 				}
 			}
 		}
+	}
+
+	public class DynamicQuerySelects
+	{
+		public List<DynamicQuerySelectData> selects { get; set; } = new List<DynamicQuerySelectData>();
+
+		public void Add(string statement, string fieldIdentifier)
+		{
+			this.selects.Add(new DynamicQuerySelectData { Statement = statement, FieldIdentifier = fieldIdentifier });
+		}
+
+		public bool Any() { return this.selects.Any(); }
+
+		public List<string> GetStatements()
+		{
+			return this.selects.Distinct().Select(x=> x.Statement).ToList(); 
+		}
+
+		public void AddRange(IEnumerable<DynamicQuerySelectData> values)
+		{
+			foreach (var value in values)
+			{
+				this.selects.Add(new DynamicQuerySelectData { Statement = value.Statement, FieldIdentifier = value.FieldIdentifier });
+			}
+		}
+
+		public void Clear()
+		{
+			this.selects.Clear();
+		}
+		public void Merge(DynamicQuerySelects value)
+		{
+			foreach (var item in value.selects)
+			{
+				this.Add(item.Statement, item.FieldIdentifier);
+			}
+		}
+	}
+
+	public class DynamicQuerySelectData
+	{
+		public string Statement { get; set; }
+		public string FieldIdentifier { get; set; }
 	}
 }

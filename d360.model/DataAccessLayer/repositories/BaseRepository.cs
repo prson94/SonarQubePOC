@@ -138,7 +138,7 @@ namespace d360.model.DataAccessLayer.repositories
 			return $"{columnSql} AS {alias}";
 		}
 
-		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null)
+		protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, DynamicQueryJoins fieldJoins, DynamicQuerySelects fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false, bool IsCreateTempTable = false, List<string> TempTableScriptList = null)
 		{
 			List<string> TempTableNameList = new List<string>();
 
@@ -193,16 +193,16 @@ namespace d360.model.DataAccessLayer.repositories
 					 {
 						 if (fieldDataType == "bit")
 						 {
-							 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+							 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString());
 						 }
 						 else
 						 {
-							 fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+							 fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]", f.ID.ToString());
 						 }
 					 }
 					 else if (f.Type == "Lookup" && f.AllowAllValue)
 					 {
-						 fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+						 fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]", f.ID.ToString());
 
 						 var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
 
@@ -210,23 +210,23 @@ namespace d360.model.DataAccessLayer.repositories
 					 }
 					 else if (f.Type == "Lookup" && listColorsAsJSON)
 					 {
-						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
 					 }
 					 else if (f.Type == "Path")
 					 {
-						 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName));
+						 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName), f.ID.ToString());
 					 }
 					 else if (f.Type == "Score")
 					 {
-						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
 					 }
 					 else if (f.Type == "Counter")
 					 {
-						 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]");
+						 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]", f.ID.ToString());
 					 }
 					 else
 					 {
-						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+						 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
 					 }
 				 }
 				 else
@@ -237,17 +237,17 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 if (fieldDataType == "bit")
 							 {
-								 fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+								 fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString());
 							 }
 							 else
 							 {
-								 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+								 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]", f.ID.ToString());
 							 }
 						 }
 						 else if (f.Type == "Lookup" && f.AllowAllValue)
 						 {
 
-							 fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
+							 fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]", f.ID.ToString());
 
 							 var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
 
@@ -255,19 +255,19 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Path")
 						 {
-							 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName));
+							 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName), f.ID.ToString());
 						 }
 						 else if (f.Type == "Score")
 						 {
-							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
 						 }
 						 else if (f.Type == "Lookup" && listColorsAsJSON && hasColor)
 						 {
-							 fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, defaultColorValue{tableAlias}.color, @defaultValue{tableAlias}) as [{columnName}]");
+							 fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, defaultColorValue{tableAlias}.color, @defaultValue{tableAlias}) as [{columnName}]", f.ID.ToString());
 						 }
 						 else
 						 {
-							 fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
+							 fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]", f.ID.ToString());
 						 }
 
 						 dbArgs.Add($"@defaultValue{tableAlias}", defaultVal);
@@ -278,11 +278,11 @@ namespace d360.model.DataAccessLayer.repositories
 						 {
 							 if (fieldDataType == "bit")
 							 {
-								 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+								 fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]", f.ID.ToString());
 							 }
 							 else
 							 {
-								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]");
+								 fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]", f.ID.ToString());
 							 }
 						 }
 						 else if (f.Type == "JsonElement")
@@ -291,11 +291,11 @@ namespace d360.model.DataAccessLayer.repositories
 							 {
 								 jsonElementDefinition.DataType = "float";
 							 }
-							 fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
+							 fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]", f.ID.ToString());
 						 }
 						 else if (f.Type == "Lookup" && f.AllowAllValue)
 						 {
-							 fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+							 fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]", f.ID.ToString());
 
 							 var AllowAllLabelValue = getAllowedAllValue(f.AllowAllLabel, hasColor);
 
@@ -303,27 +303,27 @@ namespace d360.model.DataAccessLayer.repositories
 						 }
 						 else if (f.Type == "Path")
 						 {
-							 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName));
+							 fieldColumns.Add(AddColumnAlias(GetPathSelectSql(f), columnName), f.ID.ToString());
 						 }
 						 else if (f.Type == "Score")
 						 {
-							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
 						 }
 						 else if (f.Type == "Counter")
 						 {
-							 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]");
+							 fieldColumns.Add($"('{f.CounterPrefix}' + CAST({tableAlias}.{valueColumn} as nvarchar(max))) as [{columnName}]", f.ID.ToString());
 						 }
 						 else if (f.Type == "Link")
 						 {
-							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]");
+							 fieldColumns.Add($"NULLIF(NULLIF({tableAlias}.{valueColumn},'|'), '') as [{columnName}]", f.ID.ToString());
 						 }
 						 else if (f.Type == "ComplexRelationLookup" || f.Type == "OwnershipLookup")
 						 {
-							 fieldColumns.Add($"{tableAlias}.Definition as [{columnName}]");
+							 fieldColumns.Add($"{tableAlias}.Definition as [{columnName}]", f.ID.ToString());
 						 }
 						 else
 						 {
-							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+							 fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]", f.ID.ToString());
 						 }
 					 }
 				 }
