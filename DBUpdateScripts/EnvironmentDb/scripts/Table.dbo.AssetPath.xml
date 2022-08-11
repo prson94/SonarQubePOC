@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Tduric" id="Table.dbo.AssetPath-v2">
+  <changeSet author="Tduric" id="Table.dbo.AssetPath-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -25,8 +25,7 @@ END
 
 IF COL_LENGTH('dbo.AssetPath', 'KeyPathHash') IS NULL
 BEGIN
-    alter table [dbo].[AssetPath]
-	add [KeyPathHash] AS ([dbo].[GetKeyPathHash]([Segments])) PERSISTED
+    alter table [dbo].[AssetPath] add [KeyPathHash] AS ([dbo].[GetKeyPathHash]([Segments])) PERSISTED
 END
 		]]>
     </sql>
@@ -37,7 +36,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Table.dbo.AssetPath-Indexes-v1">
+  <changeSet author="Pappas" id="Table.dbo.AssetPath-Indexes-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -67,6 +66,11 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetPath_KeyPath')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_AssetPath_KeyPath] ON [dbo].[AssetPath] (	[KeyPath] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetPath_KeyPathHash')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetPath_KeyPathHash] ON [dbo].[AssetPath] (	[KeyPathHash] ASC )
 END
 		]]>
     </sql>
