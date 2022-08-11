@@ -303,7 +303,7 @@ export class AssetBrowserResponsibilityTypeFilterModel {
 }
 
 export class AssetBrowserFilterModel {
-    DiagramType: DiagramType = DiagramType.Lineage;
+    DiagramType: DiagramType = null;
     AncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
     DisplayBadges: boolean = true;
     DisplayIcons: boolean = true;
