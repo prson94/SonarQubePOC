@@ -985,14 +985,16 @@ namespace d360.model.DataAccessLayer
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
 
-					bool isNumber = decimal.TryParse(simpleFilter, out _);
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
 					{
-						if (!isNumber && 
-							(ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString()))
+						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
+
+						if (!isNumber && isNumbericFieldType)
 						{
+							//if search term is not a number, do not filter over numeric field types
 							continue;
 						}
 
@@ -1008,6 +1010,7 @@ namespace d360.model.DataAccessLayer
 							var splitIdx = selectStatement.ToLowerInvariant().IndexOf(" as [");
 
 							var selectField = splitIdx < 0 ? selectStatement : selectStatement.Substring(0, splitIdx);
+
 							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
 							simpleFilters.Add($@"
 								select  A.ID
