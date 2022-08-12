@@ -1018,7 +1018,8 @@ namespace d360.model.DataAccessLayer
 								from    Asset A 
 								{(ft.Type == DataType.Path.ToString() ? "inner join AssetPath Node on Node.ID = a.ID" : "")}
 								{joinStatement}
-								where A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
+								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
 						}
 					}
 
@@ -1051,7 +1052,8 @@ namespace d360.model.DataAccessLayer
 								from Asset A
 									left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
 									left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID
-								where A.AssetTypeID = @assettypeid and Parent.DisplayValue like @simpleFilter");
+									left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and Parent.DisplayValue like @simpleFilter");
 					}
 
 					if (assetType.Class == AssetTypeClass.Reference)
@@ -1060,7 +1062,8 @@ namespace d360.model.DataAccessLayer
 								from Asset A
 									left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
 									left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID
-								where A.AssetTypeID = @assettypeid and (A.Code like @simpleFilter or JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name') like @simpleFilter)");
+									left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and (A.Code like @simpleFilter or JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name') like @simpleFilter)");
 					}
 				}
 			}
@@ -1309,14 +1312,10 @@ namespace d360.model.DataAccessLayer
 				sb.AppendLine("create table #TempFilteredAssets(AssetId bigint)");
 				sb.AppendLine("create index ix_TempFilteredAssets on #TempFilteredAssets (AssetId)");
 
-				sb.AppendLine("insert into #TempFilteredAssets");
 				for (int i = 0; i < simpleFilters.Count; i++)
 				{
+					sb.AppendLine("insert into #TempFilteredAssets");
 					sb.AppendLine(simpleFilters[i]);
-					if (i != simpleFilters.Count - 1)
-					{
-						sb.AppendLine("union");
-					}
 				}
 
 				sb.Remove(sb.Length - 1, 1);
