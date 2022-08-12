@@ -50,7 +50,9 @@ namespace d360.web.Controllers.V2
 	/// </summary>
 	[
 		ApiVersion("2.0"),
-		RoutePrefix("api/v{version:apiVersion}/assets")	]
+		RoutePrefix("api/v{version:apiVersion}/assets"),
+		Authorize
+	]
 	public class AssetsController : BaseV2ApiController
 	{
 		#region DI

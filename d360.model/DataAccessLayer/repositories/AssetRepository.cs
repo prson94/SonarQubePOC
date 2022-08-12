@@ -1012,9 +1012,11 @@ namespace d360.model.DataAccessLayer
 							var selectField = splitIdx < 0 ? selectStatement : selectStatement.Substring(0, splitIdx);
 
 							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
+
 							simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
+								{(ft.Type == DataType.Path.ToString() ? "inner join AssetPath Node on Node.ID = a.ID" : "")}
 								{joinStatement}
 								where A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
 						}
