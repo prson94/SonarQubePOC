@@ -30,25 +30,9 @@ namespace d360.model
 {
     public interface ICompanyContext : IBaseContext
     {
-        DbSet<ApiEndpoint> ApiEndpoints { get; set; }
-        
-        DbSet<ApiEndpointVersion> ApiEndpointVersions { get; set; }
-        
-        DbSet<ApiEntity> ApiEntities { get; set; }
-        
-        DbSet<ApiEntityFieldTypeMultiSelectField> ApiEntityFieldTypeMultiSelectFields { get; set; }
-        
-        DbSet<ApiEntityFieldType> ApiEntityFieldTypes { get; set; }
-        
-        DbSet<ApiEntityUri> ApiEntityUris { get; set; }
-        
-        DbSet<ApiExecution> ApiExecutions { get; set; }
+	    DbSet<ApiExecution> ApiExecutions { get; set; }
         
         DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
-        
-        DbSet<ApiNamespace> ApiNamespaces { get; set; }
-        
-        DbSet<ApiService> ApiServices { get; set; }
         
         DbSet<AssetDetail> AssetDetails { get; set; }
         

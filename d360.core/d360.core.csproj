@@ -64,11 +64,6 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Update="resources\CustomAPI.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CustomAPI.resx</DependentUpon>
-    </Compile>
     <Compile Update="resources\DataQualityErrors.Designer.cs">
       <DependentUpon>DataQualityErrors.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -209,10 +204,6 @@
     <EmbeddedResource Update="resources\Bulkload.resx">
       <LastGenOutput>Bulkload.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="resources\CustomAPI.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>CustomAPI.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="resources\DataQualityErrors.resx">
       <LastGenOutput>DataQualityErrors.Designer.cs</LastGenOutput>
