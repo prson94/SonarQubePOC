@@ -31,6 +31,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 import { Dropdown } from 'primeng/dropdown';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { Table } from 'primeng/table';
+import { MultiSelect } from "primeng/multiselect";
 
 @Component({
     selector: 'asset-editor-field',
@@ -102,7 +103,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     showLookupSearchField: boolean = false;
     hadInitialLazyLoad: boolean = false;
 
-    @ViewChild('dropdown', { static: false }) dropdown: Dropdown;
+    @ViewChild('dropdown', { static: false }) dropdown: Dropdown & MultiSelect;
     @ViewChild('overlayPanel', { static: false }) overlayPanel: OverlayPanel;
     @ViewChild("dataTable", { static: false }) dataTable: Table;
 
@@ -261,20 +262,22 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
         if (this.field.FieldType === 'Relationship' && this.field.Value) {
             this.field.Items = this.field.Value;
-            var value = this.field.Items.filter((x) => x.Selected === true).map(x => x.Value);
+            let value: any;
+			if (this.field.MultiSelect) {
+				value = this.field.Value.filter((x) => x.Selected === true).map(x => x.Value);
+			} else {
+				value = this.field.Value.filter((x) => x.Selected === true).map(x => x.Value)[0];
+			}
             this.form.controls[this.field.FieldName].setValue(value);
 
-            if (this.field?.MultiSelect && this.field.Value) {
+            if (this.field.Value) {
                 this.lookupSelectedValue = [];
-
                 this.field.Items.forEach((item) => {
                     item['label'] = item['Text'];
                     item['value'] = item['Value'];
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
-
                 });
                 this.selectSingleItem(null, { value: null });
-
             }
         }
 
@@ -307,9 +310,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
             }
 
-            if (this.field?.MultiSelect && this.field.Value) {
+            if (this.field.Value) {
                 this.lookupSelectedValue = [];
                 this.field.Items.filter((x) => x.Selected === true).forEach((item) => {
+					item['value'] = item['Value'];
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
                 this.selectSingleItem(null, { value: null });
@@ -794,7 +798,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             let loadedData = [];
 
             res.items.forEach((str) => {
-                loadedData.push({ label: str.text, value: str.value, color: str.color });
+				const color = str.color;
+                loadedData.push({ label: str.text, value: str.value, ...(color && { color }) });
             });
 
             Array.prototype.splice.apply(this.lookupValues, [...[loadParams.skip, loadParams.take], ...loadedData]);
@@ -806,6 +811,14 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             }
             this.isLookupValuesLoading = false;
             this.lastParams = loadParams;
+			
+			if (!this.field.MultiSelect) {
+				const selectedItem = this.lookupValues.find(lookup => lookup.value === this.dropdown.value);
+				if (selectedItem) {
+					this.selectSingleItem(null, selectedItem);
+				}
+			}
+			
             this.lookupValues = JSON.parse(JSON.stringify(this.lookupValues));
             this.setSelectionVirtualScrollHeight();
             this.ref.detectChanges();
@@ -825,15 +838,17 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     selectSingleItem(event: MouseEvent, item: SelectItem) {
         if (this.field?.MultiSelect) {
             this.field.Items = [...this.lookupSelectedValue];
-            var value = this.lookupSelectedValue.map((s) => s.value);
+            const value = this.lookupSelectedValue.map((s) => s.value);
             this.form.controls[this.field.FieldName].setValue(value);
         } else {
             this.lookupSelectedValue = [item];
-            this.dropdown.options = [item];
+			if (this.dropdown) {
+				this.dropdown.options = [item];
+			}
             this.form.controls[this.field.FieldName].setValue(item.value);
-            this.overlayPanel.hide();
         }
         if (event) {
+			this.overlayPanel.hide();
             this.dynEditorService.updateLookupValue({ assetUid: this.assetUid, fieldName: this.field.FieldName, fieldValue: this.field.Value });
         }
     }

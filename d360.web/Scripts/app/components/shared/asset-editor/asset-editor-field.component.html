@@ -130,10 +130,33 @@
                                            (onChange)="onChangeMultiselect($event)"
                                            [required]="field.Required"
                                            [readonly]="true"
-                                           placeholder="{{lookupSelectPlaceholder}}"
                                            [disabled]="isLookupFieldDisabled"
+										   placeholder="{{ lookupSelectPlaceholder }}"
                                            [igDataCy]="'Asset_Modal_Field_' + field.FieldName"
                                            display="chip">
+								<ng-template pTemplate="selectedItems" let-items>
+									<ng-container *ngIf="dropdown.value && dropdown.value.length !== 0; else placeholder">
+										<div class="p-multiselect-token" *ngFor="let item of items">
+											<ng-container *ngTemplateOutlet="chipTemplate; context: { $implicit: item | findMultiselectOption: field.Items }">
+											</ng-container>
+										</div>
+										<ng-template #chipTemplate let-option>
+											<span class="p-multiselect-token-label">
+												{{ option.label }}
+											</span>
+											<span class="p-multiselect-token-icon pi pi-times-circle"
+												  (click)="dropdown.removeChip(option.value, $event); $event.stopPropagation()">
+											</span>
+											<asset-editor-field-info [item]="option" size="s"
+																	 (click)="onItemInfoClick($event, option)"
+																	 [selected]="sidePanelSelection">
+											</asset-editor-field-info>
+										</ng-template>
+									</ng-container>
+									<ng-template #placeholder>
+										{{ lookupSelectPlaceholder }}
+									</ng-template>
+								</ng-template>
                             </p-multiSelect>
                         </div>
                         <p-dropdown *ngIf="!field?.MultiSelect"

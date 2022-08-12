@@ -43,6 +43,7 @@ import { DynamicFieldNameModule } from '../dynamic-field-name.component';
 import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-feedback-badges.component';
 import { SidePanelModule } from "../sidepanel/side-panel.module";
 import { AssetEditorFieldInfoComponent } from "./asset-editor-field-info.component";
+import { FindMultiselectOptionPipe } from "./find-multiselect-option.pipe";
 
 @NgModule({
     imports: [
@@ -93,7 +94,8 @@ import { AssetEditorFieldInfoComponent } from "./asset-editor-field-info.compone
     declarations: [
         AssetEditorComponent,
         AssetEditorFieldComponent,
-		AssetEditorFieldInfoComponent
+		AssetEditorFieldInfoComponent,
+		FindMultiselectOptionPipe
     ],
     exports: [
         AssetEditorComponent
