@@ -2137,9 +2137,16 @@ namespace d360.web.Controllers.V2
 
 				if (getModelFilter.AssetTypeUid.HasValue)
 				{
-					if (!Company.AssetTypes.Any(x => x.uid == getModelFilter.AssetTypeUid))
+					var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == getModelFilter.AssetTypeUid);
+					if (assetType == null)
 					{
 						return errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, String.Format(Messages.AssetTypeNotFound, getModelFilter.AssetTypeUid));
+					}
+
+					var allowedClasses = new List<AssetTypeClass> { AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.User };
+					if (!allowedClasses.Contains(assetType.Class))
+					{
+						throw new GenericException(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, String.Format(Messages.AssetTypeInvalidClass, string.Join(",", allowedClasses.Select(x => x.ToString()))));
 					}
 				}
 
@@ -2161,7 +2168,7 @@ namespace d360.web.Controllers.V2
 
 				var responseModel = await DashboardRepository.GetDashboardsAsync(getModelFilter);
 
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, responseModel));
+				return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseModel));
 			}
 			catch (GenericException ex)
 			{
