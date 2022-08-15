@@ -202,14 +202,6 @@
 	<include file="scripts/Table.workflow.ItemStepTransition.xml"/>
 	<include file="scripts/Table.workflow.TaskProcedure.xml"/>
 
-	<include file="scripts/Table.api.Namespace.xml"/>
-	<include file="scripts/Table.api.Service.xml"/>
-	<include file="scripts/Table.api.Endpoint.xml"/>
-	<include file="scripts/Table.api.EndpointVersion.xml"/>
-	<include file="scripts/Table.api.Entity.xml"/>
-	<include file="scripts/Table.api.EntityFieldType.xml"/>
-	<include file="scripts/Table.api.EntityFieldTypeMultiSelectField.xml"/>
-	<include file="scripts/Table.api.EntityUri.xml"/>
 	<include file="scripts/Table.api.Execution.xml"/>
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>

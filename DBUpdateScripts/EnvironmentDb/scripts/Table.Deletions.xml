@@ -160,5 +160,31 @@ GO
 		]]>
     </sql>
   </changeSet>
+
+  <changeSet author="Pappas" id="Table.Deletions.CustomAPI-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop table if exists api.EntityUri
+GO
+drop table if exists api.EntityFieldTypeMultiSelectField
+GO
+drop table if exists api.EntityFieldType
+GO
+drop table if exists api.Entity
+GO
+drop table if exists api.EndpointVersion
+GO
+drop table if exists api.[Endpoint]
+GO
+drop table if exists api.[Namespace]
+GO
+drop table if exists api.[Service]
+GO
+		]]>
+    </sql>
+  </changeSet>
    
 </databaseChangeLog>
