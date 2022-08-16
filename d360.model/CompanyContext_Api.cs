@@ -4135,38 +4135,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											from	ResponsibilityTypeRelation T
 													inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
 
-
-											drop table if exists #e;
-											create table #e (ID int);
-											create index idx_e on #e(ID);
-
-											insert into #e
-											select distinct E.ID
-											from	api.Entity E
-											inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID 
-											and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-
-											if exists(select 1 from #e)
-											begin
-
-												delete	T
-												from	api.EntityFieldTypeMultiSelectField T
-														inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
-														inner join #e E on E.ID = F.EntityID;
-
-												delete	T
-												from	api.EntityFieldType T
-														inner join #e E on E.ID = T.EntityID;
-
-												delete	T
-												from	api.EntityUri T
-														inner join #e E on E.ID = T.EntityID;
-
-												delete	T
-												from	api.Entity T
-														inner join #e E on E.ID = T.ID;
-											end
-
 											delete	T
 											from	[Load] T
 													inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
