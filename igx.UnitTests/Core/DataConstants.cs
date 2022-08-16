@@ -3,13 +3,10 @@ using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace igx.UnitTests.Core
 {
-    public class DataConstants
+	public class DataConstants
     {
         public const string ValidDataSource = "ValidDataSource";
         public const string ValidType = "ValidType";
@@ -18,6 +15,7 @@ namespace igx.UnitTests.Core
         public const string WrongFormatGUID = "B1F828DE-BD5FB-451A-A472-77BF5916F771AAA";
         public const string InvalidGUID = "00000000-0000-0000-0000-000000000000";
         public const string FieldTypesJsonFormat = "[{\"FriendlyName\":\"Name\",\"ID\":49,\"IsListable\":false,\"IsRequired\":false,\"ColumnOrder\":1,\"SortOrder\":0,\"ObjectType\":\"ArtifactType\",\"ObjectID\":50001,\"Type\":\"Text\"}]";
+		public const string UrlString = "https://testhost.com";
 
         public class Tags
         {
