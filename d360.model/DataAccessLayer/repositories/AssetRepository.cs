@@ -1001,6 +1001,12 @@ namespace d360.model.DataAccessLayer
 						var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 
+						if(ft.Type == DataType.Path.ToString())
+						{
+							join = new DynamicQueryJoinData();
+							join.SQLStatement = "inner join AssetPath Node on Node.ID = a.ID";
+						}
+
 						if (select != null && join != null)
 						{
 							//search for beggining of alias part  

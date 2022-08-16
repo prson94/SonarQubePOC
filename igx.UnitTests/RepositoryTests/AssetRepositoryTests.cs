@@ -121,7 +121,7 @@ namespace igx.UnitTests.RepositoryTests
         {
             var mockCompanyContext = new Mock<ICompanyContext>();
             mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
-
+			mockCompanyContext.Setup(x=> x.GetEscapedFilterString(It.IsAny<string>(), It.IsAny<bool>())).Returns((string value, bool bit) => value);
             mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
                 .Returns((string sql, object param, int timeout) =>
                 {
@@ -390,8 +390,9 @@ namespace igx.UnitTests.RepositoryTests
         {
             var mockCompanyContext = new Mock<ICompanyContext>();
             mockCompanyContext.Setup(x => x.CurrentResourceIsAdmin).Returns(true);
+			mockCompanyContext.Setup(x => x.GetEscapedFilterString(It.IsAny<string>(), It.IsAny<bool>())).Returns((string value, bool bit) => value);
 
-            mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
+			mockCompanyContext.Setup(x => x.Query<Guid>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<int>()))
                 .Returns((string sql, object param, int timeout) =>
                 {
                     if (sql.ToLowerInvariant().Contains("create table #family"))
