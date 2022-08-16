@@ -22,6 +22,7 @@ enum IgInfoButtonSize {
 })
 export class AssetEditorFieldInfoComponent implements OnChanges {
 	isSelected: boolean;
+	tooltipText: string = $localize`View Information`;
 	@Input() size: IgInfoButtonSize = IgInfoButtonSize.L;
 	@Input() object: { objectID: string, fieldName: string };
     @Input() selected: { objectID: string, fieldName: string };
