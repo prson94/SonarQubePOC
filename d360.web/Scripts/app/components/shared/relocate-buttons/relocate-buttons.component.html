@@ -22,7 +22,7 @@
         <div style="height:16px"></div>
         <button igButton
                 class="ig-lookup-grid-button rotateRight"
-                [disabled]="!isButtonMoveToTopActive()"
+                [disabled]="!isMoveUpPossible()"
                 icon="fa-step-backward"
                 (click)="moveToTop()"
                 i18n-pTooltip
@@ -31,7 +31,7 @@
                 tooltipStyleClass="ig-tooltip"></button>
         <button igButton
                 class="ig-lookup-grid-button"
-                [disabled]="isButtonMoveUpActive()"
+                [disabled]="!isMoveUpPossible()"
                 icon="fa-caret-up"
                 (click)="moveUp()"
                 i18n-pTooltip
@@ -40,7 +40,7 @@
                 tooltipStyleClass="ig-tooltip"></button>
         <button igButton
                 class="ig-lookup-grid-button"
-                [disabled]="isButtonMoveDownActive()"
+                [disabled]="!isMoveDownPossible()"
                 icon="fa-caret-down"
                 (click)="moveDown()"
                 i18n-pTooltip
@@ -49,7 +49,7 @@
                 tooltipStyleClass="ig-tooltip"></button>
         <button igButton
                 class="ig-lookup-grid-button rotateLeft"
-                [disabled]="isButtonMoveToBottomActive()"
+                [disabled]="!isMoveDownPossible()"
                 icon="fa-step-backward"
                 (click)="moveToBottom()"
                 i18n-pTooltip

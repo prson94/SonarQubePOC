@@ -11,10 +11,14 @@ export class RelocateButtonsComponent implements OnInit {
   @Input() selectedItemsFromSource: any[] = [];
   @Input() selectedItemsFromTarget: any[] = [];
   @Input() isFirstItemFromTargetSelected: boolean;
+  @Input() isLastItemFromTargetSelected: boolean;
 
   @Output() relocateItemsFromSourceToTargetEvent = new EventEmitter();
   @Output() relocateItemsFromTargetToSourceEvent = new EventEmitter();
   @Output() moveToTopEvent = new EventEmitter();
+  @Output() moveUpEvent = new EventEmitter();
+  @Output() moveDownEvent = new EventEmitter();
+  @Output() moveToBottomEvent = new EventEmitter();
 
   constructor() { }
 
@@ -29,34 +33,27 @@ export class RelocateButtonsComponent implements OnInit {
     this.relocateItemsFromTargetToSourceEvent.emit();
   }
 
-  disableBtnMoveToTop() {
-		
-	}
+  moveToTop() {
+    this.moveToTopEvent.emit();
+  }
 
-  addToSelectedFolderItems() {}
-  removeFromSelectedFolderItems() {}
-  moveToTop() {}
-  moveUp() {}
-  moveDown() {}
-  moveToBottom() {}
-  disableBtnMoveUp() {}
-  disableBtnMoveDown() {}
-  disableBtnMoveToBottom() {}
+  moveUp() {
+    this.moveUpEvent.emit();
+  }
 
-  isButtonMoveToTopActive(): boolean {
+  moveDown() {
+    this.moveDownEvent.emit();
+  }
+
+  moveToBottom() {
+    this.moveToBottomEvent.emit();
+  }
+
+  isMoveUpPossible(): boolean {
     return this.selectedItemsFromTarget?.length && !this.isFirstItemFromTargetSelected;
   }
 
-  isButtonMoveUpActive(): boolean {
-    return 
+  isMoveDownPossible(): boolean {
+    return this.selectedItemsFromTarget?.length && !this.isLastItemFromTargetSelected;
   }
-
-  isButtonMoveDownActive(): boolean {
-    return 
-  }
-
-  isButtonMoveToBottomActive(): boolean {
-    return 
-  }
-
 }
