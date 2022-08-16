@@ -1,0 +1,250 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetId_Description" xml:space="preserve">
+    <value>L’ID d’actif correspond à l’identifiant unique de cet actif parmi tous les actifs Data360.</value>
+  </data>
+  <data name="AssetId_Name" xml:space="preserve">
+    <value>ID de l’actif</value>
+  </data>
+  <data name="CreatedOn_Description" xml:space="preserve">
+    <value>La date à laquelle cet élément a été créé dans Data360.</value>
+  </data>
+  <data name="CreatedOn_Name" xml:space="preserve">
+    <value>Date de création</value>
+  </data>
+  <data name="Description_Name" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="DisplayFormat_Description" xml:space="preserve">
+    <value>Le format d’affichage doit être fourni pour rendre correctement la valeur d’affichage textuelle de l’élément.</value>
+  </data>
+  <data name="DisplayFormat_Name" xml:space="preserve">
+    <value>Format d’affichage</value>
+  </data>
+  <data name="ID_Name" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Name_Name" xml:space="preserve">
+    <value>Nom</value>
+  </data>
+  <data name="Parent_Description" xml:space="preserve">
+    <value>Le propriétaire de cet élément.</value>
+  </data>
+  <data name="Parent_Name" xml:space="preserve">
+    <value>Propriétaire/Parent</value>
+  </data>
+  <data name="RuleType_Description" xml:space="preserve">
+    <value>Le type de règle permet de classer la règle en fonction de son objectif.</value>
+  </data>
+  <data name="RuleType_Name" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="SystemFieldCategory" xml:space="preserve">
+    <value>Champs système</value>
+  </data>
+  <data name="SystemNoCategory" xml:space="preserve">
+    <value>Aucun</value>
+  </data>
+  <data name="UID_Description" xml:space="preserve">
+    <value>L’UID correspond à l’identifiant unique de cet élément à l’échelle de Data360.</value>
+  </data>
+  <data name="Asset_UID_Description" xml:space="preserve">
+    <value>L’UID de l’actif correspond à l’identifiant unique de cet élément à l’échelle de Data360.</value>
+  </data>
+  <data name="AssetType_UID_Description" xml:space="preserve">
+    <value>L’UID du type d’actif correspond à l’identifiant unique de ce type d’actif à l’échelle de Data360.</value>
+  </data>
+  <data name="UID_Name" xml:space="preserve">
+    <value>UID</value>
+  </data>
+  <data name="Asset_UID_Name" xml:space="preserve">
+    <value>UID de l’actif</value>
+  </data>
+  <data name="AssetType_UID_Name" xml:space="preserve">
+    <value>UID du type d’actif</value>
+  </data>
+  <data name="UpdatedOn_Description" xml:space="preserve">
+    <value>La date à laquelle cet élément a été modifié pour la dernière fois dans Data360.</value>
+  </data>
+  <data name="UpdatedOn_Name" xml:space="preserve">
+    <value>Date de la dernière modification</value>
+  </data>
+  <data name="RuleID_Name" xml:space="preserve">
+    <value>ID de la règle</value>
+  </data>
+  <data name="CreatedBy_Name" xml:space="preserve">
+    <value>Créé par</value>
+  </data>
+  <data name="IsActiveDirectoryGroup_Name" xml:space="preserve">
+    <value>Est un groupe Active Directory</value>
+  </data>
+  <data name="PrimaryOwner_Name" xml:space="preserve">
+    <value>Propriétaire principal</value>
+  </data>
+  <data name="SecondaryOwner_Name" xml:space="preserve">
+    <value>Propriétaire secondaire</value>
+  </data>
+  <data name="UpdatedBy_Name" xml:space="preserve">
+    <value>Dernière modification effectuée par</value>
+  </data>
+  <data name="Relationship_Type_Name" xml:space="preserve">
+    <value>Type de relation</value>
+  </data>
+  <data name="Relationship_UID_Name" xml:space="preserve">
+    <value>UID de la relation</value>
+  </data>
+  <data name="Load_Action" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="Load_ErrorMessages" xml:space="preserve">
+    <value>Messages d’erreur</value>
+  </data>
+  <data name="Load_Errors" xml:space="preserve">
+    <value>Erreurs</value>
+  </data>
+  <data name="Load_Incompletes" xml:space="preserve">
+    <value>Incomplet</value>
+  </data>
+  <data name="Load_MessageLessThanMin" xml:space="preserve">
+    <value>moins d’une minute</value>
+  </data>
+  <data name="Load_MessageMoreThanMin" xml:space="preserve">
+    <value>minute(s)</value>
+  </data>
+  <data name="Load_Notes" xml:space="preserve">
+    <value>Remarques</value>
+  </data>
+  <data name="Load_Status" xml:space="preserve">
+    <value>Statut</value>
+  </data>
+  <data name="Load_Successes" xml:space="preserve">
+    <value>Opérations réussies</value>
+  </data>
+  <data name="Load_Target" xml:space="preserve">
+    <value>Cible</value>
+  </data>
+  <data name="Load_TookMinutes" xml:space="preserve">
+    <value>A pris (minutes)</value>
+  </data>
+  <data name="Load_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Load_UploadedBy" xml:space="preserve">
+    <value>Chargé par</value>
+  </data>
+</root>

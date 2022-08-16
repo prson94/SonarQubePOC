@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BackColorFormat" xml:space="preserve">
+    <value>backColor non è un colore RGB valido.</value>
+  </data>
+  <data name="BackgroundSize" xml:space="preserve">
+    <value>homeBackground non può essere maggiore di 2048 K.</value>
+  </data>
+  <data name="BackgroundType" xml:space="preserve">
+    <value>homeBackground deve essere un file in formato *.gif, *.jpg o *.png.</value>
+  </data>
+  <data name="BreadcrumbColorFormat" xml:space="preserve">
+    <value>breadcrumbLinkColor non è un colore RGB valido.</value>
+  </data>
+  <data name="ButtonColorFormat" xml:space="preserve">
+    <value>buttonBackColor non è un colore RGB valido.</value>
+  </data>
+  <data name="CustomCssNotAllowed" xml:space="preserve">
+    <value>L'ambiente non consente la definizione di CSS personalizzato all'interno di un tema.</value>
+  </data>
+  <data name="CustomCssNotFound" xml:space="preserve">
+    <value>Il CSS personalizzato non esiste per il tema con l'UID fornito.</value>
+  </data>
+  <data name="ErrorOnCreate" xml:space="preserve">
+    <value>Errore durante l'aggiunta del tema</value>
+  </data>
+  <data name="ErrorOnDelete" xml:space="preserve">
+    <value>Errore durante l'eliminazione del tema</value>
+  </data>
+  <data name="ErrorOnGet" xml:space="preserve">
+    <value>Errore durante il recupero del tema</value>
+  </data>
+  <data name="ErrorOnGetMany" xml:space="preserve">
+    <value>Errore durante il recupero dei temi</value>
+  </data>
+  <data name="ErrorOnUpdate" xml:space="preserve">
+    <value>Errore durante l'aggiornamento del tema</value>
+  </data>
+  <data name="HeaderColorFormat" xml:space="preserve">
+    <value>headerBackColor non è un colore RGB valido.</value>
+  </data>
+  <data name="IconSize" xml:space="preserve">
+    <value>icon non può essere maggiore di 512 K.</value>
+  </data>
+  <data name="IconType" xml:space="preserve">
+    <value>icon deve essere un file in formato *.ico o *.png.</value>
+  </data>
+  <data name="InvalidUidParameter" xml:space="preserve">
+    <value>Non è stato fornito un valore del parametro UID valido.</value>
+  </data>
+  <data name="LogoSize" xml:space="preserve">
+    <value>headerLogo non può essere maggiore di 1024 K.</value>
+  </data>
+  <data name="LogoType" xml:space="preserve">
+    <value>headerLogo deve essere un file in formato *.gif, *jpg o *.png.</value>
+  </data>
+  <data name="NameNotEmpty" xml:space="preserve">
+    <value>name non può essere vuoto.</value>
+  </data>
+  <data name="NavbarColorFormat" xml:space="preserve">
+    <value>navbarBackColor non è un colore RGB valido.</value>
+  </data>
+  <data name="NavbarSelectedColorFormat" xml:space="preserve">
+    <value>navbarBackColorSelected non è un colore RGB valido.</value>
+  </data>
+  <data name="NoActiveThemeExists" xml:space="preserve">
+    <value>Non esiste alcun tema attualmente attivo.</value>
+  </data>
+  <data name="NoCurrentThemes" xml:space="preserve">
+    <value>Non esistono temi né sono contrassegnati come correnti.</value>
+  </data>
+  <data name="NotValidBase64Value" xml:space="preserve">
+    <value>La proprietà {0} non ha un valore Base64 valido.</value>
+  </data>
+  <data name="PrimaryButtonColorFormat" xml:space="preserve">
+    <value>primaryButtonBackColor non è un colore RGB valido.</value>
+  </data>
+  <data name="TableHeaderColorFormat" xml:space="preserve">
+    <value>tableHeaderBackColor non è un colore RGB valido.</value>
+  </data>
+  <data name="TableRowColorFormat" xml:space="preserve">
+    <value>tableRowBackColor non è un colore RGB valido.</value>
+  </data>
+  <data name="TabLinkColorFormat" xml:space="preserve">
+    <value>tabLinkColor non è un colore RGB valido.</value>
+  </data>
+  <data name="ThemeInUseForIsCurrentEdit" xml:space="preserve">
+    <value>Questo tema è impostato come quello attualmente utilizzato in questo ambiente e la proprietà IsCurrent non può essere impostata su false.</value>
+  </data>
+  <data name="ThemeInUseForRemoval" xml:space="preserve">
+    <value>Questo tema è impostato come quello attualmente utilizzato in questo ambiente e non è possibile rimuoverlo.</value>
+  </data>
+  <data name="ThemeInvalid" xml:space="preserve">
+    <value>Questo tema non è valido.</value>
+  </data>
+  <data name="ThemeIsLocked" xml:space="preserve">
+    <value>Questo tema è bloccato e non è possibile aggiornarlo.</value>
+  </data>
+  <data name="ThemeIsLockedForRemoval" xml:space="preserve">
+    <value>Questo tema è bloccato e non è possibile rimuoverlo.</value>
+  </data>
+  <data name="ThemeNameMustBeUnique" xml:space="preserve">
+    <value>Esiste già un tema con questo nome. I nomi dei temi devono essere univoci.</value>
+  </data>
+  <data name="ThemeWithUidNotFound" xml:space="preserve">
+    <value>Non esiste alcun tema con l'UID fornito.</value>
+  </data>
+</root>

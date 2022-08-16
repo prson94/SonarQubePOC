@@ -14,13 +14,29 @@
       "sourceRoot": "Scripts",
       "prefix": "d3s",
       "i18n": {
-				"sourceLocale": "en",
-				"locales": {
-					"nl-NL": {
-						"translation": "locale/messages.nl-NL.xlf",
-						"baseHref": ""
-					}
-				}
+		"sourceLocale": "en",
+		"locales": {
+			"nl-NL": {
+				"translation": "locale/messages.nl-NL.xlf",
+				"baseHref": ""
+			},
+			"de-DE": {
+				"translation": "locale/messages.de-DE.xlf",
+				"baseHref": ""
+			},
+			"es-ES": {
+				"translation": "locale/messages.es-ES.xlf",
+				"baseHref": ""
+			},
+			"fr-FR": {
+				"translation": "locale/messages.fr-FR.xlf",
+				"baseHref": ""
+			},
+			"it-IT": {
+				"translation": "locale/messages.it-IT.xlf",
+				"baseHref": ""
+			}
+		}
       },
       "architect": {
         "build": {
@@ -68,11 +84,31 @@
                 }
               ]
             },
-						"nl-NL": {
-							"localize": [
-								"nl-NL"
-							]
-						}
+			"nl-NL": {
+				"localize": [
+					"nl-NL"
+				]
+			},
+			"de-DE": {
+				"localize": [
+					"de-DE"
+				]
+			},
+			"es-ES": {
+				"localize": [
+					"es-ES"
+				]
+			},
+			"fr-FR": {
+				"localize": [
+					"fr-FR"
+				]
+			},
+			"it-IT": {
+				"localize": [
+					"it-IT"
+				]
+			}
           },
           "defaultConfiguration": ""
         },

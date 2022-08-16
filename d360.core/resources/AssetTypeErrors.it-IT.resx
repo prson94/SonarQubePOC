@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetsWithAssignedParents" xml:space="preserve">
+    <value>Le risorse esistono già con le entità principali assegnate. Non è possibile modificare l'entità principale di questo tipo di risorsa.</value>
+  </data>
+  <data name="AssetTypeExistsTitle" xml:space="preserve">
+    <value>Il tipo di risorsa esiste già</value>
+  </data>
+  <data name="AssetTypeWithUidExists" xml:space="preserve">
+    <value>Esiste già un tipo di risorsa con l'UID specificato.</value>
+  </data>
+  <data name="CheckRequest" xml:space="preserve">
+    <value>Controllare la richiesta e riprovare.</value>
+  </data>
+  <data name="ExistingOrganizationType" xml:space="preserve">
+    <value>Esiste già un tipo di organizzazione con quel nome.</value>
+  </data>
+  <data name="ImproperPredicate" xml:space="preserve">
+    <value>Non è stato fornito un predicato adeguato in base alla classe del tipo di risorsa.</value>
+  </data>
+  <data name="InvalidDisplayFormat" xml:space="preserve">
+    <value>DisplayFormat fornito non è valido.</value>
+  </data>
+  <data name="InvalidModelDepth" xml:space="preserve">
+    <value>Profondità massima non valida. Il livello del modello specificato deve essere un valore compreso tra 1 e 10.</value>
+  </data>
+  <data name="InvalidPolicyDepth" xml:space="preserve">
+    <value>Profondità massima non valida. Il livello della policy specificata deve essere un valore compreso tra 1 e 10.</value>
+  </data>
+  <data name="InvalidParentUid" xml:space="preserve">
+    <value>ParentUid fornito non valido.</value>
+  </data>
+  <data name="InvalidRequestHttpErrorTitle" xml:space="preserve">
+    <value>Richiesta non valida</value>
+  </data>
+  <data name="InvalidStyle" xml:space="preserve">
+    <value>Stile icona fornito non valido.</value>
+  </data>
+  <data name="NotFoundBasedOnClass" xml:space="preserve">
+    <value>Tipo di risorsa non trovato in base alla classe fornita.</value>
+  </data>
+  <data name="ErrorNameTaken" xml:space="preserve">
+    <value>Il nome è già in uso. Provarne un altro.</value>
+  </data>
+  <data name="NotFoundBasedOnUid" xml:space="preserve">
+    <value>Tipo di risorsa non trovato in base all'UID fornito.</value>
+  </data>
+  <data name="NotFoundGeneric" xml:space="preserve">
+    <value>Tipo di risorsa non trovato</value>
+  </data>
+  <data name="RelationshipExistsForAssetType" xml:space="preserve">
+    <value>La relazione o il tipo di relazione esiste: il tipo di risorsa o qualsiasi risorsa di questo tipo partecipa alla relazione.</value>
+  </data>
+  <data name="TransformationClassRestriction" xml:space="preserve">
+    <value>L'opzione Usa come trasformazione può essere impostata solo su tipi di risorse che sono di classe Aziendale o Tecnica.</value>
+  </data>
+  <data name="TransformationLimitExceeded" xml:space="preserve">
+    <value>Il numero totale di tipi di risorse supera il limite di trasformazione.</value>
+  </data>
+  <data name="UnsupportedAssetClass" xml:space="preserve">
+    <value>Classe di risorse non supportata.</value>
+  </data>
+  <data name="MatchingIconStyle" xml:space="preserve">
+    <value>Lo stile icona ForeColor e BackColor non possono avere lo stesso valore.</value>
+  </data>
+  <data name="AutoDisplayParentRestriction" xml:space="preserve">
+    <value>L'opzione Visualizza automaticamente l'entità principale può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
+  </data>
+  <data name="MissingFlowObjectType" xml:space="preserve">
+    <value>FlowObjectType è un campo obbligatorio per il tipo di risorsa con la classe Diagramma.</value>
+  </data>
+  <data name="UnsupportedFlowObjectType" xml:space="preserve">
+    <value>FlowObjectType non supporta la classe {0}.</value>
+  </data>
+  <data name="GovernanceRoleNotSet" xml:space="preserve">
+    <value>Impossibile aggiungere il tipo di risorsa del diagramma di classe. L'UID di riferimento del ruolo di governance non è impostato.</value>
+  </data>
+  <data name="GroupEndPoint" xml:space="preserve">
+    <value>/api/v2/membership/groups</value>
+  </data>
+  <data name="UserEndPoint" xml:space="preserve">
+    <value>/api/v2/membership/users</value>
+  </data>
+  <data name="InvalidParameterProvided" xml:space="preserve">
+    <value>{0} fornito non valido</value>
+  </data>
+  <data name="CanEditParentClassRestriction" xml:space="preserve">
+    <value>L'opzione Può modificare l'entità principale può essere impostata solo per i tipi di risorsa che sono di classe Aziendale o Tecnica e sono figli di un altro tipo di risorsa.</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Direzione dell'ordine non valida trasmessa nella richiesta.</value>
+  </data>
+  <data name="InvalidOrderPassed" xml:space="preserve">
+    <value>Ordine non valido trasmesso nella richiesta.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Impossibile trovare {0}.</value>
+  </data>
+  <data name="PredicateHttpErrorTitle" xml:space="preserve">
+    <value>Predicato</value>
+  </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>AssetType specificato non valido</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>UID risorsa non valido nei parametri.</value>
+  </data>
+  <data name="InvalidMaximumDepthTitle" xml:space="preserve">
+    <value>Profondità massima non valida</value>
+  </data>
+  <data name="InvalidOwnerUid" xml:space="preserve">
+    <value>UID proprietario non valido nei parametri.</value>
+  </data>
+  <data name="InvalidValueAutoDisplayParent" xml:space="preserve">
+    <value>Valore non valido per il parametro [autoDisplayParent]</value>
+  </data>
+  <data name="InvalidValueForuseastransformation" xml:space="preserve">
+    <value>Valore non valido per il parametro [useastransformation]</value>
+  </data>
+  <data name="InvalidValueHierachical" xml:space="preserve">
+    <value>Valore non valido per il parametro [hierarchical]</value>
+  </data>
+  <data name="InvalidValueincludeLevels" xml:space="preserve">
+    <value>Valore non valido per il parametro [includeLevels]</value>
+  </data>
+  <data name="InvalidValueObj" xml:space="preserve">
+    <value>Valore non valido per il parametro [obj]</value>
+  </data>
+  <data name="InvalidValueObjID" xml:space="preserve">
+    <value>Valore non valido per il parametro [objID]</value>
+  </data>
+  <data name="InvalueValue_includeFields" xml:space="preserve">
+    <value>Valore non valido {0} nel parametro _includeFields; il campo con questo nome non è stato trovato.</value>
+  </data>
+  <data name="UnableParse_IncludeFields" xml:space="preserve">
+    <value>Impossibile analizzare il valore di _includeFields</value>
+  </data>
+  <data name="UseAsAdminUseWithAssetUid" xml:space="preserve">
+    <value>Il parametro UseAsAdmin può essere utilizzato solo con _assetUid specificato.</value>
+  </data>
+  <data name="WrongNameHttpErrorTitle" xml:space="preserve">
+    <value>Nome errato</value>
+  </data>
+  <data name="DuplicateFound" xml:space="preserve">
+    <value>Duplicato trovato</value>
+  </data>
+  <data name="DuplicateNameFound" xml:space="preserve">
+    <value>Nome duplicato trovato</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>Identificatore univoco di esecuzione non trovato.</value>
+  </data>
+  <data name="InvalidClass" xml:space="preserve">
+    <value>{0} fornito non valido.</value>
+  </data>
+  <data name="InvalidOrganization" xml:space="preserve">
+    <value>Organizzazione fornita non valida.</value>
+  </data>
+  <data name="InvalidParentSelected" xml:space="preserve">
+    <value>Entità principale non valida selezionata</value>
+  </data>
+  <data name="ItemConflicit" xml:space="preserve">
+    <value>Non è stato possibile aggiungere o aggiornare {0} perché è già stato trovato un elemento esistente.</value>
+  </data>
+  <data name="MaxNumberAllowedAssetType" xml:space="preserve">
+    <value>Il numero massimo di tipi di risorse per questo metodo è 1.</value>
+  </data>
+  <data name="NameConflicit" xml:space="preserve">
+    <value>Non è stato possibile aggiungere o aggiornare {0} perché esiste già un elemento con lo stesso nome.</value>
+  </data>
+  <data name="ParentChildRelationExists" xml:space="preserve">
+    <value>Esistono relazioni entità principale/figlio esistenti per risorse di questo tipo. Non è possibile modificare il tipo di entità principale finché queste relazioni non vengono rimosse.</value>
+  </data>
+  <data name="TitleWrongOrganization" xml:space="preserve">
+    <value>Organizzazione errata</value>
+  </data>
+  <data name="WrongClass" xml:space="preserve">
+    <value>{0} errata</value>
+  </data>
+  <data name="_parentuidNotValidAsset" xml:space="preserve">
+    <value>_parentUid con valore {0} non corrispondente a una risorsa valida.</value>
+  </data>
+  <data name="_parentUidNotValidUid" xml:space="preserve">
+    <value>Il parametro _parentUid deve essere un GUID valido, essere impostato su null o non essere presente.</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Richiesta non valida</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Bannato</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Errore interno del server</value>
+  </data>
+  <data name="InvalidFieldEntry" xml:space="preserve">
+    <value>Voce del campo non valida</value>
+  </data>
+  <data name="InvalidFieldMessage" xml:space="preserve">
+    <value>Non è possibile aggiornare {0} perché è {1}</value>
+  </data>
+  <data name="MissingPropertyMessage" xml:space="preserve">
+    <value>A {0} mancano le proprietà richieste per procedere con la richiesta.</value>
+  </data>
+  <data name="MissingPropertyTitle" xml:space="preserve">
+    <value>Proprietà mancanti dell'elemento</value>
+  </data>
+  <data name="NoFormDataMessage" xml:space="preserve">
+    <value>Nessun dato del modulo presente in {0} creato.</value>
+  </data>
+  <data name="NoFormDataTitle" xml:space="preserve">
+    <value>Nessun dato del modulo</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>Non trovato</value>
+  </data>
+  <data name="ScoreAlreadyProcessed" xml:space="preserve">
+    <value>Messaggio sui punteggi già in fase di elaborazione</value>
+  </data>
+  <data name="InvalidValueReturnCount" xml:space="preserve">
+    <value>Valore non valido per il parametro [ReturnCount]</value>
+  </data>
+  <data name="FieldIsEmpty" xml:space="preserve">
+    <value>{0} non può essere vuoto.</value>
+  </data>
+  <data name="FieldIsInvalid" xml:space="preserve">
+    <value>{0} non è valido.</value>
+  </data>
+  <data name="FieldProvideCorrectValue" xml:space="preserve">
+    <value>Fornire un valore valido.</value>
+  </data>
+  <data name="InvalidRelationshipFieldType" xml:space="preserve">
+    <value>Tipo di relazione non valido o eliminato rilevato nel campo Relazione con nome descrittivo '{FriendlyName}'.</value>
+  </data>
+  <data name="InvalidValueincludedashboardflag" xml:space="preserve">
+    <value>Valore non valido per il parametro [includedashboardflag]</value>
+  </data>
+  <data name="UnhandledError" xml:space="preserve">
+    <value>Si è verificato un errore non gestito. Riprovare la richiesta.</value>
+  </data>
+  <data name="TypeNotFound" xml:space="preserve">
+    <value>Tipo non trovato.</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>Utente non valido</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Operazione riuscita</value>
+  </data>
+  <data name="DuplicateItem" xml:space="preserve">
+    <value>Elementi duplicati trovati nella richiesta</value>
+  </data>
+  <data name="MaxLengthExceeded" xml:space="preserve">
+    <value>{0} non può superare i {1} caratteri.</value>
+  </data>
+</root>

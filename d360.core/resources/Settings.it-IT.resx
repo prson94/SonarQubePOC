@@ -1,0 +1,478 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ActionMessage_Desc" xml:space="preserve">
+    <value>Questo è il messaggio da mostrare agli utenti nella pagina Intervieni.</value>
+  </data>
+  <data name="ActionMessage_Name" xml:space="preserve">
+    <value>Messaggio Intervieni</value>
+  </data>
+  <data name="AllowedOrigins_Desc" xml:space="preserve">
+    <value>Elenco separato da virgole delle origini CORS consentite.</value>
+  </data>
+  <data name="AllowedOrigins_Name" xml:space="preserve">
+    <value>Origini consentite</value>
+  </data>
+  <data name="ApiTimeout_Desc" xml:space="preserve">
+    <value>Questa impostazione modifica il timeout di tutte le chiamate GET API v2 in base al valore in secondi.</value>
+  </data>
+  <data name="ApiTimeout_Name" xml:space="preserve">
+    <value>Timeout API</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Desc" xml:space="preserve">
+    <value>Numero di giorni per i quali i dati del profilo dei dati della risorsa devono essere conservati.</value>
+  </data>
+  <data name="AssetDataProfileLifespan_Name" xml:space="preserve">
+    <value>Durata del profilo dei dati delle risorse</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Desc" xml:space="preserve">
+    <value>Larghezza delle colonne (in pixel) utilizzata per disporre i campi nel riquadro Definizione della risorsa.</value>
+  </data>
+  <data name="AssetDefinitionColumnWidth_Name" xml:space="preserve">
+    <value>Larghezza colonna definizione risorsa</value>
+  </data>
+  <data name="AzureADTenant_Desc" xml:space="preserve">
+    <value>Il nome del tenant di Azure Active Directory.</value>
+  </data>
+  <data name="AzureADTenant_Name" xml:space="preserve">
+    <value>Nome del tenant di Azure AD</value>
+  </data>
+  <data name="AzureApplicationId_Desc" xml:space="preserve">
+    <value>L'ID applicazione del sito Web Data3Sixty dal portale di Azure AD</value>
+  </data>
+  <data name="AzureApplicationId_Name" xml:space="preserve">
+    <value>ID applicazione Azure AD</value>
+  </data>
+  <data name="AzureGraphAPIKey_Desc" xml:space="preserve">
+    <value>La chiave per l'API del grafico di Azure Active Directory.</value>
+  </data>
+  <data name="AzureGraphAPIKey_Name" xml:space="preserve">
+    <value>Chiave API Azure Graph</value>
+  </data>
+  <data name="BrowserTitlePrefix_Desc" xml:space="preserve">
+    <value>Prefisso da utilizzare per la barra del titolo del browser.</value>
+  </data>
+  <data name="BrowserTitlePrefix_Name" xml:space="preserve">
+    <value>Prefisso del titolo del browser</value>
+  </data>
+  <data name="CompanyIcon_Desc" xml:space="preserve">
+    <value>Caricare l'icona della società.</value>
+  </data>
+  <data name="CompanyIcon_Name" xml:space="preserve">
+    <value>Icona società</value>
+  </data>
+  <data name="CompanyLogo_Desc" xml:space="preserve">
+    <value>Caricare il logo della società.</value>
+  </data>
+  <data name="CompanyLogo_Name" xml:space="preserve">
+    <value>Logo società</value>
+  </data>
+  <data name="CustomCSSLocation_Desc" xml:space="preserve">
+    <value>La posizione di qualsiasi foglio di stile personalizzato.</value>
+  </data>
+  <data name="CustomCSSLocation_Name" xml:space="preserve">
+    <value>Posizione del foglio di stile personalizzato</value>
+  </data>
+  <data name="DefaultRoute_Desc" xml:space="preserve">
+    <value>La pagina predefinita che sarà visualizzata dopo aver effettuato l'accesso a Data3Sixty.</value>
+  </data>
+  <data name="DefaultRoute_Name" xml:space="preserve">
+    <value>Percorso predefinito</value>
+  </data>
+  <data name="DefaultSearchTypes_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla i tipi predefiniti da utilizzare per la funzionalità di ricerca.</value>
+  </data>
+  <data name="DefaultSearchTypes_Name" xml:space="preserve">
+    <value>Tipi predefiniti da utilizzare per la ricerca</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Desc" xml:space="preserve">
+    <value>Numero massimo di link al diagramma Lineage che utilizzerà l'impostazione di rendering 'AvoidNodes'. Se è maggiore, i link verranno visualizzati senza angoli e come una linea retta tra 2 nodi. Ciò migliora le prestazioni di rendering sui diagrammi con più dati.</value>
+  </data>
+  <data name="DiagramMaxAvoidNodesLinkCount_Name" xml:space="preserve">
+    <value>Numero massimo di link al diagramma per utilizzare il modello di rendering 'AvoidNodes'</value>
+  </data>
+  <data name="DisableCommunityPosting_Desc" xml:space="preserve">
+    <value>Ciò consente di disabilitare la pubblicazione di commenti e risposte su tutte le bacheche della community nell'intero sistema.  Gli utenti potranno comunque vedere le bacheche della community e tutti i commenti a livello di sistema.</value>
+  </data>
+  <data name="DisableCommunityPosting_Name" xml:space="preserve">
+    <value>Disabilita i post della community</value>
+  </data>
+  <data name="DisableIssueManagement_Desc" xml:space="preserve">
+    <value>Ciò consente di nascondere il pulsante Intervieni e la pagina Monitora dall'interfaccia utente.</value>
+  </data>
+  <data name="DisableIssueManagement_Name" xml:space="preserve">
+    <value>Disabilita Intervieni</value>
+  </data>
+  <data name="EmailDomainWhitelist_Desc" xml:space="preserve">
+    <value>Ciò contiene un elenco di domini consentiti separati da virgole. Se presente, solo gli utenti con e-mail provenienti dai domini specificati potranno accedere a Govern.</value>
+  </data>
+  <data name="EmailDomainWhitelist_Name" xml:space="preserve">
+    <value>Domini e-mail consentiti</value>
+  </data>
+  <data name="EnableJsonAttribute_Desc" xml:space="preserve">
+    <value>Abilitare il supporto del tipo di campo JSON Attribute.  L'abilitazione di questa operazione consente di archiviare tutte le proprietà per tutti i campi JSON nell'ambiente Govern e di abilitare questo tipo di campo. Valore predefinito false.  La modifica di questo valore richiede il ricaricamento dei dati interessati per analizzare le proprietà JSON.</value>
+  </data>
+  <data name="EnableJsonAttribute_Name" xml:space="preserve">
+    <value>Abilita attributo JSON</value>
+  </data>
+  <data name="EnableOrganizations_Desc" xml:space="preserve">
+    <value>Consente la creazione e la gestione di organizzazioni, nonché la registrazione degli utenti appartenenti a queste organizzazioni nel sistema</value>
+  </data>
+  <data name="EnableOrganizations_Name" xml:space="preserve">
+    <value>Abilita organizzazioni</value>
+  </data>
+  <data name="EnableSagacity_Desc" xml:space="preserve">
+    <value>Consente l'uso di dashboard DQ+</value>
+  </data>
+  <data name="EnableSagacity_Name" xml:space="preserve">
+    <value>Abilita dashboard DQ+</value>
+  </data>
+  <data name="EnableShoppingCart_Desc" xml:space="preserve">
+    <value>Consente l'uso della funzione carrello.</value>
+  </data>
+  <data name="EnableShoppingCart_Name" xml:space="preserve">
+    <value>Abilita carrello</value>
+  </data>
+  <data name="FramingDomains_Desc" xml:space="preserve">
+    <value>Specificare un elenco di domini consentiti separati da virgole</value>
+  </data>
+  <data name="FramingDomains_Name" xml:space="preserve">
+    <value>Frame</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Desc" xml:space="preserve">
+    <value>L'UID dell'elenco di riferimento che contiene i ruoli di governance da cui dipende Diagram Designer.</value>
+  </data>
+  <data name="GovernanceRoleReferenceListUid_Name" xml:space="preserve">
+    <value>UID elenco di riferimento ruolo di governance</value>
+  </data>
+  <data name="HasRegisterLink_Desc" xml:space="preserve">
+    <value>Ha un link per la registrazione nella pagina di accesso.</value>
+  </data>
+  <data name="HasRegisterLink_Name" xml:space="preserve">
+    <value>Ha un link per la registrazione all'accesso</value>
+  </data>
+  <data name="HideData3SixtyUsers_Desc" xml:space="preserve">
+    <value>Questa impostazione nasconde gli utenti di Data3Sixty da un ambiente, in modo da non rendere modificabili questi account.</value>
+  </data>
+  <data name="HideData3SixtyUsers_Name" xml:space="preserve">
+    <value>Nascondi utenti Data3Sixty</value>
+  </data>
+  <data name="HideHeaderBarControls_Desc" xml:space="preserve">
+    <value>Questa impostazione nasconde i comandi a destra della barra dell'intestazione</value>
+  </data>
+  <data name="HideHeaderBarControls_Name" xml:space="preserve">
+    <value>Nascondi i comandi della barra di intestazione</value>
+  </data>
+  <data name="HomePageBackgroundImage_Desc" xml:space="preserve">
+    <value>Quando impostata, questa opzione viene utilizzata per visualizzare un'immagine personalizzata nella home page.</value>
+  </data>
+  <data name="HomePageBackgroundImage_Name" xml:space="preserve">
+    <value>Immagine di sfondo della home page</value>
+  </data>
+  <data name="HomePageTitleColor_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per impostare il colore del titolo della home page.</value>
+  </data>
+  <data name="HomePageTitleColor_Name" xml:space="preserve">
+    <value>Colore del titolo della home page</value>
+  </data>
+  <data name="HomePageTitleSize_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per impostare le dimensioni del titolo della home page.</value>
+  </data>
+  <data name="HomePageTitleSize_Name" xml:space="preserve">
+    <value>Dimensioni del titolo della home page</value>
+  </data>
+  <data name="IpRestriction_Desc" xml:space="preserve">
+    <value>Facoltativamente, è possibile scegliere di limitare l'accesso a questo ambiente in base all'intervallo IP.</value>
+  </data>
+  <data name="IpRestriction_Name" xml:space="preserve">
+    <value>Restrizioni dell'intervallo IP</value>
+  </data>
+  <data name="JwtAuthority_Desc" xml:space="preserve">
+    <value>URI autorità per token JWT.</value>
+  </data>
+  <data name="JwtAuthority_Name" xml:space="preserve">
+    <value>URI autorità per JWT</value>
+  </data>
+  <data name="MaxDropdownItems_Desc" xml:space="preserve">
+    <value>Questo è il numero massimo di elementi da mostrare in un elenco a discesa prima di passare al completamento automatico.</value>
+  </data>
+  <data name="MaxDropdownItems_Name" xml:space="preserve">
+    <value>Numero massimo di elementi in un elenco a discesa</value>
+  </data>
+  <data name="MaxExcelExportRows_Desc" xml:space="preserve">
+    <value>Questo è il numero massimo di elementi che è possibile esportare in un foglio di calcolo Excel.</value>
+  </data>
+  <data name="MaxExcelExportRows_Name" xml:space="preserve">
+    <value>Numero massimo di righe da esportare in Excel</value>
+  </data>
+  <data name="PowerBIClientId_Desc" xml:space="preserve">
+    <value>L'ID client per i client Power BI incorporati.</value>
+  </data>
+  <data name="PowerBIClientId_Name" xml:space="preserve">
+    <value>ID client Power BI incorporato</value>
+  </data>
+  <data name="PowerBIGroupId_Desc" xml:space="preserve">
+    <value>L'ID area di lavoro per questi client in Power BI.</value>
+  </data>
+  <data name="PowerBIGroupId_Name" xml:space="preserve">
+    <value>ID area di lavoro/gruppo Power BI incorporato </value>
+  </data>
+  <data name="RequestCertificationDraft_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per controllare quando il pulsante Richiedi certificazione è disponibile in Govern e cosa viene considerato stato della bozza.</value>
+  </data>
+  <data name="RequestCertificationDraft_Name" xml:space="preserve">
+    <value>Valori di stato che determinano se il pulsante Richiedi certificazione è disponibile</value>
+  </data>
+  <data name="SessionTimeout_Desc" xml:space="preserve">
+    <value>Numero di minuti prima del timeout della sessione degli utenti.</value>
+  </data>
+  <data name="SessionTimeout_Name" xml:space="preserve">
+    <value>Timeout sessione (minuti)</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere la chiave API utente sull'interfaccia utente.</value>
+  </data>
+  <data name="ShowAllUsersAPIKey_Name" xml:space="preserve">
+    <value>Mostra chiave API utente</value>
+  </data>
+  <data name="ShowChangeLogTab_Desc" xml:space="preserve">
+    <value>Se impostata su false, la scheda Registro delle modifiche sarà nascosta nell'interfaccia utente.</value>
+  </data>
+  <data name="ShowChangeLogTab_Name" xml:space="preserve">
+    <value>Mostra scheda Registro delle modifiche</value>
+  </data>
+  <data name="ShowCommentsTab_Desc" xml:space="preserve">
+    <value>Se impostata su false, la scheda Commenti sarà nascosta nell'interfaccia utente.</value>
+  </data>
+  <data name="ShowCommentsTab_Name" xml:space="preserve">
+    <value>Mostra scheda Commenti</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla se la pagina Amministrazione API personalizzata è visibile o meno.</value>
+  </data>
+  <data name="ShowCustomAPIAdmin_Name" xml:space="preserve">
+    <value>Mostra pagina Amministrazione API personalizzata</value>
+  </data>
+  <data name="ShowFavorites_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la funzionalità dei preferiti.</value>
+  </data>
+  <data name="ShowFavorites_Name" xml:space="preserve">
+    <value>Mostra preferiti</value>
+  </data>
+  <data name="ShowFollowersSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale dei follower.</value>
+  </data>
+  <data name="ShowFollowersSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale dei follower</value>
+  </data>
+  <data name="ShowHomeActivityTile_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il riquadro delle attività nella home page.</value>
+  </data>
+  <data name="ShowHomeActivityTile_Name" xml:space="preserve">
+    <value>Mostra riquadro attività nella home page</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il riquadro delle assegnazioni nella home page.</value>
+  </data>
+  <data name="ShowHomeAssignmentTile_Name" xml:space="preserve">
+    <value>Mostra riquadro assegnazioni nella home page</value>
+  </data>
+  <data name="ShowHomeBoardTile_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il riquadro della bacheca nella home page.</value>
+  </data>
+  <data name="ShowHomeBoardTile_Name" xml:space="preserve">
+    <value>Mostra riquadro bacheca nella home page</value>
+  </data>
+  <data name="ShowHomePageTitle_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per mostrare/nascondere il titolo nella home page.</value>
+  </data>
+  <data name="ShowHomePageTitle_Name" xml:space="preserve">
+    <value>Mostra titolo nella home page</value>
+  </data>
+  <data name="ShowImpactSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale dell'impatto.</value>
+  </data>
+  <data name="ShowImpactSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale dell'impatto</value>
+  </data>
+  <data name="ShowLineageSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale di lineage.</value>
+  </data>
+  <data name="ShowLineageSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale di lineage</value>
+  </data>
+  <data name="ShowNavigationChildren_Desc" xml:space="preserve">
+    <value>Consente di mostrare le voci del menu di navigazione figlio.</value>
+  </data>
+  <data name="ShowNavigationChildren_Name" xml:space="preserve">
+    <value>Mostra menu di navigazione figlio</value>
+  </data>
+  <data name="ShowOwnersSidebar_Desc" xml:space="preserve">
+    <value>Questa impostazione viene utilizzata per disabilitare la barra laterale delle proprietà.</value>
+  </data>
+  <data name="ShowOwnersSidebar_Name" xml:space="preserve">
+    <value>Mostra barra laterale delle proprietà</value>
+  </data>
+  <data name="ShowResources_Desc" xml:space="preserve">
+    <value>Consente di mostrare altri utenti agli amministratori None</value>
+  </data>
+  <data name="ShowResources_Name" xml:space="preserve">
+    <value>Mostra risorse</value>
+  </data>
+  <data name="ShowSocialScoreBar_Desc" xml:space="preserve">
+    <value>Questa impostazione consente agli amministratori di disattivare la barra social visualizzata nella parte superiore delle pagine dei dettagli. Questa impostazione è attiva per impostazione predefinita.</value>
+  </data>
+  <data name="ShowSocialScoreBar_Name" xml:space="preserve">
+    <value>Mostra barra social/punteggio</value>
+  </data>
+  <data name="UseAsTransformationLimit_Desc" xml:space="preserve">
+    <value>Il numero massimo di tipi di risorse che è possibile contrassegnare come tipo di risorsa di trasformazione.</value>
+  </data>
+  <data name="UseAsTransformationLimit_Name" xml:space="preserve">
+    <value>Usa come limite di trasformazione</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla quale gruppo di utenti deve ricevere e-mail se le responsabilità in un workflow comportano che nessun utente riceva l'assegnazione del workflow. Se 0 o non definito, tutti gli amministratori di un'area geografica riceveranno le assegnazioni.</value>
+  </data>
+  <data name="WorkflowCatchAllGroup_Name" xml:space="preserve">
+    <value>Gruppo utenti predefinito workflow</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Desc" xml:space="preserve">
+    <value>Questa impostazione controlla i giorni in cui vengono inviate le e-mail di riepilogo del workflow.</value>
+  </data>
+  <data name="WorkflowDigestEmailDays_Name" xml:space="preserve">
+    <value>Giorni in cui vengono inviate le e-mail di riepilogo del workflow</value>
+  </data>
+  <data name="WorkflowFromEmail_Desc" xml:space="preserve">
+    <value>Questo è l'indirizzo e-mail che le e-mail dal workflow avranno come indirizzo e-mail di provenienza.</value>
+  </data>
+  <data name="WorkflowFromEmail_Name" xml:space="preserve">
+    <value>Indirizzo e-mail di provenienza del workflow</value>
+  </data>
+  <data name="WorkflowFromName_Desc" xml:space="preserve">
+    <value>Questo è il nome che viene visualizzato quando un'e-mail viene inviata dal workflow.</value>
+  </data>
+  <data name="WorkflowFromName_Name" xml:space="preserve">
+    <value>Nome dell'e-mail di provenienza del workflow</value>
+  </data>
+  <data name="WriteActionDescription_Desc" xml:space="preserve">
+    <value>Scrivere la descrizione dell'azione come commento.</value>
+  </data>
+  <data name="WriteActionDescription_Name" xml:space="preserve">
+    <value>Scrivi descrizione azione</value>
+  </data>
+</root>
