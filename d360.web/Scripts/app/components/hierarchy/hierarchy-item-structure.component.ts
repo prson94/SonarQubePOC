@@ -647,17 +647,21 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.assetService.getUIDetailsForAssetUID(asset.AssetUid)
             .subscribe((res) => {
                 let url = SiteUrlHelpers.getObjectUrl(this.object, res.ObjectId, this.objectTypeId);
-				this.linkClickInterceptor.sendEvent($event, {
-					Values: [{
-						TooltipContext: "Preview",
-						TooltipID: res.ObjectId,
-						TooltipType: "Artifact",
-						Value: asset.Name,
-						assetTypeUid: asset.AssetTypeUid,
-						uid: asset.AssetUid,
-					}],
-					DataType: 'Lookup'
-				}, url);
+				if ($event['from-context-method']) {
+					this.linkClickInterceptor.sendEvent($event, {
+						Values: [{
+							TooltipContext: "Preview",
+							TooltipID: res.ObjectId,
+							TooltipType: "Artifact",
+							Value: asset.Name,
+							assetTypeUid: asset.AssetTypeUid,
+							uid: asset.AssetUid,
+						}],
+						DataType: 'Lookup'
+					}, url);
+				} else {
+					this.router.navigateByUrl(url);
+				}
             });
     }
 

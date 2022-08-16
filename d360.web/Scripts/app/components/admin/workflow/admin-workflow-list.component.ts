@@ -122,7 +122,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     onNavigate(uid: string) {
         this.isLoading = true;
         this.workflowService.getWorkflowTypeId(uid).subscribe(
-            x => this.navigate(x)
+            (x) => this.navigate(x)
         );
     }
 
@@ -131,7 +131,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
 
         this.workflowService.getChangeTypes()
             .pipe(
-                map(r => this.changeTypes = r),
+                map((r) => this.changeTypes = r),
                 map(() =>
                     this.workflowService.getAdminTypes()
                         .subscribe((r) => {
@@ -157,8 +157,8 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                             if (this.items.length > 0) {
                                 this.selection = this.items[0];
                             }
-                            this.items.forEach(i => {
-                                var ChangeTypeDescription = this.changeTypes.find(c => c.ID == i.ChangeType);
+                            this.items.forEach((i) => {
+                                var ChangeTypeDescription = this.changeTypes.find((c) => c.ID == i.ChangeType);
                                 if (ChangeTypeDescription) {
                                     i.ChangeTypeName = ChangeTypeDescription.Description;
                                 }

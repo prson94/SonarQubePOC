@@ -130,7 +130,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
 
         //load available fields for the artifact type
         this.fieldsService.getAssetTypeFields(this.exportTemplate.AssetTypeUID).subscribe(
-            data => {
+            (data) => {
                 data = data.filter((x) => x.Type != 'ComplexRelationLookup' && x.Type != 'OwnershipLookup' && x.Type != 'JSON' && x.Type != 'JsonElement');
                 //split the string of selected fields and populate the selected fields array
                 this.availableFields = this.setInitialFields(data);
@@ -170,7 +170,7 @@ export class AdminExportTemplateFieldsComponent extends BaseComponent implements
     public save() {
         let fields = "";
         let fieldTypes = [];
-        fieldTypes = this.selectedFields.sort((a, b) => a.ExtOrder - b.ExtOrder).map(a => a.Name);
+        fieldTypes = this.selectedFields.sort((a, b) => a.ExtOrder - b.ExtOrder).map((a) => a.Name);
 
         //trigger save event
         this.saveFieldsClick.emit({ IncludeFieldTypes: fieldTypes });

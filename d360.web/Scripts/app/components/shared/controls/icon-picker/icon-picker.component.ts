@@ -32,7 +32,10 @@ export class IconPickerComponent implements ControlValueAccessor {
     @Output() ngModelChange = new EventEmitter();
 
     onModelChange: Function = () => { };
-    onModelTouched: Function = () => { };
+	onModelTouched: Function = () => { };
+
+	labelRequired = $localize`Required`;
+	labelOptional = $localize`Optional`;
 
     protected isRequired = false;
     public isLoading: boolean = true;

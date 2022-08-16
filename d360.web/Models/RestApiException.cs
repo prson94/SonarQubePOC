@@ -17,7 +17,7 @@ namespace d360.web.Models
 
         public RestApiException(HttpStatusCode status, string message) : base(message)
         {
-            Title = "Error occured";
+            Title = "Error occurred";
             Status = status;
         }
     }

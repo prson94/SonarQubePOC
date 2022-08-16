@@ -667,17 +667,21 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     console.warn("onRightClick => Invalid object type");
                 }
-				this.linkClickInterceptor.sendEvent($event, {
-					Values: [{
-						TooltipContext: "Preview",
-						TooltipID: res.ObjectId,
-						TooltipType: "Artifact",
-						Value: artifact.Name,
-						assetTypeUid: artifact.AssetTypeUid,
-						uid: artifact.AssetUid,
-					}],
-					DataType: 'Lookup'
-				}, this.itemUrl);
+				if ($event['from-context-method']) {
+					this.linkClickInterceptor.sendEvent($event, {
+						Values: [{
+							TooltipContext: "Preview",
+							TooltipID: res.ObjectId,
+							TooltipType: "Artifact",
+							Value: artifact.Name,
+							assetTypeUid: artifact.AssetTypeUid,
+							uid: artifact.AssetUid,
+						}],
+						DataType: 'Lookup'
+					}, this.itemUrl);
+				} else {
+					this.router.navigateByUrl(this.itemUrl);
+				}
             });
 
     }

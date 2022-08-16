@@ -175,16 +175,16 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         this.metricTree = [];
         if (this.allocation.uid) {
             this.metricsService.getMetricsByAllocation(this.allocation.uid, this.showDisabled)
-                .subscribe(r => {
+                .subscribe((r) => {
                     this.metrics = r;
                     if (this.metrics) {
-                        this.metrics.filter(g => g.ParentUid == null).forEach(g => {
+                        this.metrics.filter((g) => g.ParentUid == null).forEach((g) => {
                             let n = {
                                 data: g,
                                 children: [],
                                 expanded: true
                             };
-                            if (this.metricTree.findIndex(o => o.data.Uid === g.Uid) == -1) {
+                            if (this.metricTree.findIndex((o) => o.data.Uid === g.Uid) == -1) {
                                 this.metricTree.push(n);
                                 this.addChildren(n);
                             }
@@ -192,17 +192,17 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
                     } else {
                         this.selectionChange.emit(null);
                     }
-                    this.allocationService.getAllocationsByAssetTypeUid(this.allocation.assetTypeUid).subscribe(res => {
+                    this.allocationService.getAllocationsByAssetTypeUid(this.allocation.assetTypeUid).subscribe((res) => {
                         this.isLoading = false;
                         if (this.metricTree !== null && this.metricTree.length > 0) {
                             let node = this.metricTree[0];
                             if (initiallySelected) {
                                 let found = null;
-                                this.metricTree.forEach(n => {
+                                this.metricTree.forEach((n) => {
                                     if (n.data.Name.toLowerCase() === initiallySelected.toLowerCase())
                                         found = n;
                                     else if (n.children && n.children.length > 0) {
-                                        found = n.children.find(c => c.data.Name.toLowerCase() === initiallySelected.toLowerCase());
+                                        found = n.children.find((c) => c.data.Name.toLowerCase() === initiallySelected.toLowerCase());
                                     }
 
 
@@ -230,9 +230,9 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
 
     addChildren(node: TreeNode) {
         if (this.metrics) {
-            let children = this.metrics.filter(g => g.ParentUid === node.data.Uid);
+            let children = this.metrics.filter((g) => g.ParentUid === node.data.Uid);
             if (children.length > 0) {
-                children.forEach(c => {
+                children.forEach((c) => {
                     let n = {
                         data: c,
                         children: [],
@@ -367,7 +367,7 @@ export class MeasureListComponent extends BaseComponent implements OnInit, OnCha
         let html = ';';
         const ruleResultPathUid = this.selection?.Definition.DataQuality.ResultPathUid;
         if (ruleResultPathUid && this.screenReferences && this.screenReferences.paths) {
-            const matches = this.screenReferences.paths.filter(p => { return p.value == ruleResultPathUid; });
+            const matches = this.screenReferences.paths.filter((p) => { return p.value == ruleResultPathUid; });
             if (matches.length > 0) {
                 html = matches[0].label;
             }

@@ -5,16 +5,6 @@ export enum Cardinality {
     Many = 2
 }
 
-export class RelationItem {
-    ID: number;
-    IntersectTypeID: number;
-    Object: string;
-    ObjectID: number;
-    TypeName: string;
-    Name: string;
-    Url: string;
-}
-
 export class RelationshipTypeEdge {
     Uid: string;
     Name: string;
@@ -32,23 +22,10 @@ export class RelationshipType {
     HasFieldTypes?: boolean;
 }
 
-export class RelationshipTypeApiRequestModel {
-    Uid: string;
-
-}
-
-
 export class RelationshipCount {
     IntersectTypeUid: string;
     Count: number;
     IsSubject: boolean;
-}
-
-export class RelationshipTypeUIModel extends RelationshipType {
-    Count: number;
-    TypeName: string;
-    AllowEditFromRelationshipEditor: boolean = true;
-    IsSubject: boolean = false;
 }
 
 export class RelationshipDetail {
@@ -79,27 +56,6 @@ export class RelatedItem {
     Type: string;
     ID: number;
     Uid: string;
-}
-
-export class ObjectRelationshipCount {
-    Object: string;
-    ObjectID: number;
-    Name: string;
-    Count: number;
-    IntersectTypeID: number;
-    uid: number;
-    Cardinality: number;
-    AllowEditFromRelationshipEditor: boolean;
-    IsSubject: boolean;
-    ObjectUid: string;
-}
-
-
-export class PossibleTechnicalRelationship {
-    Title: string;
-    IntersectTypeID: number;
-    ObjectType: string;
-    ParentIntersectTypeID: number;
 }
 
 export class PredicateDropdown {

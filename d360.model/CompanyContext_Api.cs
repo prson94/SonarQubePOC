@@ -15,6 +15,7 @@ using d360.core.entities.Membership;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.exceptions;
 using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
@@ -75,26 +76,10 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<ApiService> ApiServices { get; set; }
-
-        public DbSet<ApiEndpoint> ApiEndpoints { get; set; }
-
-        public DbSet<ApiEndpointVersion> ApiEndpointVersions { get; set; }
-
-        public DbSet<ApiEntity> ApiEntities { get; set; }
-
-        public DbSet<ApiEntityFieldType> ApiEntityFieldTypes { get; set; }
-
-        public DbSet<ApiEntityFieldTypeMultiSelectField> ApiEntityFieldTypeMultiSelectFields { get; set; }
-
-        public DbSet<ApiEntityUri> ApiEntityUris { get; set; }
-
         public DbSet<ApiExecution> ApiExecutions { get; set; }
 
         public DbSet<ApiExecutionsExternal> ApiExecutionsExternals { get; set; }
-
-        public DbSet<ApiNamespace> ApiNamespaces { get; set; }
-
+        
         #endregion
 
         #region Events specific to API sub-system
@@ -4150,38 +4135,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 											from	ResponsibilityTypeRelation T
 													inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
 
-
-											drop table if exists #e;
-											create table #e (ID int);
-											create index idx_e on #e(ID);
-
-											insert into #e
-											select distinct E.ID
-											from	api.Entity E
-											inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID 
-											and S.AssetTypeID = @AssetTypeID and S.ExecutionID = @executionUid;
-
-											if exists(select 1 from #e)
-											begin
-
-												delete	T
-												from	api.EntityFieldTypeMultiSelectField T
-														inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
-														inner join #e E on E.ID = F.EntityID;
-
-												delete	T
-												from	api.EntityFieldType T
-														inner join #e E on E.ID = T.EntityID;
-
-												delete	T
-												from	api.EntityUri T
-														inner join #e E on E.ID = T.EntityID;
-
-												delete	T
-												from	api.Entity T
-														inner join #e E on E.ID = T.ID;
-											end
-
 											delete	T
 											from	[Load] T
 													inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.AssetTypeId = @AssetTypeId;
@@ -5323,7 +5276,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (fieldLoadProperties.ContainsColorField)
                     {
-                        ResolveColorValues(execution.ExecutionID, timeout);
+						AddMeasurement(metrics, "ResolveColorValues-Begin", 0, ++step);
+						ResolveColorValues(execution.ExecutionID, timeout);
                         AddMeasurement(metrics, "ResolveColorValues", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5332,13 +5286,15 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     {
                         if (lookupFieldsPassedByValue)
                         {
-                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
+							AddMeasurement(metrics, "CopyFieldLookupValuesAsIs-Begin", 0, ++step);
+							CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
                             AddMeasurement(metrics, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
                         else
                         {
-                            ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
+							AddMeasurement(metrics, "ResolveFieldLookupValues-Begin", 0, ++step);
+							ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
                             AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
@@ -5346,21 +5302,24 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (hasLookupFieldTypes)
                     {
-                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
+						AddMeasurement(metrics, "LogFieldLookupErrors-Begin", 0, ++step);
+						LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 
                     if (hasRelationshipFieldTypes)
                     {
-                        LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
+						AddMeasurement(metrics, "LogRelationshipErrors-Begin", 0, ++step);
+						LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 
                     if (hasCounterField)
                     {
-                        LogCounterFieldErrors(execution.ExecutionID, timeout);
+						AddMeasurement(metrics, "LogCounterFieldErrors-Begin", 0, ++step);
+						LogCounterFieldErrors(execution.ExecutionID, timeout);
                         AddMeasurement(metrics, "LogCounterFieldErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5377,7 +5336,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (!isInsert)
                     {
-                        LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
+						AddMeasurement(metrics, "LogAssetErrors / LoadMissingKeyFields/ LogNullIsRequiredFields - Begin", 0, ++step);
+
+						LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                         LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
 
@@ -5394,14 +5355,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     AddMeasurement(metrics, "Log Errors", sw.ElapsedMilliseconds, ++step);
                     sw.Restart();
-
-                    #region Generate proposed key hash and compare against existing data.
-
-                    CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID, fieldTable: ApiExecutionFieldTable);
-                    AddMeasurement(metrics, "CalculateProposedKeyHashes", sw.ElapsedMilliseconds, ++step);
-                    sw.Restart();
-
-                    #endregion
 
                     #region Invalidate repetitious items in load
 
@@ -5771,14 +5724,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     if (hasCounterField)
                                     {
-                                        UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+										AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop} > Begin", 0, ++step);
+										UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         sw.Restart();
                                     }
 
                                     if (hasRelationshipFieldTypes)
                                     {
-                                        ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										AddMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
+										ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
                                         AddMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5787,7 +5742,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (enableJsonAttributes && jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
                                     {
                                         sw.Restart();
-                                        MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
+										AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop} > Begin", 0, ++step);
+
+										MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5796,6 +5753,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 										"exec api.MergeAssetPaths @executionId, @class, @begin, @end",
 										new { executionID = execution.ExecutionID, @class = (int)at.Class, begin = beginItemNumber, end = endItemNumber },
 										transaction: trans, timeout);
+									sw.Restart();
+									AddMeasurement(metrics, "MergeAssetPaths", sw.ElapsedMilliseconds, ++step);
 
 									// Must execute BEFORE the Success flag is updated below.
 									sw.Restart();
@@ -5806,11 +5765,47 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (hasLookupFieldTypes && !isInsert)
                                     {
                                         sw.Restart();
-                                        DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+										AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop} > Begin", 0, ++step);
+
+										DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
                                         AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
-                                    sw.Restart();
+									#region Generate proposed key hash and compare against existing data.
+									var invalidHashState = Connection.Query<int>(@"
+										declare @assetTypeId int =  (select top 1 a.AssetTypeID from api.ExecutionAsset ea
+										inner join Asset a on a.ID = ea.AssetID
+										where ExecutionId = @executionid and ea.AssetID is not null and  ItemNumber between @beginItemNumber and @endItemNumber )
+
+										drop table if exists #HashData
+										select AssetID, Ap.KeyPathHash 
+										into #HashData
+										from api.ExecutionAsset ea
+										inner join Asset A on a.ID = ea.AssetID
+										inner join AssetPath AP on AP.ID = A.ID
+
+										where ea.ExecutionID = @executionid 
+										and ItemNumber between @beginItemNumber and @endItemNumber 
+
+										select count(1) from Asset A
+										inner join AssetPath ap on ap.ID = a.ID
+										inner join #HashData hd on hd.assetid != a.ID and hd.KeyPathHash = ap.KeyPathHash
+										where a.AssetTypeID = @assetTypeId
+										option(recompile)
+										", new { executionID = execution.ExecutionID, beginItemNumber, endItemNumber },
+										transaction: trans, commandTimeout: timeout).FirstOrDefault();
+
+									if (invalidHashState > 0)
+									{
+										throw new DuplicateHashException("Key values match another asset under a different set of key fields.");
+									}
+
+									AddMeasurement(metrics, "CheckKeyHashes", sw.ElapsedMilliseconds, ++step);
+									sw.Restart();
+
+									#endregion
+
+									sw.Restart();
                                     // Update success flag.
                                     Connection.Execute(
                                         $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
@@ -5830,6 +5825,11 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 }
                                 catch (Exception ex)
                                 {
+									if (ex is DuplicateHashException)
+									{
+										retryCount = API_V2_RETRY_LIMIT;
+									}
+
                                     try
                                     {
                                         if (trans != null)
@@ -5840,7 +5840,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     catch
                                     {
                                     }
-
                                     retryCount++;
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
@@ -5881,7 +5880,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (sendGraphEvents)
                     {
-                        IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
+						AddMeasurement(metrics, $"SendAssetGraphEvents > Begin", 0, ++step);
+
+						IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
 
                         if (parentIntersectGuids.Any())
                         {
@@ -5918,7 +5919,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     if (sendWorkflowEvents)
                     {
                         sw.Restart();
-                        SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
+						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
+						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
 
@@ -5936,13 +5938,17 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 					if (intersectTypeID.HasValue)
                     {
-                        CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						sw.Restart();
+						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
+						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
                     }
 
                     if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
                         sw.Restart();
-                        CreateImportAssetsExecution(execution.ExecutionID, at.uid);
+						AddMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
+						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
                         AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                     }
 

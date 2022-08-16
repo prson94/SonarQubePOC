@@ -151,12 +151,12 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.surveysService
             .getSurveyTypes(this.getSurveyTypesParams())
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.totalRecords = res.total;
                 this.surveys = res.items.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.surveys.length > 0) this.selected = this.surveys[0];
                 this.isLoading = false;
-            }, err => { this.error = err; });
+            }, (err) => { this.error = err; });
     }
     
     getSurveyTypesParams() {
@@ -210,7 +210,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     deleteSurveyType(uid: string) {
         this.surveysService.deleteSurveyTypeById(uid).
-            subscribe(result => {
+            subscribe((result) => {
                 if (result !== true) {
                     // error happened
                     this.showDelete = false;
@@ -252,7 +252,7 @@ export class AdminSurveysComponent extends AdminBaseComponent {
 
     saveSurvey(event) {
         this.surveysService.saveSurveyType(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result == null) {
                     return;
                 }

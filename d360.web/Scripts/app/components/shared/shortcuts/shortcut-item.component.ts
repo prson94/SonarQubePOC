@@ -14,11 +14,11 @@ import { CompanySettingsService } from '../../../services/settings.service';
 <div *ngIf="!isLoading">
     <div class="row">
         <div class="col s12 m6">
-            <div class="FieldName">Name</div>
+            <div class="FieldName" i18n>Name</div>
             <input type="text" [(ngModel)]="shortcut.Name" style="width: 98%" maxlength="250" />
         </div>
         <div class="col s12 m6">
-            <div class="FieldName">Url</div>
+            <div class="FieldName" i18n>Url</div>
             <input type="text" [(ngModel)]="shortcut.Url" style="width: 98%" maxlength="250" />
         </div>
     </div>
@@ -28,7 +28,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <input type="text" [(ngModel)]="shortcut.Description" style="width: 98%" maxlength="500" />
         </div>        
         <div class="col s12 m6">
-            <div class="FieldName">Link Opens In</div>
+            <div class="FieldName" i18n>Link Opens In</div>
             <div><select [(ngModel)]="shortcut.LinkTarget" style="width:98%">
                 <option value="0" i18n>New Tab</option>
                 <option value="1" i18n>Current Tab - Reload</option>
@@ -74,13 +74,13 @@ import { CompanySettingsService } from '../../../services/settings.service';
             <div class="FieldName" i18n>Icon</div>
             <div>
                 <div>
-                    <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> Use a predefined icon
+                    <input type="radio" name="iconType" [checked]="iconType == 'icon'" (change)="changeIconType($event)" value="icon" /> <span i18n>Use a predefined icon</span>
                 </div>
                 <div *ngIf="iconType == 'icon'" style="padding-bottom: 10px;">
                     <ig-icon-picker [(ngModel)]="shortcut.Icon" required ngDefaultControl></ig-icon-picker>
                 </div>
                 <div>
-                    <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> Upload your own icon
+                    <input type="radio" name="iconType" [checked]="iconType == 'image'" (change)="changeIconType($event)" value="image" /> <span i18n>Upload your own icon</span>
                 </div>
                 <div *ngIf="iconType == 'image'">
                     <input #imageUpload type="file" (change)="onFileChange($event)" accept="image/gif,image/jpeg,image/png" />

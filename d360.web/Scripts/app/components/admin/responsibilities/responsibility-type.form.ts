@@ -50,7 +50,7 @@ export class ResponsibilityTypeForm implements OnInit {
     load(): void {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityType(this.id)
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.item = r;
                 this.getSelectedAllocations();
                 this.isLoading = false;
@@ -66,13 +66,13 @@ export class ResponsibilityTypeForm implements OnInit {
 
         if (this.id == 0) {
             this.responsibilityTypeService.postResponsibilityType(this.item)
-                .subscribe(d => {
+                .subscribe((d) => {
                     this.isLoading = false;
                     this.onSaveComplete.emit(d);
                 });
         } else {
             this.responsibilityTypeService.putResponsibilityType(this.item)
-                .subscribe(d => {
+                .subscribe((d) => {
                     this.isLoading = false;
                     this.onSaveComplete.emit(d);
                 });
@@ -99,7 +99,7 @@ export class ResponsibilityTypeForm implements OnInit {
     private getSelectedAllocations() {
         this.selectedAllocations = [];
         if (this.item.ResponsibilityTypeRelations)
-            this.item.ResponsibilityTypeRelations.forEach(r => {
+            this.item.ResponsibilityTypeRelations.forEach((r) => {
                 let s = r.ObjectID.toString();
                 this.selectedAllocations.push(r.ObjectType + '|' + r.ObjectID.toString());
             });

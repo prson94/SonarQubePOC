@@ -11,7 +11,7 @@
         <div #scoreTable class="score-table">
             <div class="col s12 no-padding">
                 <div class="row score-tbl-header {{(tableHasVerticalScrollbar ? 'has-scroll':'')}}">
-                    <div class="col s4 column">Date (UTC)</div>
+                    <div class="col s4 column" i18n>Date (UTC)</div>
                     <div class="col s4 column">
                         <ng-container *ngIf="showMeasurePoints && !isExternallyCalculated">
                             <div [style.background-color]="measureScoreGraphColor" class="round-circle"></div>

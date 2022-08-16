@@ -46,7 +46,7 @@ export class AdminLevelEditorComponent extends BaseComponent {
     getUnusedLevels() {
         this.isLoading = true;
         this.levelsService.getObjectLevels(this.objectId, this.objectType).subscribe(
-            result => {
+            (result) => {
                 this.isLoading = false;
 
                 for (var i = 1; i <= this.maxDepth; i++) {

@@ -12,13 +12,3 @@
     AssetTypeID: number;
     AssetTypeUID: string;
 }
-
-export class ReferenceItem {
-    ID: number;
-    ReferenceItemTypeID: number;
-    DisplayValue: string;
-    CreatedOn: Date;
-    CreatedBy: number;
-    UpdatedOn: Date;
-    UpdatedBy: number;
-}

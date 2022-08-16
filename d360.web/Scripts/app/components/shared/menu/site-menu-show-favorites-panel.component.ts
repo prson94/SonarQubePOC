@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { map } from 'rxjs/operators';
-import { Favorite, FavoriteViewModel } from '../../../models/favorite.model';
+import { FavoriteViewModel } from '../../../models/favorite.model';
 import { SearchFieldComponent } from '../controls/search-field/search-field.component';
 import { FavoritesManagementService } from './FavoritesManagementService';
 
