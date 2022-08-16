@@ -25,20 +25,13 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
 		[DataMember]
-		[Column(TypeName = "varchar"), StringLength(50)]
-		public string Object { get; set; }
+		public long? AssetId { get; set; }
 
 		[DataMember]
-		public int? ObjectID { get; set; }
+		public long? AssetTypeId { get; set; }
 
 		[DataMember]
-		public int? AssetId { get; set; }
-
-		[DataMember]
-		public int? AssetTypeId { get; set; }
-
-		[DataMember]
-		public int? SemanticId { get; set; }
+		public long? SemanticId { get; set; }
 
 		[DataMember]
         public bool IsHomePage { get; set; }

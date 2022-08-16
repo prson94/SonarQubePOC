@@ -109,9 +109,7 @@ namespace d360.web.Services.Favorites
 
 				IsHomePage = isHomepage,
 				Type = routeMatch.Matcher.PageType.ToString(),
-				Name = routeMatch.Matcher.GetName(@object?.Name, routeMatch.RouteParams),
-				Object = @object?.ObjectType.ToString(),
-				ObjectID = @object?.ObjectId
+				Name = routeMatch.Matcher.GetName(@object?.Name, routeMatch.RouteParams)
 			};
 
 			SplitObjectId(newFavorite, @object?.ObjectType.ToString());
@@ -124,8 +122,7 @@ namespace d360.web.Services.Favorites
 				await companyContext.SaveChangesAsync();
 			}
 
-			var routes = matcherService.GetAllPossibleRoutes(request.Route, routeMatch.Matcher, @object);
-			var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && routes.Contains(f.Route));
+			var existing = await companyContext.Favorites.FirstOrDefaultAsync(f => f.ResourceID == newFavorite.ResourceID && f.Route == newFavorite.Route);
 
 			if (existing == null)
 			{
@@ -138,8 +135,6 @@ namespace d360.web.Services.Favorites
 					existing.IsHomePage = newFavorite.IsHomePage;
 					existing.Type = newFavorite.Type;
 					existing.Name = newFavorite.Name;
-					existing.Object = newFavorite.Object;
-					existing.ObjectID = newFavorite.ObjectID;
 
 					SplitObjectId(existing, newFavorite.ToString());
 
