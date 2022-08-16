@@ -162,6 +162,40 @@ GO
 				end
 
 				GO
+				
+				update Favorite
+					set AssetId = a.ID
+				from Favorite f
+				left join Asset a on a.Object = f.Object and a.ObjectID = f.ObjectID
+				where f.Object is not null and f.Object != 'SemanticType' and f.Object not like '%Type'
+
+				GO
+				
+				update Favorite 
+					set AssetTypeId = at.ID
+				from Favorite f
+				left join AssetType at on at.Object = f.Object and at.ObjectID = f.ObjectID
+				where f.Object is not null and f.Object != 'SemanticType' and f.Object like '%Type'
+
+				GO
+				
+				update Favorite
+					set SemanticId = s.ID
+				from Favorite f
+				left join Semantic s on s.ID = f.ObjectID
+				where f.Object is not null and f.Object = 'SemanticType'
+				
+				GO
+				
+				alter Favorite
+				drop column Object
+				
+				GO
+				
+				alter Favorite
+				drop column ObjectID
+				
+				GO
 			]]>
 		</sql>
 	</changeSet>
