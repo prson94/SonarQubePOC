@@ -32,7 +32,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { Subject } from 'rxjs';
+import { forkJoin, Observable, Subject } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -42,13 +42,22 @@ import { AssetEditorFieldComponent } from './asset-editor-field.component';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipV2 } from '../../../models/relationship.model';
-import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
+import { RelationshipType, RelationshipTypeEdge, RelationshipV2 } from '../../../models/relationship.model';
+import { FieldsObservableService } from "../../../services/fieldsObservable.service";
+import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
+import { ObjectDetailService } from "../../../services/object-detail.service";
 
 @Component({
     selector: 'asset-editor',
     templateUrl: './asset-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService, GroupService],
+    providers: [
+		EditorDefinitionService,
+		UriBasedService,
+		CascadeService,
+		AssetService,
+		GroupService,
+		ObjectDetailService
+	],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['asset-editor.component.less']
@@ -108,6 +117,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     action: string = "Edit";
     fields: EditorField[] = [];
+	assetTypeFields: FieldTypeAPIModelField[] = [];
+	fieldsRelations: {[fieldName: string]: RelationshipTypeEdge} = {};
 
     categories: EditorCategory[] = [];
     editedItem: any;
@@ -123,7 +134,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	isSidePanelOpened: boolean = false;
 	isSidePanelLoading: boolean = false;
 	sidePanelTab: string;
-	sidePanelSelection: any = null;
+	sidePanelSelection: { objectID: string, fieldName: string };
+	sidePanelSelectedAsset: { objectID: number, objectType: string };
+	selectedReferenceItem: { uid: string, assetUid: string };
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -142,6 +155,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         private dynEditorService: DynEditorService,
         private relationshipService: RelationshipsService,
         protected settingsService: CompanySettingsService,
+		private fieldsObservableService: FieldsObservableService,
+		private objectDetailService: ObjectDetailService,
         private elRef: ElementRef
     ) {
         super(settingsService);
@@ -242,8 +257,28 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.editedItem = {};
             this.action = this.newActionName;
         }
-        this.getDefinition();
+		
+		this.getAssetTypeDetails().subscribe((result) => {
+			this.assetTypeFields = result.fields;
+			result.fields.forEach((field) => {
+				const relationship = result.relationships.find(relationship => {
+					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
+				});
+				if (relationship) {
+					this.fieldsRelations[field.Name] = relationship.Object;
+				}
+			});
+			console.log(this.fieldsRelations, result);
+			this.getDefinition();
+		});
     }
+	
+	getAssetTypeDetails(): Observable<{ fields: FieldTypeAPIModelField[], relationships: RelationshipType[] }> {
+		return forkJoin({
+			fields: this.fieldsObservableService.getFieldsV2(this.objectTypeUid, null, null),
+			relationships: this.relationshipService.getRelationshipsByAssetTypeUid(this.objectTypeUid)
+		});
+	}
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
@@ -1007,9 +1042,49 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		}
 	}
 	
-	onSidePanelSelectionChange(selection: any): void {
-		this.sidePanelSelection = !_.isEqual(this.sidePanelSelection, selection) ? selection : null;
+	getObjectTypeByFieldName(fieldName: string): string {
+		const className = this.fieldsRelations[fieldName]?.Class;
+		if (className) {
+			if (className !== 'Policy' && className !== 'Rule') {
+				if (className === 'Model') {
+					return 'Taxonomy';
+				}
+			} else {
+				return className;
+			}
+		} else {
+			const fieldDetails = this.assetTypeFields.find(field => field.Name === fieldName);
+			if (fieldDetails?.Type.Lookup && fieldDetails.Type.Lookup.List.Class === 'Reference') {
+				this.selectedReferenceItem = {uid: fieldDetails.Type.Lookup.List.Uid, assetUid: null};
+				return 'ReferenceItem';
+			}
+		}
+		return 'Artifact';
+	}
+	
+	onSidePanelSelectionChange(selection: {objectID: string, fieldName: string}): void {
+		if (!_.isEqual(this.sidePanelSelection, selection)) {
+			this.sidePanelSelection = selection;
+			this.sidePanelSelectedAsset = {
+				objectID: +selection.objectID,
+				objectType: this.getObjectTypeByFieldName(selection.fieldName)
+			};
+			if (this.sidePanelSelectedAsset.objectType === 'ReferenceItem') {
+				this.isSidePanelLoading = true;
+				this.objectDetailService.getObject(
+					this.sidePanelSelectedAsset.objectID,
+					this.sidePanelSelectedAsset.objectType
+				).subscribe((details) => {
+					this.selectedReferenceItem.assetUid = details['AssetUid'];
+					this.isSidePanelLoading = false;
+				});
+			}
+		} else {
+			this.sidePanelSelection = null;
+			this.sidePanelSelectedAsset = null;
+		}
 		this.isSidePanelOpened = !!this.sidePanelSelection;
+		console.log('Current selection: ', this.sidePanelSelectedAsset);
 	}
 	
 	onSidePanelExpansionChange(expanded: boolean): void {

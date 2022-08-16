@@ -57,8 +57,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
 	
-	@Input() sidePanelSelection: any;
-	@Output() sidePanelSelectionChange: EventEmitter<any> = new EventEmitter<any>();
+	@Input() sidePanelSelection: { objectID: string, fieldName: string };
+	@Output() sidePanelSelectionChange: EventEmitter<{ objectID: string, fieldName: string }> = new EventEmitter<any>();
 
     @ViewChild('ed', { static: false }) ed: Editor;
     private quill;
@@ -963,8 +963,8 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
         return true;
     }
 	
-	onItemInfoClick($event: MouseEvent, item: any): void {
+	onItemInfoClick($event: MouseEvent, objectID: string): void {
 		$event.stopPropagation();
-		this.sidePanelSelectionChange.emit(item);
+		this.sidePanelSelectionChange.emit({ objectID, fieldName: this.field.FieldName });
 	}
 }

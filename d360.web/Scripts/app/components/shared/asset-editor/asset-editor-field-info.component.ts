@@ -23,12 +23,12 @@ enum IgInfoButtonSize {
 export class AssetEditorFieldInfoComponent implements OnChanges {
 	isSelected: boolean;
 	@Input() size: IgInfoButtonSize = IgInfoButtonSize.L;
-	@Input() item: any;
-    @Input() selected: any;
+	@Input() object: { objectID: string, fieldName: string };
+    @Input() selected: { objectID: string, fieldName: string };
 
 	ngOnChanges(changes: SimpleChanges): void {
-		if (changes.item || changes.selected) {
-			this.isSelected = _.isEqual(this.selected, this.item);
+		if (changes.object || changes.selected) {
+			this.isSelected = _.isEqual(this.selected, this.object);
 		}
 	}
 }

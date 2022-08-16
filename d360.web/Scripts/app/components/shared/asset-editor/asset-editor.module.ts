@@ -44,6 +44,8 @@ import { FormFeedbackBadgesModule } from '../controls/form-feedback-badges/form-
 import { SidePanelModule } from "../sidepanel/side-panel.module";
 import { AssetEditorFieldInfoComponent } from "./asset-editor-field-info.component";
 import { FindMultiselectOptionPipe } from "./find-multiselect-option.pipe";
+import { AssetDetailModule } from "../asset-detail/asset-detail.module";
+import { AssetTypeDetailModule } from "../asset-type-detail/asset-type-detail.module";
 
 @NgModule({
     imports: [
@@ -89,7 +91,10 @@ import { FindMultiselectOptionPipe } from "./find-multiselect-option.pipe";
         SwitchModule,
 
         NgxJsonViewModule,
-        SidePanelModule
+        SidePanelModule,
+		
+		AssetDetailModule,
+		AssetTypeDetailModule
     ],
     declarations: [
         AssetEditorComponent,

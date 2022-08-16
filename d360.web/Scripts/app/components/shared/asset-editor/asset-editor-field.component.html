@@ -147,9 +147,9 @@
 											<span class="p-multiselect-token-icon pi pi-times-circle"
 												  (click)="dropdown.removeChip(option.value, $event); $event.stopPropagation()">
 											</span>
-											<asset-editor-field-info [item]="option" size="s"
-																	 (click)="onItemInfoClick($event, option)"
-																	 [selected]="sidePanelSelection">
+											<asset-editor-field-info [object]="{objectID: option.value, fieldName: field.FieldName}"
+																	 (click)="onItemInfoClick($event, option.value)"
+																	 [selected]="sidePanelSelection" size="s">
 											</asset-editor-field-info>
 										</ng-template>
 									</ng-container>
@@ -185,8 +185,9 @@
                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
 								
 								<div class="info-button">
-									<asset-editor-field-info (click)="onItemInfoClick($event, item)" size="m"
-															 [item]="item" [selected]="sidePanelSelection">
+									<asset-editor-field-info (click)="onItemInfoClick($event, item.value)" size="m"
+															 [object]="{objectID: item.value, fieldName: field.FieldName}"
+															 [selected]="sidePanelSelection">
 									</asset-editor-field-info>
 								</div>
                             </ng-template>
@@ -244,8 +245,9 @@
                                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
                                             </td>
 											<td style="justify-content: flex-end;">
-												<asset-editor-field-info (click)="onItemInfoClick($event, item)"
-																		 [item]="item" [selected]="sidePanelSelection">
+												<asset-editor-field-info (click)="onItemInfoClick($event, item.value)"
+																		 [object]="{objectID: item.value, fieldName: field.FieldName}"
+																		 [selected]="sidePanelSelection">
 												</asset-editor-field-info>
 											</td>
                                         </tr>

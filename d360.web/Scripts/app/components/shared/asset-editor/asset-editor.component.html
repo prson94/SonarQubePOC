@@ -32,14 +32,16 @@
 					<ng-template ngFor
 								 let-category
 								 [ngForOf]="categories">
-						<ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true" (expandedChange)="expandChanged()">
+						<ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true"
+										   (expandedChange)="expandChanged()">
 							<div inputs class="inputs-wrapper">
 								<div class="row"
 									 *ngFor="let row of category.rows">
 									<div *ngFor="let field of row.Fields"
 										 [class]="'field-col col ' + row.getColClass()">
 										<asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
-															[form]="form" (listItemChange)="listSelectionChanged($event)"
+															[form]="form"
+															(listItemChange)="listSelectionChanged($event)"
 															[editorChange]="editorChange"
 															[object]="objectType"
 															[objectID]="objectID"
@@ -58,7 +60,7 @@
 						</ig-property-group>
 					</ng-template>
 				</div>
-	
+
 				<div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
 					<button igButton
 							type="button"
@@ -107,79 +109,36 @@
 					[(selectedPanel)]="sidePanelTab"
 					closeIcon="fa-close"
 					hasDetail="true">
-<!--			<ng-container *ngIf="sidePanelOpen && selection != null && sidePanelLoading">-->
-<!--				<d3s-loading [isLoading]="true"></d3s-loading>-->
-<!--			</ng-container>-->
-<!--			<ng-container *ngIf="sidePanelOpen && selection != null && !sidePanelLoading">-->
-<!--				<ng-container *ngIf="sidePanelTab === 'dataprofile' && selection?.HasProfiling">-->
-<!--					<data-profile [dataProfile]="dataProfile" (secondaryPanelLinkClicked)="secondaryPanelOpen($event)"></data-profile>-->
-<!--				</ng-container>-->
-<!--				<ng-container *ngIf="sidePanelTab === 'detail'">-->
-<!--					<ig-asset-detail *ngIf="!selectedReferenceItem && !selectedTag" #assetDetail-->
-<!--									 [objectUID]="selectedAsset ? selectedAsset.uid : selection.AssetUid"-->
-<!--									 [objectType]="selectedAsset ? selectedAsset.type : 'artifact'"-->
-<!--									 [useAccordion]="true"-->
-<!--									 [shouldBePadded]="false"-->
-<!--									 [showHeader]="true"-->
-<!--									 [showHeaderLine]="false"-->
-<!--									 [spacerHeight]="'16px'"-->
-<!--									 [tooltipAlign]="'left'"-->
-<!--									 [isSidePanel]="true"-->
-<!--									 [hasEditLink]="true"-->
-<!--									 [hasAddRelationshipsPermissions]="false"-->
-<!--									 [hasModifyRelationshipsPermissions]="false"-->
-<!--									 [hasDeleteRelationshipsPermissions]="false"-->
-<!--									 [interceptLinkClick]="true"-->
-<!--									 (onEditClick)="assetGrid.triggerEdit()"></ig-asset-detail>-->
-
-<!--					<ng-container *ngIf="selectedReferenceItem">-->
-<!--						<ig-asset-type-detail [uid]="selectedReferenceItem.uid"-->
-<!--											  [highlightUid]="selectedReferenceItem.assetUid"-->
-<!--											  [baseUrl]="selectedReferenceItem.url">-->
-<!--						</ig-asset-type-detail>-->
-<!--					</ng-container>-->
-<!--					<ng-container *ngIf="selectedTag">-->
-<!--						<ig-tagged-assets-detail [uid]="selectedTag.uid"></ig-tagged-assets-detail>-->
-<!--					</ng-container>-->
-<!--				</ng-container>-->
-<!--			</ng-container>-->
-<!--			<ng-container *ngIf="secondarySidePanelOpen">-->
-<!--				<div #semanticTile class="secondary-side-panel">-->
-<!--					<div class="panel-header">-->
-<!--						<span class="header-label" i18n>Information</span>-->
-<!--						<div class="button-container">-->
-<!--							<button igButton [attr.data-cy]="'Semantic_Secondary_Close'" icon="fa-times" (click)="secondarySidePanelOpen=false;" [tooltip]="Close" class="close-button"></button>-->
-<!--						</div>-->
-<!--					</div>-->
-<!--					<div class="details-container">-->
-<!--						<ng-container *ngIf="semanticType && secondarySidePanel=='detail'">-->
-<!--							<semantic-detail [qualifier]="semanticType.qualifier"-->
-<!--											 [isSidePanel]="true"-->
-<!--											 [showHeader]="true"-->
-<!--											 [semanticType]="semanticType"-->
-<!--											 (close)="secondarySidePanelOpen=false;"-->
-<!--											 (linkClicked)="secondaryPanelOpen($event)">-->
-<!--							</semantic-detail>-->
-<!--						</ng-container>-->
-<!--						<ng-container *ngIf="resourceUid && secondarySidePanel=='user'">-->
-<!--							<ig-asset-detail [objectUID]="resourceUid"-->
-<!--											 [objectType]="'Resource'"-->
-<!--											 [useAccordion]="true"-->
-<!--											 [shouldBePadded]="true"-->
-<!--											 [showHeader]="true"-->
-<!--											 [showHeaderLine]="false"-->
-<!--											 [spacerHeight]="'16px'"-->
-<!--											 [tooltipAlign]="'left'"-->
-<!--											 [isSidePanel]="true"-->
-<!--											 [interceptLinkClick]="true"-->
-<!--											 (close)="secondarySidePanelOpen=false;"></ig-asset-detail>-->
-<!--						</ng-container>-->
-<!--						<ng-container *ngIf="secondarySidePanel=='status'">-->
-<!--							<semantic-status-detail (close)="secondarySidePanelOpen=false;"></semantic-status-detail>-->
-<!--						</ng-container>-->
-<!--					</div>-->
-<!--				</div>-->
-<!--			</ng-container>-->
+			<ng-container *ngIf="isSidePanelOpened && sidePanelSelection">
+				<ng-container *ngIf="sidePanelTab === 'detail'">
+					<ig-asset-detail *ngIf="sidePanelSelectedAsset.objectType !== 'ReferenceItem'"
+									 [objectID]="sidePanelSelectedAsset.objectID"
+									 [objectType]="sidePanelSelectedAsset.objectType"
+									 [useAccordion]="true"
+									 [shouldBePadded]="false"
+									 [showHeader]="true"
+									 [showHeaderLine]="false"
+									 [spacerHeight]="'16px'"
+									 [tooltipAlign]="'left'"
+									 [isSidePanel]="true"
+									 [hasEditLink]="false"
+									 [hasAddRelationshipsPermissions]="false"
+									 [hasModifyRelationshipsPermissions]="false"
+									 [hasDeleteRelationshipsPermissions]="false"
+									 [interceptLinkClick]="true">
+					</ig-asset-detail>
+					<ng-container *ngIf="sidePanelSelectedAsset.objectType === 'ReferenceItem'">
+						<ng-container *ngIf="isSidePanelLoading && !selectedReferenceItem; else assetTypeDetail">
+							<d3s-loading [isLoading]="true"></d3s-loading>
+						</ng-container>
+						<ng-template #assetTypeDetail>
+							<ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+												  [highlightUid]="selectedReferenceItem.assetUid">
+							</ig-asset-type-detail>
+						</ng-template>
+					</ng-container>
+				</ng-container>
+			</ng-container>
 		</side-panel>
 	</div>
 </div>
