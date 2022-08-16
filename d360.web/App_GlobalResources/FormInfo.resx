@@ -154,16 +154,16 @@
     <value>Policy</value>
   </data>
   <data name="Responsibility_Then_Filter_Value_Required" xml:space="preserve">
-    <value>The Responsibility Then Filter value is required</value>
+    <value>Then is required.</value>
   </data>
   <data name="Responsibility_Then_InvalidFieldType" xml:space="preserve">
-    <value>Invalid Field type in When filters for this asset type.</value>
+    <value>When contains invalid FieldTypeId for this asset type.</value>
   </data>
   <data name="Responsibility_When_Filter_Required_Based_ApplyToType_Value" xml:space="preserve">
-    <value>At least one When filter required if Applies To Entire Type is unchecked.</value>
+    <value>When is required when ApplyToType is set to false.</value>
   </data>
   <data name="Responsibility_When_Filter_Value_Required" xml:space="preserve">
-    <value>The Responsibility When Filter value is required.</value>
+    <value>When is required.</value>
   </data>
   <data name="RuleType" xml:space="preserve">
     <value>Rule</value>

@@ -169,7 +169,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.readOnlyFullListOfTags = [...this.tags];
             }
             this.isLoading = false;
-        }, err => this.error = err);
+        }, (err) => this.error = err);
     }
 
     sortTags(tags: TagType[]): void {
@@ -197,8 +197,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
             if ((event.ctrlKey || event.metaKey) && !event.shiftKey) {
-                if (this.selected.filter(x => x.uid == item.uid).length > 0) {
-                    this.selected = this.selected.filter(x => x.uid != item.uid);
+                if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
+                    this.selected = this.selected.filter((x) => x.uid != item.uid);
                     this.triggerRerenderOfSelection();
                 }
                 else {
@@ -242,8 +242,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
             this.triggerRerenderOfSelection();
             this.lastSelectedElement = item;
         } else {
-            if (this.selected.filter(x => x.uid == item.uid).length > 0) {
-                this.selected = this.selected.filter(x => x.uid != item.uid);
+            if (this.selected.filter((x) => x.uid == item.uid).length > 0) {
+                this.selected = this.selected.filter((x) => x.uid != item.uid);
                 this.triggerRerenderOfSelection();
             }
             else {
@@ -279,7 +279,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
 
         this.tagsService.saveTag(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
                     msg = $localize`${result.Value} succesfully created`;
@@ -290,13 +290,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
                     this.addCreatedByFieldToTag(result);
-                    this.mutateTags(tags => tags.push(result));
+                    this.mutateTags((tags) => tags.push(result));
                 }
                 else {
                     this.tags[this.findTagIndex(event.item.uid)].Value = event.item.Value;
                 }
 
-                this.mutateTags(tags => tags.sort((a, b) => a.Value.localeCompare(b.Value)));
+                this.mutateTags((tags) => tags.sort((a, b) => a.Value.localeCompare(b.Value)));
 
                 this.selected = [];
                 event.item.UseCount = 0;
@@ -309,17 +309,17 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     deleteTags() {
         this.tagsService.deleteTags(this.selected).
-            subscribe(result => {
+            subscribe((result) => {
                 this.showMessageForResult(this.messagesService, result);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-                    this.selected.forEach(t => {
-                        this.mutateTags(tags => tags.splice(this.findTagIndex(t.uid), 1));
+                    this.selected.forEach((t) => {
+                        this.mutateTags((tags) => tags.splice(this.findTagIndex(t.uid), 1));
                     });
                     this.selected = [];
                 }
                 this.showDelete = false;
-            }, err => this.showMessageForResult(this.messagesService, err));
+            }, (err) => this.showMessageForResult(this.messagesService, err));
     }
 
     openDeleteModal() {
@@ -336,24 +336,24 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     consolidateTags(parentUid: string, childrenUids: string[]) {
         this.tagsService.consolidateTags(parentUid, childrenUids)
-            .subscribe(result => {
+            .subscribe((result) => {
 
                 if (result) {
 
                     this.messagesService.showInfoMessage($localize`Success`, $localize`Tag consolidation succesfull`);
 
-                    result.forEach(t => {
+                    result.forEach((t) => {
                         if (t.UseCount != 0)
                             this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;
                         else if (t.uid != parentUid)
-                            this.tags = this.tags.filter(x => x.uid != t.uid);
+                            this.tags = this.tags.filter((x) => x.uid != t.uid);
                     });
                 }
                 this.selected = [];
                 this.selected.push(this.tags[0]);
                 this.showConsolidate = false;
                 this.showEditor = false;
-            }, err => {
+            }, (err) => {
                 this.showMessageForResult(this.messagesService, err);
                 this.showConsolidate = false;
                 this.showEditor = false;
