@@ -19,7 +19,7 @@ namespace Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class FormInfo {
@@ -169,7 +169,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Responsibility Then Filter value is required.
+        ///   Looks up a localized string similar to Then is required..
         /// </summary>
         public static string Responsibility_Then_Filter_Value_Required {
             get {
@@ -178,7 +178,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid Field type in When filters for this asset type..
+        ///   Looks up a localized string similar to When contains invalid FieldTypeId for this asset type..
         /// </summary>
         public static string Responsibility_Then_InvalidFieldType {
             get {
@@ -187,7 +187,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to At least one When filter required if Applies To Entire Type is unchecked..
+        ///   Looks up a localized string similar to When is required when ApplyToType is set to false..
         /// </summary>
         public static string Responsibility_When_Filter_Required_Based_ApplyToType_Value {
             get {
@@ -196,7 +196,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Responsibility When Filter value is required..
+        ///   Looks up a localized string similar to When is required..
         /// </summary>
         public static string Responsibility_When_Filter_Value_Required {
             get {
