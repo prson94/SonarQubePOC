@@ -951,6 +951,7 @@
     <EmbeddedResource Include="App_GlobalResources\FormInfo.nl-NL.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
       <LastGenOutput>FormInfo.nl-NL.designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="App_GlobalResources\MetricsApiMessages.nl-NL.resx">
       <Generator>GlobalResourceProxyGenerator</Generator>
