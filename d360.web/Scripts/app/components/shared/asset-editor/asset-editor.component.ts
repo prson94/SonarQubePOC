@@ -32,7 +32,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { forkJoin, Observable, Subject } from 'rxjs';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -46,6 +46,7 @@ import { RelationshipType, RelationshipTypeEdge, RelationshipV2 } from '../../..
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
+import {LinkClickInterceptor} from "../../../services/href-click-service";
 
 @Component({
     selector: 'asset-editor',
@@ -123,6 +124,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     categories: EditorCategory[] = [];
     editedItem: any;
     editorChange: Subject<any> = new Subject();
+	hrefSub: Subscription;
     hasDirections: boolean = false;
     hasIconFields: boolean = false;
     fore: EditorField;
@@ -131,11 +133,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     hasUpdateFormChanged: boolean = false;
 
     isProcessSidePanel: boolean = false;
-	isSidePanelOpened: boolean = false;
-	isSidePanelLoading: boolean = false;
+	sidePanelOpen: boolean = false;
+	sidePanelLoading: boolean = false;
 	sidePanelTab: string;
 	sidePanelSelection: { objectID: string, fieldName: string };
-	sidePanelSelectedAsset: { objectID: number, objectType: string };
+	selectedAsset: { id: number, uid?: string, type: string };
 	selectedReferenceItem: { uid: string, assetUid: string };
 
     modalFormMaxHeight = 400;
@@ -157,6 +159,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         protected settingsService: CompanySettingsService,
 		private fieldsObservableService: FieldsObservableService,
 		private objectDetailService: ObjectDetailService,
+		private linkClickInterceptor: LinkClickInterceptor,
         private elRef: ElementRef
     ) {
         super(settingsService);
@@ -215,6 +218,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     ngOnInit() {
         this.hasDirections = (this.directions && this.directions !== "");
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+			this.sidePanelSelection = null;
+		});
         this.load();
     }
 
@@ -265,10 +272,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
 				});
 				if (relationship) {
-					this.fieldsRelations[field.Name] = relationship.Object;
+					if (this.objectTypeUid !== relationship.Object.Uid) {
+						this.fieldsRelations[field.Name] = relationship.Object;
+					} else {
+						this.fieldsRelations[field.Name] = relationship.Subject;
+					}
 				}
 			});
-			console.log(this.fieldsRelations, result);
 			this.getDefinition();
 		});
     }
@@ -342,7 +352,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         if (this.parentID && this.parentID.toString().length === 36) {
             this.editorDefinitionService.getAssetEditorDefinition(this.objectTypeUid, this.assetUid, this.parentID.toString())
                 .subscribe((result) => {
-                    this.isLoading = false;
                     this.handleEditor(result);
                 });
         }
@@ -1037,25 +1046,32 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     }
 
 	get panelApplies(): boolean {
-		if (this.sidePanelSelection == null || this.sidePanelTab === 'detail') {
+		if (this.selectedAsset == null || this.sidePanelTab === 'detail') {
 			return true;
 		}
 	}
 	
 	getObjectTypeByFieldName(fieldName: string): string {
-		const className = this.fieldsRelations[fieldName]?.Class;
-		if (className) {
-			if (className !== 'Policy' && className !== 'Rule') {
-				if (className === 'Model') {
-					return 'Taxonomy';
-				}
-			} else {
-				return className;
-			}
+		const relationClassName = this.fieldsRelations[fieldName]?.Class;
+		if (relationClassName) {
+			return this.getObjectTypeByClass(relationClassName);
 		} else {
 			const fieldDetails = this.assetTypeFields.find(field => field.Name === fieldName);
-			if (fieldDetails?.Type.Lookup && fieldDetails.Type.Lookup.List.Class === 'Reference') {
-				this.selectedReferenceItem = {uid: fieldDetails.Type.Lookup.List.Uid, assetUid: null};
+			if (fieldDetails?.Type.Lookup) {
+				return this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+			}
+		}
+		return 'Artifact';
+	}
+
+	getObjectTypeByClass(className: string): string {
+		if (className === 'Policy' || className === 'Rule') {
+			return className;
+		} else {
+			if (className === 'Model') {
+				return 'Taxonomy';
+			}
+			if (className === 'Reference') {
 				return 'ReferenceItem';
 			}
 		}
@@ -1065,33 +1081,32 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	onSidePanelSelectionChange(selection: {objectID: string, fieldName: string}): void {
 		if (!_.isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
-			this.sidePanelSelectedAsset = {
-				objectID: +selection.objectID,
-				objectType: this.getObjectTypeByFieldName(selection.fieldName)
+			this.selectedAsset = {
+				id: +selection.objectID,
+				type: this.getObjectTypeByFieldName(selection.fieldName)
 			};
-			if (this.sidePanelSelectedAsset.objectType === 'ReferenceItem') {
-				this.isSidePanelLoading = true;
+			if (this.selectedAsset.type === 'ReferenceItem') {
+				this.sidePanelLoading = true;
 				this.objectDetailService.getObject(
-					this.sidePanelSelectedAsset.objectID,
-					this.sidePanelSelectedAsset.objectType
+					this.selectedAsset.id,
+					this.selectedAsset.type
 				).subscribe((details) => {
-					this.selectedReferenceItem.assetUid = details['AssetUid'];
-					this.isSidePanelLoading = false;
+					this.selectedReferenceItem = { uid: details.AssetTypeUid, assetUid: details.UID };
+					this.sidePanelLoading = false;
 				});
 			}
 		} else {
 			this.sidePanelSelection = null;
-			this.sidePanelSelectedAsset = null;
+			this.selectedAsset = null;
 		}
-		this.isSidePanelOpened = !!this.sidePanelSelection;
-		console.log('Current selection: ', this.sidePanelSelectedAsset);
+		this.sidePanelOpen = !!this.sidePanelSelection;
 	}
 	
 	onSidePanelExpansionChange(expanded: boolean): void {
 		if (!expanded) {
 			this.sidePanelSelection = null;
 		}
-		this.isSidePanelOpened = expanded;
+		this.sidePanelOpen = expanded;
 	}
 	
 }

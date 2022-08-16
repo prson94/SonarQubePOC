@@ -92,28 +92,24 @@
 							tooltip="{{saveButtonLabel}}"
 							[loading]="savingInProgress && !savingInProgressWithAddNew">
 					</button>
-					&nbsp;&nbsp;&nbsp;&nbsp;
-					<button type="button"
-							class="ig-button-primary"
-							igButton (click)="isSidePanelOpened = !isSidePanelOpened">
-						SP
-					</button>
 				</div>
 			</form>
 		</div>
 	</div>
-	<div class="side-panel" *ngIf="isSidePanelOpened">
-		<side-panel [expanded]="isSidePanelOpened"
+	<div class="side-panel" *ngIf="sidePanelOpen">
+		<side-panel [expanded]="sidePanelOpen"
 					(expandedChange)="onSidePanelExpansionChange($event)"
 					[panelApplies]="panelApplies"
 					[(selectedPanel)]="sidePanelTab"
+					[height]="'calc(100vh - 152px)'"
 					closeIcon="fa-close"
 					hasDetail="true">
-			<ng-container *ngIf="isSidePanelOpened && sidePanelSelection">
+			<ng-container *ngIf="sidePanelOpen && selectedAsset">
 				<ng-container *ngIf="sidePanelTab === 'detail'">
-					<ig-asset-detail *ngIf="sidePanelSelectedAsset.objectType !== 'ReferenceItem'"
-									 [objectID]="sidePanelSelectedAsset.objectID"
-									 [objectType]="sidePanelSelectedAsset.objectType"
+					<ig-asset-detail *ngIf="selectedAsset.type !== 'ReferenceItem'"
+									 [objectID]="selectedAsset.id"
+									 [objectUID]="selectedAsset.uid"
+									 [objectType]="selectedAsset.type"
 									 [useAccordion]="true"
 									 [shouldBePadded]="false"
 									 [showHeader]="true"
@@ -127,8 +123,8 @@
 									 [hasDeleteRelationshipsPermissions]="false"
 									 [interceptLinkClick]="true">
 					</ig-asset-detail>
-					<ng-container *ngIf="sidePanelSelectedAsset.objectType === 'ReferenceItem'">
-						<ng-container *ngIf="isSidePanelLoading && !selectedReferenceItem; else assetTypeDetail">
+					<ng-container *ngIf="selectedAsset.type === 'ReferenceItem'">
+						<ng-container *ngIf="sidePanelLoading && !selectedReferenceItem; else assetTypeDetail">
 							<d3s-loading [isLoading]="true"></d3s-loading>
 						</ng-container>
 						<ng-template #assetTypeDetail>
