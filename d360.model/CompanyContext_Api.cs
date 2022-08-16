@@ -5308,7 +5308,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (fieldLoadProperties.ContainsColorField)
                     {
-                        ResolveColorValues(execution.ExecutionID, timeout);
+						AddMeasurement(metrics, "ResolveColorValues-Begin", 0, ++step);
+						ResolveColorValues(execution.ExecutionID, timeout);
                         AddMeasurement(metrics, "ResolveColorValues", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5317,13 +5318,15 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     {
                         if (lookupFieldsPassedByValue)
                         {
-                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
+							AddMeasurement(metrics, "CopyFieldLookupValuesAsIs-Begin", 0, ++step);
+							CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout, ApiExecutionFieldTable);
                             AddMeasurement(metrics, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
                         else
                         {
-                            ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
+							AddMeasurement(metrics, "ResolveFieldLookupValues-Begin", 0, ++step);
+							ResolveFieldLookupValues(execution.ExecutionID, ApiExecutionFieldTable, timeout);
                             AddMeasurement(metrics, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, ++step);
                             sw.Restart();
                         }
@@ -5331,21 +5334,24 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (hasLookupFieldTypes)
                     {
-                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
+						AddMeasurement(metrics, "LogFieldLookupErrors-Begin", 0, ++step);
+						LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", lookupFieldsPassedByValue, timeout);
                         AddMeasurement(metrics, "LogFieldLookupErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 
                     if (hasRelationshipFieldTypes)
                     {
-                        LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
+						AddMeasurement(metrics, "LogRelationshipErrors-Begin", 0, ++step);
+						LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         AddMeasurement(metrics, "LogRelationshipErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
 
                     if (hasCounterField)
                     {
-                        LogCounterFieldErrors(execution.ExecutionID, timeout);
+						AddMeasurement(metrics, "LogCounterFieldErrors-Begin", 0, ++step);
+						LogCounterFieldErrors(execution.ExecutionID, timeout);
                         AddMeasurement(metrics, "LogCounterFieldErrors", sw.ElapsedMilliseconds, ++step);
                         sw.Restart();
                     }
@@ -5362,7 +5368,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (!isInsert)
                     {
-                        LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
+						AddMeasurement(metrics, "LogAssetErrors / LoadMissingKeyFields/ LogNullIsRequiredFields - Begin", 0, ++step);
+
+						LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                         LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
 
@@ -5748,14 +5756,16 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                                     if (hasCounterField)
                                     {
-                                        UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+										AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop} > Begin", 0, ++step);
+										UpdateCounterFields(at.ID, execution.ExecutionID, trans, beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         AddMeasurement(metrics, $"UpdateCounteFields >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                         sw.Restart();
                                     }
 
                                     if (hasRelationshipFieldTypes)
                                     {
-                                        ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+										AddMeasurement(metrics, $"ImportRelationships >> {currentLoop} > Begin", 0, ++step);
+										ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
                                         AddMeasurement(metrics, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5764,7 +5774,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (enableJsonAttributes && jsonFieldTypes.Count > 0 && fieldLoadProperties.JsonFieldCount > 0)
                                     {
                                         sw.Restart();
-                                        MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
+										AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop} > Begin", 0, ++step);
+
+										MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, metrics, step, isInsert);
                                         AddMeasurement(metrics, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5785,7 +5797,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                     if (hasLookupFieldTypes && !isInsert)
                                     {
                                         sw.Restart();
-                                        DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+										AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop} > Begin", 0, ++step);
+
+										DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
                                         AddMeasurement(metrics, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, ++step);
                                     }
 
@@ -5898,7 +5912,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (sendGraphEvents)
                     {
-                        IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
+						AddMeasurement(metrics, $"SendAssetGraphEvents > Begin", 0, ++step);
+
+						IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
 
                         if (parentIntersectGuids.Any())
                         {
@@ -5935,7 +5951,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                     if (sendWorkflowEvents)
                     {
                         sw.Restart();
-                        SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
+						AddMeasurement(metrics, $"SendWorkflowEvents > Begin", 0, ++step);
+						SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
                         AddMeasurement(metrics, $"SendWorkflowEvents", sw.ElapsedMilliseconds, ++step);
                     }
 
@@ -5953,13 +5970,17 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
 					if (intersectTypeID.HasValue)
                     {
-                        CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						sw.Restart();
+						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution > Begin", 0, ++step);
+						CreateParentAssetGovernanceRescoreExecution(execution.ExecutionID);
+						AddMeasurement(metrics, $"CreateParentAssetGovernanceRescoreExecution", 0, ++step);
                     }
 
                     if (Any<MetricAllocation>(i => i.AssetTypeUid == at.uid && i.ScoreType == ScoreType.Governance && !i.IsExternallyCalculated))
                     {
                         sw.Restart();
-                        CreateImportAssetsExecution(execution.ExecutionID, at.uid);
+						AddMeasurement(metrics, $"SendScoreEventWithPayload > Begin", 0, ++step);
+						CreateImportAssetsExecution(execution.ExecutionID, at.uid);
                         AddMeasurement(metrics, $"SendScoreEventWithPayload", sw.ElapsedMilliseconds, ++step);
                     }
 
