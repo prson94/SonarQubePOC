@@ -138,7 +138,7 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
         this.organizationsService
             .getDomainsByOrganization(this.organization.ID)
             .subscribe(
-                result => {
+                (result) => {
                     this.domains = result;
 
                     this.selected = (this.domains.length > 0 ? this.domains[0] : null);
@@ -150,11 +150,11 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
 
     delete(id: number) {
         this.organizationsService.deleteDomain(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {
-                    this.domains = this.domains.filter(x => x.ID != id);
+                    this.domains = this.domains.filter((x) => x.ID != id);
                 }
 
                 this.showDelete = false;
@@ -181,7 +181,7 @@ export class AdminOrganizationDomainsComponent extends BaseComponent implements 
         this.organizationsService
             .saveDomain(event.item)
             .subscribe(
-                result => {
+                (result) => {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, result);
                     this.getDomains();

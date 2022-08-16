@@ -75,10 +75,10 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
 
         this.isLoading = true;
         this.allocationService.getAllocations()
-            .subscribe(r => {
+            .subscribe((r) => {
                 this.allocations = [];
                 this._loadedAllocations = r;
-                r.forEach(x => {
+                r.forEach((x) => {
                     this.allocations.push(this.getFormattedItem(x));
                 });
                 this.isLoading = false;
@@ -155,18 +155,18 @@ export class ScoringIndexComponent extends AdminBaseComponent implements OnInit,
     }
 
     private getAllocationByUid(uid: string): ScoreTypeAllocation {
-        return this._loadedAllocations.find(x => x.uid === uid);
+        return this._loadedAllocations.find((x) => x.uid === uid);
     }
 
     private deleteAllocation($event) {
         this.allocationService.deleteAllocationByUid($event.uid).
-            subscribe(result => {
+            subscribe((result) => {
                 result.message = $localize`Score successfully deleted`;
                 this.showMessageForResult(this.messagesService, result);
                 this.load();
                 this.showDelete = false;
 
-            }, err => { this.showMessageForResult(this.messagesService, err); this.showDelete = false; });
+            }, (err) => { this.showMessageForResult(this.messagesService, err); this.showDelete = false; });
     }
 
     onSaveCancel() {
