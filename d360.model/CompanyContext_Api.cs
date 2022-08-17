@@ -3161,15 +3161,6 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 															and S.id between @struncount and @enruncount
 												);
 
-										delete  T
-										from    [graph].AssetEdge T
-										where   exists (
-													select  1
-													from    #tempintersect S
-													where   S.IntersectID = T.ID
-															and S.id between @struncount and @enruncount
-												);
-
 										set @runcount = @enruncount;
 									end;
 
