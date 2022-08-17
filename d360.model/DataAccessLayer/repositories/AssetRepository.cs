@@ -1304,7 +1304,7 @@ namespace d360.model.DataAccessLayer
 			var includedJoins = new DynamicQueryJoins();
 			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", null);
 
-			fieldsUsedInMainQuery.ForEach(field =>
+			fieldsUsedInMainQuery.Distinct().ToList().ForEach(field =>
 			{
 				var joins = countJoins.Joins().Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
 				includedJoins.AddRange(joins);
