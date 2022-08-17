@@ -37,6 +37,18 @@
   width: max-content;
 }
 
+p-table ::ng-deep table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
 p-table {
   tr {
     position: relative;

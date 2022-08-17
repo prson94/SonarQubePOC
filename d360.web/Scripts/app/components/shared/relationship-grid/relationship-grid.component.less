@@ -5,6 +5,18 @@
   z-index: 1;
 }
 
+.relationship-detail p-table table {
+  th, td {
+    &:not(:last-child) {
+      padding-right: 16px;
+    }
+
+    &:not(:first-child) {
+      padding-left: 16px;
+    }
+  }
+}
+
 // This is a fix to add horizontal scroll on table when [responsiveLayout]="scroll"
 .relationship-detail p-table table {
     width: max-content;
