@@ -201,7 +201,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         if (this.relationsSidebar) {
             this.relationsSidebar.orderPriority = 3;
-            this.relationsSidebar.url = `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`;
+            this.relationsSidebar.url = `/asset/${this.selectedReferenceListId}/relationships`;
         }
 
         if (this.monitorSidebar) {

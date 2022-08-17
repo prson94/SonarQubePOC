@@ -38,21 +38,14 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
+			this.assetUid = params['assetUid'];
 
-            this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-                res => {
-                    this.objectName = res.Name ? res.Name : res.DisplayValue;
-                    this.assetUid = res["Uid"];
-                    if (!this.assetUid) {
-                        this.assetUid = res["UID"];
-                    }
-                    this.assetTypeUid = res["AssetTypeUid"];
-                }
-            );
-            this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-            this.buildSecondaryNavigation(null, this.objectID, this.objectType);
+			this.permissionsService.getAssetPermissions(this.assetUid)
+				.subscribe((p) => {
+					this.objectPermission = p;
+				});
+
+			this.buildSecondaryNavigation(this.assetUid);
         });
     }
 

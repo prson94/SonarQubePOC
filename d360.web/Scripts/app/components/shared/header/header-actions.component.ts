@@ -119,10 +119,10 @@ export class HeaderActionsComponent {
                     if ((this.currentObject != null && this.currentObjectId != null) && (this.currentObject == 'ReferenceItemType'))
                     {
                         if (((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_FIELDS_ROOT.toUpperCase()))
-                            ||
-                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT.toUpperCase()))
-                            ||
-                            ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RELATIONSHIP_ROOT.toUpperCase()))
+							||
+							((this.uri || '').toUpperCase().indexOf("diagrams".toUpperCase()) > 0)
+							||
+							((this.uri || '').toUpperCase().endsWith("relationships".toUpperCase()))
                             ||
                             ((this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESPONSIBILITIES_ROOT.toUpperCase()))
                             ||

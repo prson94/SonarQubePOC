@@ -1,6 +1,6 @@
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel } from '../../models/secondaryNav.model';
-import { PermissionsService } from '../../services/permissions.service';
+import { PermissionsService, Permissions } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 
@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';
 import { ApiResult, ErrorResponse } from '../../models/apiresult.model';
-import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
+import { Permission, ResponsibilityTypeRelationPermission } from '../../models/responsibility-type.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { TreeNode } from 'primeng/api';
@@ -85,7 +85,9 @@ export class BaseComponent {
     // permissions
     // Ideally this should be an input so we dont have to copy / past it...
     // child classes that support permissions input....
-    permissions: ResponsibilityTypeRelationPermission[] = [];
+	permissions: ResponsibilityTypeRelationPermission[] = [];
+	objectPermission: Permissions;
+	
 
     // default paging options
     defaultPagingOptions: number[] = [10, 25, 50, 100];
@@ -165,7 +167,25 @@ export class BaseComponent {
 
     }
 
-    hasPermission(permission: number) {
+	hasPermission(permission: number | Permission) {
+		//permissions coming from v2 api
+		//in future this will replace ResponsibilityTypeRelationPermission
+		if (this.objectPermission) {
+			switch (permission) {
+				case Permission.AddRelationships: return this.objectPermission.AddRelationships;
+				case Permission.EditRelationships: return this.objectPermission.EditRelationships;
+				case Permission.DeleteRelationships: return this.objectPermission.DeleteRelationships;
+
+				case Permission.AddResponsibilities: return this.objectPermission.AddResponsibilities;
+				case Permission.EditResponsibilities: return this.objectPermission.EditResponsibilities;
+				case Permission.DeleteResponsibilities: return this.objectPermission.DeleteResponsibilities;
+
+				case Permission.AddAsset: return this.objectPermission.AddAsset;
+				case Permission.EditAsset: return this.objectPermission.EditAsset;
+				case Permission.DeleteAsset: return this.objectPermission.DeleteAsset;
+			}
+		}
+
         return ResponsibilityTypeRelationPermission.hasPermission(this.permissions, permission);
     }
 
@@ -363,8 +383,8 @@ export class BaseComponent {
                 this.relationsSidebar = new SecondaryNavItem(
                     $localize`Relationships`,
                     'relationship',
-                    ['fa-retweet'],
-                    `/sidebar/relationships${this.objectContextUrl()}`, null, 20
+					['fa-retweet'],
+					`/asset/${this.uid}/relationships`, null, 20
                 );
                 this.secondaryNavService.showItem(this.relationsSidebar);
             }
