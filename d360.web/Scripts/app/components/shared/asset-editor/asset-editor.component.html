@@ -20,8 +20,7 @@
 		<div class="row" *ngIf="isInError">
 			<div class="err-message">{{isInErrorMessage}}</div>
 		</div>
-		<div class="row"
-			 *ngIf="!isLoading">
+		<div class="row" *ngIf="!isLoading" style="position: relative; height: calc(100% - 61px);">
 			<div class="form-instructions" *ngIf="hasDirections">
 				{{directions}}
 			</div>
@@ -60,7 +59,9 @@
 						</ig-property-group>
 					</ng-template>
 				</div>
-
+				
+				<div class="action-buttons-placeholder"></div>
+				
 				<div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
 					<button igButton
 							type="button"
