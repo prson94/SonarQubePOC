@@ -5,15 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.bulkload.GetLoadColumns-v14">
-    <comment>GOV-16538</comment>
+  <changeSet author="Pappas" id="Procedure.bulkload.GetLoadColumns-v15">
+    <comment>GOV-19319</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-
-CREATE OR ALTER   procedure [bulkload].[GetLoadColumns]
+create or alter procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
 	@id int,
@@ -302,13 +301,10 @@ begin
 
 			end
 		
+			declare @IDs varchar(500);
+			select @IDs = string_agg(FieldTypeID, ',') from @fields where FieldTypeID <> 0 and IsLookup = 1
 			insert into @lookups (FieldTypeID, [Label])
-				select		F.FieldTypeID,
-							V.[Text]
-				from		@fields F 
-							inner join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeID <> 0
-							inner join FieldLookupValue V on V.FieldTypeID = F.FieldTypeID and F.IsLookup = 1
-				order by	F.FieldTypeID, V.[Text];
+				exec('select FieldTypeID, [Text] from FieldLookupValue where FieldTypeID in (' + @IDs + ') order by FieldTypeID, [Text]');
 	end
 	
 	select	Name,
@@ -333,7 +329,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-create or alter procedure [bulkload].[GetLoadColumns]
+CREATE OR ALTER   procedure [bulkload].[GetLoadColumns]
 	@action varchar(2),
 	@type varchar(50),
 	@id int,
@@ -591,6 +587,36 @@ begin
 						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
 						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON') or (IsEditable = 0 and IsRequired = 1))						
 			order by	ColumnOrder;
+
+			--add Tag and Tag Action columns if applicable
+			if exists (select 1 from FieldType where Object = @type and Objectid = @id and Type = 'Tag' and @action = 'P')
+			begin
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+				select		ID,
+							Name, 
+							IsRequired,
+							IsPartOfKey,
+							AllowMultipleValues,
+							case Type
+								when 'Lookup' then cast(1 as bit)
+								else cast(0 as bit)
+							end as IsLookup, 
+							1
+				from		FieldType 
+				where		Object = @type 
+							and ObjectID = @id 
+							and Type = 'Tag' and @action = 'P'
+
+				insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level])
+				values		(0, 'Tag Action', 0, 0, 0, 1, 1);
+
+				insert into @lookups (FieldTypeID, [Label])
+				values		(0, 'Append');
+				insert into @lookups (FieldTypeID, [Label])
+				values		(0, 'Replace');
+
+
+			end
 		
 			insert into @lookups (FieldTypeID, [Label])
 				select		F.FieldTypeID,

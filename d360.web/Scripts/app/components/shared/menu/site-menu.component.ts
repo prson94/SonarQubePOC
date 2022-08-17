@@ -377,9 +377,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Items = [];
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, count: null });
         integrationMenu.Items.push({ Name: $localize`Bulk Loader`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, count: null });
-        if (this.getBooleanSetting(CompanySettingEnum.ShowCustomAPIAdmin)) {
-            integrationMenu.Items.push({ Name: $localize`Custom API`, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, count: null });
-        }
         this.adminMenu.NavigationItems.push(integrationMenu);
 
         let securityMenu = new SiteMenuItem();

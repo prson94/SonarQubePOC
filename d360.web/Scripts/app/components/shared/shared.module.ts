@@ -31,9 +31,7 @@ import { SharedObjectDetailsModule } from './objectdetails/shared-object-details
 import { AdvancedFiltersModule } from "../assets-grid/advanced-filtering/advanced-filtering.module";
 import { SearchFieldModule } from "../shared/controls/search-field/search-field.component";
 
-import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
-import { ObjectFollowersComponent } from './object-followers.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { UserListComponent } from './user/user-list.component';
@@ -44,17 +42,13 @@ import { AssetEditorModule } from './asset-editor/asset-editor.module';
 
 @NgModule({
     declarations: [                           
-        MessagesBarComponent,                                        
         ObjectDefinitionTile,
-        ObjectFollowersComponent,                          
         ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,      
         UserListComponent
     ],
     exports: [                                                                                                                                        
-        MessagesBarComponent,                                                  
         ObjectDefinitionTile,
-        ObjectFollowersComponent,                                 
         ResourceResponsibilityComponent,
         ResourceResponsibilityGridComponent,               
         UserListComponent

@@ -158,11 +158,11 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
 
     delete(id: number) {
         this.organizationsService.deleteInvitation(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {
-                    this.invitations = this.invitations.filter(x => x.ID != id);
+                    this.invitations = this.invitations.filter((x) => x.ID != id);
                 }
 
                 this.showDelete = false;
@@ -190,7 +190,7 @@ export class AdminOrganizationInvitationsComponent extends BaseComponent impleme
     save(event) {
         this.isLoading = true;
         this.organizationsService.saveInvitation(event.item).subscribe(
-            result => {
+            (result) => {
                 if (result.type != 'error') {
                     this.showEditor = false;
                     this.getInvitations();

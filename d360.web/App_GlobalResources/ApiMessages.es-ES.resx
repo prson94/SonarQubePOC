@@ -1,0 +1,751 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Solicitud incorrecta</value>
+  </data>
+  <data name="EndpointGettingMeasureHistoryHeading" xml:space="preserve">
+    <value>Error al obtener el historial de mediciones</value>
+  </data>
+  <data name="EndpointNotAuthorizedHeading" xml:space="preserve">
+    <value>No autorizado</value>
+  </data>
+  <data name="EndpointNotAuthorizedMessage" xml:space="preserve">
+    <value>No está autorizado a realizar esta acción.</value>
+  </data>
+  <data name="EndpointRecalculatingMeasureScoreItemsHeading" xml:space="preserve">
+    <value>Error al recalcular los elementos de puntuación de medición</value>
+  </data>
+  <data name="ErrorAddingScoreResultsHeading" xml:space="preserve">
+    <value>Error al agregar los resultados de puntuación</value>
+  </data>
+  <data name="ErrorDeletingDefaultHelpItem" xml:space="preserve">
+    <value>No se puede eliminar una entrada de ayuda predeterminada</value>
+  </data>
+  <data name="ErrorInvalidDatasetMessage" xml:space="preserve">
+    <value>Ha enviado un conjunto de datos no válido o vacío. Compruebe su solicitud y vuelva a enviarla.</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>Prohibido</value>
+  </data>
+  <data name="ForbiddenUserNotAuthorizedMessage" xml:space="preserve">
+    <value>El usuario prohibido no es un administrador.</value>
+  </data>
+  <data name="InvalidAssetUid" xml:space="preserve">
+    <value>AssetUid {0} no es válido</value>
+  </data>
+  <data name="InvalidDirection" xml:space="preserve">
+    <value>Valor no válido para el parámetro '_direction'. Los valores permitidos son 'desc' y 'asc'.</value>
+  </data>
+  <data name="InvalidIncludeTotal" xml:space="preserve">
+    <value>Invalid _includeTotal proporcionado</value>
+  </data>
+  <data name="InvalidHelpName" xml:space="preserve">
+    <value>El nombre no puede estar vacío.</value>
+  </data>
+  <data name="InvalidHelpNameLength" xml:space="preserve">
+    <value>El nombre no puede tener más de 500 caracteres.</value>
+  </data>
+  <data name="InvalidHelpUrl" xml:space="preserve">
+    <value>La URL no puede estar vacía.</value>
+  </data>
+  <data name="InvalidHelpUrlLength" xml:space="preserve">
+    <value>La URL no puede tener más de 2000 caracteres</value>
+  </data>
+  <data name="InvalidRequest" xml:space="preserve">
+    <value>Solicitud no válida</value>
+  </data>
+  <data name="InvalidScoreType" xml:space="preserve">
+    <value>Tipo de puntuación no válido proporcionado; proporcione un tipo de puntuación válido.</value>
+  </data>
+  <data name="NotFound" xml:space="preserve">
+    <value>No se encuentra</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Correcto</value>
+  </data>
+  <data name="UnknownError" xml:space="preserve">
+    <value>Error desconocido</value>
+  </data>
+  <data name="InvalidFilterExpression" xml:space="preserve">
+    <value>Expresión de filtro no válida:</value>
+  </data>
+  <data name="InvalidFilterExpressionUsed" xml:space="preserve">
+    <value>Expresión de filtro no válida utilizada.</value>
+  </data>
+  <data name="InvalidFilterExpressionUsedMessage" xml:space="preserve">
+    <value>Expresión de filtro no válida utilizada. Compruebe los valores de los filtros y sus tipos de datos.</value>
+  </data>
+  <data name="AssetNotfound" xml:space="preserve">
+    <value>Activo no encontrado</value>
+  </data>
+  <data name="AssetTypeNotFoundForAsset" xml:space="preserve">
+    <value>No se pudo encontrar el tipo de activo para este activo</value>
+  </data>
+  <data name="AssetValidateWithAssetType" xml:space="preserve">
+    <value>El UID del activo no coincide con el tipo de activo proporcionado.</value>
+  </data>
+  <data name="EmptyInvalidParameterSet" xml:space="preserve">
+    <value>Ha pasado un conjunto de criterios vacío o no válido.</value>
+  </data>
+  <data name="FilterNotFound" xml:space="preserve">
+    <value>Filtro no encontrado.</value>
+  </data>
+  <data name="FilterNotOwned" xml:space="preserve">
+    <value>El filtro no es propiedad del usuario.</value>
+  </data>
+  <data name="FilterRemove" xml:space="preserve">
+    <value>Filtro eliminado.</value>
+  </data>
+  <data name="InvalidGuid" xml:space="preserve">
+    <value>GUID {0} no válido.</value>
+  </data>
+  <data name="InvalidNumberTooLarge" xml:space="preserve">
+    <value>Valor {0} proporcionado no válido. El número es demasiado largo.</value>
+  </data>
+  <data name="InvalidValueMessage" xml:space="preserve">
+    <value>Valor {0} proporcionado no válido.</value>
+  </data>
+  <data name="MinLengthCheckGTZero" xml:space="preserve">
+    <value>Valor {0} proporcionado no válido. El valor debe ser mayor que 0.</value>
+  </data>
+  <data name="NumberValueMessage" xml:space="preserve">
+    <value>Valor {0} proporcionado no válido. Debe ser un valor numérico.</value>
+  </data>
+  <data name="PageNumString" xml:space="preserve">
+    <value>pageNum</value>
+  </data>
+  <data name="PageSizeString" xml:space="preserve">
+    <value>pageSize</value>
+  </data>
+  <data name="SaveFailedMessage" xml:space="preserve">
+    <value>Error al guardar</value>
+  </data>
+  <data name="UIDNotFoundObjectAndObjectType" xml:space="preserve">
+    <value>No se han encontrado Asset, Asset Type, Tag, Workflow Type, RelationshipType ni Responsibility Type para el UID</value>
+  </data>
+  <data name="ApiEntryNotFound" xml:space="preserve">
+    <value>Entidad API no encontrada</value>
+  </data>
+  <data name="ExecutionIDNotFound" xml:space="preserve">
+    <value>No se ha encontrado un identificador único de ejecución.</value>
+  </data>
+  <data name="ExecutionIDStatus" xml:space="preserve">
+    <value>Procesando solicitud. Vuelva a comprobar el estado con este ExecutionID.</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>No se ha encontrado el tipo de campo</value>
+  </data>
+  <data name="RuleIDNotFound" xml:space="preserve">
+    <value>ID de regla no encontrado</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Error de servidor interno</value>
+  </data>
+  <data name="AccessDenied" xml:space="preserve">
+    <value>Acceso denegado</value>
+  </data>
+  <data name="AssetNotFoundForAssetType" xml:space="preserve">
+    <value>No se encontró ningún activo para el tipo de activo {0}</value>
+  </data>
+  <data name="AssetTypeNotSupportExport" xml:space="preserve">
+    <value>AssetType no es compatible con la plantilla de exportación.</value>
+  </data>
+  <data name="ChangeFieldNotAllowed" xml:space="preserve">
+    <value>No tiene permisos para cambiar los campos de este tipo.</value>
+  </data>
+  <data name="ComponentMaxSize250" xml:space="preserve">
+    <value>El componente no puede superar los 250 caracteres.</value>
+  </data>
+  <data name="ComponentNotValid" xml:space="preserve">
+    <value>El componente no es válido.</value>
+  </data>
+  <data name="Conflict" xml:space="preserve">
+    <value>Conflicto</value>
+  </data>
+  <data name="ConnectorStatusNotFound" xml:space="preserve">
+    <value>No se ha podido encontrar el estado del conector con externalId {0}.</value>
+  </data>
+  <data name="CounterInitialValueHigherCurrentValue" xml:space="preserve">
+    <value>El valor inicial del contador debe ser mayor que el recuento de activos ({0})</value>
+  </data>
+  <data name="DataTypeValueNotMatched" xml:space="preserve">
+    <value>El valor proporcionado no coincide con el tipo de datos esperado para esta configuración</value>
+  </data>
+  <data name="DiagramAssetTypeSystemFieldValidation" xml:space="preserve">
+    <value>Los campos Nombre, GovernanceRole y StepNo no se pueden eliminar del tipo de activo de diagrama.</value>
+  </data>
+  <data name="DuplicateUserUidProvided" xml:space="preserve">
+    <value>El mismo UID de usuario aparece varias veces.</value>
+  </data>
+  <data name="EndIPAddressNotValid" xml:space="preserve">
+    <value>El valor final {0} no es una dirección IP válida</value>
+  </data>
+  <data name="ErrorConnectorStatus" xml:space="preserve">
+    <value>Error al añadir el estado de un punto de conexión del conector</value>
+  </data>
+  <data name="ErrorCreateTemplate" xml:space="preserve">
+    <value>Error al crear la plantilla</value>
+  </data>
+  <data name="ErrorFileOpen" xml:space="preserve">
+    <value>Error al abrir el archivo.</value>
+  </data>
+  <data name="ErrorFilterExpressionParse" xml:space="preserve">
+    <value>Error de análisis de la expresión del filtro</value>
+  </data>
+  <data name="ErrorScoreCasting" xml:space="preserve">
+    <value>No se ha podido transformar el valor del tipo de puntuación {0} en un tipo de puntuación válido</value>
+  </data>
+  <data name="ErrorUpdateTemplate" xml:space="preserve">
+    <value>Error al actualizar la plantilla</value>
+  </data>
+  <data name="ExecutionCancel" xml:space="preserve">
+    <value>La ejecución con el UID {0} se ha cancelado correctamente.</value>
+  </data>
+  <data name="ExecutionCancelByUser" xml:space="preserve">
+    <value>El usuario ha cancelado el trabajo de ejecución.</value>
+  </data>
+  <data name="ExecutionUIDCancelled" xml:space="preserve">
+    <value>La ejecución con el UID {0} ya se ha cancelado.</value>
+  </data>
+  <data name="ExecutionUIDFinishedCanNotCancel" xml:space="preserve">
+    <value>La ejecución con el UID {0} ha finalizado y no se puede cancelar.</value>
+  </data>
+  <data name="ExecutionUIDNotBatchJobCanNotCancel" xml:space="preserve">
+    <value>La ejecución con el UID {0} no es un trabajo por lotes y no se puede cancelar.</value>
+  </data>
+  <data name="ExecutionUIDNotExist" xml:space="preserve">
+    <value>La ejecución con el UID {0} no existe.</value>
+  </data>
+  <data name="ExecutionUIDNotFound" xml:space="preserve">
+    <value>No se ha encontrado un identificador único de ejecución.</value>
+  </data>
+  <data name="ExecutionUIDStartedCanNotCancel" xml:space="preserve">
+    <value>La ejecución con el UID {0} ha comenzado y no se puede cancelar.</value>
+  </data>
+  <data name="ExecutionWrongWhenCancel" xml:space="preserve">
+    <value>Algo salió mal al cancelar la ejecución.</value>
+  </data>
+  <data name="ExistItemInSystem" xml:space="preserve">
+    <value>Elementos existentes en el sistema</value>
+  </data>
+  <data name="ExportViewMessage" xml:space="preserve">
+    <value>Se requiere un ExportViewType válido.</value>
+  </data>
+  <data name="FieldMovedSuccessfully" xml:space="preserve">
+    <value>El campo se ha movido correctamente.</value>
+  </data>
+  <data name="FieldTypeError" xml:space="preserve">
+    <value>Error del tipo de campo</value>
+  </data>
+  <data name="FieldUseInResponsibilityRule" xml:space="preserve">
+    <value>Este tipo de campo está en uso en una regla de responsabilidad y esta debe eliminarse primero.</value>
+  </data>
+  <data name="FieldValidateWithAssetType" xml:space="preserve">
+    <value>El campo '{0}' no es válido para el tipo de activo especificado.</value>
+  </data>
+  <data name="FileUploadMessage" xml:space="preserve">
+    <value>El archivo se ha cargado correctamente</value>
+  </data>
+  <data name="GroupIsAcitveDirectorNotManageManually" xml:space="preserve">
+    <value>El UID de grupo proporcionado es un grupo del directorio activo y no se puede gestionar manualmente.</value>
+  </data>
+  <data name="GroupUidNotExists" xml:space="preserve">
+    <value>El UID de grupo proporcionado no es un UID de grupo válido. El grupo no existe.</value>
+  </data>
+  <data name="InvalidAssetTypeID" xml:space="preserve">
+    <value>ID de tipo de activo no válido. Proporcione un ID de tipo de activo válido.</value>
+  </data>
+  <data name="InvalidBoolean" xml:space="preserve">
+    <value>El valor proporcionado no es un valor boolean válido</value>
+  </data>
+  <data name="InvalidExternalID" xml:space="preserve">
+    <value>externalId {0} no es un UID válido</value>
+  </data>
+  <data name="InvalidNumber" xml:space="preserve">
+    <value>El valor proporcionado no es un número válido</value>
+  </data>
+  <data name="InvalidParameter" xml:space="preserve">
+    <value>Parámetro no válido</value>
+  </data>
+  <data name="InvalidResourceuid" xml:space="preserve">
+    <value>_resourceuid proporcionado no válido.</value>
+  </data>
+  <data name="InvalidUserUids" xml:space="preserve">
+    <value>Uno o más de los UID de usuario pasados no son un usuario.</value>
+  </data>
+  <data name="Invalid_Order" xml:space="preserve">
+    <value>_order proporcionado no válido.</value>
+  </data>
+  <data name="ItemExistsNotReplaceMessage" xml:space="preserve">
+    <value>Hay elementos existentes en su entorno. No puede realizar una acción Reemplazar hasta que se eliminen esos elementos.</value>
+  </data>
+  <data name="JSONValidMessage" xml:space="preserve">
+    <value>No ha proporcionado una estructura JSON válida para esta solicitud.</value>
+  </data>
+  <data name="MissingIPAddressValue" xml:space="preserve">
+    <value>Falta un valor en una o más direcciones IP</value>
+  </data>
+  <data name="ModelExportTemplateStyleNotFound" xml:space="preserve">
+    <value>El modelo no contiene un estilo de plantilla de exportación válido.</value>
+  </data>
+  <data name="NotValidAssetActionRelationTypeProvided" xml:space="preserve">
+    <value>No se ha proporcionado ningún assetTypeUid, actionTypeUid ni relationshipTypeUid</value>
+  </data>
+  <data name="NoUserUIDProvided" xml:space="preserve">
+    <value>No se han proporcionado ningún UID de usuario.</value>
+  </data>
+  <data name="RemoveFieldNotAllowed" xml:space="preserve">
+    <value>No tiene permisos para eliminar los campos en este tipo.</value>
+  </data>
+  <data name="SettingIDNotFound" xml:space="preserve">
+    <value>No se ha encontrado la configuración con este ID</value>
+  </data>
+  <data name="SettingIDNotValid" xml:space="preserve">
+    <value>El valor pasado para _settingId no es válido</value>
+  </data>
+  <data name="SettingLocked" xml:space="preserve">
+    <value>Esta configuración está bloqueada y no se puede actualizar</value>
+  </data>
+  <data name="SettingValueProvided" xml:space="preserve">
+    <value>Se debe proporcionar exactamente un valor basado en el tipo de datos de la configuración</value>
+  </data>
+  <data name="StartIPAddressNotValid" xml:space="preserve">
+    <value>El valor de inicio {0} no es una dirección IP válida</value>
+  </data>
+  <data name="StatusInvalid" xml:space="preserve">
+    <value>Valor no válido para Estado. Los valores permitidos son: START, COMPLETE_SUCCESS, COMPLETE_FAILURE, INFORMATION</value>
+  </data>
+  <data name="StatusRequied" xml:space="preserve">
+    <value>Se requiere el valor del parámetro del estado.</value>
+  </data>
+  <data name="StyleUpdated" xml:space="preserve">
+    <value>Estilos actualizados correctamente.</value>
+  </data>
+  <data name="SuccessfullyAdded" xml:space="preserve">
+    <value>{0} añadido correctamente.</value>
+  </data>
+  <data name="SucessfullyUpdated" xml:space="preserve">
+    <value>{0} actualizado correctamente.</value>
+  </data>
+  <data name="TemplateCreatingError" xml:space="preserve">
+    <value>Error al crear la plantilla</value>
+  </data>
+  <data name="TemplateDeleted" xml:space="preserve">
+    <value>Plantilla eliminada.</value>
+  </data>
+  <data name="TemplateDeletedError" xml:space="preserve">
+    <value>Error al eliminar la plantilla</value>
+  </data>
+  <data name="TemplateDeletedMessage" xml:space="preserve">
+    <value>Plantilla eliminada correctamente.</value>
+  </data>
+  <data name="TemplateFileTypeValidate" xml:space="preserve">
+    <value>El tipo de archivo de la plantilla debe ser .xls o .xlsx.</value>
+  </data>
+  <data name="TemplateNameDuplicate" xml:space="preserve">
+    <value>La plantilla con el nombre '{0}' ya existe para el tipo de activo '{1}'.</value>
+  </data>
+  <data name="TemplateNotFound" xml:space="preserve">
+    <value>Plantilla no encontrada.</value>
+  </data>
+  <data name="TemplateNotFoundMessage" xml:space="preserve">
+    <value>No se han encontrado plantillas para el UID proporcionado.</value>
+  </data>
+  <data name="TemplateNotFoundUpdate" xml:space="preserve">
+    <value>No se ha encontrado el estilo de la plantilla de exportación que desea actualizar.</value>
+  </data>
+  <data name="UsedinResponsibilityRules" xml:space="preserve">
+    <value>Utilizado en reglas de responsabilidad</value>
+  </data>
+  <data name="UserAlreadyMemberOfGroup" xml:space="preserve">
+    <value>El usuario {0} ya es miembro de este grupo</value>
+  </data>
+  <data name="AlreadyWatch" xml:space="preserve">
+    <value>Ya está viendo {0}</value>
+  </data>
+  <data name="CurrentWatch" xml:space="preserve">
+    <value>Actualmente está viendo '{0}' mediante su elemento principal '{1}'.</value>
+  </data>
+  <data name="CurrentWatchNotUnwatchIndividually" xml:space="preserve">
+    <value>Actualmente está viendo el elemento principal de este elemento, '{0}'.  No puede dejar de ver este elemento de manera individual.</value>
+  </data>
+  <data name="ImageSize2048" xml:space="preserve">
+    <value>Solicitud no válida, tamaño no válido especificado para la imagen. El valor debe ser menor que 2048 o mayor que 0</value>
+  </data>
+  <data name="InvalidApiKeyOrApiSecret" xml:space="preserve">
+    <value>ApiKey o apiSecret no válidos para currentUser</value>
+  </data>
+  <data name="InvalidOrgTypeUid" xml:space="preserve">
+    <value>OrganizationTypeUid proporcionado no válido</value>
+  </data>
+  <data name="InvalidOrgUid" xml:space="preserve">
+    <value>UID de organización proporcionado no válido</value>
+  </data>
+  <data name="InvalidUser" xml:space="preserve">
+    <value>Información de usuario no válida</value>
+  </data>
+  <data name="IsChangePwdReqAuthOtherThanForm" xml:space="preserve">
+    <value>IsChangePasswordReqeust establecido en true, no se permite para tipos de autenticación que no sean Formularios</value>
+  </data>
+  <data name="IsChangePwdReqCurrentUser" xml:space="preserve">
+    <value>IsChangePasswordReqeust establecido en true solo para el usuario actual</value>
+  </data>
+  <data name="IsChangePwdReqOneReq" xml:space="preserve">
+    <value>Solo se acepta una solicitud para IsChangePasswordReqeust establecido en true.</value>
+  </data>
+  <data name="NameMissingInGroupPayload" xml:space="preserve">
+    <value>Falta el nombre en uno o varios grupos de la carga útil. Se debe proporcionar un nombre.</value>
+  </data>
+  <data name="NoGroupRequest" xml:space="preserve">
+    <value>No se ha proporcionado ningún grupo en la solicitud</value>
+  </data>
+  <data name="NotCurrentWatch" xml:space="preserve">
+    <value>Actualmente no está viendo '{0}'.</value>
+  </data>
+  <data name="NoUserRequest" xml:space="preserve">
+    <value>No se ha proporcionado ningún usuario en la solicitud.</value>
+  </data>
+  <data name="OneMoreUidExists" xml:space="preserve">
+    <value>Uno o más de los UID especificados ya existen.</value>
+  </data>
+  <data name="PrimayOwnerOfGroupNotDelete" xml:space="preserve">
+    <value>No se puede eliminar el propietario principal del grupo.</value>
+  </data>
+  <data name="RequiredFieldError" xml:space="preserve">
+    <value>{0} es un campo obligatorio.</value>
+  </data>
+  <data name="ResourceGroupNotExists" xml:space="preserve">
+    <value>El recurso o grupo no existe</value>
+  </data>
+  <data name="Userremoved" xml:space="preserve">
+    <value>Usuario eliminado.</value>
+  </data>
+  <data name="UserremovedMessage" xml:space="preserve">
+    <value>Se ha eliminado al usuario del grupo.</value>
+  </data>
+  <data name="YouAreWatching" xml:space="preserve">
+    <value>Está {0} viendo {1}.</value>
+  </data>
+  <data name="FieldNotAllowedForAssetType" xml:space="preserve">
+    <value>No tiene permitido recuperar los campos de este tipo de activo.</value>
+  </data>
+  <data name="UnknownErrorInvestigatingMessage" xml:space="preserve">
+    <value>Se ha producido un error desconocido y se ha registrado para su posterior investigación. Intente realizar su solicitud de nuevo más tarde.</value>
+  </data>
+  <data name="InvalidEndDate" xml:space="preserve">
+    <value>_endDate proporcionado no válido</value>
+  </data>
+  <data name="InvalidStartDate" xml:space="preserve">
+    <value>_startDate proporcionado no válido</value>
+  </data>
+  <data name="StartEndDateValidation" xml:space="preserve">
+    <value>La fecha de inicio debe ser anterior a la fecha de finalización</value>
+  </data>
+  <data name="FilterExpressionParseError" xml:space="preserve">
+    <value>Error de análisis de la expresión del filtro</value>
+  </data>
+  <data name="Invalid_PageNum" xml:space="preserve">
+    <value>Parámetro _pageNum no válido pasado en la solicitud</value>
+  </data>
+  <data name="Invalid_PageSize" xml:space="preserve">
+    <value>Parámetro _pageSize no válido pasado en la solicitud</value>
+  </data>
+  <data name="_PageSizeLimit" xml:space="preserve">
+    <value>El parámetro _pageSize no válido pasado en el valor de la solicitud es mayor que el valor máximo admitido de 100 000.</value>
+  </data>
+  <data name="_PageSizePassedZeroLess" xml:space="preserve">
+    <value>El parámetro _pageSize no válido pasado en el valor de la solicitud es menor o igual a cero.</value>
+  </data>
+  <data name="EndpointMethod" xml:space="preserve">
+    <value>Método de punto de conexión</value>
+  </data>
+  <data name="Invalid" xml:space="preserve">
+    <value>No válida</value>
+  </data>
+  <data name="CustomUidNotValid" xml:space="preserve">
+    <value>{0} no es un UID válido.</value>
+  </data>
+  <data name="UidConstant" xml:space="preserve">
+    <value>UID</value>
+  </data>
+  <data name="InvalidOrderRequese" xml:space="preserve">
+    <value>Orden no válida pasada en la solicitud</value>
+  </data>
+  <data name="InvalidType" xml:space="preserve">
+    <value>Tipo no válido</value>
+  </data>
+  <data name="FailedAuthentication" xml:space="preserve">
+    <value>Error al autenticar. Estado de Oidc no encontrado en .</value>
+  </data>
+  <data name="FailedAuthenticationNonces" xml:space="preserve">
+    <value>Error al autenticar. Los valores de seguridad (nonces) no coinciden.</value>
+  </data>
+  <data name="InvalidSortField" xml:space="preserve">
+    <value>Campo de clasificación especificado no válido</value>
+  </data>
+  <data name="InvalidSortOrder" xml:space="preserve">
+    <value>Orden de clasificación especificado no válido</value>
+  </data>
+  <data name="MissingConfigInfo" xml:space="preserve">
+    <value>A la gestión le falta información de configuración relacionada con el IdP de OpenID, como ClientID o Authority.</value>
+  </data>
+  <data name="LookupFieldTypeInUse" xml:space="preserve">
+    <value>Hay activos existentes en su entorno con valores en el campo '{0}'. No puede cambiar la propiedad 'Tipo de lista' hasta que se eliminen los valores de esos campos.</value>
+  </data>
+  <data name="InvalidIntersecttypeid" xml:space="preserve">
+    <value>ID de tipo de intersección no válido</value>
+  </data>
+  <data name="InvalidModel" xml:space="preserve">
+    <value>Modelo no válido.</value>
+  </data>
+  <data name="TargetAssetType" xml:space="preserve">
+    <value>tipo de activo objetivo</value>
+  </data>
+  <data name="AssetCorssRefAlreadyExists" xml:space="preserve">
+    <value>La referencia cruzada de los activos ya existe.</value>
+  </data>
+  <data name="AssetCrossReferenceNotHaveRequiredField" xml:space="preserve">
+    <value>El modelo de referencia cruzada de activos no contiene campos obligatorios.</value>
+  </data>
+  <data name="Invalid_includeChildAssetsProvided" xml:space="preserve">
+    <value>_includeChildAssets proporcionado no válido</value>
+  </data>
+  <data name="ModelNotContainFields" xml:space="preserve">
+    <value>El modelo no contiene campos obligatorios</value>
+  </data>
+  <data name="RequestMissingDatasource" xml:space="preserve">
+    <value>La solicitud no contiene el parámetro requerido dataSource.</value>
+  </data>
+  <data name="RequestMissingDatasourceType" xml:space="preserve">
+    <value>La solicitud no contiene los parámetros requeridos datasource y type.</value>
+  </data>
+  <data name="RequestMissingType" xml:space="preserve">
+    <value>La solicitud no contiene el parámetro requerido type</value>
+  </data>
+  <data name="add" xml:space="preserve">
+    <value>añadir</value>
+  </data>
+  <data name="confirm" xml:space="preserve">
+    <value>confirmar</value>
+  </data>
+  <data name="RebuildRequest" xml:space="preserve">
+    <value>Solicitud de reconstrucción recibida y aceptada.</value>
+  </data>
+  <data name="CompanyInactive" xml:space="preserve">
+    <value>Empresa inactiva</value>
+  </data>
+  <data name="InvalidEnumValueInJson" xml:space="preserve">
+    <value>Valor de enumeración no válido en JSON</value>
+  </data>
+  <data name="InvalidJson" xml:space="preserve">
+    <value>Mensaje JSON no válido</value>
+  </data>
+  <data name="FavoritesEmptyRoute" xml:space="preserve">
+    <value>Los favoritos de tipo Página no pueden tener una ruta vacía.</value>
+  </data>
+  <data name="SucessfullyCreated" xml:space="preserve">
+    <value>{0} se ha creado correctamente.</value>
+  </data>
+  <data name="SucessfullyRemoved" xml:space="preserve">
+    <value>{0} se ha eliminado correctamente.</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="OwnershipType" xml:space="preserve">
+    <value>tipo de propiedad</value>
+  </data>
+  <data name="Predicate" xml:space="preserve">
+    <value>Predicado</value>
+  </data>
+  <data name="SucessfullyDeleted" xml:space="preserve">
+    <value>{0} se ha eliminado correctamente.</value>
+  </data>
+  <data name="SucessfullyEdited" xml:space="preserve">
+    <value>{0} se ha editado correctamente.</value>
+  </data>
+  <data name="HelpMenuSuccess" xml:space="preserve">
+    <value>Los elementos del menú de ayuda se han actualizado correctamente.</value>
+  </data>
+  <data name="HelpMenuItemsUpdated" xml:space="preserve">
+    <value>Elementos del menú de ayuda actualizados.</value>
+  </data>
+  <data name="HelpMenuVisibilityError" xml:space="preserve">
+    <value>La visibilidad del elemento debe estar establecida en 1, 2 o 3.</value>
+  </data>
+  <data name="ExecutionStatusInvalid" xml:space="preserve">
+    <value>Valor no válido para Estado. Los valores válidos son Pendiente, En ejecución y Completado.</value>
+  </data>
+  <data name="HelpItemsAdded" xml:space="preserve">
+    <value>Los elementos del menú de ayuda se han creado correctamente.</value>
+  </data>
+  <data name="HelpItemsDeleted" xml:space="preserve">
+    <value>Los elementos del menú de ayuda se han eliminado correctamente.</value>
+  </data>
+  <data name="HelpMenuItemsCreated" xml:space="preserve">
+    <value>Elementos del menú de ayuda creados.</value>
+  </data>
+  <data name="HelpMenuItemsDeleted" xml:space="preserve">
+    <value>Elementos del menú de ayuda eliminados.</value>
+  </data>
+  <data name="ApplicationIdMaxLengthViolated" xml:space="preserve">
+    <value>La longitud del ApplicationId no puede superar los 200 caracteres</value>
+  </data>
+  <data name="FavoritesSuccessfullyDeleted" xml:space="preserve">
+    <value>Se han eliminado correctamente los favoritos especificados</value>
+  </data>
+  <data name="FavoritesListCleared" xml:space="preserve">
+    <value>Lista de favoritos borrada.</value>
+  </data>
+  <data name="InvalidHelpDeleteUid" xml:space="preserve">
+    <value>No se ha proporcionado un UID válido para su eliminación.</value>
+  </data>
+  <data name="InvalidHelpUpdateUid" xml:space="preserve">
+    <value>No se ha proporcionado un UID válido para su actualización.</value>
+  </data>
+  <data name="HelpMenuOrderError" xml:space="preserve">
+    <value>El orden no puede ser un número negativo.</value>
+  </data>
+  <data name="InvalidLoadUid" xml:space="preserve">
+    <value>LoadUid proporcionado no válido.</value>
+  </data>
+  <data name="ArtifactNotFound" xml:space="preserve">
+    <value>Artefacto no encontrado.</value>
+  </data>
+  <data name="OpenIdCodeOrStateIsNotPresent" xml:space="preserve">
+    <value>En la respuesta del proveedor de OpenID faltan el código o el estado. Es posible que su administrador haya configurado mal los ajustes de su proveedor de identidad.</value>
+  </data>
+  <data name="InvalidParameterMessage" xml:space="preserve">
+    <value>'{0}' no es un valor válido para {1}</value>
+  </data>
+  <data name="FavoriteUnknownObject" xml:space="preserve">
+    <value>La ruta {Route} apunta a un objeto desconocido</value>
+  </data>
+  <data name="FavoriteUnknownRoute" xml:space="preserve">
+    <value>La ruta {Route} se desconoce o está obsoleta</value>
+  </data>
+  <data name="InvalidAssetTypeUidProvided" xml:space="preserve">
+    <value>No se ha encontrado ningún tipo de activo con el assetTypeUid proporcionado.</value>
+  </data>
+  <data name="InvalidIntersectTypeUidProvided" xml:space="preserve">
+    <value>No se ha encontrado ningún tipo de intersección con el intersectTypeUid proporcionado.</value>
+  </data>
+  <data name="InvalidProfileIdentifier" xml:space="preserve">
+    <value>Identificador de perfil no válido.</value>
+  </data>
+</root>

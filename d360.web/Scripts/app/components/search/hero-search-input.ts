@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnInit, AfterViewInit } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
@@ -14,7 +14,7 @@ import { interval } from 'rxjs';
     providers: [TypeaheadSearchService],
 })
 
-export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
@@ -46,7 +46,13 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
     ngAfterViewInit(): void {
         this.setEventTypeLabel();
-    }
+	}
+
+	ngOnDestroy() {
+		if (this.setLabelInterval) {
+			clearInterval(this.setLabelInterval);
+		}
+	}
 
     setEventTypeLabel() {
         let label = (document.getElementById('searchMultiSelect')
@@ -66,8 +72,12 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
 	setLabelInterval;
 	private setSelectAllLabel() {
-		if (document.getElementById('searchMultiSelect').getElementsByClassName("select-all-label").length === 0
-			&& document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header").length !== 0
+		var searchMultiSelect = document.getElementById('searchMultiSelect');
+		if (!searchMultiSelect) {
+			return;
+		}
+		if (searchMultiSelect.getElementsByClassName("select-all-label").length === 0
+			&& searchMultiSelect.getElementsByClassName("p-multiselect-header").length !== 0
 		) {
 			if (this.setLabelInterval) {
 				clearInterval(this.setLabelInterval);

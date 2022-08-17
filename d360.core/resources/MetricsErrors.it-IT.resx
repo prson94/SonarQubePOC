@@ -1,0 +1,316 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllocationScoreTypeNotRecognised" xml:space="preserve">
+    <value>Allocazione ScoreType non riconosciuta.  Valore {0}</value>
+  </data>
+  <data name="AllocationUidInvalid" xml:space="preserve">
+    <value>È necessario fornire un AllocationUid valido.</value>
+  </data>
+  <data name="ConditionGroupThresholdValue" xml:space="preserve">
+    <value>Il gruppo di condizioni in posizione {0} deve contenere un valore Threshold compreso tra 0 e 1</value>
+  </data>
+  <data name="ConditionOperatorNotValid" xml:space="preserve">
+    <value>Una condizione utilizza un operatore ({0}) che non è valido per i campi con un tipo di dati {1}. </value>
+  </data>
+  <data name="ConditionValue" xml:space="preserve">
+    <value>Valore di condizione</value>
+  </data>
+  <data name="DataQualityInvalidOperator" xml:space="preserve">
+    <value>Un filtro DataQuality utilizza un operatore non valido.</value>
+  </data>
+  <data name="DataQualityInvalidOperatorForDataType" xml:space="preserve">
+    <value>Un filtro DataQuality utilizza un operatore ({0}) che non è valido per i campi con un tipo di dati {1}.</value>
+  </data>
+  <data name="DataQualityMustNotExternalCalc" xml:space="preserve">
+    <value>Una misura appartenente a un punteggio calcolato esternamente potrebbe non avere una definizione DataQuality.</value>
+  </data>
+  <data name="DataQualityResultFilter" xml:space="preserve">
+    <value>Filtro del risultato della qualità dei dati</value>
+  </data>
+  <data name="DefinitionNotExceed4000" xml:space="preserve">
+    <value>La definizione non deve superare i 4000 caratteri.</value>
+  </data>
+  <data name="DefinitionObjectPropertyNotEmpty" xml:space="preserve">
+    <value>La proprietà dell'oggetto Definizione non deve essere vuota.</value>
+  </data>
+  <data name="DuplicateMetricSameGroup" xml:space="preserve">
+    <value>Non è possibile aggiungere una metrica con lo stesso nome nello stesso raggruppamento.</value>
+  </data>
+  <data name="Erroraddingmetric" xml:space="preserve">
+    <value>Errore durante l'aggiunta della metrica</value>
+  </data>
+  <data name="ErrorConditionAlter" xml:space="preserve">
+    <value>Non è possibile modificare le condizioni di questa metrica senza alterarne anche la data di entrata in vigore.</value>
+  </data>
+  <data name="ErrorConditionTypeAlter" xml:space="preserve">
+    <value>Non è possibile modificare il tipo di condizione di questa metrica senza alterarne anche la data di entrata in vigore.</value>
+  </data>
+  <data name="ErrorConvertGroupToMetricChildExists" xml:space="preserve">
+    <value>Non è possibile convertire questo raggruppamento in una metrica poiché vi sono già associate metriche secondarie.</value>
+  </data>
+  <data name="ErrorConvertMetricToGroup" xml:space="preserve">
+    <value>Non è possibile convertire questa metrica in un raggruppamento poiché vi sono già associati dei risultati.</value>
+  </data>
+  <data name="ErrorCreatingMeasure" xml:space="preserve">
+    <value>Errore durante la creazione della misura</value>
+  </data>
+  <data name="ErrorDefinitionAlter" xml:space="preserve">
+    <value>Non è possibile modificare la definizione di questa metrica senza alterarne anche la data di entrata in vigore.</value>
+  </data>
+  <data name="ErrorUpdatingMeasure" xml:space="preserve">
+    <value>Errore durante l'aggiornamento della misura</value>
+  </data>
+  <data name="Errorupdatingmetric" xml:space="preserve">
+    <value>Errore durante l'aggiornamento della metrica</value>
+  </data>
+  <data name="ErrorWeightalter" xml:space="preserve">
+    <value>Non è possibile modificare il peso di questa metrica senza alterarne anche la data di entrata in vigore.</value>
+  </data>
+  <data name="FieldTypeNotFound" xml:space="preserve">
+    <value>FieldType non esiste!</value>
+  </data>
+  <data name="GovernanceFieldCheck" xml:space="preserve">
+    <value>Controllo sul campo di governance</value>
+  </data>
+  <data name="GovernanceMustNotExternalCalc" xml:space="preserve">
+    <value>Una misura appartenente a un punteggio calcolato esternamente potrebbe non avere una definizione Governance.</value>
+  </data>
+  <data name="GovernanceNotSupportOperator" xml:space="preserve">
+    <value>La Governance {0} non supporta l'operatore selezionato.</value>
+  </data>
+  <data name="GovernanceRelationCheck" xml:space="preserve">
+    <value>Controllo della relazione di governance</value>
+  </data>
+  <data name="InstrunctionExternalCheckMax500Char" xml:space="preserve">
+    <value>Le istruzioni per il controllo esterno non possono superare i 500 caratteri.</value>
+  </data>
+  <data name="InvalidFieldTypeAsset" xml:space="preserve">
+    <value>FieldType non valido per questa risorsa.</value>
+  </data>
+  <data name="InvalidFieldTypeGovernanceFieldCheck" xml:space="preserve">
+    <value>Il nome del tipo di campo ({0}) utilizzato nel controllo del campo di governance non esiste su questo tipo di risorsa.</value>
+  </data>
+  <data name="InvalidOperatorGovernanceFieldCheck" xml:space="preserve">
+    <value>Il nome del tipo di campo ({0}) utilizzato nel controllo del campo di governance non supporta l'operatore selezionato.</value>
+  </data>
+  <data name="MeasureInvalidAllocation" xml:space="preserve">
+    <value>La misura non appartiene a un'allocazione valida, il che indica una misura non valida.</value>
+  </data>
+  <data name="MeasureNameAlreadyExists" xml:space="preserve">
+    <value>La misura con il nome '{0}' esiste già.</value>
+  </data>
+  <data name="MeasureNotAllocationUid" xml:space="preserve">
+    <value>La misura non rientra nell'allocazione con UID di {0}.</value>
+  </data>
+  <data name="MeasureRecalculated" xml:space="preserve">
+    <value>La misura è attualmente in fase di ricalcolo. Attendere fino al completamento di questa azione, quindi riprovare.</value>
+  </data>
+  <data name="MeasureUidNotFound" xml:space="preserve">
+    <value>Impossibile trovare la misura con UID di {0}.</value>
+  </data>
+  <data name="MeasureWithNoVersion" xml:space="preserve">
+    <value>La misura non contiene alcuna versione, il che indica una misura non valida.</value>
+  </data>
+  <data name="MetricBackDateEntryNotAllowed" xml:space="preserve">
+    <value>Non è possibile retrodatare la data di entrata in vigore per questa metrica. È necessario fornire una data più recente di {0}</value>
+  </data>
+  <data name="MetricNotNull" xml:space="preserve">
+    <value>È stata fornita una metrica null.</value>
+  </data>
+  <data name="MetricUidNotExists" xml:space="preserve">
+    <value>La metrica con l'UID {0} non esiste.</value>
+  </data>
+  <data name="NameMax250Char" xml:space="preserve">
+    <value>Il nome non può contenere più di 250 caratteri.</value>
+  </data>
+  <data name="NotProvideDataQualityUnderDefinition" xml:space="preserve">
+    <value>Non è possibile fornire una proprietà dell'oggetto DataQuality alla voce Definizione.</value>
+  </data>
+  <data name="NotProvideGovernanceUnderDefinition" xml:space="preserve">
+    <value>Non è possibile fornire una proprietà dell'oggetto Governance alla voce Definizione.</value>
+  </data>
+  <data name="OneMoreValueDataQualityNotSupportDataType" xml:space="preserve">
+    <value>Uno o più valori utilizzati nei filtri DataQuality non sono supportati dal tipo di dati ({0}) del campo di riferimento.</value>
+  </data>
+  <data name="OneMoreValueGovernanceNotSupportDataType" xml:space="preserve">
+    <value>Uno o più valori utilizzati nel controllo del campo di governance non sono supportati dal tipo di dati ({0}) del campo di riferimento.</value>
+  </data>
+  <data name="OneMoreValueGovernanceRelationNotSupport" xml:space="preserve">
+    <value>Uno o più valori utilizzati nel controllo delle relazioni di governance non sono supportati. Tutti i valori devono corrispondere agli UID delle risorse esistenti.</value>
+  </data>
+  <data name="OperatorAcceptExactValue" xml:space="preserve">
+    <value>L'operatore utilizzato su {0} non supporta {1} valori. È necessario fornire esattamente {2} valore/i per questo operatore.</value>
+  </data>
+  <data name="OperatorAcceptRangeValue" xml:space="preserve">
+    <value>L'operatore utilizzato su {0} non supporta {1} valori. È necessario fornire tra {2} e {3} valori per questo operatore.</value>
+  </data>
+  <data name="OperatorNotAcceptAnyValue" xml:space="preserve">
+    <value>L'operatore utilizzato su {0} non supporta {1} valori. Non è necessario fornire alcun valore per questo operatore.</value>
+  </data>
+  <data name="ParentMetricNotFound" xml:space="preserve">
+    <value>Metrica principale non trovata.</value>
+  </data>
+  <data name="ProvideDataQualityUnderDefinition" xml:space="preserve">
+    <value>È necessario fornire la proprietà dell'oggetto DataQuality alla voce Definizione.</value>
+  </data>
+  <data name="ProvideGovernanceUnderDefinition" xml:space="preserve">
+    <value>Non è possibile fornire la proprietà dell'oggetto Governance alla voce Definizione.</value>
+  </data>
+  <data name="ProvideValueForNotThresholdBasedScoring" xml:space="preserve">
+    <value>Non è necessario fornire un valore per la proprietà Threshold poiché la misura che si sta per aggiungere non appartiene a una definizione di punteggio basata sulla soglia.</value>
+  </data>
+  <data name="ReferInvalidFieldDataQualityFilters" xml:space="preserve">
+    <value>È stato utilizzato un campo non valido come parte dei filtri DataQuality, in quanto non è stato trovato o utilizza un operatore non corretto.</value>
+  </data>
+  <data name="ResultPathUidNotEmpty" xml:space="preserve">
+    <value>ResultPathUid potrebbe non essere un identificatore vuoto.</value>
+  </data>
+  <data name="ResultPathUidNotValid" xml:space="preserve">
+    <value>ResultPathUid con l'identificatore specificato {0} non esiste o non corrisponde al tipo di risorsa di cui si sta calcolando il punteggio.</value>
+  </data>
+  <data name="ScoreDefinitionNotThresholdBased" xml:space="preserve">
+    <value>Il gruppo di condizioni in posizione {0} non deve fornire un valore per la proprietà Threshold poiché l'indicatore che si sta aggiungendo non appartiene a un indicatore basato sulla soglia.</value>
+  </data>
+  <data name="ThresholdRangeCheck" xml:space="preserve">
+    <value>Threshold deve essere un valore compreso tra 0 e 1</value>
+  </data>
+  <data name="UidGovernanceOwnerCheck" xml:space="preserve">
+    <value>Il controllo del proprietario della governance dell'UID non corrisponde a un tipo di responsabilità noto.</value>
+  </data>
+  <data name="UidGovernancePredicateCheck" xml:space="preserve">
+    <value>Il controllo del predicato della governance dell'UID non corrisponde a un predicato noto.</value>
+  </data>
+  <data name="UidGovernanceRelationCheck" xml:space="preserve">
+    <value>Il controllo della relazione della governance dell'UID non corrisponde a un tipo di relazione noto.</value>
+  </data>
+  <data name="ValidApiFieldNameWhenRuleResultFilterUse" xml:space="preserve">
+    <value>È necessario fornire nomi di campo validi (non vuoti) (nome API della definizione di campo) quando si utilizzano i filtri dei risultati delle regole.</value>
+  </data>
+  <data name="ValidAssetTypeUidWhenRuleResultFilterUse" xml:space="preserve">
+    <value>È necessario fornire identificatori del tipo di risorse validi (non vuoti) quando si utilizzano i filtri dei risultati delle regole.</value>
+  </data>
+  <data name="ValueNotSupportByDataType" xml:space="preserve">
+    <value>Uno o più valori utilizzati nella condizione non sono supportati dal tipo di dati ({0}) del campo di riferimento.</value>
+  </data>
+  <data name="WeightDecimalCheck" xml:space="preserve">
+    <value>Il peso può avere un massimo di 2 cifre decimali.</value>
+  </data>
+  <data name="WeightRangeCheck" xml:space="preserve">
+    <value>Il peso deve essere un valore compreso tra 0 e 1</value>
+  </data>
+</root>

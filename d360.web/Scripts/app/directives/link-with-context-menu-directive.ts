@@ -151,11 +151,28 @@ export class LinkWithContextDirective implements OnInit, OnDestroy, AfterViewChe
         this.el.nativeElement.dispatchEvent(event);
     }
 
-    @HostListener('document:mouseup', ['$event.target'])
+    @HostListener('document:click', ['$event.target'])
     onClick(btn) {
         this.removeElement();
     }
 
+	@HostListener('document:contextmenu', ['$event.target'])
+	onContextMenuClick(target: HTMLElement) {
+		if (!this.isElementContextLink(target)) {
+			this.removeElement();
+		}
+	}
+
+	private isElementContextLink(element: HTMLElement): boolean {
+		while (element.parentElement) {
+			if (element.attributes.getNamedItem('context-link')) {
+				return true;
+			}
+			element = element.parentElement;
+		}
+		return false;
+	}
+	
     removeEventListener(): void {
         var htmlEl = this.el.nativeElement as HTMLElement;
         htmlEl.onmouseenter = null;

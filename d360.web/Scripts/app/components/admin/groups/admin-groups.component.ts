@@ -189,7 +189,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     delete() {
         this.deleteInProgress = true;
         this.groupService.deleteGroupWithUid(this.selectedRow.Uid).subscribe(
-            result => {
+            (result) => {
                 this.showDelete = false;
                 this.selectedRow = null;
                 this.load();

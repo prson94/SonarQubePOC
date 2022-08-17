@@ -71,7 +71,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
         this.isLoading = true;
 
         this.responsibilityTypeService.getRelationRulesByResponsibilityType(this.id)
-            .subscribe(data => {
+            .subscribe((data) => {
                 this.rows = data;
                 this.selectedRow = null;
                 this.isLoading = false;
@@ -79,7 +79,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     edit(id: number): void {
-        this.selectedRow = this.rows.find(f => f.ID == id);
+        this.selectedRow = this.rows.find((f) => f.ID == id);
         this.isEditing = true;
         this.isDeleting = false;
         this.isAdding = false;
@@ -94,7 +94,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     delete(id: number): void {
-        this.selectedRow = this.rows.find(f => f.ID == id);
+        this.selectedRow = this.rows.find((f) => f.ID == id);
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
@@ -102,7 +102,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     clearDate(id: number): void {
-        this.selectedRow = this.rows.find(f => f.ID == id);
+        this.selectedRow = this.rows.find((f) => f.ID == id);
         this.isEditing = false;
         this.isDeleting = false;
         this.isAdding = false;
@@ -131,7 +131,7 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     deleteDate(id: number) {
-        this.responsibilityTypeService.deleteDate(id).subscribe(res => {
+        this.responsibilityTypeService.deleteDate(id).subscribe((res) => {
             this.showMessageForResult(this.messagesService, res);
             if (!res.isError) {
                 this.isDeletingDate = false;

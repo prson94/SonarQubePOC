@@ -4,6 +4,7 @@ using System.Data.Entity;
 using System.Drawing;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -384,8 +385,9 @@ namespace d360.model.DataAccessLayer
 				hasAssetPathField = true;
 			}
 
-			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			DynamicQuerySelects fieldColumns = new DynamicQuerySelects();
+			var fieldJoins = new DynamicQueryJoins();
+
 			List<string> whereStatements = new List<string>();
 			List<string> pagingSql = new List<string>();
 			List<string> TempTableScriptList = new List<string>();
@@ -395,7 +397,7 @@ namespace d360.model.DataAccessLayer
 			var dbArgs = new DynamicParameters();
 			var model = new AssetsApiViewModel();
 
-			fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+			fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", "AssetType");
 
 			dbArgs.Add("@assetTypeID", assetTypeID);
 			whereStatements.Add("A.AssetTypeID = @assetTypeID");
@@ -406,7 +408,7 @@ namespace d360.model.DataAccessLayer
 			//Don't get field sql for OwnershipLookup fields, as that will return the definition rather than the json we want
 			//The sql for OwnershipLookup fields will be added below at the includeOwnershipLookup conditional
 			getFieldSql(fieldTypes.Where(f => f.Type != "OwnershipLookup").ToList(), dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON, true, TempTableScriptList);
-			List<string> countJoins = new List<string>(fieldJoins);
+			var countJoins = fieldJoins.Clone();
 
 			TempTableScriptStr = string.Join("\n ", TempTableScriptList);
 
@@ -553,11 +555,11 @@ namespace d360.model.DataAccessLayer
 
 				var joinCountSql = $@"cross apply ({innerCountSql}) R";
 
-				fieldColumns.Add("R.Relationships");
+				fieldColumns.Add("R.Relationships", null);
 				dbArgs.Add("@predicateUid", predicateUID);
 
-				fieldJoins.Add(joinSql);
-				countJoins.Add(joinCountSql);
+				fieldJoins.Add(joinSql, "PredicateFilter");
+				countJoins.Add(joinCountSql, "PredicateFilter");
 				fieldsUsedInMainQuery.Add(joinCountSql);
 			}
 
@@ -730,8 +732,8 @@ namespace d360.model.DataAccessLayer
 
 					ownershipColumns.Add($"F{f.ID}.FormattedValue as [{f.Name}]");
 					groupColumns.Add($"F{f.ID}.FormattedValue");
-					fieldJoins.Add(ownershipQuery);
-					countJoins.Add(ownershipQuery);
+					fieldJoins.Add(ownershipQuery, "Ownership");
+					countJoins.Add(ownershipQuery, "Ownership");
 					ownershipJoins.Add(ownershipQuery);
 					ownershipPropertiesMapping.Add(f.Name, "F{f.ID}.FormattedValue");
 				});
@@ -846,8 +848,8 @@ namespace d360.model.DataAccessLayer
 					//Temp vars for filter expression parsing
 					//Filter expression parser uses sql definitions from getFieldSql() method
 					var tempArgs = new DynamicParameters();
-					List<string> tempJoins = new List<string>();
-					List<string> tempFieldColumns = new List<string>();
+					var tempJoins = new DynamicQueryJoins();
+					var tempFieldColumns = new DynamicQuerySelects();
 					List<Tuple<int, string>> originalTypeMappings = new List<Tuple<int, string>>();
 
 					//handle field types in case "Field from relationship"
@@ -864,7 +866,7 @@ namespace d360.model.DataAccessLayer
 
 					var filterDataProvider = new FilterDataProvider(CompanyContext);
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.CustomFields, includeParent);
-					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
+					filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns.GetStatements());
 					Dictionary<string, object> sqlParams = new Dictionary<string, object>();
 					List<int> filteredFields = new List<int>();
 					whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
@@ -897,9 +899,9 @@ namespace d360.model.DataAccessLayer
 						tempJoins.Clear();
 						tempFieldColumns.Clear();
 						getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && !fieldTypes.Any(f => f.ID == x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
-						fieldColumns.AddRange(tempFieldColumns);
-						fieldJoins.AddRange(tempJoins);
-						countJoins.AddRange(tempJoins);
+						fieldColumns.Merge(tempFieldColumns);
+						fieldJoins.Merge(tempJoins);
+						countJoins.Merge(tempJoins);
 						dbArgs.AddDynamicParams(tempArgs);
 					}
 
@@ -973,6 +975,7 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(value, out includePermissionDetails);
 			}
 
+			List<string> simpleFilters = new List<string>();
 			if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
 			{
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
@@ -982,38 +985,47 @@ namespace d360.model.DataAccessLayer
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
 
-					List<string> simpleFilters = new List<string>();
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
+
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
 					{
-						if (ft.Type == DataType.Tag.ToString())
-						{
-							string simpleFilterTagSql = @"exists (select top 1 AT.TagId from AssetTag AT
-														inner join Tag T on AT.TagId = T.Id
-														where AT.AssetID = A.ID and T.Value like @simpleFilter)";
+						bool isNumbericFieldType = ft.Type == DataType.Score.ToString() || ft.Type == DataType.Number.ToString() || ft.Type == DataType.Decimal.ToString();
 
-							simpleFilters.Add(simpleFilterTagSql);
-						}
-						else if (ft.Type == DataType.Path.ToString())
+						if (!isNumber && isNumbericFieldType)
 						{
-							simpleFilters.Add($"{GetPathSelectSql(ft)} like @simpleFilter");
+							//if search term is not a number, do not filter over numeric field types
+							continue;
 						}
-						else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
+
+						var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
+						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
+
+						if(ft.Type == DataType.Path.ToString())
 						{
-							string ftformatted = (listColorsAsJSON && CompanyContext.LookupFieldHasColorItem(ft)) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
-							simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
+							join = new DynamicQueryJoinData();
+							join.SQLStatement = "inner join AssetPath Node on Node.ID = a.ID";
 						}
-						else if (ft.Type == DataType.Lookup.ToString() && listColorsAsJSON && CompanyContext.LookupFieldHasColorItem(ft))
+
+						if (select != null && join != null)
 						{
-							simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
-						}
-						else if (ft.Type == DataType.Counter.ToString())
-						{
-							simpleFilters.Add($"('{ft.CounterPrefix}' + CAST(F{ft.ID}.FormattedValue as nvarchar(max))) like @simpleFilter");
-						}
-						else
-						{
-							simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+							//search for beggining of alias part  
+							//F26650.FormattedValue as [x]
+							//and trim take only part before that
+							var selectStatement = select.SimpleStatement ?? select.Statement;
+							var splitIdx = selectStatement.ToLowerInvariant().IndexOf(" as [");
+
+							var selectField = splitIdx < 0 ? selectStatement : selectStatement.Substring(0, splitIdx);
+
+							var joinStatement = !string.IsNullOrEmpty(join.SimpleStatement) ? join.SimpleStatement : join.SQLStatement;
+
+							simpleFilters.Add($@"
+								select  A.ID
+								from    Asset A 
+								{(ft.Type == DataType.Path.ToString() ? "inner join AssetPath Node on Node.ID = a.ID" : "")}
+								{joinStatement}
+								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
 						}
 					}
 
@@ -1032,7 +1044,9 @@ namespace d360.model.DataAccessLayer
 						{
 							ownershipSimpleFilterFields.Add("SecurityAssetName");
 						}
-						string simpleFilterOwnership = $@"exists (select 1 from #OwnershipLookupAssets ola where ola.assetid = a.id
+						string simpleFilterOwnership = $@"select  A.ID
+								from    Asset A  
+                                where A.AssetTypeID = @assettypeid and exists (select 1 from #OwnershipLookupAssets ola where ola.assetid = a.id
 													and ({string.Join(" or ", ownershipSimpleFilterFields.Select(f => $"{f} like @simpleFilter"))}))";
 						simpleFilters.Add(simpleFilterOwnership);
 					}
@@ -1040,16 +1054,23 @@ namespace d360.model.DataAccessLayer
 					//do not use simple filter on parent value if response is used for tree grid, otherwise all child items will be matched incorrectly
 					if (includeParent && !isForTreeGrid)
 					{
-						simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
+						simpleFilters.Add($@"select  A.ID
+								from Asset A
+									left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
+									left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID
+									left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and Parent.DisplayValue like @simpleFilter");
 					}
 
 					if (assetType.Class == AssetTypeClass.Reference)
 					{
-						simpleFilters.Add($"A.Code like @simpleFilter");
-						simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name') like @simpleFilter");
+						simpleFilters.Add($@"select  A.ID
+								from Asset A
+									left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
+									left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID
+									left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
+								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and (A.Code like @simpleFilter or JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonByColor(A.Color)), '$.Name') like @simpleFilter)");
 					}
-
-					whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
 				}
 			}
 
@@ -1221,7 +1242,7 @@ namespace d360.model.DataAccessLayer
 			var fieldsSql = "";
 			if (fieldColumns.Any())
 			{
-				fieldsSql = $",\n {string.Join(",\n", fieldColumns)}";
+				fieldsSql = $",\n {string.Join(",\n", fieldColumns.GetStatements())}";
 			}
 
 			bool hasKeyPathCountFiltering = whereSql.ToLowerInvariant().Contains("Node.KeyPath");
@@ -1240,7 +1261,7 @@ namespace d360.model.DataAccessLayer
 						from Asset A
 						left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 						left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-						{string.Join("\n", fieldJoins)}
+						{string.Join("\n", fieldJoins.GetStatements())}
 						{(includeSegments || hasAssetPathField || whereSql.Contains("Node.") ? " inner join AssetPath Node on Node.ID = a.ID" : "")} 
 						{(isForTreeGrid ? "cross apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 						{(includeColor ? "cross apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
@@ -1280,32 +1301,42 @@ namespace d360.model.DataAccessLayer
 			bool includeParentUIDSelect = fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("hparent"));
 			bool includeParentQuery = includeParent && fieldsUsedInMainQuery.Any(x => x.ToLowerInvariant().Contains("parent"));
 
-			List<string> includedJoins = new List<string>();
-			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+			var includedJoins = new DynamicQueryJoins();
+			includedJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID", null);
 
 			fieldsUsedInMainQuery.ForEach(field =>
 			{
-				var joins = countJoins.Where(x => x.ToLowerInvariant().Contains(field.ToLowerInvariant()));
+				var joins = countJoins.Joins().Where(x => x.SQLStatement.ToLowerInvariant().Contains(field.ToLowerInvariant()));
 				includedJoins.AddRange(joins);
 			});
 
+			string simpleFiltersTempTablesQuery = "";
 			if (dbArgs.ParameterNames.Contains("simpleFilter"))
 			{
-				includedJoins = countJoins;
-				includeTreeGridQuery = isForTreeGrid;
-				includeColorQuery = includeColor;
-				includeParentUIDSelect = true;
-				includeParentQuery = includeParent;
-			}
-			includedJoins = includedJoins.Distinct().ToList();
+				var sb = new StringBuilder();
+				sb.AppendLine("drop table if exists #TempFilteredAssets");
+				sb.AppendLine("create table #TempFilteredAssets(AssetId bigint)");
+				sb.AppendLine("create index ix_TempFilteredAssets on #TempFilteredAssets (AssetId)");
 
-			var assetCountJoins = new AssetQueryJoins(includedJoins);
-			var filteredSelect = $@"select  A.ID
+				for (int i = 0; i < simpleFilters.Count; i++)
+				{
+					sb.AppendLine("insert into #TempFilteredAssets");
+					sb.AppendLine(simpleFilters[i]);
+				}
+
+				sb.Remove(sb.Length - 1, 1);
+				simpleFiltersTempTablesQuery = sb.ToString();
+			}
+
+			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
+			var filteredSelect = $@"
+				select  A.ID
 				from    Asset A 
 				inner join AssetPath Node on Node.ID = a.ID 
+				{(useSimpleFilterTempTable ? "inner join #TempFilteredAssets ta on ta.AssetId = a.ID" : "")}
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{assetCountJoins.SQLJoinStatement}
+				{includedJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -1315,6 +1346,8 @@ namespace d360.model.DataAccessLayer
 
 			var baseSQL = $@"
 				{TempTableScriptStr}
+
+				{simpleFiltersTempTablesQuery}
 
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
@@ -1330,7 +1363,7 @@ namespace d360.model.DataAccessLayer
 
 			var countSQL = $@"{(includeTotal ? $"select count(1) from ({filteredSelect}) as sub_query" : "")}";
 
-			if (previousCount.HasValue) 
+			if (previousCount.HasValue)
 			{
 				countSQL = "";
 			}
@@ -1342,7 +1375,6 @@ namespace d360.model.DataAccessLayer
 				pagingQuery = "";
 			}
 
-			var assetFieldJoins = new AssetQueryJoins(fieldJoins);
 			var sql = $@"
 				{(useTempTableForResults ? "drop table if exists #results;" : "")}
 				select 
@@ -1372,7 +1404,7 @@ namespace d360.model.DataAccessLayer
 				inner join AssetPath Node on Node.ID = a.ID
 				left join Asset CA on CA.ObjectID  = A.CreatedBy and CA.Object = 'Resource'
 				left join Asset UA on UA.ObjectID  = A.UpdatedBy and UA.Object = 'Resource'
-				{assetFieldJoins.SQLJoinStatement}
+				{fieldJoins.SQLJoinStatement}
 				{(isForTreeGrid ? "outer apply dbo.GetAssetLevelById(A.Id)LVL" : "")}
 				{(includeColor ? "outer apply dbo.GetAssetColorJsonByColor(A.Color) ACJ" : "")}
 				{(includePermissionDetails ? permissionDetailSQL : "")}
@@ -2346,7 +2378,7 @@ namespace d360.model.DataAccessLayer
 							where	N.DisplayPath like @phrase {prefilterSql}
 							";
 
-										var sql = $@"
+			var sql = $@"
 							select	A.Uid,
 									AT.Uid as AssetTypeUid,
 									AT.Name as AssetTypeName,
@@ -3857,8 +3889,8 @@ namespace d360.model.DataAccessLayer
 
 			var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
 			var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID).ToList();
-			var fieldJoins = new List<string>();
-			var fieldColumns = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
+			var fieldColumns = new DynamicQuerySelects();
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@assetUid", assetUid);
 
@@ -3877,7 +3909,7 @@ namespace d360.model.DataAccessLayer
 								ACJ.ColorJson as Color,
 								{(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
 								Node.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
-								{string.Join(",\n", fieldColumns)}
+								{string.Join(",\n", fieldColumns.GetStatements())}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
 								inner join AssetPath Node on Node.ID = a.ID 
@@ -3890,7 +3922,7 @@ namespace d360.model.DataAccessLayer
 											inner join AssetDisplayValue PD on PD.AssetID = PA.ID
 									where	I.Object = A.Object and I.ObjectID = A.ObjectID
 								) P 
-								{string.Join("\n", fieldJoins)}
+								{string.Join("\n", fieldJoins.GetStatements())}
 						where   A.[uid] = @assetUid";
 
 			return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs, ApiTimeout)).FirstOrDefault();
@@ -3914,8 +3946,8 @@ namespace d360.model.DataAccessLayer
 				return null;
 			}
 
-			var fieldJoins = new List<string>();
-			var fieldColumns = new List<string>();
+			var fieldJoins = new DynamicQueryJoins();
+			var fieldColumns = new DynamicQuerySelects();
 			DynamicParameters dbArgs = new DynamicParameters();
 			dbArgs.Add("@assetUid", assetUid);
 
@@ -3923,7 +3955,7 @@ namespace d360.model.DataAccessLayer
 
 			var sql = $@"
 						select  
-								{string.Join("," + Environment.NewLine, fieldColumns)}
+								{string.Join("," + Environment.NewLine, fieldColumns.GetStatements())}
 						from    Asset A
 								inner join AssetType T on T.ID = A.AssetTypeID
 								outer apply (
@@ -3935,7 +3967,7 @@ namespace d360.model.DataAccessLayer
 									where A.uid = @assetuid
 								) Parent
 								left join AssetDetail P on P.uid = Parent.uid
-								{string.Join(Environment.NewLine, fieldJoins)}
+								{fieldJoins.SQLJoinStatement}
 						where   A.[uid] = @assetUid";
 
 			var data = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs) as IDictionary<string, object>;

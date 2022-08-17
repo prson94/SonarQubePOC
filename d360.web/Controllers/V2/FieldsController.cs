@@ -1680,7 +1680,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<HttpResponseMessage> GetTechnicalRelationships(Guid intersectTypeUid)

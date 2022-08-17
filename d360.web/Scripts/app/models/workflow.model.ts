@@ -1,32 +1,5 @@
-﻿import { SelectItem, FormMessage } from '../models/form.model';
-import { State } from './asset.model';
+﻿import { State } from './asset.model';
 
-
-export class WorkflowTypeRelationEditorModel {
-    Enabled: boolean;
-    ObjectTypes: SelectItem[];
-    ParentTypes: SelectItem[];
-    ResponsibilityTypes: SelectItem[];
-    WorkflowType: WorkflowType;
-    WorkflowTypeRelation: WorkflowItem;
-}
-
-export class WorkflowItem {
-    ID: number;
-    Object: string;
-    ObjectID: number;
-    Parent: string;
-    ParentID: number;
-    ParentName: string;
-    WorkflowType: WorkflowType;
-    Enabled: boolean;
-    ResponsibilityTypeID: number;
-    ResponsibilityType: string;
-    WorkflowTypeName: string;
-    WorkflowTypeDisplayName: string;
-    Properties: string;
-    Fields: any[];
-}
 
 export class Issue {
     Issue: string;
@@ -59,79 +32,6 @@ export class IssueDetail {
     WorkflowItemID: number;
 }
 
-export class CertifyItem {
-    Name: string;
-    ID: number;    
-    Activity: number;
-    ActivityName: string;
-    ActivityDescription: string;
-    StartDate: string;
-    DueDate: string;
-    WorkflowID: string;
-    TypeName: string;
-}
-
-export class SuggestedItem {
-    Name: string;
-    ID: number;
-    ProposedName: string;
-    ProposedDescription: string;
-    TaxonomyTypeName: string;
-    RequestingResourceName: string;
-    RequestingResourceID: number;
-    ActivityName: string;
-    StartDate: string;
-    WorkflowID: string;
-    Activity: number;
-}
-
-export class WorkflowStepStatistic {
-    Count: number;
-    ID: number;
-    Name: string;
-    WorkflowType: number;
-}
-
-export class ArtifactTypeWorkflowBreakdown {
-    Description: string;
-    Name: string;
-    ID: WorkflowType;
-    Steps: WorkflowStepStatistic[];    
-}
-
-export class WorkflowStep {
-    Date: Date;
-    ID: number;
-    Name: string;
-    TraceLevel: string;
-}
-
-export class WorkflowStatusDetailField {
-    Name: string;
-    Value: string;
-}
-
-export class WorkflowAssignment {
-    ActivityType: number;
-    ActivityTypeDescription: string;
-    ActivityTypeName: string;
-    IsComplete: boolean;
-    ResourceID: number;
-    ResourceName: string;
-}
-
-export class WorkflowStatusDetails {
-    Assignments: WorkflowAssignment[];
-    DateCompleted: Date;
-    DateStarted: Date;
-    Fields: WorkflowStatusDetailField[];
-    ID: string;
-    Steps: WorkflowStep[];
-    WorkflowType: WorkflowType;
-    WorkflowTypeDescription: string;
-    WorkflowTypeName: string;
-}
-
 export class WorkflowIssueType {
     Uid: string;
     ID: number;
@@ -139,12 +39,6 @@ export class WorkflowIssueType {
     Description: string;
     IsSystem: boolean;
 }
-
-export class IssueInfo {
-    Fields: any[];
-    Issue: any;
-}
-
 
 export class WorkflowTypeNew
 {
@@ -471,12 +365,6 @@ export class WorkflowTaskProcedure {
     PassObjectInfo: boolean;
     UpdatedBy: number;
     UpdatedOn: string;
-}
-
-export class SharedWorkflowFields {
-    formFields: any[] = [];
-    httpFields: any[] = [];
-    jsonFields: HTTPResponseOutput[] = [];
 }
 
 //#region enums

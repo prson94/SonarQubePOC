@@ -48,11 +48,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     selectedItemChange() {
         if (this.selected) {
 
-            this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
+            this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe((res) => {
                 this.selectedItemID = res.ObjectID;
                 this.selectedAssetTypeID = res.Id;
 
-                this.types.forEach(t => {
+                this.types.forEach((t) => {
                     if (t.uid == this.selected.uid) {
                         t['AssetTypeId'] = res.Id;
                     }
@@ -113,7 +113,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         this.isLoading = true;
         this.assetTypeService
             .getAssetTypesByClass(this.assetTypeClass)
-            .subscribe(results => {
+            .subscribe((results) => {
                 let t = results.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.types = t.map((item) => {
                     return { MaximumDepth: item.HierarchyMaximumDepth, ...item };
@@ -124,7 +124,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                     this.selectedItemChange();
                 }
                 this.isLoading = false;
-            }, error => this.error = error);
+            }, (error) => this.error = error);
     }
 
     add() {
@@ -148,16 +148,16 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     deleteType(id: number) {
-        var uid = this.types.filter(x => x.AssetTypeId == id)[0].uid;
+        var uid = this.types.filter((x) => x.AssetTypeId == id)[0].uid;
 
         this
             .assetTypeService
             .deleteSingleAssetType(uid)
-            .subscribe(res => {
+            .subscribe((res) => {
                 this.showMessageForResult(this.messagesService, res);
 
                 if (res.type != 'error') {
-                    this.types = this.types.filter(x => x.uid != this.selected.uid);
+                    this.types = this.types.filter((x) => x.uid != this.selected.uid);
                     this.selected = this.types.length > 0 ? this.types[0] : null;
                     this.selectedItemChange();
                     this.stateService.reloadLeftNavMenu();

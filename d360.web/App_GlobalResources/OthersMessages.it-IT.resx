@@ -1,0 +1,274 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllNodeMustLink" xml:space="preserve">
+    <value>È necessario collegare tutti i nodi all'interno del diagramma.</value>
+  </data>
+  <data name="AllocationIdentifierDoesnotValidAllocation" xml:space="preserve">
+    <value>L'identificatore di allocazione con valore {0} non corrisponde a un'allocazione valida.</value>
+  </data>
+  <data name="AllocationUidNotCorrectlyFormatted" xml:space="preserve">
+    <value>allocationUid {0} non è un identificatore formattato correttamente.</value>
+  </data>
+  <data name="AssetIdentifierDoesnotValidAsset" xml:space="preserve">
+    <value>L'identificatore della risorsa con valore {0} non corrisponde a una risorsa valida.</value>
+  </data>
+  <data name="AssetuidDoesnotExists" xml:space="preserve">
+    <value>La risorsa con l'UID specificato non esiste.</value>
+  </data>
+  <data name="AssetUidMustSpecified" xml:space="preserve">
+    <value>È necessario specificare l'UID della risorsa.</value>
+  </data>
+  <data name="AssetuidNotCorrectlyFormatted" xml:space="preserve">
+    <value>assetUid {0} non è un identificatore formattato correttamente.</value>
+  </data>
+  <data name="BadRequestSubmitted" xml:space="preserve">
+    <value>Richiesta non valida inviata</value>
+  </data>
+  <data name="CriticalException" xml:space="preserve">
+    <value>Eccezione critica</value>
+  </data>
+  <data name="CustomConstant" xml:space="preserve">
+    <value>Personalizzata</value>
+  </data>
+  <data name="DatasourceNotReachable" xml:space="preserve">
+    <value>L'origine dati sottostante non è raggiungibile.</value>
+  </data>
+  <data name="EndPointNotFound" xml:space="preserve">
+    <value>Endpoint non trovato.</value>
+  </data>
+  <data name="FailedToVerifySignature" xml:space="preserve">
+    <value>AssertionConsumerService =&gt; Impossibile verificare la firma in cui è stato archiviato un file CER fornito da IDP</value>
+  </data>
+  <data name="FailedToVerifySignatureNoIDP" xml:space="preserve">
+    <value>AssertionConsumerService =&gt; Impossibile verificare la firma in cui non è stato archiviato alcun file CER fornito da IDP</value>
+  </data>
+  <data name="FilterExpressionErrors" xml:space="preserve">
+    <value>Le espressioni di filtro contenevano i seguenti errori: {0}</value>
+  </data>
+  <data name="GovernEnvironmentInactive" xml:space="preserve">
+    <value>L'ambiente Govern richiesto è attualmente inattivo. Contattare l'assistenza di Precisely per ulteriori informazioni.</value>
+  </data>
+  <data name="IncorrectPassword" xml:space="preserve">
+    <value>Il nome utente o la password forniti non sono corretti.</value>
+  </data>
+  <data name="InvalidEmail" xml:space="preserve">
+    <value>Questa e-mail non sembra valida.</value>
+  </data>
+  <data name="InvalidFieldFilterParameter" xml:space="preserve">
+    <value>Sono presenti campi non validi nei parametri della query del filtro: {0}.</value>
+  </data>
+  <data name="InvalidFieldSelectQueryParameter" xml:space="preserve">
+    <value>Sono presenti campi non validi nei parametri della query selezionati: {0}.</value>
+  </data>
+  <data name="InvalidField_OrderParameter" xml:space="preserve">
+    <value>Sono presenti campi non validi nel parametro della query _order.</value>
+  </data>
+  <data name="InvalidOrDeletedRelationshipType" xml:space="preserve">
+    <value>Campo di relazione non valida rilevato non valido o tipo di relazione eliminata rilevato.</value>
+  </data>
+  <data name="ItemNotFound" xml:space="preserve">
+    <value>Elemento non trovato.</value>
+  </data>
+  <data name="LinkWithoutFromToDetected" xml:space="preserve">
+    <value>Link sprovvisto di provenienza e destinazione rilevato.</value>
+  </data>
+  <data name="ModelNotEmpty" xml:space="preserve">
+    <value>Il modello non può essere vuoto.</value>
+  </data>
+  <data name="MustAcceptTermsOfUse" xml:space="preserve">
+    <value>È necessario accettare le condizioni d'uso</value>
+  </data>
+  <data name="NeedAdministratorHelp" xml:space="preserve">
+    <value>Si è verificato un errore. Riprovare o contattare l'amministratore</value>
+  </data>
+  <data name="NoAssertionsInResponse" xml:space="preserve">
+    <value>Nessuna asserzione nella risposta</value>
+  </data>
+  <data name="NoEmailDomainResolved" xml:space="preserve">
+    <value>Non è stato possibile risolvere alcun dominio e-mail.</value>
+  </data>
+  <data name="NoPremissiontoviewScoreHistory" xml:space="preserve">
+    <value>Non si dispone delle autorizzazioni per visualizzare la cronologia del punteggio di questa risorsa.</value>
+  </data>
+  <data name="NoRegistrationFound" xml:space="preserve">
+    <value>Nessuna registrazione trovata.</value>
+  </data>
+  <data name="NoRelationshipTypeFoundToLookup" xml:space="preserve">
+    <value>Il campo Relazione non valida non ha rilevato alcun tipo di relazione da cercare nella definizione.</value>
+  </data>
+  <data name="NoResourceAccount" xml:space="preserve">
+    <value>Non è stato possibile individuare alcun account di risorse per l'utente.</value>
+  </data>
+  <data name="NotAuthorizedToEditDiagram" xml:space="preserve">
+    <value>Non si dispone dell'autorizzazione per modificare questo diagramma di processo</value>
+  </data>
+  <data name="NoTermOfAgreementFound" xml:space="preserve">
+    <value>Nessun accordo sulle condizioni d'uso trovato.</value>
+  </data>
+  <data name="NotMeetPasswordRule" xml:space="preserve">
+    <value>La password non soddisfa i seguenti requisiti di complessità: {0}.</value>
+  </data>
+  <data name="OrganisationNotYetRegistered" xml:space="preserve">
+    <value>L'organizzazione non è ancora registrata nel glossario aziendale di mercato o le informazioni fornite non sono valide. Contattare l'indirizzo &lt;a href='mailto:datasupport@londonmarketgroup.co.uk'&gt;datasupport@londonmarketgroup.co.uk&lt;/a&gt; per ricevere assistenza.</value>
+  </data>
+  <data name="OwnershipConfirmationMail" xml:space="preserve">
+    <value>A breve verrà inviata un'e-mail che permetterà di confermare la proprietà di questo indirizzo e-mail e continuare la registrazione.</value>
+  </data>
+  <data name="PasswordNotMatch" xml:space="preserve">
+    <value>Le password non corrispondono.</value>
+  </data>
+  <data name="RequestURINotExceed16Kchar" xml:space="preserve">
+    <value>L'URI della richiesta non deve superare i 16.000 caratteri.</value>
+  </data>
+  <data name="ResoourceAccountNotAllocatedToCompany" xml:space="preserve">
+    <value>Account di risorse non ancora assegnato a questa azienda.</value>
+  </data>
+  <data name="ResourceNotSetOrgResource" xml:space="preserve">
+    <value>Account di risorse non ancora impostato come risorsa organizzativa.</value>
+  </data>
+  <data name="ResourceNotThisUser" xml:space="preserve">
+    <value>Risorsa non disponibile per questo utente.</value>
+  </data>
+  <data name="SearchFilterInvalid" xml:space="preserve">
+    <value>I filtri di ricerca non sono validi nel parametro della query del filtro: last_modified.</value>
+  </data>
+  <data name="ServerErrorOccurred" xml:space="preserve">
+    <value>Si è verificato un errore del server. Riprovare a effettuare la richiesta più tardi</value>
+  </data>
+  <data name="SourceAssetUidModelNotEmpty" xml:space="preserve">
+    <value>Quando si utilizza l'opzione copia/sostituisci, il modello sourceAssetUid deve essere vuoto.</value>
+  </data>
+  <data name="SourceTargetNotSame" xml:space="preserve">
+    <value>La risorsa di origine e quella di destinazione non possono corrispondere.</value>
+  </data>
+  <data name="SourceTargetTypeMustSame" xml:space="preserve">
+    <value>I tipi di risorse di origine e di destinazione devono essere gli stessi.</value>
+  </data>
+  <data name="SourceUidNotExists" xml:space="preserve">
+    <value>sourceAssetUid non è valido o la risorsa non esiste.</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Autorizzazione non disponibile</value>
+  </data>
+  <data name="_PageNumGT0" xml:space="preserve">
+    <value>Il parametro _pageNum deve essere maggiore di 0.</value>
+  </data>
+  <data name="_PageSizeMax200" xml:space="preserve">
+    <value>Il parametro _pageSize ha un valore massimo supportato di 200.</value>
+  </data>
+</root>

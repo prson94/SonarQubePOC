@@ -1,9 +1,4 @@
-﻿export class ShoppingCartType {
-    ID: number;
-    Name: string;
-}
-
-export class ShoppingCart {
+﻿export class ShoppingCart {
     ID: number;
     ShoppingCartTypeID: number;
     ResourceID: number;
@@ -11,13 +6,6 @@ export class ShoppingCart {
     RequestedOn: Date;
     Request: string;
     Requestor: string;
-}
-
-export class ShoppingCartItem {
-    ShoppingCartID: number;
-    Object: string;
-    ObjectID: number;
-    AddedOn: string;
 }
 
 export class ShoppingCartListItem {

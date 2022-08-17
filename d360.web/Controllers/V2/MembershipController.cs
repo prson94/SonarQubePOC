@@ -1371,7 +1371,7 @@ namespace d360.web.Controllers.V2
 			Route("users/me/getHomePage"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteApiViewModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetHomePage()

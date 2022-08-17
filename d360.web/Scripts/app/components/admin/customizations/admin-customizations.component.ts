@@ -45,14 +45,14 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
 
     private load() {
         this.isLoading = true;
-        this.siteCustomizationsService.getCustomCss().subscribe(res => {
+        this.siteCustomizationsService.getCustomCss().subscribe((res) => {
             this.isLoading = false;
             this.customCss = res;
         });
     }
 
     saveCustomizations() {
-        this.siteCustomizationsService.saveCustomCss(this.customCss).subscribe(res => {
+        this.siteCustomizationsService.saveCustomCss(this.customCss).subscribe((res) => {
             this.showMessageForResult(this.messagesService, res);
             window.location.reload();
         });

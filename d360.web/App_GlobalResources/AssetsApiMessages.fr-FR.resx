@@ -1,0 +1,280 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<root>   <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AssetAssetTypeNotFound" xml:space="preserve">
+    <value>Aucune valeur Asset ou AssetType trouvée pour GUID [{0}]</value>
+  </data>
+  <data name="AssetCount" xml:space="preserve">
+    <value>AssetCount</value>
+  </data>
+  <data name="AssetTagAssociationFailed" xml:space="preserve">
+    <value>L’association Asset/Tag a échoué. Le champ Tag ne peut pas être attribué à Asset.</value>
+  </data>
+  <data name="AssetTypeAddAssetPermissionsDenied" xml:space="preserve">
+    <value>Vous n’êtes pas autorisé à ajouter des actifs de ce type.</value>
+  </data>
+  <data name="AssetTypeCreatedMessage" xml:space="preserve">
+    <value>Le type d’actif est créé</value>
+  </data>
+  <data name="AssetTypeInProcessNotDelete" xml:space="preserve">
+    <value>Suppression du type d’actif dont l’UID est {0} déjà en cours.</value>
+  </data>
+  <data name="AssetTypeUid" xml:space="preserve">
+    <value>AssetTypeUid</value>
+  </data>
+  <data name="AutoDisplayParent" xml:space="preserve">
+    <value>Affichage automatique du parent</value>
+  </data>
+  <data name="CanEditParent" xml:space="preserve">
+    <value>Peut modifier le parent</value>
+  </data>
+  <data name="ClassNotSupport" xml:space="preserve">
+    <value>La classe '{0}' n’est pas prise en charge. Les valeurs autorisées sont BusinessAsset, TechnicalAsset, Model, Policy, Rule.</value>
+  </data>
+  <data name="CorrectEndpoint" xml:space="preserve">
+    <value>Le point de terminaison correct pour {0}s est {1}://{2}{3}</value>
+  </data>
+  <data name="EnvironmentLevelAssetCountNotAllowed" xml:space="preserve">
+    <value>Vous ne disposez pas de l’autorisation permettant de charger les comptes d’actifs au niveau de l’environnement.</value>
+  </data>
+  <data name="ExecutionID" xml:space="preserve">
+    <value>ExecutionID</value>
+  </data>
+  <data name="ExecutionUid" xml:space="preserve">
+    <value>ExecutionUid</value>
+  </data>
+  <data name="ExportTemplateMessage" xml:space="preserve">
+    <value>Le paramètre UID du modèle d’exportation doit être utilisé avec l’en-tête 'Accept' défini sur 'application/octet-stream'.</value>
+  </data>
+  <data name="ExportTemplateUidNotExist" xml:space="preserve">
+    <value>Le modèle d’exportation dont l’UID est '{0}' n’existe pas.</value>
+  </data>
+  <data name="FieldTypeAssetNotFound" xml:space="preserve">
+    <value>Type de champ '{0}' introuvable pour l’actif.</value>
+  </data>
+  <data name="FieldTypeNotSupport" xml:space="preserve">
+    <value>Le type de champ '{0}' n’est pas pris en charge. Les types de champs autorisés sont ComplexRelationLookup, RefListRelationship et OwnershipLookup</value>
+  </data>
+  <data name="FilterResrictPredicateUid" xml:space="preserve">
+    <value>Le filtrage à l’aide de _relationFilter ne peut pas être utilisé avec le paramètre _predicateUid</value>
+  </data>
+  <data name="GovernRoleReferListNotExists" xml:space="preserve">
+    <value>La liste de référence des rôles de gouvernance dont l’UID est '{0}' n’existe pas</value>
+  </data>
+  <data name="InvalidAsset" xml:space="preserve">
+    <value>Actif non valide</value>
+  </data>
+  <data name="InvalidAssetTypeClass" xml:space="preserve">
+    <value>Classe de type d’actif '{0}' non valide</value>
+  </data>
+  <data name="InvalidExportTemplateCurrent" xml:space="preserve">
+    <value>Modèle d’exportation non valide pour le type d’actif actuel.</value>
+  </data>
+  <data name="InvalidExportTemplatedUid" xml:space="preserve">
+    <value>Valeur exportTemplateUID non valide.</value>
+  </data>
+  <data name="InvalidExportViewType" xml:space="preserve">
+    <value>TYPE DE VUE D’EXPORTATION SPÉCIFIÉ NON VALIDE</value>
+  </data>
+  <data name="InvalidOrder" xml:space="preserve">
+    <value>{0} n’est pas un champ _order valide</value>
+  </data>
+  <data name="InvalidPageNumber" xml:space="preserve">
+    <value>Le numéro de page n’est pas une valeur valide.</value>
+  </data>
+  <data name="InvalidPageNumberGT0" xml:space="preserve">
+    <value>Le numéro de page n’est pas valide, il doit être supérieur à 0.</value>
+  </data>
+  <data name="InvalidParameteforUI" xml:space="preserve">
+    <value>Valeur booléenne non valide pour le paramètre 'forUI'</value>
+  </data>
+  <data name="InvalidParameterIncludeTotal" xml:space="preserve">
+    <value>Inclure le total n’est pas un booléen valide.</value>
+  </data>
+  <data name="InvalidParameteruseUidUrls" xml:space="preserve">
+    <value>Valeur booléenne non valide pour le paramètre 'useUidUrls'</value>
+  </data>
+  <data name="InvalidParameteruseUnflattedStructure" xml:space="preserve">
+    <value>Valeur booléenne non valide pour le paramètre 'useUnflattedStructure'</value>
+  </data>
+  <data name="InvalidParameteruseuseFriendlyNames" xml:space="preserve">
+    <value>Valeur booléenne non valide pour le paramètre 'useFriendlyNames'</value>
+  </data>
+  <data name="InvalidParameter_order" xml:space="preserve">
+    <value>Valeur du champ du paramètre '_direction' non valide.</value>
+  </data>
+  <data name="InvalidParameter_pageNum" xml:space="preserve">
+    <value>Valeur entière pour le paramètre '_pageNum' non valide</value>
+  </data>
+  <data name="InvalidParameter_pageSize" xml:space="preserve">
+    <value>Valeur entière pour le paramètre '_pageSize' non valide</value>
+  </data>
+  <data name="InvalidParentAssetUid" xml:space="preserve">
+    <value>ParentAssetUid {0} non valide</value>
+  </data>
+  <data name="InvalidResourceUID" xml:space="preserve">
+    <value>Valeur resourceUid fournie non valide</value>
+  </data>
+  <data name="InvalidUserGroupRequestAsNonOwner" xml:space="preserve">
+    <value>UID d’utilisateur ou de groupe non-propriétaire transmis dans la requête non valide</value>
+  </data>
+  <data name="InvalidUserGroupRequestAsOwner" xml:space="preserve">
+    <value>UID d’utilisateur ou de groupe propriétaire transmis dans la requête non valide</value>
+  </data>
+  <data name="model" xml:space="preserve">
+    <value>modèle</value>
+  </data>
+  <data name="PageSizeNotNumber" xml:space="preserve">
+    <value>La taille de page n’est pas une valeur valide.</value>
+  </data>
+  <data name="PageSizeRange" xml:space="preserve">
+    <value>La taille de page doit être comprise entre 1 et 100 000.</value>
+  </data>
+  <data name="ProvidePreFilterCriteria" xml:space="preserve">
+    <value>Vous avez fourni des critères de pré-filtrage, mais aucun ne semble être valide. Vous devez fournir au moins une condition.</value>
+  </data>
+  <data name="ProvideSearchPhrase" xml:space="preserve">
+    <value>Vous devez fournir une phrase de recherche.</value>
+  </data>
+  <data name="ReachedTransformationlimit" xml:space="preserve">
+    <value>Limite de transformation atteinte</value>
+  </data>
+  <data name="ReferenceUIDConfigureAsGovernRole" xml:space="preserve">
+    <value>L’UID {0} est une liste de référence qui est configuré en tant que rôle de gouvernance et ne peut pas être supprimé.</value>
+  </data>
+  <data name="RemoveAssetTypeNotAllowed" xml:space="preserve">
+    <value>Vous n’êtes pas autorisé à supprimer des types d’actifs.</value>
+  </data>
+  <data name="RequestCreatedMsg" xml:space="preserve">
+    <value>Requête correctement créée</value>
+  </data>
+  <data name="RequestMaxAsset" xml:space="preserve">
+    <value>Vous pouvez fournir au maximum {0} actifs dans cette requête. Veuillez appeler l’API BATCH pour soumettre plus de {1} éléments.</value>
+  </data>
+  <data name="RestrictReadAssettype" xml:space="preserve">
+    <value>Vous ne disposez pas des autorisations permettant de lire le type d’actif spécifié.</value>
+  </data>
+  <data name="TagUIDAssetUIDNotExists" xml:space="preserve">
+    <value>L’association TagUID {0} et AssetUID {1} n’existe pas</value>
+  </data>
+  <data name="TransormationReationExists" xml:space="preserve">
+    <value>La relation de transformation d’AssetType existe</value>
+  </data>
+  <data name="UseAsTransformation" xml:space="preserve">
+    <value>Utiliser comme transformation</value>
+  </data>
+</root>

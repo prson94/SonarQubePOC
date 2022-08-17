@@ -754,7 +754,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An unhandled error occured. Please try your request again..
+        ///   Looks up a localized string similar to An unhandled error occurred. Please try your request again..
         /// </summary>
         public static string UnhandledError {
             get {

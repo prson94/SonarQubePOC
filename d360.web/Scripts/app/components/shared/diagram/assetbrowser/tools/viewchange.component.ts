@@ -9,7 +9,7 @@ import { DiagramType } from '../../../../../models/lineage.model';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserViewChangeComponent implements AfterViewInit, OnChanges {
-    @Input() current: DiagramType;
+    @Input() current: DiagramType = null;
     @Input() items: any[] = [];
     @Output() apply: EventEmitter<DiagramType> = new EventEmitter();
 

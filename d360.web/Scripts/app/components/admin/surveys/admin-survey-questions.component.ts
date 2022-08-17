@@ -141,7 +141,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
 
     saveQuestion(event) {
         this.surveysService.saveSurveyTypeQuestion(event.surveyTypeUid, event.question)
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result == null) {
                     return;
                 }

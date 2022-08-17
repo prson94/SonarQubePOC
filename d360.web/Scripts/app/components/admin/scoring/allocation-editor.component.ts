@@ -114,7 +114,7 @@ export class AllocationEditorComponent extends BaseComponent implements OnChange
     private populateAssetTypesDDL() {
         if (this.selection.scoreType) {
             this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
-                .subscribe(data => {
+                .subscribe((data) => {
                     this.ddlAssetTypes = [];
                     data.forEach((item) => {
                         this.ddlAssetTypes.push({
