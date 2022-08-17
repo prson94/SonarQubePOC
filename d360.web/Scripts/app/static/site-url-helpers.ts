@@ -151,10 +151,10 @@ export class SiteUrlHelpers {
     }
 
     // getObjectUrl - Generates the url for an object based on its type
-    static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string): string {
-        switch (objectType.toUpperCase()) {
-            case 'ARTIFACTTYPE':
-                return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${objectId}`;
+	static getObjectUrl(objectType: string, objectId: number | string, parentId?: number, objectName?: string): string {
+		switch (objectType.toUpperCase()) {
+			case 'ARTIFACTTYPE':
+				return this.getObjectUrlByUid(objectType, objectId as string);
             case 'ARTIFACT':
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${parentId}/${objectId}`;
             case 'COMMENTS':
@@ -182,7 +182,18 @@ export class SiteUrlHelpers {
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }
-    }
+	}
+
+	// getObjectUrl - Generates the url for an object based on its type
+	static getObjectUrlByUid(objectType: string, uid: string): string {
+		console.log("Debug getObjectUrl > ", objectType, uid);
+		switch (objectType.toUpperCase()) {
+			case 'ARTIFACTTYPE':
+				return `${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${uid}`;
+			default:
+				console.log('Unable to generate getObjectUrlByUid');
+		}
+	}
 
     // getAssetUrl - Generates the url for an object based on its type
     static getAssetUrl(uid: string): string {

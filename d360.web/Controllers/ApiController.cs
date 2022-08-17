@@ -1331,11 +1331,12 @@ namespace d360.web.Controllers
 
 			try
 			{
-
+				var parent = Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType);
 				model.Add("ID", assetType.ObjectID);
 				model.Add("Name", assetType.Name);
 				model.Add("Description", assetType.Description);
-				model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
+				model.Add("ParentID", parent?.ID ?? null);
+				model.Add("ParentUid", parent?.uid ?? null);
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);

@@ -16,6 +16,7 @@ export class ArtifactTypeEditorModel extends BaseEditorModel {
 export class ArtifactType {
     ID: number;
     ParentID: number;
+	ParentUid: string;
     AssetTypeID: number;
     Name: string;
     DisplayFormat: string;

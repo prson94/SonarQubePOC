@@ -125,8 +125,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
     }
 
     createBreadcrumbHierarchy(artifact: ArtifactType) {
-        if (artifact.ParentID) {
-            var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).subscribe(parent => {
+		if (artifact.ParentID) {
+			var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentUid).subscribe(parent => {
                 this.artifactTypeHierarchy.unshift(parent);
                 if (parent.ParentID)
                     this.createBreadcrumbHierarchy(parent);
@@ -147,10 +147,10 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                 .subscribe(result => {
                     this.currentAreaName = result;
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : this.folderTitle, this.areaLink));
-                    this.artifactTypeHierarchy.forEach(x => {
+					this.artifactTypeHierarchy.forEach(x => {
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(
-                            x.Name,
-                            SiteUrlHelpers.getObjectUrl("ArtifactType", x.ID),
+							x.Name,
+							SiteUrlHelpers.getObjectUrl("ArtifactType", x.AssetTypeUID),
                             false,
                             "ArtifactType",
                             x.ID,
