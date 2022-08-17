@@ -46,7 +46,7 @@ import { RelationshipType, RelationshipTypeEdge, RelationshipV2 } from '../../..
 import { FieldsObservableService } from "../../../services/fieldsObservable.service";
 import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
 import { ObjectDetailService } from "../../../services/object-detail.service";
-import {LinkClickInterceptor} from "../../../services/href-click-service";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
 
 @Component({
     selector: 'asset-editor',
