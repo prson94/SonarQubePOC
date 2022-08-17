@@ -384,8 +384,8 @@ export class BaseComponent {
                 this.monitorSidebar = new SecondaryNavItem(
                     $localize`Workflow`,
                     'monitor',
-                    ['fa-usb'],
-                    `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
+					['fa-usb'],
+					`/asset/${this.uid}/workflowmonitor`, null, 30
                 );
                 this.secondaryNavService.showItem(this.monitorSidebar);
             }

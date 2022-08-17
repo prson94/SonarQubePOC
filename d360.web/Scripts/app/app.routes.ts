@@ -39,7 +39,7 @@ const routes: Routes = [
     { path: "sidebar/visualization", loadChildren: () => import("./components/sidebar/visualization/visualization.module").then((m) => m.VisualizationModule) },
     { path: "sidebar/relationships", loadChildren: () => import("./components/sidebar/relationships/relationships.module").then((m) => m.RelationshipsModule) },
     { path: "sidebar/children", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },
-    { path: "sidebar/workflowmonitor", loadChildren: () => import("./components/sidebar/workflowmonitor/workflow-monitor.module").then((m) => m.WorkflowMonitorModule) },
+    { path: "asset", loadChildren: () => import("./components/sidebar/workflowmonitor/workflow-monitor.module").then((m) => m.WorkflowMonitorModule) },
     { path: "sidebar/fields", loadChildren: () => import("./components/sidebar/fields/fields.module").then((m) => m.FieldsModule) },
     { path: "sidebar/responsibilities", loadChildren: () => import("./components/sidebar/permissions/permissions.module").then((m) => m.PermissionsModule) },
     { path: "cart", loadChildren: () => import("./components/shoppingcart/shopping-cart.module").then((m) => m.ShoppingCartModule) },
