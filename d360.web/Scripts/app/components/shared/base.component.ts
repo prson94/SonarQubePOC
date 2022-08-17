@@ -258,14 +258,13 @@ export class BaseComponent {
                 this.lineageSidebar = new SecondaryNavItem(
                     $localize`Diagrams`,
                     'lineage',
-                    ['fa-random'],
-                    `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
+					['fa-random'],
+					`/asset/${this.uid}/diagrams`, null, 15
                 );
 
-                this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
-                this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
-                this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
-
+                this.lineageSidebar.subTabsUrl.push(`/asset/${this.uid}/diagrams/Lineage`);
+                this.lineageSidebar.subTabsUrl.push(`/asset/${this.uid}/diagrams/Impact`);
+				this.lineageSidebar.subTabsUrl.push(`/asset/${this.uid}/diagrams/Process`);
                 this.secondaryNavService.showItem(this.lineageSidebar);
             }
 

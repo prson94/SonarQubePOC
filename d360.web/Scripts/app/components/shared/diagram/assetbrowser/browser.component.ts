@@ -294,7 +294,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
                     } else {
                         this.helper_UpdateDiagramType(this.diagramTypes.initial);
-
                     }
 
                     if (this.diagram) this.diagram.div = null;
@@ -3453,7 +3452,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     */
     viewchange_Apply(e: DiagramType) {
         this.saveFilter();
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
+        this.router.navigateByUrl(`asset/${this.assetUid}/diagrams/${DiagramType[e]}`);
     }
 
     /**

@@ -2861,7 +2861,7 @@ namespace d360.model
 		public string GetDiagramUrlForDiagramAsset(Guid assetUid)
 		{
 			string diagramUrl = $@"select 
-							'/sidebar/visualization/browser/'+lower(cast(a.uid as nvarchar(36)))+'/Process/' + lower(cast(@assetUid as nvarchar(36)))
+							'/asset/'+lower(cast(a.uid as nvarchar(36)))+'/diagrams/Process/' + lower(cast(@assetUid as nvarchar(36)))
 							from AssetProcessDiagram APD
 							cross apply (SELECT *
 							FROM OPENJSON(APD.Diagram,'$.nodeDataArray')
