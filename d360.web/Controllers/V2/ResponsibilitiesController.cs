@@ -795,9 +795,14 @@ namespace d360.web.Controllers.V2
 
 			foreach (var type in responsibilityTypes)
 			{
-				if (type.Name.Trim().Length > 250)
+				if (type.Name?.Trim().Length > 250)
 				{
 					throw new ArgumentException(ActionApiMessages.NameMaxLength250Char);
+				}
+
+				if (type.Description?.Trim().Length > 4000)
+				{
+					throw new ArgumentException(string.Format(MetricsApiMessages.DescriptionLengthValidation, type.Description?.Trim().Length));
 				}
 			}
 
