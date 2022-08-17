@@ -52,7 +52,7 @@ namespace d360.web.Controllers
 							outer apply (
 										select	I.SubjectID
 										from	[Intersect] I
-												inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+												inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetId = A.Id
 												inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 										) P
 							cross apply (
@@ -111,9 +111,9 @@ namespace d360.web.Controllers
 								outer apply (
 											select	top 1 I.SubjectID, A.uid
 											from	[Intersect] I
-													inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+													inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetId = A.ID
 													inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-													inner join Asset A on A.ObjectId = I.SubjectID and A.Object = I.Subject
+													inner join Asset A on A.Id = I.SubjectAssetId
 											) P
 						where   A.Type = 'TaxonomyType' 
 								and A.TypeID = @id 
