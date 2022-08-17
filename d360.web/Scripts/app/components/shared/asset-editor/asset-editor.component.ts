@@ -137,7 +137,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	sidePanelLoading: boolean = false;
 	sidePanelTab: string;
 	sidePanelSelection: { objectID: string, fieldName: string };
-	selectedAsset: { id: number, uid?: string, type: string };
+	selectedAsset: { id?: number, uid?: string, type: string };
 	selectedReferenceItem: { uid: string, assetUid: string };
 
     modalFormMaxHeight = 400;
@@ -1082,9 +1082,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		if (!_.isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
 			this.selectedAsset = {
-				id: +selection.objectID,
-				type: this.getObjectTypeByFieldName(selection.fieldName)
+				type: this.getObjectTypeByFieldName(selection.fieldName),
 			};
+			if (isNaN(+selection.objectID)) {
+				this.selectedAsset.uid = selection.objectID;
+			} else {
+				this.selectedAsset.id = +selection.objectID;
+			}
 			if (this.selectedAsset.type === 'ReferenceItem') {
 				this.sidePanelLoading = true;
 				this.objectDetailService.getObject(

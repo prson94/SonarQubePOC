@@ -130,7 +130,8 @@
 							<d3s-loading [isLoading]="true"></d3s-loading>
 						</ng-container>
 						<ng-template #assetTypeDetail>
-							<ig-asset-type-detail [uid]="selectedReferenceItem.uid"
+							<ig-asset-type-detail [hasOpenLink]="false"
+												  [uid]="selectedReferenceItem.uid"
 												  [highlightUid]="selectedReferenceItem.assetUid">
 							</ig-asset-type-detail>
 						</ng-template>

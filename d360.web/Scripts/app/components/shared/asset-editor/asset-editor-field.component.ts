@@ -268,17 +268,16 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			} else {
 				value = this.field.Value.filter((x) => x.Selected === true).map(x => x.Value)[0];
 			}
-            this.form.controls[this.field.FieldName].setValue(value);
-
-            if (this.field.Value) {
-                this.lookupSelectedValue = [];
-                this.field.Items.forEach((item) => {
-                    item['label'] = item['Text'];
-                    item['value'] = item['Value'];
-                    this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
-                });
-                this.selectSingleItem(null, { value: null });
-            }
+			
+			this.lookupSelectedValue = [];
+			this.field.Items.forEach((item) => {
+				item['label'] = item['Text'];
+				item['value'] = item['Value'];
+				this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
+			});
+			this.selectSingleItem(null, { value: null });
+			
+			this.form.controls[this.field.FieldName].setValue(value);
         }
 
         if (this.field.FieldType === 'Relationship') {
@@ -306,22 +305,28 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 }
             });
 
-            if (this.field.Value === null && this.field.Items.some((x) => x.Selected === true)) {
-                this.field.Value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
+			let value: any = this.field.Value;
+
+            if (!value && this.field.Items.some((x) => x.Selected === true)) {
+				if (this.field.MultiSelect) {
+					value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
+				} else {
+					value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value)[0];
+				}
             }
 
-            if (this.field.Value) {
+            if (value) {
                 this.lookupSelectedValue = [];
-                this.field.Items.filter((x) => x.Selected === true).forEach((item) => {
+                this.field.Items.forEach((item) => {
 					item['value'] = item['Value'];
                     this.lookupSelectedValue.push({ label: item.Text, value: item.Value });
                 });
                 this.selectSingleItem(null, { value: null });
             }
-            this.form.controls[this.field.FieldName].setValue(this.field.Value);
+			this.form.controls[this.field.FieldName].setValue(value);
 
             window.setTimeout(() => {
-                this.listItemChange.emit({ field: this.field, value: this.field.Value });
+                this.listItemChange.emit({ field: this.field, value: value });
                 this.ref.markForCheck();
             }, 250);
         }
@@ -813,8 +818,10 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.lastParams = loadParams;
 			
 			if (!this.field.MultiSelect) {
-				const selectedItem = this.lookupValues.find(lookup => lookup.value === this.dropdown.value);
-				if (selectedItem) {
+				const selectedItem = this.lookupValues.find(lookup => {
+					return lookup.value.toLowerCase() === this.dropdown.value.toLowerCase();
+				});
+				if (selectedItem?.value) {
 					this.selectSingleItem(null, selectedItem);
 				}
 			}
@@ -965,6 +972,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 	
 	onItemInfoClick($event: MouseEvent, objectID: string): void {
 		$event.stopPropagation();
-		this.sidePanelSelectionChange.emit({ objectID, fieldName: this.field.FieldName });
+		this.sidePanelSelectionChange.emit({ objectID: objectID.toLowerCase(), fieldName: this.field.FieldName });
 	}
 }
