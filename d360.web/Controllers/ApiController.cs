@@ -1017,10 +1017,7 @@ namespace d360.web.Controllers
 							new GridColumn { text = Fields.AssetPath_Name, datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
 					);
 
-					remainingWidth = 80;
-					dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-					parseDynamicColumnsAndFields(items, columns, fields, dynamicFieldWidth, true);
+					parseDynamicColumnsAndFields(items, columns, fields, 0, true);
 
 					fields.Add(new GridField { name = "ID", type = "number" });
 					fields.Add(new GridField { name = "Name", type = "string" });
