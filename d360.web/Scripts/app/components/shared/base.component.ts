@@ -34,7 +34,8 @@ export class BaseComponent {
     // current object info
     uid: string;
     assetID: number;
-    assetTypeID: number;
+	assetTypeID: number;
+
     objectID: number;
     objectType: string;
 	objectName: string;
@@ -393,8 +394,8 @@ export class BaseComponent {
                 this.followersSidebar = new SecondaryNavItem(
                     $localize`Followers`,
                     'followers',
-                    ['fa-bookmark-o'],
-                    `/sidebar/followers${this.objectContextUrl()}`, null, 35
+					['fa-bookmark-o'],
+					`/asset/${this.uid}/followers`, null, 35
                 );
                 this.secondaryNavService.showItem(this.followersSidebar);
             }

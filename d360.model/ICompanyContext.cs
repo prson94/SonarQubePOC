@@ -329,7 +329,7 @@ namespace d360.model
         
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);
         
-        IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id);
+        IQueryable<FollowDetail> GetFollowersByObject(string type, int id);
         
         Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
         

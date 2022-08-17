@@ -4664,7 +4664,14 @@ where v.id = {0}", id)).FirstOrDefault();
 		[Route("{type}/{id:int}/followers")]
 		public IQueryable<FollowDetail> GetFollowers(SystemObjects type, int id)
 		{
-			return Company.GetFollowersByObject(type, id);
+			return Company.GetFollowersByObject(type.ToString(), id);
+		}
+
+		[Route("{assetUid:Guid}/followers")]
+		public IQueryable<FollowDetail> GetFollowers(Guid assetUid)
+		{
+			var objectData = Company.Assets.Where(x => x.uid == assetUid).Select(x => new { x.Object, x.ObjectID }).FirstOrDefault();
+			return Company.GetFollowersByObject(objectData.Object, objectData.ObjectID);
 		}
 
 		[Route("{id:int}/permissionsbyid")]

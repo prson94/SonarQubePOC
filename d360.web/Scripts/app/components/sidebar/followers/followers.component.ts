@@ -8,6 +8,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettingsService } from '../../../services/settings.service';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-followers',
@@ -85,7 +86,8 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     constructor(
         private followerService: FollowerService,
-        private objectDetailService: ObjectDetailService,
+		private objectDetailService: ObjectDetailService,
+		private assetsService: AssetService,
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         private router: Router,
@@ -99,11 +101,9 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number
-            this.objectType = params['objectType'];
-
-            this.load();
-            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+			this.uid = params['assetUid'];
+			this.load();
+			this.buildSecondaryNavigation(this.uid);
         });
     }
 
@@ -114,14 +114,14 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     load() {
-        this.isLoading = true;
-        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-            res => {
-                this.objectName = res.Name ? res.Name : res.DisplayValue;
-            }
-        );
+		this.isLoading = true;
 
-        this.followerService.getFollowers(this.objectType, this.objectID).subscribe(
+		this.assetsService.getAsset(this.uid)
+			.subscribe((res) => {
+				this.objectName = res.Name ? res.Name : res.DisplayValue;
+			});
+
+		this.followerService.getFollowersByAssetUid(this.uid).subscribe(
             r => {
                 this.items = r;
 

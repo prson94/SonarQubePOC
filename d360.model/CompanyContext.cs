@@ -1335,16 +1335,14 @@ namespace d360.model
 		/// <summary>
 		/// Get a list of those following the current object.
 		/// </summary>
-		public IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id)
+		public IQueryable<FollowDetail> GetFollowersByObject(string type, int id)
 		{
-			string fs = type.ToString();
-
 			string sql = @"select f.* from FollowDetail f
 						inner join reporting.Global_Resource r on
 						r.ResourceID = f.ResourceID
 						where r.State = @userStatus  and objectId=@objectId and objectType = @objectType";
 
-			return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = fs }).AsQueryable();
+			return Query<FollowDetail>(sql, new { userStatus = CompanyResourceState.Active, objectId = id, objectType = type }).AsQueryable();
 		}
 
 		#endregion
