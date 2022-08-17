@@ -320,8 +320,8 @@ export class BaseComponent {
                     this.ownershipSidebar = new SecondaryNavItem(
                         $localize`Responsibilities`,
                         'ownership',
-                        ['fa-user'],
-                        `/sidebar/ownership/${this.assetID}`, null, 25
+						['fa-user'],
+						`/asset/${this.uid}/owners`, null, 25
                     );
                 }
                 this.secondaryNavService.showItem(this.ownershipSidebar);

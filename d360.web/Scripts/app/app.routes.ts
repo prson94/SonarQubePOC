@@ -35,7 +35,7 @@ const routes: Routes = [
     { path: "sidebar/audit", loadChildren: () => import("./components/sidebar/audit/audit.module").then((m) => m.AuditModule) },
     { path: "dashboard", loadChildren: () => import("./components/sidebar/dashboard/dashboard.module").then((m) => m.DashboardModule) },
     { path: "sidebar/followers", loadChildren: () => import("./components/sidebar/followers/followers.module").then((m) => m.FollowersModule) },
-    { path: "sidebar/ownership", loadChildren: () => import("./components/sidebar/ownership/ownership.module").then((m) => m.OwnershipModule) },
+    { path: "asset", loadChildren: () => import("./components/sidebar/ownership/ownership.module").then((m) => m.OwnershipModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/visualization/visualization.module").then((m) => m.VisualizationModule) },
     { path: "asset", loadChildren: () => import("./components/sidebar/relationships/relationships.module").then((m) => m.RelationshipsModule) },
     { path: "sidebar/children", loadChildren: () => import("./components/sidebar/children/children.module").then((m) => m.ChildrenModule) },

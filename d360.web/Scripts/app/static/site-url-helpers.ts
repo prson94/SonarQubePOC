@@ -30,7 +30,6 @@ export class SiteUrlHelpers {
     static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
     static SITE_URL_DASHBOARD_ROOT = 'dashboard';
     static SITE_URL_FOLLOWERS_ROOT = 'sidebar/followers';
-    static SITE_URL_OWNERSHIP_ROOT = 'sidebar/ownership';
     static SITE_URL_CHILDREN_ROOT = 'sidebar/children';
     static SITE_URL_WORKFLOW_MONITOR_ROOT = 'sidebar/workflowmonitor';
     static SITE_URL_FIELDS_ROOT = 'sidebar/fields';
