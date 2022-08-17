@@ -50,7 +50,7 @@ const routes: Routes = [
     { path: "sidebar/workflowmonitor", loadChildren: () => import("./components/workflowmonitor/workflowmonitor.module").then((m) => m.WorkflowMonitorModule) },
     { path: "sidebar/score", loadChildren: () => import("./components/sidebar/score/score.module").then((m) => m.ScoreModule) },
     { path: "sidebar/actions", loadChildren: () => import("./components/sidebar/actions/actions.module").then((m) => m.ActionsModule) },
-    { path: "sidebar/ruleResults", loadChildren: () => import("./components/sidebar/ruleresults/rule-results.module").then((m) => m.RuleResultsModule) },
+    { path: "asset", loadChildren: () => import("./components/sidebar/ruleresults/rule-results.module").then((m) => m.RuleResultsModule) },
     { path: "sidebar/governanceRoles", loadChildren: () => import("./components/sidebar/governance-roles/governance-roles-sidebar.module").then((m) => m.GovernanceRolesModule) },
     { path: "sidebar/connectorLabels", loadChildren: () => import("./components/sidebar/connector-labels/connector-labels-sidebar.module").then((m) => m.ConnectorLabelsModule) },
     { path: "semantics", loadChildren: () => import("./components/semantic/semantics.module").then((m) => m.SemanticsModule) },   

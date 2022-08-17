@@ -405,7 +405,7 @@ export class BaseComponent {
                     $localize`Rule Results`,
                     'Rule Results',
                     ['fa-sitemap'],
-                    `/sidebar/ruleResults/${this.objectID}/${this.uid}`
+                    `/asset/${this.uid}/results`
                     , null, 1);
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }

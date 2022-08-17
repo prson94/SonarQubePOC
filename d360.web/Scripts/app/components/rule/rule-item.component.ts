@@ -81,7 +81,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     load(ruleId: number) {
-        this.ruleSub = this.rulesService.getRule(ruleId)
+        this.ruleSub = this.rulesService.getRule(ruleId+"")
             .subscribe(result => {
                 this.rule = result;
 
