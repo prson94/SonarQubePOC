@@ -104,7 +104,11 @@ import { TaggedAssetDetailModule } from '../shared/tagged-assets/tagged-assets-d
         RuleColumnFilterComponent
     ],
     exports: [
-        RuleResultsGridComponent
+		RuleComponent,
+		RuleListComponent,
+		RuleItemComponent,
+		RuleResultsGridComponent,
+		RuleColumnFilterComponent
     ],
     providers: [
 

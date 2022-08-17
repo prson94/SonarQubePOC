@@ -23,8 +23,8 @@ export class RulesService extends BaseObservableService {
             );
     }
 
-    getRuleType(id: number): Observable<RuleType> {
-        return this.http.get(`api/ruletypes/${id}`)
+    getRuleType(uid: string): Observable<RuleType> {
+        return this.http.get(`api/ruletypes/${uid}`)
             .pipe(
                 map((response) => <RuleType>response),
                 catchError((err) => this.handleError(err))

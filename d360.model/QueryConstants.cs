@@ -330,7 +330,7 @@ namespace d360.model
 										where	WER.Object = T.Object
 												and WER.ObjectID = T.ObjectID
 										) Work
-				where T.[object]='RuleType' and		T.ObjectID = @id";
+				where T.uid = @uid";
 
 		public static readonly string SynonymTypes = @"
 				declare	@ot varchar(50),

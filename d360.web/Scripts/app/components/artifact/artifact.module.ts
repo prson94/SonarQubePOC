@@ -86,7 +86,12 @@ import { SemanticsModule } from '../semantic/semantics.module';
         ArtifactComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
-    ],
+	],
+	exports: [
+		ArtifactComponent,
+		ArtifactItemComponent,
+		ArtifactListComponent,
+	],
     providers: [
         
     ]

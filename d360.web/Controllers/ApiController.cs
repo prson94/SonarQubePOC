@@ -2403,13 +2403,13 @@ namespace d360.web.Controllers
 
 		#region Rules
 
-		[Route("ruletypes/{id:int}")]
-		public HttpResponseMessage GetRuleType(int id)
+		[Route("ruletypes/{uid:Guid}")]
+		public HttpResponseMessage GetRuleType(Guid uid)
 		{
-			var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
+			var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { uid }).Single();
 			int objectId = int.Parse(row.ID.ToString());
 			var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
-			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.Object == "RuleType" && x.ObjectID == id).ID;
+			var assettypeid = Company.AssetTypes.FirstOrDefault(x => x.uid == uid).ID;
 			var hasDashboards = Company.Reports.Any(x => x.AssetTypeID == assettypeid && x.ReportType != DashboardType.Legacy && x.Location == DashboardLocation.List);
 
 			return Request.CreateResponse<dynamic>(
@@ -2419,7 +2419,7 @@ namespace d360.web.Controllers
 					{ "Description", row.Description },
 					{ "HasCustomExportTemplates", hasCustomExports },
 					{ "HasWorkflow", (bool)row.HasWorkflow },
-					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
+					{ "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = assettypeid, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
 					{ "HasDashboards", hasDashboards },
 					{ "AssetTypeUID", row.uid }
 				}

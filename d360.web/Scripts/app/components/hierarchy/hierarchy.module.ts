@@ -100,7 +100,13 @@ import { InfoTooltipModule } from '../shared/tooltip/info-tooltip.component';
         HierarchyListComponent,
         HierarchyItemComponent,
         HierarchyItemStructureComponent,
-    ],
+	],
+	exports: [
+		HierarchyComponent,
+		HierarchyListComponent,
+		HierarchyItemComponent,
+		HierarchyItemStructureComponent,
+	],
     providers: [
         
     ]
