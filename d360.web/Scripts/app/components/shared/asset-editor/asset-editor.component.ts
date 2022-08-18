@@ -32,7 +32,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { Subject } from 'rxjs';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -42,12 +42,23 @@ import { AssetEditorFieldComponent } from './asset-editor-field.component';
 import { GroupService } from '../../../services/group.service';
 import { Group } from '../../../models/group.model';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipV2 } from '../../../models/relationship.model';
+import { RelationshipType, RelationshipTypeEdge, RelationshipV2 } from '../../../models/relationship.model';
+import { FieldsObservableService } from "../../../services/fieldsObservable.service";
+import { FieldTypeAPIModelField } from "../../../models/fieldtype-api.model";
+import { ObjectDetailService } from "../../../services/object-detail.service";
+import { LinkClickInterceptor } from "../../../services/href-click-service";
 
 @Component({
     selector: 'asset-editor',
     templateUrl: './asset-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService, GroupService],
+    providers: [
+		EditorDefinitionService,
+		UriBasedService,
+		CascadeService,
+		AssetService,
+		GroupService,
+		ObjectDetailService
+	],
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
     styleUrls: ['asset-editor.component.less']
@@ -107,18 +118,27 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     action: string = "Edit";
     fields: EditorField[] = [];
+	assetTypeFields: FieldTypeAPIModelField[] = [];
+	fieldsRelations: {[fieldName: string]: RelationshipTypeEdge} = {};
 
     categories: EditorCategory[] = [];
     editedItem: any;
     editorChange: Subject<any> = new Subject();
+	hrefSub: Subscription;
     hasDirections: boolean = false;
-    hasIconFields = false;
+    hasIconFields: boolean = false;
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
     hasUpdateFormChanged: boolean = false;
 
     isProcessSidePanel: boolean = false;
+	sidePanelOpen: boolean = false;
+	sidePanelLoading: boolean = false;
+	sidePanelTab: string;
+	sidePanelSelection: { objectID: string, fieldName: string };
+	selectedAsset: { id?: number, uid?: string, type: string };
+	selectedReferenceItem: { uid: string, assetUid: string };
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -137,6 +157,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         private dynEditorService: DynEditorService,
         private relationshipService: RelationshipsService,
         protected settingsService: CompanySettingsService,
+		private fieldsObservableService: FieldsObservableService,
+		private objectDetailService: ObjectDetailService,
+		private linkClickInterceptor: LinkClickInterceptor,
         private elRef: ElementRef
     ) {
         super(settingsService);
@@ -195,6 +218,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 
     ngOnInit() {
         this.hasDirections = (this.directions && this.directions !== "");
+		this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+			this.linkClickInterceptor.handleEvent(this, ev);
+			this.sidePanelSelection = null;
+		});
         this.load();
     }
 
@@ -237,8 +264,31 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.editedItem = {};
             this.action = this.newActionName;
         }
-        this.getDefinition();
+		
+		this.getAssetTypeDetails().subscribe((result) => {
+			this.assetTypeFields = result.fields;
+			result.fields.forEach((field) => {
+				const relationship = result.relationships.find((relationship) => {
+					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
+				});
+				if (relationship) {
+					if (this.objectTypeUid !== relationship.Object.Uid) {
+						this.fieldsRelations[field.Name] = relationship.Object;
+					} else {
+						this.fieldsRelations[field.Name] = relationship.Subject;
+					}
+				}
+			});
+			this.getDefinition();
+		});
     }
+	
+	getAssetTypeDetails(): Observable<{ fields: FieldTypeAPIModelField[], relationships: RelationshipType[] }> {
+		return forkJoin({
+			fields: this.fieldsObservableService.getFieldsV2(this.objectTypeUid, null, null),
+			relationships: this.relationshipService.getRelationshipsByAssetTypeUid(this.objectTypeUid)
+		});
+	}
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
@@ -302,7 +352,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
         if (this.parentID && this.parentID.toString().length === 36) {
             this.editorDefinitionService.getAssetEditorDefinition(this.objectTypeUid, this.assetUid, this.parentID.toString())
                 .subscribe((result) => {
-                    this.isLoading = false;
                     this.handleEditor(result);
                 });
         }
@@ -995,4 +1044,73 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     get saveButtonLabel(): string {
         return this.selection ? $localize`Save Changes` : $localize`Create`;
     }
+
+	get panelApplies(): boolean {
+		if (this.selectedAsset == null || this.sidePanelTab === 'detail') {
+			return true;
+		}
+	}
+	
+	getObjectTypeByFieldName(fieldName: string): string {
+		const relationClassName = this.fieldsRelations[fieldName]?.Class;
+		if (relationClassName) {
+			return this.getObjectTypeByClass(relationClassName);
+		} else {
+			const fieldDetails = this.assetTypeFields.find((field) => field.Name === fieldName);
+			if (fieldDetails?.Type.Lookup) {
+				return this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+			}
+		}
+		return 'Artifact';
+	}
+
+	getObjectTypeByClass(className: string): string {
+		if (className === 'Policy' || className === 'Rule') {
+			return className;
+		} else {
+			if (className === 'Model') {
+				return 'Taxonomy';
+			}
+			if (className === 'Reference') {
+				return 'ReferenceItem';
+			}
+		}
+		return 'Artifact';
+	}
+	
+	onSidePanelSelectionChange(selection: {objectID: string, fieldName: string}): void {
+		if (!_.isEqual(this.sidePanelSelection, selection)) {
+			this.sidePanelSelection = selection;
+			this.selectedAsset = {
+				type: this.getObjectTypeByFieldName(selection.fieldName),
+			};
+			if (isNaN(+selection.objectID)) {
+				this.selectedAsset.uid = selection.objectID;
+			} else {
+				this.selectedAsset.id = +selection.objectID;
+			}
+			if (this.selectedAsset.type === 'ReferenceItem') {
+				this.sidePanelLoading = true;
+				this.objectDetailService.getObject(
+					this.selectedAsset.id,
+					this.selectedAsset.type
+				).subscribe((details) => {
+					this.selectedReferenceItem = { uid: details.AssetTypeUid, assetUid: details.UID };
+					this.sidePanelLoading = false;
+				});
+			}
+		} else {
+			this.sidePanelSelection = null;
+			this.selectedAsset = null;
+		}
+		this.sidePanelOpen = !!this.sidePanelSelection;
+	}
+	
+	onSidePanelExpansionChange(expanded: boolean): void {
+		if (!expanded) {
+			this.sidePanelSelection = null;
+		}
+		this.sidePanelOpen = expanded;
+	}
+	
 }

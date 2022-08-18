@@ -21,6 +21,7 @@ export class AssetTypeDetailComponent implements OnChanges, OnDestroy {
     @Input() uid: string;
     @Input() highlightUid: string;
     @Input() baseUrl: string = '';
+	@Input() hasOpenLink: boolean = true;
 
     isLoading: boolean = false;
     assetType: AssetTypeApiModel;

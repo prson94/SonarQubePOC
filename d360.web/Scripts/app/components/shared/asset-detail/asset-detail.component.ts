@@ -115,7 +115,6 @@ export class AssetDetailComponent implements OnChanges, OnDestroy {
                 this.objectUID = changes['objectUID'].currentValue;
             }
         }
-
         this.load();
     }
 

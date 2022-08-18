@@ -1,93 +1,143 @@
-﻿<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
-    <div class="form-header-wrapper">
-        <div class="form-header">
-            {{title}}
-            <h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
-            <div class="sub-header" *ngIf="!isLoading && !hidePath">
-                <span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
-                {{assetTypePath}}
-            </div>
-        </div>
-        <ig-form-feedback-badges
-            class="ig-form-feedback-badges"
-            [igformGroup]="form"
-            [inputContainer]="formElement"
-        >
-        </ig-form-feedback-badges>
-    </div>
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div class="row" *ngIf="isInError">
-        <div class="err-message">{{isInErrorMessage}}</div>
-    </div>
-    <div class="row"
-         *ngIf="!isLoading">
-        <div class="form-instructions" *ngIf="hasDirections">
-            {{directions}}
-        </div>
-        <form (ngSubmit)="onSubmit()"
-              [formGroup]="form"
-              #assetForm>
-            <div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
-                <ng-template ngFor
-                             let-category
-                             [ngForOf]="categories">
-                    <ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true" (expandedChange)="expandChanged()">
-                        <div inputs class="inputs-wrapper">
-                            <div class="row"
-                                 *ngFor="let row of category.rows">
-                                <div *ngFor="let field of row.Fields"
-                                     [class]="'field-col col ' + row.getColClass()">
-                                    <asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
-                                                        [form]="form"
-                                                        (listItemChange)="listSelectionChanged($event)"
-                                                        [editorChange]="editorChange"
-                                                        [object]="objectType"
-                                                        [objectID]="objectID"
-                                                        [selectedObject]="selectedObject"
-                                                        [disallowedNames]="disallowedNames"
-                                                        [assetUid]="loadedAssetUid"
-                                                        [assetTypeUid]="objectTypeUid"
-                                                        [diagramNodeKey]="diagramNodeKey"
-                                                        [selectedObjectID]="selectedObjectID"></asset-editor-field>
-                                </div>
-                            </div>
-                        </div>
-                    </ig-property-group>
-                </ng-template>
-            </div>
-
-            <div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
-                <button igButton
-                        type="button"
-                        [igDataCy]="'Asset_Modal_Button_Cancel'"
-                        label="{{cancelButtonLabel}}"
-                        tooltip="{{cancelButtonLabel}}"
-                        title="{{cancelButtonLabel}}"
-                        (click)="closeClick.emit();">
-                </button>
-                <div class="flex-grow"></div>
-                <button *ngIf="!selection"
-                        type="button"
-                        [igDataCy]="'Asset_Modal_Button_Another'"
-                        igButton
-                        [disabled]="!form.valid || savingInProgress"
-                        i18n-label
-                        i18n-tooltip
-                        label="Create and Add Another"
-                        tooltip="Create and Add Another"
-                        [loading]="savingInProgress && savingInProgressWithAddNew"
-                        (click)="onSubmit(true)">
-                </button>
-                &nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="submit"
-                        class="ig-button-primary"
-                        [igDataCy]="'Asset_Modal_Button_Save'"
-                        igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
-                        label="{{saveButtonLabel}}"
-                        tooltip="{{saveButtonLabel}}"
-                        [loading]="savingInProgress && !savingInProgressWithAddNew">
-                </button>
-            </div>
-        </form>
-    </div>
+﻿<div class="asset-editor-container">
+	<div class="add-asset-form {{savingInProgress ? 'saving-in-progress' : ''}}">
+		<div class="form-header-wrapper">
+			<div class="form-header">
+				{{title}}
+				<h2 *ngIf="subTitle" [innerHTML]="subTitle"></h2>
+				<div class="sub-header" *ngIf="!isLoading && !hidePath">
+					<span *ngIf="!assetTypePath" class="fa fa-spinner fa-spin"></span>
+					{{assetTypePath}}
+				</div>
+			</div>
+			<ig-form-feedback-badges
+				class="ig-form-feedback-badges"
+				[igformGroup]="form"
+				[inputContainer]="formElement"
+			>
+			</ig-form-feedback-badges>
+		</div>
+		<d3s-loading [isLoading]="isLoading"></d3s-loading>
+		<div class="row" *ngIf="isInError">
+			<div class="err-message">{{isInErrorMessage}}</div>
+		</div>
+		<div class="row" *ngIf="!isLoading" style="position: relative; height: calc(100% - 61px);">
+			<div class="form-instructions" *ngIf="hasDirections">
+				{{directions}}
+			</div>
+			<form (ngSubmit)="onSubmit()"
+				  [formGroup]="form"
+				  #assetForm>
+				<div class="form-wrapper" [style.height.px]="modalFormMaxHeight">
+					<ng-template ngFor
+								 let-category
+								 [ngForOf]="categories">
+						<ig-property-group [igformGroup]="form" [title]="category.name" [hideIfNoTitle]="true"
+										   (expandedChange)="expandChanged()">
+							<div inputs class="inputs-wrapper">
+								<div class="row"
+									 *ngFor="let row of category.rows">
+									<div *ngFor="let field of row.Fields"
+										 [class]="'field-col col ' + row.getColClass()">
+										<asset-editor-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
+															[form]="form"
+															(listItemChange)="listSelectionChanged($event)"
+															[editorChange]="editorChange"
+															[object]="objectType"
+															[objectID]="objectID"
+															[selectedObject]="selectedObject"
+															[disallowedNames]="disallowedNames"
+															[assetUid]="loadedAssetUid"
+															[assetTypeUid]="objectTypeUid"
+															[diagramNodeKey]="diagramNodeKey"
+															[selectedObjectID]="selectedObjectID"
+															[sidePanelSelection]="sidePanelSelection"
+															(sidePanelSelectionChange)="onSidePanelSelectionChange($event)">
+										</asset-editor-field>
+									</div>
+								</div>
+							</div>
+						</ig-property-group>
+					</ng-template>
+				</div>
+				
+				<div class="action-buttons-placeholder"></div>
+				
+				<div *ngIf="showActions && !useModelBinding" class="action-buttons flex-grid">
+					<button igButton
+							type="button"
+							[igDataCy]="'Asset_Modal_Button_Cancel'"
+							label="{{cancelButtonLabel}}"
+							tooltip="{{cancelButtonLabel}}"
+							title="{{cancelButtonLabel}}"
+							(click)="closeClick.emit();">
+					</button>
+					<div class="flex-grow"></div>
+					<button *ngIf="!selection"
+							type="button"
+							[igDataCy]="'Asset_Modal_Button_Another'"
+							igButton
+							[disabled]="!form.valid || savingInProgress"
+							i18n-label
+							i18n-tooltip
+							label="Create and Add Another"
+							tooltip="Create and Add Another"
+							[loading]="savingInProgress && savingInProgressWithAddNew"
+							(click)="onSubmit(true)">
+					</button>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<button type="submit"
+							class="ig-button-primary"
+							[igDataCy]="'Asset_Modal_Button_Save'"
+							igButton [disabled]="!form.valid || savingInProgress || !formHasChanges()"
+							label="{{saveButtonLabel}}"
+							tooltip="{{saveButtonLabel}}"
+							[loading]="savingInProgress && !savingInProgressWithAddNew">
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="side-panel" *ngIf="sidePanelOpen">
+		<side-panel [expanded]="sidePanelOpen"
+					(expandedChange)="onSidePanelExpansionChange($event)"
+					[panelApplies]="panelApplies"
+					[(selectedPanel)]="sidePanelTab"
+					[height]="'calc(100vh - 152px)'"
+					closeIcon="fa-close"
+					hasDetail="true">
+			<ng-container *ngIf="sidePanelOpen && selectedAsset">
+				<ng-container *ngIf="sidePanelTab === 'detail'">
+					<ig-asset-detail *ngIf="selectedAsset.type !== 'ReferenceItem'"
+									 [objectID]="selectedAsset.id"
+									 [objectUID]="selectedAsset.uid"
+									 [objectType]="selectedAsset.type"
+									 [useAccordion]="true"
+									 [shouldBePadded]="false"
+									 [showHeader]="true"
+									 [showHeaderLine]="false"
+									 [spacerHeight]="'16px'"
+									 [tooltipAlign]="'left'"
+									 [isSidePanel]="true"
+									 [hasEditLink]="false"
+									 [hasOpenLink]="false"
+									 [hasAddRelationshipsPermissions]="false"
+									 [hasModifyRelationshipsPermissions]="false"
+									 [hasDeleteRelationshipsPermissions]="false"
+									 [interceptLinkClick]="true">
+					</ig-asset-detail>
+					<ng-container *ngIf="selectedAsset.type === 'ReferenceItem'">
+						<ng-container *ngIf="sidePanelLoading && !selectedReferenceItem; else assetTypeDetail">
+							<d3s-loading [isLoading]="true"></d3s-loading>
+						</ng-container>
+						<ng-template #assetTypeDetail>
+							<ig-asset-type-detail [hasOpenLink]="false"
+												  [uid]="selectedReferenceItem.uid"
+												  [highlightUid]="selectedReferenceItem.assetUid">
+							</ig-asset-type-detail>
+						</ng-template>
+					</ng-container>
+				</ng-container>
+			</ng-container>
+		</side-panel>
+	</div>
 </div>
