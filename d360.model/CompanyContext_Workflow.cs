@@ -3584,7 +3584,18 @@ namespace d360.model
 
 		#endregion
 
+		private TelemetryClient _externalTelemetryClient;
+
+		/// <summary>
+		/// Sets up TelemetryClient which will be used for logging. If not provided then new single instance will be created and used across all the places.
+		/// </summary>
+		/// <param name="client"></param>
+		public void SetTelemetryClient(TelemetryClient client)
+		{
+			_externalTelemetryClient = client;
+		}
+
 		private readonly Lazy<TelemetryClient> _telemetryClient = new Lazy<TelemetryClient>(() => new TelemetryClient());
-		private TelemetryClient TelemetryClient { get => _telemetryClient.Value; }
+		private TelemetryClient TelemetryClient { get => _externalTelemetryClient ?? _telemetryClient.Value; }
 	}
 }
