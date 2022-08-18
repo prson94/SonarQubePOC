@@ -324,7 +324,6 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 });
                 this.selectSingleItem(null, { value: null });
             }
-			console.log(value);
 			this.form.controls[this.field.FieldName].setValue(value);
 
             window.setTimeout(() => {
@@ -821,7 +820,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			
 			if (!this.field.MultiSelect) {
 				const selectedItem = this.lookupValues.find((lookup) => {
-					return lookup.value.toLowerCase() === this.dropdown.value.toLowerCase();
+					return lookup.value?.toLowerCase() === this.dropdown.value?.toLowerCase();
 				});
 				if (selectedItem?.value) {
 					this.selectSingleItem(null, selectedItem);

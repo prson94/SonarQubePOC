@@ -32,8 +32,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { EMPTY, forkJoin, Observable, Subject, Subscription } from 'rxjs';
-import { catchError, finalize, tap } from 'rxjs/operators';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -91,7 +90,6 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() useV2ApiLink: boolean = false;
     @Input() hidePath: boolean = false;
     @Input() showActions: boolean = true;
-	@Input() useSidePanel: boolean = true;
 
     @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
@@ -135,6 +133,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     hasUpdateFormChanged: boolean = false;
 
     isProcessSidePanel: boolean = false;
+	useSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelLoading: boolean = false;
 	sidePanelTab: string;
@@ -267,7 +266,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.action = this.newActionName;
         }
 		
-		if (this.objectType !== 'IntersectType' && this.objectType !== 'Predicate') {
+		this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
+		
+		if (this.useSidePanel) {
 			this.getAssetTypeDetails().subscribe((result) => {
 				this.assetTypeFields = result.fields;
 				result.fields.forEach((field) => {
@@ -1064,7 +1065,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		} else {
 			const fieldDetails = this.assetTypeFields.find((field) => field.Name === fieldName);
 			if (fieldDetails?.Type.Lookup) {
-				return this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+				const lookupClassName = fieldDetails.Type.Lookup.List.Class;
+				if (lookupClassName !== 'Reference' || fieldDetails?.Type.Lookup.List.Uid) {
+					return this.getObjectTypeByClass(lookupClassName);
+				} else {
+					return 'ReferenceItemType';
+				}
 			}
 		}
 		return 'Artifact';
@@ -1088,14 +1094,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		if (!_.isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
 			this.selectedAsset = {
-				type: this.getObjectTypeByFieldName(selection.fieldName),
+				type: this.getObjectTypeByFieldName(selection.fieldName)
 			};
 			if (isNaN(+selection.objectID)) {
 				this.selectedAsset.uid = selection.objectID;
 			} else {
 				this.selectedAsset.id = +selection.objectID;
 			}
-			if (this.selectedAsset.type === 'ReferenceItem') {
+			if (this.selectedAsset.type.startsWith('ReferenceItem')) {
 				this.sidePanelLoading = true;
 				this.objectDetailService.getObject(
 					this.selectedAsset.id,
