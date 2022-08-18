@@ -49,6 +49,7 @@ namespace d360.model.DataAccessLayer
 			bool listColorsAsJSON = false;
 			List<string> condition = new List<string>();
 			string resourceString = "";
+			string paginationStatement = "";
 
 			var fieldColumns = new DynamicQuerySelects();
 			var fieldJoins = new DynamicQueryJoins();
@@ -95,6 +96,14 @@ namespace d360.model.DataAccessLayer
 						condition.Add("RG.[GroupID] = G.ID");
 						dbArgs.Add("user", user);
 					}
+				}
+
+				var pageSize = queryParams.FirstOrDefault(q => q.Key == "_pageSize");
+				var pageNum = queryParams.FirstOrDefault(q => q.Key == "_pageNum");
+
+				if (int.TryParse(pageSize.Value, out int _pageSize) && int.TryParse(pageNum.Value, out int _pageNum))
+				{
+					paginationStatement = $"offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
 				}
 			}
 
@@ -162,7 +171,8 @@ namespace d360.model.DataAccessLayer
 						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins.SQLJoinStatement) : "")}
 						   {resourceString} 
 						   {whereStatements}  
-						   order by G.Name  ";
+						   order by G.Name 
+						   {paginationStatement}";
 
 			var countSql = $@"Select count(*) from [Group] G
 			inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
