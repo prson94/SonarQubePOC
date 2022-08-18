@@ -202,7 +202,7 @@ namespace d360.model
 										T.ParentObjectID = S.ObjectID
 								from    api.ExecutionAsset T
 										inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID and T.ParentUid is null
-										inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID;",
+										inner join Asset S on S.Id = I.SubjectAssetId;",
             new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
 
             if (at.Class == AssetTypeClass.Reference)
@@ -264,21 +264,18 @@ namespace d360.model
 								with h as 
 								(select 
 										p.parentuid,
-										A.object subject,
-										A.objectid SubjectId,
+										A.Id as AssetId,
 										1 [Level]
 									from #tempdistparent P
 									inner join Asset A
 									on A.uid = p.parentuid
 									union all
 								select  H.parentuid,
-										I.subject,
-										I.SubjectId,
+										I.SubjectAssetId as AssetId,
 										H.[Level] + 1 [Level]
 								from H
 								inner join [Intersect] I
-									on I.[object] = h.Subject
-									and I.ObjectID = h.SubjectID
+									on I.[ObjectAssetID] = h.AssetId
 									and I.IntersectTypeID = @intersectTypeID
 									where H.[Level] <= @maxlevel + 1
 									)
@@ -303,21 +300,18 @@ namespace d360.model
 
 									with h as 
 									(select c.uid,
-											A.object,
-											A.objectid,
+											A.Id as AssetId,
 											1 [Level]
 										from #tempdistchild C
 										inner join Asset A
 										on a.uid = c.uid
 										union all
 									select H.uid,
-											I.Object,
-											I.ObjectId,
+											I.ObjectAssetID as AssetId,
 											H.[Level] + 1 [Level]
 									from H
 									inner join [Intersect] I
-										on I.[Subject] = h.object
-										and I.SubjectID = h.objectID
+										on I.[SubjectAssetID] = h.AssetId
 										and I.IntersectTypeID = @intersectTypeID
 										where H.[Level] <= @maxlevel + 1
 										)
@@ -5603,8 +5597,8 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 																						insert into api.ExecutionItemDependentChange (ExecutionID, ItemNumber, DependentChangeType, [Action], Payload)
 																							select  EA.ExecutionID, EA.ItemNumber, 1, 2, '{ ""ParentAssetUid"": ""' + cast(P.Uid as varchar(50)) + '""}' 
 																							from    api.ExecutionAsset EA 
-																									inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and EA.Object = I.Object and EA.ObjectID = I.ObjectID 
-																									inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+																									inner join [Intersect] I on I.IntersectTypeID = EA.IntersectTypeID and EA.AssetId = I.ObjectAssetId
+																									inner join Asset P on P.Id = I.SubjectAssetId
 																							where    EA.ExecutionID = @ExecutionID 
 																									and Success is null 
 																									and EA.ItemNumber between @beginItemNumber and @endItemNumber
@@ -9240,7 +9234,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 													select		A.ID, P.UID as ParentAssetUID, Null, Null
 													from		Asset A 
 															left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-															left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID	
+															left join Asset P on P.Id = I.SubjectAssetId
 													where		A.AssetTypeID = @ID and @hasUpdatedKeyFields = 1;
 
 													create clustered index idx_key_assetid on #keys(AssetID);
