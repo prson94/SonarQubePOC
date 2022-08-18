@@ -647,6 +647,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		}
 	}
 
+	onRelocatePermissionItemsForwardEvent(): void {
+		this.addPermissionAssets();
+	}
+
 	lastLoadedEvent: any;
 	addPermissionAssets() {
 		if (!this.selectedPermissionAssets) {
@@ -665,6 +669,10 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		this._tempSelectedPermissionAssets = [];
 
 		this.cdRef.markForCheck();
+	}
+
+	onRelocatePermissionItemsBackwardEvent(): void {
+		this.removePermissionAssets();
 	}
 
 	removePermissionAssets() {

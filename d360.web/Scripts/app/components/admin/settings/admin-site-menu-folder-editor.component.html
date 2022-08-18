@@ -239,29 +239,16 @@
 										</p-table>
 									</div>
 								</div>
-								<div class="buttons-grid">
-									<div style="height:100px"></div>
-									<div class="buttons-vertical">
-										<button igButton
-												class="ig-lookup-grid-button"
-												icon="fa-arrow-right"
-												(click)="addPermissionAssets()"
-												[disabled]="!_tempSelectedPermissionAssets || _tempSelectedPermissionAssets.length === 0"
-												pTooltip="Add to selected users/groups"
-												i18n-pTooltip
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-										<button igButton
-												class="ig-lookup-grid-button"
-												icon="fa-arrow-left"
-												(click)="removePermissionAssets()"
-												[disabled]="!_selectedPermissionAsset || _selectedPermissionAsset.length === 0"
-												pTooltip="Remove from selected users/groups"
-												i18n-pTooltip
-												tooltipPosition="top"
-												tooltipStyleClass="ig-tooltip"></button>
-									</div>
-								</div>
+								<d3s-relocate-buttons [sourceItems]="permissionAssets"
+													  [targetItems]="selectedPermissionAssets"
+													  [selectedItemsFromSource]="_tempSelectedPermissionAssets"
+													  [selectedItemsFromTarget]="_selectedPermissionAsset"
+													  [isOrderButtonsPresent]="false"
+													  [relocateToTargetButtonTooltip]="'Add to selected users/groups'"
+													  [relocateToSourceButtonTooltip]="'Remove from selected users/groups'"
+													  (relocateItemsFromSourceToTargetEvent)="onRelocatePermissionItemsForwardEvent()"
+													  (relocateItemsFromTargetToSourceEvent)="onRelocatePermissionItemsBackwardEvent()">
+								</d3s-relocate-buttons>
 								<div class="table-content">
 									<ig-search-field class="search tooltip-full-width"
 														mode="Keypress"

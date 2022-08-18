@@ -12,6 +12,9 @@ export class RelocateButtonsComponent implements OnInit {
   @Input() selectedItemsFromTarget: any[] = [];
   @Input() isFirstItemFromTargetSelected: boolean;
   @Input() isLastItemFromTargetSelected: boolean;
+  @Input() isOrderButtonsPresent: boolean = true;
+  @Input() relocateToTargetButtonTooltip: string = "Add to selected folder items";
+  @Input() relocateToSourceButtonTooltip: string = "Remove from selected folder items";
 
   @Output() relocateItemsFromSourceToTargetEvent = new EventEmitter();
   @Output() relocateItemsFromTargetToSourceEvent = new EventEmitter();
@@ -33,19 +36,19 @@ export class RelocateButtonsComponent implements OnInit {
     this.relocateItemsFromTargetToSourceEvent.emit();
   }
 
-  moveToTop() {
+  moveToTop(): void {
     this.moveToTopEvent.emit();
   }
 
-  moveUp() {
+  moveUp(): void {
     this.moveUpEvent.emit();
   }
 
-  moveDown() {
+  moveDown(): void {
     this.moveDownEvent.emit();
   }
 
-  moveToBottom() {
+  moveToBottom(): void {
     this.moveToBottomEvent.emit();
   }
 
