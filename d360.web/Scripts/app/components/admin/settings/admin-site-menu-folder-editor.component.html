@@ -111,18 +111,21 @@
 										</p-table>
 									</div>
 								</div>
-								<d3s-relocate-buttons [sourceItems]="availableItems"
-													  [targetItems]="newFolderItems"
-													  [selectedItemsFromSource]="_tempSelectedFolderItems"
-													  [selectedItemsFromTarget]="selectedNewFolderItems"
-													  [isFirstItemFromTargetSelected]="isFirstItemFromTargetSelected"
-													  [isLastItemFromTargetSelected]="isLastItemFromTargetSelected"
-													  (relocateItemsFromSourceToTargetEvent)="onRelocateItemsFromSourceToTargetEvent()"
-													  (relocateItemsFromTargetToSourceEvent)="onRelocateItemsFromTargetToSourceEvent()"
-													  (moveToTopEvent)="onMoveToTopEvent()"
-													  (moveUpEvent)="onMoveUpEvent()"
-													  (moveDownEvent)="onMoveDownEvent()"
-													  (moveToBottomEvent)="onMoveToBottomEvent()"></d3s-relocate-buttons>
+								<div class="buttons-grid">
+									<d3s-relocate-buttons [sourceItems]="availableItems"
+														[targetItems]="newFolderItems"
+														[selectedItemsFromSource]="_tempSelectedFolderItems"
+														[selectedItemsFromTarget]="selectedNewFolderItems"
+														[isFirstItemFromTargetSelected]="isFirstItemFromTargetSelected"
+														[isLastItemFromTargetSelected]="isLastItemFromTargetSelected"
+														(relocateItemsFromSourceToTargetEvent)="onRelocateItemsFromSourceToTargetEvent()"
+														(relocateItemsFromTargetToSourceEvent)="onRelocateItemsFromTargetToSourceEvent()"
+														(moveToTopEvent)="onMoveToTopEvent()"
+														(moveUpEvent)="onMoveUpEvent()"
+														(moveDownEvent)="onMoveDownEvent()"
+														(moveToBottomEvent)="onMoveToBottomEvent()">
+									</d3s-relocate-buttons>
+								</div>
 								<div class="table-content">
 									<div class="flex-grid-search">
 										<ig-search-field class="search tooltip-full-width"
@@ -239,16 +242,18 @@
 										</p-table>
 									</div>
 								</div>
-								<d3s-relocate-buttons [sourceItems]="permissionAssets"
-													  [targetItems]="selectedPermissionAssets"
-													  [selectedItemsFromSource]="_tempSelectedPermissionAssets"
-													  [selectedItemsFromTarget]="_selectedPermissionAsset"
-													  [isOrderButtonsPresent]="false"
-													  [relocateToTargetButtonTooltip]="'Add to selected users/groups'"
-													  [relocateToSourceButtonTooltip]="'Remove from selected users/groups'"
-													  (relocateItemsFromSourceToTargetEvent)="onRelocatePermissionItemsForwardEvent()"
-													  (relocateItemsFromTargetToSourceEvent)="onRelocatePermissionItemsBackwardEvent()">
-								</d3s-relocate-buttons>
+								<div class="buttons-grid">
+									<d3s-relocate-buttons [sourceItems]="permissionAssets"
+														[targetItems]="selectedPermissionAssets"
+														[selectedItemsFromSource]="_tempSelectedPermissionAssets"
+														[selectedItemsFromTarget]="_selectedPermissionAsset"
+														[isOrderButtonsPresent]="false"
+														[relocateToTargetButtonTooltip]="'Add to selected users/groups'"
+														[relocateToSourceButtonTooltip]="'Remove from selected users/groups'"
+														(relocateItemsFromSourceToTargetEvent)="onRelocatePermissionItemsForwardEvent()"
+														(relocateItemsFromTargetToSourceEvent)="onRelocatePermissionItemsBackwardEvent()">
+									</d3s-relocate-buttons>
+								</div>
 								<div class="table-content">
 									<ig-search-field class="search tooltip-full-width"
 														mode="Keypress"
