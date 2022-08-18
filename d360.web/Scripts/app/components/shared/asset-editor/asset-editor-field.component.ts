@@ -264,9 +264,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.field.Items = this.field.Value;
             let value: any;
 			if (this.field.MultiSelect) {
-				value = this.field.Value.filter((x) => x.Selected === true).map(x => x.Value);
+				value = this.field.Value.filter((x) => x.Selected === true).map((x) => x.Value);
 			} else {
-				value = this.field.Value.filter((x) => x.Selected === true).map(x => x.Value)[0];
+				value = this.field.Value.filter((x) => x.Selected === true).map((x) => x.Value)[0];
 			}
 			
 			this.lookupSelectedValue = [];
@@ -309,9 +309,9 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 
             if (!value && this.field.Items.some((x) => x.Selected === true)) {
 				if (this.field.MultiSelect) {
-					value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value);
+					value = this.field.Items.filter((x) => x.Selected === true).map((x) => x.Value);
 				} else {
-					value = this.field.Items.filter((x) => x.Selected == true).map((x) => x.Value)[0];
+					value = this.field.Items.filter((x) => x.Selected === true).map((x) => x.Value)[0];
 				}
             }
 
@@ -326,7 +326,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			this.form.controls[this.field.FieldName].setValue(value);
 
             window.setTimeout(() => {
-                this.listItemChange.emit({ field: this.field, value: value });
+                this.listItemChange.emit({ field: this.field, value });
                 this.ref.markForCheck();
             }, 250);
         }
@@ -818,7 +818,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
             this.lastParams = loadParams;
 			
 			if (!this.field.MultiSelect) {
-				const selectedItem = this.lookupValues.find(lookup => {
+				const selectedItem = this.lookupValues.find((lookup) => {
 					return lookup.value.toLowerCase() === this.dropdown.value.toLowerCase();
 				});
 				if (selectedItem?.value) {

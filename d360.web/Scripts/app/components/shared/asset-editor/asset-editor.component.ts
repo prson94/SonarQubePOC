@@ -268,7 +268,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		this.getAssetTypeDetails().subscribe((result) => {
 			this.assetTypeFields = result.fields;
 			result.fields.forEach((field) => {
-				const relationship = result.relationships.find(relationship => {
+				const relationship = result.relationships.find((relationship) => {
 					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
 				});
 				if (relationship) {
@@ -1056,7 +1056,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		if (relationClassName) {
 			return this.getObjectTypeByClass(relationClassName);
 		} else {
-			const fieldDetails = this.assetTypeFields.find(field => field.Name === fieldName);
+			const fieldDetails = this.assetTypeFields.find((field) => field.Name === fieldName);
 			if (fieldDetails?.Type.Lookup) {
 				return this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
 			}
