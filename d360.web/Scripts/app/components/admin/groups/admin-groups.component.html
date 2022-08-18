@@ -28,11 +28,16 @@
                          [metaKeySelection]="true"
                          [globalFilterFields]="['Name']"
                          [paginator]="true"
+                         [lazy] ="true"
+                         (onLazyLoad)="lazyLoadGroups($event)"
+                         [rows]="rowsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         [totalRecords]="totalRecords"
                          [(selection)]="selectedRow"
-                         [rows]="20"
                          [style]="{'width':'100%'}"
                          [loading]="isLoading"
-                         [loadingIcon]="'fa fa-spinner fa-spin'">
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         (onPage)="numberOfRowsByCategoryService.onPage($event, groupListHeading)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th *ngFor="let col of columns"
