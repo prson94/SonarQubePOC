@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="VLova" id="Procedure.graph.PopulateForwardLineage-v1">
+  <changeSet author="VLova" id="Procedure.graph.PopulateForwardLineage-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -49,8 +49,8 @@
 					O.ID as ObjectID
 			from	@assetIds H
 					inner join Asset S on S.ID = H.Id
-					inner join PredicateIntersect I on I.Subject = S.Object and I.SubjectID = S.ObjectID and I.PredicateType in (1, 12, 13)
-					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+					inner join PredicateIntersect I on I.SubjectAssetID = S.ID and I.PredicateType in (1, 12, 13)
+					inner join Asset O on O.ID = I.ObjectAssetID
 		
 			while @currentHop < @endHop
 			begin
@@ -67,11 +67,10 @@
 					from	#PopulateForwardLineageReturn f
 							inner join Asset S on S.ID = f.ObjectID
 							inner join PredicateIntersect I 
-								on I.Subject = S.Object 
-								and I.SubjectID = S.ObjectID
+								on I.SubjectAssetID = S.ID
 								and I.PredicateType in (1, 12, 13) 
 								and I.IntersectID <> f.IntersectID and I.IntersectID not in (select Id from @intersectIds)
-							inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
+							inner join Asset O on O.ID = I.ObjectAssetID
 					where f.ObjectHop = @currentHop + 1
 		
 					set @currentHop = @currentHop + 1

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="VLova" id="Procedure.graph.AssetBrowser_Lineage-v6">
+  <changeSet author="VLova" id="Procedure.graph.AssetBrowser_Lineage-v8">
     <comment>GOV-18816 Optimize performance of lineage diagram</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -55,7 +55,7 @@ begin
 	drop table if exists #hopIntersect;
 	create table #hopIntersect (IntersectID int, 
 		[from] varchar(100), [to] varchar(100),
-		SubjectHop int, SubjectID bigint, ObjectHop int, ObjectID bigint,
+		SubjectHop int, SubjectAssetID bigint, ObjectHop int, ObjectAssetID bigint,
 		predicateId int,
 		predicateUid uniqueidentifier,
 		[text] nvarchar(250),
@@ -110,13 +110,13 @@ begin
 									T.Uid
 							from	#assetsEditable T
 									inner join Asset N on N.Uid = T.Uid
-									inner join PredicateIntersect E on E.Subject = N.Object and E.SubjectID = N.ObjectID and E.PredicateType in (1, 12, 13)
+									inner join PredicateIntersect E on N.ID = E.SubjectAssetID and E.PredicateType in (1, 12, 13)
 							union
 							select	distinct 
 									T.Uid
 							from	#assetsEditable T
 									inner join Asset N on N.Uid = T.Uid
-									inner join PredicateIntersect E on E.Object = N.Object and E.ObjectID = N.ObjectID and E.PredicateType in (1, 12, 13)
+									inner join PredicateIntersect E on N.ID = E.ObjectAssetID and E.PredicateType in (1, 12, 13)
 							)
 	end
 
@@ -140,8 +140,8 @@ begin
 										select	count(1) as [Count]
 										from	PredicateIntersect I 
 												inner join Asset CC on	I.PredicateType in (3,4) 
-																		and I.Subject = PP.Object and I.SubjectID = PP.ObjectID 
-																		and CC.Object = I.Object and CC.ObjectID = I.ObjectID 
+																		and I.SubjectAssetID = PP.ID 
+																		and CC.ID = I.ObjectAssetID 
 																		and CC.uid in (select Uid from #assetsEditable)
 									) O
 							where	O.[Count] = 1
@@ -167,8 +167,8 @@ begin
 				end as IncludeInResult
 		from	d
 				inner join Asset P on P.ID = d.ID
-				inner join PredicateIntersect I on I.Subject = P.Object and I.SubjectID = P.ObjectID and I.PredicateType in (3, 4)
-				inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+				inner join PredicateIntersect I on I.SubjectAssetID = P.ID and I.PredicateType in (3, 4)
+				inner join Asset C on C.ID = I.ObjectAssetID
 	)
 
 	insert into #hopAsset (Hop, ID, ParentID, IncludeInResult)
@@ -180,8 +180,8 @@ begin
 				P.ID as ParentID
 		from	#assetsEditable H--#hopAsset H
 				inner join Asset C on C.Uid = H.Uid--C.ID = H.ID and H.ID = @focalId
-				left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
-				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+				left join PredicateIntersect I on I.ObjectAssetID = C.ID and I.PredicateType in (3, 4)
+				left join Asset P on P.ID = I.SubjectAssetID
 		union all
 		select	C.ID,
 				iif(@ancestry = 1, P.ID, null) as ParentID
@@ -191,8 +191,8 @@ begin
 					select	A.ID 
 					from	PredicateIntersect I
 							inner join Asset A on 
-									I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4) 
-									and A.Object = I.Subject and A.ObjectID = I.SubjectID
+									I.ObjectAssetID = C.ID and I.PredicateType in (3, 4) 
+									and A.ID = I.SubjectAssetID
 				) P
 	)
 
@@ -252,8 +252,8 @@ begin
 		)
 		exec graph.PopulateForwardLineage @currentHop = @currentHop, @endHop = @endForwardHop, @assetIds = @hopAssetIds, @intersectIds = @hopIntersectIds;
 
-		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID)
-		select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID 
+		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectAssetID, ObjectHop, ObjectAssetID)
+		select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID as ObjectAssetID
 		from		#PopulateForwardLineageReturn
 		order by	SubjectHop;
 	end
@@ -264,8 +264,8 @@ begin
 	-- Loop backward in lineage.
 	if @direction = 'A' or @direction = 'B'
 	begin
-		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID)
-			select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID 
+		insert into #hopIntersect (IntersectID, PredicateID, PredicateUid, [Text], PredicateType, SubjectHop, SubjectAssetID, ObjectHop, ObjectAssetID)
+			select		IntersectID, PredicateID, PredicateUid, PredicateName, PredicateType, SubjectHop, SubjectID, ObjectHop, ObjectID as ObjectAssetID
 			from		graph.GetBackwardLineage(@currentHop, @endBackwardHop, @hopAssetIds, @hopIntersectIds) 
 			order by	SubjectHop desc;
 	end
@@ -275,9 +275,9 @@ begin
 	create table #revealIntersect (Direction int, RootID bigint, Hop int, ID bigint);
 
 	insert into #revealIntersect (Direction, Hop, ID)
-		select 1, SubjectHop, SubjectID from #hopIntersect where ObjectHop > @endForwardHop--@currentHop
+		select 1, SubjectHop, SubjectAssetID from #hopIntersect where ObjectHop > @endForwardHop--@currentHop
 		union
-		select 2, ObjectHop, ObjectID from #hopIntersect where SubjectHop < @endBackwardHop; --@currentHop;
+		select 2, ObjectHop, ObjectAssetID from #hopIntersect where SubjectHop < @endBackwardHop; --@currentHop;
 
 	-- Remove the extra edges that should beyond the specified number of hops.
 	delete #hopIntersect where SubjectHop < @endBackwardHop or ObjectHop > @endForwardHop;
@@ -290,16 +290,16 @@ begin
 	-- Now add the missing assets discovered in the relationship hopping into the Asset temp table.
 	insert into #hopAsset (Hop, ID)
 		select	distinct 
-				SubjectHop, SubjectID
+				SubjectHop, SubjectAssetID
 		from	#hopIntersect I
-				left join #hopAsset A on A.Hop = I.SubjectHop and A.ID = I.SubjectID
+				left join #hopAsset A on A.Hop = I.SubjectHop and A.ID = I.SubjectAssetID
 		where	A.ID is null
 
 	insert into #hopAsset (Hop, ID)
 		select	distinct 
-				ObjectHop, ObjectID 
+				ObjectHop, ObjectAssetID 
 		from	#hopIntersect I
-				left join #hopAsset A on A.Hop = I.ObjectHop and A.ID = I.ObjectID
+				left join #hopAsset A on A.Hop = I.ObjectHop and A.ID = I.ObjectAssetID
 		where	A.ID is null
 
 	-- Now we find the hop assets, other than @currentHop, that need their ancestry. We take into account the hops as well.
@@ -317,8 +317,8 @@ begin
 					inner join dbo.AssetPath A on A.ID = H.ID and H.Hop <> @currentHop and H.ParentID is null
 					cross apply A.Segments.nodes('/path/segment') n(s)
 					inner join Asset C on C.ID = n.s.value('@assetId', 'bigint')
-					left join PredicateIntersect I on I.Object = C.Object and I.ObjectID = C.ObjectID and I.PredicateType in (3, 4)
-					left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+					left join PredicateIntersect I on I.ObjectAssetID = C.ID and I.PredicateType in (3, 4)
+					left join Asset P on P.ID = I.SubjectAssetID
 	end
 
 	-- Update parentId of assets that are already in the table.
@@ -418,8 +418,8 @@ begin
 			I.[to] =	O.RootPrefix + '|' + cast(O.Hop as varchar) + '|' + cast(O.RootID as varchar(50)),
 			I.[text] = I.[text]
 	from	#hopIntersect I
-			inner join #hopAsset S on S.Hop = I.SubjectHop and S.ID = I.SubjectID
-			inner join #hopAsset O on O.Hop = I.ObjectHop and O.ID = I.ObjectID;
+			inner join #hopAsset S on S.Hop = I.SubjectHop and S.ID = I.SubjectAssetID
+			inner join #hopAsset O on O.Hop = I.ObjectHop and O.ID = I.ObjectAssetID;
 
 	-- Load final edge data into the high-level links between nodes.
 	insert into #edges ([from], [to], back, [text], linksJson)
@@ -436,8 +436,8 @@ begin
 				(
 					select	distinct
 							intersectId as id,  
-							'A|' + cast(SubjectHop as varchar) + '|' + cast(SubjectID as varchar(50)) as [from],
-							'A|' + cast(ObjectHop as varchar) + '|' + cast(ObjectID as varchar(50)) as [to],
+							'A|' + cast(SubjectHop as varchar) + '|' + cast(SubjectAssetID as varchar(50)) as [from],
+							'A|' + cast(ObjectHop as varchar) + '|' + cast(ObjectAssetID as varchar(50)) as [to],
 							predicateId, 
 							predicateUid, 
 							predicateType
@@ -645,7 +645,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Subject = A.Object and I.SubjectID = A.ObjectID and I.Object <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
+														inner join PredicateIntersect I on I.SubjectAssetID = A.ID and A.Object <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateName
@@ -657,7 +657,7 @@ begin
 														count(1) as [count]
 											from		#nodes IH
 														inner join Asset A on A.ID = IH.assetId and IH.hierarchyKey = H.hierarchyKey
-														inner join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.Subject <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
+														inner join PredicateIntersect I on I.ObjectAssetID = A.ID and A.Object <> 'ReferenceItemType' and I.PredicateType not in (1,3,4,12,13,15)
 											group by	I.PredicateID,
 														I.PredicateUid,
 														I.PredicateInverse
