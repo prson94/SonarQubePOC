@@ -35,7 +35,7 @@
 // By this we guarantee that column headings are always visible (sticky) even if user scrolls vertically
 :host p-treetable ::ng-deep thead tr th {
   position: sticky;
-  top: 0px;
+  top: 0;
   z-index: 1;
 }
 
@@ -51,7 +51,8 @@
 }
 
 p-treetable ::ng-deep table {
-  th, td {
+  th, 
+  td {
     &:not(:last-child) {
       padding-right: 16px;
     }

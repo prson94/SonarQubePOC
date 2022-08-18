@@ -1,12 +1,13 @@
 ﻿// By this we guarantee that column headings are always visible (sticky) even if user scrolls vertically
 .relationship-detail p-table thead tr th {
   position: sticky;
-  top: 0px;
+  top: 0;
   z-index: 1;
 }
 
 .relationship-detail p-table table {
-  th, td {
+  th, 
+  td {
     &:not(:last-child) {
       padding-right: 16px;
     }
