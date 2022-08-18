@@ -147,7 +147,8 @@
 											<span class="p-multiselect-token-icon pi pi-times-circle"
 												  (click)="dropdown.removeChip(option.value, $event); $event.stopPropagation()">
 											</span>
-											<asset-editor-field-info [object]="{objectID: option.value.toLowerCase(), fieldName: field.FieldName}"
+											<asset-editor-field-info *ngIf="useSidePanel"
+																	 [object]="{objectID: option.value.toLowerCase(), fieldName: field.FieldName}"
 																	 (click)="onItemInfoClick($event, option.value)"
 																	 [selected]="sidePanelSelection" size="s">
 											</asset-editor-field-info>
@@ -184,7 +185,7 @@
 
                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label ?? item.Text"></span>
 								
-								<div class="info-button" [class.info-button--required]="field.Required">
+								<div class="info-button" [class.info-button--required]="field.Required" *ngIf="useSidePanel">
 									<asset-editor-field-info (click)="onItemInfoClick($event, item.value)" size="m"
 															 [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
 															 [selected]="sidePanelSelection">
@@ -244,7 +245,7 @@
 
                                                 <span *ngIf="!field.UseColorControl" class="item-value" [innerHTML]="item.label"></span>
                                             </td>
-											<td style="justify-content: flex-end;">
+											<td style="justify-content: flex-end;" *ngIf="useSidePanel">
 												<asset-editor-field-info (click)="onItemInfoClick($event, item.value)"
 																		 [object]="{objectID: item.value.toLowerCase(), fieldName: field.FieldName}"
 																		 [selected]="sidePanelSelection">

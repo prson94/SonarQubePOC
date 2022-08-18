@@ -55,6 +55,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     selectionScrollHeight: string = "320px";
 
     @Input() useNewUI: boolean = false;
+	@Input() useSidePanel: boolean = false;
     private isDirty: boolean = false;
 	
 	@Input() sidePanelSelection: { objectID: string, fieldName: string };
@@ -323,6 +324,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
                 });
                 this.selectSingleItem(null, { value: null });
             }
+			console.log(value);
 			this.form.controls[this.field.FieldName].setValue(value);
 
             window.setTimeout(() => {

@@ -50,6 +50,7 @@
 															[assetTypeUid]="objectTypeUid"
 															[diagramNodeKey]="diagramNodeKey"
 															[selectedObjectID]="selectedObjectID"
+															[useSidePanel]="useSidePanel"
 															[sidePanelSelection]="sidePanelSelection"
 															(sidePanelSelectionChange)="onSidePanelSelectionChange($event)">
 										</asset-editor-field>
@@ -97,7 +98,7 @@
 			</form>
 		</div>
 	</div>
-	<div class="side-panel" *ngIf="sidePanelOpen">
+	<div class="side-panel" *ngIf="useSidePanel && sidePanelOpen">
 		<side-panel [expanded]="sidePanelOpen"
 					(expandedChange)="onSidePanelExpansionChange($event)"
 					[panelApplies]="panelApplies"

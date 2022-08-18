@@ -32,7 +32,8 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
-import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
+import { EMPTY, forkJoin, Observable, Subject, Subscription } from 'rxjs';
+import { catchError, finalize, tap } from 'rxjs/operators';
 import { DynEditorService } from '../../../services/dyn-editor.service';
 import { SelectItem } from 'primeng/api';
 import { CompanySettingsService } from '../../../services/settings.service';
@@ -90,6 +91,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     @Input() useV2ApiLink: boolean = false;
     @Input() hidePath: boolean = false;
     @Input() showActions: boolean = true;
+	@Input() useSidePanel: boolean = true;
 
     @Input() useModelBinding: boolean = false;
     @Input() dataModel: any = null;
@@ -265,22 +267,26 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.action = this.newActionName;
         }
 		
-		this.getAssetTypeDetails().subscribe((result) => {
-			this.assetTypeFields = result.fields;
-			result.fields.forEach((field) => {
-				const relationship = result.relationships.find((relationship) => {
-					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
-				});
-				if (relationship) {
-					if (this.objectTypeUid !== relationship.Object.Uid) {
-						this.fieldsRelations[field.Name] = relationship.Object;
-					} else {
-						this.fieldsRelations[field.Name] = relationship.Subject;
+		if (this.objectType !== 'IntersectType' && this.objectType !== 'Predicate') {
+			this.getAssetTypeDetails().subscribe((result) => {
+				this.assetTypeFields = result.fields;
+				result.fields.forEach((field) => {
+					const relationship = result.relationships.find((relationship) => {
+						return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
+					});
+					if (relationship) {
+						if (this.objectTypeUid !== relationship.Object.Uid) {
+							this.fieldsRelations[field.Name] = relationship.Object;
+						} else {
+							this.fieldsRelations[field.Name] = relationship.Subject;
+						}
 					}
-				}
+				});
+				this.getDefinition();
 			});
+		} else {
 			this.getDefinition();
-		});
+		}
     }
 	
 	getAssetTypeDetails(): Observable<{ fields: FieldTypeAPIModelField[], relationships: RelationshipType[] }> {
