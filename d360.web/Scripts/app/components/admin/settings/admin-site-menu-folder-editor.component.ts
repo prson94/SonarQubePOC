@@ -164,6 +164,7 @@ export class AdminSiteMenuFolderEditorComponent extends BaseComponent implements
 		} else {
 			this.isEdit = false;
 			this.folderModel = new SiteNav();
+			this.folderModel.IsCustom = true;
 		}
 
 		this.$destroy.next();
