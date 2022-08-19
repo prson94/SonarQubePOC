@@ -13,6 +13,7 @@ using d360.core.enums;
 using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Services;
 
 using Microsoft.Web.Http;
 
@@ -113,19 +114,19 @@ namespace d360.web.Controllers.V2
 		{
 			if (assetUid == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetUidMustSpecified));
+				throw new ArgumentException(OthersMessages.AssetUidMustSpecified);
 			}
 
 			var asset = AssetRepository.GetAssetByUID(assetUid);
 
 			if (asset == null)
 			{
-				return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, OthersMessages.AssetuidDoesnotExists));
+				throw new NotFoundBusinessLayerException(OthersMessages.AssetuidDoesnotExists);
 			}
 
 			IEnumerable<dynamic> nodes = await ProcessRepository.GetAvailableDiagramNodesForAsset(assetUid);
 
-			return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, nodes));
+			return Ok(nodes);
 		}
 
 		/// <summary>
@@ -252,12 +253,12 @@ namespace d360.web.Controllers.V2
 
 															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
 																 inner join Asset a on a.uid = ass.assetuid
-																 inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
+																 inner join [Intersect] i on i.objectassetid = a.id
 																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
 															 union
 															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
 																 inner join Asset a on a.uid = ass.assetuid
-																 inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
+																 inner join [Intersect] i on i.subjectassetid = a.id
 																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
 															", new { assetUid = sourceAsset.uid }).ToList();
 
@@ -662,7 +663,7 @@ namespace d360.web.Controllers.V2
 						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
 					 from assets
 						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.subject = a.object and i.subjectid = a.objectid
+						inner join [intersect] i on i.subjectassetid = a.id
 						inner join intersecttype it on i.intersecttypeid = it.id
 						inner join asset a2 on a2.Object = i.Object and a2.ObjectID = i.ObjectID
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
@@ -673,7 +674,7 @@ namespace d360.web.Controllers.V2
 						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
 					 from assets
 						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.object = a.object and i.objectid = a.objectid
+						inner join [intersect] i on i.objectassetid = a.id
 						inner join intersecttype it on i.intersecttypeid = it.id
 						inner join asset a2 on a2.Object = i.subject and a2.ObjectID = i.subjectid
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1

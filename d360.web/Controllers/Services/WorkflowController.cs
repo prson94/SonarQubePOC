@@ -1302,7 +1302,7 @@ namespace d360.web.Controllers.Services
 							,i.updatedon as 'UpdatedOn'
 							,i.completedon as 'CompletedOn'
 							,i.numberofevents as 'NumberOfEvents'
-							,coalesce(od.DisplayValue,IName.Name) as 'Name'
+							,od.DisplayValue as 'Name'
 							,AUrl.[Url] as 'Url'
 							,i.id as 'ItemID'
 						  from
@@ -1311,7 +1311,6 @@ namespace d360.web.Controllers.Services
 							left join AssetDetail od on i.objectid = od.objectid and i.[object] = od.[object] 
 							outer apply [dbo].[GetAssetUrlById](od.ID) AUrl
 							left join [Intersect] IT on i.Object = 'Intersect' and I.ObjectID = IT.ID
-							outer apply dbo.GetIntersectNames(IT.ID) IName	                         
 						  where 
 							coalesce(od.ID, it.ID) is not null and v.id = @id";
 

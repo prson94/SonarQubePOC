@@ -18,7 +18,7 @@ export class BaseObservableService {
 
     handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false, router: Router = null) {
         return this.messages.saveClientError(error, handleAsAPI2Error).pipe(
-            tap(res => {
+            tap((res) => {
                 if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.
                     console.error('An error occurred[client side]:', error);
@@ -100,8 +100,8 @@ export class BaseObservableService {
                 }
             )
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             )
             ;
     }
@@ -128,8 +128,8 @@ export class BaseObservableService {
             return http
                 .post(`form/dynamicedit/${method}/${type}`, form)
                 .pipe(
-                    map(res => <JsonResult>res),
-                    catchError(err => this.handleError(err))
+                    map((res) => <JsonResult>res),
+                    catchError((err) => this.handleError(err))
                 )
                 ;
         }
@@ -143,8 +143,8 @@ export class BaseObservableService {
                 }
             )
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             )
             ;
     }
@@ -171,8 +171,8 @@ export class BaseObservableService {
                     form
                 )
                 .pipe(
-                    map(res => <JsonResult>res),
-                    catchError(err => this.handleError(err))
+                    map((res) => <JsonResult>res),
+                    catchError((err) => this.handleError(err))
                 )
                 ;
         }
@@ -186,8 +186,8 @@ export class BaseObservableService {
                 }
             )
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             )
             ;
     }

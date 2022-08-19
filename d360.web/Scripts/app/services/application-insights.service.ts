@@ -11,10 +11,10 @@ export class ApplicationInsightsService {
     private routerSubscriptionEnd: Subscription;
 
     constructor(private router: Router) {        
-        this.routerSubscriptionStart = this.router.events.pipe(filter(event => event instanceof NavigationStart)).subscribe((event: NavigationStart) => {
+        this.routerSubscriptionStart = this.router.events.pipe(filter((event) => event instanceof NavigationStart)).subscribe((event: NavigationStart) => {
             this.startNavigationEvent(event.url);            
         });
-        this.routerSubscriptionEnd = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
+        this.routerSubscriptionEnd = this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
             this.endNavigationEvent(event.url);                      
         });
     }

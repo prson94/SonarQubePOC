@@ -128,8 +128,8 @@ namespace d360.model.DataAccessLayer
 			string _orderBy = "I.IntersectTypeID,I.ID";
 			string _orderDirection = "asc";
 
-			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldColumns = new DynamicQuerySelects();
+			var fieldJoins = new DynamicQueryJoins();
 
 			string filteredIntersectsTempTable = "";
 			string prefilteredIntersectTypesTempTable = "";
@@ -357,7 +357,7 @@ namespace d360.model.DataAccessLayer
 			if (queryParams.Any(x => x.Key.ToLower() == "_order"))
 			{
 				var orderValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value.ToLower(System.Globalization.CultureInfo.InvariantCulture);
-				var joinColumn = fieldColumns.FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
+				var joinColumn = fieldColumns.GetStatements().FirstOrDefault(x => x.ToLower().Contains($"[{orderValue}]"));
 				if (!string.IsNullOrEmpty(joinColumn))
 				{
 					_orderBy = joinColumn.Substring(0, joinColumn.IndexOf(" as ["));
@@ -454,15 +454,15 @@ namespace d360.model.DataAccessLayer
 					filteringByFields = true;
 
 					var tempArgs = new DynamicParameters();
-					List<string> tempJoins = new List<string>();
-					List<string> tempFieldColumns = new List<string>();
+					var tempJoins = new DynamicQueryJoins();
+					var tempFieldColumns = new DynamicQuerySelects();
 
 					getFieldSql(fieldTypes, tempArgs, tempJoins, tempFieldColumns);
 
 					var filterDataProvider = new FilterDataProvider(companyContext);
 
 					var filterExpressionParser = new FilterExpressionParser(filterDataProvider, FilterExpressionParseType.RelationshipCustomFields);
-					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns);
+					filterExpressionParser.LoadFieldTypes(fieldTypes, tempFieldColumns.GetStatements());
 					var fieldsQuery = "(" + filterExpressionParser.Parse(value, out Dictionary<string, object> sqlParams, out List<int> filteredFields) + ")";
 
 					whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + fieldsQuery;
@@ -508,37 +508,37 @@ namespace d360.model.DataAccessLayer
 
 			if (includeAssetPath || orderByAssetPath)
 			{
-				fieldJoins.Add(" left join dbo.AssetPath ANDP_Object on ANDP_Object.Id = O.Id ");
-				fieldJoins.Add(" left join dbo.AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ");
+				fieldJoins.Add(" left join dbo.AssetPath ANDP_Object on ANDP_Object.Id = O.Id ", "AssetPathObject");
+				fieldJoins.Add(" left join dbo.AssetPath ANDP_Subject on ANDP_Subject.Id = S.Id ", "AssetPathSubject");
 			}
 
 			if (isExport)
 			{
-				fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ");
-				fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ");
-				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ");
-				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ");
+				fieldJoins.Add(" left join AssetDisplayValue ADVS on S.ID = ADVS.AssetID ", null);
+				fieldJoins.Add(" left join AssetDisplayValue ADVO on O.ID = ADVO.AssetID ", null);
+				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ') PS ", null);
+				fieldJoins.Add(" outer apply dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ') PO ", null);
 			}
 
 			if (isFilteredByAssetUID)
 			{
 				//apply data to check which side on relationship are we
-				fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side");
+				fieldJoins.Add(@"outer apply (select case when I.Subject = @assetObject and I.SubjectID = @assetObjectId then 'Subject' else 'Object' end as Value)Side", null);
 				//depending on relationship side reslove relationship type name and asset name
 				fieldJoins.Add(@"outer apply (select case when Side.Value = 'Subject' then P.Name + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(O.AssetTypeID, ' > ')),'---')
 				else P.Inverse + ' ' + isnull((select Path from dbo.GetAssetTypeTextPathById(S.AssetTypeID, ' > ')),'---') end as RelationshipTypeName,
 				case when Side.Value = 'Subject' then ISNULL(ANDP_Object.DisplayPath,OT2.Name)
-				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData");
+				else ISNULL(ANDP_Subject.DisplayPath,ST2.Name) end as AssetPath)RelationshipSideData", null);
 			}
 
 			string fieldColumnsSql = "";
-			if (fieldColumns.Count > 0)
-				fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+			if (fieldColumns.Any())
+				fieldColumnsSql = string.Join(",\n", fieldColumns.GetStatements()) + ",";
 
 			var countFullSql = $@"select	
 		   @total = count(1) 
 				{countSql} 
-				{(filteringByFields ? string.Join("\n", fieldJoins) : "")} 
+				{(filteringByFields ? string.Join("\n", fieldJoins.GetStatements()) : "")} 
 				{whereClause}";
 
 			string orderByClause = $"order by {_orderBy} {_orderDirection}";
@@ -580,7 +580,7 @@ select	@pageSize as 'pageSize',
 				
 				
 		{baseTableSql}
-		{string.Join("\n", fieldJoins)}
+		{string.Join("\n", fieldJoins.GetStatements())}
 		{whereClause} 
 		{orderByClause}
 		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
@@ -621,8 +621,8 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 					WHERE I.uid = @uid"
 				, new { uid }, ApiTimeout).ToList();
 
-			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldColumns = new DynamicQuerySelects();
+			var fieldJoins = new DynamicQueryJoins();
 
 			if (fieldTypes != null)
 			{
@@ -644,9 +644,9 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 			predicateTypeSql += " end as 'Predicate.Type', ";
 
 			string fieldColumnsSql = "";
-			if (fieldColumns.Count > 0)
+			if (fieldColumns.Any())
 			{
-				fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
+				fieldColumnsSql = string.Join(",\n", fieldColumns.GetStatements()) + ",";
 			}
 
 			var sql = $@"
@@ -666,7 +666,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 								OKP.KeyPath as 'Object.Path',
 								ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
 						{baseTableSql}
-						{string.Join("\n", fieldJoins)}
+						{fieldJoins.SQLJoinStatement}
 						{whereClause} 
 						for json path, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER";
 

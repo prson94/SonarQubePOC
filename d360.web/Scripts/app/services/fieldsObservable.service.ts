@@ -31,8 +31,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<FieldDefinition[]>(`/fields/${objectType}/${objectID}/full`)
             .pipe(
-                map(response => <FieldDefinition[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <FieldDefinition[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -53,8 +53,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<any>(`api/v2/fields?${url}`)
             .pipe(
-                map(response => <FieldTypeAPIModelField[]>response.items),
-                catchError(err => this.handleError(err))
+                map((response) => <FieldTypeAPIModelField[]>response.items),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -65,8 +65,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .put<any>(`api/v2/fields`, model)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -75,8 +75,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<FieldDefinition[]>(`/api/v2/assets/fields/${assetTypeUID}`)
             .pipe(
-                map(response => <FieldDefinition[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <FieldDefinition[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -95,8 +95,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<any>(`api/v2/fields?${url}&Name=${name}`)
             .pipe(
-                map(response => <FieldTypeAPIModelField>response.items[0]),
-                catchError(err => this.handleError(err))
+                map((response) => <FieldTypeAPIModelField>response.items[0]),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -124,9 +124,9 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<SelectItem[]>(`api/v2/fields/GetRelationLookupDisplayFields?assetTypeUid=${assetTypeUid}&intersectTypeUid=${intersectTypeUid}`)
             .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
-                catchError(err => this.handleError(err))
+                map((response) => <FtItem[]>response),
+                map((r) => this.ftItemToSelectItem(r)),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -143,8 +143,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<SelectItem[]>(`api/v2/fields/GetReferenceHierarchy?${url}`)
             .pipe(
-                map(response => <SelectItem[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <SelectItem[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -161,8 +161,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<any>(`api/v2/fields/GetLookupListFilter?${url}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -173,8 +173,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<SelectItem[]>(`api/v2/fields/GetLookupDefaultValues?Uid=${Uid}`)
             .pipe(
-                map(r => this.ftItemToSelectItem(<FtItem[]>r)),
-                catchError(err => this.handleError(err))
+                map((r) => this.ftItemToSelectItem(<FtItem[]>r)),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -184,8 +184,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<Array<SelectItem>>(`api/v2/fields/GetFieldTypeLookupTokens?identifier=${uid}`)
             .pipe(
-                map(r => this.ftItemToSelectItem(<FtItem[]>r)),
-                catchError(err => this.handleError(err))
+                map((r) => this.ftItemToSelectItem(<FtItem[]>r)),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -202,7 +202,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<Lookups>(`api/v2/fields/GetLookups?${url}`)
             .pipe(
-                map(response => <any>response),
+                map((response) => <any>response),
                 map(
                     (r) => {
                         let l = new Lookups();
@@ -229,7 +229,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         return l;
                     }
                 ),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -245,8 +245,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<FieldTypeEditorModel>(`api/v2/fields/GetFieldTypeFormData?name=${name}&${url}`)
             .pipe(
-                map(response => <FieldTypeEditorModel>response),
-                catchError(err => this.handleError(err))
+                map((response) => <FieldTypeEditorModel>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -274,8 +274,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .delete('api/v2/fields', options)
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -300,8 +300,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(`api/v2/fields/GetChildRelations?${url}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -311,8 +311,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(`api/v2/fields/GetParentRelations?${url}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -322,8 +322,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(`api/v2/fields/GetStandardRelations?${url}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -333,8 +333,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(`api/v2/fields/technicalrelationships?${url}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -348,8 +348,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .post(`api/v2/fields/move`, model)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -363,8 +363,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .post(`api/v2/fields/move`, model)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -380,8 +380,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<EditorDropDownItem[]>(`api/FieldType_CascadingListValues/${fieldTypeId}?parentItemId=${parentItemId}&parentValues=${parentValues}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -397,8 +397,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<any>(`api/v2/fields/IsListableRelationship?${url}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -418,13 +418,13 @@ export class FieldsObservableService extends BaseObservableService implements IF
                     }
 
                     return this.http.get(uri).pipe(
-                        map(res => res),
+                        map((res) => res),
                         map(
                             (res) => {
                                 return { fieldTypeID: event.fieldTypeID, results: res, event: event.event };
                             }
                         ),
-                        catchError(err => this.handleError(err))
+                        catchError((err) => this.handleError(err))
                     );
                 }
             )
@@ -443,7 +443,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                     }
 
                     return this.http.get(uri).pipe(
-                        map(res => <EditorDropDownItem[]>res)
+                        map((res) => <EditorDropDownItem[]>res)
                     );
                 }
             )
@@ -459,8 +459,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get<any>(`form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${fieldTypeID}&objectType=${objectType}&ObjectID=${id}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -471,7 +471,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 let uri = `form/FieldType_Lookup_FilteredByPredicate?fieldTypeId=${e.fieldTypeID}&objectType=${objectType}&ObjectID=${id}&query=${e.event.query}`;
                 if (e.value != null)
                     uri += `&value=${e.value}`;
-                return this.http.get(uri).pipe(map(res => <any[]>res["items"]));
+                return this.http.get(uri).pipe(map((res) => <any[]>res["items"]));
             }));
     }
 
@@ -485,8 +485,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             url = `relationshipTypeUid=${relationshipTypeUid}`;
         return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldName=${fieldName}&phrase=${encodeURIComponent(phrase)}&${url}`)
             .pipe(
-                map(response => <string[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <string[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -495,16 +495,16 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(`api/v2/fields/GetAvailableScoreTypes?assetTypeUid=${assetTypeUid}`)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
 
     }
 
     getAssetTypeAncestry(assetTypeUid: string) {
         return this.http.get(`api/v2/assets/types/${assetTypeUid}/ancestry`).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err))
+            map((response) => response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -522,8 +522,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(url)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -541,8 +541,8 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .http
             .get(url)
             .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
+                map((response) => response),
+                catchError((err) => this.handleError(err))
             );
 
     }

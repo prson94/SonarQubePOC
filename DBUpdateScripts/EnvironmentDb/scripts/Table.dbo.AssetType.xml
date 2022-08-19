@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="sDooley" id="Table.dbo.AssetType-v5">
+  <changeSet author="Pappas" id="Table.dbo.AssetType-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,28 +14,29 @@
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetType')
 BEGIN
 	CREATE TABLE [dbo].[AssetType](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[Description] [nvarchar](max) NULL,
-		[Class] [int] CONSTRAINT [DF_AssetType_Class] DEFAULT (1) NOT NULL,
-		[DisplayFormat] [nvarchar](250) CONSTRAINT [DF_AssetType_DisplayFormat] DEFAULT ('{ID}') NOT NULL,
-		[State] [int] CONSTRAINT [DF_AssetType_State] DEFAULT (1) NOT NULL,
-		[Hierarchical] [bit] CONSTRAINT [DF_AssetType_Hierarchical] DEFAULT (0) NOT NULL,
-		[HierarchyPredicateID] [int] NULL,
-		[HierarchyIntersectTypeID] [int] NULL,
-		[HierarchyMaximumDepth] [int] CONSTRAINT [DF_AssetType_HierarchyMaximumDepth] DEFAULT (0) NOT NULL,
-		[Object] [varchar](50) NOT NULL,
-		[ObjectID] [int] CONSTRAINT [DF_AssetType_ObjectId] DEFAULT (NEXT VALUE FOR [dbo].[AssetType_ObjectID_Seq]) NOT NULL,
-		[CreatedOn] [datetime] NULL,
-		[CreatedBy] [int] NULL,
-		[UpdatedOn] [datetime] NULL,
-		[UpdatedBy] [int] NULL,
-		[Notes] [nvarchar](max) NULL,
-		[uid] [uniqueidentifier] CONSTRAINT [DF_AssetType_uid] DEFAULT (newid()) NOT NULL,
-		[CanOwnFusion] [bit] CONSTRAINT [DF_assetType_CanOwnFusion] DEFAULT (0) NOT NULL,
-		[AutoDisplayDescription] [bit] DEFAULT (0) NOT NULL,
-		[UseAsTransformation] [bit] CONSTRAINT [DF_AssetType_UseAsTransformation] DEFAULT (0) NOT NULL,
+		[ID] int identity(1,1) NOT NULL,
+		[Name] nvarchar(250) NOT NULL,
+		[Description] nvarchar(max) NULL,
+		[Class] int constraint [DF_AssetType_Class] default(1) NOT NULL,
+		[DisplayFormat] nvarchar(250) constraint [DF_AssetType_DisplayFormat] default('{ID}') NOT NULL,
+		[State] int constraint [DF_AssetType_State] default(1) NOT NULL,
+		[Hierarchical] bit constraint [DF_AssetType_Hierarchical] default(0) NOT NULL,
+		[HierarchyPredicateID] int NULL,
+		[HierarchyIntersectTypeID] int NULL,
+		[HierarchyMaximumDepth] int constraint [DF_AssetType_HierarchyMaximumDepth] default(0) NOT NULL,
+		[Object] varchar(50) NOT NULL,
+		[ObjectID] int constraint [DF_AssetType_ObjectId] default(NEXT VALUE FOR [dbo].[AssetType_ObjectID_Seq]) NOT NULL,
+		[CreatedOn] datetime NULL,
+		[CreatedBy] int NULL,
+		[UpdatedOn] datetime NULL,
+		[UpdatedBy] int NULL,
+		[Notes] nvarchar(max) NULL,
+		[uid] uniqueidentifier constraint [DF_AssetType_uid] default(newid()) NOT NULL,
+		[UseAsTransformation] [bit] constraint [DF_AssetType_UseAsTransformation] default(0) NOT NULL,
 		[HashValue] [binary](20) NULL,
+		[AutoDisplayParent] [bit] constraint DF_AssetType_AutoDisplayParent default(0) NOT NULL,
+		[FlowObjectType] int null,
+		CanEditParent bit constraint DF_AssetType_CanEditParent default(1) not null, 
 		CONSTRAINT [PK_AssetType] PRIMARY KEY CLUSTERED ( [ID] ASC ),
 		CONSTRAINT [AssetType_Object_ObjectId] UNIQUE NONCLUSTERED ( [Object] ASC, [ObjectID] ASC )
 	)
@@ -46,91 +47,45 @@ BEGIN
 	CREATE NONCLUSTERED INDEX [IX_AssetType_Object_ObjectID_Include] ON [dbo].[AssetType] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID])
 END
 
-IF COL_LENGTH('[dbo].[AssetType]','FlowObjectType') IS NULL
-BEGIN
-ALTER TABLE [dbo].[AssetType]
-ADD [FlowObjectType] int 
-END
-
-IF COL_LENGTH('[dbo].[AssetType]','CanEditParent') IS NULL
-BEGIN
-ALTER TABLE [dbo].[AssetType]
-ADD [CanEditParent] bit 
-END
-
-    IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
+IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
                    WHERE Name = 'MetricAllocation'
                    AND Class = 16)
 		BEGIN
-			insert into [dbo].[AssetType]([Name]
-      ,[Description]
-      ,[Class]
-      ,[DisplayFormat]
-      ,[State]
-      ,[Hierarchical]
-      ,[HierarchyPredicateID]
-      ,[HierarchyIntersectTypeID]
-      ,[HierarchyMaximumDepth]
-      ,[Object]
-      ,[ObjectID]
-      ,[CreatedOn]
-      ,[CreatedBy]
-      ,[UpdatedOn]
-      ,[UpdatedBy]
-      ,[Notes]
-      ,[uid]
-      ,[CanOwnFusion]
-      ,[AutoDisplayDescription]
-      ,[UseAsTransformation]
-      ,[FlowObjectType]
-      ,[CanEditParent]
-      ,[AutoDisplayParent])
-	  values('MetricAllocation','A Metric Allocation',16,'{Name}',1,0,NULL,NULL,0,'MetricAllocation',1,GETDATE(),0,GETDATE(),0,NULL,'00000001-0000-0000-0000-B00000000013',0,0,0,NULL,1,NULL)
+			insert into AssetType (
+				Name, Description, [Class], DisplayFormat, [State]
+				, [Hierarchical], [HierarchyPredicateID], [HierarchyIntersectTypeID], [HierarchyMaximumDepth]
+				, [Object], [ObjectID]
+				, [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy]
+				, [Notes], [uid])
+			values (
+				'MetricAllocation','A Metric Allocation',16, '{Name}', 1
+				, 0, NULL, NULL, 0
+				, 'MetricAllocation', 1
+				, GETDATE(), 0, GETDATE(), 0
+				, NULL, '00000001-0000-0000-0000-B00000000013')
 		END
 
 IF NOT EXISTS (SELECT * FROM [dbo].[AssetType] 
                    WHERE Name = 'Predicate'
                    AND Class = 17)
 		BEGIN
-			insert into [dbo].[AssetType]([Name]
-      ,[Description]
-      ,[Class]
-      ,[DisplayFormat]
-      ,[State]
-      ,[Hierarchical]
-      ,[HierarchyPredicateID]
-      ,[HierarchyIntersectTypeID]
-      ,[HierarchyMaximumDepth]
-      ,[Object]
-      ,[ObjectID]
-      ,[CreatedOn]
-      ,[CreatedBy]
-      ,[UpdatedOn]
-      ,[UpdatedBy]
-      ,[Notes]
-      ,[uid]
-      ,[CanOwnFusion]
-      ,[AutoDisplayDescription]
-      ,[UseAsTransformation]
-      ,[FlowObjectType]
-      ,[CanEditParent]
-      ,[AutoDisplayParent])
-	  values('Predicate','A Predicate',17,'{Name}',1,0,NULL,NULL,0,'Predicate',1,GETDATE(),0,GETDATE(),0,NULL,'00000001-0000-0000-0000-B00000000014',0,0,0,NULL,1,NULL)
+			insert into AssetType (
+				Name, Description, [Class], DisplayFormat, [State]
+				, [Hierarchical], [HierarchyPredicateID], [HierarchyIntersectTypeID], [HierarchyMaximumDepth]
+				, [Object], [ObjectID]
+				, [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy]
+				, [Notes], [uid])
+			values (
+				'Predicate','A Predicate',17,'{Name}',1
+				, 0, NULL, NULL, 0
+				, 'Predicate', 1
+				, GETDATE(), 0, GETDATE(), 0
+				, NULL, '00000001-0000-0000-0000-B00000000014')
 		END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-IF COL_LENGTH('[dbo].[AssetType]','CanEditParent') IS NOT NULL
-BEGIN
-ALTER TABLE [dbo].[AssetType]
-DROP COLUMN [CanEditParent]
-END
-
-Delete from [dbo].[AssetType] where Name = 'MetricAllocation' AND Class = 16
-
-Delete from [dbo].[AssetType] where Name = 'Predicate' AND Class = 17
-		]]>
+		<![CDATA[]]>
 	</rollback>
   </changeSet>
 
@@ -204,94 +159,4 @@ AS
 	</rollback>
   </changeSet>
 
-  <changeSet author="Bhoward" id="Table.dbo.AssetType-v2">
-    <comment>GOV-9840 - Adding AutoDisplayParentv col to be used by Technical or Business asset</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayParent') IS NULL
-BEGIN
-ALTER TABLE [dbo].[AssetType]
-ADD [AutoDisplayParent] bit 
-END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayParent') IS NOT NULL
-BEGIN
-ALTER TABLE [dbo].[AssetType]
-DROP COLUMN [AutoDisplayParent]
-END
-		]]>
-    </rollback>
-  </changeSet>
-
-
-  <changeSet author="kmcnamee" id="Table.dbo.AssetType-DropCanOwnFusion-v1">
-    <comment>GOV-15928 Remove CanOwnFusion</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-IF COL_LENGTH('[dbo].[AssetType]','CanOwnFusion') IS NOT NULL
-BEGIN
-  alter table [dbo].[AssetType] DROP CONSTRAINT DF_assetType_CanOwnFusion;
-  ALTER TABLE [dbo].[AssetType] DROP COLUMN [CanOwnFusion]
-END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-
-IF COL_LENGTH('[dbo].[AssetType]','CanOwnFusion') IS NULL
-BEGIN
-  ALTER TABLE [dbo].[AssetType] ADD [CanOwnFusion] bit 
-  ALTER TABLE [dbo].[AssetType] ADD  CONSTRAINT [DF_assetType_CanOwnFusion]  DEFAULT ((0)) FOR [CanOwnFusion]
-END
-		]]>
-    </rollback>
-  </changeSet>
-
-  <changeSet author="vlova" id="Table.dbo.AssetType-DropAutoDisplayDescription-v1">
-    <comment>GOV-17822 Remove AutoDisplayDescription</comment>
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-
--- dynamic drop of constraints is required, because "default 0" creates randomly-named constraint
--- which prevents deleting of column AutoDisplayDescription
-declare @sql nvarchar(max)
-
-select 
-  @sql = 'alter table dbo.AssetType drop constraint ' + df.NAME 
-from sys.default_constraints df
-  INNER JOIN sys.tables t ON df.parent_object_id = t.object_id
-  INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_column_id = c.column_id
-where t.name = 'AssetType' and c.name = 'AutoDisplayDescription'
-
-exec sp_executeSql @sql
-
--- drop column
-alter table dbo.AssetType 
-drop column if exists AutoDisplayDescription
-
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-
-IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayDescription') IS NULL
-BEGIN
-  ALTER TABLE [dbo].[AssetType] Add [AutoDisplayDescription] [bit] DEFAULT (0) NOT NULL
-END
-
-		]]>
-    </rollback>
-  </changeSet>
 </databaseChangeLog>

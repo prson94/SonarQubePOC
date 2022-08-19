@@ -16,8 +16,8 @@ export class UriBasedService extends BaseObservableService {
     getItems(uri: string): Observable<any[]> {
         return this.http.get(uri)
             .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -28,8 +28,8 @@ export class UriBasedService extends BaseObservableService {
         return this.http
             .delete(`${uri}${id}`, { headers })
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -48,8 +48,8 @@ export class UriBasedService extends BaseObservableService {
         return this.http
             .post(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -61,18 +61,18 @@ export class UriBasedService extends BaseObservableService {
         return this.http
             .put(uri, 'json=' + encodeURIComponent(JSON.stringify(item)), { headers: headers })
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getAsObservable(uri: string) {
-        return this.http.get(uri).pipe(map(res => <any>res));
+        return this.http.get(uri).pipe(map((res) => <any>res));
     }
 
     search(uri: string, query: Observable<string>, debounceTimeParametr: number = 300, emptyResults: boolean = false) {
         return query.pipe(debounceTime(debounceTimeParametr),
             distinctUntilChanged(),
-            switchMap(query => this.getAsObservable(uri + query)));
+            switchMap((query) => this.getAsObservable(uri + query)));
     }
 }

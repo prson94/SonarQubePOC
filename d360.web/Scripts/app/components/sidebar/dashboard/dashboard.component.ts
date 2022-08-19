@@ -2,7 +2,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { DashboardService } from '../../../services/dashboard.service';
-import { Dashboard, DashboardModel } from '../../../models/dashboard.model';
+import { DashboardModel } from '../../../models/dashboard.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';

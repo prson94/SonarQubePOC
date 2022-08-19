@@ -18,23 +18,23 @@ export class ToolTipService extends BaseObservableService {
 
         return this.http.get(`resources/tooltipdata/${objectType}/${objectID}`)
             .pipe(
-                map(response => <TooltipInfo>response),
-                catchError(err => this.handleError(err))
+                map((response) => <TooltipInfo>response),
+                catchError((err) => this.handleError(err))
             );
     }
     private tooltipsCache: any[] = [];
 
     getTooltipInfoByUid(uid: string, objectType: string = null): Observable<TooltipInfo> {
-        var cachedItem = this.tooltipsCache.find(x => x.uid == uid);
+        var cachedItem = this.tooltipsCache.find((x) => x.uid == uid);
         if (cachedItem)
             return cachedItem.obs;
 
         var obs = this.http.get(`resources/tooltipdatabyuid/${uid}?objectType=${objectType}`)
             .pipe(
-                map(response => <TooltipInfo>response),
+                map((response) => <TooltipInfo>response),
                 publishReplay(1),
                 refCount(),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
 
         var data = { uid: uid, obs: obs };
@@ -46,8 +46,8 @@ export class ToolTipService extends BaseObservableService {
     getLookupTooltipInfo(objectType: string, objectID: number): Observable<LookupTooltipInfo> {
         return this.http.get(`resources/lookuptooltipdata/${objectType}/${objectID}`)
             .pipe(
-                map(response => <LookupTooltipInfo>response),
-                catchError(err => this.handleError(err))
+                map((response) => <LookupTooltipInfo>response),
+                catchError((err) => this.handleError(err))
             );
     }
 }

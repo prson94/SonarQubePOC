@@ -134,7 +134,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     }
 
     public deleteTemplateStyle(id: number) {
-        this.exportTemplateService.deleteExportTemplateStyle(id).subscribe(result => {
+        this.exportTemplateService.deleteExportTemplateStyle(id).subscribe((result) => {
             this.messagesService.showInfoMessage($localize`Success`, $localize`Style deleted successfully`);
             this.showDelete = false;
             this.load();
@@ -147,9 +147,9 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
             this.isLoading = false;
             return;
         }
-        this.exportTemplateService.getExportTemplateStyles(this.templateId).subscribe(result => {
+        this.exportTemplateService.getExportTemplateStyles(this.templateId).subscribe((result) => {
             if (this.exportViewType != ExportViewType.Pivot)
-                this.styleRules = result.filter(x => x.Column == -1);
+                this.styleRules = result.filter((x) => x.Column == -1);
             else
                 this.styleRules = result;
             this.isLoading = false;

@@ -33,8 +33,8 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get(`form/AssetType?class=${cls}&parentID=${parentID}&id=${id}`)
             .pipe(
-                map(response => <AssetTypeEditorModel>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AssetTypeEditorModel>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -44,8 +44,8 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get(`api/legacyuri/AssetType/${uid}`)
             .pipe(
-                map(response => <string & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <string & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -62,8 +62,8 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .delete(`api/v2/assets/single`, httpOptions)
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
+                map((res) => <JsonResult>res),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -82,8 +82,8 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get(`api/v2/assets/types${qString}`)
             .pipe(
-                map(response => <AssetTypeApiModel[] & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AssetTypeApiModel[] & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -92,16 +92,16 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get('api/v2/assets/types?class=' + cs.toString())
             .pipe(
-                map(response => <AssetTypeApiModel[] & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <AssetTypeApiModel[] & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     public getAssetTypeObjectAndID(uid: string) {
         return this.http.get(`api/getAssetTypeObjectAndObjectID/${uid}`)
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -111,7 +111,7 @@ export class AssetTypeService extends BaseObservableService {
             .get(`api/v2/assets/types?assetTypeUid=${uid}`)
             .pipe(
                 map((response) => { return <AssetTypeApiModel>response[0]; }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -121,7 +121,7 @@ export class AssetTypeService extends BaseObservableService {
             .get(`api/v2/assets/${uid}/possibleOwners`)
             .pipe(
                 map((response) => { return <any[]>response; }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -131,7 +131,7 @@ export class AssetTypeService extends BaseObservableService {
             .get(`api/v2/assets/${uid}/possibleCreators`)
             .pipe(
                 map((response) => { return <any[]>response; }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -141,7 +141,7 @@ export class AssetTypeService extends BaseObservableService {
             .get(`api/v2/assets/${uid}/possibleRedactors`)
             .pipe(
                 map((response) => { return <any[]>response; }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
 	}
 	GetPossibleAssetTypeForSiteNav(): Observable<any[]> {
@@ -150,7 +150,7 @@ export class AssetTypeService extends BaseObservableService {
 			.get(`api/v2/assets/possibleSiteNav`)
 			.pipe(
 				map((response) => { return <any[]>response; }),
-				catchError(err => this.handleError(err))
+				catchError((err) => this.handleError(err))
 			);
 	}
 
@@ -160,8 +160,8 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .post('api/v2/assets', model)
             .pipe(
-                map(response => <ApiResult & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiResult & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -171,8 +171,8 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .put('api/v2/assets', model)
             .pipe(
-                map(response => <ApiResult & ErrorResponse>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ApiResult & ErrorResponse>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -180,8 +180,8 @@ export class AssetTypeService extends BaseObservableService {
         return this.http
             .get('api/v2/assets/types')
             .pipe(
-                map(res => <AssetType[] & ErrorResponse>res),
-                catchError(err => this.handleError(err))
+                map((res) => <AssetType[] & ErrorResponse>res),
+                catchError((err) => this.handleError(err))
             );
     }
 

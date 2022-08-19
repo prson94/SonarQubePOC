@@ -790,9 +790,9 @@ namespace d360.web.Controllers.V2
 				case when ga.ActionObject = 'Intersect' then 'Relationship'
 					 when ga.ActionObject = 'IntersectType' then 'RelationshipType'
 					 else ga.ActionObject end ActionObject,
-				case when ga.ActionObjectTypeName = 'Intersect Type' then 'Relationship Type' else ga.ActionObjectTypeName end as actionObjectTypeName,
-				ga.actionObjectName,
-				ga.actionDescription,
+				ActionData.actionObjectTypeName,
+				ActionData.actionObjectName,
+				ActionData.actionDescription,
 				fa.FieldName as Field,
 				CASE WHEN ga.Action = 'Tag Consolidate' THEN
 					ga.ObjectName
@@ -825,6 +825,25 @@ namespace d360.web.Controllers.V2
 			left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
 			left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
 			left join FieldType FT on FT.ID = fa.FieldTypeID
+			outer apply (
+				select 
+				case 
+					when ga.ActionObjectTypeName = 'Intersect Type' 
+						then 'Relationship Type' 
+					else coalesce(ityname.name,ga.ActionObjectTypeName) 
+				end as actionObjectTypeName,
+				coalesce(iname.Name,ga.actionObjectName) as actionObjectName,
+				case when O.ID > 0
+					then ITyName.Name + ' ' + R.Action
+					else ga.ActionDescription
+				end as actionDescription
+				from reporting.global_audit r
+					left join [Intersect] O on R.ActionObject = 'Intersect' and O.ID = r.ActionObjectID
+					left join [IntersectType] T on T.ID = O.IntersectTypeID
+					outer apply dbo.getIntersectNames(O.ID) Iname
+					outer apply dbo.getIntersectTypeNames(T.ID) ITyName
+				where r.ID = ga.ID
+			)ActionData
 			inner join  (
 				select uid, DisplayValue, Object, objectid, AssetTypeClass from AssetDetail where uid = @uid
 				union

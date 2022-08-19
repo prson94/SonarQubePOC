@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, ViewEncapsulation } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, OnDestroy, SimpleChange, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -12,13 +12,18 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { CompanySettingsService } from '../../../services/settings.service';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { GridColumn, GridField } from '../../../models/grid-definition.model';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { AssetEditorComponent } from '../../shared/asset-editor/asset-editor.component';
 import { Table } from 'primeng/table';
 import { AssetDetailComponent } from '../../shared/asset-detail/asset-detail.component';
 import { LinkClickInterceptor } from '../../../services/href-click-service';
 import { FeatureFlags, FeatureFlagsService } from "../../../services/featureflags.service";
+import { V2ApiFilters } from '../../../models/asset-search.model';
+import { NumberOfRowsByCategoryService } from '../../../services/number-of-rows-by-category.service';
+import { takeUntil } from 'rxjs/operators';
+import { LazyLoadEvent } from 'primeng/api';
+import { isEqual } from 'lodash';
 
 declare var CurrentResourceID;
 @Component({
@@ -51,6 +56,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     labelCancel = $localize`Cancel`;
     labelDelete = $localize`Delete`;
 
+	groupListHeading: string = 'Groups';
+
     simpleTextFilter: string = '';
 
     columns: GridColumn[] = [];
@@ -66,6 +73,14 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     selectedAsset: any;
     selectedReferenceItem: any;
     selectedTag: any;
+
+	previousEvent: LazyLoadEvent;
+	currentPageNumber: number = 0;
+	totalRecords: number;
+	rowsPerPage: number = this.defaultInitialItemsPerPage;
+	defaultInitialItemsPerPage: number = 10;
+
+	private destroy = new Subject<void>();
 
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: AssetEditorComponent;
     @ViewChild('dt', { static: false }) table: Table;
@@ -87,7 +102,8 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
         protected settingsService: CompanySettingsService,
         private cdRef: ChangeDetectorRef,
         private linkClickInterceptor: LinkClickInterceptor,
-		private featureFlagService: FeatureFlagsService
+		private featureFlagService: FeatureFlagsService,
+		public numberOfRowsByCategoryService: NumberOfRowsByCategoryService
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
         this.areaName = StringConstants.Section_Groups;
@@ -105,14 +121,39 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
 	}
 
     ngOnInit() {
-        this.load();
+		this.load();
+
+		this.setRowsPerPage()
+		this.numberOfRowsByCategoryService.defineNumberOfRows(this.defaultInitialItemsPerPage);
     }
 
     ngOnDestroy() {
         if (this.loadSub) {
             this.loadSub.unsubscribe();
-        }
+		}
+
+		this.destroy.next();
+		this.destroy.complete();
     }
+
+	setRowsPerPage(): void {
+		this.numberOfRowsByCategoryService.rowsPerPage.pipe(
+			takeUntil(this.destroy)
+		).subscribe((rowsPerPage) => {
+			this.rowsPerPage = rowsPerPage[this.groupListHeading] || this.defaultInitialItemsPerPage;
+		});
+	}
+
+	public lazyLoadGroups(event: LazyLoadEvent) {
+		if (isEqual(event, this.previousEvent)) {
+			return;
+		}
+		this.previousEvent = event;
+
+		this.rowsPerPage = event.rows;
+		this.currentPageNumber = event.first / event.rows;
+		this.load();
+	}
 
     load() {
         this.isLoading = true;
@@ -121,32 +162,47 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
             this.loadSub.unsubscribe();
         }
 		
-		const simpleTextFilter = this.isContainsSearchDefault ? `*${this.simpleTextFilter}*` : this.simpleTextFilter;
-
-        this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroups(simpleTextFilter))
+		this.loadSub = forkJoin(this.gridDefinitionService.getGridDefinition(1, "GroupType"), this.groupService.getGroupsLazy(this.getParams()))
             .subscribe((res) => {
-                var result = res[0];
-                var d = res[1];
+				var gridDefinition = res[0];
+				var groups = res[1];
 
-                this.columns = result.Columns.filter((x) => x.datafield !== 'Name');
-                this.fields = result.Fields;
+				this.columns = gridDefinition.Columns.filter((x) => x.datafield !== 'Name');
+				this.fields = gridDefinition.Fields;
 
-                this.groupItems = d.items;
+				this.totalRecords = groups.Total;
+				this.groupItems = groups.items;
 
-                if (this.selectedRow) {
-                    var sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
-                    if (sItem.length > 0) {
-                        this.selectedRow = sItem[0];
-                    }
-                    else {
-                        this.selectedRow = null;
-                    }
-                }
+				if (this.selectedRow) {
+					var sItem = this.groupItems.filter((item) => item.Uid === this.selectedRow.Uid);
+					if (sItem.length > 0) {
+						this.selectedRow = sItem[0];
+					}
+					else {
+						this.selectedRow = null;
+					}
+				}
 
-                this.isLoading = false;
-                this.cdRef.markForCheck();
+				this.isLoading = false;
+				this.cdRef.markForCheck();
             });
     }
+
+	getParams() {
+		var params = new V2ApiFilters();
+
+		if (this.simpleTextFilter) {
+			params._simpleFilter = this.isContainsSearchDefault ? `*${this.simpleTextFilter}*` : this.simpleTextFilter;
+		}
+		else {
+			delete params['_simpleFilter'];
+		}
+
+		params._pageNum = this.currentPageNumber + 1;
+		params._pageSize = this.rowsPerPage;
+
+		return params;
+	}
 
     add() {
         this.selectedRow = null;
@@ -189,7 +245,7 @@ export class AdminGroupsComponent extends AdminBaseComponent implements OnDestro
     delete() {
         this.deleteInProgress = true;
         this.groupService.deleteGroupWithUid(this.selectedRow.Uid).subscribe(
-            result => {
+            (result) => {
                 this.showDelete = false;
                 this.selectedRow = null;
                 this.load();

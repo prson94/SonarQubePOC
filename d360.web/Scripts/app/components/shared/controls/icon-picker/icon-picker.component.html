@@ -12,7 +12,7 @@
                 appendTo="body"
                 scrollHeight="320px"
                 [attr.required]="isRequired"
-                [placeholder]="(isRequired ? 'Required' : 'Optional')"
+                [placeholder]="(isRequired ? this.labelRequired : this.labelOptional)"
                 filterPlaceholder="Type to filter">
         <ng-template let-group pTemplate="group">
             <span [class.noGroup] ="!group.label">{{group.label}}</span>

@@ -1279,14 +1279,14 @@ namespace d360.model
 													inner join [Intersect] R on R.ID = ER.IntersectID 
 														and ER.ExecutionID = @apiExecutionUid 
 														and ER.Success = 1
-													inner join Asset A on (A.Object = R.Subject and A.ObjectID = R.SubjectID)
+													inner join Asset A on A.ID = R.SubjectAssetId
 													UNION ALL
 													SELECT a.id, a.Uid, R.IntersectTypeID, A.AssetTypeID
 													FROM api.ExecutionRelationship ER
 													inner join [Intersect] R on R.ID = ER.IntersectID 
 														and ER.ExecutionID = @apiExecutionUid 
 														and ER.Success = 1
-													inner join Asset A on (A.Object = R.Object and A.ObjectID = R.ObjectID)
+													inner join Asset A on A.ID = R.ObjectAssetId
 												) S
 												inner join IntersectType T on T.ID = S.IntersectTypeID 
 												inner join [Predicate] P on P.ID = T.PredicateID 

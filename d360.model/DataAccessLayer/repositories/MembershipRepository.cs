@@ -49,9 +49,10 @@ namespace d360.model.DataAccessLayer
 			bool listColorsAsJSON = false;
 			List<string> condition = new List<string>();
 			string resourceString = "";
+			string paginationStatement = "";
 
-			List<string> fieldColumns = new List<string>();
-			List<string> fieldJoins = new List<string>();
+			var fieldColumns = new DynamicQuerySelects();
+			var fieldJoins = new DynamicQueryJoins();
 
 			if (queryParams != null)
 			{
@@ -95,6 +96,14 @@ namespace d360.model.DataAccessLayer
 						condition.Add("RG.[GroupID] = G.ID");
 						dbArgs.Add("user", user);
 					}
+				}
+
+				var pageSize = queryParams.FirstOrDefault(q => q.Key == "_pageSize");
+				var pageNum = queryParams.FirstOrDefault(q => q.Key == "_pageNum");
+
+				if (int.TryParse(pageSize.Value, out int _pageSize) && int.TryParse(pageNum.Value, out int _pageNum))
+				{
+					paginationStatement = $"offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
 				}
 			}
 
@@ -149,7 +158,7 @@ namespace d360.model.DataAccessLayer
 			var sql = $@"
 				   Select 
 					   A.Uid,
-					   {(fieldColumns.Count > 0 ? string.Join(",\n", fieldColumns) + "," : "")}
+					   {(fieldColumns.GetStatements().Count > 0 ? string.Join(",\n", fieldColumns.GetStatements()) + "," : "")}
 					   G.Name,
 					   G.Description,
 					   gr1.uid as PrimaryOwnerUid,
@@ -159,16 +168,17 @@ namespace d360.model.DataAccessLayer
 						   inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
 						   left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
 						   left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
+						   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins.SQLJoinStatement) : "")}
 						   {resourceString} 
 						   {whereStatements}  
-						   order by G.Name  ";
+						   order by G.Name 
+						   {paginationStatement}";
 
 			var countSql = $@"Select count(*) from [Group] G
 			inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
 			left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
 			left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-			   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins) : "")}
+			   {(fieldJoins.Count > 0 ? string.Join("\n", fieldJoins.GetStatements()) : "")}
 				{resourceString} 
 				{whereStatements}  ";
 

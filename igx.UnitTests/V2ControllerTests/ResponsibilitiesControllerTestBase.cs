@@ -1,8 +1,10 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Web.Http;
 using d360.model.DataAccessLayer;
 using d360.web.Controllers.V2;
 using d360.web.Services;
+using igx.UnitTests.Core;
 using Moq;
 
 namespace igx.UnitTests.V2ControllerTests
@@ -26,7 +28,7 @@ namespace igx.UnitTests.V2ControllerTests
 
 			ResponsibilitiesController = new ResponsibilitiesController(CoreComponentSet, MockAssetRepository.Object, MockResponsibilityRepository.Object, MockResourceRepository.Object, MockAssetService.Object)
 			{
-				Request = new HttpRequestMessage(),
+				Request = new HttpRequestMessage() { RequestUri = new Uri(DataConstants.UrlString) },
 				Configuration = new HttpConfiguration()
 			};
 		}

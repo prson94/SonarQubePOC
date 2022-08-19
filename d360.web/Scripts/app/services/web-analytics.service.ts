@@ -17,7 +17,7 @@ export class WebAnalyticsService extends BaseObservableService {
             .http
             .post('webanalytics/logactivity', JSON.stringify(activity), { headers: {'Content-Type':'application/json'}})            
             .pipe(                
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
             ).subscribe();
     }
 }

@@ -179,7 +179,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     duplicate(pos) {
-        let itemToDupe = this.conditionGroups.find(x => x.Position == pos);
+        let itemToDupe = this.conditionGroups.find((x) => x.Position == pos);
         let newGroup = _.cloneDeep(itemToDupe);
         newGroup.Position = this.getMaxPositionForGroups();
         newGroup.DisplayOrder = this.getMaxDisplayOrderForGroups();
@@ -189,8 +189,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     moveGroupItems(from, to) {
         let temp = from;
-        let fromitem = this.conditionGroups.find(x => x.DisplayOrder == from);
-        let toitem = this.conditionGroups.find(x => x.DisplayOrder == to);
+        let fromitem = this.conditionGroups.find((x) => x.DisplayOrder == from);
+        let toitem = this.conditionGroups.find((x) => x.DisplayOrder == to);
 
         fromitem.DisplayOrder = to;
         toitem.DisplayOrder = temp;
@@ -211,7 +211,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     getMaxPositionForGroups(): number {
         if (this.conditionGroups.length > 0) {
-            return (this.conditionGroups.map(x => x.Position).sort((a, b) => b - a)[0] + 1);
+            return (this.conditionGroups.map((x) => x.Position).sort((a, b) => b - a)[0] + 1);
         } else {
             return 0;
         }
@@ -219,14 +219,14 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
     getMaxDisplayOrderForGroups(): number {
         if (this.conditionGroups.length > 0) {
-            return (this.conditionGroups.map(x => x.DisplayOrder).sort((a, b) => b - a)[0] + 1);
+            return (this.conditionGroups.map((x) => x.DisplayOrder).sort((a, b) => b - a)[0] + 1);
         } else {
             return 0;
         }
     }
 
     canAddNewGroup(event: boolean) {
-        if (this.conditionGroups.length > 0 && this.conditionGroups.every(x => x.conditionItemFields.filter(x => x.field).length > 0)) {
+        if (this.conditionGroups.length > 0 && this.conditionGroups.every((x) => x.conditionItemFields.filter((x) => x.field).length > 0)) {
             this.canAddGroup = event;
         } else {
             this.canAddGroup = false;
@@ -299,7 +299,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 if (conditions.length > 0) {
                     conditions.forEach((c) => {
                         const cond = new FieldCondition();
-                        c.FieldType = this.screenReferences.fields.find(x => x.ApiName == c.ConditionFieldTypeName);
+                        c.FieldType = this.screenReferences.fields.find((x) => x.ApiName == c.ConditionFieldTypeName);
                         cond['uid'] = c.Uid;
                         cond.field = `${this.allocation.assetTypeUid}.${c.FieldType.ApiName}`;
                         cond.isValid = true;
@@ -325,7 +325,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
     }
 
     showConditionMatch(cg): boolean {
-        return cg.conditionItemFields.filter(x => x.field).length > 1;
+        return cg.conditionItemFields.filter((x) => x.field).length > 1;
     }
 
     loadConditionFieldOptions(): Observable<boolean> {
@@ -346,19 +346,19 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         }
                     }
                 });
-                tempFields.forEach(f => {
+                tempFields.forEach((f) => {
                     f.Operators = [];
-                    this.screenReferences.operators.forEach(op => {
-                        if (op.AllowedDataTypes.some(x => x.Name.toLowerCase() === FieldTypeHelper.getFieldType(f.Type).toLowerCase())) {
+                    this.screenReferences.operators.forEach((op) => {
+                        if (op.AllowedDataTypes.some((x) => x.Name.toLowerCase() === FieldTypeHelper.getFieldType(f.Type).toLowerCase())) {
                             f.Operators.push({ label: op.Name, value: op.ID });
                         }
 
                         if (FieldTypeHelper.getFieldType(f.Type) === 'Lookup') {
 
-                            const options = this.screenReferences.fields.find(x => x.ApiName === f.Name);
+                            const options = this.screenReferences.fields.find((x) => x.ApiName === f.Name);
                             f.Values = [];
                             if (options && options.Values) {
-                                options.Values.forEach(val => {
+                                options.Values.forEach((val) => {
                                     f.Values.push({ value: val.Value.toString(), label: val.Text });
                                 });
                             }
@@ -372,7 +372,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                     });
 
                 });
-                this.fields = tempFields.filter(x => x.Operators.length > 0);
+                this.fields = tempFields.filter((x) => x.Operators.length > 0);
                 this.isLoadingFields = false;
 
                 obs.next(true);
@@ -486,8 +486,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
             this.model.ConditionGroups = [];
         }
         else {
-            this.conditionGroups.forEach(x => {
-                const conditions = x.conditionItemFields.filter(x => x.field);
+            this.conditionGroups.forEach((x) => {
+                const conditions = x.conditionItemFields.filter((x) => x.field);
                 x.Position = x.DisplayOrder;
                 if (x.DisplayWeight) {
                     x.Weight = +(x.DisplayWeight / 100).toFixed(2);
@@ -499,11 +499,11 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                 } else {
                     x.Threshold = null;
                 }
-                conditions.forEach(c => {
+                conditions.forEach((c) => {
                     let fieldCondition = new MetricAssetVersionConditionItemViewModel();
                     fieldCondition.ConditionFieldTypeName = c.field.split('.')[1]; // {assetTypeUid}.{FieldTypeName}
                     fieldCondition.Operator = c.operator;
-                    fieldCondition.FieldType = this.screenReferences.fields.filter(x => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
+                    fieldCondition.FieldType = this.screenReferences.fields.filter((x) => x.ApiName == fieldCondition.ConditionFieldTypeName)[0];
 
                     if (!fieldCondition.Values) {
                         fieldCondition.Values = [];
@@ -538,7 +538,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
         }
 
         this.metricsService.saveMetric(this.model)
-            .subscribe(r => {
+            .subscribe((r) => {
                 if (r && r.type != 'error') {
                     this.isSaving = false;
                     this.showMessageForResult(this.messagesService, r);
@@ -672,8 +672,8 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         if (updated && original) {
             let changeFound = updated.length != original.length;
-            updated.forEach(x => {
-                let originalMatch = original.find(y => y.Uid == x.Uid);
+            updated.forEach((x) => {
+                let originalMatch = original.find((y) => y.Uid == x.Uid);
                 if (originalMatch) {
                     if (x.MatchType !== originalMatch.MatchType
                         || x.Position !== originalMatch.Position
@@ -683,10 +683,10 @@ export class BaseMeasureEditorComponent extends BaseComponent {
                         || +(x.DisplayThreshold ?? 0) !== +(originalMatch.DisplayThreshold ?? 0)
                         || x.DisplayOrder !== originalMatch.DisplayOrder
                         || x.Position !== originalMatch.Position
-                        || x.conditionItemFields.filter(x => x.field).length !== originalMatch.conditionItemFields.filter(x => x.field).length) {
+                        || x.conditionItemFields.filter((x) => x.field).length !== originalMatch.conditionItemFields.filter((x) => x.field).length) {
                         changeFound = true;
                     } else if (!originalMatch.conditionItemFields.every((item) => {
-                        return x.conditionItemFields.findIndex(x => x.field == item.field
+                        return x.conditionItemFields.findIndex((x) => x.field == item.field
                             && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
                             && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
                     })) {
@@ -707,7 +707,7 @@ export class BaseMeasureEditorComponent extends BaseComponent {
 
         if (updated && original) {
             if (updated.length != original.length || !original.every((item) => {
-                return updated.findIndex(x => x.field == item.field
+                return updated.findIndex((x) => x.field == item.field
                     && (x.operator == item.operator || Operator[x.operator] == <any>item.operator)
                     && (x.value ? x.value.toString() : "") == (item.value ? item.value.toString() : "")) > -1;
             })) {

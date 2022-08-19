@@ -61,7 +61,7 @@ export class LoadForm implements OnInit, OnChanges {
         this.isLoadingTypes = true;
         this.selectedType = '';
         this.loadService.getTypeOptions(this.selectedAction).subscribe(
-            data => {
+            (data) => {
                 this.types = data;
 
                 if (this.types && this.types.length > 0) {
@@ -87,7 +87,7 @@ export class LoadForm implements OnInit, OnChanges {
         this.isLoadingColumns = true;
 
         this.loadService.getExpectedColumns(this.selectedAction, type, id).subscribe(
-            data => {
+            (data) => {
                 this.columns = data;
 
                 this.isLoadingColumns = false;
@@ -149,7 +149,7 @@ export class LoadForm implements OnInit, OnChanges {
         if (this.file) {
             FormHelper.getDataUrl(this.file)
                 .then(
-                    s => {
+                    (s) => {
                         model.File = s;
                         model.LoadAction = this.selectedAction;
                         model.Type = this.selectedType;
@@ -158,7 +158,7 @@ export class LoadForm implements OnInit, OnChanges {
                 )
                 .then(() => {
                     this.loadService.postLoad(model).subscribe(
-                        data => {
+                        (data) => {
                             if (data["type"] == 'error') {
                                 this.onError.emit(null);
                                 this.errorMessage = data["message"];

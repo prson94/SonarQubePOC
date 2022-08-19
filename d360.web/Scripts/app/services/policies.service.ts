@@ -27,16 +27,16 @@ export class PoliciesService extends BaseObservableService {
     ): Observable<Policy[]> {
         return this.http.get(`api/policytypes/${policyTypeId}/policies?stripHtml=${stripHtml}`)
             .pipe(
-                map(response => <Policy[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Policy[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getPolicyType(id: number): Observable<PolicyType> {
         return this.http.get(`api/policytypes/${id}`)
             .pipe(
-                map(response => <PolicyType>response),
-                catchError(err => this.handleError(err))
+                map((response) => <PolicyType>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

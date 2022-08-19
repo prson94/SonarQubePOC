@@ -823,7 +823,9 @@ namespace d360.web.Controllers.V2
 			SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false),
 			SwaggerParameter("ResourceUid", "Uid of user", DataType = "string", ParameterType = "query", Required = false),
-			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false)
+			SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageSize", "The number of results to return per page. The default is 10 groups per page", DataType = "integer", ParameterType = "query", Required = false),
+			SwaggerParameter("_pageNum", PAGE_NUMBER_DESCRIPTION, DataType = "integer", ParameterType = "query", Required = false)
 		]
 		public async Task<IHttpActionResult> GetGroups()
 		{
@@ -843,7 +845,25 @@ namespace d360.web.Controllers.V2
 					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.InvalidRequest, ActionApiMessages.ResourceUidNotValid)).ConfigureAwait(false);
 				}
 
+				var pageSize = "10";
+				var pageNum = "1";
+				var pageSizeParam = queryParams.FirstOrDefault(x => x.Key == "_pageSize");
+				var pageNumParam = queryParams.FirstOrDefault(x => x.Key == "_pageNum");
+				pageSize = pageSizeParam.Value ?? pageSize;
+				pageNum = pageNumParam.Value ?? pageNum;
+
+				Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+				var isValid = isPageSizeAndNumValid(queryParams);
+
+				if (!string.IsNullOrEmpty(isValid))
+				{
+					throw new ArgumentException(isValid);
+				}
+
 				var results = await membershipRepository.GetGroups(queryParams);
+
+				results.PageNum = int.Parse(pageNum);
+				results.PageSize = int.Parse(pageSize);
 
 				return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results))).ConfigureAwait(false);
 			}
@@ -1371,7 +1391,7 @@ namespace d360.web.Controllers.V2
 			Route("users/me/getHomePage"),
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "", typeof(FavoriteApiViewModel)),
-			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
 		public async Task<IHttpActionResult> GetHomePage()

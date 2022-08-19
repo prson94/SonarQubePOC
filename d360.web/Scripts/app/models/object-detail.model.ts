@@ -1,8 +1,4 @@
-﻿export interface IObjectDetailService {
-    getObjectDetail(objectID: number, objectType: string): Promise<DetailModel>;
-}
-
-export class AssetDetail {
+﻿export class AssetDetail {
     ID: number;
     DisplayValue: string;
     AssetTypeID: number;
@@ -11,11 +7,6 @@ export class AssetDetail {
     AssetTypeName: string;
     State: number;
     uid: string;
-}
-
-export class DetailModel {
-    columns: number;
-    rows: DetailRow[];
 }
 
 export class DetailRow {
@@ -147,12 +138,6 @@ export class ObjectDetail {
     AssetID: number;
     AssetTypeUid: string;
     UID: string;
-}
-
-
-export class ObjectAction {
-    Name: string;
-    Value: boolean;
 }
 
 export class Classification {

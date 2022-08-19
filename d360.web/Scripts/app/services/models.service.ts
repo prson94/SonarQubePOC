@@ -26,23 +26,23 @@ export class ModelsService extends BaseObservableService {
             .get(`diagrams/${id}/InformationCatalogDiagramData`)
             .pipe(
                 map((response) => <HierarchyDiagramModel[]>response),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
     getModels(): Observable<Model[]> {
         return this.http.get('api/v2/assets/types?Class=Model')
             .pipe(
-                map(response => <Model[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Model[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
     getModel(id: number): Observable<Model> {
         return this.http.get(`api/catalogs/${id}`)
             .pipe(
-                map(response => <Model>response),
-                catchError(err => this.handleError(err))
+                map((response) => <Model>response),
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -56,8 +56,8 @@ export class ModelsService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-                map(response => <ModelHierarchy[]>response),
-                catchError(err => this.handleError(err))
+                map((response) => <ModelHierarchy[]>response),
+                catchError((err) => this.handleError(err))
             );
     }
 

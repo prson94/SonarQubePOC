@@ -152,7 +152,7 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
         this.isLoading = true;
         this.organizationsService.getContract(this.contractId)
             .subscribe(
-                r => {
+                (r) => {
                     this.contract = r;
 
                     this.isLoading = false;
@@ -170,7 +170,7 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
         if (this.isAdding) {
             this.organizationsService.postContract(this.contract, publish)
                 .subscribe(
-                    r => {
+                    (r) => {
                         this.showMessageForResult(this.messagesService, r);
 
                         this.isLoading = false;
@@ -181,7 +181,7 @@ export class AdminOrganizationContractEditorComponent extends BaseComponent impl
         } else {
             this.organizationsService.putContract(this.contract, publish)
                 .subscribe(
-                    r => {
+                    (r) => {
                         this.showMessageForResult(this.messagesService, r);
 
                         this.isLoading = false;

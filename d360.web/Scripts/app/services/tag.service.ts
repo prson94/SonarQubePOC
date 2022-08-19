@@ -18,11 +18,11 @@ export class TagService extends BaseObservableService {
         let url = `api/tagsuggestions?phrase=${phrase}&excludeObjects=${excludeObjects}`;
 
         return this.http.get(url).pipe(
-            map(response => {
+            map((response) => {
                 return response;
             }),
-            map(item => { return <Tag[]>item; }),
-            catchError(err => this.handleError(err)));
+            map((item) => { return <Tag[]>item; }),
+            catchError((err) => this.handleError(err)));
     }
 
     getTagsList(getAll: boolean = true): Observable<TagType[]> {
@@ -33,17 +33,17 @@ export class TagService extends BaseObservableService {
         }
 
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                map(items => <TagType[]>items.items),
-                catchError(err => this.handleError(err)));
+            .pipe(map((response) => <any>response),
+                map((items) => <TagType[]>items.items),
+                catchError((err) => this.handleError(err)));
 
     }
 
     deleteTagByUid(uid: string, cascade: boolean = true): Observable<any> {
         let url = `api/v2/tags/${uid}?cascade=${cascade}`;
         return this.http.delete(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     deleteTags(tags: TagType[]): Observable<any> {
@@ -53,7 +53,7 @@ export class TagService extends BaseObservableService {
             return this.deleteTagByUid(tags[0].uid);
 
         let body: any[] = [];
-        tags.forEach(t => {
+        tags.forEach((t) => {
             body.push({ 'uid': t.uid, cascade: true });
         });
 
@@ -61,8 +61,8 @@ export class TagService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: body
         };
         return this.http.delete(url, httpHeaders)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     saveTag(tag: TagType): Observable<any> {
@@ -70,32 +70,32 @@ export class TagService extends BaseObservableService {
 
         if (tag.uid == undefined || !tag.uid) {
             return this.http.post(url, tag)
-                .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err, true)));
+                .pipe(map((response) => <any>response),
+                    catchError((err) => this.handleError(err, true)));
         }
         url = `api/v2/tags/${tag.uid}`;
         return this.http.put(url, tag)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
     createAssetTag(tags: TagApiModel[]): Observable<any> {
         let url = `api/v2/assets/tags`;
         return this.http.post(url, tags)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
     getAssetTagDetails(tagID: number, assetUID: string): Observable<any> {
         let url = `api/v2/tags/AssetTagDetails?tagID=${tagID}&assetUID=${assetUID}`;
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     getAssetTagOwnerByName(tagName: string, assetUid: string): Observable<any> {
         let url = `api/v2/tags/AssetTagOwnerByName?tagName=${tagName}&assetUID=${assetUid}`;
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     deleteAssetTag(tags: TagApiModel[]): Observable<any> {
@@ -105,8 +105,8 @@ export class TagService extends BaseObservableService {
         };
         let url = `api/v2/assets/tags`;
         return this.http.delete(url, httpHeaders)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     doesTagExist(tag: TagType): Observable<any> {
@@ -120,29 +120,29 @@ export class TagService extends BaseObservableService {
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     getAssetPathsForTag(tagUid: string): Observable<any[]> {
         let url = `api/v2/tags/${tagUid}/assetpath`;
         return this.http.get(url)
-            .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any[]>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     searchTags(q: string, exceptId, ignoreCounts: boolean = false): Observable<any[]> {
         let url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}&ignoreCounts=${ignoreCounts}`;
         return this.http.get(url)
-            .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any[]>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<any[]> {
         let url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}`;
         return this.http.get(url)
-            .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any[]>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     exportTags(filter: any, sort, advancedFilter: string) {
@@ -183,16 +183,16 @@ export class TagService extends BaseObservableService {
             params += "&_filter=" + advancedFilter;
         }
 
-        this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
+        this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'Tags'));
     }
 
     getTagByUid(uid: string): Observable<TagType> {
         let url = `api/v2/tags?uid=${uid}`;
 
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                map(response => <TagType>response.items[0]),
-                catchError(err => this.handleError(err)));
+            .pipe(map((response) => <any>response),
+                map((response) => <TagType>response.items[0]),
+                catchError((err) => this.handleError(err)));
 
     }
 
@@ -215,7 +215,7 @@ export class TagService extends BaseObservableService {
     getTagTooltip(tagUid: string, assetUid: string = null, value: string = null): Observable<any> {
 
         if (tagUid) {
-            var cachedItem = this.tagTooltipsCache.find(x => x.tagUid == tagUid && x.assetUid == assetUid);
+            var cachedItem = this.tagTooltipsCache.find((x) => x.tagUid == tagUid && x.assetUid == assetUid);
             if (cachedItem)
                 return cachedItem.obs;
         }
@@ -231,10 +231,10 @@ export class TagService extends BaseObservableService {
             url += `?assetUid=${assetUid}`;
 
         var obs = this.http.get(url)
-            .pipe(map(response => <any>response),
+            .pipe(map((response) => <any>response),
                 publishReplay(1),
                 refCount(),
-                catchError(err => this.handleError(err)));
+                catchError((err) => this.handleError(err)));
 
         var data = { tagUid: tagUid, assetUid: assetUid, obs: obs };
         this.tagTooltipsCache.push(data);
@@ -246,8 +246,8 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/permissions/${assetUid}`;
 
         return this.http.get(url)
-            .pipe(map(response => <TagPermissionItem[]>response),
-                catchError(err => this.handleError(err)));
+            .pipe(map((response) => <TagPermissionItem[]>response),
+                catchError((err) => this.handleError(err)));
     }
 
 }

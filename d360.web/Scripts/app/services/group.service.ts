@@ -28,7 +28,7 @@ export class GroupService extends BaseObservableService implements IGroupService
 
     getGroupList(): Observable<GroupSearchResultModel[]> {
         return this.http.get('api/groups').pipe(
-            map(r => <GroupSearchResultModel[]>r),
+            map((r) => <GroupSearchResultModel[]>r),
             catchError((err) => this.handleError(err))
         );
     }
@@ -42,10 +42,27 @@ export class GroupService extends BaseObservableService implements IGroupService
 
         return this.http.get(url)
             .pipe(
-                map(x => <any>x),
-                catchError(err => this.handleError(err))
-            );
+                map((x) => <any>x),
+                catchError((err) => this.handleError(err))
+				);
     }
+
+	getGroupsLazy(params: any): Observable<any> {
+		let url = 'api/v2/membership/groups?_listColorsAsJSON=true';
+
+		var qString = '';
+		if (params) {
+			qString = Object.keys(params).map((key) => key + '=' + params[key]).join('&');
+			if (qString)
+				qString = '&' + qString;
+		}
+
+		return this.http.get(url + qString)
+			.pipe(
+				map((x) => <any>x),
+				catchError((err) => this.handleError(err))
+				);
+	}
 
     deleteGroupWithUid(group: string): Observable<JsonResult> {
         const httpOptions = {
@@ -96,8 +113,8 @@ export class GroupService extends BaseObservableService implements IGroupService
     getGroupByUid(uid: string): Observable<any> {
         return this.http.get('api/v2/membership/groups?Uid=' + uid)
             .pipe(
-                map(x => <any>x),
-                catchError(err => this.handleError(err))
+                map((x) => <any>x),
+                catchError((err) => this.handleError(err))
             );
     }
 

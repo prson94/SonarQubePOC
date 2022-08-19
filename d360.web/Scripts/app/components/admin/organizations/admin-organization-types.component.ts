@@ -152,7 +152,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
         this.organizationsService
             .getOrganizationTypes()
             .subscribe(
-                result => {
+                (result) => {
                     this.organizationTypes = result;
                     this.type = (this.organizationTypes.length > 0 ? this.organizationTypes[0] : null);
                     this.typeChange.emit(this.type);
@@ -164,7 +164,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
 
     delete(id: number) {
         this.organizationsService.deleteOrganizationType(id).subscribe(
-            result => {
+            (result) => {
                 this.showMessageForResult(this.messagesService, result);
 
                 if (result.type != 'error') {

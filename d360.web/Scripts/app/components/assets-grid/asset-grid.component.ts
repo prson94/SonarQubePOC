@@ -219,13 +219,18 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.selectedChange.emit({ row, forceRefresh });
     }
 
-    clickMenuItem(event: any, item: any) {
-        let key = event.value.toLowerCase();
-
-        if (key === $localize`Open`.toLowerCase()) {
-            this.selectArtifact(event, item);
+    clickMenuItem(menuItem: any, item: any) {
+        let key = menuItem.value.toLowerCase();
+		const event = menuItem.event;
+		if (key === $localize`View Information`.toLowerCase()) {
+			event['from-context-method'] = 'info';
+			this.selectArtifact(event, item);
+		} else if (key === $localize`Open`.toLowerCase()) {
+			event['from-context-method'] = 'open';
+			this.selectArtifact(event, item);
         } else if (key === $localize`Open in New Tab`.toLowerCase()) {
-            this.selectArtifact(event, item, true);
+			event['from-context-method'] = 'new-tab';
+			this.selectArtifact(event, item);
         } else if (key === $localize`Edit`.toLowerCase()) {
             this.onEdit(item);
         } else if (key === $localize`Delete`.toLowerCase()) {
@@ -471,7 +476,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.items.forEach((item) => {
 
                     item[this.menuKey] = [
-                        { title: $localize`Open` },
+						{ title: $localize`View Information` },
+						{ title: $localize`Open` },
                         { title: $localize`Open in New Tab` },
                     ];
 
@@ -649,7 +655,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         this.changeDetectorRef.markForCheck();
     }
 
-    selectArtifact($event, artifact, newTab: boolean = false) {
+    selectArtifact($event, artifact) {
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
                 if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
@@ -674,11 +680,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 						DataType: 'Lookup'
 					}, this.itemUrl);
 				} else {
-					if (newTab) {
-						window.open(this.itemUrl, '_blank');
-					} else {
-						this.router.navigateByUrl(this.itemUrl);
-					}
+					this.router.navigateByUrl(this.itemUrl);
 				}
             });
 

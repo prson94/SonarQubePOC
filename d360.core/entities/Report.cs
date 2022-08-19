@@ -44,6 +44,9 @@ namespace d360.core.entities
 		[DataMember]
 		public int? AssetTypeID { get; set; }
 
+		[NotMapped]
+		public Guid? AssetTypeUid { get; set; }
+
 		[DataMember]
 		public DashboardType ReportType { get; set; }
 
@@ -67,9 +70,9 @@ namespace d360.core.entities
 		public DashboardApiGetModel ToApiDashboardGetModel()
 		{
 			var model = new DashboardApiGetModel();
-			model.Id = this.ID;
 			model.Name = this.Name;
 			model.uid = this.uid;
+			model.AssetTypeUid = this.AssetTypeUid;
 			return model;
 		}
 	}
@@ -149,7 +152,7 @@ namespace d360.core.entities
 	public class DashboardApiGetModel : DashboardModel
 	{
 		[DataMember]
-		public int Id { get; set; }
+		public int? Id { get; set; }
 		[DataMember]
 		public Guid uid { get; set; }
 	}

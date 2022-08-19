@@ -1,7 +1,6 @@
 ﻿@import "_Variables.less";
 /* need to import the color-picker styles until the the new dropdown component is completed or the measures screen is not displaying correctly */
 @import "../../Scripts/app/components/shared/controls/color-picker/color-picker.less";
-
 /* source-sans-pro-regular - latin */
 @font-face {
   font-family: 'Precisely';
@@ -2507,7 +2506,8 @@ div.home-image-title-text {
 
   &.large-dialog {
     width: 100%;
-    max-width: 800px;
+    max-width: fit-content;
+    min-width: 800px;
     max-height: 100%;
 
     .confirmation-wrapper {
@@ -4694,7 +4694,7 @@ d3s-header-typeahead-search {
 
   .p-multiselect {
     background: @ig-grey-t5;
-    width: 200px;
+    max-width: 220px;
     height: 56px;
     border-radius: 4px 0px 0px 4px;
     background-color: @ig-grey-t5;
@@ -4723,6 +4723,10 @@ d3s-header-typeahead-search {
         padding-left: 4px;
       }
     }
+    .select-all-label {
+      color: @ig-black;
+      margin-left: 22px;
+    }
 
     .p-multiselect-header {
       border-bottom: 1px solid @ig-grey-t5;
@@ -4731,6 +4735,7 @@ d3s-header-typeahead-search {
     .p-multiselect-label {
       padding: 0 20px;
       line-height: 56px;
+      padding-right: 40px;
     }
 
     .p-multiselect-trigger {
@@ -4769,7 +4774,6 @@ d3s-header-typeahead-search {
       line-height: 28px;
 
       .p-checkbox-box::after {
-        content: 'Search All Categories';
         padding-left: 24px;
         font-size: 14px;
         font-weight: normal;
@@ -4787,15 +4791,6 @@ d3s-header-typeahead-search {
       .p-checkbox-box {
         border-radius: 2px !important;
         display: block;
-      }
-
-      .p-checkbox-box.p-highlight::after {
-        padding-left: 10px;
-      }
-
-      .p-checkbox .p-checkbox-icon {
-        display: inline-block;
-        line-height: 1px !important;
       }
     }
 

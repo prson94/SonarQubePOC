@@ -123,7 +123,7 @@ export class AdminSurveyQuestionEditorEditor {
             var keys = Object.keys(form.value);
             var options: string[] = [];
             var option_values: string[] = [];
-            keys.forEach(key => {
+            keys.forEach((key) => {
                 if (key.indexOf('item_') == 0) {
                     options.push(form.value[key]);
                 }

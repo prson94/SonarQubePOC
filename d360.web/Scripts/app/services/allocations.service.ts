@@ -18,8 +18,8 @@ export class AllocationService extends BaseObservableService {
     public getAllocations(): Observable<ScoreTypeAllocation[]> {
         let url = `/api/v2/scoring/allocations?_state=Active&includeFlags=true`;
         return this.http.get(url)
-            .pipe(map(response => <ScoreTypeAllocation[]>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <ScoreTypeAllocation[]>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getAllocationsByAssetTypeUid(assetTypeUid: string, state: string = "Active", orderBy = "", direction = ""): Observable<ScoreTypeAllocation[]> {
@@ -34,22 +34,22 @@ export class AllocationService extends BaseObservableService {
         }
 
         return this.http.get(url)
-            .pipe(map(response => <ScoreTypeAllocation[]>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <ScoreTypeAllocation[]>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public deleteAllocationByUid(uid: string): Observable<any> {
         let url = `api/v2/scoring/allocations/${uid}`;
         return this.http.delete(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     public getunallocatedAssetTypes(scoreType: ScoreType): Observable<any[]> {
         let url = `api/v2/scoring/unallocatedAssetTypes/` + scoreType;
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
 
     }
 
@@ -57,21 +57,21 @@ export class AllocationService extends BaseObservableService {
         let url = `api/v2/scoring/allocations`;
         if (allocation.uid == undefined) {
             return this.http.post(url, allocation)
-                .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err, true)));
+                .pipe(map((response) => <any>response),
+                    catchError((err) => this.handleError(err, true)));
         }
         else {
             return this.http.put(url + "/" + allocation.uid, allocation)
-                .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err, true)));
+                .pipe(map((response) => <any>response),
+                    catchError((err) => this.handleError(err, true)));
         }
 
     }
 
     public export(filters: any) {
-        var queryString = '?' + Object.keys(filters).map(key => key + '=' + filters[key].value).join('&');
+        var queryString = '?' + Object.keys(filters).map((key) => key + '=' + filters[key].value).join('&');
 
-        this.http.get('api/v2/scoring/export' + queryString, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Scores'));
+        this.http.get('api/v2/scoring/export' + queryString, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'Scores'));
 
     }
 }

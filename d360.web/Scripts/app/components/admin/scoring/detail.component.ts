@@ -82,7 +82,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.routeParamsSubscription = this.route.params.subscribe(params => {
+        this.routeParamsSubscription = this.route.params.subscribe((params) => {
             this.allocationUid = params['allocationUid'];
             this.assetTypeUid = params['assetTypeUid'];
             this.selectedMetric = null;
@@ -103,13 +103,13 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 this.formatScoreCalc();
                 this.allocation.scoreType = ScoreType[this.allocation.scoreType.toString()];
                 if (this.allocation.scoreType == 2 || res.scoreType.toString() == "DataQuality") {
-                    this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe(options => {
-                        options.forEach(p => {
+                    this.metricsService.getRuleResultPathOptions(this.assetTypeUid, res.scoreType).subscribe((options) => {
+                        options.forEach((p) => {
                             let processedUids: string[] = [];
                             let html: string = p.Path;
-                            p.Segments.forEach(s => {
+                            p.Segments.forEach((s) => {
                                 // Keep track of Uids we already replaced the paths for, so we do not mess up the resulting HTML.
-                                if (processedUids.findIndex(x => { return x == s.AssetTypeUid; }) == -1) {
+                                if (processedUids.findIndex((x) => { return x == s.AssetTypeUid; }) == -1) {
                                     let segmentPath = s.Path.split('->').join(' > ');
                                     html = html.replace(new RegExp(s.Name, 'g'), `<b title="${segmentPath}">${s.Name}</b>`,);
                                     processedUids.push(s.AssetTypeUid);
@@ -134,14 +134,14 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                 }
             });
 
-            this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe(f => {
+            this.metricsService.getFieldTypeViewModelsByAssetType(this.assetTypeUid).subscribe((f) => {
                 //spread operator is used for change detection as adding value wont trigger the change detection we need to format the pass test section.
                 this.screenReferences.fields = f;
                 this.screenReferences = { ...this.screenReferences };
                 this.cdRef.markForCheck();
             });
 
-            this.settingsService.getOperators().subscribe(o => {
+            this.settingsService.getOperators().subscribe((o) => {
                 this.screenReferences.operators = o;
                 this.screenReferences = { ...this.screenReferences };
                 this.cdRef.markForCheck();
@@ -167,7 +167,7 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     });
 
                     this.screenReferences.relationships = [...data];
-                    this.screenReferences.predicates = data.map(x => {
+                    this.screenReferences.predicates = data.map((x) => {
                         return x.Predicate;
                     });
                     this.screenReferences = { ...this.screenReferences };
@@ -207,9 +207,9 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
             this.setCommonItems(true, this.selectedAssetType.Name);
             this.setCommonSecondaryNavTabs({ hasAudit: false });
             this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid, "Active", "scoretype", "asc")
-                .subscribe(res => {
+                .subscribe((res) => {
                     var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
-                    res.forEach(x => {
+                    res.forEach((x) => {
                         const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
                         const searchRes: SearchResult = new SearchResult();
                         searchRes.Name = x.assetTypePath;
@@ -225,17 +225,17 @@ export class ScoringDetailComponent extends AdminBaseComponent implements OnInit
                     this.headerBreadcrumbService.showBreadcrumb(crumb);
 
                     if (res && res.length > 0) {
-                        const items = res.filter(x => { return x.uid == this.allocation.uid; });
+                        const items = res.filter((x) => { return x.uid == this.allocation.uid; });
 
                         if (items.length > 0) {
                             this.allocation = items[0];
                             this.allocationCopy = _.cloneDeep(this.allocation);
                             this.formatScoreCalc();
                             this.metricsService.getMetricsScores(this.assetTypeUid, this.allocation.scoreType)
-                                .subscribe(f => {
+                                .subscribe((f) => {
                                     if (f && f.items && f.items.length > 0) {
                                         let maxDates: any[] = [];
-                                        f.items.forEach(x => {
+                                        f.items.forEach((x) => {
                                             if (x.Scores && x.Scores.length > 0) {
                                                 let scores = x.Scores.sort((x, y) => {
                                                     let datex = new Date(x.EffectiveDate);

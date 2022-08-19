@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpRequest, HttpResponse } from '@angular/common/http';
-import { ReferenceItemType, ReferenceItem } from '../models/reference.model';
+import { ReferenceItemType } from '../models/reference.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -17,8 +17,8 @@ export class ReferenceService extends BaseObservableService {
     canReadReferenceType(id: number): Observable<boolean> {
         return this.http.get(`api/canReadReferenceItemType/${id}`)
             .pipe(
-             map(response => <boolean>response),
-            catchError(err => this.handleError(err)));
+             map((response) => <boolean>response),
+            catchError((err) => this.handleError(err)));
     }
 
     saveReferenceItemType(item: ReferenceItemType) {

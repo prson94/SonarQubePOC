@@ -1,10 +1,12 @@
-﻿import { Component, Input, OnInit, AfterViewInit } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { AuthenticationService } from '../../services/authentication.service';
 import { CompanySettingsService } from '../../services/settings.service';
+import { ConnectedOverlayScrollHandler } from 'primeng/dom';
+import { interval } from 'rxjs';
 
 @Component({
     selector: 'd3s-hero-search-input',
@@ -12,7 +14,7 @@ import { CompanySettingsService } from '../../services/settings.service';
     providers: [TypeaheadSearchService],
 })
 
-export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit {
+export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
@@ -23,7 +25,8 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
         protected searchService: SearchService,
         protected settingsService: CompanySettingsService
     ) {
-        super(settingsService);
+		super(settingsService);
+		this.setLabelInterval = setInterval(this.setSelectAllLabel, 50);
     }
 
     ngOnInit() {
@@ -43,7 +46,13 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
 
     ngAfterViewInit(): void {
         this.setEventTypeLabel();
-    }
+	}
+
+	ngOnDestroy() {
+		if (this.setLabelInterval) {
+			clearInterval(this.setLabelInterval);
+		}
+	}
 
     setEventTypeLabel() {
         let label = (document.getElementById('searchMultiSelect')
@@ -57,6 +66,27 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
             label.textContent = $localize`Search All Categories`;
         } else {
             label.textContent = $localize`Search ${this.searchTypes.length} Categories`;
-        }
-    }
+		}
+
+	}
+
+	setLabelInterval;
+	private setSelectAllLabel() {
+		var searchMultiSelect = document.getElementById('searchMultiSelect');
+		if (!searchMultiSelect) {
+			return;
+		}
+		if (searchMultiSelect.getElementsByClassName("select-all-label").length === 0
+			&& searchMultiSelect.getElementsByClassName("p-multiselect-header").length !== 0
+		) {
+			if (this.setLabelInterval) {
+				clearInterval(this.setLabelInterval);
+			}
+			var selectAllLabel = document.createElement("span");
+			selectAllLabel.className = "select-all-label";
+			selectAllLabel.innerText = $localize`Search All Categories`;
+			document.getElementById('searchMultiSelect').getElementsByClassName("p-multiselect-header")[0]
+				.getElementsByClassName("p-checkbox-box")[0].append(selectAllLabel);
+		}
+	}
 }

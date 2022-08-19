@@ -1,0 +1,60 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+	
+	<changeSet author="TDuric" id="Function.dbo.GetKeyPathHash-v2.1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<comment></comment>
+			<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_AssetPath_KeyPathHash')
+BEGIN
+	DROP INDEX [IX_AssetPath_KeyPathHash] ON [dbo].[AssetPath]
+END
+GO
+
+IF COL_LENGTH('dbo.AssetPath', 'KeyPathHash') IS NOT NULL
+BEGIN
+    alter table [dbo].[AssetPath] drop column [KeyPathHash]
+END
+GO
+
+create or ALTER   function [dbo].[GetKeyPathHash] 
+(
+	@segments xml
+)
+returns nvarchar(32) WITH SCHEMABINDING
+as
+begin
+	declare @path nvarchar(max)
+
+	select	@path = '[' + V + ']'
+	from	(
+			select	string_agg(Val, '].[') within group(order by L, P) as  V
+			from	(
+					select	X.p.value('./@level', 'int') as L,
+							X.p.value('./@position', 'int') as P,
+							X.p.value('.', 'nvarchar(max)') as Val
+					from	@segments.nodes('/path/segment') X(p)
+					) O
+			) O
+
+	if @path is null
+	begin
+		return null;
+	end
+
+	return CONVERT(varchar(32), SUBSTRING(HASHBYTES('SHA1', @path), 3, 32), 2)
+end
+		]]>
+		</sql>
+		<rollback>
+			<![CDATA[	
+
+			]]>
+		</rollback>
+	</changeSet>
+
+</databaseChangeLog>

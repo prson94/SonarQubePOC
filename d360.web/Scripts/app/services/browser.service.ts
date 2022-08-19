@@ -39,7 +39,7 @@ export class BrowserService extends BaseObservableService {
         messagesService: MessagesObservableService
     ) {
         super(messagesService);
-        this.iconService.getIconProperties().subscribe(data => {
+        this.iconService.getIconProperties().subscribe((data) => {
             this.iconProperties = data;
         });
     }
@@ -57,9 +57,9 @@ export class BrowserService extends BaseObservableService {
 
         //#region Load root data from hierarchy array
 
-        response.hierarchy.forEach(h => {
+        response.hierarchy.forEach((h) => {
             try {
-                let rootNode = response.nodes.find(n => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
+                let rootNode = response.nodes.find((n) => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
                 if (rootNode) {
                     rootNode.predictableId = h.predictableId;
                     rootNode.owners = h.owners;
@@ -73,7 +73,7 @@ export class BrowserService extends BaseObservableService {
 
                     // Handle initial expanded logic.
                     rootNode.relations.forEach((r, rix) => {
-                        let ix = response.links.findIndex(l => { return l.predicateId == r.predicateId && l.from == rootNode.key && l.text == r.predicate; });
+                        let ix = response.links.findIndex((l) => { return l.predicateId == r.predicateId && l.from == rootNode.key && l.text == r.predicate; });
                         if (ix > -1) {
                             r.expanded = true;
                             response.links[ix].badgeIdentifier = rootNode.hierarchyKey + '|' + rix;
@@ -126,7 +126,7 @@ export class BrowserService extends BaseObservableService {
             badgeIdentifier: rootKey
         };
 
-        response.ownerRelations.forEach(l => {
+        response.ownerRelations.forEach((l) => {
             rootLink.links.push({
                 id: 0,
                 from: l.assetKey,
@@ -158,7 +158,7 @@ export class BrowserService extends BaseObservableService {
         rootNode.nonHiddenTemplate = "Owners";
         newResponse.nodes.push(rootNode);
 
-        response.owners.forEach(o => {
+        response.owners.forEach((o) => {
             let n = new AssetBrowserTranslationNode();
             n.hierarchyKey = rootKey;
             n.key = o.key;
@@ -203,7 +203,7 @@ export class BrowserService extends BaseObservableService {
                 this.processResponse(response);
                 return response;
             }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -220,7 +220,7 @@ export class BrowserService extends BaseObservableService {
                 this.processResponse(response);
                 return response;
             }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -245,7 +245,7 @@ export class BrowserService extends BaseObservableService {
                 this.processResponse(response);
                 return response;
             }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -257,7 +257,7 @@ export class BrowserService extends BaseObservableService {
                 this.processResponse(response);
                 return response;
             }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -277,7 +277,7 @@ export class BrowserService extends BaseObservableService {
             map((response: AssetBrowserOwnersModel) => {
                 return this.processOwnerResponse(hierarchyKey, badgeIndex, responsibilityTypeId, responsibilityTypeName, response);
             }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -292,8 +292,8 @@ export class BrowserService extends BaseObservableService {
         const url = `api/v2/actions/alerts`;
 
         return this.http.post(url, model).pipe(
-            map(response => response),
-            catchError(err => this.handleError(err))
+            map((response) => response),
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -306,7 +306,7 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.get(url).pipe(
             map((response: FilterSelectionsModel) => new FilterSelectionsModel(response.AssetTypeOptions, response.PredicateOptions, response.ResponsibilityTypeOptions)),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -319,7 +319,7 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.get(url).pipe(
             map((response: StoredAssetBrowserFilterModel[]) => response),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
@@ -329,12 +329,12 @@ export class BrowserService extends BaseObservableService {
         if (model.uid != undefined)
             return this.http.put(url + '/' + model.uid, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
         else
             return this.http.post(url, model).pipe(
                 map((response: StoredAssetBrowserFilterModel) => response),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
     }
 
@@ -343,14 +343,14 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.delete(url + '/' + model.uid).pipe(
             map((response: ApiResult) => response.Success),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
     }
 
     public getDiagramTypes(uid: string): Observable<DiagramTypesModel> {
         return this.http.get(`api/v2/browser/types/${uid}/me`).pipe(
             map((response: DiagramTypesModel) => response),
-            catchError(err => this.handleError(err)));
+            catchError((err) => this.handleError(err)));
     }
 
     /**
@@ -367,7 +367,7 @@ export class BrowserService extends BaseObservableService {
         }
 
         if (id != null) {
-            let iconProperties = this.iconProperties.find(d => d.id == id);
+            let iconProperties = this.iconProperties.find((d) => d.id == id);
             if (iconProperties != null) {
                 return String.fromCharCode(parseInt(iconProperties.unicodeValue, 16));
             }

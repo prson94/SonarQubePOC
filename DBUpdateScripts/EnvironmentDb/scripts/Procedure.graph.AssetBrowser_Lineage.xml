@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="VLova" id="Procedure.graph.AssetBrowser_Lineage-v8">
+  <changeSet author="VLova" id="Procedure.graph.AssetBrowser_Lineage-v10">
     <comment>GOV-18816 Optimize performance of lineage diagram</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -50,7 +50,8 @@ begin
 		IncludeInResult bit default(1) not null, IsType bit default(0)
 		);
 	create nonclustered index IX_TempHopAsset_IncludeInResult on #hopAsset (IncludeInResult desc);
-	create nonclustered index IX_TempHopAsset_RootID on #hopAsset (RootID asc);
+	create nonclustered index IX_TempHopAsset_RootID on #hopAsset (RootID asc) INCLUDE (Hop, TemporaryRootId);
+	create nonclustered index IX_TempHopAsset_HopParent on #hopAsset (Hop asc, ParentID asc);
 
 	drop table if exists #hopIntersect;
 	create table #hopIntersect (IntersectID int, 

@@ -39,7 +39,7 @@ export class IconService extends BaseObservableService {
                     this.data = res.body;
                     return this.data;
                 }),
-                catchError(err => this.handleError(err))
+                catchError((err) => this.handleError(err))
             );
 
             return this.observable;
@@ -55,7 +55,7 @@ export class IconService extends BaseObservableService {
                 this.observable = null;
                 return res.body;
             }),
-            catchError(err => this.handleError(err))
+            catchError((err) => this.handleError(err))
         );
 
         return this.observable;

@@ -152,11 +152,11 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private deleteIssueType(uid: string) {
         this.isLoading = true;
         this.workflowService.deleteWorkflowIssueType(uid)
-            .subscribe(result => {
+            .subscribe((result) => {
                 if (result) {
                     this.showMessageForApiResponse(this.messagesService, result);
                     if (result.Success) {
-                        this.issueTypes = this.issueTypes.filter(x => x.Uid != uid);
+                        this.issueTypes = this.issueTypes.filter((x) => x.Uid != uid);
                     }
                     this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 }
@@ -169,7 +169,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         if (this.selected) {
             if (!this.selected.ID) {
                 this.workflowService.getIssueByUID(this.selected.Uid)
-                    .subscribe(result => {
+                    .subscribe((result) => {
                         this.selected.ID = result.ID;
                         this.isLoading = false;
                         this.buildSecondaryNavigationForObject(result.ID, 'IssueType');
@@ -189,7 +189,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private load() {
         this.isLoading = true;
         this.workflowService.getAdminWorkflowIssueTypes()
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.issueTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 this.selectedItemChange();
@@ -206,7 +206,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.isLoading = true;
 
         this.workflowService.saveIssueType(event.item)
-            .subscribe(result => {
+            .subscribe((result) => {
                 this.isLoading = false;
                 this.showMessageForApiResponse(this.messagesService, result);
                 if (result.Success) {

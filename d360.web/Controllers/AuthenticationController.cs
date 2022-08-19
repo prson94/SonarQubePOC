@@ -53,17 +53,20 @@ namespace d360.web.Controllers
         private const string APP_ID = "https://data3sixty.com/ui";
         private const string SessionIndexCookieName = "SessionIndex";
 
-        #region DI
+		#region DI
 
-        private readonly TelemetryClient Telemetry;
+		private readonly OidcDiscoveryCache Discovery;
+		private readonly TelemetryClient Telemetry;
 
-        public AuthenticationController(ICoreComponentSet set, IMailProvider mail)
+        public AuthenticationController(ICoreComponentSet set, IMailProvider mail, OidcDiscoveryCache discovery)
             : base(set)
         {
             Mail = mail;
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
             Telemetry.Context.GlobalProperties["CompanyID"] = Company.CurrentCompanyID.ToString();
+
+			Discovery = discovery;
         }
 
         #endregion
@@ -672,7 +675,12 @@ namespace d360.web.Controllers
 
                     Community.SetOpenIdRequest(new OpenIdRequest { Nonce = nonce, RedirectUrl = returnUrl, State = state });
 
-                    var ru = new RequestUrl($"{authenticationSettings.baseUri}/authorize");
+
+					var client = new HttpClient();
+					var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? authenticationSettings.baseUri : authenticationSettings.discoveryUri;
+					var discoDoc = await Discovery.GetDiscoverDocument(client, discoveryUri);
+					var authUri = discoDoc.authorization_endpoint ?? $"{authenticationSettings.baseUri}/authorize";
+					var ru = new RequestUrl(authUri);
 
 					var scopes = "openid profile email infogix";
 
@@ -867,11 +875,17 @@ namespace d360.web.Controllers
 
             var client = new HttpClient();
             string redirectUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/sso/openid";
-            var response = await client.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
-            {
-                Address = $"{baseUri}/token",
 
-                ClientId = authenticationSettings.clientId,
+			var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
+			var discoDoc = await Discovery.GetDiscoverDocument(client, discoveryUri);
+			var tokenUri = discoDoc.token_endpoint;
+			
+			var response = await client.RequestAuthorizationCodeTokenAsync(new AuthorizationCodeTokenRequest
+            {
+                Address = tokenUri,//$"{baseUri}/token",
+
+
+				ClientId = authenticationSettings.clientId,
                 ClientSecret = authenticationSettings.clientSecret,
                 ClientCredentialStyle = ClientCredentialStyle.PostBody,
                 Code = code,
@@ -921,15 +935,12 @@ namespace d360.web.Controllers
 
             try
             {
-                var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? baseUri : authenticationSettings.discoveryUri;
-                var disco = new DiscoveryCache(discoveryUri, new DiscoveryPolicy { RequireHttps = true, ValidateEndpoints = false, ValidateIssuerName = false });
-                var discoDoc = disco.GetAsync().Result;
-                var keySet = await client.GetJsonWebKeySetAsync(discoDoc.JwksUri);
+                var keySet = await client.GetJsonWebKeySetAsync(discoDoc.jwks_uri);
 
                 var user = response.IdentityToken.ValidateJwtIdentityToken(
 					authenticationSettings.nameClaimType,
                     authenticationSettings.audience, false,
-                    discoDoc.Issuer, (discoDoc.Issuer != null),
+                    discoDoc.issuer, (discoDoc.issuer != null),
                     keySet.KeySet.Keys, true, true, true, false);
 
                 System.Action addOpenIdTokenToContext = () =>
@@ -1039,7 +1050,14 @@ namespace d360.web.Controllers
                     if (!string.IsNullOrEmpty(idToken))
                     {
                         var callbackUri = $"{Request.Url.Scheme}://{Request.Url.Authority}/slo-callback";
-                        var ru = new RequestUrl($"{authenticationSettings.baseUri}/logout");
+
+						var client = new HttpClient();
+						var discoveryUri = string.IsNullOrEmpty(authenticationSettings.discoveryUri) ? authenticationSettings.baseUri : authenticationSettings.discoveryUri;
+						var discoDoc = await Discovery.GetDiscoverDocument(client, discoveryUri);
+
+						var endSessionUri = discoDoc.end_session_endpoint ?? $"{authenticationSettings.baseUri}/logout";
+
+						var ru = new RequestUrl(endSessionUri);
                         var url = ru.CreateEndSessionUrl(idToken,
                             callbackUri,
                             extra: loadExtraParametersFromOpenIdSettings(authenticationSettings)

@@ -36,8 +36,8 @@ export class ConnectorLabelService extends BaseObservableService {
             .http
             .get(url)
             .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err, true))
+                map((response) => <any[]>response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
@@ -46,8 +46,8 @@ export class ConnectorLabelService extends BaseObservableService {
             .http
             .post(`/api/v2/connectorLabels/insertOrGet`, { Value: q })
             .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err, true))
+                map((response) => <any>response),
+                catchError((err) => this.handleError(err, true))
             );
     }
 
@@ -59,9 +59,9 @@ export class ConnectorLabelService extends BaseObservableService {
         }
 
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                map(items => <ConnectorLabel[]>items.items),
-                catchError(err => this.handleError(err)));
+            .pipe(map((response) => <any>response),
+                map((items) => <ConnectorLabel[]>items.items),
+                catchError((err) => this.handleError(err)));
 
     }
 
@@ -69,17 +69,17 @@ export class ConnectorLabelService extends BaseObservableService {
         let url = `api/v2/connectorLabels/?uid=` + uid;
 
         return this.http.get(url)
-            .pipe(map(response => <any>response),
-                map(items => <ConnectorLabel>items.items[0]),
-                catchError(err => this.handleError(err)));
+            .pipe(map((response) => <any>response),
+                map((items) => <ConnectorLabel>items.items[0]),
+                catchError((err) => this.handleError(err)));
     }
 
     getLabelUsage(labelUid: string): Observable<ConnectorLabelUsage[]> {
         let url = `api/v2/connectorLabels/` + labelUid + `/usage`;
 
         return this.http.get(url)
-            .pipe(map(items => <ConnectorLabelUsage[]>items),
-                catchError(err => this.handleError(err)));
+            .pipe(map((items) => <ConnectorLabelUsage[]>items),
+                catchError((err) => this.handleError(err)));
 
     }
 
@@ -100,7 +100,7 @@ export class ConnectorLabelService extends BaseObservableService {
         this.
             http
             .get(url, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
-            .subscribe(data => this.downloadFile(data, fileName));
+            .subscribe((data) => this.downloadFile(data, fileName));
 
     }
 
@@ -108,7 +108,7 @@ export class ConnectorLabelService extends BaseObservableService {
     deleteLabels(labels: ConnectorLabel[]): Observable<any> {
         let url = `api/v2/connectorLabels/`;
         var model = [];
-        labels.forEach(label => {
+        labels.forEach((label) => {
             model.push({ uid: label.uid, cascade:true });
         });
 
@@ -117,8 +117,8 @@ export class ConnectorLabelService extends BaseObservableService {
             body: model
         };
         return this.http.delete(url, httpHeaders)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     saveLabel(label: ConnectorLabel): Observable<any> {
@@ -126,23 +126,23 @@ export class ConnectorLabelService extends BaseObservableService {
 
         if (label.uid == undefined || !label.uid) {
             return this.http.post(url, label)
-                .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err, true)));
+                .pipe(map((response) => <any>response),
+                    catchError((err) => this.handleError(err, true)));
         }
         url = `api/v2/connectorLabels/${label.uid}`;
         return this.http.put(url, label)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     consolidateConnectorLabels(parentLabel: string, childrenLabels: string[]): Observable<any[]> {
         let url = `api/v2/connectorLabels/consolidate/${parentLabel}`;
         return this.http.post(url, childrenLabels)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)));
+            .pipe(map((response) => <any>response),
+                catchError((err) => this.handleError(err, true)));
     }
 
     exportLabels(filters: any, sort) {
-        this.http.get(`api/v2/connectorLabels/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Connector Labels'));
+        this.http.get(`api/v2/connectorLabels/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe((data) => this.downloadFile(data, 'Connector Labels'));
     }
 }

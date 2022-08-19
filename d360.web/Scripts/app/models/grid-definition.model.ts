@@ -176,7 +176,3 @@ export class LookupGridField {
     fieldTypeId: number;
     showDescription: boolean;
 }
-
-export class DynamicGridResultsInData extends DynamicGridDefinitionBase {
-    Data: any[];
-}
