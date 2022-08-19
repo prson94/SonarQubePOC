@@ -275,6 +275,8 @@ namespace d360.model.DataAccessLayer
 			string profilingCheckFields = "";
 			bool includeProfilingCheck = false;
 
+			string parentFilterTemporaryTablesSQL = "";
+
 			Dictionary<string, string> ownershipPropertiesMapping = new Dictionary<string, string>();
 
 			if (assetType == null)
@@ -910,6 +912,36 @@ namespace d360.model.DataAccessLayer
 					{
 						dbArgs.Add(item.Key, item.Value);
 					}
+
+					if (dbArgs.ParameterNames.Any(x => x.Contains("filter_parent_asset")))
+					{
+						StringBuilder stringBuilder = new StringBuilder();
+						stringBuilder.AppendLine(@"
+						drop table if exists #tempParentFilter
+						create table #tempParentFilter (AssetId bigint);");
+						foreach (var dbArg in dbArgs.ParameterNames)
+						{
+							if (dbArg.ToLowerInvariant().Contains("filter_parent_asset"))
+							{
+								var propName = $"@{dbArg}";
+								var targetPropName = $"@targetAssetId_for_{dbArg}";
+
+								stringBuilder.AppendLine($@"
+								declare {targetPropName} int = (select top 1 Id from Asset where uid = cast({propName} as uniqueidentifier));
+
+								insert into #tempParentFilter
+								select A.Id
+								from Asset A
+								inner
+								join [Intersect] I on I.ObjectAssetID = A.ID and I.SubjectAssetId = {targetPropName}
+								inner join[IntersectType] IT on IT.Id = I.IntersectTypeId
+								inner join[Predicate] P on P.ID = IT.PredicateID
+								where A.AssetTypeID = @Assettypeid and P.Type = 3");
+
+							}
+						}
+						parentFilterTemporaryTablesSQL = stringBuilder.ToString();
+					}
 				}
 			}
 
@@ -1003,7 +1035,7 @@ namespace d360.model.DataAccessLayer
 						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 
 						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
-						if (ft.Type == DataType.Path.ToString())
+						if (ft.Type == DataType.Path.ToString() && !join.SQLStatement.ToLowerInvariant().Contains("segmentpath"))
 						{
 							join = new DynamicQueryJoinData();
 							join.SQLStatement = nodeJoin;
@@ -1024,6 +1056,7 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
+								{(!string.IsNullOrEmpty(parentFilterTemporaryTablesSQL) ? "inner join #tempParentFilter tpf on tpf.assetid = a.id" : "")}
 								{(ft.Type == DataType.Path.ToString() && joinStatement != nodeJoin ? nodeJoin : "")}
 								{joinStatement}
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
@@ -1330,41 +1363,6 @@ namespace d360.model.DataAccessLayer
 				simpleFiltersTempTablesQuery = sb.ToString();
 			}
 
-			string parentFilterTemporaryTables = "";
-
-			if (dbArgs.ParameterNames.Any(x => x.Contains("filter_parent_asset")))
-			{
-				StringBuilder stringBuilder = new StringBuilder();
-				stringBuilder.AppendLine(@"
-				drop table if exists #tempParentFilter
-				create table #tempParentFilter (AssetId bigint);");
-				foreach (var dbArg in dbArgs.ParameterNames)
-				{
-					if (dbArg.ToLowerInvariant().Contains("filter_parent_asset"))
-					{
-						var propName = $"@{dbArg}";
-						var targetPropName = $"@targetAssetId_for_{dbArg}";
-
-						stringBuilder.AppendLine($@"
-					declare {targetPropName} int = (select top 1 Id from Asset where uid = cast({propName} as uniqueidentifier));
-
-					insert into #tempParentFilter
-					select A.Id
-					from Asset A
-					inner
-					join [Intersect] I on I.ObjectAssetID = A.ID and I.SubjectAssetId = {targetPropName}
-					inner join[IntersectType] IT on IT.Id = I.IntersectTypeId
-					inner join[Predicate] P on P.ID = IT.PredicateID
-					where A.AssetTypeID = @Assettypeid and P.Type = 3");
-
-					}
-				}
-			}
-
-
-
-			parentFilterTemporaryTables = stringBuilder.ToString();
-
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
 			var filteredSelect = $@"
 				select  A.ID
@@ -1384,9 +1382,9 @@ namespace d360.model.DataAccessLayer
 			var baseSQL = $@"
 				{TempTableScriptStr}
 
-				{simpleFiltersTempTablesQuery}
+				{parentFilterTemporaryTablesSQL}
 				
-				{parentFilterTemporaryTables}
+				{simpleFiltersTempTablesQuery}
 				
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
