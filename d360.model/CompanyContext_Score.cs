@@ -1129,8 +1129,6 @@ namespace d360.model
 
 			ScoreExecution execution = createScoreExecution(apiExecutionUid);
 
-			Connection.OpenIfClosed().Wait();
-
 			int rowsImpacted = Connection.Execute(
 				sql,
 				new
@@ -1636,8 +1634,6 @@ namespace d360.model
 							where   J.Payload like '%Measures%';";
 
 			ScoreExecution execution = createScoreExecution(apiExecutionUid);
-
-			Connection.OpenIfClosed().Wait();
 
 			int rowsImpacted = Connection.Execute(sql, new { apiExecutionUid, execution.ID, changeType = (int)ScoreQueueChangeType.AssetMeasures });
 
