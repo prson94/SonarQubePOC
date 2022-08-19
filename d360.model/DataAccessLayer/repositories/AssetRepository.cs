@@ -585,6 +585,7 @@ namespace d360.model.DataAccessLayer
 					 then 1
 					 else 0
 					end as HasAssetPermission
+					option(recompile)
 					", new { userId = CompanyContext.CurrentResourceID, assetTypeID, p = (int)Permission.ReadAsset }
 					, ApiTimeout))
 					.FirstOrDefault();
@@ -1001,10 +1002,11 @@ namespace d360.model.DataAccessLayer
 						var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 
-						if(ft.Type == DataType.Path.ToString())
+						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
+						if (ft.Type == DataType.Path.ToString())
 						{
 							join = new DynamicQueryJoinData();
-							join.SQLStatement = "inner join AssetPath Node on Node.ID = a.ID";
+							join.SQLStatement = nodeJoin;
 						}
 
 						if (select != null && join != null)
@@ -1022,7 +1024,7 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
-								{(ft.Type == DataType.Path.ToString() ? "inner join AssetPath Node on Node.ID = a.ID" : "")}
+								{(ft.Type == DataType.Path.ToString() && joinStatement != nodeJoin ? nodeJoin : "")}
 								{joinStatement}
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
@@ -1328,6 +1330,41 @@ namespace d360.model.DataAccessLayer
 				simpleFiltersTempTablesQuery = sb.ToString();
 			}
 
+			string parentFilterTemporaryTables = "";
+
+			if (dbArgs.ParameterNames.Any(x => x.Contains("filter_parent_asset")))
+			{
+				StringBuilder stringBuilder = new StringBuilder();
+				stringBuilder.AppendLine(@"
+				drop table if exists #tempParentFilter
+				create table #tempParentFilter (AssetId bigint);");
+				foreach (var dbArg in dbArgs.ParameterNames)
+				{
+					if (dbArg.ToLowerInvariant().Contains("filter_parent_asset"))
+					{
+						var propName = $"@{dbArg}";
+						var targetPropName = $"@targetAssetId_for_{dbArg}";
+
+						stringBuilder.AppendLine($@"
+					declare {targetPropName} int = (select top 1 Id from Asset where uid = cast({propName} as uniqueidentifier));
+
+					insert into #tempParentFilter
+					select A.Id
+					from Asset A
+					inner
+					join [Intersect] I on I.ObjectAssetID = A.ID and I.SubjectAssetId = {targetPropName}
+					inner join[IntersectType] IT on IT.Id = I.IntersectTypeId
+					inner join[Predicate] P on P.ID = IT.PredicateID
+					where A.AssetTypeID = @Assettypeid and P.Type = 3");
+
+					}
+				}
+			}
+
+
+
+			parentFilterTemporaryTables = stringBuilder.ToString();
+
 			bool useSimpleFilterTempTable = simpleFiltersTempTablesQuery.Length > 0;
 			var filteredSelect = $@"
 				select  A.ID
@@ -1348,7 +1385,9 @@ namespace d360.model.DataAccessLayer
 				{TempTableScriptStr}
 
 				{simpleFiltersTempTablesQuery}
-
+				
+				{parentFilterTemporaryTables}
+				
 				DROP TABLE IF EXISTS #tempasset;
 				create table #tempasset (id int identity(1,1), AssetId bigint);
 

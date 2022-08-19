@@ -118,7 +118,22 @@ namespace d360.model.helpers.filters
                 stringBuilder.AppendFormat(formattedSql, defaultFilter.SqlExpression, pName);
                 sqlParamsRef.Add(pName, value);
             }
-            else
+            if (defaultFilter.ApiName.ToLowerInvariant() == "parentuid")
+			{
+				var valueValidation = fieldValueValidator.CheckValue(value, field, @operator);
+
+				if (!valueValidation.Status)
+				{
+					throw new FormatException(valueValidation.Message);
+				}
+
+				value = valueValidation.UpdatedValue;
+				value = value.ToString().Trim('\'');
+
+				stringBuilder.Append("exists(select top 1 1 from #tempParentFilter tpf where tpf.AssetId = a.ID)");
+				sqlParamsRef.Add($"@filter_parent_asset_{parameterIdx}", value);
+			}
+			else
             {
                 if (!FilterHelpers.IsValidOperatorForFieldType(CurrentFieldType, @operator))
                 {
