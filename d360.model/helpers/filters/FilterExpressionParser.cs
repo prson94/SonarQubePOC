@@ -22,7 +22,7 @@ namespace d360.model.helpers
         private readonly List<string> disallowedFieldTypes = new List<string> { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
         private readonly bool registerTokensAsFields;
-		private bool hasSingleParentFilter = false;
+		private bool hasSingleParentFilter;
 		List<IFilterToken> filterTokens = new List<IFilterToken>();
 
 		public FilterExpressionParser(
@@ -188,7 +188,7 @@ namespace d360.model.helpers
                 }
 
                 filterString = filterString.Trim();
-				hasSingleParentFilter = filterString.ToLowerInvariant().Split(new string[] { "parentuid" }, StringSplitOptions.None).Length == 2;
+				hasSingleParentFilter = filterString.ToLowerInvariant().Split(new [] { "parentuid" }, StringSplitOptions.None).Length == 2;
 
 				StringBuilder sb = new StringBuilder();
 

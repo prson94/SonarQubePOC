@@ -62,7 +62,7 @@ namespace d360.model.helpers.filters
 
 		public AdvancedFilterTempTableInfo GetTempTableFilterData()
 		{
-			return new AdvancedFilterTempTableInfo()
+			return new AdvancedFilterTempTableInfo
 			{
 				ApiName = "parentuid",
 				TempTableQuery = _tempFilterTableSQL,
