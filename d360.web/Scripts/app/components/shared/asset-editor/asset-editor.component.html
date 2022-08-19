@@ -50,6 +50,7 @@
 															[assetTypeUid]="objectTypeUid"
 															[diagramNodeKey]="diagramNodeKey"
 															[selectedObjectID]="selectedObjectID"
+															[useSidePanel]="useSidePanel"
 															[sidePanelSelection]="sidePanelSelection"
 															(sidePanelSelectionChange)="onSidePanelSelectionChange($event)">
 										</asset-editor-field>
@@ -97,7 +98,7 @@
 			</form>
 		</div>
 	</div>
-	<div class="side-panel" *ngIf="sidePanelOpen">
+	<div class="side-panel" *ngIf="useSidePanel && sidePanelOpen">
 		<side-panel [expanded]="sidePanelOpen"
 					(expandedChange)="onSidePanelExpansionChange($event)"
 					[panelApplies]="panelApplies"
@@ -107,7 +108,7 @@
 					hasDetail="true">
 			<ng-container *ngIf="sidePanelOpen && selectedAsset">
 				<ng-container *ngIf="sidePanelTab === 'detail'">
-					<ig-asset-detail *ngIf="selectedAsset.type !== 'ReferenceItem'"
+					<ig-asset-detail *ngIf="!selectedAsset.type.startsWith('ReferenceItem')"
 									 [objectID]="selectedAsset.id"
 									 [objectUID]="selectedAsset.uid"
 									 [objectType]="selectedAsset.type"
@@ -125,7 +126,7 @@
 									 [hasDeleteRelationshipsPermissions]="false"
 									 [interceptLinkClick]="true">
 					</ig-asset-detail>
-					<ng-container *ngIf="selectedAsset.type === 'ReferenceItem'">
+					<ng-container *ngIf="selectedAsset.type.startsWith('ReferenceItem')">
 						<ng-container *ngIf="sidePanelLoading && !selectedReferenceItem; else assetTypeDetail">
 							<d3s-loading [isLoading]="true"></d3s-loading>
 						</ng-container>

@@ -55,6 +55,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
     selectionScrollHeight: string = "320px";
 
     @Input() useNewUI: boolean = false;
+	@Input() useSidePanel: boolean = false;
     private isDirty: boolean = false;
 	
 	@Input() sidePanelSelection: { objectID: string, fieldName: string };
@@ -819,7 +820,7 @@ export class AssetEditorFieldComponent extends BaseComponent implements OnInit, 
 			
 			if (!this.field.MultiSelect) {
 				const selectedItem = this.lookupValues.find((lookup) => {
-					return lookup.value.toLowerCase() === this.dropdown.value.toLowerCase();
+					return lookup.value?.toLowerCase() === this.dropdown.value?.toLowerCase();
 				});
 				if (selectedItem?.value) {
 					this.selectSingleItem(null, selectedItem);

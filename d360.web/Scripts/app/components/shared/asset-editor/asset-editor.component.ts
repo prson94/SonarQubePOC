@@ -133,6 +133,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     hasUpdateFormChanged: boolean = false;
 
     isProcessSidePanel: boolean = false;
+	useSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelLoading: boolean = false;
 	sidePanelTab: string;
@@ -265,22 +266,28 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.action = this.newActionName;
         }
 		
-		this.getAssetTypeDetails().subscribe((result) => {
-			this.assetTypeFields = result.fields;
-			result.fields.forEach((field) => {
-				const relationship = result.relationships.find((relationship) => {
-					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
-				});
-				if (relationship) {
-					if (this.objectTypeUid !== relationship.Object.Uid) {
-						this.fieldsRelations[field.Name] = relationship.Object;
-					} else {
-						this.fieldsRelations[field.Name] = relationship.Subject;
+		this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
+		
+		if (this.useSidePanel) {
+			this.getAssetTypeDetails().subscribe((result) => {
+				this.assetTypeFields = result.fields;
+				result.fields.forEach((field) => {
+					const relationship = result.relationships.find((relationship) => {
+						return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
+					});
+					if (relationship) {
+						if (this.objectTypeUid !== relationship.Object.Uid) {
+							this.fieldsRelations[field.Name] = relationship.Object;
+						} else {
+							this.fieldsRelations[field.Name] = relationship.Subject;
+						}
 					}
-				}
+				});
+				this.getDefinition();
 			});
+		} else {
 			this.getDefinition();
-		});
+		}
     }
 	
 	getAssetTypeDetails(): Observable<{ fields: FieldTypeAPIModelField[], relationships: RelationshipType[] }> {
@@ -1058,7 +1065,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		} else {
 			const fieldDetails = this.assetTypeFields.find((field) => field.Name === fieldName);
 			if (fieldDetails?.Type.Lookup) {
-				return this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+				const lookupClassName = fieldDetails.Type.Lookup.List.Class;
+				if (lookupClassName !== 'Reference' || fieldDetails?.Type.Lookup.List.Uid) {
+					return this.getObjectTypeByClass(lookupClassName);
+				} else {
+					return 'ReferenceItemType';
+				}
 			}
 		}
 		return 'Artifact';
@@ -1082,14 +1094,14 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		if (!_.isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
 			this.selectedAsset = {
-				type: this.getObjectTypeByFieldName(selection.fieldName),
+				type: this.getObjectTypeByFieldName(selection.fieldName)
 			};
 			if (isNaN(+selection.objectID)) {
 				this.selectedAsset.uid = selection.objectID;
 			} else {
 				this.selectedAsset.id = +selection.objectID;
 			}
-			if (this.selectedAsset.type === 'ReferenceItem') {
+			if (this.selectedAsset.type.startsWith('ReferenceItem')) {
 				this.sidePanelLoading = true;
 				this.objectDetailService.getObject(
 					this.selectedAsset.id,
