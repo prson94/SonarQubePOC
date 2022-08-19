@@ -321,7 +321,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 				if (!this.selectedItems.some((x) => x.Value === sel.Value)) {
 					this.selectedItems.push(sel);
 				}
-			})
+			});
 		}
     }
 
