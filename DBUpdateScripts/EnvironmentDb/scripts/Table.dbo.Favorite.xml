@@ -139,8 +139,7 @@ GO
 				if not exists (select 1 from sys.columns where Name = N'AssetID' and Object_ID = Object_ID(N'dbo.Favorite'))
 				begin
 					alter table dbo.Favorite
-					add AssetID bigint null
-						constraint DF_Favorite_AssetID default(null)
+					add AssetID bigint SPARSE
 				end
 					
 				GO
@@ -148,8 +147,7 @@ GO
 				if not exists (select 1 from sys.columns where Name = N'AssetTypeID' and Object_ID = Object_ID(N'dbo.Favorite'))
 				begin
 					alter table dbo.Favorite
-					add AssetTypeID bigint null
-						constraint DF_Favorite_AssetTypeID default(null)
+					add AssetTypeID bigint SPARSE
 				end
 
 				GO
@@ -157,8 +155,7 @@ GO
 				if not exists (select 1 from sys.columns where Name = N'SemanticID' and Object_ID = Object_ID(N'dbo.Favorite'))
 				begin
 					alter table dbo.Favorite
-					add SemanticID bigint null
-						constraint DF_Favorite_SemanticID default(null)
+					add SemanticID bigint SPARSE
 				end
 
 				GO
