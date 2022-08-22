@@ -7,26 +7,35 @@ import { Title } from "@angular/platform-browser";
 import { MessagesObservableService } from "../../../services/messages-observable.service";
 import { IndexableType, IndexableStatus } from "../../../models/search-admin.model";
 import { TreeNode } from "primeng/api";
-import { StringConstants } from "../../../static/string-constants";
 import { CompanySettingsService } from "../../../services/settings.service";
 import { ReuseInterceptor } from '../../../http-interceptors/reuse.interceptor';
 
 @Component({
     selector: "d3s-admin-search-component",
-    templateUrl: "./admin-search.component.html"
+    templateUrl: "./admin-search.component.html",
+	styleUrls: ['./admin-search.component.less']
 })
 
 export class AdminSearchComponent extends AdminBaseComponent implements OnDestroy {
 
     isUpdating: boolean = false;
-    updateIn: number = 30;
-
-    indexableHash;
+    indexableHash: any;
     indexableNodes: TreeNode[];
-    readonly JobStatus: string[] = ["None", "Pending", "Processing", "Processing By Asset Type", "Error", "Completed"];
-    readonly emptyguid: string = "00000000-0000-0000-0000-000000000000";
+	selectedIndexes: IndexableStatus[] = [];
+	
+    readonly jobStatuses: { name: string, color: string }[] = [
+		{ name: "None", color: "gray" },
+		{ name: "Pending", color: "gray" },
+		{ name: "Processing", color: "yellow" },
+		{ name: "Processing By Asset Type", color: "yellow" },
+		{ name: "Error", color: "red" },
+		{ name: "Completed", color: "green" }
+	];
+    readonly emptyUid: string = "00000000-0000-0000-0000-000000000000";
+	readonly emptyDate: string = "0001-01-01T00:00:00.000Z";
 
     refreshViewLabel = $localize`Refresh View`;
+	rebuildIndexesLabel = $localize`Rebuild Indexes`;
 
     constructor(
         protected searchService: SearchService,
@@ -38,8 +47,6 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
         private reuseInterceptor: ReuseInterceptor
     ) {
         super(headerBreadcrumbService, titleService, settingsService, secondaryNavService);
-        this.areaName = StringConstants.Section_Search;
-        this.setCommonItems();
     }
 
     ngOnInit() {
@@ -48,53 +55,49 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
 
     getIndexableTypes() {
         this.isLoading = true;
-        this.searchService.GetIndexableTypes()
+        this.searchService.getIndexableTypes()
             .subscribe((types) => {
                 this.indexableHash = {};
                 this.indexableNodes = [];
 
                 types
-                    .filter((t) => t.AssetTypeUid === this.emptyguid)
+                    .filter((t) => t.AssetTypeUid === this.emptyUid)
                     .forEach((t) => {
-                        let elem: IndexableStatus = this.ConvertTypeToStatus(t);
-                        this.indexableHash[this.IndexableStatusId(elem)] = { data: elem, children: [] };
+                        let elem: IndexableStatus = this.convertTypeToStatus(t);
+                        this.indexableHash[this.getIndexableStatusId(elem)] = { data: elem, children: [] };
 
-                        this.indexableNodes.push(this.indexableHash[this.IndexableStatusId(elem)]);
+                        this.indexableNodes.push(this.indexableHash[this.getIndexableStatusId(elem)]);
                     });
 
                 types
-                    .filter((t) => t.AssetTypeUid !== this.emptyguid)
+                    .filter((t) => t.AssetTypeUid !== this.emptyUid)
                     .sort((a, b) => 0 - (a.Name > b.Name ? -1 : 1))
                     .forEach((t) => {
-                        let elem: IndexableStatus = this.ConvertTypeToStatus(t);
-                        this.indexableHash[this.IndexableStatusId(elem)] = { data: elem, children: [] };
+                        let elem: IndexableStatus = this.convertTypeToStatus(t);
+                        this.indexableHash[this.getIndexableStatusId(elem)] = { data: elem, children: [] };
 
-                        if (this.indexableHash[`${elem.Class}-${this.emptyguid}`]) {
-                            this.indexableHash[`${elem.Class}-${this.emptyguid}`].children.push(this.indexableHash[this.IndexableStatusId(elem)]);
+                        if (this.indexableHash[`${elem.Class}-${this.emptyUid}`]) {
+                            this.indexableHash[`${elem.Class}-${this.emptyUid}`].children.push(this.indexableHash[this.getIndexableStatusId(elem)]);
                         }
                     });
 
-                this.UpdateStatus();
+                this.updateStatus();
                 this.isLoading = false;
             });
     }
 
-    private IndexableStatusId(s: IndexableStatus) {
+    private getIndexableStatusId(s: IndexableStatus): string {
         return `${s.Class}-${s.AssetTypeUid}`;
     }
 
-    private ConvertDate(d): Date {
-        let m = /^\/Date\((\d+)\)\/$/.exec(d);
-        if (m !== null) {
-            return new Date(parseInt(m[1]));
-        } else {
-            return null;
-        }
-
-
+    private convertDate(iso: string): string {
+		if (iso !== this.emptyDate) {
+			return iso;
+		}
+		return null;
     }
 
-    private ConvertTypeToStatus(t: IndexableType) {
+    private convertTypeToStatus(t: IndexableType): IndexableStatus {
         let elem: IndexableStatus = new IndexableStatus();
         elem.AssetTypeUid = t.AssetTypeUid;
         elem.Class = t.Class;
@@ -104,18 +107,18 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
         return elem;
     }
 
-    UpdateStatus() {
+    updateStatus(): void {
         this.isUpdating = true;
         this.reuseInterceptor.forceRefresh();
-        this.searchService.GetIndexbleStatus()
+        this.searchService.getIndexableStatus()
             .subscribe((statuses) => {
                 statuses.forEach((s) => {
-                    if (this.indexableHash[this.IndexableStatusId(s)]) {
-                        let elem: IndexableStatus = this.indexableHash[this.IndexableStatusId(s)].data;
+                    if (this.indexableHash[this.getIndexableStatusId(s)]) {
+                        let elem: IndexableStatus = this.indexableHash[this.getIndexableStatusId(s)].data;
                         elem.TargetCount = s.TargetCount;
                         elem.CurrentCount = s.CurrentCount;
-                        elem.Start = this.ConvertDate(s.Start);
-                        elem.LastUpdate = this.ConvertDate(s.LastUpdate);
+                        elem.Start = this.convertDate(s.Start);
+                        elem.LastUpdate = this.convertDate(s.LastUpdate);
                         elem.Status = s.Status;
                     }
                 });
@@ -127,14 +130,14 @@ export class AdminSearchComponent extends AdminBaseComponent implements OnDestro
         return (data.Status < 1 || data.Status > 3);
     }
 
-    rebuild(data: IndexableStatus) {
-        this.isUpdating = true;
-        this.searchService.SendRebildRequest(data.Class, data.AssetTypeUid)
-            .toPromise()
-            .then(() => this.UpdateStatus());
+    rebuild(data: IndexableStatus[]) {
+		console.log(data);
+        // this.isUpdating = true;
+        // this.searchService.SendRebildRequest(data.Class, data.AssetTypeUid)
+        //     .toPromise()
+        //     .then(() => this.UpdateStatus());
     }
 
     ngOnDestroy() {
-        this.clearSidebar();
     }
 }

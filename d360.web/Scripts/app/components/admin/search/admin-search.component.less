@@ -1,0 +1,83 @@
+@import "../../../../../Content/styles/_Variables";
+
+.tile {
+  box-shadow: none;
+  padding: 0 24px 24px;
+  margin-top: -12px;
+
+  &-actions {
+    display: flex;
+    justify-content: flex-start;
+    min-width: 308px;
+
+    button {
+      width: 150px;
+
+      &:first-child {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  &-tools {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  &-description {
+    color: @igx-grey;
+    font-size: 14px;
+  }
+}
+
+.tr-head {
+  height: 32px;
+
+  & > th {
+    background-color: #F1F2F3;
+  }
+}
+
+.tr-body {
+  height: 35px;
+  border-bottom: 2px solid #F1F2F3;
+
+  .name-cell {
+    display: flex;
+    word-break: break-all;
+  }
+}
+
+td, th {
+  color: black;
+}
+
+.rebuild-status {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  &__circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    margin-right: 4px;
+
+    &--gray {
+      background-color: @d3s-primary-gray;
+    }
+
+    &--yellow {
+      background-color: @d3s-primary-yellow;
+    }
+
+    &--green {
+      background-color: @d3s-primary-green;
+    }
+
+    &--red {
+      background-color: @d3s-primary-red;
+    }
+  }
+}

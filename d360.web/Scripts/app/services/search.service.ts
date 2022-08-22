@@ -69,9 +69,14 @@ export class SearchService extends BaseObservableService  {
     }
 
     public downloadSearchExcel(query: SearchQuery): Observable<any> {
-        return this.
-            http
-            .post("api/v2/search/results", query, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
+        return this.http.post(
+			"api/v2/search/results",
+			query, 
+			{
+				headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }),
+				responseType: 'blob' 
+			}
+		);
     }
 
     public getSearchCategories(showUsers: boolean = true, keepNotVisible: boolean = false): Observable<SearchType[]> {
@@ -126,7 +131,7 @@ export class SearchService extends BaseObservableService  {
         this.visibleCategories$ = null;
     }
 
-    public GetIndexableTypes(): Observable<IndexableType[]> {
+    public getIndexableTypes(): Observable<IndexableType[]> {
         return this.http
             .get("api/v2/search/indexableTypes")
             .pipe(
@@ -145,7 +150,7 @@ export class SearchService extends BaseObservableService  {
             );
     }
 
-    public GetIndexbleStatus(): Observable<IndexableStatus[]> {
+    public getIndexableStatus(): Observable<IndexableStatus[]> {
         return this.http
             .get("api/v2/search/indexableStatus")
             .pipe(
@@ -164,11 +169,11 @@ export class SearchService extends BaseObservableService  {
             );
     }
 
-	public SendRebildRequest(Class: number, assettypeuid: string) {
+	public sendRebuildRequest(assetClass: number, assetTypeUid: string) {
 		let requests: IndexPartialRebuild[] = [];
 		requests.push({
-			Class: Class,
-			AssetTypeUid: assettypeuid
+			Class: assetClass,
+			AssetTypeUid: assetTypeUid
 		})
         return this.http
 			.post(`api/v2/search/rebuild`, requests)

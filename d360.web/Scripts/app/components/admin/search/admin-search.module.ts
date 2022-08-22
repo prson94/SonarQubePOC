@@ -1,6 +1,5 @@
 ﻿import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HTTP_INTERCEPTORS } from "@angular/common/http";
 
 import { TreeTableModule } from "primeng/treetable";
 import { TooltipModule } from 'primeng/tooltip';
@@ -21,8 +20,9 @@ import { AdminSearchRoutingModule } from "./admin-search.routes";
     declarations: [
         AdminSearchComponent,
     ],
-    providers: [
-    ]
-
+	exports: [
+		AdminSearchComponent
+	],
+    providers: []
 })
 export class AdminSearchModule { }

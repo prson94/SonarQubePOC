@@ -2509,6 +2509,11 @@ div.home-image-title-text {
     max-width: fit-content;
     min-width: 800px;
     max-height: 100%;
+    
+    &.rebuild-partial-search-index {
+      min-width: 1200px;
+      max-width: calc(100vw - 80px);
+    }
 
     .confirmation-wrapper {
       padding: 0px 24px 24px 24px;
@@ -7159,6 +7164,25 @@ table {
     a {
       padding: 0;
       border: 0;
+    }
+  }
+}
+
+p-treetablecheckbox,
+p-treetableheadercheckbox {
+  .p-checkbox {
+    border-radius: 4px;
+    color: white;
+
+    &-box.p-indeterminate,
+    &-box.p-highlight {
+      background-color: @ig-purple-t1;
+      border: unset;
+    }
+    
+    &-icon {
+      font-size: 9px;
+      font-weight: bold;
     }
   }
 }
