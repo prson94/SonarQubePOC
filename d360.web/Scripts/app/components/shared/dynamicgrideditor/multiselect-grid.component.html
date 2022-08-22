@@ -11,9 +11,9 @@
                             [loadIdentifier]="targetAssetTypeUid"
                             (onChange)="advancedFiltersChanged($event)">
         </advanced-filtering>
-        <div *ngIf="selectedItems && selectedItems.length > 0" class="multiselect-grid-sel">
-            <span *ngIf="selectedItems && selectedItems.length === 1" i18n>1 item selected</span>
-            <span *ngIf="selectedItems && selectedItems.length > 1" i18n>{{selectedItems.length}} items selected</span>
+        <div *ngIf="selectedAssetsDetail && selectedAssetsDetail.length > 0" class="multiselect-grid-sel">
+            <span *ngIf="selectedAssetsDetail.length === 1" i18n>1 item selected</span>
+            <span *ngIf="selectedAssetsDetail.length > 1" i18n>{{selectedAssetsDetail.length}} items selected</span>
         </div>
     </div>
 
