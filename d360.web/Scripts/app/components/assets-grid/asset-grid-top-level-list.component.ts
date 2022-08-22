@@ -132,13 +132,7 @@ export class AssetGridTopLevelListComponent extends AssetGridBaseComponent imple
 	}
 
 	navigate(uid: string) {
-		this.assetService.getAssetTypeLegacyData(uid)
-			.subscribe(res => {
-				if (res.Object === 'RuleType') {
-					this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_RULE_ROOT}/` + res.ObjectID);
-				} else {
-					this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
-				}
-			});
+		this.router.navigateByUrl("assets/" + uid);
+
 	}
 }
