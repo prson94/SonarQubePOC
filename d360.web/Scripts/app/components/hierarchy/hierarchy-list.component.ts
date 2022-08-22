@@ -28,7 +28,6 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     public rowsPerPage: number;
     private types: AssetTypeApiModel[] = [];
     private selected: AssetTypeApiModel;
-    private type: string;
 
     private assetTypeClass: AssetTypeClass;
     private navFolderName: string;
@@ -50,18 +49,26 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
         this.secondaryNavService = secondaryNavService;
     }
 
-    ngOnInit() {
+	ngOnInit() {
+		let assetTypeClassString: keyof typeof AssetTypeClass = this.route.snapshot.data.type;
+		try {
 
-        this.type = this.route.parent.snapshot.data.type;
+			this.assetTypeClass = AssetTypeClass[assetTypeClassString];
+			if (!this.assetTypeClass) {
+				this.assetTypeClass = AssetTypeClass.Model;
+			}
+		} catch (e) {
+			this.assetTypeClass = AssetTypeClass.Model;
+		}
 
-        switch (this.type) {
-            case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
+        switch (this.assetTypeClass) {
+			case AssetTypeClass.Model:
                 this.assetTypeClass = AssetTypeClass.Model;
                 this.objectType = StringConstants.ObjectTaxonomyType;
                 this.objectName = 'Models';
                 this.navFolderName = '#Models';
-                break;
-            case SiteUrlHelpers.SITE_URL_POLICY_ROOT:
+				break;
+			case AssetTypeClass.Policy:
                 this.assetTypeClass = AssetTypeClass.Policy;
                 this.objectType = StringConstants.ObjectPolicyType;
                 this.objectName = 'Policies';
@@ -123,6 +130,6 @@ export class HierarchyListComponent extends BaseComponent implements OnInit {
     }
 
     showAsset(asset: AssetTypeApiModel) {
-        this.router.navigateByUrl(`${this.type}/structure/${asset.uid}`);
+        this.router.navigateByUrl(`/asset/${asset.uid}`);
     }
 }
