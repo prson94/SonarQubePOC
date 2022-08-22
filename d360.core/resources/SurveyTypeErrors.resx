@@ -135,6 +135,9 @@
   <data name="DuplicateQuestionOptionValue" xml:space="preserve">
     <value>Please enter unique option identifier for option #{index}</value>
   </data>
+  <data name="InvalidAssetType" xml:space="preserve">
+    <value>Asset Type is invalid. Surveys can be created only for Business Assets, Technical Assets, Models and Rules</value>
+  </data>
   <data name="InvalidDirection" xml:space="preserve">
     <value>Invalid value for direction parameter. Use asc|desc.</value>
   </data>

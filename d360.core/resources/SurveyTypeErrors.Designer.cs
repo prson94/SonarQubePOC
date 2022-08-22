@@ -115,6 +115,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset Type is invalid. Surveys can be created only for Business Assets, Technical Assets, Models and Rules.
+        /// </summary>
+        public static string InvalidAssetType {
+            get {
+                return ResourceManager.GetString("InvalidAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid value for direction parameter. Use asc|desc..
         /// </summary>
         public static string InvalidDirection {
