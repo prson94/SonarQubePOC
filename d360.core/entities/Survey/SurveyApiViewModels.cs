@@ -39,7 +39,7 @@ namespace d360.core.entities.SurveyModels
     {
         public int pageSize { get; set; }
 
-        public int pageNum { get; set; }
+        public long pageNum { get; set; }
 
         public int total { get; set; }
 
@@ -187,7 +187,7 @@ namespace d360.core.entities.SurveyModels
     {
         public int pageSize { get; set; }
 
-        public int pageNum { get; set; }
+        public long pageNum { get; set; }
 
         public int total { get; set; }
 
