@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v8.2">
+  <changeSet author="tduric" id="Procedure.dbo.GetSiteNavigation-v8.4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -130,8 +130,9 @@ SELECT	n.Name as MenuID,
 					SELECT		TOP 1000
 								T.ObjectID,
 								T.Name,
-								dbo.GenerateAssetTypeUrl(T.ID) As url
+								AUrl.Url As url
 					FROM		AssetType T 
+								cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'TaxonomyType' and v.Name != '#ASSET_TYPE'
 					WHERE		v.ObjectID is null
 					and			T.Object = 'TaxonomyType'
@@ -160,8 +161,9 @@ SELECT	n.Name as MenuID,
 					SELECT		TOP 1000
 								T.ObjectID,
 								T.name,
-								dbo.GenerateAssetTypeUrl(T.ID) As url
+								AUrl.Url As url
 					FROM		AssetType T 
+								cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'PolicyType' and v.Name != '#ASSET_TYPE'
 					WHERE		v.ObjectID is null
 					and T.Object = 'PolicyType'
@@ -213,10 +215,11 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		n.Title as Title,
 		(
 		SELECT	T.name,
-				dbo.GenerateAssetTypeUrl(T.ID) As url,
+				AUrl.Url As url,
 				0 as feature,
 				null AS items	
 		FROM	AssetType T
+				cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 				LEFT JOIN SiteNav v on v.ObjectID = T.ObjectID and v.Object = T.Object and v.Name != '#ASSET_TYPE'
 		WHERE	T.Object = 'RuleType' 
 				and v.ObjectID IS NULL
