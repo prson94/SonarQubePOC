@@ -857,7 +857,7 @@ namespace d360.web.Controllers.V2
 
 				if (!string.IsNullOrEmpty(isValid))
 				{
-					throw new ArgumentException(isValid);
+					return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, ApiMessages.BadRequest, isValid)).ConfigureAwait(false);
 				}
 
 				var results = await membershipRepository.GetGroups(queryParams);
