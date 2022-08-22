@@ -14,7 +14,7 @@ const routes: Routes = [
     // lazy loaded modules 
     { path: "assettype", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
 	{ path: "assets", loadChildren: () => import("./components/assets-base/assets-base.module").then((m) => m.AssetsBaseModule), data: { preload: false } },
-    { path: "artifact", loadChildren: () => import("./components/artifact/artifact.module").then((m) => m.ArtifactModule), data: { preload: false } },
+    { path: "asset", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
     { path: "community", loadChildren: () => import("./components/community/community.module").then((m) => m.CommunityModule) },
     { path: "help", loadChildren: () => import("./components/help/help.module").then((m) => m.HelpModule) },
     { path: "admin", loadChildren: () => import("./components/admin/admin.module").then((m) => m.AdminModule) },
@@ -25,7 +25,6 @@ const routes: Routes = [
     { path: "group", loadChildren: () => import("./components/group/group.module").then((m) => m.GroupModule) },
     { path: "resource", loadChildren: () => import("./components/resource/resource.module").then((m) => m.ResourceModule) },
     { path: "reference", loadChildren: () => import("./components/reference/reference.module").then((m) => m.ReferenceModule) },
-    { path: "asset", loadChildren: () => import("./components/asset/asset.module").then((m) => m.AssetModule), data: { preload: false } },
     { path: "home", loadChildren: () => import("./components/home/home.module").then((m) => m.HomeModule) },
     { path: "gallery", loadChildren: () => import("./components/gallery/gallery.module").then((m) => m.GalleryModule) },
     { path: "search", loadChildren: () => import("./components/search/search.module").then((m) => m.SearchModule) },
