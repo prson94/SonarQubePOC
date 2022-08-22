@@ -27,154 +27,156 @@ import { FeatureFlags, FeatureFlagsService } from '../../services/featureflags.s
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-artifact-item',
-    templateUrl: './artifact-item.component.html',
-    providers: [ArtifactService, PermissionsService, SiteMenuService, DataProfileService]
+	selector: 'd3s-artifact-item',
+	templateUrl: './artifact-item.component.html',
+	providers: [ArtifactService, PermissionsService, SiteMenuService, DataProfileService]
 })
 
 export class ArtifactItemComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
-    private artifact: Artifact;
-    private sub: any;
-    private currentAreaNameSubscription: any;
-    private currentAreaName: string;
-    private artifactTypeId: number;
-    private messages: MessageBarItem[] = [];
-    private showSurvey: boolean = false;
-    private showSocialScoreBar: boolean = true;
-    private showDataProfile: boolean = false;
-    private dataProfile: any;
-    private sidePanelOpen: boolean = false;
-    private sidePanelStorageKey;
-    private synonymPermission: SynonymPermission;
-    hrefSub: Subscription;
-    selectedAsset: any;
-    selectedReferenceItem: any;
-    selectedTag: any;
-    semanticType: SemanticType;
-    secondarySidePanelOpen: boolean;
-    secondarySidePanel: string = 'detail';
-    resourceUid: string;
+	private artifact: Artifact;
+	private sub: any;
+	private currentAreaNameSubscription: any;
+	private currentAreaName: string;
 
-    constructor(
-        private route: ActivatedRoute,
-        secondaryNavService: SecondaryNavService,
-        private router: Router,
-        private artifactService: ArtifactService,
-        private titleService: Title,
-        webAnalyticsService: WebAnalyticsService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        private dataProfileService: DataProfileService,
-        protected settingsService: CompanySettingsService,
-        private linkClickInterceptor: LinkClickInterceptor,
-        private assetService: AssetService,
-        private featureFlagService: FeatureFlagsService
-    ) {
-        super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
-    }
-    
-    ngOnInit() {
-        this.sub = this.route.params.subscribe(params => {
-            let artifactId = +params['artifactId']; // (+) converts string 'id' to a number
-            this.artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
-            this.headerBreadcrumbService.setCurrentObjectInfo('Artifact', artifactId);
-            this.logAction('open', 'Artifact', artifactId);
-            this.isLoading = true;
-            this.messages = [];
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
-                .then(p => {
-                    this.load(artifactId, this.artifactTypeId);
-                });
+	private messages: MessageBarItem[] = [];
+	private showSurvey: boolean = false;
+	private showSocialScoreBar: boolean = true;
+	private showDataProfile: boolean = false;
+	private dataProfile: any;
+	private sidePanelOpen: boolean = false;
+	private sidePanelStorageKey;
+	private synonymPermission: SynonymPermission;
+	hrefSub: Subscription;
+	selectedAsset: any;
+	selectedReferenceItem: any;
+	selectedTag: any;
+	semanticType: SemanticType;
+	secondarySidePanelOpen: boolean;
+	secondarySidePanel: string = 'detail';
+	resourceUid: string;
 
-            this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
-                this.linkClickInterceptor.handleEvent(this, ev);   
-            });
+	constructor(
+		private route: ActivatedRoute,
+		secondaryNavService: SecondaryNavService,
+		private router: Router,
+		private artifactService: ArtifactService,
+		private titleService: Title,
+		webAnalyticsService: WebAnalyticsService,
+		headerBreadcrumbService: HeaderBreadcrumbService,
+		protected permissionsService: PermissionsService,
+		private dataProfileService: DataProfileService,
+		protected settingsService: CompanySettingsService,
+		private linkClickInterceptor: LinkClickInterceptor,
+		private assetService: AssetService,
+		private featureFlagService: FeatureFlagsService
+	) {
+		super(headerBreadcrumbService, settingsService, secondaryNavService, webAnalyticsService);
+	}
 
-            this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
-        });
-    }
+	ngOnInit() {
+		this.sub = this.route.params.subscribe(params => {
+			this.uid = this.baseAssetUid = params["assetUid"];
 
-    ngOnDestroy() {
-        if (this.sub) {
-            this.sub.unsubscribe();
-        }
-        if (this.hrefSub) {
-            this.hrefSub.unsubscribe();
-        }
-    }
+			this.logAction('open', 'Artifact', this.uid);
+			this.isLoading = true;
+			this.messages = [];
 
-    private load(id: number, typeID: number) {
-        this.messages = []; /* clear any messages for this artifact */
-        this
-            .artifactService
-            .getArtifact(id)
-            .pipe(
-                finalize(() => {
-                    this.isLoading = false;
-                })
-            )
-            .subscribe(
-                artifact => {
-                    this.artifact = artifact;
-                    this.synonymPermission = artifact.SynonymPermission;
+			this.permissionsService.getAssetPermissions(this.uid)
+				.subscribe((res) => {
+					this.objectPermission = res;
+					this.load(this.uid);
+				}
+				);
 
-                    this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
+			this.hrefSub = this.linkClickInterceptor.getEvents().subscribe((ev) => {
+				this.linkClickInterceptor.handleEvent(this, ev);
+			});
 
-                    this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
+			this.showSocialScoreBar = this.settingsService.getSettingById(CompanySettingEnum.ShowSocialScoreBar).BooleanSetting.Value;
+		});
+	}
 
-                    this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                    if (this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
-                        this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
-                            (r) => {
-                                if (r && r.items && r.items.length > 0) {
-                                    this.dataProfile = r.items[0];
+	ngOnDestroy() {
+		if (this.sub) {
+			this.sub.unsubscribe();
+		}
+		if (this.hrefSub) {
+			this.hrefSub.unsubscribe();
+		}
+	}
 
-                                    forkJoin(
-                                        this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
-                                        this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
-                                    ).subscribe((res) => {
-                                        this.dataProfile['matches'] = {
-                                            structure: res[0],
-                                            data: res[1]
-                                        };
-                                    });
+	private load(assetUid: string) {
+		this.messages = []; /* clear any messages for this artifact */
+		this
+			.artifactService
+			.getArtifactByUid(assetUid)
+			.pipe(
+				finalize(() => {
+					this.isLoading = false;
+				})
+			)
+			.subscribe(
+				artifact => {
+					this.artifact = artifact;
+					this.synonymPermission = artifact.SynonymPermission;
 
-                                    this.showDataProfile = true;
-                                }
-                            });
-                    }
-                },
-                err => {
-                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-                }
-            )
-            ;
-    }
+					this.buildSecondaryNavigation(this.artifact.Uid, null, null, null, null, null, null, this.artifact.DisplayValue);
 
-    private editArtifact(e: any) {
-        this.isLoading = true;
-        this.load(e.ID, this.artifactTypeId);
-    }
+					this.sidePanelStorageKey = 'detail_' + AssetTypeClass[artifact.Class] + '_' + CurrentResourceID;
+
+					this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
+					if (this.featureFlagService.flags[FeatureFlags.DataProfilingUiFlag]) {
+						this.dataProfileService.getDataProfiles(this.artifact.Uid).subscribe(
+							(r) => {
+								if (r && r.items && r.items.length > 0) {
+									this.dataProfile = r.items[0];
+
+									forkJoin(
+										this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Structure'),
+										this.dataProfileService.getMatchCounts(this.dataProfile.assetUid, 'Data')
+									).subscribe((res) => {
+										this.dataProfile['matches'] = {
+											structure: res[0],
+											data: res[1]
+										};
+									});
+
+									this.showDataProfile = true;
+								}
+							});
+					}
+				},
+				err => {
+					this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
+				}
+			)
+			;
+	}
+
+	private editArtifact(e: any) {
+		this.isLoading = true;
+		this.load(this.uid);
+	}
 
 
-    sidePanelTab: string = '';
-    get showSidePanel() {
-        return this.showDataProfile || true;
-    }
+	sidePanelTab: string = '';
+	get showSidePanel() {
+		return this.showDataProfile || true;
+	}
 
-    secondaryPanelOpen(event: any) {
-        this.secondarySidePanelOpen = true;
-        if (event) {
-            if (event.resourceUid) {
-                this.secondarySidePanel = "user";
-                this.resourceUid = event.resourceUid;
-            }
-            if (event.semanticType) {
-                this.secondarySidePanel = "detail";
-                this.semanticType = event.semanticType;
-            }
-        } else {
-            this.secondarySidePanel = "status";
-        }
-    }  
+	secondaryPanelOpen(event: any) {
+		this.secondarySidePanelOpen = true;
+		if (event) {
+			if (event.resourceUid) {
+				this.secondarySidePanel = "user";
+				this.resourceUid = event.resourceUid;
+			}
+			if (event.semanticType) {
+				this.secondarySidePanel = "detail";
+				this.semanticType = event.semanticType;
+			}
+		} else {
+			this.secondarySidePanel = "status";
+		}
+	}
 }

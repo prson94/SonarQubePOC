@@ -87,6 +87,8 @@ export class BaseComponent {
     // Ideally this should be an input so we dont have to copy / past it...
     // child classes that support permissions input....
 	permissions: ResponsibilityTypeRelationPermission[] = [];
+
+	//permissions coming from v2 api's
 	objectPermission: Permissions;
 	
 
@@ -891,8 +893,15 @@ export class BaseComponent {
             }
             let area = this.determineAreaForAdminPage(areaName);
 
-            var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);
-            this.secondaryNavService.setLocalHomeUrl(homeUrl);
+			let homeUrl: string = ``;
+			if (this.uid) {
+				homeUrl = SiteUrlHelpers.getAssetUrl(this.uid);
+			}
+			else {
+				homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);
+			}
+
+			this.secondaryNavService.setLocalHomeUrl(homeUrl);
             this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID);
             if (buildBreadcrumbOverride == null) {
                 if (this.objectType.toLowerCase() == 'artifact') {

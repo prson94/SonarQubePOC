@@ -247,9 +247,9 @@ namespace d360.model
 			QueueSource.CreateMessage(queueName, item);
 		}
 
-		public JObject GetPageInformation(SystemObjects o, int oid)
+		public JObject GetPageInformation(Guid assetUid)
 		{
-			IEnumerable<string> jsonRows = Database.Connection.Query<string>("exec GetPageInformation @o, @oid, @rid", new { o = o.ToString(), oid, rid = CurrentResourceID });
+			IEnumerable<string> jsonRows = Database.Connection.Query<string>("exec GetPageInformation @assetUid, @rid", new { assetUid, rid = CurrentResourceID });
 			if (jsonRows.Count() == 0)
 			{
 				return null;

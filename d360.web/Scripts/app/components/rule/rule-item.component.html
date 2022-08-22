@@ -7,7 +7,7 @@
                     <d3s-object-definition-tile [objectType]="'Rule'"
                                                 [useV2Api]="true"
                                                 [objectID]="rule?.ID"
-                                                [objectPermissions]="permissions"
+                                                [objectPermissions]="objectPermission"
                                                 (onEditComplete)="editRule($event)"
                                                 [interceptLinkClick]="true">
                     </d3s-object-definition-tile>

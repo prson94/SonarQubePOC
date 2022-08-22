@@ -1287,18 +1287,20 @@ namespace d360.web.Controllers
 
 		#region Artifacts
 
-		[Route("artifact/{id:int}")]
-		public HttpResponseMessage GetArtifact(int id)
+		[Route("artifact/{uid:Guid}")]
+		public HttpResponseMessage GetArtifact(Guid uid)
 		{
-			var json = Company.GetPageInformation(SystemObjects.Artifact, id);
+			
+			var json = Company.GetPageInformation(uid);
 			bool addModifySynonym = true;
 			bool deleteSynonym = true;
 
 			if (!Company.CurrentResourceIsAdmin)
 			{
+				long assetId = long.Parse(json.GetValue("AssetID").ToString());
 				string objectType = SystemObjects.Artifact.ToString();
-				addModifySynonym = Company.HasAssetPermission(objectType, id, Permission.AddRelationships) || Company.HasAssetPermission(objectType, id, Permission.EditRelationships);
-				deleteSynonym = Company.HasAssetPermission(objectType, id, Permission.DeleteRelationships);
+				addModifySynonym = Company.HasAssetPermission(assetId, Permission.AddRelationships) || Company.HasAssetPermission(assetId, Permission.EditRelationships);
+				deleteSynonym = Company.HasAssetPermission(assetId, Permission.DeleteRelationships);
 			}
 
 			var permission = new JObject

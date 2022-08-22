@@ -149,7 +149,7 @@ namespace d360.model.DataAccessLayer.repositories
 
 																select favorite.FavoriteId, breadcrumbs.Level, breadcrumbs.Name
 																from @assets favorite
-																cross apply dbo.GetAssetBreadcrumbs(favorite.ObjectType, favorite.ObjectId) as breadcrumbs
+																cross apply dbo.GetAssetBreadcrumbs(favorite.uid) as breadcrumbs
 	
 																union
 	

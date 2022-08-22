@@ -355,7 +355,7 @@ namespace d360.model
         
         string GetObjectTypePath(string type, long id);
         
-        JObject GetPageInformation(SystemObjects o, int oid);
+        JObject GetPageInformation(Guid assetUid);
         
         AssetDetail GetParentObject(int id, SystemObjects obj);
         

@@ -1394,7 +1394,7 @@ namespace d360.web.Controllers
 				{
 					if (responseModel.Object == "Artifact")
 					{
-						responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+						responseModel.Artifact = Company.GetPageInformation(model.AssetUid.Value);
 					}
 
 					if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
