@@ -270,8 +270,8 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		
 		if (this.useSidePanel) {
 			this.getAssetTypeDetails().subscribe((result) => {
-				this.assetTypeFields = result.fields;
-				result.fields.forEach((field) => {
+				this.assetTypeFields = result.fields || [];
+				this.assetTypeFields.forEach((field) => {
 					const relationship = result.relationships.find((relationship) => {
 						return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
 					});
