@@ -981,11 +981,10 @@ namespace d360.model.DataAccessLayer
 				var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
 				if (!string.IsNullOrEmpty(simpleFilter))
 				{
+					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 					simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
 
 					dbArgs.Add("@simpleFilter", simpleFilter);
-
-					bool isNumber = decimal.TryParse(simpleFilter.Trim('%'), out _);
 
 					//There may be multiple OwnershipLookup fields, but they all look to the same table for filtering, so that will be dealt with below
 					foreach (var ft in fieldTypes.Where(x => x.IsListable == true && x.Type != DataType.OwnershipLookup.ToString()))
@@ -1001,10 +1000,11 @@ namespace d360.model.DataAccessLayer
 						var select = fieldColumns.Selects().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 						var join = fieldJoins.Joins().FirstOrDefault(x => x.FieldIdentifier == ft.ID.ToString());
 
-						if(ft.Type == DataType.Path.ToString())
+						string nodeJoin = "inner join AssetPath Node on Node.ID = a.ID";
+						if (ft.Type == DataType.Path.ToString() && (join == null || !join.SQLStatement.ToLowerInvariant().Contains("segmentpath")))
 						{
 							join = new DynamicQueryJoinData();
-							join.SQLStatement = "inner join AssetPath Node on Node.ID = a.ID";
+							join.SQLStatement = nodeJoin;
 						}
 
 						if (select != null && join != null)
@@ -1022,7 +1022,7 @@ namespace d360.model.DataAccessLayer
 							simpleFilters.Add($@"
 								select  A.ID
 								from    Asset A 
-								{(ft.Type == DataType.Path.ToString() ? "inner join AssetPath Node on Node.ID = a.ID" : "")}
+								{(ft.Type == DataType.Path.ToString() && joinStatement != nodeJoin ? nodeJoin : "")}
 								{joinStatement}
 								left join #TempFilteredAssets tfa on tfa.AssetId = a.ID
 								where tfa.AssetId is null and A.AssetTypeID = @assettypeid and {selectField} like @simpleFilter");
