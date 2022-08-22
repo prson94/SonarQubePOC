@@ -139,7 +139,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 	sidePanelTab: string;
 	sidePanelSelection: { objectID: string, fieldName: string };
 	selectedAsset: { id?: number, uid?: string, type: string };
-	selectedReferenceItem: { uid: string, assetUid: string };
+	selectedReferenceItem: { uid: string, assetUid?: string, url: string };
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -1065,11 +1065,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		} else {
 			const fieldDetails = this.assetTypeFields.find((field) => field.Name === fieldName);
 			if (fieldDetails?.Type.Lookup) {
-				const lookupClassName = fieldDetails.Type.Lookup.List.Class;
-				if (lookupClassName !== 'Reference' || fieldDetails?.Type.Lookup.List.Uid) {
-					return this.getObjectTypeByClass(lookupClassName);
-				} else {
-					return 'ReferenceItemType';
+				const objectType = this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+				if (objectType !== 'Artifact') {
+					return fieldDetails?.Type.Lookup.List.Uid ? objectType : `${objectType}Type`;
 				}
 			}
 		}
@@ -1082,6 +1080,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		} else {
 			if (className === 'Model') {
 				return 'Taxonomy';
+			}
+			if (className === 'User') {
+				return 'Resource';
 			}
 			if (className === 'Reference') {
 				return 'ReferenceItem';
@@ -1107,7 +1108,11 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 					this.selectedAsset.id,
 					this.selectedAsset.type
 				).subscribe((details) => {
-					this.selectedReferenceItem = { uid: details.AssetTypeUid, assetUid: details.UID };
+					this.selectedReferenceItem = {
+						uid: details.AssetTypeUid,
+						assetUid: details.UID,
+						url: details.UID ? `${details.Url},${details.UID}` : null
+					};
 					this.sidePanelLoading = false;
 				});
 			}
