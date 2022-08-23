@@ -1284,4 +1284,10 @@ namespace d360.core.entities
 		[JsonProperty("Count")]
 		public int AssetCount { get; set; }
 	}
+
+	public class SearchPartialRebuildRequest
+	{
+		public int Class { get; set; }
+		public Guid AssetTypeUid { get; set; }
+	}
 }
