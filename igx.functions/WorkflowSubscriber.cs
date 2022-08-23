@@ -77,6 +77,8 @@ namespace igx.functions.consumption
                 config.GetConnectionString("CommunityContext")
             );
 
+			company.SetTelemetryClient(CoreFunction.AITelemetryClient);
+
             try
             {
                 //check if this event already has a open workflow instance
