@@ -41,7 +41,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid uid { get; set; }
 
-        [DataMember]
+		[DataMember]
+		public long id { get; set; }
+		
+		[DataMember]
         public DateTime? CreatedOn { get; set; }
 
         [DataMember]

@@ -1442,7 +1442,78 @@ ENABLE TRIGGER ALL ON [dbo].[Intersect];
 		<![CDATA[]]>
 	</rollback>
   </changeSet>
+  <changeSet author="Puneet Gupta" id="Data.Corrections.GOV-18457">
+  <comment>Update Asset/AssetID column</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update	F
+set		F.AssetID = A.ID
+from	Follow F 
+		inner join Asset A on A.Object = F.ObjectType and A.ObjectId = F.ObjectId
+where   F.FollowTypeID = 1
+		and F.AssetID is null
+		and F.AssetTypeID is null;
 
+update	F
+set		F.AssetTypeID = ATT.ID
+from	Follow F 
+		inner join AssetType ATT on ATT.Object = F.ObjectType and ATT.ObjectId = F.ObjectId
+where   F.FollowTypeID = 3 
+		and F.ObjectType in ('ArtifactType','ReferenceItemType','PolicyType','TaxonomyType','RuleType')
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+
+update	F
+set		F.AssetTypeID = (select top 1 ATT.ID from AssetType ATT where ATT.object = 'GroupType') 
+from	Follow F 
+where   F.ObjectType = 'Group' 
+		and F.ObjectID = 0 
+		and F.FollowTypeID = 3
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+
+update	F
+set		F.AssetTypeID = (select top 1 ATT.ID from AssetType ATT where ATT.object = 'ResourceType') 
+from	Follow F 
+where   F.ObjectType = 'ResourceType' 
+		and F.FollowTypeID = 3
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+		
+update	F
+set		F.AssetID = A.ID
+from	Follow F 
+		inner join Asset A on A.Object = F.ObjectType and A.ObjectId = F.ObjectId
+where   F.FollowTypeID = 3 
+		and F.ObjectType in ('Policy','Taxonomy') 
+		and F.AssetID is null
+		and F.AssetTypeID is null;
+		
+if exists(select 1 from Follow F where F.AssetID is null and F.AssetTypeID is null)
+begin
+	update	F
+	set		F.AssetID = A.ID
+	from	Follow F 
+			inner join Asset A on A.Object = F.ObjectType and A.ObjectId = F.ObjectId
+	where 	F.AssetID is null
+			and F.AssetTypeID is null;
+	
+	update	F
+	set		F.AssetTypeID = ATT.ID
+	from	Follow F 
+			inner join AssetType ATT on ATT.Object = F.ObjectType and ATT.ObjectId = F.ObjectId
+	where   F.AssetID is null
+			and F.AssetTypeID is null;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
    <changeSet author="Pappas" id="Data.Corrections.GOV-18449-Workflow-1">
   <comment>Update columns for workflow.EventRegistration</comment>
   <sql dbms="mssql"

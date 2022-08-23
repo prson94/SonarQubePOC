@@ -312,12 +312,12 @@ namespace d360.model
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
         
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);
-        
-        IQueryable<FollowDetail> GetFollowersByObject(SystemObjects type, int id);
-        
-        Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
-        
-        string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
+
+		IQueryable<FollowDetail> GetFollowersByObject(int? assetTypeid, long? assetid);
+
+		Follow GetFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID);
+
+		string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         
         string GetIntersectTypeName(IntersectType intersectType);
         
@@ -410,12 +410,12 @@ namespace d360.model
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true);
         
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
-        
-        bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
-        
-        bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
-        
-        Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
+
+		bool IsUserFollowing(int? AssetTypeID, long? AssetID, int? resourceID);
+
+		bool IsUserFollowingParent(int? AssetTypeID, long? AssetID, int? resourceID);
+
+		Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
         
         void ParseResponsibilityRuleModel(Guid executionId, SqlTransaction trans = null, int timeout = 3600, string sourceTable = "api.ExecutionResponsibilityRule");
         
@@ -462,10 +462,10 @@ namespace d360.model
         bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy);
         
         new bool Update<T>(T item) where T : BaseObject;
-        
-        bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
-        
-        IntersectType UpsertIntersectType(IntersectType model);
+
+		bool UpdateFollowStatus(int? assetTypeid, long? assetid, int? resourceID, bool includeChildren = false);
+
+		IntersectType UpsertIntersectType(IntersectType model);
         
         Database Database { get; }
         

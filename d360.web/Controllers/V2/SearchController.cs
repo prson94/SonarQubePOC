@@ -405,12 +405,12 @@ namespace d360.web.Controllers.V2
 		/// <returns></returns>
 		[
 			HttpPost,
-			Route("rebuild/{Class:int}/{assetTypeUid:Guid}"),
-			SwaggerResponse(HttpStatusCode.OK, "Creates a new Bulk load.", typeof(ConfirmResponse)),
+			Route("rebuild"),
+			SwaggerResponse(HttpStatusCode.OK, "Queues a rebuild request.", typeof(ConfirmResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public async Task<IHttpActionResult> DoRebuild(int Class, Guid assetTypeUid)
+		public async Task<IHttpActionResult> DoRebuild(List<SearchPartialRebuildRequest> rebuildRequests)
 		{
 			if (!Company.CurrentResourceIsAdmin)
 			{
@@ -419,7 +419,9 @@ namespace d360.web.Controllers.V2
 
 			var response = new ConfirmResponse();
 			SearchIndexer indexer = new SearchIndexer(Company.Connection, Company.CurrentCompanyID, SearchSource);
-			indexer.QueueRebuildRequest((AssetTypeClass)Class, assetTypeUid);
+			rebuildRequests.ForEach(r => {
+				indexer.QueueRebuildRequest((AssetTypeClass)r.Class, r.AssetTypeUid);
+			});
 			response.message = "Rebuild queued";
 
 			return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response))).ConfigureAwait(false);

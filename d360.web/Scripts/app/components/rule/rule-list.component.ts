@@ -110,6 +110,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 					this.gridObject = RuleType.AsGridObject(this.ruleType);
 					this.baseAssetTypeUid = this.gridObject.AssetTypeUID;
                     this.setObjectInfo('RuleType', this.ruleType.ID);
+					this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId, this.baseAssetTypeUid);
 
                     this.sidePanelStorageKey = 'list_' + AssetTypeClass[AssetTypeClass.Rule] + '_' + CurrentResourceID;
 

@@ -160,7 +160,7 @@
     <value>Question response already submitted by user and may no longer be updated. Only Description may be updated.</value>
   </data>
   <data name="SurveyTypeNotFound" xml:space="preserve">
-    <value>Survey with the specified Uid was does not exist.</value>
+    <value>Survey with the specified Uid does not exist.</value>
   </data>
   <data name="ValidForDaysIsTooBig" xml:space="preserve">
     <value>ValidForDays must be {maxValidForDays} days or less.</value>

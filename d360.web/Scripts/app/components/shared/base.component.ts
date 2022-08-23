@@ -873,8 +873,8 @@ export class BaseComponent {
             let area = this.determineAreaForAdminPage(areaName);
 
             var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);
-            this.secondaryNavService.setLocalHomeUrl(homeUrl);
-            this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID);
+			this.secondaryNavService.setLocalHomeUrl(homeUrl);
+			this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID, r.Artifact?.AssetTypeUid, r.Uid);
             if (buildBreadcrumbOverride == null) {
                 if (this.objectType.toLowerCase() == 'artifact') {
                     this.setArtifactBreadcrumbs(r);

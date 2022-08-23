@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using d360.core.entities;
 using d360.core.entities.SurveyModels;
+using d360.core.resources;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers.filters;
 using Dapper;
@@ -144,10 +145,10 @@ namespace d360.model.DataAccessLayer
 
 						break;
 					case "_pagenum":
-						int num = 0;
-						if (int.TryParse(param.Value, out num))
+						long num = 0;
+						if (long.TryParse(param.Value, out num))
 						{
-							response.pageNum = int.Parse(param.Value);
+							response.pageNum = num;
 							if (response.pageNum <= 0)
 							{
 								response.pageNum = 1;
@@ -155,7 +156,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							throw new ArgumentException("Invalid value for page number parametar!");
+							throw new ArgumentException(OthersError.InvalidPageNum);
 						}
 
 						break;
@@ -436,11 +437,11 @@ namespace d360.model.DataAccessLayer
 
 						break;
 					case "_pagenum":
-						int num = 0;
+						long pageNum = 0;
 
-						if (int.TryParse(param.Value, out num))
+						if (long.TryParse(param.Value, out pageNum))
 						{
-							response.pageNum = int.Parse(param.Value);
+							response.pageNum = pageNum;
 							if (response.pageNum <= 0)
 							{
 								response.pageNum = 1;
@@ -448,7 +449,7 @@ namespace d360.model.DataAccessLayer
 						}
 						else
 						{
-							throw new ArgumentException("Invalid value for page number parametar!");
+							throw new ArgumentException(OthersError.InvalidPageNum);
 						}
 
 						break;

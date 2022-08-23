@@ -195,7 +195,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Survey successfully updated."),
 			SwaggerResponse(HttpStatusCode.BadRequest, "ValidForDays must be 365 days or less.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to create a new survey.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid does not exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Conflict, "Another survey with the same name already exists for this asset type.", typeof(ErrorResponse)),
 			RequireAdminPermissions
 		]
@@ -229,7 +229,7 @@ namespace d360.web.Controllers.V2
 			SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
 			SwaggerResponse(HttpStatusCode.OK, "Survey successfully removed."),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid does not exist.", typeof(ErrorResponse)),
 			RequireAdminPermissions
 		]
 		public async Task<IHttpActionResult> DeleteSurveyType(Guid surveyTypeUid)
@@ -257,7 +257,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<QuestionTypeShortInfo>)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid does not exist.", typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetQuestionTypesBySurveyType(Guid surveyTypeUid)
 		{
@@ -283,7 +283,7 @@ namespace d360.web.Controllers.V2
 			SwaggerProduces("application/json"),
 			SwaggerResponseRemoveDefaults,
 			SwaggerResponse(HttpStatusCode.OK, "OK.", typeof(List<ObjectSurveyQuestionValuesModel>)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist. Question not found.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid does not exist. Question not found.", typeof(ErrorResponse)),
 		]
 		public async Task<IHttpActionResult> GetSurveyQuestionValues(Guid surveyTypeUid, Guid questionTypeUid)
 		{
@@ -310,7 +310,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Created, "Survey question successfully created.", typeof(QuestionTypeCreateResponseModel)),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Question have invalid fields", typeof(ErrorResponse)),
-			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid was does not exist.", typeof(ErrorResponse)),
+			SwaggerResponse(HttpStatusCode.NotFound, "Survey with the specified Uid does not exist.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Conflict, "Question with the same name already exists for this survey type.", typeof(ErrorResponse)),
 			RequireAdminPermissions
 		]
@@ -358,7 +358,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.BadRequest, "Question have invalid fields", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound, 
-				@"Survey with the specified Uid was does not exist.
+				@"Survey with the specified Uid does not exist.
 				  Survey question with the specified Uid was does not exist.", 
 				typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.Conflict, 
@@ -412,7 +412,7 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.OK, "Survey question successfully removed."),
 			SwaggerResponse(HttpStatusCode.Forbidden, "You must be an administrator to remove this survey question.", typeof(ErrorResponse)),
 			SwaggerResponse(HttpStatusCode.NotFound,
-				@"Survey with the specified Uid was does not exist. 
+				@"Survey with the specified Uid does not exist. 
 				Survey question with the specified Uid was does not exist.",
 				typeof(ErrorResponse)),
 			RequireAdminPermissions

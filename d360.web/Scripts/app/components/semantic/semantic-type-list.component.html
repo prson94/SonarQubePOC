@@ -85,7 +85,9 @@
                                     <ng-container i18n>Base Type</ng-container>
                                     <d3s-sortIcon [field]="'BaseType'"></d3s-sortIcon>
                                 </th>
-                                <th *ngIf="showDisabled" style="flex: 0 0 100px">
+                                <th *ngIf="showDisabled" style="flex: 0 0 100px" [pSortableColumn]="'isDisabled'">
+                                    <ng-container i18n>Disabled</ng-container>
+                                    <d3s-sortIcon [field]="'isDisabled'"></d3s-sortIcon>
                                 </th>
                                 <th style="flex: 0 0 30px"></th>
                             </tr>

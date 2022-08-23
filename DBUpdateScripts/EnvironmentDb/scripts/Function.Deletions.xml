@@ -59,6 +59,8 @@ drop function if exists [utility].[GetBreadcrumbStringWrapper]
 GO
 drop function if exists [utility].[GetBreadcrumbString]
 GO
+drop function if exists [graph].[GetForwardLineage]
+GO
 		]]>
     </sql>
 	<rollback></rollback>

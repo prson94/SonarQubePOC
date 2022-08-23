@@ -49,7 +49,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
 
     simpleSearchTooltipHTML = StringConstants.simpleSearchTooltipHTML;
     items: any[];
-    selectedItems: any;
+	selectedItems: any[];
     simpleTextFilter: string = "";
     advancedFilters: string = "";
     private selectedRelationRowIndex: number = null;
@@ -312,17 +312,17 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         });
     }
 
-    checkPreSelectedItems() {
-        this.selectedItems = [];
-        if (this.items && this.selectedAssetsDetail) {
-            this.items.forEach((item) => {
-                this.selectedAssetsDetail.forEach((sel) => {
-                    if (sel.Value === item.Value) {
-                        this.selectedItems.push(item);
-                    }
-                });
-            });
-        }
+	checkPreSelectedItems() {
+		if (this.selectedAssetsDetail) {
+			if (!this.selectedItems) {
+				this.selectedItems = [];
+			}
+			this.selectedAssetsDetail.forEach((sel) => {
+				if (!this.selectedItems.some((x) => x.Value === sel.Value)) {
+					this.selectedItems.push(sel);
+				}
+			});
+		}
     }
 
     private getObjectTypeForTooltip(item: any): string {
@@ -334,7 +334,7 @@ export class MultiSelectGridComponent extends BaseComponent implements ControlVa
         if (item.Value.indexOf('|') == -1) return item.Value;
 
         return item.Value.split('|')[1];
-    }
+	}
 
     private handleItemSelection(event) {
         if (this.multiple) {
