@@ -9,7 +9,7 @@ import {
 import * as _ from 'lodash';
 
 enum IgInfoButtonSize {
-	S = 's',
+	CHIP = 'chip',
 	M = 'm',
 	L = 'l'
 }
