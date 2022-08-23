@@ -133,12 +133,13 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
     hasUpdateFormChanged: boolean = false;
 
     isProcessSidePanel: boolean = false;
+	useSidePanel: boolean = true;
 	sidePanelOpen: boolean = false;
 	sidePanelLoading: boolean = false;
 	sidePanelTab: string;
 	sidePanelSelection: { objectID: string, fieldName: string };
 	selectedAsset: { id?: number, uid?: string, type: string };
-	selectedReferenceItem: { uid: string, assetUid: string };
+	selectedReferenceItem: { uid: string, assetUid?: string, url: string };
 
     modalFormMaxHeight = 400;
     @ViewChild('assetForm', { static: false }) formElement: ElementRef;
@@ -265,22 +266,28 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
             this.action = this.newActionName;
         }
 		
-		this.getAssetTypeDetails().subscribe((result) => {
-			this.assetTypeFields = result.fields;
-			result.fields.forEach((field) => {
-				const relationship = result.relationships.find((relationship) => {
-					return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
-				});
-				if (relationship) {
-					if (this.objectTypeUid !== relationship.Object.Uid) {
-						this.fieldsRelations[field.Name] = relationship.Object;
-					} else {
-						this.fieldsRelations[field.Name] = relationship.Subject;
+		this.useSidePanel = this.objectType !== 'IntersectType' && this.objectType !== 'Predicate';
+		
+		if (this.useSidePanel) {
+			this.getAssetTypeDetails().subscribe((result) => {
+				this.assetTypeFields = result.fields || [];
+				this.assetTypeFields.forEach((field) => {
+					const relationship = result.relationships.find((relationship) => {
+						return relationship.Uid === field.Type.Relationship?.IntersectTypeUid;
+					});
+					if (relationship) {
+						if (this.objectTypeUid !== relationship.Object.Uid) {
+							this.fieldsRelations[field.Name] = relationship.Object;
+						} else {
+							this.fieldsRelations[field.Name] = relationship.Subject;
+						}
 					}
-				}
+				});
+				this.getDefinition();
 			});
+		} else {
 			this.getDefinition();
-		});
+		}
     }
 	
 	getAssetTypeDetails(): Observable<{ fields: FieldTypeAPIModelField[], relationships: RelationshipType[] }> {
@@ -1058,7 +1065,10 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		} else {
 			const fieldDetails = this.assetTypeFields.find((field) => field.Name === fieldName);
 			if (fieldDetails?.Type.Lookup) {
-				return this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+				const objectType = this.getObjectTypeByClass(fieldDetails.Type.Lookup.List.Class);
+				if (objectType !== 'Artifact') {
+					return fieldDetails?.Type.Lookup.List.Uid ? objectType : `${objectType}Type`;
+				}
 			}
 		}
 		return 'Artifact';
@@ -1071,6 +1081,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 			if (className === 'Model') {
 				return 'Taxonomy';
 			}
+			if (className === 'User') {
+				return 'Resource';
+			}
 			if (className === 'Reference') {
 				return 'ReferenceItem';
 			}
@@ -1082,20 +1095,24 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges, On
 		if (!_.isEqual(this.sidePanelSelection, selection)) {
 			this.sidePanelSelection = selection;
 			this.selectedAsset = {
-				type: this.getObjectTypeByFieldName(selection.fieldName),
+				type: this.getObjectTypeByFieldName(selection.fieldName)
 			};
 			if (isNaN(+selection.objectID)) {
 				this.selectedAsset.uid = selection.objectID;
 			} else {
 				this.selectedAsset.id = +selection.objectID;
 			}
-			if (this.selectedAsset.type === 'ReferenceItem') {
+			if (this.selectedAsset.type.startsWith('ReferenceItem')) {
 				this.sidePanelLoading = true;
 				this.objectDetailService.getObject(
 					this.selectedAsset.id,
 					this.selectedAsset.type
 				).subscribe((details) => {
-					this.selectedReferenceItem = { uid: details.AssetTypeUid, assetUid: details.UID };
+					this.selectedReferenceItem = {
+						uid: details.AssetTypeUid,
+						assetUid: details.UID,
+						url: details.UID ? `${details.Url},${details.UID}` : null
+					};
 					this.sidePanelLoading = false;
 				});
 			}

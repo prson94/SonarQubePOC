@@ -436,6 +436,24 @@ namespace d360.web.Controllers
 					JsonRequestBehavior.AllowGet);
 				}
 
+				if (objectType == "QuestionType")
+				{
+					var question = Company.QuestionTypes.FirstOrDefault(x => x.Uid == uid);
+
+					return Json(
+					new
+					{
+						ShowTooltip = true,
+						AssetID = -1,
+						UID = uid,
+						DisplayName = question?.Name,
+						TypeName = "Question Type",
+						Url = "",
+						Description = question?.Description
+
+					},
+					JsonRequestBehavior.AllowGet);
+				}
 			}
 
 

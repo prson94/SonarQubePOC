@@ -67,7 +67,8 @@ namespace d360.model.DataAccessLayer
 			{ "priority", "Priority" },
 			{ "qualifier", "Qualifier" },
 			{ "status", "StatusString" },
-			{ "threshold", "Threshold" }
+			{ "threshold", "Threshold" },
+			{ "isDisabled", "case when EffectiveDate < UpdatedOn then 1 else 0 end" }
 		};
 
 		private void addToChangeLog(string transactionId, string action)

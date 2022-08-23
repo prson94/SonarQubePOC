@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.dbo.PredicateIntersect-v2">
+  <changeSet author="TKlok" id="View.dbo.PredicateIntersect-v3">
+    <comment>GOV-19364 : Add SubjectAssetID, ObjectAssetID</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -20,7 +21,9 @@ select	I.ID AS IntersectID,
 		I.Subject, 
 		I.SubjectID, 
 		I.Object, 
-		I.ObjectID, 
+		I.ObjectID,
+		I.SubjectAssetID,
+		I.ObjectAssetID,
 		I.State, 
 		T.PredicateID, 
 		P.Uid as PredicateUid,
@@ -34,23 +37,25 @@ from	dbo.[Intersect] AS I
     </sql>
 	<rollback>
 		<![CDATA[	
-	create or alter view [dbo].[PredicateIntersect] 
-	as
-		SELECT	I.ID AS IntersectID, 
+		create or alter view [dbo].[PredicateIntersect] 
+		as
+		select	I.ID AS IntersectID, 
 				I.uid, 
 				I.IntersectTypeID, 
+				T.Uid as IntersectTypeUid,
 				I.Subject, 
 				I.SubjectID, 
 				I.Object, 
 				I.ObjectID, 
 				I.State, 
 				T.PredicateID, 
+				P.Uid as PredicateUid,
 				P.Name AS PredicateName, 
 				P.Inverse AS PredicateInverse, 
 				P.Type AS PredicateType
-		FROM	dbo.[Intersect] AS I 
-				INNER JOIN dbo.IntersectType AS T ON T.ID = I.IntersectTypeID 
-				LEFT JOIN dbo.Predicate AS P ON P.ID = T.PredicateID
+		from	dbo.[Intersect] AS I 
+				inner join dbo.IntersectType AS T ON T.ID = I.IntersectTypeID 
+				left join dbo.[Predicate] AS P ON P.ID = T.PredicateID
 		]]>
 	</rollback>
   </changeSet>

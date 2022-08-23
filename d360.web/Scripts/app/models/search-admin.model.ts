@@ -13,3 +13,9 @@ export class IndexableStatus extends IndexableType
     Start: Date;
     LastUpdate: Date;
 }
+
+export class IndexPartialRebuild
+{
+	Class: number;
+	AssetTypeUid: string;
+}

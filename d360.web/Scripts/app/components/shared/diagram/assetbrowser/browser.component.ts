@@ -1999,18 +1999,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region Search
 
-    search_AddHighlightToNode(node: go.Node, phrase: string) {
-        this.diagram.model.commit(function (m) {
-            var data = m.findNodeDataForKey(node.key);
+    search_AddHighlightToNode(m: go.Model, node: go.Node, phrase: string) {
+        var data = m.findNodeDataForKey(node.key);
 
-            var idx = phrase.length;
-            var highlight = data.text.substring(0, idx);
-            var text = data.text.substring(idx, data.text.length);
+        var idx = phrase.length;
+        var highlight = data.text.substring(0, idx);
+        var text = data.text.substring(idx, data.text.length);
 
-            m.set(data, 'highlight', highlight);
-            m.set(data, 'highlight_visible', true);
-            m.set(data, 'text', text);
-        }, 'update_highlight');
+        m.set(data, 'highlight', highlight);
+        m.set(data, 'highlight_visible', true);
+        m.set(data, 'text', text);
     }
 
     /**
@@ -2018,39 +2016,44 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing
     */
     private search_Execute(phrase: string) {
+        try {
+            this.diagram.model.commit((m) => {
+                // Clear highlights of exisitng search results
+                this.searchResults.forEach(n => {
+                    this.search_RemoveHighlightFromNode(m, n);
+                });
 
-        // Clear highlights of exisitng search results
-        this.searchResults.forEach(n => {
-            this.search_RemoveHighlightFromNode(n);
-        });
+                this.searchText = phrase;
+                let foundResults: go.Node[] = [];
+                this.searchResults = [];
 
-        this.searchText = phrase;
-        let foundResults: go.Node[] = [];
-        this.searchResults = [];
+                this.helper_ScaleDiagram(1);//this.diagram.zoomToFit();
+                var self = this;
 
-        this.helper_ScaleDiagram(1);//this.diagram.zoomToFit();
-        var self = this;
-
-        this.diagram.nodes.each(function (node) {
-            if (node instanceof go.Node) {
-                var nodeData = node.data;
-                node.isHighlighted = false;
-                if (phrase != '') {
-                    self.searchableProps.forEach(prop => {
-                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
-                            foundResults.push(node);
-                            self.search_AddHighlightToNode(node, phrase);
-                            self.search_ExpandGroups(node.data.group);
+                this.diagram.nodes.each(function (node) {
+                    if (node instanceof go.Node) {
+                        var nodeData = node.data;
+                        node.isHighlighted = false;
+                        if (phrase != '') {
+                            self.searchableProps.forEach(prop => {
+                                if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
+                                    foundResults.push(node);
+                                    self.search_AddHighlightToNode(m, node, phrase);
+                                    self.search_ExpandGroups(node.data.group);
+                                }
+                            });
                         }
-                    });
-                }
-            }
-        });
+                    }
+                });
 
-        this.searchResults = foundResults;
+                this.searchResults = foundResults;
+            }, 'update_highlight');
 
-        this.search_GoToResult(1);
-        this.cdRef.markForCheck();
+            this.search_GoToResult(1);
+            this.cdRef.markForCheck();
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     search_ExpandGroups(groupName) {
@@ -2074,22 +2077,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    search_RemoveHighlightFromNode(node: go.Node) {
-        try {
-            this.diagram.model.commit(function (m) {
-                var data = m.findNodeDataForKey(node.key);
-                var fullText = (data) ? data.text : "";
-                if (data.highlight) {
-                    fullText = data.highlight + data.text;
-                }
-
-                m.set(data, 'highlight', '');
-                m.set(data, 'highlight_visible', false);
-                m.set(data, 'text', fullText);
-            }, 'update_highlight');
-        } catch (e) {
-            console.log(e);
+    search_RemoveHighlightFromNode(m: go.Model, node: go.Node) {
+        var data = m.findNodeDataForKey(node.key);
+        var fullText = (data) ? data.text : "";
+        if (data.highlight) {
+            fullText = data.highlight + data.text;
         }
+
+        m.set(data, 'highlight', '');
+        m.set(data, 'highlight_visible', false);
+        m.set(data, 'text', fullText);
     }
 
     search_SetFocusedNodeHighlight(node: go.Node) {
