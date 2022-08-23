@@ -35,7 +35,8 @@ export class BaseComponent {
     uid: string;
     assetID: number;
     assetTypeID: number;
-    objectID: number;
+	//object: string;
+	objectID: number;
     objectType: string;
 	objectName: string;
 

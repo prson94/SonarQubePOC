@@ -1305,7 +1305,7 @@ namespace d360.model
 					};
 				}
 
-				bool isSubject = intersectType.SubjectID == assetInfo.ObjectTypeID && intersectType.Subject == assetInfo.ObjectType.ToString();
+				bool isSubject = intersectType.SubjectAssetTypeID == assetInfo.AssetTypeID;
 
 				if (item.ClearValue)
 				{

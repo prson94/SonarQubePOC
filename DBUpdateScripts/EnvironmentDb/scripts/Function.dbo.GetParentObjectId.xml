@@ -5,12 +5,37 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetParentObjectId-v1">
+  <changeSet author="Pappas" id="Function.dbo.GetParentObjectId-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [dbo].[GetParentObjectId]
+(
+	@type varchar(50),
+	@id int
+)
+returns int
+as
+begin
+	return
+	(
+	select	S.ObjectID as ParentID 
+	from	Asset O
+			inner join AssetType OT on OT.ID = O.AssetTypeID
+			inner join [IntersectType] T on T.ObjectAssetTypeID = OT.ID
+			inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 3
+			inner join [Intersect] I on I.ObjectAssetID = O.ID and I.IntersectTypeID = T.ID
+			inner join Asset S on S.ID = I.SubjectAssetID
+	where	O.Object = @type 
+			and O.ObjectID = @id
+	)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetParentObjectId]
 (
 	@type varchar(50),
@@ -29,11 +54,6 @@ BEGIN
 	where A.Object = @type and A.ObjectID = @id
 	)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

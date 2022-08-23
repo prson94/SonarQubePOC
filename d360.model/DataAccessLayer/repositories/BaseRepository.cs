@@ -46,44 +46,40 @@ namespace d360.model.DataAccessLayer.repositories
 				return false;
 			}
 
-			return intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0 || intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0;
+			return intersectType.ObjectClass == AssetTypeClass.Reference && intersectType.ObjectAssetTypeID == 0 || intersectType.SubjectClass == AssetTypeClass.Reference && intersectType.SubjectAssetTypeID == 0;
 		}
 
-		private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship(int lookupObjectID, string objecttype, int objectid, out bool hasReferenceList, out string targetType)
+		private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship(int lookupObjectID, int assetTypeId, out bool hasReferenceList)
 		{
 			hasReferenceList = false;
-			var intersecttypeboth = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Object == objecttype && i.ObjectID == objectid && i.Subject == objecttype && i.SubjectID == objectid).SingleOrDefault();
+			var intersecttypeboth = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.ObjectAssetTypeID == assetTypeId && i.SubjectAssetTypeID == assetTypeId).SingleOrDefault();
 			hasReferenceList = DoesIntersectHasRefList(intersecttypeboth);
 			if (intersecttypeboth == null)
 			{
-				var intersecttypeobject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Object == objecttype && i.ObjectID == objectid).SingleOrDefault();
+				var intersecttypeobject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.ObjectAssetTypeID == assetTypeId).SingleOrDefault();
 				hasReferenceList = DoesIntersectHasRefList(intersecttypeobject);
 
 				if (intersecttypeobject == null)
 				{
-					var intersecttypesubject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Subject == objecttype && i.SubjectID == objectid).SingleOrDefault();
+					var intersecttypesubject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.SubjectAssetTypeID == assetTypeId).SingleOrDefault();
 					hasReferenceList = DoesIntersectHasRefList(intersecttypesubject);
 
 					if (intersecttypesubject == null)
 					{
-						targetType = objecttype;
 						return SplitFilterCriteriaRelationship.Both;
 					}
 					else
 					{
-						targetType = intersecttypesubject.Object;
 						return SplitFilterCriteriaRelationship.Subject;
 					}
 				}
 				else
 				{
-					targetType = intersecttypeobject.Subject;
 					return SplitFilterCriteriaRelationship.Object;
 				}
 			}
 			else
 			{
-				targetType = objecttype;
 				return SplitFilterCriteriaRelationship.Both;
 			}
 
@@ -321,8 +317,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 if (f.Type == "FieldFromRelationship")
 				 {
 					 bool hasReferenceList = false;
-					 string targetType;
-					 var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
+					 var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.AssetTypeID.GetValueOrDefault(), out hasReferenceList);
 
 					 string assetIdBackwardQuery;
 					 string assetIdForwardQuery;
@@ -420,11 +415,7 @@ namespace d360.model.DataAccessLayer.repositories
 				 else if (f.Type == "Relationship")
 				 {
 					 bool hasReferenceList = false;
-					 string targetType;
-					 var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList, out targetType);
-
-					 // Models / Policy relationships should return the textpath not just the display name of the bottom level item.
-					 bool isModelOrPolicy = (targetType == SystemObjects.PolicyType.ToString() || targetType == SystemObjects.TaxonomyType.ToString());
+					 var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.AssetTypeID.GetValueOrDefault(), out hasReferenceList);
 
 					 if (hasReferenceList)
 					 {
@@ -433,7 +424,7 @@ namespace d360.model.DataAccessLayer.repositories
 							 fieldJoins.Add($@"outer apply (
 								select  STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 									inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
-									left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
+									left join AssetType S on S.ID = I.SubjectAssetTypeID and I.ObjectAssetID = A.ID
 									where FT.Id = {f.ID}
 									having STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') is not null
 								) {tableAlias}", f.ID.ToString());
@@ -443,7 +434,7 @@ namespace d360.model.DataAccessLayer.repositories
 							 fieldJoins.Add($@"outer apply (
 								select  STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 									inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
-									left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
+									left join AssetType O on O.ID = I.ObjectAssetTypeID and I.SubjectAssetID = A.ID
 									where FT.Id = {f.ID}
 									having STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') is not null
 								) {tableAlias}", f.ID.ToString());
@@ -453,8 +444,8 @@ namespace d360.model.DataAccessLayer.repositories
 							 fieldJoins.Add($@"outer apply (
 								select  STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 									inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
-									left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
-									left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
+									left join AssetType S on S.ID = I.SubjectAssetTypeID and I.ObjectAssetID = A.ID
+									left join AssetType O on O.ID = I.ObjectAssetTypeID and I.SubjectAssetID = A.ID
 									where FT.Id = {f.ID}
 									having STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') is not null
 								) {tableAlias}", f.ID.ToString());
@@ -534,12 +525,11 @@ namespace d360.model.DataAccessLayer.repositories
 												where I.IntersectTypeID = {f.LookupObjectID} AND I.SubjectAssetId = A.Id";
 							 }
 						 }
+						 
 						 assetIdFinalQuery = $@" outer apply (
-							select STRING_AGG({(isModelOrPolicy ? "ATV.TextPath" : "AD.DisplayValue")},'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
-							{(isModelOrPolicy ? " cross apply [dbo].[GetAssetTextPathById](AD.ID,'/') ATV " : "")}
-							where AD.ID in (
+							select STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetPath where ID in (
 							{assetIdQuery})
-							having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
+							having string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
 							) {tableAlias} ";
 
 						 fieldJoins.Add(assetIdFinalQuery, f.ID.ToString());

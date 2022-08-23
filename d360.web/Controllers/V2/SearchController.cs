@@ -575,27 +575,29 @@ namespace d360.web.Controllers.V2
 			//Assign icons by lower level navmenu
 			if (results.Where(r => r.AssetTypeUid != null && r.MissingIcon()).Any())
 			{
-				var sql = $@"WITH cteParents(AssetTypeUid, Object, ObjectID, Subject, SubjectID, Level)
-					AS (SELECT at.Uid as AssetTypeUid, it.Object, it.ObjectID, it.Subject, it.SubjectID, 1
-						FROM [dbo].[IntersectType] it 
-						INNER JOIN [dbo].[Predicate] p ON p.ID = it.PredicateID AND p.Type = 3
-						INNER JOIN [dbo].[AssetType] at ON at.Object = it.Object AND at.ObjectID = it.ObjectID
-						inner join @uids U on U.Uid = AT.Uid
-						UNION ALL
-						SELECT cteParents.AssetTypeUid, cteParents.Object, cteParents.ObjectID, it.Subject, it.SubjectID, cteParents.Level+1
-							FROM cteParents
-							INNER JOIN [dbo].[IntersectType] it ON it.Object = cteParents.Subject and it.ObjectID = cteParents.SubjectID
-							INNER JOIN [dbo].[Predicate] p ON P.ID = it.PredicateID and p.Type = 3)
-					SELECT cteParents.AssetTypeUid, nav.Icon, nav.ImageIconUrl
-					FROM cteParents
-					INNER JOIN SiteNav nav1 on cteParents.Subject = nav1.Object and cteParents.SubjectID = nav1.ObjectID
-					INNER JOIN SiteNav nav on nav1.ParentID = nav.ID
+				var sql = $@"WITH cteParents(AssetTypeUid, ObjectAssetTypeID, SubjectAssetTypeID, Level) as (
+					select	at.Uid as AssetTypeUid, it.ObjectAssetTypeID, it.SubjectAssetTypeID, 1
+					from	IntersectType it 
+							inner join [Predicate] p ON p.ID = it.PredicateID AND p.Type = 3
+							inner join AssetType at ON at.ID = it.ObjectAssetTypeID
+							inner join @uids U on U.Uid = AT.Uid
 					UNION ALL
-					SELECT at.Uid as AssetTypeUid, nav.Icon, nav.ImageIconUrl
-					FROM [dbo].[AssetType] at
-					INNER JOIN SiteNav nav1 on at.Object = nav1.Object and at.ObjectID = nav1.ObjectID
-					INNER JOIN SiteNav nav on nav1.ParentID = nav.ID
-					inner join @uids U on U.Uid = AT.Uid;";
+					select	cteParents.AssetTypeUid, cteParents.ObjectAssetTypeID, it.SubjectAssetTypeID, cteParents.Level+1
+					from	cteParents
+							inner join IntersectType it ON it.ObjectAssetTypeID = cteParents.SubjectAssetTypeID 
+							inner join [Predicate] p ON P.ID = it.PredicateID and p.Type = 3
+					)
+
+					select	cteParents.AssetTypeUid, nav.Icon, nav.ImageIconUrl
+					from	cteParents
+							inner join SiteNav nav1 on cteParents.Subject = nav1.Object and cteParents.SubjectID = nav1.ObjectID
+							inner join SiteNav nav on nav1.ParentID = nav.ID
+					UNION ALL
+					select	at.Uid as AssetTypeUid, nav.Icon, nav.ImageIconUrl
+					from	AssetType at
+							inner join SiteNav nav1 on at.Object = nav1.Object and at.ObjectID = nav1.ObjectID
+							inner join SiteNav nav on nav1.ParentID = nav.ID
+							inner join @uids U on U.Uid = AT.Uid;";
 
 				var menuItems = Company.Query<dynamic>(sql, new
 				{

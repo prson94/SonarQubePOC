@@ -5,12 +5,51 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="vlova" id="Function.dbo.GetAssetTypeBreadcrumbs-v1.1">
+  <changeSet author="Pappas" id="Function.dbo.GetAssetTypeBreadcrumbs-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [dbo].[GetAssetTypeBreadcrumbs]
+(		        
+	@objectType varchar(max),
+	@objectId int
+)
+returns table
+as
+return 
+(
+		with h as (
+		select	0 as Level, 
+				Name,
+				ID,
+				ObjectID
+		from	AssetType
+		where	[Object] = @objectType 
+				and ObjectId = @objectId
+
+		union all
+	
+		select	o.[Level]-1 as [Level],
+				s.Name,
+				s.ID,
+				s.ObjectID
+		from	h o
+				inner join IntersectType i on i.ObjectAssetTypeID = o.ID
+				inner join [Predicate] P on P.ID = i.PredicateID and P.[Type] = 3
+				inner join AssetType s on s.ObjectID = i.SubjectAssetTypeID
+	)
+	select	distinct top 1000000
+			h.Level, 
+			h.Name as TypeName
+	from	h
+	order by h.Level
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter function [dbo].[GetAssetTypeBreadcrumbs]
 (		        
 	@objectType varchar(max),
@@ -50,11 +89,6 @@ return
 	from h
 	order by h.Level
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop function [dbo].[GetAssetTypeBreadcrumbs]
 		]]>
 	</rollback>
   </changeSet>

@@ -1443,4 +1443,26 @@ ENABLE TRIGGER ALL ON [dbo].[Intersect];
 	</rollback>
   </changeSet>
 
+   <changeSet author="Pappas" id="Data.Corrections.GOV-18449-Workflow-1">
+  <comment>Update columns for workflow.EventRegistration</comment>
+  <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update	T
+set		T.AssetTypeID = A.ID,
+		T.IntersectTypeID = I.ID,
+		T.IssueTypeID = Q.ID
+from	workflow.EventRegistration T
+		left join AssetType A on T.Object in ('ArtifactType', 'PolicyType', 'ReferenceItemType', 'RuleType', 'TaxonomyType') and A.ObjectID = T.ObjectID
+		left join IntersectType I on T.Object in ('IntersectType') and I.ID = T.ObjectID
+		left join IssueType Q on T.Object in ('IssueType') and Q.ID = T.ObjectID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

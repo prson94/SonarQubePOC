@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.workflow.EventRegistration-v1">
+  <changeSet author="Core" id="Table.workflow.EventRegistration-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,6 +32,21 @@ BEGIN
 	ALTER TABLE [workflow].[EventRegistration] WITH CHECK ADD CONSTRAINT [FK_WorkflowEventRegistration_WorkflowType] FOREIGN KEY([TypeID]) REFERENCES [workflow].[Type] ([ID]) ON DELETE CASCADE
 	ALTER TABLE [workflow].[EventRegistration] CHECK CONSTRAINT [FK_WorkflowEventRegistration_WorkflowType]
 END
+
+IF COL_LENGTH('workflow.EventRegistration', 'AssetTypeID') IS NULL
+BEGIN
+    alter table [workflow].[EventRegistration] add [AssetTypeID] int sparse
+END
+
+IF COL_LENGTH('workflow.EventRegistration', 'IntersectTypeID') IS NULL
+BEGIN
+    alter table [workflow].[EventRegistration] add [IntersectTypeID] int sparse
+END
+
+IF COL_LENGTH('workflow.EventRegistration', 'IssueTypeID') IS NULL
+BEGIN
+    alter table [workflow].[EventRegistration] add [IssueTypeID] int sparse
+END
 		]]>
     </sql>
 	<rollback>
@@ -41,7 +56,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Puneet Gupta" id="Table.workflow.EventRegistration-v2">
+  <changeSet author="Puneet Gupta" id="Table.workflow.EventRegistration-Indexes-v2">
     <comment>GOV-12894</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -73,4 +88,5 @@ END
 		]]>
 	</rollback>
   </changeSet>  
+  
 </databaseChangeLog>

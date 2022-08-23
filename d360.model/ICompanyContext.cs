@@ -293,7 +293,7 @@ namespace d360.model
         
         List<AllocationPossibility> GetAllocationOptions();
         
-        Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id);
+        Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(Guid subjectUid, Guid? predicateUid = null);
         
         IQueryable<ResponsibilityType> GetAllowedResponsibilityTypesByAsset(long id);
         
@@ -359,11 +359,11 @@ namespace d360.model
         
         AssetDetail GetParentObject(int id, SystemObjects obj);
         
-        AssetType GetParentType(int id, SystemObjects obj);
+        AssetType GetParentType(int id);
         
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         
-        Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
+        Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "", string keyword = null, int? id = null, string subject = null, string predicate = null, string @object = null);     
                 
         string GetThenResultsSql(ResponsibilityTypeRelationRule rule, bool IsHideData3SixtyUsers, SqlTransaction transaction, bool includeName = true, string assetIDColumn = "", bool includeUid = true);
@@ -477,7 +477,7 @@ namespace d360.model
 
         void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false);
         
-        List<RelationshipDirectionFieldInfo> getRelationFieldData(string fieldTypeRelationType, int typeID, List<FieldType> fields);
+        List<RelationshipDirectionFieldInfo> getRelationFieldData(int assetTypeId, List<FieldType> fields);
 
         Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
         

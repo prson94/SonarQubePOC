@@ -961,14 +961,14 @@ namespace d360.model.DataAccessLayer
 						definitionRelations.Add(relation);
 
 						var relatedTypeList = Company.Filter<IntersectTypeDetail>(r =>
-						   (r.Subject == relationObject && r.SubjectID == relationObjectId) ||
-						   (r.Object == relationObject && r.ObjectID == relationObjectId)
+						   (r.SubjectUid == relation.AssetTypeUid) ||
+						   (r.ObjectUid == relation.AssetTypeUid)
 						   )
 						.ToList()
 						.Select(r => new
 						{
 							r.ID,
-							Name = (r.Subject == relationObject && r.SubjectID == relationObjectId)
+							Name = (r.SubjectUid == relation.AssetTypeUid)
 							   ? $"{r.ObjectName} ({r.PredicateName})"
 							   : $"{r.SubjectName} ({r.PredicateName})"
 						})

@@ -45,5 +45,14 @@ namespace d360.core.entities.Workflow
 
         [IgnoreDataMember, ForeignKey("TypeID")]
         public virtual Type Type { get; set; }
-    }
+
+		[DataMember]
+		public int? AssetTypeID { get; set; }
+
+		[DataMember]
+		public int? IntersectTypeID { get; set; }
+
+		[DataMember]
+		public int? IssueTypeID { get; set; }
+	}
 }

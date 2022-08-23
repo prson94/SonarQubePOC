@@ -5,43 +5,40 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="Function.dbo.ArtifactNgSiteNavigation-v2">
-    <comment>GOV-11122</comment>
+  <changeSet author="Pappas" id="Function.dbo.ArtifactNgSiteNavigation-v3">
+    <comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [dbo].[ArtifactNgSiteNavigation](@id int)
-RETURNS XML
-WITH RETURNS NULL ON NULL INPUT
-BEGIN 
-	RETURN 
+create or alter function [dbo].[ArtifactNgSiteNavigation](@id int)
+returns xml
+with returns null on null input
+begin 
+	return 
 	(
-	SELECT	name,
+	select	name,
 			url,
 			'Menu_AT' + cast(id as varchar(15)) as menuID,
 			0 as feature,
-			case when @@NESTLEVEL > 24 then null else  dbo.ArtifactNgSiteNavigation(id) end as items
-	FROM	(				
-					select
-						T.ObjectID as ID,
-						T.Name,
-						AUrl.[Url] as [Url]
-					from
-					AssetType T 
+			case when @@nestlevel > 24 then null else  dbo.ArtifactNgSiteNavigation(id) end as items
+	from	(				
+			select	T.ID as ID,
+					T.Name,
+					AUrl.[Url] as [Url]
+			from	AssetType T 
 					outer apply (
-							select	IT.SubjectID
+							select	IT.SubjectAssetTypeID
 							from	IntersectType IT 
-									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+									inner join [Predicate] P on IT.ObjectAssetTypeID = T.ID and P.ID = IT.PredicateID and P.Type = 3
 							) IT
 					cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
-					where IT.SubjectID = @id and T.ObjectID <> @id and T.Object = 'ArtifactType' 
-			
+			where	IT.SubjectAssetTypeID = @id
 			) BG order by name
-			FOR XML PATH('nav'), TYPE
+			for xml path('nav'), type
 	)
-END
+end
 		]]>
     </sql>
 	<rollback>
@@ -72,7 +69,7 @@ BEGIN
 					cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
 					where IT.SubjectID = @id and T.ObjectID <> @id and T.Object = 'ArtifactType' 
 			
-			) BG
+			) BG order by name
 			FOR XML PATH('nav'), TYPE
 	)
 END

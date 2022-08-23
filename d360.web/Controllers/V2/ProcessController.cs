@@ -252,14 +252,14 @@ namespace d360.web.Controllers.V2
 
 
 															select ass.assetUid as keyUid, I.Id as IntersectId, 'Object' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid
-																 inner join [Intersect] i on i.object = a.object and i.objectid = a.objectid
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
+																 inner join Asset a on a.uid = ass.assetuid 
+																 inner join [Intersect] i on i.ObjectAssetID = a.ID 
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
 															 union
 															 select ass.assetUid as keyUid, I.Id as IntersectId, 'Subject' as Location, it.SubjectCardinality, it.ObjectCardinality from #assets ass
-																 inner join Asset a on a.uid = ass.assetuid
-																 inner join [Intersect] i on i.subject = a.object and i.subjectid = a.objectid
-																 inner join [IntersectType] it on i.IntersectTypeID = it.ID
+																 inner join Asset a on a.uid = ass.assetuid 
+																 inner join [Intersect] i on i.SubjectAssetID = a.ID 
+																 inner join [IntersectType] it on i.IntersectTypeID = it.ID 
 															", new { assetUid = sourceAsset.uid }).ToList();
 
 					rejectedRelationsipsCopy = copyRelationshipModel.Where(x => x.ObjectCardinality == 1 || x.SubjectCardinality == 1).ToList();
@@ -663,9 +663,9 @@ namespace d360.web.Controllers.V2
 						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
 					 from assets
 						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.subject = a.object and i.subjectid = a.objectid
+						inner join [intersect] i on i.SubjectAssetID = a.ID 
 						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.Object = i.Object and a2.ObjectID = i.ObjectID
+						inner join asset a2 on a2.ID = i.ObjectAssetID
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					union
 					select 
@@ -674,9 +674,9 @@ namespace d360.web.Controllers.V2
 						utility.GetAssetDisplayValue(a2.id) as 'RelatedAsset'
 					 from assets
 						inner join asset a on a.uid = assets.duid
-						inner join [intersect] i on i.object = a.object and i.objectid = a.objectid
+						inner join [intersect] i on i.ObjectAssetID = a.ID 
 						inner join intersecttype it on i.intersecttypeid = it.id
-						inner join asset a2 on a2.Object = i.subject and a2.ObjectID = i.subjectid
+						inner join asset a2 on a2.ID = i.SubjectAssetID 
 					where it.objectcardinality = 1 or it.SubjectCardinality = 1
 					", new { targetAssetUid });
 

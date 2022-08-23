@@ -733,8 +733,7 @@ namespace d360.web.Controllers.V2
 				var sType = type.ToString();
 
 				IQueryable<IntersectTypeDetail> queryAllRelationships = Company.Filter<IntersectTypeDetail>(i =>
-					(i.Subject == sType && i.SubjectID == id) ||
-					(i.Object == sType && i.ObjectID == id)
+					(i.SubjectUid == AssetTypeUid) || (i.ObjectUid == AssetTypeUid)
 				);
 
 				//Hide self reference relationships for models and policies 
@@ -747,27 +746,25 @@ namespace d360.web.Controllers.V2
 				var excludedFieldRelationshipPredicates = new List<PredicateType> { PredicateType.Diagram, PredicateType.DiagramUse, PredicateType.DiagramReference };
 
 				var cardinalRelationships = allRelationships.Where(i =>
-					(i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
-					(i.Object == sType && i.ObjectID == id && i.ObjectCardinality == Cardinality.One)
+					(i.SubjectUid == AssetTypeUid && i.SubjectCardinality == Cardinality.One) ||
+					(i.ObjectUid == AssetTypeUid && i.ObjectCardinality == Cardinality.One)
 				).ToList();
 
 				var fieldFromRelRelationships = allRelationships.Where(i =>
 					(!i.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(i.PredicateType.Value)) &&
 					(
-						(i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
-						(i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+						(i.SubjectUid == AssetTypeUid && i.ObjectCardinality == Cardinality.One) ||
+						(i.ObjectUid == AssetTypeUid && i.SubjectCardinality == Cardinality.One)
 					)
 				).ToList();
 
 				var Field_Relationships = allRelationships
 					.Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))
 								&& x.PredicateType != PredicateType.InterTypeHierarchy
-								&& x.Object != SystemObjects.IntersectType.ToString()
-								&& x.Subject != SystemObjects.IntersectType.ToString()
 							   )
 					.Select(i => new
 					{
-						title = (i.Subject == sType && i.SubjectID == id) ?
+						title = (i.SubjectUid == AssetTypeUid) ?
 							$"{i.PredicateName} {i.ObjectAssetTypePath}" :
 							$"{i.PredicateInverse} {i.SubjectAssetTypePath}",
 						value = i.Uid
@@ -776,7 +773,7 @@ namespace d360.web.Controllers.V2
 				var Field_CardinalRelationships = cardinalRelationships
 					.Select(i => new
 					{
-						title = (i.Subject == sType && i.SubjectID == id) ?
+						title = (i.SubjectUid == AssetTypeUid) ?
 							$"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
 							$"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}",
 						value = i.Uid
@@ -784,13 +781,13 @@ namespace d360.web.Controllers.V2
 
 				var Field_CardinalReferenceRelationships = cardinalRelationships
 					.Where(i =>
-						(i.Subject == sType && i.SubjectID == id) ?
-							(i.Object == SystemObjects.ReferenceItemType.ToString() && i.ObjectID == 0) :
-							(i.Subject == SystemObjects.ReferenceItemType.ToString() && i.SubjectID == 0)
+						(i.SubjectUid == AssetTypeUid) ?
+							(i.ObjectClass == AssetTypeClass.Reference && i.ObjectAssetTypeID == 0) :
+							(i.SubjectClass == AssetTypeClass.Reference && i.SubjectAssetTypeID == 0)
 					)
 					.Select(i => new
 					{
-						title = (i.Subject == sType && i.SubjectID == id) ?
+						title = (i.SubjectUid == AssetTypeUid) ?
 							$"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
 							$"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}",
 						value = i.Uid
@@ -798,7 +795,7 @@ namespace d360.web.Controllers.V2
 
 				var Field_FieldFromRelRelationships = fieldFromRelRelationships.Select(i => new
 				{
-					title = (i.Subject == sType && i.SubjectID == id) ?
+					title = (i.SubjectUid == AssetTypeUid) ?
 							$"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
 							$"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}",
 					value = i.Uid
@@ -1209,72 +1206,35 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage GetFieldFromRelationshipFields(Guid intersectTypeUid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
+		public HttpResponseMessage GetFieldFromRelationshipFields(Guid intersectTypeUid, Guid? AssetTypeUid = null)
 		{
-			var prefix = "Fields.GetFieldFromRelationshipFields => ";
-			var errorMessage = "";
-
-			try
+			if (AssetTypeUid == null)
 			{
-				int id = 0;
-				SystemObjects type = SystemObjects.ArtifactType;
-
-				if (AssetTypeUid != null)
-				{
-					var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
-					id = assetType.ObjectID;
-					Enum.TryParse(assetType.Object, out type);
-				}
-				else if (ActionTypeUid != null)
-				{
-					var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
-					id = issueType.ID;
-					Enum.TryParse("IssueType", out type);
-				}
-				else if (RelationshipTypeUid != null)
-				{
-					var it = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
-					id = it.ID;
-				}
-				else
-				{
-					throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
-				}
-
-				var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
-
-				if (intersectType == null)
-				{
-					throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
-				}
-
-				var isSubject = intersectType.Subject == type.ToString() && intersectType.SubjectID == id;
-				var targetObjectType = isSubject ? intersectType.Object : intersectType.Subject;
-				var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-
-				var restrictedFields = DataType.Text.GetNotAllowedInFieldFromRelationship();
-				var list = Company
-					.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
-					.Where(i => !restrictedFields.Contains(i.Type))
-					.Select(i => new { i.Name, i.FriendlyName });
-
-				return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.FriendlyName, value = i.Name }));
+				throw new ArgumentNullException(ApiMessages.NotValidAssetActionRelationTypeProvided);
 			}
-			catch (RestApiException ex)
+
+			var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
+			var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
+
+			if (intersectType == null)
 			{
-				errorMessage = ex.GetFullExceptionData(false);
-
-				return ReturnApiError(ex.Status, errorMessage);
+				throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
 			}
-			catch (Exception ex)
+			if (assetType == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+				throw new RestApiException(HttpStatusCode.BadRequest, string.Format(ActionApiMessages.AssetTypeNotFound, AssetTypeUid.ToString()));
 			}
+
+			var isSubject = intersectType.SubjectAssetTypeID == assetType.ID;
+			var targetAssetTypeID = isSubject ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
+
+			var restrictedFields = DataType.Text.GetNotAllowedInFieldFromRelationship();
+			var list = Company
+				.Filter<FieldType>(f => f.AssetTypeID == targetAssetTypeID)
+				.Where(i => !restrictedFields.Contains(i.Type))
+				.Select(i => new { i.Name, i.FriendlyName });
+
+			return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.FriendlyName, value = i.Name }));
 		}
 
 		/// <summary>
@@ -1411,7 +1371,7 @@ namespace d360.web.Controllers.V2
 					string objectType = type.ToString();
 
 					//return possible hierarchy parents for this object type
-					var parent = Company.GetParentType(refitem.ObjectID, SystemObjects.ReferenceItemType);
+					var parent = Company.GetParentType(refitem.ID);
 
 					if (parent != null)
 					{
@@ -1921,12 +1881,12 @@ namespace d360.web.Controllers.V2
 
 				var sType = type.ToString();
 				var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
-					(i.Subject == sType && i.SubjectID == id) ||
-					(i.Object == sType && i.ObjectID == id)
+					(i.SubjectAssetTypeID == at.ID) ||
+					(i.ObjectAssetTypeID == at.ID)
 					).ToList().Select(i => new
 					{
 						ID = i.ID,
-						Name = (i.Subject == sType && i.SubjectID == id) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
+						Name = (i.SubjectAssetTypeID == at.ID) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
 					}).Distinct().ToList();
 				relatedTypeList.ForEach(r =>
 				{
@@ -1956,12 +1916,10 @@ namespace d360.web.Controllers.V2
 		}
 
 		/// <summary>
-		/// checks if a relationship is listable
+		/// Checks if a relationship is listable
 		/// </summary>
 		/// <param name="intersectTypeUid">intersectTypeUid></param>
 		/// <param name="assetTypeUid">assetTypeUid></param>
-		/// <param name="actionTypeUid">actionTypeUid></param>
-		/// <param name="relationshipTypeUid">relationshipTypeUid></param>
 		/// <returns>bool value for isListable</returns>
 		[
 			HttpGet,
@@ -1972,77 +1930,36 @@ namespace d360.web.Controllers.V2
 			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse)),
 			ApiExplorerSettings(IgnoreApi = true)
 		]
-		public HttpResponseMessage IsListableRelationship(Guid intersectTypeUid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
+		public HttpResponseMessage IsListableRelationship(Guid intersectTypeUid, Guid? assetTypeUid = null)
 		{
-			var prefix = "Fields.IsListableRelationship => ";
-			var errorMessage = "";
+			var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
 
-			try
+			if (intersectType == null)
 			{
-				SystemObjects type;
-				int id = 0;
-				var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
-
-				if (intersectType == null)
-				{
-					return ReturnApiError(HttpStatusCode.NotFound, string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
-				}
-
-				if (assetTypeUid != null)
-				{
-					var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
-					Enum.TryParse(at.Object, out type);
-					id = at.ObjectID;
-				}
-				else if (actionTypeUid != null)
-				{
-					var at = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault();
-					type = SystemObjects.IssueType;
-					id = at.ID;
-				}
-				else if (relationshipTypeUid != null)
-				{
-					var it = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
-					type = SystemObjects.IntersectType;
-					id = it.ID;
-				}
-				else
-				{
-					return ReturnApiError(HttpStatusCode.NotFound, string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
-				}
-
-				bool isListable = false;
-				var sType = type.ToString();
-
-				if (intersectType != null)
-				{
-					if (intersectType.Subject == sType && intersectType.SubjectID == id && intersectType.ObjectCardinality == Cardinality.One)
-					{
-						isListable = true;
-					}
-					else if (intersectType.Object == sType && intersectType.ObjectID == id && intersectType.SubjectCardinality == Cardinality.One)
-					{
-						isListable = true;
-					}
-				}
-
-				return Request.CreateResponse(HttpStatusCode.OK, isListable);
+				throw new NotFoundBusinessLayerException(string.Format(ActionApiMessages.RelationShipTypeUidNotFound, intersectTypeUid.ToString()));
 			}
-			catch (RestApiException ex)
+			if (assetTypeUid == null)
 			{
-				errorMessage = ex.GetFullExceptionData(false);
-
-				return ReturnApiError(ex.Status, errorMessage);
+				throw new ArgumentNullException(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
-			catch (Exception ex)
+			var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+			if (at == null)
 			{
-				errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-				SendException(ex, new Dictionary<string, string> {
-					{ "Endpoint Method", prefix }
-				});
-
-				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+				throw new NotFoundBusinessLayerException(string.Format(ApiMessages.AssetNotFoundForAssetType, assetTypeUid.ToString()));
 			}
+
+			bool isListable = false;
+
+			if (intersectType.SubjectAssetTypeID == at.ID && intersectType.ObjectCardinality == Cardinality.One)
+			{
+				isListable = true;
+			}
+			else if (intersectType.ObjectAssetTypeID == at.ID && intersectType.SubjectCardinality == Cardinality.One)
+			{
+				isListable = true;
+			}
+
+			return Request.CreateResponse(HttpStatusCode.OK, isListable);
 		}
 
 		/// <summary>
@@ -2360,16 +2277,11 @@ namespace d360.web.Controllers.V2
 							whereQuery += " trim(displaypath) like @filter ";
 						}
 
-						sql = $@"declare @target nvarchar(255) 
-								declare @targetid int
+						sql = $@"declare @parentAssetTypeId int
 								
-								select @target = ito.Subject, @targetid = ito.SubjectId from AssetType at
-								inner join [IntersectType] ito on ito.Object = at.Object and ito.ObjectId = at.objectid
-								inner join [Predicate] po on ito.PredicateID = po.ID and po.Type in (3,4)
-								where at.id = @id
-								
-								declare @parentAssetTypeId int = (select top 1 id from assettype where object =@target and objectid = @targetid)
-								
+								select @parentAssetTypeId = I.SubjectAssetTypeID from [IntersectType] I 
+								inner join [Predicate] P on I.ObjectAssetTypeID = @id and I.PredicateID = P.ID and P.Type in (3,4)
+																
 								drop table if exists #tempAssetsMap
 
 								select a.uid, a.id, node.DisplayPath

@@ -1081,6 +1081,58 @@ namespace d360.web.Controllers.V2
 				return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
 			}
 		}
+
+		/// <summary>
+		/// GET a list of possible relationship types by the uid of the subject asset type and optionally, the predicate's Uid.
+		/// </summary>
+		[
+			HttpGet,
+			ApiExplorerSettings(IgnoreApi = true),
+			MapToApiVersion("2.0"),
+			Route("types/possibilities"),
+			SwaggerProduces("application/json"),
+			SwaggerParameter("subjectUid", "The asset type's unique identifier, which will serve as the subject of the potential relationship type.", ParameterType = "query", Required = true),
+			SwaggerParameter("predicateUid", "The predicate's unique identifier, which will serve as the predicate of the potential relationship type.", ParameterType = "query", Required = false),
+			SwaggerResponse(HttpStatusCode.OK, "A list of available options to create relationships from, given the subject and optional predicate.", typeof(List<AllowedIntersectionType>)),
+			SwaggerResponse(HttpStatusCode.InternalServerError, INTERNAL_ERROR_MESSAGE, typeof(ErrorResponse))
+		]
+		public async Task<HttpResponseMessage> GetRelationshipTypePossibilitiesAsync()
+		{
+			var subjectUidString = Request.GetQueryString("subjectUid");
+			Guid subjectUid;
+			var predicateUidString = Request.GetQueryString("predicateUid");
+			Guid? predicateUid = null;
+
+			if (string.IsNullOrEmpty(subjectUidString))
+			{
+				throw new RestApiException(HttpStatusCode.BadRequest, "subjectUid cannot be empty.");
+			}
+			else 
+			{
+				if (!Guid.TryParse(subjectUidString, out subjectUid))
+				{
+					throw new RestApiException(HttpStatusCode.BadRequest, "subjectUid must be a valid unique identifier.");
+				}
+			}
+
+			if (!string.IsNullOrEmpty(predicateUidString))
+			{
+				Guid pId;
+				if (!Guid.TryParse(predicateUidString, out pId))
+				{
+					throw new RestApiException(HttpStatusCode.BadRequest, "predicateUid must be a valid unique identifier.");
+				}
+				else 
+				{
+					predicateUid = pId;
+				}
+			}
+
+			var types = await Company.GetAllowedIntersectionTypes(subjectUid, predicateUid);
+
+			return Request.CreateResponse(HttpStatusCode.OK, types);
+		}
+
 		/// <summary>
 		/// GET a list of relationship types using an ID and a Type.
 		/// </summary>
@@ -1868,7 +1920,7 @@ namespace d360.web.Controllers.V2
 															;with cte as (select it.uid as 'IntersectTypeUid', 1 as 'IsSubject',count(*) as 'Count' 
 															from Asset a
 															inner join assettype at on at.id = a.assettypeid
-															inner join intersecttype it on it.subjectUid = at.uid
+															inner join intersecttype it on it.SubjectAssetTypeID = at.ID
 															inner join [Intersect] i on i.intersecttypeid = it.id and i.subjectAssetID = a.id
 															where a.uid = @assetuid
 															group by it.uid
@@ -1876,7 +1928,7 @@ namespace d360.web.Controllers.V2
 															select it.uid as 'IntersectTypeUid', 0 as 'IsSubject',count(*) as 'Count' 
 															from Asset a
 															inner join assettype at on at.id = a.assettypeid
-															inner join intersecttype it on it.objectUid = at.uid
+															inner join intersecttype it on it.ObjectAssetTypeID = at.ID
 															inner join [Intersect] i on i.intersecttypeid = it.id and i.objectAssetID = a.id
 															where a.uid = @assetuid
 															group by it.uid)
@@ -1967,12 +2019,13 @@ namespace d360.web.Controllers.V2
 				from	IntersectType I
 						left join [Predicate] P on P.ID = I.PredicateID
 
-						left join AssetType S on (S.Uid = I.SubjectUid)
+						left join AssetType S on S.ID = I.SubjectAssetTypeID
 						outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
 		
-						left join AssetType O on (O.Uid = I.ObjectUid)
+						left join AssetType O on O.ID = I.ObjectAssetTypeID
 						outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
-						where I.Uid in @uids
+
+				where	I.Uid in @uids
 						for json path";
 
 				var models = await Company.GetDatabaseJsonAsObjectAsync<List<JObject>>(sql, dbArgs, ApiTimeout);

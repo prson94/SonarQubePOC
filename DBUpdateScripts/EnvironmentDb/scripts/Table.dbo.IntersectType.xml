@@ -5,51 +5,54 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.IntersectType-v1">
-    <sql dbms="mssql"
+  <changeSet author="Pappas" id="Table.dbo.IntersectType-v2">
+    <comment>GOV-18449</comment>
+	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IntersectType')
 BEGIN
-	CREATE TABLE [dbo].[IntersectType](
+	CREATE TABLE [dbo].[IntersectType] (
 		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Subject] [varchar](50) NULL,
-		[SubjectID] [int] NULL,
-		[Object] [varchar](50) NULL,
-		[ObjectID] [int] NULL,
-		[IsSystem] [bit] NULL,
-		[State] [int] CONSTRAINT [DF_IntersectType_State] DEFAULT (1) NOT NULL,
-		[CreatedBy] [int] NULL,
-		[CreatedOn] [datetime] NULL,
-		[UpdatedBy] [int] NULL,
-		[UpdatedOn] [datetime] NULL,
-		[PredicateID] [int] NULL,
-		[SubjectCardinality] [int] CONSTRAINT [DF_IntersectType_SubjectCardinality] DEFAULT (2) NOT NULL,
-		[ObjectCardinality] [int] CONSTRAINT [DF_IntersectType_ObjectCardinality] DEFAULT (2) NOT NULL,
-		[SubjectUid] [uniqueidentifier] NULL,
-		[ObjectUid] [uniqueidentifier] NULL,
+		SubjectClass int null,
+		SubjectAssetTypeID int null,
+		SubjectCardinality int CONSTRAINT [DF_IntersectType_SubjectCardinality] DEFAULT (2) NOT NULL,
+		ObjectClass int null,
+		ObjectAssetTypeID int null,
+		ObjectCardinality int CONSTRAINT [DF_IntersectType_ObjectCardinality] DEFAULT (2) NOT NULL,
+		PredicateID int NULL,
+		IsSystem bit NULL,
+		[State] int CONSTRAINT [DF_IntersectType_State] DEFAULT (1) NOT NULL,
+		CreatedBy int NULL,
+		CreatedOn datetime NULL,
+		UpdatedBy int NULL,
+		UpdatedOn datetime NULL,
 		[uid] [uniqueidentifier] CONSTRAINT [DF_IntersectType_uid] DEFAULT (newid()) NOT NULL,
-		CONSTRAINT [PK_IntersectType] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
-		CONSTRAINT [UQ_IntersectType] UNIQUE CLUSTERED ( [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC, [PredicateID] ASC )
+		CONSTRAINT [PK_IntersectType] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_Object')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_IntersectType_Object] ON [dbo].[IntersectType] ( [Object] ASC, [ObjectID] ASC )
-END
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'SubjectClass')
+begin
+	alter table IntersectType add SubjectClass int null
+end
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_PredicateID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_IntersectType_PredicateID] ON [dbo].[IntersectType] ( [PredicateID] ASC )
-END
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'SubjectAssetTypeID')
+begin
+	alter table IntersectType add SubjectAssetTypeID int null
+end
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_Subject')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_IntersectType_Subject] ON [dbo].[IntersectType] ( [Subject] ASC, [SubjectID] ASC )
-END
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'ObjectClass')
+begin
+	alter table IntersectType add ObjectClass int null
+end
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME = 'IntersectType' and COLUMN_NAME = 'ObjectAssetTypeID')
+begin
+	alter table IntersectType add ObjectAssetTypeID int null
+end
 		]]>
     </sql>
 	<rollback>
@@ -60,42 +63,123 @@ END
   </changeSet>
 
   
-    <changeSet author="Puneet Gupta" id="Index.dbo.IntersectType-Uid-v1">
-    <comment>GOV-18232</comment>
+    <changeSet author="Pappas" id="Indices.dbo.IntersectType-v2.3">
+    <comment>GOV-18449</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IntersectType')
+
+if exists (select name from sys.key_constraints where name = 'UQ_IntersectType')
+begin
+	ALTER TABLE [dbo].[IntersectType] DROP CONSTRAINT [UQ_IntersectType] WITH ( ONLINE = ON )
+end
+GO
+
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid')
 BEGIN
-	IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid' and object_id = object_id(N'dbo.IntersectType'))
-	BEGIN
-		CREATE NONCLUSTERED INDEX [IX_IntersectType_Uid] ON [dbo].[IntersectType] ( [Uid] ASC )
-	END
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_Uid] ON [dbo].[IntersectType] ( [Uid] ASC )
 END
+GO
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_PredicateID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_PredicateID] ON [dbo].[IntersectType] ( [PredicateID] ASC )
+END
+GO
+
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Object')
+BEGIN
+	DROP INDEX [IX_IntersectType_Object] ON [dbo].[IntersectType]
+END
+GO
+
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Subject')
+BEGIN
+	DROP INDEX [IX_IntersectType_Subject] ON [dbo].[IntersectType]
+END
+GO
+
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_ObjectAssetType')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_ObjectAssetType] ON [dbo].[IntersectType] ( [ObjectAssetTypeID] ASC )
+END
+GO
+
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_SubjectAssetType')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_SubjectAssetType] ON [dbo].[IntersectType] ( [SubjectAssetTypeID] ASC )
+END
+GO
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IntersectType')
+if exists (select name from sys.key_constraints where name = 'UQ_IntersectType')
+begin
+	ALTER TABLE [dbo].[IntersectType] ADD  CONSTRAINT [UQ_IntersectType] UNIQUE CLUSTERED 
+	(
+		[Subject] ASC,
+		[SubjectID] ASC,
+		[Object] ASC,
+		[ObjectID] ASC,
+		[PredicateID] ASC
+	)
+end
+GO
+
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid')
 BEGIN
-	IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Uid' and object_id = object_id(N'dbo.IntersectType'))
-	BEGIN
-		DROP INDEX [IX_IntersectType_Uid] ON [dbo].[IntersectType]
-	END
-END		
+	drop index [IX_IntersectType_Uid] ON [dbo].[IntersectType]
+END
+GO
+
+IF EXISTS (select 1 from sys.indexes where name = 'IX_IntersectType_PredicateID')
+BEGIN
+	drop index [IX_IntersectType_PredicateID] ON [dbo].[IntersectType]
+END
+
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Object')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_Object] ON [dbo].[IntersectType] ( [Uid] ASC )
+END
+GO
+
+IF NOT EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_Subject')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_Subject] ON [dbo].[IntersectType] ( [Uid] ASC )
+END
+GO
+
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_ObjectAssetType')
+BEGIN
+	DROP INDEX [IX_IntersectType_ObjectAssetType] ON [dbo].[IntersectType]
+END
+GO
+
+IF EXISTS (select 1 from [sys].[indexes] i where name = 'IX_IntersectType_SubjectAssetType')
+BEGIN
+	DROP INDEX [IX_IntersectType_SubjectAssetType] ON [dbo].[IntersectType]
+END
+GO
 ]]>
 	</rollback>
   </changeSet>
   
 
-  <changeSet author="Core" id="Table.dbo.IntersectType-IntersectType_AfterInsert-v1">
-    <sql dbms="mssql"
+  <changeSet author="Pappas" id="Table.dbo.IntersectType-IntersectType_AfterInsert-v2">
+    <comment>GOV-18449</comment>
+	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+drop trigger if exists [dbo].[IntersectType_AfterInsert]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[IntersectType_AfterInsert]
 	ON [dbo].[IntersectType]
 	FOR INSERT
@@ -107,20 +191,21 @@ BEGIN
         select 'Add', [queue].WriteIndexXml('', 'IntersectType', ID, coalesce(UpdatedBy, 0)), 'IntersectType', ID from inserted
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.IntersectType-IntersectType_AfterUpdate-v1">
-    <sql dbms="mssql"
+  <changeSet author="Pappas" id="Table.dbo.IntersectType-IntersectType_AfterUpdate-v2">
+    <comment>GOV-18449</comment>
+	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+drop trigger if exists [dbo].[IntersectType_AfterUpdate]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[IntersectType_AfterUpdate]
 	ON [dbo].[IntersectType]
 	FOR UPDATE
@@ -132,12 +217,84 @@ BEGIN
         select 'Update', [queue].WriteIndexXml('', 'IntersectType', ID, coalesce(UpdatedBy, 0)), 'IntersectType', ID from inserted
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
+  </changeSet>
+
+    <changeSet author="Pappas" id="KeyConv.dbo.IntersectType-v1">
+    <comment>GOV-18449</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+declare @nonClustered bit = 0
+select	@nonClustered = 1 from sys.indexes where name = 'PK_IntersectType' and type_desc = 'NONCLUSTERED'
+
+if (@nonClustered = 1)
+begin
+	ALTER TABLE [dbo].[Intersect] DROP CONSTRAINT [FK_Intersect_IntersectType];
+	ALTER TABLE [metrics].[AssetVersionConditionItem] DROP CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType];
+	ALTER TABLE [metrics].[RollupPathLink] DROP CONSTRAINT [FK_MetricRollupPathLink_IntersectType];
+
+	ALTER TABLE [dbo].[IntersectType] DROP CONSTRAINT [PK_IntersectType];
+	ALTER TABLE [dbo].[IntersectType] ADD CONSTRAINT [PK_IntersectType] PRIMARY KEY CLUSTERED ( [ID] ASC );
+
+	ALTER TABLE [dbo].[Intersect] WITH CHECK ADD CONSTRAINT [FK_Intersect_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [dbo].[Intersect] CHECK CONSTRAINT [FK_Intersect_IntersectType];
+	ALTER TABLE [metrics].[AssetVersionConditionItem]  WITH CHECK ADD  CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType] FOREIGN KEY([ConditionIntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType];
+	ALTER TABLE [metrics].[RollupPathLink]  WITH CHECK ADD  CONSTRAINT [FK_MetricRollupPathLink_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE;
+	ALTER TABLE [metrics].[RollupPathLink] CHECK CONSTRAINT [FK_MetricRollupPathLink_IntersectType];
+end
+		]]>
+    </sql>
+  </changeSet>
+
+    <changeSet author="Pappas" id="DataConv.dbo.IntersectType-v1.1">
+    <comment>GOV-18449</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update	T
+set		T.SubjectClass = S.Class,
+		T.SubjectAssetTypeID = S.ID
+from	[IntersectType] T inner join AssetType S on S.Object = T.Subject and S.ObjectId = T.SubjectID;
+
+update	T
+set		T.ObjectClass = S.Class,
+		T.ObjectAssetTypeID = S.ID
+from	[IntersectType] T inner join AssetType S on S.Object = T.Object and S.ObjectId = T.ObjectID;
+
+update	[IntersectType]
+set		SubjectClass = 9,
+		SubjectAssetTypeID = 0
+where	Subject = 'ReferenceItemType' and SubjectID = 0;
+
+update	[IntersectType]
+set		ObjectClass = 9,
+		ObjectAssetTypeID = 0
+where	Object = 'ReferenceItemType' and ObjectID = 0;
+		]]>
+    </sql>
+  </changeSet>
+
+    <changeSet author="Pappas" id="Deletion.dbo.IntersectType-v1">
+    <comment>GOV-18449</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table IntersectType drop column Subject;
+alter table IntersectType drop column SubjectID;
+alter table IntersectType drop column SubjectUid;
+alter table IntersectType drop column Object;
+alter table IntersectType drop column ObjectID;
+alter table IntersectType drop column ObjectUid;
+		]]>
+    </sql>
   </changeSet>
 
 </databaseChangeLog>

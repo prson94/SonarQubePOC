@@ -244,7 +244,7 @@ namespace d360.model
 				{
 					case "P":
 						AssetType assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
-						AssetType parentAssetType = assetType == null ? null : GetParentTypeById(assetType.ID);
+						AssetType parentAssetType = assetType == null ? null : GetParentType(assetType.ID);
 
 						sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
 						sqlTables = @"
@@ -354,28 +354,15 @@ namespace d360.model
 
 		#region Process Data Methods
 
-		private int getAssetIDFieldIndex(string objectType, string objectName, int objectId, List<LoadColumn> columns)
+		private int getAssetIDFieldIndex(AssetTypeClass @class, int assetTypeId, string name, List<LoadColumn> columns)
 		{
-			if (objectType == "IntersectType")
+			if (@class == AssetTypeClass.Reference && assetTypeId == 0)
 			{
-				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName}", x.Name, true) == 0).FirstOrDefault();
+				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{name} Asset Type Uid", x.Name, true) == 0).FirstOrDefault();
 
 				if (col == null)
 				{
-					throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName}]");
-				}
-
-				columns.Remove(col);
-
-				return col.ColumnIndex;
-			}
-			else if (objectType == "ReferenceItemType" && objectId == 0)
-			{
-				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset Type Uid", x.Name, true) == 0).FirstOrDefault();
-
-				if (col == null)
-				{
-					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{objectName} Asset Uid]");
+					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{name} Asset Uid]");
 				}
 
 				columns.Remove(col);
@@ -384,11 +371,11 @@ namespace d360.model
 			}
 			else
 			{
-				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset Uid", x.Name, true) == 0).FirstOrDefault();
+				LoadColumn col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{name} Asset Uid", x.Name, true) == 0).FirstOrDefault();
 
 				if (col == null)
 				{
-					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{objectName} Asset Uid]");
+					throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{name} Asset Uid]");
 				}
 
 				columns.Remove(col);
@@ -562,7 +549,7 @@ namespace d360.model
 			await GenerateExecutionItemUids(load, timeout);
 
 			//get parent type info if applicable
-			AssetType parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
+			AssetType parentAssetType = GetParentType(assetType.ID);
 			int? intersectTypeId = null;
 			PredicateType? predicateType = null;
 			bool calculateParentHashByUid = false;
@@ -585,7 +572,7 @@ namespace d360.model
 
 			if (predicateType.HasValue)
 			{
-				IntersectType intersectType = Filter<IntersectType>(o => o.Object == assetType.Object && o.ObjectID == assetType.ObjectID && o.Predicate.Type == predicateType).FirstOrDefault();
+				IntersectType intersectType = Filter<IntersectType>(o => o.ObjectAssetTypeID == assetType.ID && o.Predicate.Type == predicateType).FirstOrDefault();
 				intersectTypeId = intersectType?.ID;
 			}
 
@@ -1302,25 +1289,17 @@ namespace d360.model
 				throw new Exception($"intersect type for uid {load.IntersectTypeUid} not found");
 			}
 
-			Guid? subjectUid = (await QueryAsync<Guid?>("select [uid] from AssetType where Object = @subject and ObjectID = @subjectID", new { intersectType.Subject, intersectType.SubjectID })).FirstOrDefault();
-			Guid? objectUid = (await QueryAsync<Guid?>("select [uid] from AssetType where Object = @object and ObjectID = @objectID", new { intersectType.Object, intersectType.ObjectID })).FirstOrDefault();
-
-			if (subjectUid == null || objectUid == null)
-			{
-				throw new Exception($"Intersect subject or asset not found");
-			}
-
-			AssetType subjectAssetType = assetRepository.GetAssetTypeByUID((Guid)subjectUid);
-			AssetType objectAssetType = assetRepository.GetAssetTypeByUID((Guid)objectUid);
+			AssetType subjectAssetType = GetById<AssetType>(intersectType.SubjectAssetTypeID);
+			AssetType objectAssetType = GetById<AssetType>(intersectType.ObjectAssetTypeID);
 
 			if (subjectAssetType == null)
 			{
-				throw new Exception($"Could not find subject asset type for uid [{subjectUid}]");
+				throw new Exception($"Could not find subject asset type for ID [{intersectType.SubjectAssetTypeID}]");
 			}
 
 			if (objectAssetType == null)
 			{
-				throw new Exception($"Could not find object asset type for uid [{objectUid}]");
+				throw new Exception($"Could not find object asset type for ID [{intersectType.ObjectAssetTypeID}]");
 			}
 
 			bool subjectIsReferenceItemType = subjectAssetType.Object == "ReferenceItemType" && subjectAssetType.ObjectID == 0;
@@ -1335,8 +1314,8 @@ namespace d360.model
 
 			List<LoadColumn> fieldColumns = columns.ToList();
 
-			int subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, subjectAssetType.Name, intersectType.SubjectID, fieldColumns);
-			int objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, objectAssetType.Name, intersectType.ObjectID, fieldColumns);
+			int subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.SubjectClass, intersectType.SubjectAssetTypeID, subjectAssetType.Name, fieldColumns);
+			int objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.ObjectClass, intersectType.ObjectAssetTypeID, objectAssetType.Name, fieldColumns);
 
 			List<LoadItem> loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
 			List<LoadColumn> loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();

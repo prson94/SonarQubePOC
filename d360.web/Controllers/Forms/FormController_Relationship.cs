@@ -258,7 +258,7 @@ namespace d360.web.Controllers
 
 				var targetCardinality = Cardinality.Many;
 
-				if (relationshipType.Subject == sourceObject.Type && relationshipType.SubjectID == sourceObject.TypeID)
+				if (relationshipType.SubjectAssetTypeID == sourceObject.AssetTypeID)
 				{
 					targetCardinality = relationshipType.ObjectCardinality;
 				}
@@ -384,227 +384,227 @@ namespace d360.web.Controllers
 		public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
 		{
 			var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
-			Predicate predicate = null;
+			//Predicate predicate = null;
 
-			if (relationshipType.PredicateID.HasValue)
-			{
-				predicate = Company.GetById<Predicate>((int)relationshipType.PredicateID);
-			}
+			//if (relationshipType.PredicateID.HasValue)
+			//{
+			//	predicate = Company.GetById<Predicate>((int)relationshipType.PredicateID);
+			//}
 
-			int objectTypeID = -1;
-			string parentType = string.Empty;
+			//int objectTypeID = -1;
+			//string parentType = string.Empty;
 
-			#region Resolve Type
+			//#region Resolve Type
 
-			var obj = Company.GetObjectDetail(type.ToString(), objectId);
-			objectTypeID = obj.TypeID;
-			parentType = obj.Type;
+			//var obj = Company.GetObjectDetail(type.ToString(), objectId);
+			//objectTypeID = obj.TypeID;
+			//parentType = obj.Type;
 
 
-			if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
-			{
-				return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
-			}
+			//if (objectTypeID <= 0 || string.IsNullOrEmpty(parentType) || relationshipType == null)
+			//{
+			//	return jsonException(FormControllerApiMessage.InvalidRelationshipType, HttpStatusCode.NotFound);
+			//}
 
-			if (type == SystemObjects.ReferenceItemType)
-			{
-				objectTypeID = 0;
-			}
+			//if (type == SystemObjects.ReferenceItemType)
+			//{
+			//	objectTypeID = 0;
+			//}
 
-			var targetType = "";
-			var targetTypeID = 0;
-			var IntersectDirectionSql = "";
-			var IntersectCardinalitySql = "";
-			var IntersectTypeDirectionSql = "";
-			var SemanticRelationshipSql = "";
+			//var targetType = "";
+			//var targetTypeID = 0;
+			//var IntersectDirectionSql = "";
+			//var IntersectCardinalitySql = "";
+			//var IntersectTypeDirectionSql = "";
+			//var SemanticRelationshipSql = "";
 
-			if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
-			{
-				targetType = relationshipType.Object;
-				targetTypeID = relationshipType.ObjectID;
-				IntersectDirectionSql = "and I.Subject = @source and I.SubjectID = @id and I.Object = A.[Object] and I.ObjectID = A.ObjectID ";
-				IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.SubjectCardinality = 1 and Object = A.[Object] and ObjectID = A.ObjectID) ";
-				IntersectTypeDirectionSql = " and IT.Object = T.Object and IT.ObjectID = T.ObjectID ";
-			}
-			else
-			{
-				targetType = relationshipType.Subject;
-				targetTypeID = relationshipType.SubjectID;
-				IntersectDirectionSql = "and I.Subject = A.[Object] and I.SubjectID = A.ObjectID and I.Object = @source and I.ObjectID = @id ";
-				IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.ObjectCardinality = 1 and Subject = A.[Object] and SubjectID = A.ObjectID) ";
-				IntersectTypeDirectionSql = " and IT.Subject = T.Object and IT.SubjectID = T.ObjectID ";
-			}
+			//if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
+			//{
+			//	targetType = relationshipType.Object;
+			//	targetTypeID = relationshipType.ObjectID;
+			//	IntersectDirectionSql = "and I.Subject = @source and I.SubjectID = @id and I.Object = A.[Object] and I.ObjectID = A.ObjectID ";
+			//	IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.SubjectCardinality = 1 and Object = A.[Object] and ObjectID = A.ObjectID) ";
+			//	IntersectTypeDirectionSql = " and IT.Object = T.Object and IT.ObjectID = T.ObjectID ";
+			//}
+			//else
+			//{
+			//	targetType = relationshipType.Subject;
+			//	targetTypeID = relationshipType.SubjectID;
+			//	IntersectDirectionSql = "and I.Subject = A.[Object] and I.SubjectID = A.ObjectID and I.Object = @source and I.ObjectID = @id ";
+			//	IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.ObjectCardinality = 1 and Subject = A.[Object] and SubjectID = A.ObjectID) ";
+			//	IntersectTypeDirectionSql = " and IT.Subject = T.Object and IT.SubjectID = T.ObjectID ";
+			//}
 
-			if (relationshipType.Subject == relationshipType.Object && relationshipType.SubjectID == relationshipType.ObjectID)
-			{
-				IntersectDirectionSql = @"and (  ( (I.Subject = @source and I.SubjectID = @id) AND(I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
-										  ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
-			}
+			//if (relationshipType.Subject == relationshipType.Object && relationshipType.SubjectID == relationshipType.ObjectID)
+			//{
+			//	IntersectDirectionSql = @"and (  ( (I.Subject = @source and I.SubjectID = @id) AND(I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
+			//							  ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
+			//}
 
-			if (predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false)
-			{
-				SemanticRelationshipSql = @"outer apply (
-				 select IR.ID from [Intersect] IR
-				 inner join IntersectType ITR on ITR.ID = IR.IntersectTypeID and ITR.ID <> @it 
-				 inner join [Predicate] P on P.ID = ITR.PredicateID and P.[Type] = 14
-				 where 
-					((IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID)
-					 or (IR.[Object] = @source and IR.ObjectID = @id and IR.[Subject] = a.Object and IR.SubjectID = a.ObjectID))
-								) SR";
-			}
+			//if (predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false)
+			//{
+			//	SemanticRelationshipSql = @"outer apply (
+			//	 select IR.ID from [Intersect] IR
+			//	 inner join IntersectType ITR on ITR.ID = IR.IntersectTypeID and ITR.ID <> @it 
+			//	 inner join [Predicate] P on P.ID = ITR.PredicateID and P.[Type] = 14
+			//	 where 
+			//		((IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID)
+			//		 or (IR.[Object] = @source and IR.ObjectID = @id and IR.[Subject] = a.Object and IR.SubjectID = a.ObjectID))
+			//					) SR";
+			//}
 
-			var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
+			//var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
 			
-			if (targetAssetType == null)
-			{
-				throw new NotFoundException(ApiMessages.TargetAssetType);
-			}
+			//if (targetAssetType == null)
+			//{
+			//	throw new NotFoundException(ApiMessages.TargetAssetType);
+			//}
 
-			#endregion
+			//#endregion
 
-			#region sql
+			//#region sql
 
-			var sql = "";
+			//var sql = "";
 
-			var PermissionJoins = "";
-			if (!Company.CurrentResourceIsAdmin)
-			{
-				PermissionJoins = $@" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
-			}
+			//var PermissionJoins = "";
+			//if (!Company.CurrentResourceIsAdmin)
+			//{
+			//	PermissionJoins = $@" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & {(int)Permission.ModifyRelationships} = {(int)Permission.ModifyRelationships} and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
+			//}
 
-			var subSql = $@"(
-							select		A.ID,
-										A.[Object],
-										A.ObjectID,
-										A.Uid,
-										P.DisplayPath as [Path]
-							from		Asset A
-										inner join AssetType T on A.AssetTypeID = T.ID
-										inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
-										left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
-										left join AssetPath P on P.ID = A.ID
-										{SemanticRelationshipSql}
-							where		I.ID is null 
-										{(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
-										and A.[State] = 1 
-										and T.ObjectID = @targetTypeID 
-										and T.[Object] = @targetType 
-										and not (A.ObjectID = @id and A.Object = @source) {IntersectCardinalitySql} {PermissionJoins}
-							) C";
+			//var subSql = $@"(
+			//				select		A.ID,
+			//							A.[Object],
+			//							A.ObjectID,
+			//							A.Uid,
+			//							P.DisplayPath as [Path]
+			//				from		Asset A
+			//							inner join AssetType T on A.AssetTypeID = T.ID
+			//							inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
+			//							left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
+			//							left join AssetPath P on P.ID = A.ID
+			//							{SemanticRelationshipSql}
+			//				where		I.ID is null 
+			//							{(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
+			//							and A.[State] = 1 
+			//							and T.ObjectID = @targetTypeID 
+			//							and T.[Object] = @targetType 
+			//							and not (A.ObjectID = @id and A.Object = @source) {IntersectCardinalitySql} {PermissionJoins}
+			//				) C";
 
-			switch (targetType)
-			{
-				case "Group":
-				case "GroupType":
-					#region
-					sql = $@"
-							select	'Group' as [Object], 
-									D.ID as ObjectID, 
-									A.uid,
-									D.Name
-							from	[Group] D with(nolock)
-							inner join Asset A on A.Object = 'Group' and A.ObjectID= D.ID
-							where	D.ID not in (
-												select	case 
-															when SubjectType = 'Group' then SubjectID
-															else ObjectID
-														end
-												from	[IntersectDetail]
-												where	IntersectTypeID = @it and (
-														 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group') ) OR
-														 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
-														)
-												)
-									and D.ID != @id 
-							order by D.Name";
-					break;
-				#endregion
-				case "Resource":
-				case "ResourceType":
-					#region
-					sql = $@"
-							SELECT
-							  'Resource' AS [Object],
-							D.ResourceID AS ObjectID,
-							  D.LastName + ', ' + D.FirstName AS Name,
-							  A.uid
-							FROM reporting.Global_Resource D WITH (NOLOCK)
-							INNER JOIN Asset A
-							  ON A.Object = 'Resource'
-							  AND A.ObjectID = D.ResourceID
-							WHERE D.ResourceID NOT IN (SELECT
-							  CASE
-								WHEN SubjectType = 'ResourceType' THEN SubjectID
-								ELSE ObjectID
-							  END
-							FROM [IntersectDetail]
-							WHERE IntersectTypeID = @it
-							AND ((Subject = @source
-							AND SubjectID = @id)
-							AND (ObjectType = 'Resource'))
-							union all
-							SELECT
-							  CASE
-								WHEN SubjectType = 'ResourceType' THEN SubjectID
-								ELSE ObjectID
-							  END
-							FROM [IntersectDetail]
-							WHERE IntersectTypeID = @it
-							and ((SubjectType = 'Resource')
-							AND (Object = @source
-							AND ObjectID = @id))
-							)
-							AND D.ResourceID != @id
-							ORDER BY D.LastName, D.FirstName";
-					break;
-				#endregion
-				case "ReferenceItemType":
-					#region
-					if (targetTypeID == 0)
-					{
-						sql = $@"
-								select	'ReferenceItemType' as [Object], 
-										r.ObjectID as ObjectID, 
-										r.uid,
-										r.Name as Name
-								from	AssetType r with(nolock)
-								where   r.[objectId] not in (
-													select	case 
-																when SubjectType = 'ReferenceItemType' then SubjectID
-																else ObjectID
-															end
-													from	[IntersectDetail]
-													where	IntersectTypeID = @it and (
-															 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType') ) OR
-															 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
-															)
-													)
-										and r.[ObjectId] != @id
-										and r.[Object]='ReferenceItemType'
-								order by r.Name";
-					}
-					else
-					{
-						sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
-					}
-					break;
-				#endregion
-				case "ArtifactType":
-				case "LookupType":
-				case "RuleType":
-					sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
-					break;
-				case "PolicyType":
-				case "TaxonomyType":
-					sql = $@"select	c.uid, C.Path as Name, c.Object from {subSql} order by C.Path";
-					break;
-			}
+			//switch (targetType)
+			//{
+			//	case "Group":
+			//	case "GroupType":
+			//		#region
+			//		sql = $@"
+			//				select	'Group' as [Object], 
+			//						D.ID as ObjectID, 
+			//						A.uid,
+			//						D.Name
+			//				from	[Group] D with(nolock)
+			//				inner join Asset A on A.Object = 'Group' and A.ObjectID= D.ID
+			//				where	D.ID not in (
+			//									select	case 
+			//												when SubjectType = 'Group' then SubjectID
+			//												else ObjectID
+			//											end
+			//									from	[IntersectDetail]
+			//									where	IntersectTypeID = @it and (
+			//											 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Group') ) OR
+			//											 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
+			//											)
+			//									)
+			//						and D.ID != @id 
+			//				order by D.Name";
+			//		break;
+			//	#endregion
+			//	case "Resource":
+			//	case "ResourceType":
+			//		#region
+			//		sql = $@"
+			//				SELECT
+			//				  'Resource' AS [Object],
+			//				D.ResourceID AS ObjectID,
+			//				  D.LastName + ', ' + D.FirstName AS Name,
+			//				  A.uid
+			//				FROM reporting.Global_Resource D WITH (NOLOCK)
+			//				INNER JOIN Asset A
+			//				  ON A.Object = 'Resource'
+			//				  AND A.ObjectID = D.ResourceID
+			//				WHERE D.ResourceID NOT IN (SELECT
+			//				  CASE
+			//					WHEN SubjectType = 'ResourceType' THEN SubjectID
+			//					ELSE ObjectID
+			//				  END
+			//				FROM [IntersectDetail]
+			//				WHERE IntersectTypeID = @it
+			//				AND ((Subject = @source
+			//				AND SubjectID = @id)
+			//				AND (ObjectType = 'Resource'))
+			//				union all
+			//				SELECT
+			//				  CASE
+			//					WHEN SubjectType = 'ResourceType' THEN SubjectID
+			//					ELSE ObjectID
+			//				  END
+			//				FROM [IntersectDetail]
+			//				WHERE IntersectTypeID = @it
+			//				and ((SubjectType = 'Resource')
+			//				AND (Object = @source
+			//				AND ObjectID = @id))
+			//				)
+			//				AND D.ResourceID != @id
+			//				ORDER BY D.LastName, D.FirstName";
+			//		break;
+			//	#endregion
+			//	case "ReferenceItemType":
+			//		#region
+			//		if (targetTypeID == 0)
+			//		{
+			//			sql = $@"
+			//					select	'ReferenceItemType' as [Object], 
+			//							r.ObjectID as ObjectID, 
+			//							r.uid,
+			//							r.Name as Name
+			//					from	AssetType r with(nolock)
+			//					where   r.[objectId] not in (
+			//										select	case 
+			//													when SubjectType = 'ReferenceItemType' then SubjectID
+			//													else ObjectID
+			//												end
+			//										from	[IntersectDetail]
+			//										where	IntersectTypeID = @it and (
+			//												 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItemType') ) OR
+			//												 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
+			//												)
+			//										)
+			//							and r.[ObjectId] != @id
+			//							and r.[Object]='ReferenceItemType'
+			//					order by r.Name";
+			//		}
+			//		else
+			//		{
+			//			sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
+			//		}
+			//		break;
+			//	#endregion
+			//	case "ArtifactType":
+			//	case "LookupType":
+			//	case "RuleType":
+			//		sql = $@"select C.uid, C.Object, C.Path as Name from {subSql} order by C.Path";
+			//		break;
+			//	case "PolicyType":
+			//	case "TaxonomyType":
+			//		sql = $@"select	c.uid, C.Path as Name, c.Object from {subSql} order by C.Path";
+			//		break;
+			//}
 
-			#endregion
+			//#endregion
 
-			var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
+			//var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = WebUtility.HtmlDecode(i.Name), Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
-			return Json(items, JsonRequestBehavior.AllowGet);
+			return Json(null, JsonRequestBehavior.AllowGet); //items
 		}
 
 		#endregion

@@ -928,14 +928,13 @@ namespace d360.web.Controllers
 
 			var hasProfiling = GetBoolFlag(FeatureFlags.PERM_DATA_PROFILING) ? Company.Query<bool>("select case when exists (select 1 from AssetDataProfile P inner join AssetWithType A on A.ID = P.AssetID where A.Type = @type and A.TypeID = @id) then 1 else 0 end", new { type = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50 }, id }).SingleOrDefault() : false;
 
+			var assetType = Company.Filter<AssetType>(x => x.Object == type.ToString() && x.ObjectID == id).FirstOrDefault();
 			switch (type)
 			{
 				case SystemObjects.ArtifactType:
 					#region
 
 					bool showParent = true;
-					var assetType = Company.Filter<AssetType>(x => x.Object == type.ToString() && x.ObjectID == id).FirstOrDefault();
-
 					if (assetType != null)
 					{
 						showParent = assetType.AutoDisplayParent.HasValue ? (bool)assetType.AutoDisplayParent : true;
@@ -1055,7 +1054,7 @@ namespace d360.web.Controllers
 
 					columns.Add(new GridColumn { text = Fields.Code_Name, datafield = "Code" });
 					columns.Add(new GridColumn { text = Fields.Color_Name, datafield = "Color" });
-					var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
+					var parentRefType = Company.GetParentType(assetType.ID);
 					var loopCount = 0;
 
 					List<GridField> parentGridFields = new List<GridField>();
@@ -1064,7 +1063,7 @@ namespace d360.web.Controllers
 					{
 						columns.Insert(0, new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
 						parentGridFields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "", type = "string" });
-						parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
+						parentRefType = Company.GetParentType(parentRefType.ID);
 						loopCount++;
 					}
 
@@ -1335,7 +1334,7 @@ namespace d360.web.Controllers
 				model.Add("ID", assetType.ObjectID);
 				model.Add("Name", assetType.Name);
 				model.Add("Description", assetType.Description);
-				model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
+				model.Add("ParentID", Company.GetParentType(assetType.ID)?.ObjectID ?? null);
 				model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
 				model.Add("Class", assetType.Class);
 				model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
@@ -1887,20 +1886,11 @@ namespace d360.web.Controllers
 			return await Company.QueryAsync<FilterObjectItem>(sql, new { id, intersectTypeId });
 		}
 
-		/// <summary>
-		/// Gets a list of available relationships types based on the source type specified in parameters. 
-		/// Used in the Filter By Relationship tile on artifact list pages.
-		/// </summary>
-		[Route("{type}/{id:int}/relationshiptypes")]
-		public async Task<IEnumerable<AllowedIntersectionType>> GetRelationshipTypes(SystemObjects type, int id)
-		{
-			return await Company.GetAllowedIntersectionTypes(type.ToString(), id);
-		}
-
         [Route("relationships/field/{fieldTypeID:int}"), HttpGet]
         public HttpResponseMessage GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null)
         {
-            var selected = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, true);
+			var asset = Company.GetAssetDetail(@object, objectID.GetValueOrDefault());
+            var selected = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, true);
 
 			if (selected.ContainsKey("RelationshipError"))
 			{
@@ -1949,7 +1939,7 @@ namespace d360.web.Controllers
 			if ((offset + rows) > 0)
 			{
 				List<string> excludeValues = selection.Select(s => s.Value).ToList(); //Exclude values already added to selection
-				result = Company.GetRelationshipFieldItems(fieldTypeID, @object, objectID, offset, rows, query, false);
+				result = Company.GetRelationshipFieldItems(fieldTypeID, asset.ID, offset, rows, query, false);
 				
 				if (result.ContainsKey("Items"))
 				{
@@ -2240,7 +2230,7 @@ namespace d360.web.Controllers
 									outer apply (
 												select	I.SubjectID
 												from	[Intersect] I
-														inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ObjectID
+														inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetID = A.ID
 														inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 												) P
 									cross apply (
@@ -3955,7 +3945,7 @@ namespace d360.web.Controllers
 							Category = FieldInfo.SystemFieldCategory
 						});
 
-						var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
+						var parentRefType = Company.GetParentType(refType.ID);
 
 						var heirarchyColumns = new DetailReadOnlyRowModel
 						{
@@ -5207,15 +5197,15 @@ where v.id = {0}", id)).FirstOrDefault();
 		public async Task<IEnumerable<BreadcrumbTypeAheadModel>> GetBreadcrumbTypeaheadForType(string q, int num, SystemObjects objectType, int objectId)
 		{
 			//var sql = $"select top {num} ad.DisplayValue as Name, u.Url  from asset ast inner join assettype astt on (ast.assetTypeID = astt.id)  inner join AssetDisplayValue AD on AD.assetid = ast.id cross apply [dbo].GetAssetUrlById(ast.ID) u where ast.[object] = @typeName and astt.objectId = @typeId and ad.DisplayValuePrefix like @search";
-			var sql = $" select top {num} AT.ID, AT.ObjectID, AT.Name, u.Url,IT.SubjectID as ParentID from AssetType AT " +
+			var sql = $" select top {num} AT.ID, AT.ObjectID, AT.Name, u.Url,IT.SubjectAssetTypeID as ParentID from AssetType AT " +
 						$"cross apply [dbo].GetAssetTypeUrlById(AT.ID) u " +
-						$"outer apply (SELECT IT.SubjectID from IntersectType IT " +
+						$"outer apply (SELECT IT.SubjectAssetTypeID from IntersectType IT " +
 						$"              inner join [Predicate] P on IT.Object = @typeName " +
-						$"              and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3) IT " +
-						$" WHERE IT.SubjectID = " +
-						$" (SELECT  IT.SubjectID as ParentID FROM AssetType AT " +
-						$"          outer apply (select	IT.SubjectID from	IntersectType IT " +
-						$"          inner join [Predicate] P on IT.Object = @typeName and IT.ObjectID = AT.ObjectID " +
+						$"              and IT.ObjectAssetTypeID = AT.ID and P.ID = IT.PredicateID and P.Type = 3) IT " +
+						$" WHERE IT.SubjectAssetTypeID = " +
+						$" (SELECT  IT.SubjectAssetTypeID as ParentID FROM AssetType AT " +
+						$"          outer apply (select	IT.SubjectAssetTypeID from	IntersectType IT " +
+						$"          inner join [Predicate] P on IT.Object = @typeName and IT.ObjectAssetTypeID = AT.ID " +
 						$"          and P.ID = IT.PredicateID and P.Type = 3) IT " +
 						$"where AT.[Object] = @typeName and AT.[objectId] = @typeId) AND AT.[Object] = @typeName AND AT.Name like @search " +
 						$"Order By AT.Name";
@@ -5369,7 +5359,7 @@ where v.id = {0}", id)).FirstOrDefault();
 					throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
 				}
 
-				var parentReferenceListType = Company.GetParentType(referenceListType.ObjectID, SystemObjects.ReferenceItemType);
+				var parentReferenceListType = Company.GetParentType(referenceListType.ID);
 
 				if (parentReferenceListType == null)
 				{

@@ -5,13 +5,34 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.dbo.GetIntersectTypeNames-v3">
+  <changeSet author="Pappas" id="Function.dbo.GetIntersectTypeNames-v4">
   <comment></comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [dbo].[GetIntersectTypeNames]
+(	
+	@id int
+)
+returns table 
+as
+return 
+(
+	select	coalesce(S.Name, S_R.Name, '') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE(O.Name, O_R.Name, '') as Name
+	from	IntersectType I
+			inner join [Predicate] P on P.ID = I.PredicateID
+			left join AssetType S on S.ID = I.SubjectAssetTypeID
+			left join AssetType S_R on I.SubjectAssetTypeID = 0 and S_R.Class = I.SubjectClass
+			left join AssetType O on O.ID = I.ObjectAssetTypeID 
+			left join AssetType O_R on I.ObjectAssetTypeID = 0 and O_R.Class = I.ObjectClass
+	where	I.ID = @id				
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER FUNCTION [dbo].[GetIntersectTypeNames]
 (	
 	@id int
@@ -44,52 +65,6 @@ RETURN
 					) ORef on I.Object = 'ReferenceItemType' and I.ObjectID = 0
 					left join [Predicate] P on P.ID = I.PredicateID
 	WHERE		I.ID = @id				
-)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER FUNCTION [dbo].[GetIntersectTypeNames]
-(	
-	@id int
-)
-RETURNS TABLE 
-AS
-RETURN 
-(
-	SELECT	COALESCE(SF.TextPath, SI.Name, SRef.Name, SATT.Name, '') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE([OF].TextPath, ORef.Name, OATT.Name, '') as Name
-					FROM	[IntersectType] I
-							left join AssetType SATT on SATT.[Object] = I.Subject and SATT.[ObjectID] = I.SubjectID and SATT.[Object] != 'FusionAttributeType'
-							left join AssetType OATT on OATT.[Object] = I.[Object] and OATT.[ObjectID] = I.ObjectID and OATT.[Object] != 'FusionAttributeType'
-							
-							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
-							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
-														
-							left join (
-								SELECT	I_sub.ID, COALESCE(SF_sub.TextPath, SATT_sub.Name, '') + 
-										' [' + coalesce(P_sub.Name,'/') + '] ' + 
-										COALESCE([OF_sub].TextPath, OATT_sub.Name, '') as Name
-								FROM	[IntersectType] I_sub
-										left join AssetType SATT_sub on SATT_sub.[Object] = I_sub.Subject and SATT_sub.[ObjectID] = I_sub.SubjectID and SATT_sub.[Object] != 'FusionAttributeType'
-										left join AssetType OATT_sub on OATT_sub.[Object] = I_sub.[Object] and OATT_sub.[ObjectID] = I_sub.ObjectID and OATT_sub.[Object] != 'FusionAttributeType'
-
-										left join [FusionAttributeType] SF_sub on I_sub.Subject = 'FusionAttributeType' and SF_sub.ID = I_sub.SubjectID
-										left join [FusionAttributeType] [OF_sub] on I_sub.Object = 'FusionAttributeType' and [OF_sub].ID = I_sub.ObjectID
-
-										left join [Predicate] P_sub on P_sub.ID = I_sub.PredicateID
-								
-							   ) SI on (I.Subject = 'IntersectType' and SI.ID = I.SubjectID)
-
-							left join (
-								select 0 as ID, 'Reference Item Type' as Name								
-							  ) SRef on I.Subject = 'ReferenceItemType' and I.SubjectID = 0
-
-							 left join (
-								select 0 as ID, 'Reference Item Type' as Name								
-							 ) ORef on I.Object = 'ReferenceItemType' and I.ObjectID = 0
-							 
-							left join [Predicate] P on P.ID = I.PredicateID
-					WHERE	I.ID = @id				
 )
 		]]>
 	</rollback>

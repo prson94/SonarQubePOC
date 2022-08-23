@@ -1025,21 +1025,11 @@ namespace d360.web.Controllers
 
                         if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
                         {
-                            var sql = @"select
-											[ID],
-											[Subject],
-											[SubjectID],
-											[SubjectCardinality],
-											[Object],
-											[ObjectID],
-											[ObjectCardinality],
-											[PredicateID] from [dbo].[intersecttype] where ID = @ID";
-                            var intersectType = Company.Database.Connection.QueryFirstOrDefault<IntersectType>(sql, new { ID = f.LookupObjectID.Value });
+                            var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
 
                             if (intersectType != null)
                             {
-                                bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
-
+                                bool isSubject = (intersectType.SubjectAssetTypeID == f.AssetTypeID);
 
                                 var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
@@ -1383,7 +1373,7 @@ namespace d360.web.Controllers
 
                             if (intersectType != null)
                             {
-                                bool isSubject = (intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID);
+                                bool isSubject = (intersectType.SubjectAssetTypeID == ft.AssetTypeID);
                                 var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
                                 if (cardinality != Cardinality.Many)
@@ -1394,8 +1384,8 @@ namespace d360.web.Controllers
                                 {
                                     fld.MultiSelect = true;
                                 }
-
-                                var result = Company.GetRelationshipFieldItems(ft.ID, @object, objectID);
+								var asset = Company.GetAssetDetail(@object, objectID);
+                                var result = Company.GetRelationshipFieldItems(ft.ID, asset.ID);
 
                                 fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
                                 fld.RecordCount = (int)result["Count"];
@@ -1989,43 +1979,30 @@ namespace d360.web.Controllers
 
                         dbParams.Add("relTypeAdvFlt", RelationshipObjectType); // use bind variable to avoid sql injection
 
-                        if (RelationshipObjectType.ToUpper() == "MAP")
+                        if (RelationshipIncludeType == "Any")
                         {
-                            var subSql = $@"select a.ObjectID from [Intersect] i
-									inner join intersecttype it on (i.intersecttypeid = it.id)
-									inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
-									inner join asset a on a.object = 'Artifact' and a.objectid = = i_2.objectid
-									inner join assettype t on t.id = a.assettypeid and t.object = 'ArtifactType' and t.objectid = @id
-								where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
-
-                            filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"{idColumn} in ({subSql})";
+                            filters += (string.IsNullOrEmpty(filters) ? " WHERE " : " AND ") + $@"{idColumn} in (
+select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+union 
+select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+)";
                         }
                         else
                         {
-                            if (RelationshipIncludeType == "Any")
+                            IDs.ForEach(ID =>
                             {
-                                filters += (string.IsNullOrEmpty(filters) ? " WHERE " : " AND ") + $@"{idColumn} in (
-	select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-	union 
-	select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID in ({idList}) and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-	)";
-                            }
-                            else
-                            {
-                                IDs.ForEach(ID =>
+                                if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
                                 {
-                                    if (int.TryParse(ID, out int idInt)) //convert to integer to avoid sql injection
-                                    {
-                                        filters += string.IsNullOrEmpty(filters) ? " WHERE " : " AND ";
-                                        filters += $@"{idColumn} in (
-	select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-	union 
-	select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
-	)";
-                                    }
-                                });
-                            }
+                                    filters += string.IsNullOrEmpty(filters) ? " WHERE " : " AND ";
+                                    filters += $@"{idColumn} in (
+select SubjectID from [Intersect] where Subject = 'Artifact' and Object = @relTypeAdvFlt and ObjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+union 
+select ObjectID from [Intersect] where Object = 'Artifact' and Subject = @relTypeAdvFlt and SubjectID = {idInt} and IntersectTypeID = {int.Parse(RelationshipIntersectTypeID)} 
+)";
+                                }
+                            });
                         }
+                        
                     }
                 }
             }

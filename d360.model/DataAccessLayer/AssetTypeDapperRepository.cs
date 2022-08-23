@@ -28,10 +28,9 @@ namespace d360.model.DataAccessLayer
                    SELECT AssetType.*
                         , cte.lvl - 1 
                      FROM IntersectType it
-                    INNER JOIN[Predicate] p ON it.PredicateID = p.ID
-                    INNER JOIN cte ON cte.ObjectID = it.ObjectID
-                    INNER JOIN AssetType ON AssetType.ObjectID = it.SubjectID
-                    WHERE it.[Object] = 'ArtifactType' AND p.Type IN(3,4)
+                    INNER JOIN[Predicate] p ON it.PredicateID = p.ID and p.Type IN(3,4) 
+                    INNER JOIN cte ON cte.ID = it.ObjectAssetTypeID 
+                    INNER JOIN AssetType ON AssetType.ID = it.SubjectAssetTypeID 
                 )
                 SELECT *
                   FROM cte

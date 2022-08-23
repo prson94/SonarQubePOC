@@ -50,7 +50,7 @@ namespace d360.model.helpers.filters
 
 			var condition = @operator == "eq" ? " exists" : " not exists";
 			var filterCond = GetSplitFilterCriteriaRelationship();
-			var hasRefList = (intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0) || (intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0);
+			var hasRefList = (intersectType.ObjectClass == AssetTypeClass.Reference && intersectType.ObjectAssetTypeID == 0) || (intersectType.SubjectClass == AssetTypeClass.Reference && intersectType.SubjectAssetTypeID == 0);
 
 			if (!hasRefList)
 			{
@@ -159,13 +159,12 @@ namespace d360.model.helpers.filters
 
 		private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship()
 		{
-			if (intersectType.Object == assetType.Object && intersectType.ObjectID == assetType.ObjectID
-			   && intersectType.Subject == assetType.Object && intersectType.SubjectID == assetType.ObjectID)
+			if (intersectType.ObjectAssetTypeID == assetType.ID && intersectType.SubjectAssetTypeID == assetType.ID)
 			{
 				return SplitFilterCriteriaRelationship.Both;
 			}
 
-			if (intersectType.Object == assetType.Object && intersectType.ObjectID == assetType.ObjectID)
+			if (intersectType.ObjectAssetTypeID == assetType.ID)
 			{
 				return SplitFilterCriteriaRelationship.Object;
 			}

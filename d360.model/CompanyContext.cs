@@ -302,14 +302,14 @@ namespace d360.model
 			return list;
 		}
 
-		public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id)
+		public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(Guid subjectUid, Guid? predicateUid = null)
 		{
-			return await Database.Connection
-				.QueryAsync<AllowedIntersectionType>("GetAllowedIntersectionTypes @SourceType, @SourceTypeID",
+			return await Database.Connection.QueryAsync<AllowedIntersectionType>(
+				"GetAllowedIntersectionTypes @subjectUid, @predicateUid",
 				new
 				{
-					SourceType = new DbString { Value = type, IsAnsi = true, IsFixedLength = true, Length = 50 },
-					SourceTypeID = id
+					subjectUid,
+					predicateUid
 				}).ConfigureAwait(false);
 		}
 
@@ -429,26 +429,16 @@ namespace d360.model
 				.AsQueryable();
 		}
 
-		public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
+		public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, long assetId, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
 		{
-			FieldType ft = GetById<FieldType>(fieldTypeID);
+			var ft = GetById<FieldType>(fieldTypeID);
 			bool hasCardinalityOne = false;
 
 			if (!ft.LookupObjectID.HasValue)
 			{
 				throw new ArgumentNullException(CompanyContextErrors.InvalidRelationShipField);
 			}
-
-			string sql = @"select
-							[ID],
-							[Subject],
-							[SubjectID],
-							[SubjectCardinality],
-							[Object],
-							[ObjectID],
-							[ObjectCardinality],
-							[PredicateID] from [dbo].[intersecttype] where ID = @ID";
-			IntersectType intersectType = Database.Connection.QueryFirstOrDefault<IntersectType>(sql, new { ID = ft.LookupObjectID.Value });
+			var intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
 
 			if (intersectType == null)
 			{
@@ -456,20 +446,16 @@ namespace d360.model
 				{
 					{ "RelationshipError", ft.FriendlyName }
 				};
-
 				return error;
 			}
 
-			int objID;
 			int count = 0;
-			string countSql, obj, selectedSql;
+			string sql = "", countSql = "", selectedSql = "", cardinalityCheckSQL = "";
 
-			bool isSubject = intersectType.Subject == ft.Object && intersectType.SubjectID == ft.ObjectID;
-			bool sameSubjectObject = intersectType.Subject == intersectType.Object && intersectType.SubjectID == intersectType.ObjectID;
-			obj = isSubject ? intersectType.Object : intersectType.Subject;
-			objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-
-			string cardinalityCheckSQL = "";
+			bool isSubject = intersectType.SubjectAssetTypeID == ft.AssetTypeID;
+			bool sameSubjectObject = intersectType.SubjectAssetTypeID == intersectType.ObjectAssetTypeID;
+			var objectAssetClass = isSubject ? intersectType.ObjectClass : intersectType.SubjectClass;
+			int objectAssetTypeID = isSubject ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
 
 			if (intersectType.SubjectCardinality == Cardinality.One)
 			{
@@ -478,7 +464,7 @@ namespace d360.model
 					hasCardinalityOne = true;
 				}
 
-				cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
+				cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and ObjectAssetID = {0} and I.Id is null)";
 			}
 
 			if (intersectType.ObjectCardinality == Cardinality.One)
@@ -488,158 +474,187 @@ namespace d360.model
 					hasCardinalityOne = true;
 				}
 
-				cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
+				cardinalityCheckSQL += " and not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and SubjectAssetID = {0} and I.Id is null)";
 			}
 
-			string intersectJoin = @"((I.[Subject] = {0} and I.SubjectID = {1} and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
-								(I.[Object] = {0} and I.ObjectID = {1} and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))";
+			string intersectJoin = @"((I.SubjectAssetID = {0} and I.ObjectAssetID = @fieldAssetID) or (I.ObjectAssetID = {0} and I.SubjectAssetID = @fieldAssetID))";
 
 			if (!sameSubjectObject)
 			{
 				if (isSubject)
 				{
-					intersectJoin = @"(I.[Subject] = {0} and I.SubjectID = {1} and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID)";
+					intersectJoin = @"(I.SubjectAssetID = {0} and I.ObjectAssetID = @fieldAssetID)";
 				}
 				else
 				{
-					intersectJoin = @"(I.[Object] = {0} and I.ObjectID = {1} and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID)";
+					intersectJoin = @"(I.ObjectAssetID = {0} and I.SubjectAssetID = @fieldAssetID)";
 				}
 			}
 
-			string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, $"'{obj.Replace("Type", "")}'", "AD.[ObjectId]");
-			string formattedIntersectJoin = string.Format(intersectJoin, $"'{obj.Replace("Type", "")}'", "AD.[ObjectId]");
+			string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "AD.ID");
+			string formattedIntersectJoin = string.Format(intersectJoin, "AD.ID");
 
-			selectedSql = @"select 
-					case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
-					P.TextPath as [Text],
-					1 as Selected
-				 from [intersect] i
-				 inner join Asset A with (nolock) on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
-								and A.ObjectID = case when i.[Subject] = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end
-				cross apply GetAssetTextPathById(A.ID, '.') P
-				where i.intersectTypeID = @intersectTypeID and i.State = 1 and ((i.Subject = @obj and i.SubjectID = @objID) or (i.Object = @obj and i.ObjectID = @objID))";
+			selectedSql = @"
+select	iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID) as [Value],
+		P.DisplayPath as [Text],
+		1 as Selected 
+from	[Intersect] i
+		inner join Asset A on A.ID = iif(i.SubjectAssetID = @assetId, i.ObjectAssetID, i.SubjectAssetID)
+		inner join AssetPath P on P.ID = A.ID
+where	i.intersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
 
-			switch (obj)
+			switch (objectAssetClass)
 			{
-				case "ReferenceItemType":
+				case AssetTypeClass.Reference:
 
-					if (objID == 0)
+					if (objectAssetTypeID == 0)
 					{
-						formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.[Object]", "A.[ObjectId]");
-						formattedIntersectJoin = string.Format(intersectJoin, "A.[Object]", "A.[ObjectId]");
+						formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.ID");
+						formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
 
-						countSql = $@"select count(*) from AssetType A with (nolock)
-						inner join [IntersectType] IT on IT.Id = @intersectTypeID
- left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-						where A.[Object] = @obj  and (@query is null or A.Name like '%' + @query + '%') {formattedCardinalityCheck}";
-						sql = $@"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
-							from AssetType A with (nolock)
-							inner join [IntersectType] IT on IT.Id = @intersectTypeID
-							left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where A.[Object] = @obj and (@query is null or A.[Name] like '%' + @query + '%')
-							{formattedCardinalityCheck}
-							order by 3 desc, A.[Name] asc
-							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
-						selectedSql = @"select 
-							case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
-							A.[Name] as [Text],
-							1 as Selected
-							from [intersect] i
-							inner join AssetType A with (nolock) on A.[Object] = case when i.[Subject] = @obj and i.SubjectID = @objID then i.[Object] else i.[Subject] end
-										and A.ObjectID = case when i.[Subject] = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end
-						where i.intersectTypeID = @intersectTypeID and i.State = 1 and ((i.Subject = @obj and i.SubjectID = @objID) or (i.Object = @obj and i.ObjectID = @objID))";
+						countSql = $@"
+select	count(*) 
+from	AssetType A 
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID 
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+where	A.ID = @assetID and (@query is null or A.Name like '%' + @query + '%') {formattedCardinalityCheck}";
+
+						sql = $@"
+select  A.ObjectID as [Value], 
+		A.[Name] as [Text], 
+		case when I.ID is not null then 1 else 0 end as Selected
+from	AssetType A 
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin} 
+where	A.ID = @assetId and (@query is null or A.[Name] like '%' + @query + '%') {formattedCardinalityCheck}
+order by 3 desc, A.[Name] asc
+OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+
+						selectedSql = @"
+select	case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value], 
+		A.[Name] as [Text], 
+		1 as Selected 
+from	[intersect] i
+		inner join AssetType A on A.ID = iif(i.SubjectAssetID = @assetID, i.ObjectAssetTypeID, i.SubjectAssetTypeID)
+where	i.IntersectTypeID = @intersectTypeID and i.State = 1 and (i.SubjectAssetID = @assetId or i.ObjectAssetID = @assetId)";
 					}
 					else
 					{
-						formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.[Object]", "A.[ObjectId]");
-						formattedIntersectJoin = string.Format(intersectJoin, "A.[Object]", "A.[ObjectId]");
+						formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.ID");
+						formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
 
-						countSql = $@"select count(*) from Asset A with (nolock)
-						inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
-						inner join [IntersectType] IT on IT.Id = @intersectTypeID
- left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-						cross apply dbo.GetAssetDisplayValueById(a.ID) D
-						where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
-							and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}";
+						countSql = $@"
+select	count(*) 
+from	Asset A 
+		inner join AssetType T on T.ID = A.AssetTypeID
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID 
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+		inner join AssetDisplayValue D on D.AssetID = A.ID
+where	T.[Object] = @obj and T.ObjectID = @objID 
+		and (@query is null or D.DisplayValue like '%' + @query + '%')
+		and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}";
 
-						sql = $@"select  A.ObjectID as [Value], D.DisplayValue as [Text], case when I.ID is not null then 1 else 0 end as Selected
-							from Asset A with (nolock)
-							inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
-							inner join [IntersectType] IT on IT.Id = @intersectTypeID
-							cross apply dbo.GetAssetDisplayValueById(a.ID) D
-							left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
-							and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)                            
-							{formattedCardinalityCheck}
-							order by 3 desc, D.DisplayValue asc
-							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+						sql = $@"
+select	A.ObjectID as [Value], 
+		D.DisplayValue as [Text], 
+		case when I.ID is not null then 1 else 0 end as Selected
+from	Asset A 
+		inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID
+		inner join AssetDisplayValue D on D.AssetID = A.ID
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+where	T.[Object] = @obj and T.ObjectID = @objID 
+		and (@query is null or D.DisplayValue like '%' + @query + '%')
+		and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)                            
+		{formattedCardinalityCheck}
+order by 3 desc, D.DisplayValue asc
+OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					}
 
 					break;
-				case "ArtifactType":
-				case "PolicyType":
-				case "RuleType":
-				case "TaxonomyType":
-					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.[Object]", "A.[ObjectId]");
-					formattedIntersectJoin = string.Format(intersectJoin, "A.[Object]", "A.[ObjectId]");
-
-
-					countSql = $@"select count(*) from AssetWithType A with (nolock)
-						{(string.IsNullOrEmpty(query) ? "" : " cross apply GetAssetTextPathById(A.ID, '/') P ")}
-						inner join [IntersectType] IT on IT.Id = @intersectTypeID
- left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-						where A.[Type] = @obj and A.TypeID = @objID and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID)
-						{(string.IsNullOrEmpty(query) ? "" : " and (P.TextPath like '%' + @query + '%')")}
-						{formattedCardinalityCheck}";
-					sql = $@"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
-							from AssetWithType A with (nolock)
-							cross apply GetAssetTextPathById(A.ID, '/') P 
-							inner join [IntersectType] IT on IT.Id = @intersectTypeID
-							left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')
-								and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}
-							order by 3 desc, P.TextPath asc
-							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
-					break;
-				case "ResourceType":
+				case AssetTypeClass.User:
 					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'Resource'", "R.ResourceID");
 					formattedIntersectJoin = string.Format(intersectJoin, "'Resource'", "R.ResourceID");
 
-					countSql = $@"select count(*) from reporting.Global_Resource R 
-								inner join [IntersectType] IT on IT.Id = @intersectTypeID
-							left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-									where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-								and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
-							   {formattedCardinalityCheck}";
-					sql = $@"select R.ResourceID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
-							from reporting.[Global_Resource] R
-							inner join [IntersectType] IT on IT.Id = @intersectTypeID
-							left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
-							where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
-								and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
-							{formattedCardinalityCheck}
-							order by 3 desc, R.LastName + ', ' + R.FirstName asc  
-							OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+					countSql = $@"
+select	count(*) 
+from	reporting.Global_Resource R 
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+		and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
+		{formattedCardinalityCheck}";
+
+					sql = $@"
+select	R.ResourceID as Value, 
+		R.LastName + ', ' + R.FirstName as Text, 
+		case when I.ID is not null then 1 else 0 end as Selected 
+from	reporting.[Global_Resource] R
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+where	(@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+		and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
+		{formattedCardinalityCheck} 
+order by 3 desc, R.LastName + ', ' + R.FirstName asc 
+OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
 					break;
 				default:
-					throw new InvalidOperationException(string.Format(CompanyContextErrors.UnexpectedObjectType, obj));
+					formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.ID");
+					formattedIntersectJoin = string.Format(intersectJoin, "A.ID");
+
+					countSql = $@"
+select	count(*) 
+from	AssetWithType A 
+		inner join AssetPath P on P.ID = A.ID
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+where	A.[Type] = @obj and A.TypeID = @objID 
+		and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID)
+						{(string.IsNullOrEmpty(query) ? "" : " and (P.DisplayPath like '%' + @query + '%')")}
+						{formattedCardinalityCheck}";
+					sql = $@"
+select	distinct 
+		A.ID as Value, 
+		P.DisplayPath as Text, 
+		case when I.ID is not null then 1 else 0 end as Selected 
+from	AssetWithType A 
+		inner join AssetPath P on P.ID = A.ID
+		inner join [IntersectType] IT on IT.Id = @intersectTypeID
+		left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
+where	A.[Type] = @obj and A.TypeID = @objID 
+		and (@query is null or P.TextPath like '%' + @query + '%')
+		and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}
+order by 3 desc, P.TextPath asc
+OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
+					break;
 			}
 
 			if (offset == 0 || query != null)
 			{
-				count = Database.Connection.QueryFirstOrDefault<int>(countSql, new { obj, objID, query, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID });
+				count = Database.Connection.QueryFirstOrDefault<int>(countSql, new { assetId, query, intersectTypeID = intersectType.ID }); // fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID,
 			}
 
 			List<dynamic> selected = null, items = null;
 
 			if (includeSelection)
 			{
-				selected = Query<dynamic>(selectedSql, new { obj = @object, objID = objectID, intersectTypeID = intersectType.ID }).ToList();
+				selected = Query<dynamic>(selectedSql, new { assetId, intersectTypeID = intersectType.ID }).ToList();
 			}
 
 			if (!includeSelection)
 			{
-				items = Query<dynamic>(sql, new { offset, rows, query, obj, objID, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).ToList();
+				items = Query<dynamic>(
+					sql, 
+					new { 
+						offset, 
+						rows, 
+						query,
+						assetId,
+						//fieldObject = @object ?? obj, 
+						//fieldObjectID = objectID ?? objID, 
+						intersectTypeID = intersectType.ID 
+					}
+					).ToList();
 			}
 
 			Dictionary<string, object> dict = new Dictionary<string, object>();
@@ -762,43 +777,20 @@ namespace d360.model
 			return null;
 		}
 
-		public AssetType GetParentType(int id, SystemObjects obj)
+		public AssetType GetParentType(int id)
 		{
-			if (id < 0)
+			if (id <= 0)
 			{
 				return null;
 			}
 
-			string sql = @"select a.id from IntersectType I
-							   inner join [Predicate] P on P.ID = I.PredicateID
-			inner join AssetType a on a.object = i.subject and a.objectid = i.subjectid
-							   where P.[Type] = @type and i.[Object] = @object and i.[ObjectID] = @objectId";
+			string sql = @"
+select	A.*
+from	IntersectType I
+		inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @type and I.ObjectAssetTypeID = @id
+		inner join AssetType A on A.id = I.SubjectAssetTypeID";
 
-			int parentId = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id }).FirstOrDefault();
-
-			if (parentId < 1)
-			{
-				return null;
-			}
-
-			return GetById<AssetType>(parentId);
-		}
-
-		public AssetType GetParentTypeById(long assetTypeId)
-		{
-			if (assetTypeId < 0)
-			{
-				return null;
-			}
-
-			AssetType assetType = GetById<AssetType>((int)assetTypeId);
-
-			if (assetType == null)
-			{
-				return null;
-			}
-
-			return GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
+			return Query<AssetType>(sql, new { type = (int)PredicateType.InterTypeHierarchy, id }).FirstOrDefault();
 		}
 
 		public string GetIntersectTypeName(IntersectType intersectType)
@@ -812,9 +804,10 @@ namespace d360.model
 		public bool TypeHasParent(SystemObjects type, int id, PredicateType parentFunctionalType = PredicateType.InterTypeHierarchy)
 		{
 
-			string sql = @"select 1 from IntersectType I
-					inner join [Predicate] P on P.ID = I.PredicateID
-					where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
+			string sql = @"select	1 
+from	IntersectType I
+		inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @type
+		inner join AssetType O on O.ID = I.ObjectAssetTypeID and O.[Object] = @object and O.ObjectID = @objectId";
 
 			return Query<dynamic>(sql, new { type = (int)parentFunctionalType, @object = new DbString { Value = type.ToString(), IsAnsi = true, Length = 50, IsFixedLength = true }, objectId = id }).Any();
 		}
@@ -994,8 +987,8 @@ namespace d360.model
 			}
 
 			if (
-				(intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID && intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID) ||
-				(intersectType.Subject == objectDetail.Type && intersectType.SubjectID == objectDetail.TypeID && intersectType.Object == subjectDetail.Type && intersectType.ObjectID == subjectDetail.TypeID)
+				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
+				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
 				)
 			{
 				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
@@ -1008,25 +1001,17 @@ namespace d360.model
 				{
 					intersect = new Intersect { IntersectTypeID = intersectType.ID };
 
-					if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
+					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
 					{
-						intersect.Subject = subject;
-						intersect.SubjectID = subjectID;
-						intersect.Object = @object;
-						intersect.ObjectID = objectID;
-
-						Intersects.Add(intersect);
+						intersect.SubjectAssetID = subjectDetail.AssetID;
+						intersect.ObjectAssetID = objectDetail.AssetID;
 					}
 					else
 					{
-						intersect.Subject = @object;
-						intersect.SubjectID = objectID;
-						intersect.Object = subject;
-						intersect.ObjectID = subjectID;
-
-						Intersects.Add(intersect);
+						intersect.SubjectAssetID = objectDetail.AssetID;
+						intersect.ObjectAssetID = subjectDetail.AssetID;
 					}
-
+					Intersects.Add(intersect);
 					SaveChanges();
 
 					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
@@ -1069,8 +1054,8 @@ namespace d360.model
 			}
 
 			if (
-				(intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID && intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID) ||
-				(intersectType.Subject == objectDetail.Type && intersectType.SubjectID == objectDetail.TypeID && intersectType.Object == subjectDetail.Type && intersectType.ObjectID == subjectDetail.TypeID)
+				(intersectType.SubjectAssetTypeID == subjectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == objectDetail.AssetTypeID) ||
+				(intersectType.SubjectAssetTypeID == objectDetail.AssetTypeID && intersectType.ObjectAssetTypeID == subjectDetail.AssetTypeID)
 				)
 			{
 				dtl = Filter<IntersectDetail>(i => i.IntersectTypeID == intersectType.ID && (
@@ -1083,25 +1068,17 @@ namespace d360.model
 				{
 					intersect = new Intersect { IntersectTypeID = intersectType.ID };
 
-					if (subjectDetail.Type == intersectType.Subject && subjectDetail.TypeID == intersectType.SubjectID)
+					if (subjectDetail.AssetTypeID == intersectType.SubjectAssetTypeID)
 					{
-						intersect.Subject = sSubject;
-						intersect.SubjectID = subjectID;
-						intersect.Object = sObject;
-						intersect.ObjectID = objectID;
-
-						Intersects.Add(intersect);
+						intersect.SubjectAssetID = subjectDetail.AssetID;
+						intersect.ObjectAssetID = objectDetail.AssetID;
 					}
 					else
 					{
-						intersect.Subject = sObject;
-						intersect.SubjectID = objectID;
-						intersect.Object = sSubject;
-						intersect.ObjectID = subjectID;
-
-						Intersects.Add(intersect);
+						intersect.SubjectAssetID = objectDetail.AssetID;
+						intersect.ObjectAssetID = subjectDetail.AssetID;
 					}
-
+					Intersects.Add(intersect);
 					SaveChanges();
 
 					dtl = Filter<IntersectDetail>(i => i.ID == intersect.ID).FirstOrDefault();
@@ -1270,23 +1247,20 @@ namespace d360.model
 				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.AddRelationshipValidation_Predicate);
 			}
 
-			if (($"{model.Subject}{model.SubjectID}" != $"{model.Object}{model.ObjectID}") && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+			if ((model.SubjectAssetTypeID != model.ObjectAssetTypeID) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
 			{
 				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectSameThisPredicate);
 			}
 
-			if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+			if ((model.SubjectAssetTypeID == model.ObjectAssetTypeID) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
 			{
 				throw new GenericException(System.Net.HttpStatusCode.Conflict, AssetTypeErrors.PredicateHttpErrorTitle, CompanyContextErrors.SubjectObjectNotSameThisPredicate);
 			}
 
 			AssetType subjectAssetType = null;
 			AssetType objectAssetType = null;
-			subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
-			objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
-
-			model.SubjectUid = subjectAssetType?.uid;
-			model.ObjectUid = objectAssetType?.uid;
+			subjectAssetType = Filter<AssetType>(i => i.ID == model.SubjectAssetTypeID).FirstOrDefault();
+			objectAssetType = Filter<AssetType>(i => i.ID == model.ObjectAssetTypeID).FirstOrDefault();
 
 			PredicateTypeInfo predicateInfo = predicateModel.Type.AsInfoModel();
 
@@ -1549,23 +1523,6 @@ namespace d360.model
 
 			string fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
 			FieldsObjectModel attr = entity.GetFieldsObjectInfo();
-			bool exists = false;
-
-			if (isUpdate)
-			{
-				exists = Query<bool>("select dbo.CheckIfObjectExistsWithParent(@t, @tid, @oid, @f, 0) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, oid = entity.ID, f = fieldsJson }).First();
-			}
-			else
-			{
-				exists = Query<bool>("select dbo.CheckIfObjectExistsWithParent(@t, @tid, null, @f, @p) as Val", new { t = attr.Type.ToString(), tid = attr.TypeID, f = fieldsJson, p = parentId }).First();
-			}
-
-			if (exists)
-			{
-				throw new ArgumentException(string.Format(CompanyContextErrors.ObjectAlreadyExists, attr.Object.ToString()));
-			}
-
-
 			bool returnValue = true;
 
 			if (isUpdate)
@@ -1834,23 +1791,21 @@ namespace d360.model
 
 					string sql = $@"
 									declare	@id int = {id},
-											@s varchar(50) = '{o.Subject}',
-											@sid int = {o.SubjectID},
+											@sid int = {o.SubjectAssetTypeID},
 											@sc int = {(int)o.SubjectCardinality},
-											@o varchar(50) = '{o.Object}',
-											@oid int = {o.ObjectID},
+											@oid int = {o.ObjectAssetTypeID},
 											@oc int = {(int)o.ObjectCardinality},
 											@p int = {o.PredicateID},
 											@err nvarchar(500) = ''
 
-									if exists(select 1 from IntersectType where Subject = @s and SubjectID = @sid and Object = @o and ObjectID = @oid and PredicateID = @p and ( (@id is not null and ID <> @id) OR (@id is null) ) )
+									if exists(select 1 from IntersectType where SubjectAssetTypeID = @sid and ObjectAssetTypeID = @oid and PredicateID = @p and ( (@id is not null and ID <> @id) OR (@id is null) ) )
 									begin
 										set @err = 'Another relationship already exists with this configuration.'
 									end
 
 									if @err = '' and (@sc = 0 OR @sc = 1) --ONLY ONE, check if multiple already
 									begin
-										if exists(select Object, ObjectID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by Object, ObjectID having count(1) > 1)
+										if exists(select ObjectClass, ObjectAssetTypeID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by ObjectClass, ObjectAssetTypeID having count(1) > 1)
 										begin
 											set @err = 'There are objects that are related to more than one subject.'
 										end
@@ -1858,7 +1813,7 @@ namespace d360.model
 
 									if @err = '' and (@oc = 0 OR @oc = 1) --ONLY ONE, check if multiple already
 									begin
-										if exists(select Subject, SubjectID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by Subject, SubjectID having count(1) > 1)
+										if exists(select SubjectClass, SubjectAssetTypeID, count(1) as [Count] from [Intersect] where IntersectTypeID = @id group by SubjectClass, SubjectAssetTypeID having count(1) > 1)
 										begin
 											set @err = 'There are subjects that are related to more than one object.'
 										end
@@ -2206,42 +2161,21 @@ namespace d360.model
 			StringBuilder joinbuilder = new StringBuilder();
 			joins = "";
 
-			string fieldTypeRelationType = type;
-
-			if (type == "Rule")
-			{
-				if (ruleMeansEvent)
-				{
-					type = "Event";
-				}
-				else
-				{
-					fieldTypeRelationType += "Type";
-				}
-			}
-			else
-			{
-				fieldTypeRelationType += "Type";
-			}
-
 			if (fields == null)
 			{
+				var fieldQry = Filter<FieldType>(i => i.Object == type && i.ObjectID == typeID);
 				if (listableOnly)
 				{
-					fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
+					fieldQry = fieldQry.Where(i => i.IsListable);
 				}
-				else
-				{
-					fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
-				}
-
 				if (includeKeyColumnOnly)
 				{
-					fields = fields.Where(x => x.IsPartOfKey == true).ToList();
+					fieldQry = fieldQry.Where(x => x.IsPartOfKey);
 				}
+				fields = fieldQry.OrderBy(i => i.ColumnOrder).ToList();
 			}
 
-			List<RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
+			List<RelationshipDirectionFieldInfo> relationFieldInfos = getRelationFieldData(fields[0].AssetTypeID.GetValueOrDefault(), fields);
 
 			foreach (FieldType f in fields)
 			{
@@ -2252,69 +2186,25 @@ namespace d360.model
 				{
 					if (enableRelationshipFields)
 					{
-						RelationshipDirectionFieldInfo relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
-
+						var relationFieldInfo = relationFieldInfos.SingleOrDefault(i => i.FieldTypeID == f.ID);
 						if (relationFieldInfo != null)
 						{
-							bool isReferenceItemType = relationFieldInfo.Object == SystemObjects.ReferenceItemType.ToString();
-							bool isTaxonomyType = relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString();
-							bool isPolicyType = relationFieldInfo.Object == SystemObjects.PolicyType.ToString();
-							bool isArtifactType = relationFieldInfo.Object == SystemObjects.ArtifactType.ToString();
-							bool useAssetTable = isPolicyType || isTaxonomyType || isArtifactType;
-							bool useAssetTypeTable = isReferenceItemType;
+							bool isReferenceItemType = relationFieldInfo.AssetClass == AssetTypeClass.Reference;
 
-							string tableName = relationFieldInfo.Object.Replace("Type", "");
-							string typeIDColumnName = relationFieldInfo.Object + "ID";
-
-							if (includeIdColumn)
-							{
-								columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
-							}
+							columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
+							columnbuilder.Append(isReferenceItemType ? $"{name}_AS.Name" : $"{name}_ASP.DisplayPath");
+							columnbuilder.Append($" as [{(useFriendlyName ? friendlyName : name)}],");
+							joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
+							joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {name}_T.ID");
 
 							if (isReferenceItemType)
 							{
-								columnbuilder.Append($"{name}_OT.Name");
+								joinbuilder.Append($" inner join AssetType {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetTypeID" : "SubjectAssetTypeID"));
 							}
-							else if (isTaxonomyType || isPolicyType)
+							else 
 							{
-								columnbuilder.Append($"{name}_OTT.TextPath");
-							}
-							else
-							{
-								columnbuilder.Append($"{name}_OTD.DisplayValue");
-							}
-
-							columnbuilder.Append($" as [{(useFriendlyName ? friendlyName : name)}],");
-
-							joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-							joinbuilder.Append(relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}");
-							
-							if (!useAssetTable && !useAssetTypeTable)
-							{
-								joinbuilder.Append($" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ");
-								joinbuilder.Append($"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
-							}
-							else if (useAssetTypeTable)
-							{
-								joinbuilder.Append($" left join [AssetType] {name}_OT on ");
-								joinbuilder.Append($" {name}_OT.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
-								joinbuilder.Append($" and {name}_OT.Object ='{relationFieldInfo.Object}' and  {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject") + $"= '{relationFieldInfo.Object}'");
-							}
-							else
-							{
-								joinbuilder.Append($" left join dbo.asset {name}_OT on {name}_OT.[Object] = '{tableName}' and {name}_OT.ObjectID = {relationFieldInfo.ObjectID} AND ");
-								joinbuilder.Append($"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
-							}
-
-							if (isTaxonomyType || isPolicyType)
-							{
-								joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
-								joinbuilder.Append($" outer apply [dbo].GetAssetTextPathById({name}_AS.ID, '/') {name}_OTT");
-							}
-							else if (!isReferenceItemType)
-							{
-								joinbuilder.Append($" left join asset {name}_AS on {name}_AS.Object = '{tableName}' and  {name}_AS.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
-								joinbuilder.Append($" cross apply [dbo].GetAssetDisplayValueById({name}_AS.ID) {name}_OTD");
+								joinbuilder.Append($" inner join Asset {name}_AS on {name}_AS.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
+								joinbuilder.Append($" inner join AssetPath {name}_ASP on {name}_AS.ID = {name}_ASP.ID");
 							}
 						}
 					}
@@ -2336,17 +2226,13 @@ namespace d360.model
 									FieldTypeDefinition_JsonElement jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(relationshipLookupFieldType.Definition);
 									string sqlType = DetermineSqlDataTypeForFieldType(relationshipLookupFieldType);
 
-									if (includeIdColumn)
-									{
-										columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
-									}
+									columnbuilder.Append($"{name}_T.ID as [{name}ID], ");
 									columnbuilder.Append($"try_cast({name}_P.Value as {sqlType}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
 									joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-									joinbuilder.Append(relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}");
+									joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
 									joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {jsonElementDefinition.FieldTypeID}");
-									joinbuilder.Append($" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject"));
-									joinbuilder.Append($" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+									joinbuilder.Append($" and {name}_OT.AssetID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
 									joinbuilder.Append($" left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_OT.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ");
 								}
 								else
@@ -2358,10 +2244,9 @@ namespace d360.model
 									columnbuilder.Append($"{name}_OT.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ");
 
 									joinbuilder.Append($" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and");
-									joinbuilder.Append(relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}");
+									joinbuilder.Append($" {name}_T." + (relationFieldInfo.IsSubject ? "SubjectAssetID" : "ObjectAssetID") + $" = {idColumn}");
 									joinbuilder.Append($" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}");
-									joinbuilder.Append($" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject"));
-									joinbuilder.Append($" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID"));
+									joinbuilder.Append($" and {name}_OT.AssetID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectAssetID" : "SubjectAssetID"));
 									joinbuilder.Append(" ");
 								}
 							}
@@ -2380,8 +2265,8 @@ namespace d360.model
 												else null 
 											end as [{(useFriendlyName ? friendlyName : name)}], ");
 
-																joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
-											left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
+										   left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 				else if (f.Type == DataType.Number.ToString())
 				{
@@ -2395,7 +2280,7 @@ namespace d360.model
 												else null 
 											end as [{(useFriendlyName ? friendlyName : name)}], ");
 
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
 											left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 				else if (f.Type == DataType.JsonElement.ToString())
@@ -2431,7 +2316,7 @@ namespace d360.model
 
 					columnbuilder.Append($@"(select string_agg(T.Value,'|') within group (order by T.Value) from AssetTag AT inner join Tag T on T.ID = AT.TagID  where AssetId = {assetIdPath}) as [{(useFriendlyName ? friendlyName : name)}], ");
 
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}'  
 										left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 				else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
@@ -2469,7 +2354,7 @@ namespace d360.model
 												else '' 
 											end as [{(useFriendlyName ? friendlyName : name)}], ");
 
-					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
+					joinbuilder.Append($@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.AssetTypeID = '{f.AssetTypeID}' 
 											left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ");
 				}
 			}
@@ -2501,7 +2386,7 @@ namespace d360.model
 			return false;
 		}
 
-		public List<RelationshipDirectionFieldInfo> getRelationFieldData(string type, int typeID, List<FieldType> fields)
+		public List<RelationshipDirectionFieldInfo> getRelationFieldData(int assetTypeId, List<FieldType> fields)
 		{
 			List<RelationshipDirectionFieldInfo> relationFieldInfos = new List<RelationshipDirectionFieldInfo>();
 			List<FieldType> relationshipFields = fields.Where(i => i.Type == DataType.Relationship.ToString() || i.Type == DataType.FieldFromRelationship.ToString()).ToList();
@@ -2519,10 +2404,9 @@ namespace d360.model
 						
 						if (intersectType != null)
 						{
-							relationFieldInfo.IsSubject = intersectType.Subject == type && intersectType.SubjectID == typeID;
-							relationFieldInfo.Object = relationFieldInfo.IsSubject ? intersectType.Object : intersectType.Subject;
-							relationFieldInfo.ObjectID = relationFieldInfo.IsSubject ? intersectType.ObjectID : intersectType.SubjectID;
-
+							relationFieldInfo.IsSubject = intersectType.SubjectAssetTypeID == assetTypeId;
+							relationFieldInfo.AssetTypeID = relationFieldInfo.IsSubject ? intersectType.ObjectAssetTypeID : intersectType.SubjectAssetTypeID;
+							relationFieldInfo.AssetClass = relationFieldInfo.IsSubject ? intersectType.ObjectClass: intersectType.SubjectClass;
 							relationFieldInfos.Add(relationFieldInfo);
 						}
 					}

@@ -385,17 +385,10 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationshipFieldIsListable(intersectTypeUid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
-        let url = "";
-        if (assetTypeUid)
-            url = `intersectTypeUid=${intersectTypeUid}&assetTypeUid=${assetTypeUid}`;
-        if (actionTypeUid)
-            url = `intersectTypeUid=${intersectTypeUid}&actionTypeUid=${actionTypeUid}`;
-        if (relationshipTypeUid)
-            url = `intersectTypeUid=${intersectTypeUid}&relationshipTypeUid=${relationshipTypeUid}`;
-        return this
+    getRelationshipFieldIsListable(intersectTypeUid: string, assetTypeUid: string): Observable<any> {
+		return this
             .http
-            .get<any>(`api/v2/fields/IsListableRelationship?${url}`)
+            .get<any>(`api/v2/fields/IsListableRelationship?intersectTypeUid=${intersectTypeUid}&assetTypeUid=${assetTypeUid}`)
             .pipe(
                 map((response) => response),
                 catchError((err) => this.handleError(err))

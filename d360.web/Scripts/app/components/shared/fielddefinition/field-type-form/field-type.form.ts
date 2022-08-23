@@ -559,7 +559,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //update the model to have correct lookuptype object and id
         this.model.FieldType.Type["Relationship"].IntersectTypeUid = value.toLocaleLowerCase();
 
-        return this.fieldsService.getRelationshipFieldIsListable(value, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
+        return this.fieldsService.getRelationshipFieldIsListable(value, this.assetTypeUid)
             .pipe(map(res => {
                 this.isListableRelationship = res;
                 if (!this.isListableRelationship)

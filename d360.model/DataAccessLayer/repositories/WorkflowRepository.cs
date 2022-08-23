@@ -92,27 +92,22 @@ namespace d360.model.DataAccessLayer
 
 			string sql = $@"select 
 				t.uid as 'WorkflowTypeUid',
-				case when e.[Object] = 'IssueType' then is_t.uid
-					ELSE NULL END as ActionTypeUid ,
-				case when e.[Object] = 'ArtifactType' or e.[Object] = 'RuleType' or e.[Object] = 'PolicyType'
-					or e.[Object] = 'TaxonomyType' or e.[Object] = 'ShoppingCartType' or  e.[Object] = 'ReferenceItemType' then d.uid
-				ELSE NULL END as AssetTypeUid,
-				case when e.[Object] = 'IntersectType' then IT.uid
-					ELSE NULL END as RelationshipTypeUid,
+				iif(e.IssueTypeID is not null, is_t.uid, null) as ActionTypeUid,
+				iif(e.AssetTypeID is not null, D.uid, null) as AssetTypeUid,
+				iif(e.IntersectTypeID is not null, IT.uid, null) as RelationshipTypeUid,
 				t.Name,
 				t.Description,
 				e.ChangeType,
-				case when t.PublishedVersionID is not null then v.uid
-					else null end as PublishedVersionUid,
-					t.CreatedOn,
-					dc.DisplayValue as CreatedBy,
-					t.UpdatedOn,
-					du.DisplayValue as UpdatedBy,
-					t.State as State,
-					v.Version as PublishedVersion,
-					is_t.name as ActionType,
-					D.Name as AssetType,
-					ITN.name as RelationshipType,
+				iif(t.PublishedVersionID is not null, v.uid, null) as PublishedVersionUid,
+				t.CreatedOn,
+				dc.DisplayValue as CreatedBy,
+				t.UpdatedOn,
+				du.DisplayValue as UpdatedBy,
+				t.State as State,
+				v.Version as PublishedVersion,
+				is_t.name as ActionType,
+				D.Name as AssetType,
+				IT.SubjectName + ' ' + IT.PredicateName + ' ' + IT.ObjectName as RelationshipType,
 					case when e.[Object] = 'ArtifactType' and D.[Class] = 1 then
 						'Business Asset'
 					when e.[Object] = 'ArtifactType' and D.[Class] = 8 then
@@ -136,10 +131,9 @@ namespace d360.model.DataAccessLayer
 					end as [Type]
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
-				left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
-				left join issuetype is_t on e.object = 'IssueType' and is_t.id = e.objectid
-				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
-				outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
+				left join AssetType D on D.ID = E.AssetTypeID 
+				left join issuetype is_t on e.IssueTypeID is_t.id
+				left join IntersectTypeDetail IT on e.IntersectTypeID = IT.ID
 				left join workflow.version v on v.id = t.publishedversionid
 				left join AssetDetail DC on DC.[Object] = 'Resource' and DC.ObjectID = t.CreatedBy
 				left join AssetDetail DU on DU.[Object] = 'Resource' and DU.ObjectID = t.UpdatedBy
@@ -172,22 +166,18 @@ namespace d360.model.DataAccessLayer
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
 				inner join workflow.version v on v.TypeID = t.Id
-				left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
-				left join issuetype is_t on e.object = 'IssueType' and is_t.id = e.objectid
-				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
+				left join AssetType D on D.ID = e.AssetTypeID
+				left join IssueType is_t on e.IssueTypeID = is_t.id 
+				left join IntersectType IT on e.IntersectTypeID = IT.ID 
 				left outer join reporting.Global_Resource R on R.ResourceID = t.CreatedBy
 				left outer join reporting.Global_Resource R1 on R1.ResourceID = t.UpdatedBy
 				{whereSql}";
 
 			string sql = $@"			select 
 				V.UID as Uid,
-				case when e.[Object] = 'IssueType' then is_t.uid
-					ELSE NULL END as ActionTypeUid ,
-				case when e.[Object] = 'ArtifactType' or e.[Object] = 'RuleType' or e.[Object] = 'PolicyType'
-					or e.[Object] = 'TaxonomyType' or e.[Object] = 'ShoppingCartType' or  e.[Object] = 'ReferenceItemType' then d.uid
-				ELSE NULL END as AssetTypeUid,
-				case when e.[Object] = 'IntersectType' then IT.uid
-					ELSE NULL END as RelationshipTypeUid,
+				iif(e.IssueTypeID is not null, is_t.uid, null) as ActionTypeUid,
+				iif(e.AssetTypeID is not null, D.uid, null) as AssetTypeUid,
+				iif(e.IntersectTypeID is not null, IT.uid, null) as RelationshipTypeUid,
 				t.Uid as WorkflowTypeUid,
 				case when t.PublishedVersionID = V.Id then 1
 					else 0 end as IsPublished,
@@ -202,9 +192,9 @@ namespace d360.model.DataAccessLayer
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
 				inner join workflow.version v on v.TypeID = t.Id
-				left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
-				left join issuetype is_t on e.object = 'IssueType' and is_t.id = e.objectid
-				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
+				left join AssetType D on D.ID = e.AssetTypeID 
+				left join issuetype is_t on is_t.id = e.IssueTypeID
+				left join IntersectType IT on IT.ID = e.IntersectTypeID
 				left outer join reporting.Global_Resource R on R.ResourceID = t.CreatedBy
 				left outer join reporting.Global_Resource R1 on R1.ResourceID = t.UpdatedBy
 				{whereSql}

@@ -166,7 +166,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
     }
 
     private getRelationshipTypes() {
-        this.relationshipsService.getObjectRelations('RuleType', 1)//this.artifactType.ID
+		this.relationshipsService.getObjectRelations("00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000")
             .subscribe(result => {
                 this.relationshipTypes = result;
 

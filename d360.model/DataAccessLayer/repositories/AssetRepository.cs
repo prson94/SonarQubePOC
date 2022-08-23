@@ -201,7 +201,7 @@ namespace d360.model.DataAccessLayer
 										case when exists(select top 1 * from  
 												[IntersectType] IT
 												inner join [Predicate] P on P.ID = IT.PredicateID
-												where A.Class = 9 and P.Type in (3,4) and IT.Object = A.Object and IT.ObjectID = A.ObjectID)
+												where A.Class = 9 and P.Type in (3,4) and IT.ObjectAssetTypeID = A.ID)
 												then 1 
 										else A.Hierarchical
 										end as Hierarchical)HA ";
@@ -820,10 +820,10 @@ namespace d360.model.DataAccessLayer
 					{
 						parentApplySQL = $@"outer apply (
 								select top 1 AD.uid, AD.DisplayValue from [IntersectType] IT
-									inner join [Intersect] I on I.IntersectTypeId = IT.Id and I.Object = A.Object and I.ObjectID = A.ObjectID
+									inner join [Intersect] I on I.IntersectTypeId = IT.Id and I.ObjectAssetID = A.ID
 									inner join [Predicate] P on P.ID = IT.PredicateID
-									inner join AssetDetail AD on AD.Object = I.Subject and AD.ObjectID = I.SubjectID
-								where IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.Type = {(int)PredicateType.InterTypeHierarchy}
+									inner join AssetDetail AD on AD.ID = I.SubjectAssetID
+								where IT.ObjectAssetTypeID = T.ID and P.Type = {(int)PredicateType.InterTypeHierarchy}
 							)Parent";
 					}
 				}
@@ -1213,9 +1213,9 @@ namespace d360.model.DataAccessLayer
 				hierarchyParentUidSelect = $@" {(parentUid.HasValue ? "cross" : "outer")} apply (
 					select	PA.uid 
 					from	[Intersect] I
-							inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+							inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.ObjectAssetID = A.ID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = {predicateType}
-							inner join Asset PA on PA.Object = I.Subject and PA.ObjectID =I.SubjectID
+							inner join Asset PA on PA.ID = I.SubjectAssetID
 					) HParent ";
 
 				if (parentUidPopulated)
@@ -1694,7 +1694,7 @@ namespace d360.model.DataAccessLayer
 				bool.TryParse(value, out includeParent);
 			}
 			var hierarchy = CompanyContext.IntersectTypes
-				.FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+				.FirstOrDefault(x => x.ObjectAssetTypeID == assetType.ID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 
 			if (hierarchy == null)
 			{
@@ -1721,7 +1721,7 @@ namespace d360.model.DataAccessLayer
 				var columnName = "Parent";
 				if ((assetType.Class == AssetTypeClass.Reference && hierarchy != null) || isChildItem)
 				{
-					var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
+					var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.ID == hierarchy.SubjectAssetTypeID);
 					if (parent != null)
 					{
 						columnName = isChildItem ? "Parent " + parent.Name + " Name" : parent.Name;
@@ -2206,20 +2206,20 @@ namespace d360.model.DataAccessLayer
 				;with family_cte as (
 				select a1.uid,ADV.DisplayValue
 				from asset a 
-				inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
+				inner join [Intersect] I on I.SubjectAssetID = A.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
-				cross apply GetAssetDisplayValueById(a1.ID)ADV
+				inner join asset a1 on a1.ID = I.ObjectAssetID
+				inner join AssetDisplayValue ADV on ADV.AssetID = a1.ID
 				where a.Uid in @assetUid
 				union all
 				select a1.uid, ADV.DisplayValue
 				from family_cte fam, Asset an
-				inner join [Intersect] I on I.Subject = an.Object and I.SubjectID = an.ObjectID
+				inner join [Intersect] I on I.SubjectAssetID = an.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-				inner join asset a1 on a1.Object = I.Object and a1.ObjectID = I.ObjectID
-				cross apply GetAssetDisplayValueById(a1.ID)ADV
+				inner join asset a1 on a1.ID = I.ObjectAssetID
+				inner join AssetDisplayValue ADV on ADV.AssetID = a1.ID
 				where an.Uid = fam.uid)
 				insert into #family 
 				select 
@@ -2228,21 +2228,21 @@ namespace d360.model.DataAccessLayer
 				;with family_cte as (
 				select a2.uid,ADV.DisplayValue
 				from asset a 
-				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [Intersect] I on I.ObjectAssetID = A.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
-				cross apply GetAssetDisplayValueById(a2.ID)ADV
+				inner join asset a2 on a2.ID = I.SubjectAssetID
+				inner join AssetDisplayValue ADV on ADV.AssetID = a2.ID
 				where a.Uid in @assetUid
 				union all
 				select a2.uid, ADV.DisplayValue
 				from family_cte fam, Asset an
-				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [Intersect] I on I.ObjectAssetID = an.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
-				cross apply GetAssetDisplayValueById(a2.ID)ADV
-				where an.Uid = fam.uid)
+				inner join asset a2 on a2.ID = I.SubjectAssetID 
+				inner join AssetDisplayValue ADV on ADV.AssetID = a2.ID				
+where an.Uid = fam.uid)
 				insert into #family 
 				select 
 				uid as AssetUid from family_cte
@@ -2256,20 +2256,20 @@ namespace d360.model.DataAccessLayer
 			var sql = $@";with family_cte as (
 				select a2.uid,ADV.DisplayValue
 				from asset a 
-				inner join [Intersect] I on I.Object = A.Object and I.ObjectID = A.ObjectID
+				inner join [Intersect] I on I.ObjectAssetID = A.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
-				cross apply GetAssetDisplayValueById(a2.ID)ADV
+				inner join asset a2 on a2.ID = I.SubjectAssetID
+				inner join AssetDisplayValue ADV on ADV.AssetID = a2.ID	
 				where a.Uid in @assetUids
 				union all
 				select a2.uid, ADV.DisplayValue
 				from family_cte fam, Asset an
-				inner join [Intersect] I on I.Object = an.Object and I.ObjectID = an.ObjectID
+				inner join [Intersect] I on I.ObjectAssetID = an.ID
 				inner join [IntersectType] IT on IT.ID = I.IntersectTypeID 
 				inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-				inner join asset a2 on a2.Object = I.Subject and a2.ObjectID = I.SubjectID
-				cross apply GetAssetDisplayValueById(a2.ID)ADV
+				inner join asset a2 on a2.ID = I.SubjectAssetID 
+				inner join AssetDisplayValue ADV on ADV.AssetID = a2.ID	
 				where an.Uid = fam.uid)
 				select uid as AssetUid from family_cte";
 
@@ -2310,10 +2310,10 @@ namespace d360.model.DataAccessLayer
 					switch (filter.AsSideOfRelationship.Side)
 					{
 						case AssetsByPathItemApiFilterSideOfRelationshipRequestEnum.Object:
-							prefilterRelationshipStatement += "inner join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID";
+							prefilterRelationshipStatement += "inner join IntersectType I on I.ObjectAssetTypeID = T.ID";
 							break;
 						case AssetsByPathItemApiFilterSideOfRelationshipRequestEnum.Subject:
-							prefilterRelationshipStatement += "inner join IntersectType I on I.Subject = T.Object and I.SubjectID = T.ObjectID";
+							prefilterRelationshipStatement += "inner join IntersectType I on I.SubjectAssetTypeID = T.ID";
 							break;
 					}
 
@@ -2661,11 +2661,9 @@ namespace d360.model.DataAccessLayer
 			{
 				var intersectType = new IntersectType
 				{
-					Subject = parentType.ToString(),
-					SubjectID = (parentAssetType != null) ? parentAssetType.ObjectID : model.ObjectID,
+					SubjectAssetTypeID = (parentAssetType != null) ? parentAssetType.ID : at.ID,
 					SubjectCardinality = Cardinality.One,
-					Object = model.Object,
-					ObjectID = model.ObjectID,
+					ObjectAssetTypeID = at.ID,
 					ObjectCardinality = Cardinality.Many,
 					PredicateID = predicate.ID
 				};
@@ -2815,14 +2813,12 @@ namespace d360.model.DataAccessLayer
 					PredicateType.IntraTypeHierarchy :
 					PredicateType.InterTypeHierarchy;
 
-				intersectType = CompanyContext.Filter<IntersectType>(i =>
-					i.Object == model.Object &&
-					i.ObjectID == model.ObjectID &&
-					i.Predicate.Type == parentPredicateType,
+				intersectType = CompanyContext.Filter<IntersectType>(
+					i => i.ObjectAssetTypeID == assetType.ID && i.Predicate.Type == parentPredicateType, 
 					i => i.Predicate
 				).SingleOrDefault();
 
-				var parentID = parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID;
+				var parentID = parentAssetType != null ? parentAssetType.ID : assetType.ID;
 
 				if (intersectType != null)
 				{
@@ -2838,7 +2834,7 @@ namespace d360.model.DataAccessLayer
 						}
 					}
 
-					if (intersectType.SubjectID != parentID)
+					if (intersectType.SubjectAssetTypeID != parentID)
 					{
 						if (anyExistingRelationships)
 						{
@@ -2849,7 +2845,7 @@ namespace d360.model.DataAccessLayer
 							);
 						}
 
-						intersectType.SubjectID = parentID;
+						intersectType.SubjectAssetTypeID = parentID;
 						relationshipChangeMade = true;
 					}
 
@@ -2864,10 +2860,8 @@ namespace d360.model.DataAccessLayer
 					intersectType = new IntersectType
 					{
 						IsSystem = true,
-						Subject = parentType,
-						SubjectID = parentID,
-						Object = model.Object,
-						ObjectID = model.ObjectID,
+						SubjectAssetTypeID = parentID,
+						ObjectAssetTypeID = assetType.ID,
 						PredicateID = predicate.ID
 					};
 					CompanyContext.Add(intersectType);
@@ -2880,8 +2874,7 @@ namespace d360.model.DataAccessLayer
 				var parentPredicateType = PredicateType.InterTypeHierarchy;
 
 				intersectType = CompanyContext.Filter<IntersectType>(i =>
-					i.Object == model.Object &&
-					i.ObjectID == model.ObjectID &&
+					i.ObjectAssetTypeID == assetType.ID &&
 					i.Predicate.Type == parentPredicateType,
 					i => i.Predicate
 				).SingleOrDefault();
@@ -4012,8 +4005,7 @@ namespace d360.model.DataAccessLayer
 			};
 			var results = await GetAssets(assetType, qp);
 
-			var hierarchy = CompanyContext.IntersectTypes
-				.FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+			var hierarchy = CompanyContext.IntersectTypes.FirstOrDefault(x => x.ObjectAssetTypeID == assetType.ID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 
 			bool includeParent = true;
 			if (hierarchy == null)

@@ -439,9 +439,9 @@ namespace d360.web.Controllers.V2
 
 			if (result == null)
 			{
-				result = Company.Query<dynamic>($@"select 'IntersectType' as Object, ID as ObjectId, itn.name as DisplayValue
-					from dbo.[IntersectType] IT
-					CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
+				result = Company.Query<dynamic>($@"select 'IntersectType' as Object, ID as ObjectId, SubjectName + ' ' + PredicateName + ' ' + ObjectName as DisplayValue
+					from IntersectTypeDetail
+					where uid = @assetUid", new { assetUid }, ApiTimeout).FirstOrDefault();
 			}
 
 			if (result == null)
@@ -851,8 +851,7 @@ namespace d360.web.Controllers.V2
 				union
 				select uid, name as DisplayName, 'IssueType' as Object, id as ObjectID, null as AssetTypeClass from dbo.IssueType where uid = @uid
 				union
-				select uid, itn.name as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from dbo.[IntersectType] IT
-					CROSS APPLY dbo.GetIntersectTypeNames(IT.ID) ITN  where uid = @uid
+				select uid, SubjectName + ' ' + PredicateName + ' ' + ObjectName as DisplayValue, 'IntersectType' as Object, id as ObjectID, null as AssetTypeClass from IntersectTypeDetail where uid = @uid
 				union
 				select uid, name as DisplayName, 'ResponsibilityType' as Object, id as ObjectID, null as AssetTypeClass from dbo.ResponsibilityType where uid = @uid
 				union

@@ -16,13 +16,18 @@ namespace d360.core.entities
         [DataMember]
         public Guid Uid { get; set; }
 
-        [DataMember, Key, Column(Order = 2, TypeName = "varchar"), StringLength(50)]
-        public string Subject { get; set; }
+		[DataMember]
+		public string Name { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
-        public int SubjectID { get; set; }
+		public AssetTypeClass SubjectClass { get; set; }
 
         [DataMember]
+        public int? SubjectAssetTypeID { get; set; }
+
+		[DataMember]
+		public Guid? SubjectUid { get; set; }
+
+		[DataMember]
         public Cardinality SubjectCardinality { get; set; }
 
         [DataMember]
@@ -38,18 +43,18 @@ namespace d360.core.entities
         public string SubjectIconText { get; set; }
 
         [DataMember]
-        public int? SubjectAssetTypeID { get; set; }
-
-        [DataMember]
         public string SubjectAssetTypePath { get; set; }
 
-        [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
-        public string Object { get; set; }
-
-        [DataMember, Key, Column(Order = 5)]
-        public int ObjectID { get; set; }
-
         [DataMember]
+        public AssetTypeClass ObjectClass { get; set; }
+
+		[DataMember]
+		public int? ObjectAssetTypeID { get; set; }
+
+		[DataMember]
+		public Guid? ObjectUid { get; set; }
+
+		[DataMember]
         public Cardinality ObjectCardinality { get; set; }
 
         [DataMember]
@@ -63,9 +68,6 @@ namespace d360.core.entities
 
         [DataMember]
         public string ObjectIconText { get; set; }
-
-        [DataMember]
-        public int ObjectAssetTypeID { get; set; }
 
         [DataMember]
         public string ObjectAssetTypePath { get; set; }

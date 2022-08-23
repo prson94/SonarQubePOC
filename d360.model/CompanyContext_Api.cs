@@ -201,8 +201,8 @@ namespace d360.model
 										T.ParentObject = S.Object,
 										T.ParentObjectID = S.ObjectID
 								from    api.ExecutionAsset T
-										inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.Object = T.Object and I.ObjectID = T.ObjectID and T.ParentUid is null
-										inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID;",
+										inner join [Intersect] I on T.ExecutionID = @executionID and I.IntersectTypeID = T.IntersectTypeID and I.ObjectAssetID = T.AssetID and T.ParentUid is null
+										inner join Asset S on S.ID = I.SubjectAssetID;",
             new { executionID, assetTypeID = at.ID }, commandTimeout: timeout);
 
             if (at.Class == AssetTypeClass.Reference)
@@ -1985,7 +1985,7 @@ namespace d360.model
 										T.ParentObjectID = S.ObjectID
 								from    api.ExecutionAsset T
 										inner join Asset S on T.ExecutionID = @executionID and S.Uid = T.ParentUid and T.ParentUid is not null
-										inner join AssetType ST on ST.ID = S.AssetTypeID and ST.Object = T.ParentObjectType and ST.ObjectID = T.ParentObjectTypeID;",
+										inner join AssetType ST on ST.ID = S.AssetTypeID and ST.ID = T.ParentAssetTypeID;",
             new { executionID, assetTypeID }, commandTimeout: timeout);
         }
 
@@ -4998,8 +4998,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                 List<string> requiredFieldTypeNames = null;
                 PredicateType? predicateType = DeterminePredicateType(at.Object);
                 IntersectType it = null;
-                string parentObject = null;
-                int? parentObjectID = null;
+                int? parentAssetTypeId = null;
                 List<Guid> parentIntersectGuids = new List<Guid>();
                 Guid? intersectTypeUid = null;
                 int? intersectTypeID = null;
@@ -5039,11 +5038,10 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
 
                     if (predicateType.HasValue)
                     {
-                        it = Database.Connection.QueryFirstOrDefault<IntersectType>("select i.[Subject],i.[SubjectID],i.[uid],i.ID from [dbo].[intersecttype] i inner join [predicate] p on (i.predicateid = p.id) where i.[Object] = @obj and i.[ObjectID] = @objID and p.[Type] = @predicate", new { obj = new DbString { Value = at.Object, IsFixedLength = true, Length = 50, IsAnsi = true }, objID = at.ObjectID, predicate = predicateType });
+                        it = Filter<IntersectType>(i => i.ObjectAssetTypeID == at.ID && i.Predicate.Type == predicateType, i => i.Predicate).SingleOrDefault();
                         if (it != null)
                         {
-                            parentObject = it.Subject;
-                            parentObjectID = it.SubjectID;
+                            parentAssetTypeId = it.SubjectAssetTypeID;
                             intersectTypeUid = it.uid;
                             intersectTypeID = it.ID;
                         }
@@ -5058,7 +5056,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                         {
                             List<DataRow> fieldRows = ValidateFields(at.Object, at.ObjectID, isInsert, fieldTypes, requiredFieldTypeNames, model.Fields, execution.ExecutionID, i, fieldTable, out bool success, out string errorMessage, validationFieldProperties: fieldLoadProperties, jsonElementsEnabled: enableJsonAttributes, IslookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
-                            if (success && isInsert && parentObjectID.HasValue && predicateType == PredicateType.InterTypeHierarchy)
+                            if (success && isInsert && parentAssetTypeId.HasValue && predicateType == PredicateType.InterTypeHierarchy)
                             {
                                 // Check to ensure ParentUid is present.
                                 success = model.ParentUid.HasValue;
@@ -5108,14 +5106,9 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 row["ObjectType"] = at.Object;
                                 row["ObjectTypeID"] = at.ObjectID;
 
-                                if (!string.IsNullOrEmpty(parentObject))
+                                if (parentAssetTypeId.HasValue)
                                 {
-                                    row["ParentObjectType"] = parentObject;
-                                }
-
-                                if (parentObjectID.HasValue)
-                                {
-                                    row["ParentObjectTypeID"] = parentObjectID.Value;
+                                    row["ParentAssetTypeID"] = parentAssetTypeId.Value;
                                 }
 
                                 if (intersectTypeUid.HasValue)
@@ -5201,8 +5194,7 @@ new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResource
                                 bulkCopy.ColumnMappings.Add("ObjectTypeID", "ObjectTypeID");
 
                                 bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
-                                bulkCopy.ColumnMappings.Add("ParentObjectType", "ParentObjectType");
-                                bulkCopy.ColumnMappings.Add("ParentObjectTypeID", "ParentObjectTypeID");
+                                bulkCopy.ColumnMappings.Add("ParentAssetTypeID", "ParentAssetTypeID");
 
                                 bulkCopy.ColumnMappings.Add("IntersectTypeUid", "IntersectTypeUid");
                                 bulkCopy.ColumnMappings.Add("IntersectTypeID", "IntersectTypeID");
